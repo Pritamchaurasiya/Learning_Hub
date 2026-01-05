@@ -6,6 +6,7 @@ from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+import datetime
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
@@ -106,7 +107,7 @@ def check_streak_expiry():
     """Check and update expired streaks. Run daily at midnight."""
     from apps.gamification.models import Streak
 
-    yesterday = timezone.now().date() - timezone.timedelta(days=1)
+    yesterday = timezone.now().date() - datetime.timedelta(days=1)
     expired = Streak.objects.filter(
         last_activity_date__lt=yesterday, current_streak__gt=0
     )

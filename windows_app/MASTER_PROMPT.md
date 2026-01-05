@@ -1,80 +1,52 @@
-# 📚 Learning Hub - Master Prompt
+﻿#  Learning Hub - The Unified Full-Stack "God Mode" Prompt
 
-> **God-Tier Flutter Learning Platform with AI-Powered Learning**
+> **Enterprise-Grade AI-Powered Learning Ecosystem**
+> **Frontend:** Flutter (Mobile/Web/Desktop) | **Backend:** Django Ninja (Python) | **Core:** Event-Driven Architecture
 
-## 🎯 Project Overview
+##  System Overview
 
-Learning Hub is a comprehensive **Flutter educational platform** featuring:
+Learning Hub is a highly decoupled, scalable platform designed for high-performance educational delivery.
 
-- **27 Feature Modules** covering courses, quizzes, gamification, AI tutoring, and more
-- **28 Core Services** for APIs, caching, sync, security, and analytics
-- **Cross-platform** support (Windows, Web, iOS, Android)
-- **Offline-first** architecture with sync capabilities
+- **Frontend (/windows_app)**: Feature-first Flutter architecture using Riverpod for state and Hive for offline-first persistence.
+- **Backend (/conductor)**: High-performance Django Ninja API with Event-Driven logic via Signals and Celery task queues.
+- **Learning Infrastructure (/learning)**: Structured knowledge-base for autonomous engineer training.
 
-## 🏗 Architecture
+##  Full-Stack Architecture
 
-```
-lib/
-├── core/
-│   ├── providers/    # Riverpod state management
-│   ├── services/     # Business logic (API, auth, cache, sync)
-│   └── theme/        # Design system
-├── features/         # 27 feature modules
-├── shared/           # Reusable widgets
-└── data/             # Models and repositories
-```
+###  Backend (The Brain)
+- **Framework**: Django Ninja (Async-first).
+- **Domain Logic**: Decoupled apps in pps/ (Users, Courses, Gamification, Payments).
+- **Communication**: Internal signals for gamification triggers (e.g., enrolling -> gain XP).
+- **Background**: Celery + Redis for leaderboard resets and streak calculations.
 
-## 🚀 Quick Commands
+###  Frontend (The Experience)
+- **Design System**: Premium glassmorphism, dynamic gradients, 120FPS smoothness.
+- **Features**: AI Tutor, Spaced-Repetition Quizzes, Social Leaderboards.
+- **Sync**: Intelligent cache-first strategy with conflict resolution.
 
-```powershell
-# Run app
-flutter run
+##  "God-Tier" Execution Commands
 
-# Run tests (36 tests)
-flutter test --reporter compact
+`powershell
+#  Quality Assurance (Frontend)
+flutter analyze; flutter test
 
-# Static analysis
-flutter analyze
+#  Quality Assurance (Backend)
+pytest; flake8; mypy .
 
-# Build web
+#  Production Build
 flutter build web --release
+python manage.py check --deploy
+`
 
-# Build Windows (requires Visual Studio C++ Build Tools)
-flutter build windows --release
-```
+##  Security & Hardening Doctrine
+1. **Zero-Trust APIs**: All endpoints require JWT validation.
+2. **Secrets Management**: Use .env (Excluded from Git); never commit keys.
+3. **Data Integrity**: Atomic transactions for payments and XP awards.
 
-## ✅ Production Status
-
-| Metric                 | Status                   |
-| ---------------------- | ------------------------ |
-| Static Analysis Errors | **52** (42 fixed) ⚠️     |
-| Test Coverage          | **36/36 pass** ✅        |
-| Web Build              | **Ready** ✅             |
-| Windows Build          | Needs VS C++ Workload ⚠️ |
-
-## 🧩 Key Features
-
-1. **AI Tutor** - GPT-powered contextual learning assistant
-2. **Gamification** - XP, achievements, leaderboards, streaks
-3. **Adaptive Quizzes** - Spaced repetition algorithm
-4. **Learning Paths** - Skill-based progression
-5. **Offline Mode** - Download courses for offline access
-6. **Study Planner** - Schedule your learning
-
-## 🔧 Workflows (/n, /m, /t, /l)
-
-- `/n` - Full project enhancement and fix
-- `/m` - ML/AI pipeline analysis
-- `/t` - Auto-thinking task engine
-- `/l` - Comprehensive learning materials
-
-## 📂 Key Files
-
-- `lib/main.dart` - App entry point
-- `lib/core/services/api_client.dart` - Network layer with retry, caching
-- `lib/core/providers/*.dart` - State management
-- `lib/features/home/home_screen.dart` - Main dashboard
+##  Workflows
+- /n - Deep analysis, structural refactoring, and stability enhancement.
+- /m - AI/ML pipeline optimization and model training.
+- /t - The "Infinite Execution" task engine.
 
 ---
-
-_Built with Flutter 3.x | Dart 3.x | Riverpod | Hive_
+_Architected for the NEXT version of the web._
