@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_flutter_app/src/core/utils/validators.dart';
 import 'package:my_flutter_app/src/features/auth/presentation/auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -58,16 +59,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Type your email' : null,
+                  validator: Validators.validateEmail,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
+                  // For login, we might just check if it's empty, but strictly
+                  // speaking, we can just require it to be present.
                   validator: (value) => value == null || value.isEmpty
-                      ? 'Type your password'
+                      ? 'Password is required'
                       : null,
                 ),
                 const SizedBox(height: 24),

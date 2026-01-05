@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_flutter_app/src/core/utils/validators.dart';
 import 'package:my_flutter_app/src/features/auth/presentation/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -59,25 +60,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Type your email' : null,
+                  validator: Validators.validateEmail,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _usernameController,
                   decoration: const InputDecoration(labelText: 'Username'),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Type your username'
-                      : null,
+                  validator: Validators.validateUsername,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Type your password'
-                      : null,
+                  validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 24),
                 if (state is AsyncLoading)
