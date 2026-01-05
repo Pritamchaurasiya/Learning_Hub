@@ -67,12 +67,13 @@ class UserLoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise serializers.ValidationError({"detail": "User account is disabled."})
 
+        assert user is not None
         # Generate tokens
         refresh = RefreshToken.for_user(user)
 
         attrs["user"] = user
         attrs["tokens"] = {
-            "access_token": str(refresh.access_token),
+            "access_token": str(refresh.access_token), # type: ignore
             "refresh_token": str(refresh),
         }
 

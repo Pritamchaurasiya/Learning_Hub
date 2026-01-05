@@ -12,3 +12,8 @@ venv/
 .vscode/
 .idea/
 *.log
+
+*report_visible.txt
+*.log
+.mypy_cache/
+.pytest_cache/

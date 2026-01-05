@@ -40,13 +40,13 @@ class UserService:
         )
 
     @staticmethod
-    def generate_tokens(user) -> Dict[str, str]:
+    def generate_tokens(user: Any) -> Dict[str, str]:
         """
         Generate access and refresh tokens for a user.
         """
         refresh = RefreshToken.for_user(user)
         return {
-            "access_token": str(refresh.access_token),
+            "access_token": str(refresh.access_token),  # type: ignore
             "refresh_token": str(refresh),
         }
 
