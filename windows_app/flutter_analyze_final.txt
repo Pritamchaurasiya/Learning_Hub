@@ -1,0 +1,26 @@
+﻿Analyzing windows_app...                                        
+
+   info - Don't invoke 'print' in production code - lib\core\services\certificate_service.dart:227:5 - avoid_print
+  error - Undefined class 'Timer' - lib\shared\widgets\premium_loading_indicator.dart:27:3 - undefined_class
+  error - Undefined name 'Timer' - lib\shared\widgets\premium_loading_indicator.dart:36:17 - undefined_identifier
+
+flutter : 3 issues 
+found. (ran in 13.7s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-FilePath "flutter_an
+alyze_final.txt" ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (3 issue   
+ s found. (ran in    
+ 13.7s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

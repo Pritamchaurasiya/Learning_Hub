@@ -1,0 +1,150 @@
+﻿[   +3 ms] Skipping target: _composite
+[   +4 ms] complete
+[  +13 ms] Launching lib\main.dart on Windows in debug mode...
+[   +7 ms] C:\src\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe C:\src\flutter\bin\cache\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root C:\src\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk/ --incremental --target=flutter --experimental-emit-debug-metadata --output-dill C:\Users\shiva\AppData\Local\Temp\flutter_tools.aa9131c9\flutter_tool.dd401221\app.dill --packages C:\Users\shiva\Desktop\windows_app\windows_app\.dart_tool\package_config.json -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --filesystem-scheme org-dartlang-root --initialize-from-dill build\cache.dill.track.dill --verbosity=error --enable-experiment=alternative-invalidation-strategy
+[  +64 ms] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[ +127 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] [
+             {
+               "instanceId": "18d17dec",
+               "installDate": "2025-12-27T10:46:27Z",
+               "installationName": "VisualStudio/17.14.23+36811.4",
+               "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional",
+               "installationVersion": "17.14.36811.4",
+               "productId": "Microsoft.VisualStudio.Product.Professional",
+               "productPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\devenv.exe",
+               "state": 4294967295,
+               "isComplete": true,
+               "isLaunchable": true,
+               "isPrerelease": false,
+               "isRebootRequired": false,
+               "displayName": "Visual Studio Professional 2022",
+               "description": "Professional IDE best suited to small teams",
+               "channelId": "VisualStudio.17.Release",
+               "channelUri": "https://aka.ms/vs/17/release/channel",
+               "enginePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\resources\\app\\ServiceHub\\Services\\Microsoft.VisualStudio.Setup.Service",
+               "installedChannelId": "VisualStudio.17.Release",
+               "installedChannelUri": "https://aka.ms/vs/17/release/channel",
+               "releaseNotes": "https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.14#17.14.23",
+               "resolvedInstallationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional",
+               "thirdPartyNotices": "https://go.microsoft.com/fwlink/?LinkId=661288",
+               "updateDate": "2025-12-27T10:46:27.258859Z",
+               "catalog": {
+                 "buildBranch": "d17.14",
+                 "buildVersion": "17.14.36811.4",
+                 "id": "VisualStudio/17.14.23+36811.4",
+                 "localBuild": "build-lab",
+                 "manifestName": "VisualStudio",
+                 "manifestType": "installer",
+                 "productDisplayVersion": "17.14.23",
+                 "productLine": "Dev17",
+                 "productLineVersion": "2022",
+                 "productMilestone": "RTW",
+                 "productMilestoneIsPreRelease": "False",
+                 "productName": "Visual Studio",
+                 "productPatchVersion": "23",
+                 "productPreReleaseMilestoneSuffix": "1.0",
+                 "productSemanticVersion": "17.14.23+36811.4",
+                 "requiredEngineVersion": "3.14.2086.54749"
+               },
+               "properties": {
+                 "appLocalWPF": "false",
+                 "campaignId": "",
+                 "channelManifestId": "VisualStudio.17.Release/17.14.23+36811.4",
+                 "includeRecommended": "1",
+                 "nickname": "",
+                 "setupEngineFilePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\setup.exe"
+               }
+             }
+           ]
+[   +5 ms] Building Windows application...
+[ +767 ms] <- compile package:windows_app/main.dart
+[   +1 ms] executing: C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -S C:\Users\shiva\Desktop\windows_app\windows_app\windows -B C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\x64 -G Visual Studio 17 2022 -A x64 -DFLUTTER_TARGET_PLATFORM=windows-x64
+[ +200 ms] -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+[+3236 ms] -- The CXX compiler identification is unknown
+flutter : [ +114 ms] 
+CMake Error at 
+CMakeLists.txt:3 
+(project):
+At line:1 char:1
++ flutter run -d 
+windows -v > 
+fresh_run_log.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ([ +114    
+ ms] CMak...xt:3     
+(project)::Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+[   +2 ms]   No 
+CMAKE_CXX_COMPILER 
+could be found.
+[  +19 ms] -- Configuring incomplete, errors occurred!
+[  +94 ms] Building Windows application... (completed in 4.4s)
+[+17634 ms] Error: 
+Unable to generate 
+build files
+[   +3 ms] "flutter run" took 24,008ms.
+[  +42 ms] 
+           #0      
+throwToolExit (packag
+e:flutter_tools/src/b
+ase/common.dart:10:3)
+           #1      Ru
+nCommand.runCommand (
+package:flutter_tools
+/src/commands/run.dar
+t:860:9)
+           
+<asynchronous 
+suspension>
+           #2      Fl
+utterCommand.run.<ano
+nymous closure> (pack
+age:flutter_tools/src
+/runner/flutter_comma
+nd.dart:1450:27)
+           
+<asynchronous 
+suspension>
+           #3      Ap
+pContext.run.<anonymo
+us closure> (package:
+flutter_tools/src/bas
+e/context.dart:153:19
+)
+           
+<asynchronous 
+suspension>
+           #4      Co
+mmandRunner.runComman
+d (package:args/comma
+nd_runner.dart:212:13
+)
+           
+<asynchronous 
+suspension>
+           #5      Fl
+utterCommandRunner.ru
+nCommand.<anonymous 
+closure> (package:flu
+tter_tools/src/runner
+/flutter_command_runn
+er.dart:421:9)
+           
+<asynchronous 
+suspension>
+           #6      Ap
+pContext.run.<anonymo
+us closure> (package:
+flutter_tools/src/bas
+e/context.dart:153:19

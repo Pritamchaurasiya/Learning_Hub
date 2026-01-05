@@ -1,0 +1,8 @@
+﻿cmd : '\' is not recognized as an internal or external command,
+At line:1 char:1
++ cmd /c "\"C:\Program Files\Microsoft Visual Studio\2022\Professional\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ('\' is not reco...ternal command,:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+operable program or batch file.

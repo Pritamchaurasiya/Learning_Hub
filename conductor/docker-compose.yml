@@ -1,0 +1,93 @@
+# Learning Hub Backend - Docker Configuration
+version: '3.8'
+
+services:
+  # Django Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+      - DEBUG=True
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: python manage.py runserver 0.0.0.0:8000
+    networks:
+      - backend
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=learning_hub
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  # Celery Worker (for async tasks)
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  # Celery Beat (for scheduled tasks)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A config beat -l info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  backend:
+    driver: bridge

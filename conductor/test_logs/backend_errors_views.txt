@@ -1,0 +1,2 @@
+﻿apps/gamification/views.py:7:1: F401 '.models.UserBadge' imported but unused
+apps/gamification/views.py:7:1: F401 '.models.Streak' imported but unused

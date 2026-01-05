@@ -1,0 +1,292 @@
+﻿  0s json_serializable on 133 inputs; lib/app.dart
+E json_serializable on lib/app.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+  26s json_serializable on 133 inputs: 1 no-op; spent 25s┬ásdk; lib/core/bloc/base_bloc.dart
+E json_serializable on lib/core/bloc/base_bloc.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/constants/app_constants.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/di/injection_container.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/error/exceptions.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/error/failures.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/network/network_info.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/admin_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/ai_tutor_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/analytics_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/auth_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/biometric_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/bookmark_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/cart_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/connectivity_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/discussion_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/download_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/focus_mode_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/gamification_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/learning_path_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/offline_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/peer_review_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/preferences_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/quiz_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/recommendation_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/search_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/study_planner_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/providers/theme_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/router/app_router.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/ai_tutor_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/analytics_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/api_client.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/auth_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/background_job_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/biometric_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/cache_manager.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/cart_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/certificate_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/content_recommendation_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/course_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/discussion_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/feature_flags_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/health_check_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/learning_path_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/logging_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/note_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/notification_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/offline_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/payment_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/peer_review_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/progress_prediction_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/quiz_generation_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/recommendation_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/search_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/security_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/sync_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/services/user_service.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/theme/app_colors.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/theme/app_theme.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/ui/desktop_shortcuts.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/ui/web_shell.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/usecases/usecase.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/core/utils/app_logger.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/data/models/certificate_model.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/data/models/course_model.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/data/models/user_model.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/achievements/achievements_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/ai_tutor/ai_tutor_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/analytics/analytics_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/auth/domain/entities/user_entity.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/auth/domain/repositories/user_repository.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/auth/forgot_password_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/auth/login_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/auth/signup_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/bookmarks/bookmarks_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/cart/cart_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/certificates/certificates_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/course/course_detail_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/course/lesson_player_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/discussions/discussions_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/downloads/downloads_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/data/datasources/gamification_data_sources.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/data/datasources/gamification_local_data_source_impl.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/data/datasources/gamification_remote_data_source_impl.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/data/models/gamification_models.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/data/repositories/gamification_repository_impl.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/domain/entities/achievement.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/domain/entities/leaderboard_entry.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/domain/repositories/gamification_repository.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/presentation/widgets/gamification_badge.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/gamification/screens/leaderboard_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/home/home_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/home/mentorship_banner.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/home/widgets/hero_banner.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/library/library_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/live/live_class_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/mentorship/mentorship_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/notes/data/models/note_model.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/notes/logic/notes_provider.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/notes/presentation/notes_tab.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/notifications/notifications_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/onboarding/onboarding_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/payment/presentation/widgets/payment_modal.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/peer_review/peer_review_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/profile/certificates_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/profile/profile_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/quiz/quiz_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/search/search_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/settings/admin_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/settings/settings_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/splash/splash_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/features/study_planner/study_planner_screen.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/main.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/activity_heatmap.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/course_card.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/daily_goals_widget.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/home_skeleton.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/main_scaffold.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/premium_loading_indicator.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/progress_ring.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/quick_actions_fab.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/recently_viewed_widget.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on lib/shared/widgets/video_player_widget.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/comprehensive_functionality_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/features/gamification/gamification_logic_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/home_screen_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/mocks.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/recently_viewed_widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/sanity_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/simple_widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/verification_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on test/widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E json_serializable on tool/conductor.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+  26s json_serializable on 133 inputs: 133 no-op; spent 25s┬ásdk
+  0s source_gen:combining_builder on 133 inputs; lib/app.dart
+  0s source_gen:combining_builder on 133 inputs: 133 no-op
+  0s mockito:mockBuilder on 18 inputs; test/comprehensive_functionality_test.dart
+E mockito:mockBuilder on test/comprehensive_functionality_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/features/gamification/gamification_logic_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/home_screen_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/mocks.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/recently_viewed_widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/sanity_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/simple_widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/verification_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+E mockito:mockBuilder on test/widget_test.dart:
+  PathNotFoundException: Cannot open file, path = '.dart_tool\build_resolvers\edda4f63\sdk.sum' (OS Error: The system cannot find the path specified, errno = 3)
+  0s mockito:mockBuilder on 18 inputs: 9 skipped, 9 no-op
+  Failed to build with build_runner/jit in 30s; wrote 0 outputs.

@@ -1,0 +1,20 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\my_flutter_app",
+    "\\my_flutter_app\\android",
+    "\\my_flutter_app\\android\\app",
+    "\\my_flutter_app\\android\\app\\src",
+    "\\my_flutter_app\\android\\app\\src\\main",
+    "\\my_flutter_app\\android\\app\\src\\main\\kotlin",
+    "\\my_flutter_app\\android\\app\\src\\main\\kotlin\\com",
+    "\\my_flutter_app\\android\\app\\src\\main\\kotlin\\com\\example",
+    "\\my_flutter_app\\android\\app\\src\\main\\kotlin\\com\\example\\my_flutter_app",
+    "\\windows_app",
+    "\\windows_app\\android",
+    "\\windows_app\\assets",
+    "\\windows_app\\backend"
+  ],
+  "SelectedNode": "\\windows_app\\backend\\run.py",
+  "PreviewInSolutionExplorer": false
+}

@@ -1,0 +1,14 @@
+﻿# Build artifacts
+build/
+.dart_tool/
+windows/flutter/ephemeral/
+*.pdb
+*.dll
+*.exe
+*.obj
+__pycache__/
+venv/
+.env
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,23 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+00:00 +0 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: test/comprehensive_functionality_test.dart:96:19: Error: Method not found: 'any'.
+              type: any(named: 'type'),
+                    ^^^
+  test/comprehensive_functionality_test.dart:97:21: Error: Method not found: 'any'.
+              action: any(named: 'action'),
+                      ^^^
+  test/comprehensive_functionality_test.dart:98:19: Error: Method not found: 'any'.
+              data: any(named: 'data'),
+                    ^^^
+  test/comprehensive_functionality_test.dart:95:7: Error: Method not found: 'when'.
+        when(() => mockSyncService.queue(
+        ^^^^
+  test/comprehensive_functionality_test.dart:284:7: Error: Method not found: 'when'.
+        when(() => apiClient.get('/error')).thenAnswer(
+        ^^^^
+  test/comprehensive_functionality_test.dart:285:24: Error: Method not found: 'ApiResponse'.
+            (_) async => ApiResponse(success: false, message: 'Simulated Error'));
+                         ^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.

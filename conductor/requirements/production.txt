@@ -1,0 +1,5 @@
+-r base.txt
+
+# Monitoring & Logging
+sentry-sdk==1.40.0
+django-structlog==7.1.0

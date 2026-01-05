@@ -1,0 +1,81 @@
+==========================================
+  MANUAL WINDOWS BUILD (BYPASSING FLUTTER TOOL)
+==========================================
+[STEP 1] Setting up Visual Studio Environment...
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.23
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+
+[STEP 2] Adding NuGet to PATH...
+C:\Users\shiva\Desktop\windows_app\windows_app\nuget.exe
+
+[STEP 3] Cleaning Build Directory...
+
+[STEP 4] Configuring CMake (Ninja + Release)...
+-- The CXX compiler identification is MSVC 19.44.35222.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Feeds used:
+  C:\Users\shiva\.nuget\packages\
+  https://api.nuget.org/v3/index.json
+
+
+
+Attempting to gather dependency information for package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1' with respect to project 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages', targeting 'Any,Version=v0.0'
+Gathering dependency information took 470 ms
+Attempting to resolve dependencies for package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1' with DependencyBehavior 'Lowest'
+Resolving dependency information took 0 ms
+Resolving actions to install package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1'
+Resolved actions to install package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1'
+Retrieving package 'Microsoft.Windows.ImplementationLibrary 1.0.220201.1' from 'C:\Users\shiva\.nuget\packages\'.
+Adding package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Added package 'Microsoft.Windows.ImplementationLibrary.1.0.220201.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Successfully installed 'Microsoft.Windows.ImplementationLibrary 1.0.220201.1' to C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages
+Executing nuget actions took 857 ms
+Feeds used:
+  C:\Users\shiva\.nuget\packages\
+  https://api.nuget.org/v3/index.json
+
+
+
+Attempting to gather dependency information for package 'Microsoft.Windows.CppWinRT.2.0.220418.1' with respect to project 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages', targeting 'Any,Version=v0.0'
+Gathering dependency information took 412 ms
+Attempting to resolve dependencies for package 'Microsoft.Windows.CppWinRT.2.0.220418.1' with DependencyBehavior 'Lowest'
+Resolving dependency information took 0 ms
+Resolving actions to install package 'Microsoft.Windows.CppWinRT.2.0.220418.1'
+Resolved actions to install package 'Microsoft.Windows.CppWinRT.2.0.220418.1'
+Retrieving package 'Microsoft.Windows.CppWinRT 2.0.220418.1' from 'C:\Users\shiva\.nuget\packages\'.
+Adding package 'Microsoft.Windows.CppWinRT.2.0.220418.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Added package 'Microsoft.Windows.CppWinRT.2.0.220418.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Successfully installed 'Microsoft.Windows.CppWinRT 2.0.220418.1' to C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages
+Executing nuget actions took 723 ms
+Feeds used:
+  C:\Users\shiva\.nuget\packages\
+  https://api.nuget.org/v3/index.json
+
+
+
+Attempting to gather dependency information for package 'Microsoft.Windows.CppWinRT.2.0.210806.1' with respect to project 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages', targeting 'Any,Version=v0.0'
+Gathering dependency information took 455 ms
+Attempting to resolve dependencies for package 'Microsoft.Windows.CppWinRT.2.0.210806.1' with DependencyBehavior 'Lowest'
+Resolving dependency information took 0 ms
+Resolving actions to install package 'Microsoft.Windows.CppWinRT.2.0.210806.1'
+Resolved actions to install package 'Microsoft.Windows.CppWinRT.2.0.210806.1'
+Retrieving package 'Microsoft.Windows.CppWinRT 2.0.210806.1' from 'C:\Users\shiva\.nuget\packages\'.
+Adding package 'Microsoft.Windows.CppWinRT.2.0.210806.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Added package 'Microsoft.Windows.CppWinRT.2.0.210806.1' to folder 'C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages'
+Successfully installed 'Microsoft.Windows.CppWinRT 2.0.210806.1' to C:\Users\shiva\Desktop\windows_app\windows_app\build\windows\packages
+Executing nuget actions took 770 ms
+-- Found PDFium: C:/Users/shiva/Desktop/windows_app/windows_app/windows/flutter/ephemeral/.plugin_symlinks/syncfusion_pdfviewer_windows/windows/include/pdfium/x64/bin/pdfium.dll
+-- Configuring done (18.8s)
+-- Generating done (0.6s)
+-- Build files have been written to: C:/Users/shiva/Desktop/windows_app/windows_app/build/windows
+
+[STEP 5] Building with CMake...
+ninja: error: 'C:/Users/shiva/Desktop/windows_app/windows_app/windows/flutter/ephemeral/flutter_windows.dll.lib', needed by 'plugins/connectivity_plus/connectivity_plus_plugin.lib', missing and no known rule to make it
+[ERROR] Build Failed.

@@ -1,0 +1,7 @@
+﻿Analyzing windows_app...                                        
+
+warning - Unused import: 'package:intl/intl.dart' - lib\features\learning_path\learning_path_screen.dart:5:8 - unused_import
+warning - The value of the local variable 'theme' isn't used - lib\features\learning_path\learning_path_screen.dart:246:11 - unused_local_variable
+  error - Expected to find ')' - lib\features\notes\presentation\notes_tab.dart:253:16 - expected_token
+  error - Expected to find ']' - lib\features\notes\presentation\notes_tab.dart:253:16 - expected_token
+

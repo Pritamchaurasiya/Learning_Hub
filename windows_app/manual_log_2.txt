@@ -1,0 +1,136 @@
+==========================================
+  MANUAL WINDOWS BUILD (BYPASSING FLUTTER TOOL)
+==========================================
+[STEP 1] Setting up Visual Studio Environment...
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.23
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+
+[STEP 2] Adding NuGet to PATH...
+
+[STEP 3] Cleaning Build Directory...
+
+[STEP 3.5] Generating Flutter Ephemeral Files...
+Project Dir: C:\Users\shiva\Desktop\windows_app\windows_app
+
+[STEP 4] Configuring CMake (Ninja + Release)...
+-- The CXX compiler identification is MSVC 19.44.35222.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Error at flutter/CMakeLists.txt:7 (include):
+  include could not find requested file:
+
+    C:/Users/shiva/Desktop/windows_app/windows_app/windows/flutter/ephemeral/generated_config.cmake
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/bitsdojo_window_windows/windows" which
+  is not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/connectivity_plus/windows" which is not
+  an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/dynamic_color/windows" which is not an
+  existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/file_selector_windows/windows" which is
+  not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/flutter_secure_storage_windows/windows"
+  which is not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/flutter_timezone/windows" which is not
+  an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/local_auth_windows/windows" which is
+  not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/permission_handler_windows/windows"
+  which is not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/sentry_flutter/windows" which is not an
+  existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/share_plus/windows" which is not an
+  existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/syncfusion_pdfviewer_windows/windows"
+  which is not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:27 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/url_launcher_windows/windows" which is
+  not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+CMake Error at flutter/generated_plugins.cmake:34 (add_subdirectory):
+  add_subdirectory given source
+  "flutter/ephemeral/.plugin_symlinks/flutter_local_notifications_windows/windows"
+  which is not an existing directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:59 (include)
+
+
+-- Configuring incomplete, errors occurred!
+[ERROR] CMake Configuration Failed.

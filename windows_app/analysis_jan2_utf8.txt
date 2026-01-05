@@ -1,0 +1,45 @@
+﻿Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (92.0.0 available)
+  analyzer 8.4.1 (9.0.0 available)
+  bloc 8.1.4 (9.2.0 available)
+  characters 1.4.0 (1.4.1 available)
+  confetti 0.7.0 (0.8.0 available)
+  flex_color_scheme 7.3.1 (8.4.0 available)
+  flex_seed_scheme 1.5.0 (4.0.1 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_riverpod 2.6.1 (3.1.0 available)
+  get_it 7.7.0 (9.2.0 available)
+  image 4.5.4 (4.7.2 available)
+  injectable 2.6.0 (2.7.1+4 available)
+  js 0.6.7 (0.7.2 available)
+  json_serializable 6.11.2 (6.11.3 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  msix 3.16.9 (3.16.12 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  riverpod 2.6.1 (3.1.0 available)
+  rxdart 0.27.7 (0.28.0 available)
+  sentry 7.20.2 (9.9.1 available)
+  sentry_flutter 7.20.2 (9.9.1 available)
+  socket_io_client 2.0.3+1 (3.1.3 available)
+  socket_io_common 2.0.3 (3.1.1 available)
+  source_helper 1.3.8 (1.3.9 available)
+  test_api 0.7.7 (0.7.8 available)
+  web_socket_channel 2.4.0 (3.0.3 available)
+Got dependencies!
+27 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing windows_app...                                        
+
+warning - Unused import: 'dart:convert' - lib\core\services\ai\gemini_client.dart:1:8 - unused_import
+warning - The '!' will have no effect because the receiver can't be null - lib\core\services\ai\gemini_embedding_client.dart:24:53 - unnecessary_non_null_assertion
+   info - Use 'const' with the constructor to improve performance - lib\core\services\ai\gemini_embedding_client.dart:52:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\services\ai\gemini_embedding_client.dart:96:13 - prefer_const_constructors
+  error - Undefined class 'Course' - lib\core\services\ai_tutor_service.dart:190:28 - undefined_class
+  error - The name 'Course' isn't a type, so it can't be used as a type argument - lib\core\services\ai_tutor_service.dart:195:37 - non_type_as_type_argument
+warning - The value of the local variable 'lowerQuery' isn't used - lib\core\services\ai_tutor_service.dart:314:11 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - lib\core\services\ai_tutor_service.dart:358:9 - curly_braces_in_flow_control_structures
+warning - The declaration '_generateCodeExplanation' isn't referenced - lib\core\services\ai_tutor_service.dart:421:17 - unused_element
+   info - Unnecessary use of double quotes - lib\core\services\ai_tutor_service.dart:687:12 - prefer_single_quotes
+

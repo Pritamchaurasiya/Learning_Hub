@@ -1,0 +1,40 @@
+﻿python : 
+SystemCheckError: System 
+check identified some 
+issues:
+At line:1 char:1
++ python manage.py check 
+2>&1 | Out-File -FilePath 
+check_output.txt -En ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
+    + CategoryInfo        
+      : NotSpecified: (S  
+  ystemCheckErro...ed s   
+ ome issues::String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+
+ERRORS:
+courses.Course.thumbnail: 
+(fields.E210) Cannot use 
+ImageField because Pillow 
+is not installed.
+	HINT: Get Pillow at https
+://pypi.org/project/Pillow
+/ or run command "python 
+-m pip install Pillow".
+users.User.avatar: 
+(fields.E210) Cannot use 
+ImageField because Pillow 
+is not installed.
+	HINT: Get Pillow at https
+://pypi.org/project/Pillow
+/ or run command "python 
+-m pip install Pillow".
+
+System check identified 2 
+issues (0 silenced).

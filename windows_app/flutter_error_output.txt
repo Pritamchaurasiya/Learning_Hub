@@ -1,0 +1,370 @@
+﻿Launching lib\main.dart on Chrome in debug mode...
+Waiting for connection from debug service on Chrome...             44.1s
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+This app is linked to the debug service: ws://127.0.0.1:64111/LMQjxWmpLfU=/ws
+Debug service listening on ws://127.0.0.1:64111/LMQjxWmpLfU=/ws
+A Dart VM Service on Chrome is available at: http://127.0.0.1:64111/LMQjxWmpLfU=
+The Flutter DevTools debugger and profiler on Chrome is available at: http://127.0.0.1:64111/LMQjxWmpLfU=/devtools/?uri=ws://127.0.0.1:64111/LMQjxWmpLfU=/ws
+Starting application from main method in: org-dartlang-app:/web_entrypoint.dart.
+Found an existing <meta name="viewport"> tag. Flutter Web uses its own viewport configuration for better compatibility with Flutter. This tag will be replaced.
+Got object store box in database gamification.
+[38;5;12mΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[38;5;12mΓöé #0   package:learning_hub/core/utils/app_logger.dart 35:5                              info[0m
+[38;5;12mΓöé #1   package:learning_hub/main.dart 32:13                                              <fn>[0m
+[38;5;12mΓö£ΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöä[0m
+[38;5;12mΓöé 22:18:31.714 (+0:00:00.001000)[0m
+[38;5;12mΓö£ΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöäΓöä[0m
+[38;5;12mΓöé ≡ƒÆí LearningHub app starting...[0m
+[38;5;12mΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY FLUTTER FRAMEWORK Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following assertion was thrown during runApp:
+Zone mismatch.
+The Flutter bindings were initialized in a different zone than is now being used. This will likely
+cause confusion and bugs as any zone-specific configuration will inconsistently use the
+configuration of the original binding initialization zone or this zone based on hard-to-predict
+factors such as which zone was active when a particular callback was set.
+It is important to use the same zone when calling `ensureInitialized` on the binding as when calling
+`runApp` later.
+To make this warning fatal, set BindingBase.debugZoneErrorsAreFatal to true before the bindings are
+initialized (i.e. as the first statement in `void main() { }`).
+
+When the exception was thrown, this was the stack:
+dart-sdk/lib/_internal/js_dev_runtime/patch/core_patch.dart 749:28                get current
+package:flutter/src/foundation/binding.dart 519:31                                <fn>
+package:flutter/src/foundation/binding.dart 524:14                                debugCheckZone
+package:flutter/src/widgets/binding.dart 1640:17                                  _runWidget
+package:flutter/src/widgets/binding.dart 1576:3                                   runApp
+package:learning_hub/main.dart 45:22                                              <fn>
+package:sentry/src/sentry.dart 137:26                                             <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:sentry/src/sentry.dart 165:3                                              <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:sentry_flutter/src/integrations/load_release_integration.dart 52:3        <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:package_info_plus/package_info_plus.dart 97:3                             <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:package_info_plus/src/package_info_plus_web.dart 72:3                     <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:package_info_plus/src/package_info_plus_web.dart 86:3                     <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:package_info_plus/src/package_info_plus_web.dart 90:3                     <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:http/http.dart 174:1                                                      <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 504:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 571:12               _asyncReturn
+package:http/src/response.dart 66:3                                               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 623:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 648:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 594:19               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 222:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 948:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 977:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 720:5                                         [_completeWithValue]
+dart-sdk/lib/async/future_impl.dart 804:7                                         <fn>
+dart-sdk/lib/async/zone.dart 1525:13                                              _rootRun
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/async/zone.dart 1422:19                                              run
+dart-sdk/lib/async/zone.dart 1321:7                                               runGuarded
+dart-sdk/lib/async/zone.dart 1362:23                                              <fn>
+dart-sdk/lib/async/schedule_microtask.dart 40:34                                  _microtaskLoop
+dart-sdk/lib/async/schedule_microtask.dart 49:5                                   _startMicrotaskLoop
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 118:77  tear
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 188:69               <fn>
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+[Security] Development mode - using enhanced SSL/TLS validation
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 
+[API] *** Request ***
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] method: POST
+[API] responseType: ResponseType.json
+[API] followRedirects: true
+[API] persistentConnection: true
+[API] connectTimeout: 0:00:30.000000
+[API] sendTimeout: 0:00:30.000000
+[API] receiveTimeout: 0:00:30.000000
+[API] receiveDataWhenStatusError: true
+[API] extra: {}
+[API] headers:
+[API]  Content-Type: application/json
+[API]  Accept: application/json
+[API]  User-Agent: LearningHub/1.0.0
+[API] data:
+[API] {name: jhjghjg@gmail.com, email: jdhubvd@gmail.com, password: P7800762120}
+[API] 
+[API] *** DioException ***:
+[API] uri: https://api.learninghub.com/v1/auth/register
+[API] DioException [connection error]: The connection errored: The XMLHttpRequest onError callback was called. This typically indicates an error on the network layer. This indicates an error which most likely cannot be solved by the library.
+[API] 

@@ -1,0 +1,17 @@
+{
+    "@@locale": "es",
+    "appTitle": "Centro de Aprendizaje",
+    "activeCourses": "Cursos Activos",
+    "continueLearning": "Continuar Aprendiendo",
+    "aiTutor": "Tutor IA",
+    "leaderboard": "Tabla de Clasificación",
+    "profile": "Perfil",
+    "searchHint": "¿Qué quieres aprender?",
+    "logIn": "Iniciar Sesión",
+    "joinFree": "Únete Gratis",
+    "featuredCourses": "Cursos Destacados",
+    "browseCategories": "Explorar Categorías",
+    "trendingNow": "Tendencias 🔥",
+    "recommendedForYou": "Recomendado para Ti",
+    "upcomingLiveClasses": "Próximas Clases en Vivo"
+}

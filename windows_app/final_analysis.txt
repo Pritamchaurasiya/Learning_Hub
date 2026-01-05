@@ -1,0 +1,27 @@
+﻿Analyzing windows_app...                                        
+
+  error - Unterminated string literal - lib\core\services\security_service.dart:185:43 - unterminated_string_literal
+  error - 2 positional arguments expected by 'replaceAll', but 1 found - lib\core\services\security_service.dart:188:16 - not_enough_positional_arguments
+  error - Expected to find ')' - lib\core\services\security_service.dart:188:16 - expected_token
+
+flutter : 3 issues 
+found. (ran in 9.2s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-FilePath 
+"final_analysis.txt" 
+-Encod ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (3 issue   
+ s found. (ran in    
+ 9.2s):String) [    
+], RemoteExcepti    
+on
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

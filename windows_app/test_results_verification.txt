@@ -1,0 +1,344 @@
+﻿Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (92.0.0 available)
+  analyzer 8.4.1 (9.0.0 available)
+  bloc 8.1.4 (9.2.0 available)
+  characters 1.4.0 (1.4.1 available)
+  confetti 0.7.0 (0.8.0 available)
+  flex_color_scheme 7.3.1 (8.4.0 available)
+  flex_seed_scheme 1.5.0 (4.0.1 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_riverpod 2.6.1 (3.1.0 available)
+  get_it 7.7.0 (9.2.0 available)
+  image 4.5.4 (4.7.2 available)
+  injectable 2.6.0 (2.7.1+4 available)
+  js 0.6.7 (0.7.2 available)
+  json_serializable 6.11.2 (6.11.3 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  msix 3.16.9 (3.16.12 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  riverpod 2.6.1 (3.1.0 available)
+  rxdart 0.27.7 (0.28.0 available)
+  sentry 7.20.2 (9.9.1 available)
+  sentry_flutter 7.20.2 (9.9.1 available)
+  socket_io_client 2.0.3+1 (3.1.3 available)
+  socket_io_common 2.0.3 (3.1.1 available)
+  source_helper 1.3.8 (1.3.9 available)
+  test_api 0.7.7 (0.7.8 available)
+  web_socket_channel 2.4.0 (3.0.3 available)
+Got dependencies!
+27 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+
+00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:01 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:02 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:03 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:04 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:05 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:06 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:07 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:08 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:09 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:10 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:11 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:12 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:13 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:14 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:14 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+00:14 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+[Security] SSL Pinning active for: learninghub.com
+DEBUG: MockApiClient matched login path: /auth/login
+DEBUG: MockApiClient POST path ignored: /auth/logout
+
+00:14 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+00:14 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+00:14 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+DEBUG: MockApiClient GET path: /user/progress
+
+00:14 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+00:14 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System                            
+00:14 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System                            
+00:14 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+00:14 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+
+00:14 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+00:14 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+00:14 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+00:15 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+00:15 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+00:15 +6: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+00:15 +7: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+00:15 +8: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+00:15 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+00:15 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System                                   
+00:15 +10: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System                                  
+00:15 +10: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation                   
+00:15 +11: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation                   
+00:15 +11: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management                              
+00:15 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management                              
+00:15 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget             
+00:16 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget             
+00:16 +13: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget             
+00:16 +13: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation                 
+00:16 +14: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation                 
+00:16 +14: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+00:16 +14: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+DEBUG: MockApiClient GET path: /user/profile
+
+00:16 +15: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+00:16 +15: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing                         
+00:16 +16: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing                         
+00:16 +16: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+00:16 +16: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+
+00:16 +17: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+00:16 +17: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management              
+00:16 +18: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management              
+00:16 +18: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features                       
+00:16 +19: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features                       
+00:17 +19: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features                       
+00:17 +19: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality                        
+00:17 +20: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality                        
+00:17 +20: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization                  
+00:17 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization                  
+00:17 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility                 
+00:17 +22: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility                 
+00:17 +22: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features                            
+00:17 +23: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features                            
+00:17 +23: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:17 +23: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+DEBUG: MockApiClient GET path: /user/profile
+
+00:18 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:19 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:20 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:21 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:22 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:23 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:24 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:25 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:26 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+00:26 +24: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart                                                                                                           
+00:26 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: (setUpAll)                                                                                                       
+00:26 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+00:27 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+00:27 +25: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+00:28 +25: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+00:28 +25: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY WIDGETS LIBRARY Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following _TypeError was thrown building HomeScreen(dirty, dependencies:
+[InheritedCupertinoTheme, MediaQuery, UncontrolledProviderScope, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#776ad]], state: _HomeScreenState#ae463):
+Null check operator used on a null value
+
+The relevant error-causing widget was:
+  HomeScreen
+  HomeScreen:file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:190:17
+
+When the exception was thrown, this was the stack:
+#0      _HomeScreenState.build (package:learning_hub/features/home/home_screen.dart:162:53)
+#1      StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#2      ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#3      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#4      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#5      Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#6      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5802:5)
+#7      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5976:11)
+#8      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5796:5)
+...     Normal element mounting (260 frames)
+#268    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#269    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7269:36)
+#270    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7285:32)
+...     Normal element mounting (471 frames)
+#741    _UncontrolledProviderScopeElement.mount (package:flutter_riverpod/src/framework.dart:315:11)
+...     Normal element mounting (9 frames)
+#750    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#751    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#752    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#753    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#754    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#755    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#756    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#757    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#758    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#759    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#760    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#761    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#762    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#763    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#764    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#765    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#766    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#767    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#768    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#769    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#770    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#771    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#772    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#773    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#774    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#775    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#776    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#777    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#778    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#779    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#780    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#781    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#782    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#783    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#784    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#785    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#786    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#787    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#788    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#789    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#790    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#791    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#792    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#793    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#794    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#795    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#796    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#797    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#798    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#799    StatelessElement.update (package:flutter/src/widgets/framework.dart:5898:5)
+#800    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#801    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#802    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#803    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#804    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#805    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#806    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1782:16)
+#807    RootElement.update (package:flutter/src/widgets/binding.dart:1760:5)
+#808    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1774:7)
+#809    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#810    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#811    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#812    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#813    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#814    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#815    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#816    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#817    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#820    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#821    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#822    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#825    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#826    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#827    main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:177:18)
+#828    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#829    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY WIDGETS LIBRARY Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following _TypeError was thrown building HomeScreen(dirty, dependencies:
+[InheritedCupertinoTheme, MediaQuery, UncontrolledProviderScope, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#776ad]], state: _HomeScreenState#ae463):
+Null check operator used on a null value
+
+The relevant error-causing widget was:
+  HomeScreen
+  HomeScreen:file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:190:17
+
+When the exception was thrown, this was the stack:
+#0      _HomeScreenState.build (package:learning_hub/features/home/home_screen.dart:162:53)
+#1      StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#2      ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#3      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#4      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#5      Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#6      BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#7      BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#8      BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#9      AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#10     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#11     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#12     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#13     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#16     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#17     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#18     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#21     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#22     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#23     main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:199:20)
+<asynchronous suspension>
+#24     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#25     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Featured Courses": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:204:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart line 204
+The test description was:
+  Integration: Home Screen Test with mock data
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following message was thrown:
+Multiple exceptions (3) were detected during the running of the current test, and at least one was
+unexpected.
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+00:28 +25 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data [E]                                                              
+  Test failed. See exception logs above.
+  The test description was: Integration: Home Screen Test with mock data
+  
+
+To run this test again: C:\src\flutter\bin\cache\dart-sdk\bin\dart.exe test C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart -p vm --plain-name "Integration: Home Screen Test with mock data"
+
+00:28 +25 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available                                       
+00:29 +25 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available                                       
+00:29 +26 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:29 +27 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:29 +27 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                    
+Verifying Auth Flow...
+DEBUG: MockApiClient matched login path: /auth/login
+Login Successful: Test User
+Verifying Analytics...
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+Analytics logged.
+Sync items queued: 1
+Verification Complete!
+
+00:29 +28 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:29 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:30 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:31 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:32 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                          
+00:32 +29 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart                                                                                                             
+00:32 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)                                                                                                         
+00:32 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                             
+00:33 +29 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                             
+00:33 +30 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                             
+00:33 +30 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)                                                                                                      
+00:33 +30 -1: Some tests failed.                                                                                                                                                                       

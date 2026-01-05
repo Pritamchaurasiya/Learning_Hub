@@ -1,0 +1,466 @@
+﻿[ +290 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[   +2 ms] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[   +1 ms] executing: [C:\src\flutter/] git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[ +106 ms] Exit code 0 from: git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[        ] 2025-12-11 11:50:07 -0500
+[  +22 ms] Found 1 files which will be executed as Widget Tests.
+[   +8 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +4 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[ +135 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +38 ms] Skipping pub get: version match.
+[ +263 ms] Found plugin webview_flutter at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.13.0\
+[   +9 ms] Found plugin webview_flutter_wkwebview at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.23.5\
+[  +10 ms] Found plugin webview_flutter_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-4.10.11\
+[   +4 ms] Found plugin video_player at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player-2.10.1\
+[   +3 ms] Found plugin video_player_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_web-2.4.0\
+[   +7 ms] Found plugin video_player_avfoundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_avfoundation-2.8.8\
+[   +2 ms] Found plugin video_player_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_android-2.9.1\
+[  +13 ms] Found plugin url_launcher at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +3 ms] Found plugin url_launcher_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +6 ms] Found plugin url_launcher_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +2 ms] Found plugin url_launcher_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +3 ms] Found plugin url_launcher_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[   +3 ms] Found plugin url_launcher_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[  +10 ms] Found plugin syncfusion_flutter_pdfviewer at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_flutter_pdfviewer-32.1.21\
+[   +3 ms] Found plugin syncfusion_pdfviewer_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_windows-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_web-32.1.21\
+[   +4 ms] Found plugin syncfusion_pdfviewer_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_macos-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_linux-32.1.21\
+[  +14 ms] Found plugin device_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\device_info_plus-12.3.0\
+[  +30 ms] Found plugin shared_preferences at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +4 ms] Found plugin shared_preferences_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +6 ms] Found plugin path_provider_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +8 ms] Found plugin shared_preferences_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +3 ms] Found plugin shared_preferences_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms] Found plugin path_provider_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +4 ms] Found plugin shared_preferences_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +2 ms] Found plugin shared_preferences_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.18\
+[   +4 ms] Found plugin share_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-12.0.1\
+[   +5 ms] Found plugin path_provider at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +3 ms] Found plugin path_provider_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.5.1\
+[   +2 ms] Found plugin path_provider_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[  +12 ms] Found plugin permission_handler at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +2 ms] Found plugin permission_handler_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +5 ms] Found plugin permission_handler_html at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +3 ms] Found plugin permission_handler_apple at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +2 ms] Found plugin permission_handler_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[  +18 ms] Found plugin open_filex at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\open_filex-4.7.0\
+[   +4 ms] Found plugin local_auth at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth-3.0.0\
+[   +2 ms] Found plugin local_auth_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_windows-2.0.1\
+[   +5 ms] Found plugin local_auth_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_darwin-2.0.1\
+[   +2 ms] Found plugin local_auth_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-2.0.4\
+[   +2 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +2 ms] Found plugin image_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +2 ms] Found plugin image_picker_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +4 ms] Found plugin file_selector_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +4 ms] Found plugin image_picker_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +2 ms] Found plugin file_selector_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +2 ms] Found plugin image_picker_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +2 ms] Found plugin file_selector_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +2 ms] Found plugin image_picker_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[   +2 ms] Found plugin image_picker_for_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +2 ms] Found plugin image_picker_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[  +13 ms] Found plugin flutter_timezone at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_timezone-5.0.1\
+[  +13 ms] Found plugin flutter_secure_storage at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-10.0.0\
+[   +2 ms] Found plugin flutter_secure_storage_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-4.1.0\
+[   +3 ms] Found plugin flutter_secure_storage_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-2.1.0\
+[   +2 ms] Found plugin flutter_secure_storage_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-3.0.0\
+[   +2 ms] Found plugin flutter_secure_storage_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_darwin-0.2.0\
+[  +11 ms] Found plugin flutter_local_notifications at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications-19.5.0\
+[   +2 ms] Found plugin flutter_local_notifications_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_windows-1.0.3\
+[   +4 ms] Found plugin flutter_local_notifications_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_linux-6.0.0\
+[  +12 ms] Found plugin file_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.8\
+[   +7 ms] Found plugin connectivity_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\connectivity_plus-7.0.0\
+[   +6 ms] Found plugin wakelock_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\wakelock_plus-1.4.0\
+[   +3 ms] Found plugin package_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[  +12 ms] Found plugin sqflite at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +6 ms] Found plugin sqflite_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +3 ms] Found plugin sqflite_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[ +160 ms] Found plugin webview_flutter at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.13.0\
+[   +1 ms] Found plugin webview_flutter_wkwebview at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.23.5\
+[   +4 ms] Found plugin webview_flutter_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-4.10.11\
+[   +1 ms] Found plugin video_player at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player-2.10.1\
+[   +1 ms] Found plugin video_player_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_web-2.4.0\
+[   +4 ms] Found plugin video_player_avfoundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_avfoundation-2.8.8\
+[   +1 ms] Found plugin video_player_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_android-2.9.1\
+[   +5 ms] Found plugin url_launcher at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +4 ms] Found plugin url_launcher_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +2 ms] Found plugin url_launcher_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +2 ms] Found plugin url_launcher_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +6 ms] Found plugin syncfusion_flutter_pdfviewer at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_flutter_pdfviewer-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_windows-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_web-32.1.21\
+[   +4 ms] Found plugin syncfusion_pdfviewer_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_macos-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_linux-32.1.21\
+[  +12 ms] Found plugin device_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\device_info_plus-12.3.0\
+[  +12 ms] Found plugin shared_preferences at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +2 ms] Found plugin shared_preferences_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +3 ms] Found plugin path_provider_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +5 ms] Found plugin shared_preferences_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +2 ms] Found plugin shared_preferences_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms] Found plugin path_provider_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +3 ms] Found plugin shared_preferences_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +2 ms] Found plugin shared_preferences_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.18\
+[   +2 ms] Found plugin share_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-12.0.1\
+[   +4 ms] Found plugin path_provider at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +2 ms] Found plugin path_provider_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.5.1\
+[   +2 ms] Found plugin path_provider_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[   +8 ms] Found plugin permission_handler at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +3 ms] Found plugin permission_handler_html at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +2 ms] Found plugin permission_handler_apple at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[  +15 ms] Found plugin open_filex at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\open_filex-4.7.0\
+[   +3 ms] Found plugin local_auth at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth-3.0.0\
+[   +2 ms] Found plugin local_auth_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_windows-2.0.1\
+[   +3 ms] Found plugin local_auth_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_darwin-2.0.1\
+[   +1 ms] Found plugin local_auth_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-2.0.4\
+[   +2 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +2 ms] Found plugin image_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +3 ms] Found plugin image_picker_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[   +7 ms] Found plugin flutter_timezone at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_timezone-5.0.1\
+[   +9 ms] Found plugin flutter_secure_storage at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-10.0.0\
+[   +2 ms] Found plugin flutter_secure_storage_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-4.1.0\
+[   +3 ms] Found plugin flutter_secure_storage_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-2.1.0\
+[   +1 ms] Found plugin flutter_secure_storage_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-3.0.0\
+[   +1 ms] Found plugin flutter_secure_storage_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_darwin-0.2.0\
+[   +9 ms] Found plugin flutter_local_notifications at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications-19.5.0\
+[   +2 ms] Found plugin flutter_local_notifications_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_windows-1.0.3\
+[   +3 ms] Found plugin flutter_local_notifications_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_linux-6.0.0\
+[   +9 ms] Found plugin file_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.8\
+[   +7 ms] Found plugin connectivity_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\connectivity_plus-7.0.0\
+[   +6 ms] Found plugin wakelock_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\wakelock_plus-1.4.0\
+[   +3 ms] Found plugin package_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[  +10 ms] Found plugin sqflite at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +5 ms] Found plugin sqflite_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +30 ms] Skipping generating web_plugin_registrant.dart because it is up-to-date.
+[ +114 ms] Found plugin webview_flutter at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.13.0\
+[   +2 ms] Found plugin webview_flutter_wkwebview at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.23.5\
+[   +5 ms] Found plugin webview_flutter_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-4.10.11\
+[   +2 ms] Found plugin video_player at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player-2.10.1\
+[   +2 ms] Found plugin video_player_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_web-2.4.0\
+[   +5 ms] Found plugin video_player_avfoundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_avfoundation-2.8.8\
+[   +2 ms] Found plugin video_player_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_android-2.9.1\
+[   +6 ms] Found plugin url_launcher at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +2 ms] Found plugin url_launcher_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +3 ms] Found plugin url_launcher_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +2 ms] Found plugin url_launcher_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +2 ms] Found plugin url_launcher_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +6 ms] Found plugin syncfusion_flutter_pdfviewer at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_flutter_pdfviewer-32.1.21\
+[   +1 ms] Found plugin syncfusion_pdfviewer_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_windows-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_web-32.1.21\
+[   +3 ms] Found plugin syncfusion_pdfviewer_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_macos-32.1.21\
+[   +1 ms] Found plugin syncfusion_pdfviewer_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_linux-32.1.21\
+[  +11 ms] Found plugin device_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\device_info_plus-12.3.0\
+[  +12 ms] Found plugin shared_preferences at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +2 ms] Found plugin shared_preferences_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +3 ms] Found plugin path_provider_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +5 ms] Found plugin shared_preferences_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +2 ms] Found plugin path_provider_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +3 ms] Found plugin shared_preferences_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.18\
+[   +2 ms] Found plugin share_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-12.0.1\
+[   +3 ms] Found plugin path_provider at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +2 ms] Found plugin path_provider_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.5.1\
+[   +1 ms] Found plugin path_provider_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[   +8 ms] Found plugin permission_handler at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +3 ms] Found plugin permission_handler_html at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[  +14 ms] Found plugin open_filex at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\open_filex-4.7.0\
+[   +3 ms] Found plugin local_auth at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth-3.0.0\
+[   +1 ms] Found plugin local_auth_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_windows-2.0.1\
+[   +3 ms] Found plugin local_auth_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_darwin-2.0.1\
+[   +1 ms] Found plugin local_auth_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-2.0.4\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +2 ms] Found plugin image_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +3 ms] Found plugin image_picker_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +2 ms] Found plugin file_selector_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[   +2 ms] Found plugin image_picker_for_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[   +8 ms] Found plugin flutter_timezone at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_timezone-5.0.1\
+[  +10 ms] Found plugin flutter_secure_storage at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-10.0.0\
+[   +1 ms] Found plugin flutter_secure_storage_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-4.1.0\
+[   +3 ms] Found plugin flutter_secure_storage_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-2.1.0\
+[   +1 ms] Found plugin flutter_secure_storage_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-3.0.0\
+[   +1 ms] Found plugin flutter_secure_storage_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_darwin-0.2.0\
+[   +9 ms] Found plugin flutter_local_notifications at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications-19.5.0\
+[   +2 ms] Found plugin flutter_local_notifications_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_windows-1.0.3\
+[   +3 ms] Found plugin flutter_local_notifications_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_linux-6.0.0\
+[  +11 ms] Found plugin file_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.8\
+[   +6 ms] Found plugin connectivity_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\connectivity_plus-7.0.0\
+[   +7 ms] Found plugin wakelock_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\wakelock_plus-1.4.0\
+[   +3 ms] Found plugin package_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[  +10 ms] Found plugin sqflite at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +5 ms] Found plugin sqflite_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +45 ms] Generating C:\Users\shiva\Desktop\windows_app\windows_app\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[   +3 ms] Skipping generating GeneratedPluginRegistrant.java because it is up-to-date.
+[  +13 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[   +2 ms] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[   +3 ms] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +4 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[   +1 ms] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[   +2 ms] Skipping generating generated_plugins.cmake because it is up-to-date.
+[   +4 ms] Skipping generating GeneratedPluginRegistrant.h because it is up-to-date.
+[   +2 ms] Skipping generating GeneratedPluginRegistrant.m because it is up-to-date.
+[   +2 ms] Skipping generating GeneratedPluginRegistrant.swift because it is up-to-date.
+[ +319 ms] No packages with native assets. Skipping native assets compilation.
+[   +3 ms] Writing native assets json to file:///C:/Users/shiva/Desktop/windows_app/windows_app/build/native_assets/windows/native_assets.json.
+[   +7 ms] Writing C:\Users\shiva\Desktop\windows_app\windows_app\build\native_assets\windows\native_assets.json done.
+[ +484 ms] Manifest contained wildcard assets. Inserting missing file into build graph to force rerun. for more information see #56466.
+[  +46 ms] running test package with arguments: [--no-color, --chain-stack-traces, --, file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart?]
+00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+[ +284 ms] test 0: starting test C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+[   +8 ms] Stopping scan for flutter_test_config.dart; found project root at C:\Users\shiva\Desktop\windows_app\windows_app
+[   +9 ms] Compiler will use the following file as its incremental dill file: C:\Users\shiva\AppData\Local\Temp\flutter_tools.645d1ff2\flutter_test_compiler.9064ef38\output.dill
+[        ] Listening to compiler controller...
+[  +26 ms] Compiling file:///C:/Users/shiva/AppData/Local/Temp/flutter_tools.645d1ff2/flutter_test_listener.2bd0fdcf/listener.dart
+[ +106 ms] Found plugin webview_flutter at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter-4.13.0\
+[   +1 ms] Found plugin webview_flutter_wkwebview at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_wkwebview-3.23.5\
+[   +3 ms] Found plugin webview_flutter_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-4.10.11\
+[   +1 ms] Found plugin video_player at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player-2.10.1\
+[   +1 ms] Found plugin video_player_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_web-2.4.0\
+[   +4 ms] Found plugin video_player_avfoundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_avfoundation-2.8.8\
+[   +1 ms] Found plugin video_player_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\video_player_android-2.9.1\
+[   +5 ms] Found plugin url_launcher at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +1 ms] Found plugin url_launcher_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +3 ms] Found plugin url_launcher_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +1 ms] Found plugin url_launcher_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +4 ms] Found plugin syncfusion_flutter_pdfviewer at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_flutter_pdfviewer-32.1.21\
+[   +1 ms] Found plugin syncfusion_pdfviewer_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_windows-32.1.21\
+[   +2 ms] Found plugin syncfusion_pdfviewer_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_web-32.1.21\
+[   +3 ms] Found plugin syncfusion_pdfviewer_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_macos-32.1.21\
+[   +1 ms] Found plugin syncfusion_pdfviewer_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\syncfusion_pdfviewer_linux-32.1.21\
+[   +9 ms] Found plugin device_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\device_info_plus-12.3.0\
+[  +10 ms] Found plugin shared_preferences at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +3 ms] Found plugin shared_preferences_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +4 ms] Found plugin shared_preferences_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +2 ms] Found plugin shared_preferences_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.18\
+[   +1 ms] Found plugin share_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-12.0.1\
+[   +2 ms] Found plugin path_provider at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.5.1\
+[   +1 ms] Found plugin path_provider_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.22\
+[   +5 ms] Found plugin permission_handler at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler-12.0.1\
+[   +1 ms] Found plugin permission_handler_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_windows-0.2.1\
+[   +2 ms] Found plugin permission_handler_html at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_html-0.1.3+5\
+[   +1 ms] Found plugin permission_handler_apple at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_apple-9.4.7\
+[   +1 ms] Found plugin permission_handler_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\permission_handler_android-13.0.1\
+[  +11 ms] Found plugin open_filex at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\open_filex-4.7.0\
+[   +2 ms] Found plugin local_auth at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth-3.0.0\
+[   +1 ms] Found plugin local_auth_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_windows-2.0.1\
+[   +2 ms] Found plugin local_auth_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_darwin-2.0.1\
+[   +1 ms] Found plugin local_auth_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-2.0.4\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +1 ms] Found plugin image_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +2 ms] Found plugin image_picker_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[   +1 ms] Found plugin image_picker_ios at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[   +1 ms] Found plugin image_picker_for_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[   +5 ms] Found plugin flutter_timezone at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_timezone-5.0.1\
+[  +14 ms] Found plugin flutter_secure_storage at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-10.0.0\
+[   +1 ms] Found plugin flutter_secure_storage_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-4.1.0\
+[   +2 ms] Found plugin flutter_secure_storage_web at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-2.1.0\
+[   +1 ms] Found plugin flutter_secure_storage_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-3.0.0\
+[   +1 ms] Found plugin flutter_secure_storage_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_darwin-0.2.0\
+[   +7 ms] Found plugin flutter_local_notifications at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications-19.5.0\
+[   +1 ms] Found plugin flutter_local_notifications_windows at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_windows-1.0.3\
+[   +2 ms] Found plugin flutter_local_notifications_linux at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_local_notifications_linux-6.0.0\
+[   +9 ms] Found plugin file_picker at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.8\
+[   +8 ms] Found plugin connectivity_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\connectivity_plus-7.0.0\
+[   +6 ms] Found plugin wakelock_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\wakelock_plus-1.4.0\
+[   +2 ms] Found plugin package_info_plus at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-9.0.0\
+[   +8 ms] Found plugin sqflite at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +6 ms] Found plugin sqflite_darwin at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[   +1 ms] Found plugin sqflite_android at C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +13 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[  +10 ms] C:\src\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe C:\src\flutter\bin\cache\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root C:\src\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk/ --incremental --no-print-incremental-dependencies --target=flutter --experimental-emit-debug-metadata -DFLUTTER_VERSION=3.38.5 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=f6ff1529fd -DFLUTTER_ENGINE_REVISION=1527ae0ec5 -DFLUTTER_DART_VERSION=3.10.4 --output-dill C:\Users\shiva\AppData\Local\Temp\flutter_tools.645d1ff2\flutter_test_compiler.9064ef38\output.dill --packages C:\Users\shiva\Desktop\windows_app\windows_app\.dart_tool\package_config.json -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --initialize-from-dill C:\Users\shiva\Desktop\windows_app\windows_app\build\test_cache\build\6ab642d2d29d49c7c5f5a6d85fcef46b.cache.dill.track.dill --verbosity=error
+[  +29 ms] <- compile file:///C:/Users/shiva/AppData/Local/Temp/flutter_tools.645d1ff2/flutter_test_listener.2bd0fdcf/listener.dart
+[+3000 ms] killing pid 14776
+[   +2 ms] test 0: cleaning up...
+[        ] test 0: deleting temporary directory
+[   +4 ms] test 0: waiting for controller sink to close
+00:00 +0 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: test/comprehensive_functionality_test.dart:36:43: Error: Local variable 'authProvider' can't be referenced before it is declared.
+        final authProvider = container.read(authProvider.notifier);
+                                            ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:36:13: Context: This is the declaration of the variable 'authProvider'.
+        final authProvider = container.read(authProvider.notifier);
+              ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:81:15: Error: Method not found: 'MockSyncService'.
+          sync: MockSyncService(),
+                ^^^^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:218:43: Error: Local variable 'authProvider' can't be referenced before it is declared.
+        final authProvider = container.read(authProvider.notifier);
+                                            ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:218:13: Context: This is the declaration of the variable 'authProvider'.
+        final authProvider = container.read(authProvider.notifier);
+              ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:307:24: Error: Required named parameter 'role' must be provided.
+        final user = User(
+                         ^
+  lib/data/models/user_model.dart:23:3: Context: Found this candidate, but the arguments don't match.
+    User({
+    ^^^^
+  test/comprehensive_functionality_test.dart:356:43: Error: Local variable 'authProvider' can't be referenced before it is declared.
+        final authProvider = container.read(authProvider.notifier);
+                                            ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:356:13: Context: This is the declaration of the variable 'authProvider'.
+        final authProvider = container.read(authProvider.notifier);
+              ^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:39:26: Error: The method 'login' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing method, or defining a method named 'login'.
+        await authProvider.login('test@example.com', 'TestPassword123!');
+                           ^^^^^
+  test/comprehensive_functionality_test.dart:40:27: Error: The getter 'isAuthenticated' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isAuthenticated'.
+        expect(authProvider.isAuthenticated, true);
+                            ^^^^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:47:26: Error: The method 'logout' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing method, or defining a method named 'logout'.
+        await authProvider.logout();
+                           ^^^^^^
+  test/comprehensive_functionality_test.dart:48:27: Error: The getter 'isAuthenticated' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isAuthenticated'.
+        expect(authProvider.isAuthenticated, false);
+                            ^^^^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:221:27: Error: The getter 'isAuthenticated' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isAuthenticated'.
+        expect(authProvider.isAuthenticated, false);
+                            ^^^^^^^^^^^^^^^
+  test/comprehensive_functionality_test.dart:263:28: Error: The getter 'isSuccess' isn't defined for the type 'ApiResponse<dynamic>'.
+   - 'ApiResponse' is from 'package:learning_hub/core/services/api_client.dart' ('lib/core/services/api_client.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isSuccess'.
+        expect(errorResponse.isSuccess, false);
+                             ^^^^^^^^^
+  test/comprehensive_functionality_test.dart:360:27: Error: The getter 'isAuthenticated' isn't defined for the type 'AsyncNotifierProviderImpl<AuthNotifier, User?>'.
+   - 'AsyncNotifierProviderImpl' is from 'package:riverpod/src/async_notifier.dart' ('../../../AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-2.6.1/lib/src/async_notifier.dart').
+   - 'AuthNotifier' is from 'package:learning_hub/core/providers/auth_provider.dart' ('lib/core/providers/auth_provider.dart').
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'isAuthenticated'.
+        expect(authProvider.isAuthenticated, false);
+                            ^^^^^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+[  +19 ms] Deleting C:\Users\shiva\AppData\Local\Temp\flutter_tools.645d1ff2\flutter_test_compiler.9064ef38...
+[  +11 ms] killing pid 14776
+[  +52 ms] Compiling file:///C:/Users/shiva/AppData/Local/Temp/flutter_tools.645d1ff2/flutter_test_listener.2bd0fdcf/listener.dart took 7833ms
+[   +3 ms] test package returned with exit code 1
+[   +1 ms] Runtime for phase TestRunner: Wall-clock: 0:00:08.182280; combined: 0:00:08.182321.
+[        ] Runtime for phase Compile: Wall-clock: 0:00:07.834521; combined: 0:00:07.834554.
+[        ] Runtime for phase Run: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageTotal: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageCollect: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageParseJson: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageAddHitmap: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase CoverageDataCollect: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[        ] Runtime for phase WatcherFinishedTest: Wall-clock: 0:00:00.000000; combined: 0:00:00.000000.
+[   +3 ms] "flutter test" took 10,820ms.
+[   +1 ms] Running 3 shutdown hooks
+[   +5 ms] Shutdown hooks complete
+[ +245 ms] exiting with code 1

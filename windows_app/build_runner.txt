@@ -1,0 +1,39 @@
+﻿dart : Because 
+learning_hub depends 
+on bitsdojo_window 
+^3.0.0 which doesn't 
+match any versions, 
+version solving 
+failed.
+At line:1 char:1
++ dart run 
+build_runner build --
+delete-conflicting-ou
+tputs 2>&1 | Out-F 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Because   
+  learnin...solvi    
+ng failed.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+
+You can try the 
+following suggestion 
+to make the pubspec 
+resolve:
+* Consider 
+downgrading your 
+constraint on 
+bitsdojo_window: 
+dart pub add bitsdojo
+_window:^0.1.6

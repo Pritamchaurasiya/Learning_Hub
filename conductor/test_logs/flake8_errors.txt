@@ -1,0 +1,45 @@
+﻿apps\content\tests\test_models.py:2:1: F401 'apps.content.models.Question' imported but unused
+apps\content\tests\test_models.py:12:89: E501 line too long (96 > 88 characters)
+apps\content\urls.py:3:1: F401 'django.urls.path' imported but unused
+apps\content\views.py:3:1: F401 'django.utils.timezone' imported but unused
+apps\content\views.py:4:1: F401 'rest_framework.status' imported but unused
+apps\content\views.py:8:1: F401 '.models.LessonProgress' imported but unused
+apps\content\views.py:8:1: F401 '.models.QuizAttempt' imported but unused
+apps\courses\services.py:3:1: F401 'typing.List' imported but unused
+apps\courses\services.py:7:1: F401 '.models.Category' imported but unused
+apps\courses\services.py:19:89: E501 line too long (97 > 88 characters)
+apps\courses\services.py:28:89: E501 line too long (99 > 88 characters)
+apps\courses\views.py:5:1: F401 'django.db.models.Avg' imported but unused
+apps\courses\views.py:6:1: F401 'django.utils.timezone' imported but unused
+apps\courses\views.py:15:1: F401 'core.permissions.IsEnrolled' imported but unused
+apps\courses\views.py:15:1: F401 'core.permissions.IsInstructor' imported but unused
+apps\courses\views.py:17:1: F401 '.models.Enrollment' imported but unused
+apps\courses\views.py:17:1: F401 '.models.Review' imported but unused
+apps\courses\views.py:62:89: E501 line too long (92 > 88 characters)
+apps\notifications\tests\test_models.py:11:89: E501 line too long (98 > 88 characters)
+apps\notifications\views.py:4:1: F401 'rest_framework.status' imported but unused
+apps\payments\models.py:70:89: E501 line too long (99 > 88 characters)
+apps\payments\views.py:4:1: F401 'rest_framework.status' imported but unused
+apps\payments\views.py:21:89: E501 line too long (89 > 88 characters)
+apps\payments\views.py:95:89: E501 line too long (91 > 88 characters)
+apps\payments\views.py:157:89: E501 line too long (93 > 88 characters)
+apps\users\services.py:3:1: F401 'typing.Optional' imported but unused
+apps\users\services.py:17:89: E501 line too long (89 > 88 characters)
+apps\users\services.py:27:89: E501 line too long (103 > 88 characters)
+apps\users\services.py:35:89: E501 line too long (95 > 88 characters)
+apps\users\tests\test_views.py:4:1: F401 'rest_framework.status' imported but unused
+apps\users\tests\test_views.py:18:9: F841 local variable 'url' is assigned to but never used
+apps\users\tests\test_views.py:19:9: F841 local variable 'data' is assigned to but never used
+apps\users\tests\test_views.py:25:89: E501 line too long (108 > 88 characters)
+apps\users\views.py:5:1: F401 'secrets' imported but unused
+apps\users\views.py:6:1: F401 'datetime.timedelta' imported but unused
+apps\users\views.py:8:1: F401 'django.utils.timezone' imported but unused
+apps\users\views.py:17:1: F401 'core.permissions.IsOwner' imported but unused
+apps\users\views.py:21:1: F401 '.models.PasswordResetToken' imported but unused
+apps\users\views.py:45:1: W293 blank line contains whitespace
+apps\users\views.py:48:1: W293 blank line contains whitespace
+apps\users\views.py:111:89: E501 line too long (89 > 88 characters)
+apps\users\views.py:126:1: W293 blank line contains whitespace
+apps\users\views.py:196:89: E501 line too long (97 > 88 characters)
+apps\users\views.py:230:89: E501 line too long (101 > 88 characters)
+apps\users\views.py:290:89: E501 line too long (95 > 88 characters)

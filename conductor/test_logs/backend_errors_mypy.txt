@@ -1,0 +1,2 @@
+﻿apps\gamification\tests\test_models.py:9: error: Returning Any from function declared to return "User"  [no-any-return]
+Found 1 error in 1 file (checked 1 source file)

@@ -1,0 +1,12 @@
+﻿Analyzing windows_app...                                        
+
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:38:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:40:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:42:7 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:45:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:47:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:49:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_diagnostic_test.dart:53:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_service_test.dart:95:7 - avoid_print
+   info - Don't invoke 'print' in production code - test\core\services\search_service_test.dart:97:9 - avoid_print
+

@@ -1,0 +1,30 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0
+django: version: 6.0, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: Faker-40.1.0, cov-7.0.0, django-4.11.1
+collected 39 items
+
+apps\content\tests\test_models.py ..                                     [  5%]
+apps\courses\tests\test_models.py ..                                     [ 10%]
+apps\gamification\tests\test_models.py ..                                [ 15%]
+apps\notifications\tests\test_models.py .                                [ 17%]
+apps\payments\tests\test_models.py .                                     [ 20%]
+apps\users\tests\test_models.py ....                                     [ 30%]
+apps\users\tests\test_views.py .                                         [ 33%]
+tests\test_courses.py ..........                                         [ 58%]
+tests\test_users.py ................                                     [100%]
+
+============================== warnings summary ===============================
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: pass_env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.9-final-0 _______________
+
+Coverage HTML written to dir htmlcov
+======================= 39 passed, 1 warning in 14.92s ========================

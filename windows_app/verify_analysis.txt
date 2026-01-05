@@ -1,0 +1,32 @@
+﻿Analyzing windows_app...                                        
+
+   info - Invalid regular expression syntax - lib\core\services\security_service.dart:185:28 - valid_regexps
+  error - Expected to find ';' - lib\core\services\security_service.dart:185:28 - expected_token
+warning - Dead code - lib\core\services\security_service.dart:185:36 - dead_code
+  error - 2 positional arguments expected by 'replaceAll', but 1 found - lib\core\services\security_service.dart:185:36 - not_enough_positional_arguments
+  error - Expected an identifier - lib\core\services\security_service.dart:185:36 - missing_identifier
+  error - Expected to find ')' - lib\core\services\security_service.dart:185:36 - expected_token
+  error - Unexpected text ';' - lib\core\services\security_service.dart:185:36 - unexpected_token
+  error - Expected an identifier - lib\core\services\security_service.dart:185:37 - missing_identifier
+  error - Unterminated string literal - lib\core\services\security_service.dart:185:44 - unterminated_string_literal
+
+flutter : 9 issues 
+found. (ran in 10.9s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-FilePath "verify_ana
+lysis.txt" -Enco ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (9 issue   
+ s found. (ran in    
+ 10.9s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

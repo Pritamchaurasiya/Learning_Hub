@@ -1,0 +1,790 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+flutter : test/home_screen
+_test.dart:23:11: Error: 
+A function declaration 
+needs an explicit list of 
+parameters.
+At line:1 char:1
++ flutter test 2>&1 | 
+Out-File -FilePath 
+test_results_3.txt 
+-Encoding U ...
++ ~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (t  
+  est/home_scree... of    
+ parameters.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Try adding a parameter 
+list to the function 
+declaration.
+    await 
+tester.pumpWidget(
+          ^^^^^^
+test/home_screen_test.dart
+:23:17: Error: Expected 
+'{' before this.
+    await 
+tester.pumpWidget(
+                ^
+test/home_screen_test.dart
+:23:17: Error: Expected a 
+declaration, but got '.'.
+    await 
+tester.pumpWidget(
+                ^
+test/home_screen_test.dart
+:25:18: Error: 
+Non-optional parameters 
+can't have a default 
+value.
+Try removing the default 
+value or making the 
+parameter optional.
+        overrides: [
+                 ^
+test/home_screen_test.dart
+:29:14: Error: 
+Non-optional parameters 
+can't have a default 
+value.
+Try removing the default 
+value or making the 
+parameter optional.
+        child: 
+MaterialApp(
+             ^
+test/home_screen_test.dart
+:34:6: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    );
+     ^
+test/home_screen_test.dart
+:36:11: Error: A function 
+declaration needs an 
+explicit list of 
+parameters.
+Try adding a parameter 
+list to the function 
+declaration.
+    await 
+tester.pumpAndSettle();
+          ^^^^^^
+test/home_screen_test.dart
+:36:17: Error: Expected 
+'{' before this.
+    await 
+tester.pumpAndSettle();
+                ^
+test/home_screen_test.dart
+:36:17: Error: Expected a 
+declaration, but got '.'.
+    await 
+tester.pumpAndSettle();
+                ^
+test/home_screen_test.dart
+:36:33: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    await 
+tester.pumpAndSettle();
+                          
+      ^
+test/home_screen_test.dart
+:39:35: Error: Expected 
+an identifier, but got 
+'('.
+Try inserting an 
+identifier before '('.
+    expect(find.byWidgetPr
+edicate((widget) {
+                          
+        ^
+test/home_screen_test.dart
+:39:44: Error: Expected 
+')' before this.
+    expect(find.byWidgetPr
+edicate((widget) {
+                          
+                 ^
+test/home_screen_test.dart
+:39:34: Error: Expected 
+an identifier, but got 
+'('.
+Try inserting an 
+identifier before '('.
+    expect(find.byWidgetPr
+edicate((widget) {
+                          
+       ^
+test/home_screen_test.dart
+:44:24: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    }), findsOneWidget);
+                       ^
+test/home_screen_test.dart
+:47:22: Error: Expected 
+an identifier, but got 
+''Featured Courses''.
+Try inserting an 
+identifier before 
+''Featured Courses''.
+    expect(find.text('Feat
+ured Courses'), 
+findsOneWidget);
+                     
+^^^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:47:21: Error: Expected 
+an identifier, but got 
+'('.
+Try inserting an 
+identifier before '('.
+    expect(find.text('Feat
+ured Courses'), 
+findsOneWidget);
+                    ^
+test/home_screen_test.dart
+:47:58: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    expect(find.text('Feat
+ured Courses'), 
+findsOneWidget);
+                          
+                          
+     ^
+test/home_screen_test.dart
+:48:22: Error: Expected 
+an identifier, but got 
+''Test Course 1''.
+Try inserting an 
+identifier before ''Test 
+Course 1''.
+    
+expect(find.text('Test 
+Course 1'), 
+findsOneWidget);
+                     
+^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:48:21: Error: Expected 
+an identifier, but got 
+'('.
+Try inserting an 
+identifier before '('.
+    
+expect(find.text('Test 
+Course 1'), 
+findsOneWidget);
+                    ^
+test/home_screen_test.dart
+:48:55: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    
+expect(find.text('Test 
+Course 1'), 
+findsOneWidget);
+                          
+                          
+  ^
+test/home_screen_test.dart
+:50:17: Error: Expected 
+an identifier, but got 
+'('.
+Try inserting an 
+identifier before '('.
+    addTearDown(() {
+                ^
+test/home_screen_test.dart
+:50:20: Error: Expected 
+')' before this.
+    addTearDown(() {
+                   ^
+test/home_screen_test.dart
+:52:7: Error: Expected a 
+function body or '=>'.
+Try adding {}.
+    });
+      ^
+test/home_screen_test.dart
+:53:3: Error: Expected a 
+declaration, but got '}'.
+  });
+  ^
+test/home_screen_test.dart
+:53:4: Error: Expected a 
+declaration, but got ')'.
+  });
+   ^
+test/home_screen_test.dart
+:53:5: Error: Unexpected 
+token ';'.
+  });
+    ^
+test/home_screen_test.dart
+:54:1: Error: Expected a 
+declaration, but got '}'.
+}
+^
+test/home_screen_test.dart
+:36:11: Error: 'tester' 
+is already declared in 
+this scope.
+    await 
+tester.pumpAndSettle();
+          ^^^^^^
+test/home_screen_test.dart
+:23:11: Context: Previous 
+declaration of 'tester'.
+    await 
+tester.pumpWidget(
+          ^^^^^^
+test/home_screen_test.dart
+:47:5: Error: 'expect' is 
+already declared in this 
+scope.
+    expect(find.text('Feat
+ured Courses'), 
+findsOneWidget);
+    ^^^^^^
+test/home_screen_test.dart
+:39:5: Context: Previous 
+declaration of 'expect'.
+    expect(find.byWidgetPr
+edicate((widget) {
+    ^^^^^^
+test/home_screen_test.dart
+:48:5: Error: 'expect' is 
+already declared in this 
+scope.
+    
+expect(find.text('Test 
+Course 1'), 
+findsOneWidget);
+    ^^^^^^
+test/home_screen_test.dart
+:39:5: Context: Previous 
+declaration of 'expect'.
+    expect(find.byWidgetPr
+edicate((widget) {
+    ^^^^^^
+test/home_screen_test.dart
+:23:5: Error: Type 
+'await' not found.
+    await 
+tester.pumpWidget(
+    ^^^^^
+test/home_screen_test.dart
+:36:5: Error: Type 
+'await' not found.
+    await 
+tester.pumpAndSettle();
+    ^^^^^
+test/home_screen_test.dart
+:39:12: Error: 
+'find.byWidgetPredicate' 
+can't be used as a type 
+because 'find' doesn't 
+refer to an import prefix.
+    expect(find.byWidgetPr
+edicate((widget) {
+           
+^^^^^^^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:47:12: Error: 
+'find.text' can't be used 
+as a type because 'find' 
+doesn't refer to an 
+import prefix.
+    expect(find.text('Feat
+ured Courses'), 
+findsOneWidget);
+           ^^^^^^^^^
+test/home_screen_test.dart
+:48:12: Error: 
+'find.text' can't be used 
+as a type because 'find' 
+doesn't refer to an 
+import prefix.
+    
+expect(find.text('Test 
+Course 1'), 
+findsOneWidget);
+00:00 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+00:00 +0 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: test/home_screen_test.dart:23:11: Error: A function declaration needs an explicit list of parameters.
+  Try adding a parameter list to the function declaration.
+      await tester.pumpWidget(
+            ^^^^^^
+  test/home_screen_test.dart:23:17: Error: Expected '{' before this.
+      await tester.pumpWidget(
+                  ^
+  test/home_screen_test.dart:23:17: Error: Expected a declaration, but got '.'.
+      await tester.pumpWidget(
+                  ^
+  test/home_screen_test.dart:25:18: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+          overrides: [
+                   ^
+  test/home_screen_test.dart:29:14: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+          child: MaterialApp(
+               ^
+  test/home_screen_test.dart:34:6: Error: Expected a function body or '=>'.
+  Try adding {}.
+           ^^^^^^^^^
+../../../AppData/Local/Tem
+p/flutter_tools.d6a682f9/f
+lutter_test_listener.e0516
+70a/listener.dart:21:21: 
+Error: Undefined name 
+'main'.
+  await Future(test.main);
+                    ^^^^
+test/home_screen_test.dart
+:26:63: Error: Undefined 
+name 'mockHomeData'.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+                          
+                          
+          ^^^^^^^^^^^^
+test/home_screen_test.dart
+:26:57: Error: Constant 
+expression expected.
+Try inserting 'const'.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+                          
+                          
+    ^^^^^
+test/home_screen_test.dart
+:26:57: Error: Cannot 
+invoke a non-'const' 
+factory where a const 
+expression is expected.
+Try using a constructor 
+or factory that is 
+'const'.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+                          
+                          
+    ^^^^^
+test/home_screen_test.dart
+:26:41: Error: Not a 
+constant expression.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+                          
+              ^^^^^
+test/home_screen_test.dart
+:26:11: Error: Undefined 
+name 'homeDataProvider'.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+          ^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:26:28: Error: Method 
+invocation is not a 
+constant expression.
+          homeDataProvider
+.overrideWith((ref) => Fut
+ure.value(mockHomeData)),
+      );
+       ^
+  test/home_screen_test.dart:36:11: Error: A function declaration needs an explicit list of parameters.
+  Try adding a parameter list to the function declaration.
+      await tester.pumpAndSettle();
+            ^^^^^^
+  test/home_screen_test.dart:36:17: Error: Expected '{' before this.
+      await tester.pumpAndSettle();
+                  ^
+  test/home_screen_test.dart:36:17: Error: Expected a declaration, but got '.'.
+      await tester.pumpAndSettle();
+                  ^
+  test/home_screen_test.dart:36:33: Error: Expected a function body or '=>'.
+  Try adding {}.
+      await tester.pumpAndSettle();
+                          
+ ^^^^^^^^^^^^
+test/home_screen_test.dart
+:27:51: Error: Constant 
+expression expected.
+Try inserting 'const'.
+          gamificationProv
+ider.overrideWith(() => Mo
+ckGamificationNotifier()),
+                          
+                        
+^^^^^^^^^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:27:51: Error: Cannot 
+invoke a non-'const' 
+constructor where a const 
+expression is expected.
+Try using a constructor 
+or factory that is 
+'const'.
+          gamificationProv
+ider.overrideWith(() => Mo
+ckGamificationNotifier()),
+                          
+                        
+^^^^^^^^^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:27:45: Error: Not a 
+constant expression.
+          gamificationProv
+ider.overrideWith(() => Mo
+ckGamificationNotifier()),
+                          
+                  ^^
+test/home_screen_test.dart
+:27:11: Error: Not a 
+constant expression.
+          gamificationProv
+ider.overrideWith(() => Mo
+ckGamificationNotifier()),
+          
+^^^^^^^^^^^^^^^^^^^^
+test/home_screen_test.dart
+:27:32: Error: Method 
+invocation is not a 
+constant expression.
+          gamificationProv
+ider.overrideWith(() => Mo
+ckGamificationNotifier()),
+                          
+     ^^^^^^^^^^^^
+test/home_screen_test.dart
+:25:20: Error: Constant 
+expression expected.
+Try inserting 'const'.
+        overrides: [
+                   ^
+test/home_screen_test.dart
+:30:18: Error: Constant 
+expression expected.
+Try inserting 'const'.
+          theme: 
+ThemeData(fontFamily: 
+'Roboto'),
+                 ^^^^^^^^^
+test/home_screen_test.dart
+:30:18: Error: Cannot 
+invoke a non-'const' 
+factory where a const 
+expression is expected.
+Try using a constructor 
+or factory that is 
+'const'.
+          theme: 
+ThemeData(fontFamily: 
+'Roboto'),
+                 ^^^^^^^^^
+                                  ^
+  test/home_screen_test.dart:39:35: Error: Expected an identifier, but got '('.
+  Try inserting an identifier before '('.
+      expect(find.byWidgetPredicate((widget) {
+                                    ^
+  test/home_screen_test.dart:39:44: Error: Expected ')' before this.
+      expect(find.byWidgetPredicate((widget) {
+                                             ^
+  test/home_screen_test.dart:39:34: Error: Expected an identifier, but got '('.
+  Try inserting an identifier before '('.
+      expect(find.byWidgetPredicate((widget) {
+                                   ^
+  test/home_screen_test.dart:44:24: Error: Expected a function body or '=>'.
+  Try adding {}.
+      }), findsOneWidget);
+                         ^
+  test/home_screen_test.dart:47:22: Error: Expected an identifier, but got ''Featured Courses''.
+  Try inserting an identifier before ''Featured Courses''.
+      expect(find.text('Featured Courses'), findsOneWidget);
+                       ^^^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:47:21: Error: Expected an identifier, but got '('.
+  Try inserting an identifier before '('.
+      expect(find.text('Featured Courses'), findsOneWidget);
+                      ^
+  test/home_screen_test.dart:47:58: Error: Expected a function body or '=>'.
+  Try adding {}.
+test/home_screen_test.dart
+:31:23: Error: Couldn't 
+find constructor 
+'HomeScreen'.
+      expect(find.text('Featured Courses'), findsOneWidget);
+                                                           ^
+  test/home_screen_test.dart:48:22: Error: Expected an identifier, but got ''Test Course 1''.
+  Try inserting an identifier before ''Test Course 1''.
+      expect(find.text('Test Course 1'), findsOneWidget);
+                       ^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:48:21: Error: Expected an identifier, but got '('.
+  Try inserting an identifier before '('.
+      expect(find.text('Test Course 1'), findsOneWidget);
+                      ^
+  test/home_screen_test.dart:48:55: Error: Expected a function body or '=>'.
+  Try adding {}.
+      expect(find.text('Test Course 1'), findsOneWidget);
+                                                        ^
+  test/home_screen_test.dart:50:17: Error: Expected an identifier, but got '('.
+  Try inserting an identifier before '('.
+      addTearDown(() {
+                  ^
+  test/home_screen_test.dart:50:20: Error: Expected ')' before this.
+      addTearDown(() {
+                     ^
+  test/home_screen_test.dart:52:7: Error: Expected a function body or '=>'.
+  Try adding {}.
+      });
+        ^
+  test/home_screen_test.dart:53:3: Error: Expected a declaration, but got '}'.
+    });
+    ^
+  test/home_screen_test.dart:53:4: Error: Expected a declaration, but got ')'.
+    });
+     ^
+  test/home_screen_test.dart:53:5: Error: Unexpected token ';'.
+    });
+      ^
+  test/home_screen_test.dart:54:1: Error: Expected a declaration, but got '}'.
+  }
+  ^
+  test/home_screen_test.dart:36:11: Error: 'tester' is already declared in this scope.
+      await tester.pumpAndSettle();
+            ^^^^^^
+  test/home_screen_test.dart:23:11: Context: Previous declaration of 'tester'.
+      await tester.pumpWidget(
+            ^^^^^^
+  test/home_screen_test.dart:47:5: Error: 'expect' is already declared in this scope.
+      expect(find.text('Featured Courses'), findsOneWidget);
+      ^^^^^^
+  test/home_screen_test.dart:39:5: Context: Previous declaration of 'expect'.
+          home: const 
+HomeScreen(),
+                      
+^^^^^^^^^^
+test/home_screen_test.dart
+:29:16: Error: Constant 
+expression expected.
+Try inserting 'const'.
+        child: 
+MaterialApp(
+               ^^^^^^^^^^^
+      expect(find.byWidgetPredicate((widget) {
+      ^^^^^^
+  test/home_screen_test.dart:48:5: Error: 'expect' is already declared in this scope.
+      expect(find.text('Test Course 1'), findsOneWidget);
+      ^^^^^^
+  test/home_screen_test.dart:39:5: Context: Previous declaration of 'expect'.
+      expect(find.byWidgetPredicate((widget) {
+      ^^^^^^
+  test/home_screen_test.dart:23:5: Error: Type 'await' not found.
+      await tester.pumpWidget(
+      ^^^^^
+  test/home_screen_test.dart:36:5: Error: Type 'await' not found.
+      await tester.pumpAndSettle();
+      ^^^^^
+  test/home_screen_test.dart:39:12: Error: 'find.byWidgetPredicate' can't be used as a type because 'find' doesn't refer to an import prefix.
+      expect(find.byWidgetPredicate((widget) {
+             ^^^^^^^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:47:12: Error: 'find.text' can't be used as a type because 'find' doesn't refer to an import prefix.
+      expect(find.text('Featured Courses'), findsOneWidget);
+             ^^^^^^^^^
+  test/home_screen_test.dart:48:12: Error: 'find.text' can't be used as a type because 'find' doesn't refer to an import prefix.
+      expect(find.text('Test Course 1'), findsOneWidget);
+             ^^^^^^^^^
+  ../../../AppData/Local/Temp/flutter_tools.d6a682f9/flutter_test_listener.e051670a/listener.dart:21:21: Error: Undefined name 'main'.
+    await Future(test.main);
+                      ^^^^
+  test/home_screen_test.dart:26:63: Error: Undefined name 'mockHomeData'.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+                                                                ^^^^^^^^^^^^
+  test/home_screen_test.dart:26:57: Error: Constant expression expected.
+  Try inserting 'const'.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+                                                          ^^^^^
+  test/home_screen_test.dart:26:57: Error: Cannot invoke a non-'const' factory where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+                                                          ^^^^^
+  test/home_screen_test.dart:26:41: Error: Not a constant expression.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+                                          ^^^^^
+  test/home_screen_test.dart:26:11: Error: Undefined name 'homeDataProvider'.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+            ^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:26:28: Error: Method invocation is not a constant expression.
+            homeDataProvider.overrideWith((ref) => Future.value(mockHomeData)),
+                             ^^^^^^^^^^^^
+  test/home_screen_test.dart:27:51: Error: Constant expression expected.
+  Try inserting 'const'.
+            gamificationProvider.overrideWith(() => MockGamificationNotifier()),
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:27:51: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+            gamificationProvider.overrideWith(() => MockGamificationNotifier()),
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:27:45: Error: Not a constant expression.
+            gamificationProvider.overrideWith(() => MockGamificationNotifier()),
+                                              ^^
+  test/home_screen_test.dart:27:11: Error: Not a constant expression.
+            gamificationProvider.overrideWith(() => MockGamificationNotifier()),
+            ^^^^^^^^^^^^^^^^^^^^
+  test/home_screen_test.dart:27:32: Error: Method invocation is not a constant expression.
+            gamificationProvider.overrideWith(() => MockGamificationNotifier()),
+                                 ^^^^^^^^^^^^
+  test/home_screen_test.dart:25:20: Error: Constant expression expected.
+  Try inserting 'const'.
+          overrides: [
+                     ^
+  test/home_screen_test.dart:30:18: Error: Constant expression expected.
+  Try inserting 'const'.
+            theme: ThemeData(fontFamily: 'Roboto'),
+                   ^^^^^^^^^
+  test/home_screen_test.dart:30:18: Error: Cannot invoke a non-'const' factory where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+            theme: ThemeData(fontFamily: 'Roboto'),
+                   ^^^^^^^^^
+  test/home_screen_test.dart:31:23: Error: Couldn't find constructor 'HomeScreen'.
+            home: const HomeScreen(),
+                        ^^^^^^^^^^
+  test/home_screen_test.dart:29:16: Error: Constant expression expected.
+  Try inserting 'const'.
+          child: MaterialApp(
+                 ^^^^^^^^^^^
+  .
+00:00 +0 -2: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart [E]
+  Error: The Dart compiler exited unexpectedly.
+  package:flutter_tools/src/base/common.dart 34:3  throwToolExit
+  package:flutter_tools/src/compile.dart 911:11    DefaultResidentCompiler._compile.<fn>
+  dart:async/zone.dart 1538:47                     _rootRunUnary
+  dart:async/zone.dart 1429:19                     _CustomZone.runUnary
+  dart:async/future_impl.dart 948:45               Future._propagateToListeners.handleValueCallback
+  dart:async/future_impl.dart 977:13               Future._propagateToListeners
+  dart:async/future_impl.dart 862:9                Future._propagateToListeners
+  dart:async/future_impl.dart 720:5                Future._completeWithValue
+  dart:async/future_impl.dart 804:7                Future._asyncCompleteWithValue.<fn>
+  dart:async/zone.dart 1525:13                     _rootRun
+  dart:async/zone.dart 1422:19                     _CustomZone.run
+  dart:async/zone.dart 1321:7                      _CustomZone.runGuarded
+  dart:async/zone.dart 1362:23                     _CustomZone.bindCallbackGuarded.<fn>
+  dart:async/schedule_microtask.dart 40:35         _microtaskLoop
+  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
+  dart:isolate-patch/isolate_patch.dart 127:13     _runPendingImmediateCallback
+  dart:isolate-patch/isolate_patch.dart 194:5      _RawReceivePort._handleMessage
+  
+00:00 +0 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+[Security] Development mode - using enhanced SSL/TLS validation
+DEBUG: MockApiClient matched login path: /auth/login
+DEBUG: MockApiClient POST path ignored: /auth/logout
+00:00 +1 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+DEBUG: MockApiClient GET path: /user/progress
+00:00 +2 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System
+00:00 +2 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return remote data when network is connected
+00:00 +2 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System [E]
+  type 'Null' is not a subtype of type 'Future<Either<Failure, List<Achievement>>>'
+  test\mocks.dart 12:7                                                  MockGamificationRepository.getAchievements
+  package:learning_hub/core/providers/gamification_provider.dart 90:44  GamificationNotifier._init
+  package:learning_hub/core/providers/gamification_provider.dart 83:28  GamificationNotifier.build.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                                            Future._asyncCompleteError
+  package:learning_hub/core/providers/gamification_provider.dart 83:28  GamificationNotifier.build.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                                            new Future.microtask
+  package:learning_hub/core/providers/gamification_provider.dart 83:12  GamificationNotifier.build
+  package:riverpod/src/notifier/base.dart 166:38                        NotifierProviderImpl.runNotifierBuild
+  package:riverpod/src/notifier/base.dart 212:23                        NotifierProviderElement.create
+  package:riverpod/src/framework/element.dart 426:7                     ProviderElementBase.buildState
+  package:riverpod/src/framework/element.dart 228:5                     ProviderElementBase.mount
+  package:riverpod/src/framework/container.dart 47:11                   _StateReader._create
+  package:riverpod/src/framework/container.dart 35:52                   _StateReader.getElement
+  package:riverpod/src/framework/container.dart 440:40                  ProviderContainer.readProviderElement.<fn>
+  package:riverpod/src/framework/container.dart 475:8                   ProviderContainer.readProviderElement
+  package:riverpod/src/framework/provider_base.dart 105:26              ProviderBase.read
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 127:43                     main.<fn>.<fn>
+  
+00:00 +3 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+00:00 +4 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return local data when network is disconnected
+00:00 +5 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System
+00:00 +6 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected
+00:00 +7 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:01 +8 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System
+00:01 +8 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System [E]
+  type 'String' is not a subtype of type 'int?' in type cast
+  package:shared_preferences/src/shared_preferences_legacy.dart 121:52  SharedPreferences.getInt
+  package:learning_hub/core/providers/theme_provider.dart 31:32         ThemeModeNotifier._loadThemeMode
+  ===== asynchronous gap ===========================
+  dart:async                                                            _CustomZone.registerUnaryCallback
+  package:learning_hub/core/providers/theme_provider.dart 22:19         ThemeModeNotifier._loadThemeMode
+  package:learning_hub/core/providers/theme_provider.dart 15:5          new ThemeModeNotifier
+  package:learning_hub/core/providers/theme_provider.dart 9:10          themeModeProvider.<fn>
+  package:riverpod/src/state_notifier_provider/base.dart 119:21         StateNotifierProvider._create
+  package:riverpod/src/state_notifier_provider/base.dart 172:64         StateNotifierProviderElement.create.<fn>
+  package:riverpod/src/result.dart 21:28                                Result.guard
+  package:riverpod/src/state_notifier_provider/base.dart 172:43         StateNotifierProviderElement.create
+  package:riverpod/src/framework/element.dart 426:7                     ProviderElementBase.buildState
+  package:riverpod/src/framework/element.dart 228:5                     ProviderElementBase.mount
+  package:riverpod/src/framework/container.dart 47:11                   _StateReader._create
+  package:riverpod/src/framework/container.dart 35:52                   _StateReader.getElement
+  package:riverpod/src/framework/container.dart 440:40                  ProviderContainer.readProviderElement.<fn>
+  package:riverpod/src/framework/container.dart 475:8                   ProviderContainer.readProviderElement
+  package:riverpod/src/framework/proxy_provider_listenable.dart 134:26  ProviderElementProxy.read
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 200:39                     main.<fn>.<fn>
+  
+00:01 +8 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation
+00:01 +9 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management
+00:01 +10 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget
+00:01 +11 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation
+00:01 +12 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management
+DEBUG: MockApiClient GET path: /user/profile
+00:01 +13 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing
+00:02 +14 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+00:02 +15 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management
+00:02 +16 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features
+00:02 +17 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality
+00:02 +18 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization
+00:02 +19 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility
+00:02 +20 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features
+00:02 +21 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+DEBUG: MockApiClient GET path: /user/profile
+00:03 +22 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:03 +23 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:04 +23 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes
+Verifying Auth Flow...
+DEBUG: MockApiClient matched login path: /auth/login
+Login Successful: Test User
+Verifying Analytics...
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+Analytics logged.
+Sync items queued: 1
+Verification Complete!
+00:04 +24 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:04 +25 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp
+00:04 +26 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp
+00:06 +27 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)
+00:06 +27 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing
+00:07 +28 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)
+00:07 +28 -4: Some tests failed.

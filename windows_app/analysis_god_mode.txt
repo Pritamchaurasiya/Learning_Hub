@@ -1,0 +1,404 @@
+﻿Analyzing windows_app...                                        
+
+   info - Statement should be on a separate line - lib\core\providers\ai_tutor_provider.dart:121:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\ai_tutor_provider.dart:121:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\gamification_provider.dart:167:52 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:89:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:98:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:115:29 - always_put_control_body_on_new_line
+warning - The value of the local variable 'isCorrect' isn't used - lib\core\providers\quiz_provider.dart:130:15 - unused_local_variable
+   info - The constant name 'god_mode' isn't a lowerCamelCase identifier - lib\core\services\ai_tutor_service.dart:14:3 - constant_identifier_names
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:617:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:628:23 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\analytics_service.dart:53:7 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\analytics_service.dart:68:5 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\background_job_service.dart:149:7 - unawaited_futures
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:157:42 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\background_job_service.dart:199:7 - unawaited_futures
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:241:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:269:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:282:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:323:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\cart_service.dart:56:31 - always_put_control_body_on_new_line
+warning - The value of the field '_userInteractionsKey' isn't used - lib\core\services\content_recommendation_service.dart:14:23 - unused_field
+warning - The value of the field '_userVectorsKey' isn't used - lib\core\services\content_recommendation_service.dart:15:23 - unused_field
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:88:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:125:34 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:165:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:166:43 - always_put_control_body_on_new_line
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:171:11 - unused_local_variable
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:176:11 - unused_local_variable
+   info - Statement should be on a separate line - lib\core\services\course_service.dart:303:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:66:28 - always_put_control_body_on_new_line
+warning - The value of the field '_defaultCacheDuration' isn't used - lib\core\services\feature_flags_service.dart:180:25 - unused_field
+warning - The value of the field '_lastFetch' isn't used - lib\core\services\feature_flags_service.dart:185:13 - unused_field
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:193:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:394:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:397:27 - always_put_control_body_on_new_line
+warning - The declaration '_saveToCache' isn't referenced - lib\core\services\feature_flags_service.dart:516:16 - unused_element
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:180:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:187:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:326:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:549:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:588:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:678:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:724:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:735:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:753:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:764:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:784:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:797:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:49:25 - always_put_control_body_on_new_line
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:141:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:161:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:196:18 - avoid_slow_async_io
+   info - Statement should be on a separate line - lib\core\services\peer_review_service.dart:105:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\peer_review_service.dart:143:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:16:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:17:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:71:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:91:66 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:93:60 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:403:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:405:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:407:51 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:651:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:652:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:653:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:718:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:729:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:749:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:766:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:501:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:513:58 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:519:42 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\sync_service.dart:207:5 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\core\services\user_service.dart:374:7 - unawaited_futures
+warning - Unused import: 'package:go_router/go_router.dart' - lib\core\ui\desktop_shortcuts.dart:3:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\ui\web_shell.dart:92:53 - deprecated_member_use
+   info - Statement should be on a separate line - lib\core\ui\web_shell.dart:118:39 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\cart\cart_screen.dart:127:33 - deprecated_member_use
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\features\cart\cart_screen.dart:182:9 - unawaited_futures
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\features\certificates\certificates_screen.dart:530:5 - deprecated_member_use
+   info - 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\features\certificates\certificates_screen.dart:530:11 - deprecated_member_use
+warning - The declaration '_handleEnrollment' isn't referenced - lib\features\course\course_detail_screen.dart:38:16 - unused_element
+   info - Statement should be on a separate line - lib\features\course\course_detail_screen.dart:55:22 - always_put_control_body_on_new_line
+  error - Undefined name 'HapticFeedback' - lib\features\course\course_detail_screen.dart:56:5 - undefined_identifier
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\features\course\course_detail_screen.dart:1008:40 - deprecated_member_use
+  error - Undefined class 'Timer' - lib\features\course\lesson_player_screen.dart:36:3 - undefined_class
+   info - Statement should be on a separate line - lib\features\course\lesson_player_screen.dart:57:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\course\lesson_player_screen.dart:62:44 - always_put_control_body_on_new_line
+  error - The method 'Timer' isn't defined for the type '_LessonPlayerScreenState' - lib\features\course\lesson_player_screen.dart:64:22 - undefined_method
+  error - The method '_TranscriptTab' isn't defined for the type '_LessonPlayerScreenState' - lib\features\course\lesson_player_screen.dart:249:35 - undefined_method
+  error - The method '_NotesTab' isn't defined for the type '_LessonPlayerScreenState' - lib\features\course\lesson_player_screen.dart:250:35 - undefined_method
+  error - The method '_DiscussionTab' isn't defined for the type '_LessonPlayerScreenState' - lib\features\course\lesson_player_screen.dart:251:35 - undefined_method
+  error - The method '_LessonNavigationBar' isn't defined for the type '_LessonPlayerScreenState' - lib\features\course\lesson_player_screen.dart:257:29 - undefined_method
+  error - The name 'lessonId' is already defined - lib\features\course\lesson_player_screen.dart:283:16 - duplicate_definition
+  error - All final variables must be initialized, but 'lessonId' isn't - lib\features\course\lesson_player_screen.dart:289:9 - final_not_initialized_constructor
+  error - The method '_LessonNavigationBar' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:372:24 - undefined_method
+  error - The method '_TranscriptTab' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:405:21 - undefined_method
+  error - The method '_NotesTab' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:406:21 - undefined_method
+  error - The method '_DiscussionTab' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:407:21 - undefined_method
+warning - Dead code - lib\features\course\lesson_player_screen.dart:418:1 - dead_code
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:418:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:418:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:418:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:418:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:418:7 - expected_token
+  error - Undefined name '_VideoPlayerSection' - lib\features\course\lesson_player_screen.dart:418:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:418:27 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:418:27 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:418:27 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:418:27 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:418:35 - expected_token
+warning - The value of the local variable 'isFullscreen' isn't used - lib\features\course\lesson_player_screen.dart:419:14 - unused_local_variable
+warning - The value of the local variable 'onToggleFullscreen' isn't used - lib\features\course\lesson_player_screen.dart:420:22 - unused_local_variable
+warning - The value of the local variable 'playbackSpeed' isn't used - lib\features\course\lesson_player_screen.dart:421:16 - unused_local_variable
+warning - The value of the local variable 'onSpeedChange' isn't used - lib\features\course\lesson_player_screen.dart:422:30 - unused_local_variable
+  error - The name '_VideoPlayerSection' isn't a class - lib\features\course\lesson_player_screen.dart:424:9 - creation_with_non_type
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:425:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:425:14 - expected_token
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:426:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:426:14 - expected_token
+  error - The getter 'onToggleFullscreen' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:426:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:427:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:427:14 - expected_token
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:428:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:428:14 - expected_token
+  error - The name '_VideoPlayerSection' isn't a type, so it can't be used as a type argument - lib\features\course\lesson_player_screen.dart:432:9 - non_type_as_type_argument
+warning - The declaration 'createState' isn't referenced - lib\features\course\lesson_player_screen.dart:432:30 - unused_element
+  error - The method '_VideoPlayerSectionState' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:432:47 - undefined_method
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:435:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:435:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:435:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:435:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:435:7 - expected_token
+  error - Undefined name '_VideoPlayerSectionState' - lib\features\course\lesson_player_screen.dart:435:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:435:32 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:435:32 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:435:32 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:435:32 - undefined_identifier
+  error - The operator '<' isn't defined for the type 'Type' - lib\features\course\lesson_player_screen.dart:435:45 - undefined_operator
+  error - Undefined name '_VideoPlayerSection' - lib\features\course\lesson_player_screen.dart:435:46 - undefined_identifier
+  error - A comparison expression can't be an operand of another comparison expression - lib\features\course\lesson_player_screen.dart:435:65 - equality_cannot_be_equality_operand
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:436:8 - expected_token
+  error - Undefined name '_isPlaying' - lib\features\course\lesson_player_screen.dart:436:8 - undefined_identifier
+  error - Expected to find '}' - lib\features\course\lesson_player_screen.dart:436:26 - expected_token
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:699:1 - expected_token
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:702:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:702:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:702:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:702:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:702:7 - expected_token
+  error - Undefined name '_TranscriptTab' - lib\features\course\lesson_player_screen.dart:702:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:702:22 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:702:22 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:702:22 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:702:22 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:702:30 - expected_token
+warning - The declaration 'build' isn't referenced - lib\features\course\lesson_player_screen.dart:704:10 - unused_element
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:708:7 - undefined_method
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:711:7 - undefined_method
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:715:7 - undefined_method
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:719:7 - undefined_method
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:723:7 - undefined_method
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:727:7 - undefined_method
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:774:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:774:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:774:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:774:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:774:7 - expected_token
+  error - Undefined name '_TranscriptLine' - lib\features\course\lesson_player_screen.dart:774:7 - undefined_identifier
+warning - The value of the local variable 'time' isn't used - lib\features\course\lesson_player_screen.dart:775:16 - unused_local_variable
+warning - The value of the local variable 'text' isn't used - lib\features\course\lesson_player_screen.dart:776:16 - unused_local_variable
+  error - The method '_TranscriptLine' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:778:3 - undefined_method
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:778:20 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:778:29 - expected_token
+  error - The getter 'time' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:778:34 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:778:40 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:778:40 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:778:49 - expected_token
+  error - The getter 'text' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:778:54 - undefined_getter
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:782:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:782:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:782:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:782:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:782:7 - expected_token
+  error - Undefined name '_NotesTab' - lib\features\course\lesson_player_screen.dart:782:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:782:17 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:782:17 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:782:17 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:782:17 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:782:25 - expected_token
+  error - The name '_NotesTab' isn't a type, so it can't be used as a type argument - lib\features\course\lesson_player_screen.dart:784:9 - non_type_as_type_argument
+warning - The declaration 'createState' isn't referenced - lib\features\course\lesson_player_screen.dart:784:20 - unused_element
+  error - The method '_NotesTabState' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:784:37 - undefined_method
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:787:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:787:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:787:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:787:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:787:7 - expected_token
+  error - Undefined name '_NotesTabState' - lib\features\course\lesson_player_screen.dart:787:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:787:22 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:787:22 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:787:22 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:787:22 - undefined_identifier
+  error - The operator '<' isn't defined for the type 'Type' - lib\features\course\lesson_player_screen.dart:787:35 - undefined_operator
+  error - Undefined name '_NotesTab' - lib\features\course\lesson_player_screen.dart:787:36 - undefined_identifier
+  error - A comparison expression can't be an operand of another comparison expression - lib\features\course\lesson_player_screen.dart:787:45 - equality_cannot_be_equality_operand
+  error - Expected an identifier - lib\features\course\lesson_player_screen.dart:788:3 - missing_identifier
+  error - Expected to find '}' - lib\features\course\lesson_player_screen.dart:788:3 - expected_token
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:943:1 - expected_token
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:945:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:945:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:945:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:945:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:945:7 - expected_token
+  error - Undefined name '_Note' - lib\features\course\lesson_player_screen.dart:945:7 - undefined_identifier
+  error - The method '_Note' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:949:3 - undefined_method
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:949:10 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:949:19 - expected_token
+  error - The getter 'time' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:949:24 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:949:30 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:949:30 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:949:39 - expected_token
+  error - The getter 'text' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:949:44 - undefined_getter
+warning - The declaration 'toJson' isn't referenced - lib\features\course\lesson_player_screen.dart:951:24 - unused_element
+  error - The final variable 'time' can't be read because it's potentially unassigned at this point - lib\features\course\lesson_player_screen.dart:952:17 - read_potentially_unassigned_final
+  error - The final variable 'text' can't be read because it's potentially unassigned at this point - lib\features\course\lesson_player_screen.dart:953:17 - read_potentially_unassigned_final
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:956:3 - expected_token
+  error - Undefined name '_Note' - lib\features\course\lesson_player_screen.dart:956:11 - undefined_identifier
+  error - The operator '<' isn't defined for the type 'Type' - lib\features\course\lesson_player_screen.dart:956:29 - undefined_operator
+  error - The operator '>' isn't defined for the type 'Type' - lib\features\course\lesson_player_screen.dart:956:45 - undefined_operator
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:956:51 - expected_token
+  error - The method '_Note' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:957:12 - undefined_method
+  error - The operator '[]' isn't defined for the type 'JsonCodec' - lib\features\course\lesson_player_screen.dart:958:17 - undefined_operator
+  error - The operator '[]' isn't defined for the type 'JsonCodec' - lib\features\course\lesson_player_screen.dart:959:17 - undefined_operator
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:965:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:965:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:965:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:965:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:965:7 - expected_token
+  error - Undefined name '_DiscussionTab' - lib\features\course\lesson_player_screen.dart:965:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:965:22 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:965:22 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:965:22 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:965:22 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:965:30 - expected_token
+warning - The declaration 'build' isn't referenced - lib\features\course\lesson_player_screen.dart:967:10 - unused_element
+  error - The method '_Discussion' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:971:7 - undefined_method
+  error - The method '_Discussion' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:979:7 - undefined_method
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:1066:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:1066:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1066:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:1066:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1066:7 - expected_token
+  error - Undefined name '_Discussion' - lib\features\course\lesson_player_screen.dart:1066:7 - undefined_identifier
+warning - The value of the local variable 'author' isn't used - lib\features\course\lesson_player_screen.dart:1067:16 - unused_local_variable
+warning - The value of the local variable 'avatar' isn't used - lib\features\course\lesson_player_screen.dart:1068:16 - unused_local_variable
+warning - The value of the local variable 'text' isn't used - lib\features\course\lesson_player_screen.dart:1069:16 - unused_local_variable
+warning - The value of the local variable 'timestamp' isn't used - lib\features\course\lesson_player_screen.dart:1070:16 - unused_local_variable
+warning - The value of the local variable 'likes' isn't used - lib\features\course\lesson_player_screen.dart:1071:13 - unused_local_variable
+warning - The value of the local variable 'replies' isn't used - lib\features\course\lesson_player_screen.dart:1072:13 - unused_local_variable
+  error - The method '_Discussion' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1074:3 - undefined_method
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1075:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1075:14 - expected_token
+  error - The getter 'author' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1075:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1076:5 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:1076:5 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1076:14 - expected_token
+  error - The getter 'avatar' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1076:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1077:5 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:1077:5 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1077:14 - expected_token
+  error - The getter 'text' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1077:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1078:5 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:1078:5 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1078:14 - expected_token
+  error - The getter 'timestamp' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1078:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1079:5 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:1079:5 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1079:14 - expected_token
+  error - The getter 'likes' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1079:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1080:5 - deprecated_member_use
+warning - Two elements in a set literal shouldn't be equal - lib\features\course\lesson_player_screen.dart:1080:5 - equal_elements_in_set
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1080:14 - expected_token
+  error - The getter 'replies' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1080:19 - undefined_getter
+  error - 'class' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:1085:1 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:1085:1 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1085:1 - expected_token
+  error - Undefined name 'class' - lib\features\course\lesson_player_screen.dart:1085:1 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1085:7 - expected_token
+  error - Undefined name '_LessonNavigationBar' - lib\features\course\lesson_player_screen.dart:1085:7 - undefined_identifier
+  error - 'extends' can't be used as an identifier because it's a keyword - lib\features\course\lesson_player_screen.dart:1085:28 - expected_identifier_but_got_keyword
+  error - Expected a statement - lib\features\course\lesson_player_screen.dart:1085:28 - missing_statement
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1085:28 - expected_token
+  error - Undefined name 'extends' - lib\features\course\lesson_player_screen.dart:1085:28 - undefined_identifier
+  error - Expected to find ';' - lib\features\course\lesson_player_screen.dart:1085:36 - expected_token
+warning - The value of the local variable 'courseId' isn't used - lib\features\course\lesson_player_screen.dart:1086:16 - unused_local_variable
+  error - The name '_LessonNavigationBar' isn't a class - lib\features\course\lesson_player_screen.dart:1090:9 - creation_with_non_type
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1091:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1091:14 - expected_token
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1092:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1092:14 - expected_token
+  error - The getter 'onPrevious' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1092:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\course\lesson_player_screen.dart:1093:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\course\lesson_player_screen.dart:1093:14 - expected_token
+  error - The getter 'onNext' isn't defined for the type '_DesktopLayout' - lib\features\course\lesson_player_screen.dart:1093:19 - undefined_getter
+warning - The declaration 'build' isn't referenced - lib\features\course\lesson_player_screen.dart:1097:10 - unused_element
+  error - The final variable 'onPrevious' can't be read because it's potentially unassigned at this point - lib\features\course\lesson_player_screen.dart:1113:24 - read_potentially_unassigned_final
+  error - The final variable 'onNext' can't be read because it's potentially unassigned at this point - lib\features\course\lesson_player_screen.dart:1119:24 - read_potentially_unassigned_final
+  error - Expected to find '}' - lib\features\course\lesson_player_screen.dart:1126:1 - expected_token
+   info - Statement should be on a separate line - lib\features\gamification\data\models\gamification_models.dart:57:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\gamification\data\models\gamification_models.dart:66:28 - always_put_control_body_on_new_line
+  error - The getter 'currentXp' isn't defined for the type 'GamificationState' - lib\features\gamification\presentation\widgets\gamification_badge.dart:47:38 - undefined_getter
+warning - The value of the local variable 'isDesktop' isn't used - lib\features\gamification\screens\leaderboard_screen.dart:41:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:81:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:137:61 - deprecated_member_use
+   info - Statement should be on a separate line - lib\features\gamification\screens\leaderboard_screen.dart:198:26 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:284:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:325:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:329:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:330:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:364:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:371:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\gamification\screens\leaderboard_screen.dart:416:38 - deprecated_member_use
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\features\home\home_screen.dart:47:45 - unawaited_futures
+  error - The getter 'name' isn't defined for the type 'User' - lib\features\home\home_screen.dart:211:46 - undefined_getter
+  error - The getter 'name' isn't defined for the type 'User' - lib\features\home\home_screen.dart:212:52 - undefined_getter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:111:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:145:24 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:159:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:204:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:247:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:248:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:255:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:258:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\hero_banner.dart:267:53 - deprecated_member_use
+   info - Statement should be on a separate line - lib\features\notes\logic\notes_provider.dart:13:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\notes\logic\notes_provider.dart:50:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\notes\presentation\notes_tab.dart:41:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\payment\presentation\widgets\payment_modal.dart:46:45 - always_put_control_body_on_new_line
+  error - Undefined name 'AiTutorService' - lib\main.dart:23:9 - undefined_identifier
+warning - The value of the local variable 'normalized' isn't used - lib\shared\widgets\activity_heatmap.dart:85:11 - unused_local_variable
+   info - Statement should be on a separate line - lib\shared\widgets\activity_heatmap.dart:118:25 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\activity_heatmap.dart:121:25 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\shared\widgets\course_card.dart:92:40 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\shared\widgets\course_card.dart:316:40 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\shared\widgets\course_card.dart:434:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\premium_loading_indicator.dart:27:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\premium_loading_indicator.dart:47:54 - deprecated_member_use
+  error - Target of URI doesn't exist: 'gamification_logic_test.mocks.dart' - test\features\gamification\gamification_logic_test.dart:11:8 - uri_does_not_exist
+  error - Undefined class 'MockNetworkInfo' - test\features\gamification\gamification_logic_test.dart:20:8 - undefined_class
+  error - Undefined class 'MockGamificationRemoteDataSource' - test\features\gamification\gamification_logic_test.dart:21:8 - undefined_class
+  error - Undefined class 'MockGamificationLocalDataSource' - test\features\gamification\gamification_logic_test.dart:22:8 - undefined_class
+  error - The function 'MockNetworkInfo' isn't defined - test\features\gamification\gamification_logic_test.dart:25:23 - undefined_function
+  error - The function 'MockGamificationRemoteDataSource' isn't defined - test\features\gamification\gamification_logic_test.dart:26:28 - undefined_function
+  error - The function 'MockGamificationLocalDataSource' isn't defined - test\features\gamification\gamification_logic_test.dart:27:27 - undefined_function
+  error - The named parameter 'syncService' is required, but there's no corresponding argument - test\features\gamification\gamification_logic_test.dart:28:18 - missing_required_argument
+  error - Target of URI doesn't exist: 'package:learning_hub/core/services/gamification_service.dart' - test\verification_test.dart:6:8 - uri_does_not_exist
+  error - The function 'GamificationService' isn't defined - test\verification_test.dart:145:33 - undefined_function
+   info - The referenced name isn't visible in scope - tool\conductor.dart:5:38 - comment_references
+   info - Don't invoke 'print' in production code - tool\conductor.dart:8:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:34:7 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:40:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:41:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:42:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:43:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:44:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:45:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:49:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:52:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:54:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:55:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:57:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:61:3 - avoid_print
+   info - Missing an 'await' for the 'Future' computed by this expression - tool\conductor.dart:63:10 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - tool\conductor.dart:64:10 - unawaited_futures
+   info - Don't invoke 'print' in production code - tool\conductor.dart:67:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:69:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:71:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:75:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:83:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:85:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:86:3 - avoid_print
+
+flutter : 382 issues 
+found. (ran in 89.5s)
+At line:1 char:1
++ flutter analyze 
+--no-fatal-infos 2>&1 
+| Out-File -FilePath 
+analysis_g ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpe    
+cified: (382 iss    
+ues found. (ran     in 
+89.5s):String    ) [], 
+RemoteExce    ption
+    + FullyQualified   
+ ErrorId : Native    
+CommandError
+ 

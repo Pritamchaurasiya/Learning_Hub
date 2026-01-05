@@ -1,0 +1,44 @@
+﻿Resolving dependencies...
+flutter : Because 
+hive_generator 
+>=1.0.1 depends on 
+source_gen ^1.0.0 
+and 
+riverpod_generator 
+>=2.6.4 <3.0.0-dev.2 
+depends on 
+source_gen ^2.0.0, 
+hive_generator 
+>=1.0.1 is 
+incompatible with 
+riverpod_generator 
+>=2.6.4 <3.0.0-dev.2.
+At line:1 char:1
++ flutter pub get 
+2>&1 | Out-File 
+-FilePath 
+pub_error.txt 
+-Encoding utf ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Because   
+  hive_ge...4 <3.    
+0.0-dev.2.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+So, because 
+learning_hub depends 
+on both 
+riverpod_generator 
+^2.6.4 and 
+hive_generator 
+^2.0.1, version 
+solving failed.
+Failed to update 
+packages.

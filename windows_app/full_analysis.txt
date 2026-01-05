@@ -1,0 +1,27 @@
+﻿flutter : Waiting 
+for another flutter 
+command to release 
+the startup lock...
+At line:1 char:1
++ flutter analyze 
+lib 2>&1 | Out-File 
+-Encoding UTF8 
+full_analysis.txt; 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (W    
+aiting for 
+ano...star    tup 
+lock...:String) [    
+], RemoteException
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+Analyzing lib...                                                
+No issues found! (ran in 5.8s)

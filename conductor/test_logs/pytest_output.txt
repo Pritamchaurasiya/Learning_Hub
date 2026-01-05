@@ -1,0 +1,496 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\shiva\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+django: version: 6.0, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: Faker-40.1.0, cov-7.0.0, django-4.11.1
+collecting ... collected 39 items
+
+apps/content/tests/test_models.py::TestContentModels::test_create_lesson ERROR [  2%]
+apps/content/tests/test_models.py::TestContentModels::test_create_quiz ERROR [  5%]
+apps/courses/tests/test_models.py::TestCourseModels::test_create_category PASSED [  7%]
+apps/courses/tests/test_models.py::TestCourseModels::test_create_course ERROR [ 10%]
+apps/gamification/tests/test_models.py::TestGamificationModels::test_xp_addition ERROR [ 12%]
+apps/gamification/tests/test_models.py::TestGamificationModels::test_streak_update ERROR [ 15%]
+apps/notifications/tests/test_models.py::TestNotificationModels::test_create_notification ERROR [ 17%]
+apps/payments/tests/test_models.py::TestPaymentModels::test_coupon_validity PASSED [ 20%]
+apps/users/tests/test_models.py::TestUserModel::test_create_user FAILED  [ 23%]
+apps/users/tests/test_models.py::TestUserModel::test_create_superuser FAILED [ 25%]
+apps/users/tests/test_models.py::TestUserModel::test_user_str FAILED     [ 28%]
+apps/users/tests/test_models.py::TestUserModel::test_get_full_name FAILED [ 30%]
+apps/users/tests/test_views.py::TestAuthViews::test_register_user PASSED [ 33%]
+tests/test_courses.py::TestCourseList::test_list_courses ERROR           [ 35%]
+tests/test_courses.py::TestCourseList::test_list_excludes_unpublished ERROR [ 38%]
+tests/test_courses.py::TestCourseDetail::test_get_course_detail ERROR    [ 41%]
+tests/test_courses.py::TestCourseDetail::test_course_not_found PASSED    [ 43%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course ERROR [ 46%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated ERROR [ 48%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment ERROR [ 51%]
+tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment ERROR [ 53%]
+tests/test_courses.py::TestCourseReview::test_submit_review_enrolled ERROR [ 56%]
+tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled ERROR [ 58%]
+tests/test_users.py::TestUserModel::test_create_user FAILED              [ 61%]
+tests/test_users.py::TestUserModel::test_create_superuser FAILED         [ 64%]
+tests/test_users.py::TestUserModel::test_user_str ERROR                  [ 66%]
+tests/test_users.py::TestUserModel::test_user_full_name ERROR            [ 69%]
+tests/test_users.py::TestUserModel::test_is_instructor_property ERROR    [ 71%]
+tests/test_users.py::TestUserModel::test_email_normalized FAILED         [ 74%]
+tests/test_users.py::TestUserRegistration::test_register_success FAILED  [ 76%]
+tests/test_users.py::TestUserRegistration::test_register_password_mismatch PASSED [ 79%]
+tests/test_users.py::TestUserRegistration::test_register_duplicate_email ERROR [ 82%]
+tests/test_users.py::TestUserRegistration::test_register_weak_password PASSED [ 84%]
+tests/test_users.py::TestUserLogin::test_login_success ERROR             [ 87%]
+tests/test_users.py::TestUserLogin::test_login_wrong_password ERROR      [ 89%]
+tests/test_users.py::TestUserLogin::test_login_nonexistent_user FAILED   [ 92%]
+tests/test_users.py::TestUserProfile::test_get_profile_authenticated ERROR [ 94%]
+tests/test_users.py::TestUserProfile::test_get_profile_unauthenticated PASSED [ 97%]
+tests/test_users.py::TestUserProfile::test_update_profile ERROR          [100%]
+
+=================================== ERRORS ====================================
+___________ ERROR at setup of TestContentModels.test_create_lesson ____________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+---------------------------- Captured stderr setup ----------------------------
+DEBUG 2026-01-05 20:11:38,329 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG 2026-01-05 20:11:38,360 factory 12616 5620 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,376 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG 2026-01-05 20:11:38,396 factory 12616 5620 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,401 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG 2026-01-05 20:11:38,412 factory 12616 5620 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG 2026-01-05 20:11:38,418 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG 2026-01-05 20:11:38,421 factory 12616 5620 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,428 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG 2026-01-05 20:11:38,439 factory 12616 5620 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,444 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG 2026-01-05 20:11:38,460 factory 12616 5620 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,465 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG 2026-01-05 20:11:38,468 factory 12616 5620 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,473 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG 2026-01-05 20:11:38,485 factory 12616 5620 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,492 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG 2026-01-05 20:11:38,508 factory 12616 5620 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,514 factory 12616 5620 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,514 factory 12616 5620 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,514 factory 12616 5620 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,515 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG 2026-01-05 20:11:38,520 factory 12616 5620 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,525 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG 2026-01-05 20:11:38,543 factory 12616 5620 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,548 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG 2026-01-05 20:11:38,550 factory 12616 5620 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,556 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG 2026-01-05 20:11:38,571 factory 12616 5620 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,577 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG 2026-01-05 20:11:38,589 factory 12616 5620 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,589 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG 2026-01-05 20:11:38,592 factory 12616 5620 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,597 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG 2026-01-05 20:11:38,600 factory 12616 5620 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,607 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG 2026-01-05 20:11:38,645 factory 12616 5620 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,671 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG 2026-01-05 20:11:38,702 factory 12616 5620 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,710 factory 12616 5620 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,711 factory 12616 5620 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,711 factory 12616 5620 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:38,712 factory 12616 5620 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG 2026-01-05 20:11:38,743 factory 12616 5620 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:38,750 factory 12616 5620 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+Using existing test database for alias 'default'...
+
+----------------------------- Captured log setup ------------------------------
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG    faker.factory:factory.py:88 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+____________ ERROR at setup of TestContentModels.test_create_quiz _____________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+____________ ERROR at setup of TestCourseModels.test_create_course ____________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+__________ ERROR at setup of TestGamificationModels.test_xp_addition __________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_________ ERROR at setup of TestGamificationModels.test_streak_update _________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+______ ERROR at setup of TestNotificationModels.test_create_notification ______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_____________ ERROR at setup of TestCourseList.test_list_courses ______________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_______ ERROR at setup of TestCourseList.test_list_excludes_unpublished _______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+__________ ERROR at setup of TestCourseDetail.test_get_course_detail __________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_______ ERROR at setup of TestCourseEnrollment.test_enroll_free_course ________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_____ ERROR at setup of TestCourseEnrollment.test_enroll_unauthenticated ______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_ ERROR at setup of TestCourseEnrollment.test_enroll_paid_course_without_payment _
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+______ ERROR at setup of TestCourseEnrollment.test_duplicate_enrollment _______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_______ ERROR at setup of TestCourseReview.test_submit_review_enrolled ________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_____ ERROR at setup of TestCourseReview.test_submit_review_not_enrolled ______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+________________ ERROR at setup of TestUserModel.test_user_str ________________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_____________ ERROR at setup of TestUserModel.test_user_full_name _____________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_________ ERROR at setup of TestUserModel.test_is_instructor_property _________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+____ ERROR at setup of TestUserRegistration.test_register_duplicate_email _____
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+_____________ ERROR at setup of TestUserLogin.test_login_success ______________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+__________ ERROR at setup of TestUserLogin.test_login_wrong_password __________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+______ ERROR at setup of TestUserProfile.test_get_profile_authenticated _______
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+____________ ERROR at setup of TestUserProfile.test_update_profile ____________
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+================================== FAILURES ===================================
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+---------------------------- Captured stderr call -----------------------------
+ERROR 2026-01-05 20:11:41,077 log 12616 5620 Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 231, in _load_library
+    module = importlib.import_module(mod_path)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\drf_spectacular\drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\generics.py", line 194, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py", line 51, in create
+    user = serializer.save()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\serializers.py", line 45, in create
+    user = User.objects.create_user(**validated_data)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\models.py", line 27, in create_user
+    user.set_password(password)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 94, in set_password
+    self.password = make_password(raw_password)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 119, in make_password
+    return hasher.encode(password, salt)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 404, in encode
+    argon2 = self._load_library()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 233, in _load_library
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+E   apps.users.models.User.DoesNotExist: User matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+E   ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+E   ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+---------------------------- Captured stderr call -----------------------------
+ERROR 2026-01-05 20:11:41,321 log 12616 5620 Internal Server Error: /api/v1/auth/login/
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py", line 65, in authenticate
+    user = UserModel._default_manager.get_by_natural_key(username)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 37, in get_by_natural_key
+    return self.get(**{self.model.USERNAME_FIELD: username})
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 639, in get
+    raise self.model.DoesNotExist(
+        "%s matching query does not exist." % self.model._meta.object_name
+    )
+apps.users.models.User.DoesNotExist: User matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 231, in _load_library
+    module = importlib.import_module(mod_path)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py", line 83, in post
+    serializer.is_valid(raise_exception=True)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\serializers.py", line 62, in validate
+    user = authenticate(username=email, password=password)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\debug.py", line 75, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\__init__.py", line 114, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py", line 69, in authenticate
+    UserModel().set_password(password)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 94, in set_password
+    self.password = make_password(raw_password)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 119, in make_password
+    return hasher.encode(password, salt)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 404, in encode
+    argon2 = self._load_library()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 233, in _load_library
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+============================== warnings summary ===============================
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: pass_env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.9-final-0 _______________
+
+Coverage HTML written to dir htmlcov
+=========================== short test summary info ===========================
+FAILED apps/users/tests/test_models.py::TestUserModel::test_create_user - Val...
+FAILED apps/users/tests/test_models.py::TestUserModel::test_create_superuser
+FAILED apps/users/tests/test_models.py::TestUserModel::test_user_str - ValueE...
+FAILED apps/users/tests/test_models.py::TestUserModel::test_get_full_name - V...
+FAILED tests/test_users.py::TestUserModel::test_create_user - ValueError: Cou...
+FAILED tests/test_users.py::TestUserModel::test_create_superuser - ValueError...
+FAILED tests/test_users.py::TestUserModel::test_email_normalized - ValueError...
+FAILED tests/test_users.py::TestUserRegistration::test_register_success - Val...
+FAILED tests/test_users.py::TestUserLogin::test_login_nonexistent_user - Valu...
+ERROR apps/content/tests/test_models.py::TestContentModels::test_create_lesson
+ERROR apps/content/tests/test_models.py::TestContentModels::test_create_quiz
+ERROR apps/courses/tests/test_models.py::TestCourseModels::test_create_course
+ERROR apps/gamification/tests/test_models.py::TestGamificationModels::test_xp_addition
+ERROR apps/gamification/tests/test_models.py::TestGamificationModels::test_streak_update
+ERROR apps/notifications/tests/test_models.py::TestNotificationModels::test_create_notification
+ERROR tests/test_courses.py::TestCourseList::test_list_courses - ValueError: ...
+ERROR tests/test_courses.py::TestCourseList::test_list_excludes_unpublished
+ERROR tests/test_courses.py::TestCourseDetail::test_get_course_detail - Value...
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course - ...
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+ERROR tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment
+ERROR tests/test_courses.py::TestCourseReview::test_submit_review_enrolled - ...
+ERROR tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+ERROR tests/test_users.py::TestUserModel::test_user_str - ValueError: Couldn'...
+ERROR tests/test_users.py::TestUserModel::test_user_full_name - ValueError: C...
+ERROR tests/test_users.py::TestUserModel::test_is_instructor_property - Value...
+ERROR tests/test_users.py::TestUserRegistration::test_register_duplicate_email
+ERROR tests/test_users.py::TestUserLogin::test_login_success - ValueError: Co...
+ERROR tests/test_users.py::TestUserLogin::test_login_wrong_password - ValueEr...
+ERROR tests/test_users.py::TestUserProfile::test_get_profile_authenticated - ...
+ERROR tests/test_users.py::TestUserProfile::test_update_profile - ValueError:...
+============== 9 failed, 7 passed, 1 warning, 23 errors in 5.73s ==============

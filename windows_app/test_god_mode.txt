@@ -1,0 +1,390 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+flutter : test/featur
+es/gamification/gamif
+ication_logic_test.da
+rt:11:8: Error: 
+Error when reading 't
+est/features/gamifica
+tion/gamification_log
+ic_test.mocks.dart': 
+The system cannot 
+find the file 
+specified
+At line:1 char:1
++ flutter test 2>&1 
+| Out-File -FilePath 
+test_god_mode.txt 
+-Encoding ut ...
++ ~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (test/fe   
+ atures/g... file    
+ specified:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+import 'gamification_
+logic_test.mocks.dart
+';
+       ^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:20:8: 
+Error: 
+'MockNetworkInfo' 
+isn't a type.
+  late 
+MockNetworkInfo 
+mockNetworkInfo;
+       
+^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:21:8: 
+Error: 'MockGamificat
+ionRemoteDataSource' 
+isn't a type.
+  late MockGamificati
+onRemoteDataSource 
+mockRemoteDataSource;
+       ^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:22:8: 
+Error: 'MockGamificat
+ionLocalDataSource' 
+isn't a type.
+  late MockGamificati
+onLocalDataSource 
+mockLocalDataSource;
+       ^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:25:23: 
+Error: Method not 
+found: 
+'MockNetworkInfo'.
+    mockNetworkInfo 
+= MockNetworkInfo();
+                     
+ ^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:26:28: 
+Error: Method not 
+found: 'MockGamificat
+ionRemoteDataSource'.
+    
+mockRemoteDataSource 
+= MockGamificationRem
+oteDataSource();
+                     
+      ^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:27:27: 
+Error: Method not 
+found: 'MockGamificat
+ionLocalDataSource'.
+    
+mockLocalDataSource 
+= MockGamificationLoc
+alDataSource();
+                     
+     ^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+test/features/gamific
+ation/gamification_lo
+gic_test.dart:28:44: 
+Error: Required 
+named parameter 
+'syncService' must 
+be provided.
+    repository = Gami
+ficationRepositoryImp
+l(
+                     
+                     
+ ^
+lib/features/gamifica
+tion/data/repositorie
+s/gamification_reposi
+tory_impl.dart:16:3: 
+Context: Found this 
+candidate, but the 
+arguments don't 
+match.
+  GamificationReposit
+oryImpl({
+  ^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+00:00 +0 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: test/features/gamification/gamification_logic_test.dart:11:8: Error: Error when reading 'test/features/gamification/gamification_logic_test.mocks.dart': The system cannot find the file specified
+  import 'gamification_logic_test.mocks.dart';
+         ^
+  test/features/gamification/gamification_logic_test.dart:20:8: Error: 'MockNetworkInfo' isn't a type.
+    late MockNetworkInfo mockNetworkInfo;
+         ^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:21:8: Error: 'MockGamificationRemoteDataSource' isn't a type.
+    late MockGamificationRemoteDataSource mockRemoteDataSource;
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:22:8: Error: 'MockGamificationLocalDataSource' isn't a type.
+    late MockGamificationLocalDataSource mockLocalDataSource;
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:25:23: Error: Method not found: 'MockNetworkInfo'.
+      mockNetworkInfo = MockNetworkInfo();
+                        ^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:26:28: Error: Method not found: 'MockGamificationRemoteDataSource'.
+      mockRemoteDataSource = MockGamificationRemoteDataSource();
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:27:27: Error: Method not found: 'MockGamificationLocalDataSource'.
+      mockLocalDataSource = MockGamificationLocalDataSource();
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/features/gamification/gamification_logic_test.dart:28:44: Error: Required named parameter 'syncService' must be provided.
+      repository = GamificationRepositoryImpl(
+                                             ^
+  lib/features/gamification/data/repositories/gamification_repository_impl.dart:16:3: Context: Found this candidate, but the arguments don't match.
+    GamificationRepositoryImpl({
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  .
+00:00 +0 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+00:00 +0 -2: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart [E]
+  Error: The Dart compiler exited unexpectedly.
+  package:flutter_tools/src/base/common.dart 34:3  throwToolExit
+  package:flutter_tools/src/compile.dart 911:11    DefaultResidentCompiler._compile.<fn>
+  dart:async/zone.dart 1538:47                     _rootRunUnary
+  dart:async/zone.dart 1429:19                     _CustomZone.runUnary
+  dart:async/future_impl.dart 948:45               Future._propagateToListeners.handleValueCallback
+  dart:async/future_impl.dart 977:13               Future._propagateToListeners
+  dart:async/future_impl.dart 862:9                Future._propagateToListeners
+  dart:async/future_impl.dart 720:5                Future._completeWithValue
+  dart:async/future_impl.dart 804:7                Future._asyncCompleteWithValue.<fn>
+  dart:async/zone.dart 1525:13                     _rootRun
+  dart:async/zone.dart 1422:19                     _CustomZone.run
+  dart:async/zone.dart 1321:7                      _CustomZone.runGuarded
+  dart:async/zone.dart 1362:23                     _CustomZone.bindCallbackGuarded.<fn>
+  dart:async/schedule_microtask.dart 40:35         _microtaskLoop
+  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
+  dart:isolate-patch/isolate_patch.dart 127:13     _runPendingImmediateCallback
+  dart:isolate-patch/isolate_patch.dart 194:5      _RawReceivePort._handleMessage
+  
+00:00 +0 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+[Security] Development mode - using enhanced SSL/TLS validation
+DEBUG: MockApiClient matched login path: /auth/login
+DEBUG: MockApiClient POST path ignored: /auth/logout
+00:00 +1 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+DEBUG: MockApiClient GET path: /user/progress
+00:00 +2 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System
+00:00 +2 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System [E]
+  Bad state: GetIt: Object/factory with type GamificationRepository is not registered inside GetIt. 
+  (Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;
+  Did you forget to register it?)
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 115:43                     main.<fn>.<fn>
+  package:test_api                                                      Invoker._waitForOutstandingCallbacks.<fn>
+  package:get_it/get_it_impl.dart 14:19                                 throwIfNot
+  package:get_it/get_it_impl.dart 435:5                                 _GetItImplementation._findFactoryByNameAndType
+  package:get_it/get_it_impl.dart 463:29                                _GetItImplementation.get
+  package:get_it/get_it_impl.dart 554:12                                _GetItImplementation.call
+  package:learning_hub/core/providers/gamification_provider.dart 82:21  GamificationNotifier.build
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 115:43                     main.<fn>.<fn>
+  
+00:00 +2 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+00:00 +3 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System
+00:00 +4 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:02 +5 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System
+00:02 +6 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation
+00:02 +7 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management
+00:02 +8 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget
+00:03 +9 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation
+00:03 +10 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management
+DEBUG: MockApiClient GET path: /user/profile
+00:03 +11 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing
+00:04 +12 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+00:04 +13 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management
+00:04 +14 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features
+00:04 +15 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality
+00:04 +16 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization
+00:04 +17 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility
+00:04 +18 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features
+00:04 +19 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+DEBUG: MockApiClient GET path: /user/profile
+00:05 +19 -4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow [E]
+  Bad state: Tried to use ThemeModeNotifier after `dispose` was called.
+  
+  Consider checking `mounted`.
+  
+  package:state_notifier/state_notifier.dart 175:9               StateNotifier._debugIsMounted.<fn>
+  package:state_notifier/state_notifier.dart 182:6               StateNotifier._debugIsMounted
+  package:state_notifier/state_notifier.dart 212:12              StateNotifier.state=
+  package:learning_hub/core/providers/theme_provider.dart 33:9   ThemeModeNotifier._loadThemeMode
+  ===== asynchronous gap ===========================
+  dart:async                                                     _CustomZone.registerUnaryCallback
+  package:learning_hub/core/providers/theme_provider.dart 22:19  ThemeModeNotifier._loadThemeMode
+  package:learning_hub/core/providers/theme_provider.dart 15:5   new ThemeModeNotifier
+  package:learning_hub/core/providers/theme_provider.dart 9:10   themeModeProvider.<fn>
+  package:riverpod/src/state_notifier_provider/base.dart 119:21  StateNotifierProvider._create
+  package:riverpod/src/state_notifier_provider/base.dart 172:64  StateNotifierProviderElement.create.<fn>
+  package:riverpod/src/result.dart 21:28                         Result.guard
+  package:riverpod/src/state_notifier_provider/base.dart 172:43  StateNotifierProviderElement.create
+  package:riverpod/src/framework/element.dart 426:7              ProviderElementBase.buildState
+  package:riverpod/src/framework/element.dart 228:5              ProviderElementBase.mount
+  package:riverpod/src/framework/container.dart 47:11            _StateReader._create
+  package:riverpod/src/framework/container.dart 35:52            _StateReader.getElement
+  package:riverpod/src/framework/container.dart 440:40           ProviderContainer.readProviderElement.<fn>
+  package:riverpod/src/framework/container.dart 475:8            ProviderContainer.readProviderElement
+  package:riverpod/src/framework/provider_base.dart 105:26       ProviderBase.read
+  package:riverpod/src/framework/container.dart 241:21           ProviderContainer.read
+  test\comprehensive_functionality_test.dart 438:38              main.<fn>.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                                     _CustomZone.registerUnaryCallback
+  test\comprehensive_functionality_test.dart 433:26              main.<fn>.<fn>
+  
+lib/features/home/hom
+e_screen.dart:211:46:
+ Error: The getter 
+'name' isn't defined 
+for the type 'User'.
+ - 'User' is from 'pa
+ckage:learning_hub/da
+ta/models/user_model.
+dart' ('lib/data/mode
+ls/user_model.dart').
+Try correcting the 
+name to the name of 
+an existing getter, 
+or defining a getter 
+or field named 
+'name'.
+                     
+                   
+user.name.isNotEmpty
+                     
+                     
+   ^^^^
+lib/features/home/hom
+e_screen.dart:212:52:
+ Error: The getter 
+'name' isn't defined 
+for the type 'User'.
+ - 'User' is from 'pa
+ckage:learning_hub/da
+ta/models/user_model.
+dart' ('lib/data/mode
+ls/user_model.dart').
+Try correcting the 
+name to the name of 
+an existing getter, 
+or defining a getter 
+or field named 
+'name'.
+                     
+                     
+  ? user.name[0].toUp
+perCase()
+                     
+                     
+         ^^^^
+lib/features/gamifica
+tion/presentation/wid
+gets/gamification_bad
+ge.dart:47:38: 
+Error: The getter 
+'currentXp' isn't 
+defined for the type 
+'GamificationState'.
+ - 
+'GamificationState' 
+is from 'package:lear
+ning_hub/core/provide
+rs/gamification_provi
+der.dart' ('lib/core/
+providers/gamificatio
+n_provider.dart').
+Try correcting the 
+name to the name of 
+an existing getter, 
+or defining a getter 
+or field named 
+'currentXp'.
+                '${ga
+mificationState.curre
+ntXp} XP',
+                     
+                
+^^^^^^^^^
+00:13 +19 -5: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: lib/features/home/home_screen.dart:211:46: Error: The getter 'name' isn't defined for the type 'User'.
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'name'.
+                                          user.name.isNotEmpty
+                                               ^^^^
+  lib/features/home/home_screen.dart:212:52: Error: The getter 'name' isn't defined for the type 'User'.
+   - 'User' is from 'package:learning_hub/data/models/user_model.dart' ('lib/data/models/user_model.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'name'.
+                                              ? user.name[0].toUpperCase()
+                                                     ^^^^
+  lib/features/gamification/presentation/widgets/gamification_badge.dart:47:38: Error: The getter 'currentXp' isn't defined for the type 'GamificationState'.
+   - 'GamificationState' is from 'package:learning_hub/core/providers/gamification_provider.dart' ('lib/core/providers/gamification_provider.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'currentXp'.
+                  '${gamificationState.currentXp} XP',
+                                       ^^^^^^^^^
+  .
+00:22 +19 -5: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: (setUpAll)
+00:22 +19 -5: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+test/verification_tes
+t.dart:6:8: Error: 
+Error when reading 'l
+ib/core/services/gami
+fication_service.dart
+': The system cannot 
+find the file 
+specified
+import 'package:learn
+ing_hub/core/services
+/gamification_service
+.dart';
+       ^
+test/verification_tes
+t.dart:145:33: 
+Error: Method not 
+found: 'GamificationS
+ervice'.
+    final 
+gamificationService 
+= GamificationService
+(api: mockApiClient);
+                     
+           
+^^^^^^^^^^^^^^^^^^^
+00:22 +20 -5: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:22 +20 -6: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: test/verification_test.dart:6:8: Error: Error when reading 'lib/core/services/gamification_service.dart': The system cannot find the file specified
+  import 'package:learning_hub/core/services/gamification_service.dart';
+         ^
+  test/verification_test.dart:145:33: Error: Method not found: 'GamificationService'.
+      final gamificationService = GamificationService(api: mockApiClient);
+                                  ^^^^^^^^^^^^^^^^^^^
+  .
+00:24 +21 -6: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp
+00:24 +22 -6: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp
+00:33 +23 -6: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)
+00:33 +23 -6: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing
+00:35 +24 -6: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)
+00:35 +24 -6: Some tests failed.

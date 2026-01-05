@@ -1,0 +1,5 @@
+﻿apps\courses\services.py:38: error: Returning Any from function declared to return "Enrollment"  [no-any-return]
+apps\courses\services.py:64: error: Returning Any from function declared to return "Review"  [no-any-return]
+apps\content\services.py:36: error: Returning Any from function declared to return "LessonProgress"  [no-any-return]
+apps\content\services.py:66: error: Returning Any from function declared to return "QuizAttempt"  [no-any-return]
+Found 4 errors in 2 files (checked 61 source files)

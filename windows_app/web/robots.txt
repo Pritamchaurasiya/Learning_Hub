@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://learninghub.com/sitemap.xml
+
+# Disallow admin or private paths
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /settings/

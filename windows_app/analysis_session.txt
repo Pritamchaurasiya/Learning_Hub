@@ -1,0 +1,130 @@
+﻿Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (92.0.0 available)
+  analyzer 8.4.1 (9.0.0 available)
+  bloc 8.1.4 (9.2.0 available)
+  characters 1.4.0 (1.4.1 available)
+  confetti 0.7.0 (0.8.0 available)
+  flex_color_scheme 7.3.1 (8.4.0 available)
+  flex_seed_scheme 1.5.0 (4.0.1 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_riverpod 2.6.1 (3.1.0 available)
+  get_it 7.7.0 (9.2.0 available)
+  image 4.5.4 (4.7.2 available)
+  injectable 2.6.0 (2.7.1+4 available)
+  js 0.6.7 (0.7.2 available)
+  json_serializable 6.11.2 (6.11.3 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  msix 3.16.9 (3.16.12 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  riverpod 2.6.1 (3.1.0 available)
+  rxdart 0.27.7 (0.28.0 available)
+  sentry 7.20.2 (9.9.1 available)
+  sentry_flutter 7.20.2 (9.9.1 available)
+  socket_io_client 2.0.3+1 (3.1.3 available)
+  socket_io_common 2.0.3 (3.1.1 available)
+  source_helper 1.3.8 (1.3.9 available)
+  test_api 0.7.7 (0.7.8 available)
+  web_socket_channel 2.4.0 (3.0.3 available)
+Got dependencies!
+27 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing windows_app...                                        
+
+warning - Unused import: 'package:flutter/foundation.dart' - lib\app.dart:4:8 - unused_import
+  error - The method 'getConversationHistory' isn't defined for the type 'AiTutorService' - lib\core\providers\ai_tutor_provider.dart:78:30 - undefined_method
+  error - The method 'clearConversation' isn't defined for the type 'AiTutorService' - lib\core\providers\ai_tutor_provider.dart:206:14 - undefined_method
+warning - The declaration '<unnamed>' isn't referenced - lib\core\services\ai_tutor_service.dart:157:7 - unused_element
+warning - The value of the field '_maxContextMessages' isn't used - lib\core\services\ai_tutor_service.dart:166:20 - unused_field
+  error - The method '_addMessageToConversation' isn't defined for the type 'AiTutorService' - lib\core\services\ai_tutor_service.dart:329:5 - undefined_method
+  error - Undefined name 'conv' - lib\core\services\ai_tutor_service.dart:591:21 - undefined_identifier
+  error - Undefined name 'message' - lib\core\services\ai_tutor_service.dart:591:37 - undefined_identifier
+  error - Only static fields can be declared as const - lib\core\services\ai_tutor_service.dart:595:7 - const_instance_field
+  error - Only static fields can be declared as const - lib\core\services\ai_tutor_service.dart:596:7 - const_instance_field
+  error - Only static fields can be declared as const - lib\core\services\ai_tutor_service.dart:597:7 - const_instance_field
+  error - The instance member 'maxTokens' can't be accessed in an initializer - lib\core\services\ai_tutor_service.dart:597:28 - implicit_this_reference_in_initializer
+  error - The instance member 'charsPerToken' can't be accessed in an initializer - lib\core\services\ai_tutor_service.dart:597:40 - implicit_this_reference_in_initializer
+  error - The instance member 'updated' can't be accessed in an initializer - lib\core\services\ai_tutor_service.dart:599:26 - implicit_this_reference_in_initializer
+  error - Expected a class member - lib\core\services\ai_tutor_service.dart:601:7 - expected_class_member
+  error - Expected an identifier - lib\core\services\ai_tutor_service.dart:601:10 - missing_identifier
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:601:11 - strict_top_level_inference
+  error - Expected to find ')' - lib\core\services\ai_tutor_service.dart:601:24 - expected_token
+  error - A value of type 'double' can't be assigned to a variable of type 'int' - lib\core\services\ai_tutor_service.dart:609:26 - invalid_assignment
+   info - An uninitialized field should have an explicit type annotation - lib\core\services\ai_tutor_service.dart:627:7 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:627:7 - strict_top_level_inference
+  error - Expected to find ';' - lib\core\services\ai_tutor_service.dart:627:7 - expected_token
+  error - The name '_conversations' is already defined - lib\core\services\ai_tutor_service.dart:627:7 - duplicate_definition
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\core\services\ai_tutor_service.dart:627:7 - missing_const_final_var_or_type
+  error - Expected a class member - lib\core\services\ai_tutor_service.dart:627:21 - expected_class_member
+   info - An uninitialized field should have an explicit type annotation - lib\core\services\ai_tutor_service.dart:627:22 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:627:22 - strict_top_level_inference
+  error - Expected to find ';' - lib\core\services\ai_tutor_service.dart:627:22 - expected_token
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\core\services\ai_tutor_service.dart:627:22 - missing_const_final_var_or_type
+  error - Expected a class member - lib\core\services\ai_tutor_service.dart:627:28 - expected_class_member
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:627:30 - strict_top_level_inference
+   info - The method '=' should have a return type but doesn't - lib\core\services\ai_tutor_service.dart:627:30 - always_declare_return_types
+  error - Methods must have an explicit list of parameters - lib\core\services\ai_tutor_service.dart:627:30 - missing_method_parameters
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\core\services\ai_tutor_service.dart:627:30 - missing_keyword_operator
+  error - The string '=' isn't a user-definable operator - lib\core\services\ai_tutor_service.dart:627:30 - invalid_operator
+   info - An uninitialized field should have an explicit type annotation - lib\core\services\ai_tutor_service.dart:627:32 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:627:32 - strict_top_level_inference
+  error - A function body must be provided - lib\core\services\ai_tutor_service.dart:627:32 - missing_function_body
+  error - The name 'updated' is already defined - lib\core\services\ai_tutor_service.dart:627:32 - duplicate_definition
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\core\services\ai_tutor_service.dart:627:32 - missing_const_final_var_or_type
+   info - Missing type annotation - lib\core\services\ai_tutor_service.dart:628:7 - strict_top_level_inference
+   info - The method '_saveConversations' should have a return type but doesn't - lib\core\services\ai_tutor_service.dart:628:7 - always_declare_return_types
+warning - The declaration '_saveConversations' isn't referenced - lib\core\services\ai_tutor_service.dart:628:7 - unused_element
+  error - '_saveConversations' must have a method body because 'AiTutorService' isn't abstract - lib\core\services\ai_tutor_service.dart:628:7 - concrete_class_with_abstract_member
+  error - Expected a method, getter, setter or operator declaration - lib\core\services\ai_tutor_service.dart:630:3 - expected_executable
+  error - The function '_addMessageToConversation' isn't defined - lib\core\services\ai_tutor_service.dart:635:5 - undefined_function
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:649:26 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:650:12 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:655:26 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:657:7 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:658:11 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:659:9 - undefined_identifier
+  error - Undefined name '_conversationsBox' - lib\core\services\ai_tutor_service.dart:667:9 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:669:7 - undefined_identifier
+  error - Undefined name '_conversationsBox' - lib\core\services\ai_tutor_service.dart:670:23 - undefined_identifier
+  error - Undefined name '_conversationsBox' - lib\core\services\ai_tutor_service.dart:671:22 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:674:11 - undefined_identifier
+  error - Undefined name '_conversationsBox' - lib\core\services\ai_tutor_service.dart:684:9 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:686:26 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:686:41 - undefined_identifier
+  error - Undefined name '_conversationsBox' - lib\core\services\ai_tutor_service.dart:688:15 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:689:11 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:699:39 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:702:39 - undefined_identifier
+  error - Undefined name '_conversations' - lib\core\services\ai_tutor_service.dart:706:9 - undefined_identifier
+  error - Undefined name '_activeConversationId' - lib\core\services\ai_tutor_service.dart:707:7 - undefined_identifier
+  error - Expected a method, getter, setter or operator declaration - lib\core\services\ai_tutor_service.dart:710:1 - expected_executable
+warning - The value of the local variable 'allowedSHASinger' isn't used - lib\core\services\api_client.dart:223:13 - unused_local_variable
+warning - The value of the local variable 'secret' isn't used - lib\core\services\api_client.dart:237:11 - unused_local_variable
+   info - Invalid use of a private type in a public API - lib\features\gamification\presentation\widgets\level_up_dialog.dart:17:3 - library_private_types_in_public_api
+  error - Invalid constant value - lib\features\gamification\presentation\widgets\level_up_dialog.dart:107:31 - invalid_constant
+  error - The getter 'black' isn't defined for the type 'FontWeight' - lib\features\gamification\presentation\widgets\level_up_dialog.dart:107:42 - undefined_getter
+  error - Invalid constant value - lib\features\home\home_screen.dart:443:29 - invalid_constant
+   info - Invalid use of a private type in a public API - lib\features\home\widgets\categories_section.dart:45:9 - library_private_types_in_public_api
+   info - Invalid use of a private type in a public API - lib\features\home\widgets\categories_section.dart:47:48 - library_private_types_in_public_api
+
+flutter : 75 issues 
+found. (ran in 4.9s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-FilePath "analysis_s
+ession.txt" -Enc ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (75 issu   
+ es found. (ran i    
+n 4.9s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

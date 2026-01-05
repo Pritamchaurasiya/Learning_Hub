@@ -1,0 +1,15 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+00:00 +0 -1: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart [E]
+  Failed to load "C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart":
+  Compilation failed for testPath=C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: lib/core/services/notification_service.dart:151:27: Error: The getter 'SharedPreferences' isn't defined for the type 'NotificationService'.
+   - 'NotificationService' is from 'package:learning_hub/core/services/notification_service.dart' ('lib/core/services/notification_service.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'SharedPreferences'.
+        final prefs = await SharedPreferences.getInstance();
+                            ^^^^^^^^^^^^^^^^^
+  lib/core/services/notification_service.dart:169:27: Error: The getter 'SharedPreferences' isn't defined for the type 'NotificationService'.
+   - 'NotificationService' is from 'package:learning_hub/core/services/notification_service.dart' ('lib/core/services/notification_service.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'SharedPreferences'.
+        final prefs = await SharedPreferences.getInstance();
+                            ^^^^^^^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.

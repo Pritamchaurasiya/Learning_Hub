@@ -1,0 +1,1433 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0
+django: version: 5.0.1, settings: config.settings.production (from env)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: django-4.11.1
+collected 26 items
+
+tests\test_courses.py FFFFFFFFFF                                         [ 38%]
+tests\test_users.py .....FFFFFFFFFFF                                     [100%]
+
+================================== FAILURES ===================================
+______________________ TestCourseList.test_list_courses _______________________
+
+self = <tests.test_courses.TestCourseList object at 0x000002615D0B20D0>
+api_client = <rest_framework.test.APIClient object at 0x000002615D11AE40>
+course = <Course: Python Basics>
+
+    def test_list_courses(self, api_client, course):
+        """Test listing published courses."""
+>       response = api_client.get("/api/v1/courses/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________________ TestCourseList.test_list_excludes_unpublished ________________
+
+self = <tests.test_courses.TestCourseList object at 0x000002615D0B25D0>
+api_client = <rest_framework.test.APIClient object at 0x000002615D6F6210>
+instructor = <User: instructor@example.com>, category = <Category: Programming>
+
+    def test_list_excludes_unpublished(self, api_client, instructor, category):
+        """Test unpublished courses are excluded."""
+        Course.objects.create(
+            title="Draft Course",
+            slug="draft-course",
+            description="Not ready",
+            short_description="Draft",
+            instructor=instructor,
+            category=category,
+            is_published=False,
+        )
+    
+>       response = api_client.get("/api/v1/courses/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+___________________ TestCourseDetail.test_get_course_detail ___________________
+
+self = <tests.test_courses.TestCourseDetail object at 0x000002615D0B2490>
+api_client = <rest_framework.test.APIClient object at 0x000002615D6F6710>
+course = <Course: Python Basics>
+
+    def test_get_course_detail(self, api_client, course):
+        """Test getting course details by slug."""
+>       response = api_client.get(f"/api/v1/courses/{course.slug}/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+___________________ TestCourseDetail.test_course_not_found ____________________
+
+self = <tests.test_courses.TestCourseDetail object at 0x000002615D0B2350>
+api_client = <rest_framework.test.APIClient object at 0x000002615D568C30>
+
+    def test_course_not_found(self, api_client):
+        """Test 404 for non-existent course."""
+>       response = api_client.get("/api/v1/courses/nonexistent/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________________ TestCourseEnrollment.test_enroll_free_course _________________
+
+self = <tests.test_courses.TestCourseEnrollment object at 0x000002615D0B2710>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D569E00>
+course = <Course: Python Basics>
+
+    def test_enroll_free_course(self, authenticated_client, course):
+        """Test enrolling in a free course."""
+>       response = authenticated_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______________ TestCourseEnrollment.test_enroll_unauthenticated _______________
+
+self = <tests.test_courses.TestCourseEnrollment object at 0x000002615D0B2850>
+api_client = <rest_framework.test.APIClient object at 0x000002615D5B9490>
+course = <Course: Python Basics>
+
+    def test_enroll_unauthenticated(self, api_client, course):
+        """Test enrollment fails without authentication."""
+>       response = api_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________ TestCourseEnrollment.test_enroll_paid_course_without_payment _________
+
+self = <tests.test_courses.TestCourseEnrollment object at 0x000002615D016D70>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D7D09E0>
+paid_course = <Course: Advanced Python>
+
+    def test_enroll_paid_course_without_payment(
+        self, authenticated_client, paid_course
+    ):
+        """Test paid course enrollment requires payment."""
+>       response = authenticated_client.post(
+            f"/api/v1/courses/{paid_course.slug}/enroll/"
+        )
+
+tests\test_courses.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_______________ TestCourseEnrollment.test_duplicate_enrollment ________________
+
+self = <tests.test_courses.TestCourseEnrollment object at 0x000002615D016EA0>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D2438A0>
+course = <Course: Python Basics>, user = <User: test@example.com>
+
+    def test_duplicate_enrollment(self, authenticated_client, course, user):
+        """Test cannot enroll twice in same course."""
+        Enrollment.objects.create(user=user, course=course)
+    
+>       response = authenticated_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_courses.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+________________ TestCourseReview.test_submit_review_enrolled _________________
+
+self = <tests.test_courses.TestCourseReview object at 0x000002615D0B2990>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D5CD350>
+course = <Course: Python Basics>, user = <User: test@example.com>
+
+    def test_submit_review_enrolled(self, authenticated_client, course, user):
+        """Test submitting review when enrolled."""
+        Enrollment.objects.create(user=user, course=course)
+    
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+>       response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+
+tests\test_courses.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______________ TestCourseReview.test_submit_review_not_enrolled _______________
+
+self = <tests.test_courses.TestCourseReview object at 0x000002615D0B2AD0>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D5CEE50>
+course = <Course: Python Basics>
+
+    def test_submit_review_not_enrolled(self, authenticated_client, course):
+        """Test review fails when not enrolled."""
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+>       response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+
+tests\test_courses.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_____________________ TestUserModel.test_email_normalized _____________________
+
+self = <tests.test_users.TestUserModel object at 0x000002615D0E09E0>
+create_user = <function create_user.<locals>._create_user at 0x000002615D770EA0>
+
+    def test_email_normalized(self, create_user):
+        """Test email is normalized to lowercase."""
+        user = create_user(email="Test@EXAMPLE.COM", username="testcase")
+>       assert user.email == "test@example.com"
+E       AssertionError: assert 'Test@example.com' == 'test@example.com'
+E         
+E         - test@example.com
+E         ? ^
+E         + Test@example.com
+E         ? ^
+
+tests\test_users.py:61: AssertionError
+_________________ TestUserRegistration.test_register_success __________________
+
+self = <tests.test_users.TestUserRegistration object at 0x000002615D0B2E90>
+api_client = <rest_framework.test.APIClient object at 0x000002615D732030>
+
+    def test_register_success(self, api_client):
+        """Test successful user registration."""
+        data = {
+            "email": "newuser@test.com",
+            "username": "newuser",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+            "display_name": "New User",
+        }
+>       response = api_client.post("/api/v1/auth/register/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+____________ TestUserRegistration.test_register_password_mismatch _____________
+
+self = <tests.test_users.TestUserRegistration object at 0x000002615D0B2FD0>
+api_client = <rest_framework.test.APIClient object at 0x000002615D4207D0>
+
+    def test_register_password_mismatch(self, api_client):
+        """Test registration fails with mismatched passwords."""
+        data = {
+            "email": "test@test.com",
+            "username": "testuser",
+            "password": "SecurePass123!",
+            "password_confirm": "DifferentPass123!",
+        }
+>       response = api_client.post("/api/v1/auth/register/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_____________ TestUserRegistration.test_register_duplicate_email ______________
+
+self = <tests.test_users.TestUserRegistration object at 0x000002615D017360>
+api_client = <rest_framework.test.APIClient object at 0x000002615D7FAB30>
+user = <User: test@example.com>
+
+    def test_register_duplicate_email(self, api_client, user):
+        """Test registration fails with existing email."""
+        data = {
+            "email": user.email,
+            "username": "different",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+        }
+>       response = api_client.post("/api/v1/auth/register/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______________ TestUserRegistration.test_register_weak_password _______________
+
+self = <tests.test_users.TestUserRegistration object at 0x000002615D017490>
+api_client = <rest_framework.test.APIClient object at 0x000002615D2109F0>
+
+    def test_register_weak_password(self, api_client):
+        """Test registration fails with weak password."""
+        data = {
+            "email": "test@test.com",
+            "username": "testuser",
+            "password": "123",
+            "password_confirm": "123",
+        }
+>       response = api_client.post("/api/v1/auth/register/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______________________ TestUserLogin.test_login_success _______________________
+
+self = <tests.test_users.TestUserLogin object at 0x000002615D0B3110>
+api_client = <rest_framework.test.APIClient object at 0x000002615D447040>
+user = <User: test@example.com>
+
+    def test_login_success(self, api_client, user):
+        """Test successful login."""
+        data = {"email": user.email, "password": "TestPass123!"}
+>       response = api_client.post("/api/v1/auth/login/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+___________________ TestUserLogin.test_login_wrong_password ___________________
+
+self = <tests.test_users.TestUserLogin object at 0x000002615D0B3250>
+api_client = <rest_framework.test.APIClient object at 0x000002615D36B710>
+user = <User: test@example.com>
+
+    def test_login_wrong_password(self, api_client, user):
+        """Test login fails with wrong password."""
+        data = {"email": user.email, "password": "WrongPassword!"}
+>       response = api_client.post("/api/v1/auth/login/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+__________________ TestUserLogin.test_login_nonexistent_user __________________
+
+self = <tests.test_users.TestUserLogin object at 0x000002615D0175C0>
+api_client = <rest_framework.test.APIClient object at 0x000002615DABC110>
+
+    def test_login_nonexistent_user(self, api_client):
+        """Test login fails with non-existent email."""
+        data = {"email": "nonexistent@test.com", "password": "SomePass123!"}
+>       response = api_client.post("/api/v1/auth/login/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:149: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:296: in post
+    response = super().post(
+venv\Lib\site-packages\rest_framework\test.py:210: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_______________ TestUserProfile.test_get_profile_authenticated ________________
+
+self = <tests.test_users.TestUserProfile object at 0x000002615D0B3390>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D8D8EC0>
+user = <User: test@example.com>
+
+    def test_get_profile_authenticated(self, authenticated_client, user):
+        """Test getting profile when authenticated."""
+>       response = authenticated_client.get("/api/v1/users/profile/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+______________ TestUserProfile.test_get_profile_unauthenticated _______________
+
+self = <tests.test_users.TestUserProfile object at 0x000002615D0B34D0>
+api_client = <rest_framework.test.APIClient object at 0x000002615D8D8E10>
+
+    def test_get_profile_unauthenticated(self, api_client):
+        """Test getting profile fails when not authenticated."""
+>       response = api_client.get("/api/v1/users/profile/")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:289: in get
+    response = super().get(path, data=data, **extra)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:206: in get
+    return self.generic('GET', path, **r)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+_____________________ TestUserProfile.test_update_profile _____________________
+
+self = <tests.test_users.TestUserProfile object at 0x000002615D0176F0>
+authenticated_client = <rest_framework.test.APIClient object at 0x000002615D8DA150>
+user = <User: test@example.com>
+
+    def test_update_profile(self, authenticated_client, user):
+        """Test updating profile."""
+        data = {"display_name": "Updated Name", "bio": "My new bio"}
+>       response = authenticated_client.put("/api/v1/users/profile/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:174: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+venv\Lib\site-packages\rest_framework\test.py:304: in put
+    response = super().put(
+venv\Lib\site-packages\rest_framework\test.py:214: in put
+    return self.generic('PUT', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:234: in generic
+    return super().generic(
+venv\Lib\site-packages\django\test\client.py:617: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:286: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\rest_framework\test.py:238: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:1008: in request
+    response = self.handler(environ)
+               ^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\test\client.py:173: in __call__
+    self.load_middleware()
+venv\Lib\site-packages\django\core\handlers\base.py:40: in load_middleware
+    middleware = import_string(middleware_path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:30: in import_string
+    return cached_import(module_path, class_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\django\utils\module_loading.py:15: in cached_import
+    module = import_module(module_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1310: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'whitenoise', import_ = <function _gcd_import at 0x0000026158CD04A0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'whitenoise'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+============================== warnings summary ===============================
+venv\Lib\site-packages\django\conf\__init__.py:251
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\django\conf\__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+venv\Lib\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: pass_env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_courses.py::TestCourseList::test_list_courses - ModuleNotFo...
+FAILED tests/test_courses.py::TestCourseList::test_list_excludes_unpublished
+FAILED tests/test_courses.py::TestCourseDetail::test_get_course_detail - Modu...
+FAILED tests/test_courses.py::TestCourseDetail::test_course_not_found - Modul...
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+FAILED tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_enrolled
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+FAILED tests/test_users.py::TestUserModel::test_email_normalized - AssertionE...
+FAILED tests/test_users.py::TestUserRegistration::test_register_success - Mod...
+FAILED tests/test_users.py::TestUserRegistration::test_register_password_mismatch
+FAILED tests/test_users.py::TestUserRegistration::test_register_duplicate_email
+FAILED tests/test_users.py::TestUserRegistration::test_register_weak_password
+FAILED tests/test_users.py::TestUserLogin::test_login_success - ModuleNotFoun...
+FAILED tests/test_users.py::TestUserLogin::test_login_wrong_password - Module...
+FAILED tests/test_users.py::TestUserLogin::test_login_nonexistent_user - Modu...
+FAILED tests/test_users.py::TestUserProfile::test_get_profile_authenticated
+FAILED tests/test_users.py::TestUserProfile::test_get_profile_unauthenticated
+FAILED tests/test_users.py::TestUserProfile::test_update_profile - ModuleNotF...
+================== 21 failed, 5 passed, 2 warnings in 11.42s ==================

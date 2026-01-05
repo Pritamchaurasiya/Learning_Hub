@@ -1,0 +1,75 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+00:00 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+[Security] Development mode - using enhanced SSL/TLS validation
+DEBUG: MockApiClient matched login path: /auth/login
+DEBUG: MockApiClient POST path ignored: /auth/logout
+00:00 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+00:00 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System
+00:00 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+00:00 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System
+00:00 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:01 +5 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:01 +5 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System [E]
+  Expected: <true>
+    Actual: <false>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\comprehensive_functionality_test.dart 184:7    main.<fn>.<fn>
+  
+00:01 +6 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +7 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +8 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +9 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +10 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +10 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management
+DEBUG: MockApiClient GET path: /user/profile
+00:04 +11 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +12 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +12 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+00:04 +13 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +14 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +15 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +16 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:04 +17 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:05 +18 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:05 +19 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:05 +19 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+DEBUG: MockApiClient GET path: /user/profile
+00:05 +19 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+[Security] Development mode - using enhanced SSL/TLS validation
+Cache read error
+Cache read error
+00:05 +20 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:06 +20 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:06 +20 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow [E]
+  Expected: ThemeMode:<ThemeMode.dark>
+    Actual: ThemeMode:<ThemeMode.system>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\comprehensive_functionality_test.dart 445:7    main.<fn>.<fn>
+  
+00:06 +21 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget displays courses when data is available
+00:06 +22 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: RecentlyViewedWidget hides when no data
+00:07 +23 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/recently_viewed_widget_test.dart: (tearDownAll)
+00:08 +23 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp
+00:09 +24 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes
+Verifying Auth Flow...
+DEBUG: MockApiClient matched login path: /auth/login
+Login Successful: Test User
+Verifying Analytics...
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+Analytics logged.
+Sync items queued: 1
+Verification Complete!
+00:11 +25 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)
+00:11 +25 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing
+00:12 +26 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)
+00:12 +26 -2: Some tests failed.

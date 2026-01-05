@@ -1,0 +1,87 @@
+﻿Analyzing windows_app...                                        
+
+   info - Statement should be on a separate line - lib\core\services\course_service.dart:62:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\course_service.dart:63:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\course_service.dart:64:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\offline_service.dart:21:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\offline_service.dart:45:17 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\offline_service.dart:61:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\offline_service.dart:110:17 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\offline_service.dart:126:17 - always_put_control_body_on_new_line
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:131:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:151:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:186:18 - avoid_slow_async_io
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:33:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:179:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:229:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:259:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:301:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\recommendation_service.dart:310:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:189:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:229:58 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:264:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:265:32 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:266:46 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:267:46 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:268:46 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:269:63 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:280:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:281:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\security_service.dart:282:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\sync_service.dart:279:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\data\models\certificate_model.dart:86:32 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\forgot_password_screen.dart:30:45 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\forgot_password_screen.dart:41:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\login_screen.dart:32:45 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\login_screen.dart:44:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\login_screen.dart:350:53 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\signup_screen.dart:37:45 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\auth\signup_screen.dart:60:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\certificates\certificates_screen.dart:78:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\course\course_detail_screen.dart:1010:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\course\course_detail_screen.dart:1011:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\course\course_detail_screen.dart:1018:18 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\live\live_class_screen.dart:49:46 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\onboarding\onboarding_screen.dart:101:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\search\search_screen.dart:71:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\splash\splash_screen.dart:29:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\splash\splash_screen.dart:38:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\splash\splash_screen.dart:47:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\splash\splash_screen.dart:52:19 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\recently_viewed_widget.dart:19:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\recently_viewed_widget.dart:58:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:67:34 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:81:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:103:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:143:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:160:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\shared\widgets\video_player_widget.dart:173:30 - always_put_control_body_on_new_line
+   info - 'setMockMethodCallHandler' is deprecated and shouldn't be used. Use tester.binding.defaultBinaryMessenger.setMockMethodCallHandler or TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler instead. Pass the channel as the first argument. This feature was deprecated after v3.9.0-19.0.pre - test\comprehensive_functionality_test.dart:37:12 - deprecated_member_use
+   info - Statement should be on a separate line - test\comprehensive_functionality_test.dart:38:45 - always_put_control_body_on_new_line
+   info - 'setMockMethodCallHandler' is deprecated and shouldn't be used. Use tester.binding.defaultBinaryMessenger.setMockMethodCallHandler or TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler instead. Pass the channel as the first argument. This feature was deprecated after v3.9.0-19.0.pre - test\comprehensive_functionality_test.dart:44:12 - deprecated_member_use
+  error - The setter '_userService' isn't defined for the type 'AuthNotifier' - test\comprehensive_functionality_test.dart:61:20 - undefined_setter
+  error - The class 'CourseService' doesn't have an unnamed constructor - test\comprehensive_functionality_test.dart:82:29 - new_with_undefined_constructor_default
+warning - The value of the local variable 'gamificationService' isn't used - test\comprehensive_functionality_test.dart:412:13 - unused_local_variable
+   info - Don't invoke 'print' in production code - test\mocks.dart:17:5 - avoid_print
+   info - Don't invoke 'print' in production code - test\mocks.dart:35:7 - avoid_print
+   info - Don't invoke 'print' in production code - test\mocks.dart:87:5 - avoid_print
+   info - Statement should be on a separate line - test\verification_test.dart:22:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - test\widget_test.dart:44:43 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - test\widget_test.dart:45:40 - always_put_control_body_on_new_line
+
+flutter : 68 issues 
+found. (ran in 6.1s)
+At line:1 char:1
++ flutter analyze 2>&1 | 
+Out-File -FilePath analysi
+s_current_status.txt ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (6  
+  8 issues found. (ran    
+ in 6.1s):String) [],     
+RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 

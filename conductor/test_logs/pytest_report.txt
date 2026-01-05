@@ -1,0 +1,3253 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0
+django: version: 6.0, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: Faker-40.1.0, cov-7.0.0, django-4.11.1
+collected 39 items
+
+apps\content\tests\test_models.py EE                                     [  5%]
+apps\courses\tests\test_models.py .E                                     [ 10%]
+apps\gamification\tests\test_models.py EE                                [ 15%]
+apps\notifications\tests\test_models.py E                                [ 17%]
+apps\payments\tests\test_models.py .                                     [ 20%]
+apps\users\tests\test_models.py FFFF                                     [ 30%]
+apps\users\tests\test_views.py .                                         [ 33%]
+tests\test_courses.py EEE.EEEEEE                                         [ 58%]
+tests\test_users.py FFEEEFF.E.EEFE.E                                     [100%]
+
+=================================== ERRORS ====================================
+___________ ERROR at setup of TestContentModels.test_create_lesson ____________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <apps.content.tests.test_models.TestContentModels object at 0x000001DAC9156210>
+
+    @pytest.fixture
+    def course(self):
+>       user = User.objects.create_user(
+            email="inst@test.com", username="inst", password="pass"
+        )
+
+apps\content\tests\test_models.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+---------------------------- Captured stderr setup ----------------------------
+DEBUG 2026-01-05 20:11:35,629 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG 2026-01-05 20:11:35,658 factory 13132 22792 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,717 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG 2026-01-05 20:11:35,737 factory 13132 22792 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,767 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG 2026-01-05 20:11:35,780 factory 13132 22792 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG 2026-01-05 20:11:35,805 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG 2026-01-05 20:11:35,808 factory 13132 22792 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,836 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG 2026-01-05 20:11:35,847 factory 13132 22792 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,870 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG 2026-01-05 20:11:35,889 factory 13132 22792 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,914 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG 2026-01-05 20:11:35,918 factory 13132 22792 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,945 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG 2026-01-05 20:11:35,960 factory 13132 22792 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:35,984 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG 2026-01-05 20:11:36,001 factory 13132 22792 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,026 factory 13132 22792 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,026 factory 13132 22792 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,027 factory 13132 22792 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,027 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG 2026-01-05 20:11:36,033 factory 13132 22792 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,060 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG 2026-01-05 20:11:36,080 factory 13132 22792 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,110 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG 2026-01-05 20:11:36,113 factory 13132 22792 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,140 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG 2026-01-05 20:11:36,158 factory 13132 22792 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,191 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG 2026-01-05 20:11:36,206 factory 13132 22792 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,207 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG 2026-01-05 20:11:36,210 factory 13132 22792 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,244 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG 2026-01-05 20:11:36,247 factory 13132 22792 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,286 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG 2026-01-05 20:11:36,329 factory 13132 22792 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,379 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG 2026-01-05 20:11:36,411 factory 13132 22792 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,447 factory 13132 22792 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,448 factory 13132 22792 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,448 factory 13132 22792 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-05 20:11:36,449 factory 13132 22792 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG 2026-01-05 20:11:36,474 factory 13132 22792 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG 2026-01-05 20:11:36,507 factory 13132 22792 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+----------------------------- Captured log setup ------------------------------
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG    faker.factory:factory.py:88 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+____________ ERROR at setup of TestContentModels.test_create_quiz _____________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <apps.content.tests.test_models.TestContentModels object at 0x000001DAC9156710>
+
+    @pytest.fixture
+    def course(self):
+>       user = User.objects.create_user(
+            email="inst@test.com", username="inst", password="pass"
+        )
+
+apps\content\tests\test_models.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+____________ ERROR at setup of TestCourseModels.test_create_course ____________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <apps.courses.tests.test_models.TestCourseModels object at 0x000001DAC9156AD0>
+
+    @pytest.fixture
+    def instructor(self):
+>       return User.objects.create_user(
+            email="inst@test.com", username="inst", password="password"
+        )
+
+apps\courses\tests\test_models.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+__________ ERROR at setup of TestGamificationModels.test_xp_addition __________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+    @pytest.fixture
+    def user() -> User:
+        return cast(
+            User,
+>           User.objects.create_user(
+                email="gamer@test.com", username="gamer", password="password123"
+            ),
+        )
+
+apps\gamification\tests\test_models.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_________ ERROR at setup of TestGamificationModels.test_streak_update _________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+    @pytest.fixture
+    def user() -> User:
+        return cast(
+            User,
+>           User.objects.create_user(
+                email="gamer@test.com", username="gamer", password="password123"
+            ),
+        )
+
+apps\gamification\tests\test_models.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+______ ERROR at setup of TestNotificationModels.test_create_notification ______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <apps.notifications.tests.test_models.TestNotificationModels object at 0x000001DAC9157250>
+
+    @pytest.fixture
+    def user(self):
+>       return User.objects.create_user(
+            email="notif@test.com", username="notif", password="pass"
+        )
+
+apps\notifications\tests\test_models.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________ ERROR at setup of TestCourseList.test_list_courses ______________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC945C720>
+
+    @pytest.fixture
+    def instructor(create_user):
+        """Create an instructor user."""
+>       return create_user(
+            email="instructor@example.com", username="instructor", role=User.Role.INSTRUCTOR
+        )
+
+tests\conftest.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_______ ERROR at setup of TestCourseList.test_list_excludes_unpublished _______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC93C7240>
+
+    @pytest.fixture
+    def instructor(create_user):
+        """Create an instructor user."""
+>       return create_user(
+            email="instructor@example.com", username="instructor", role=User.Role.INSTRUCTOR
+        )
+
+tests\conftest.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+__________ ERROR at setup of TestCourseDetail.test_get_course_detail __________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC93C42C0>
+
+    @pytest.fixture
+    def instructor(create_user):
+        """Create an instructor user."""
+>       return create_user(
+            email="instructor@example.com", username="instructor", role=User.Role.INSTRUCTOR
+        )
+
+tests\conftest.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_______ ERROR at setup of TestCourseEnrollment.test_enroll_free_course ________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC93C62A0>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____ ERROR at setup of TestCourseEnrollment.test_enroll_unauthenticated ______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC93C72E0>
+
+    @pytest.fixture
+    def instructor(create_user):
+        """Create an instructor user."""
+>       return create_user(
+            email="instructor@example.com", username="instructor", role=User.Role.INSTRUCTOR
+        )
+
+tests\conftest.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_ ERROR at setup of TestCourseEnrollment.test_enroll_paid_course_without_payment _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E8720>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+______ ERROR at setup of TestCourseEnrollment.test_duplicate_enrollment _______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E8D60>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_______ ERROR at setup of TestCourseReview.test_submit_review_enrolled ________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E8540>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____ ERROR at setup of TestCourseReview.test_submit_review_not_enrolled ______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E99E0>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+________________ ERROR at setup of TestUserModel.test_user_str ________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E9120>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________ ERROR at setup of TestUserModel.test_user_full_name _____________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97EA700>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_________ ERROR at setup of TestUserModel.test_is_instructor_property _________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97EAF20>
+
+    @pytest.fixture
+    def instructor(create_user):
+        """Create an instructor user."""
+>       return create_user(
+            email="instructor@example.com", username="instructor", role=User.Role.INSTRUCTOR
+        )
+
+tests\conftest.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+____ ERROR at setup of TestUserRegistration.test_register_duplicate_email _____
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E9080>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________ ERROR at setup of TestUserLogin.test_login_success ______________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC99AE0C0>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+__________ ERROR at setup of TestUserLogin.test_login_wrong_password __________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E8860>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+______ ERROR at setup of TestUserProfile.test_get_profile_authenticated _______
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97EB060>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+____________ ERROR at setup of TestUserProfile.test_update_profile ____________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+create_user = <function create_user.<locals>._create_user at 0x000001DAC99AEA20>
+
+    @pytest.fixture
+    def user(create_user):
+        """Create a default test user."""
+>       return create_user()
+               ^^^^^^^^^^^^^
+
+tests\conftest.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+================================== FAILURES ===================================
+_______________________ TestUserModel.test_create_user ________________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_models.TestUserModel object at 0x000001DAC9157610>
+
+    def test_create_user(self):
+>       user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpassword"
+        )
+
+apps\users\tests\test_models.py:10: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________________ TestUserModel.test_create_superuser _____________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_models.TestUserModel object at 0x000001DAC9157750>
+
+    def test_create_superuser(self):
+>       admin = User.objects.create_superuser(
+            email="admin@example.com", username="admin", password="adminpassword"
+        )
+
+apps\users\tests\test_models.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:43: in create_superuser
+    return self.create_user(email, password, **extra_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_________________________ TestUserModel.test_user_str _________________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_models.TestUserModel object at 0x000001DAC9191220>
+
+    def test_user_str(self):
+>       user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpassword"
+        )
+
+apps\users\tests\test_models.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+______________________ TestUserModel.test_get_full_name _______________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_models.TestUserModel object at 0x000001DAC9191350>
+
+    def test_get_full_name(self):
+>       user = User.objects.create_user(
+            email="test@example.com",
+            username="testuser",
+            password="testpassword",
+            display_name="Test User",
+        )
+
+apps\users\tests\test_models.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_______________________ TestUserModel.test_create_user ________________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_users.TestUserModel object at 0x000001DAC91EC410>
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E89A0>
+
+    def test_create_user(self, create_user):
+        """Test creating a user with email and password."""
+>       user = create_user(email="new@test.com", username="newuser")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________________ TestUserModel.test_create_superuser _____________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_users.TestUserModel object at 0x000001DAC91EC550>, db = None
+
+    def test_create_superuser(self, db):
+        """Test creating a superuser."""
+>       user = User.objects.create_superuser(
+            email="super@test.com", username="superadmin", password="SuperPass123!"
+        )
+
+tests\test_users.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps\users\models.py:43: in create_superuser
+    return self.create_user(email, password, **extra_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_____________________ TestUserModel.test_email_normalized _____________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_users.TestUserModel object at 0x000001DAC9132BE0>
+create_user = <function create_user.<locals>._create_user at 0x000001DAC97E87C0>
+
+    def test_email_normalized(self, create_user):
+        """Test email is normalized to lowercase."""
+>       user = create_user(email="Test@EXAMPLE.COM", username="testcase")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:24: in _create_user
+    return User.objects.create_user(
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+_________________ TestUserRegistration.test_register_success __________________
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_users.TestUserRegistration object at 0x000001DAC91EC690>
+api_client = <rest_framework.test.APIClient object at 0x000001DAC97EC6E0>
+
+    def test_register_success(self, api_client):
+        """Test successful user registration."""
+        data = {
+            "email": "newuser@test.com",
+            "username": "newuser",
+            "password": "SecurePass123!",
+            "password_confirm": "SecurePass123!",
+            "display_name": "New User",
+        }
+>       response = api_client.post("/api/v1/auth/register/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:299: in post
+    response = super().post(
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:213: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:237: in generic
+    return super().generic(
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:671: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:289: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:241: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:1087: in request
+    self.check_exception(response)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:802: in check_exception
+    raise exc_value
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py:55: in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py:198: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py:65: in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py:106: in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:515: in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:475: in handle_exception
+    self.raise_uncaught_exception(exc)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:486: in raise_uncaught_exception
+    raise exc
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:512: in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\drf_spectacular\drainage.py:207: in wrapped_method
+    return method(self, request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\generics.py:194: in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\views.py:51: in create
+    user = serializer.save()
+           ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py:210: in save
+    self.instance = self.create(validated_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\serializers.py:45: in create
+    user = User.objects.create_user(**validated_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\models.py:27: in create_user
+    user.set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+---------------------------- Captured stderr call -----------------------------
+ERROR 2026-01-05 20:11:43,573 log 13132 22792 Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 231, in _load_library
+    module = importlib.import_module(mod_path)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\drf_spectacular\drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\generics.py", line 194, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py", line 51, in create
+    user = serializer.save()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\serializers.py", line 45, in create
+    user = User.objects.create_user(**validated_data)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\models.py", line 27, in create_user
+    user.set_password(password)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 94, in set_password
+    self.password = make_password(raw_password)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 119, in make_password
+    return hasher.encode(password, salt)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 404, in encode
+    argon2 = self._load_library()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 233, in _load_library
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+__________________ TestUserLogin.test_login_nonexistent_user __________________
+
+self = <django.contrib.auth.backends.ModelBackend object at 0x000001DAC97D3A10>
+request = None, username = 'nonexistent@test.com', password = 'SomePass123!'
+kwargs = {}
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if username is None:
+            username = kwargs.get(UserModel.USERNAME_FIELD)
+        if username is None or password is None:
+            return
+        try:
+>           user = UserModel._default_manager.get_by_natural_key(username)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:37: in get_by_natural_key
+    return self.get(**{self.model.USERNAME_FIELD: username})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <QuerySet []>, args = (), kwargs = {'email': 'nonexistent@test.com'}
+clone = <QuerySet []>, limit = 21, num = 0
+
+    def get(self, *args, **kwargs):
+        """
+        Perform the query and return a single object matching the given
+        keyword arguments.
+        """
+        if self.query.combinator and (args or kwargs):
+            raise NotSupportedError(
+                "Calling QuerySet.get(...) with filters after %s() is not "
+                "supported." % self.query.combinator
+            )
+        clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
+        if self.query.can_filter() and not self.query.distinct_fields:
+            clone = clone.order_by()
+        limit = None
+        if (
+            not clone.query.select_for_update
+            or connections[clone.db].features.supports_select_for_update_with_limit
+        ):
+            limit = MAX_GET_RESULTS
+            clone.query.set_limits(high=limit)
+        num = len(clone)
+        if num == 1:
+            return clone._result_cache[0]
+        if not num:
+>           raise self.model.DoesNotExist(
+                "%s matching query does not exist." % self.model._meta.object_name
+            )
+E           apps.users.models.User.DoesNotExist: User matching query does not exist.
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py:639: DoesNotExist
+
+During handling of the above exception, another exception occurred:
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+>               module = importlib.import_module(mod_path)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'argon2', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'argon2'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:88: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_users.TestUserLogin object at 0x000001DAC9191BA0>
+api_client = <rest_framework.test.APIClient object at 0x000001DAC99A85D0>
+
+    def test_login_nonexistent_user(self, api_client):
+        """Test login fails with non-existent email."""
+        data = {"email": "nonexistent@test.com", "password": "SomePass123!"}
+>       response = api_client.post("/api/v1/auth/login/", data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_users.py:149: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:299: in post
+    response = super().post(
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:213: in post
+    return self.generic('POST', path, data, content_type, **extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:237: in generic
+    return super().generic(
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:671: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:289: in request
+    return super().request(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\test.py:241: in request
+    request = super().request(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:1087: in request
+    self.check_exception(response)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\test\client.py:802: in check_exception
+    raise exc_value
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py:55: in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py:198: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py:65: in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py:106: in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:515: in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:475: in handle_exception
+    self.raise_uncaught_exception(exc)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:486: in raise_uncaught_exception
+    raise exc
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py:512: in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\users\views.py:83: in post
+    serializer.is_valid(raise_exception=True)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py:225: in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py:447: in run_validation
+    value = self.validate(value)
+            ^^^^^^^^^^^^^^^^^^^^
+apps\users\serializers.py:62: in validate
+    user = authenticate(username=email, password=password)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\debug.py:75: in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\__init__.py:114: in authenticate
+    user = backend.authenticate(request, **credentials)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py:69: in authenticate
+    UserModel().set_password(password)
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py:94: in set_password
+    self.password = make_password(raw_password)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:119: in make_password
+    return hasher.encode(password, salt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:404: in encode
+    argon2 = self._load_library()
+             ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <django.contrib.auth.hashers.Argon2PasswordHasher object at 0x000001DAC94A4830>
+
+    def _load_library(self):
+        if self.library is not None:
+            if isinstance(self.library, (tuple, list)):
+                name, mod_path = self.library
+            else:
+                mod_path = self.library
+            try:
+                module = importlib.import_module(mod_path)
+            except ImportError as e:
+>               raise ValueError(
+                    "Couldn't load %r algorithm library: %s"
+                    % (self.__class__.__name__, e)
+                )
+E               ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py:233: ValueError
+---------------------------- Captured stderr call -----------------------------
+ERROR 2026-01-05 20:11:44,979 log 13132 22792 Internal Server Error: /api/v1/auth/login/
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py", line 65, in authenticate
+    user = UserModel._default_manager.get_by_natural_key(username)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 37, in get_by_natural_key
+    return self.get(**{self.model.USERNAME_FIELD: username})
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 639, in get
+    raise self.model.DoesNotExist(
+        "%s matching query does not exist." % self.model._meta.object_name
+    )
+apps.users.models.User.DoesNotExist: User matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 231, in _load_library
+    module = importlib.import_module(mod_path)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'argon2'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py", line 83, in post
+    serializer.is_valid(raise_exception=True)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\rest_framework\serializers.py", line 447, in run_validation
+    value = self.validate(value)
+  File "C:\Users\shiva\Desktop\windows_app\conductor\apps\users\serializers.py", line 62, in validate
+    user = authenticate(username=email, password=password)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\views\decorators\debug.py", line 75, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\__init__.py", line 114, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\backends.py", line 69, in authenticate
+    UserModel().set_password(password)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\base_user.py", line 94, in set_password
+    self.password = make_password(raw_password)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 119, in make_password
+    return hasher.encode(password, salt)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 404, in encode
+    argon2 = self._load_library()
+  File "C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\contrib\auth\hashers.py", line 233, in _load_library
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Couldn't load 'Argon2PasswordHasher' algorithm library: No module named 'argon2'
+============================== warnings summary ===============================
+..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: pass_env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.9-final-0 _______________
+
+Coverage HTML written to dir htmlcov
+=========================== short test summary info ===========================
+FAILED apps/users/tests/test_models.py::TestUserModel::test_create_user - Val...
+FAILED apps/users/tests/test_models.py::TestUserModel::test_create_superuser
+FAILED apps/users/tests/test_models.py::TestUserModel::test_user_str - ValueE...
+FAILED apps/users/tests/test_models.py::TestUserModel::test_get_full_name - V...
+FAILED tests/test_users.py::TestUserModel::test_create_user - ValueError: Cou...
+FAILED tests/test_users.py::TestUserModel::test_create_superuser - ValueError...
+FAILED tests/test_users.py::TestUserModel::test_email_normalized - ValueError...
+FAILED tests/test_users.py::TestUserRegistration::test_register_success - Val...
+FAILED tests/test_users.py::TestUserLogin::test_login_nonexistent_user - Valu...
+ERROR apps/content/tests/test_models.py::TestContentModels::test_create_lesson
+ERROR apps/content/tests/test_models.py::TestContentModels::test_create_quiz
+ERROR apps/courses/tests/test_models.py::TestCourseModels::test_create_course
+ERROR apps/gamification/tests/test_models.py::TestGamificationModels::test_xp_addition
+ERROR apps/gamification/tests/test_models.py::TestGamificationModels::test_streak_update
+ERROR apps/notifications/tests/test_models.py::TestNotificationModels::test_create_notification
+ERROR tests/test_courses.py::TestCourseList::test_list_courses - ValueError: ...
+ERROR tests/test_courses.py::TestCourseList::test_list_excludes_unpublished
+ERROR tests/test_courses.py::TestCourseDetail::test_get_course_detail - Value...
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course - ...
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated
+ERROR tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+ERROR tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment
+ERROR tests/test_courses.py::TestCourseReview::test_submit_review_enrolled - ...
+ERROR tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+ERROR tests/test_users.py::TestUserModel::test_user_str - ValueError: Couldn'...
+ERROR tests/test_users.py::TestUserModel::test_user_full_name - ValueError: C...
+ERROR tests/test_users.py::TestUserModel::test_is_instructor_property - Value...
+ERROR tests/test_users.py::TestUserRegistration::test_register_duplicate_email
+ERROR tests/test_users.py::TestUserLogin::test_login_success - ValueError: Co...
+ERROR tests/test_users.py::TestUserLogin::test_login_wrong_password - ValueEr...
+ERROR tests/test_users.py::TestUserProfile::test_get_profile_authenticated - ...
+ERROR tests/test_users.py::TestUserProfile::test_update_profile - ValueError:...
+============= 9 failed, 7 passed, 1 warning, 23 errors in 13.00s ==============

@@ -1,0 +1,367 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart
+00:00 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System
+[Security] Development mode - using enhanced SSL/TLS validation
+DEBUG: MockApiClient matched login path: /auth/login
+DEBUG: MockApiClient POST path ignored: /auth/logout
+00:00 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+DEBUG: MockApiClient GET path: /user/progress
+00:00 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System
+00:00 +2 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System [E]
+  Bad state: GetIt: Object/factory with type GamificationRepository is not registered inside GetIt. 
+  (Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;
+  Did you forget to register it?)
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 115:43                     main.<fn>.<fn>
+  package:test_api                                                      Invoker._waitForOutstandingCallbacks.<fn>
+  package:get_it/get_it_impl.dart 14:19                                 throwIfNot
+  package:get_it/get_it_impl.dart 435:5                                 _GetItImplementation._findFactoryByNameAndType
+  package:get_it/get_it_impl.dart 463:29                                _GetItImplementation.get
+  package:get_it/get_it_impl.dart 554:12                                _GetItImplementation.call
+  package:learning_hub/core/providers/gamification_provider.dart 82:21  GamificationNotifier.build
+  package:riverpod/src/framework/container.dart 241:21                  ProviderContainer.read
+  test\comprehensive_functionality_test.dart 115:43                     main.<fn>.<fn>
+  
+00:00 +2 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+00:00 +3 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System
+00:00 +4 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:00 +5 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:00 +6 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:00 +7 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System
+00:01 +8 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System
+00:01 +9 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation
+00:01 +10 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management
+00:01 +11 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget
+00:02 +12 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget
+00:02 +13 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +14 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +14 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management
+DEBUG: MockApiClient GET path: /user/profile
+00:02 +15 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +16 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +16 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+00:02 +17 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +18 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +19 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +20 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:02 +21 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +22 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +23 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +23 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+DEBUG: MockApiClient GET path: /user/profile
+00:03 +24 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +25 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +25 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes
+Verifying Auth Flow...
+DEBUG: MockApiClient matched login path: /auth/login
+Login Successful: Test User
+Verifying Analytics...
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+Analytics logged.
+Sync items queued: 1
+Verification Complete!
+00:03 +26 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+00:03 +27 -1: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data
+[Security] Development mode - using enhanced SSL/TLS validation
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during layout:
+A RenderFlex overflowed by 140 pixels on the right.
+
+The relevant error-causing widget was:
+  Row
+  Row:file:///C:/Users/shiva/Desktop/windows_app/windows_app/lib/features/home/home_screen.dart:136:24
+
+The overflowing RenderFlex has an orientation of Axis.horizontal.
+The edge of the RenderFlex that is overflowing has been marked in the rendering with a yellow and
+black striped pattern. This is usually caused by the contents being too big for the RenderFlex.
+Consider applying a flex factor (e.g. using an Expanded widget) to force the children of the
+RenderFlex to fit within the available space instead of being sized to their natural size.
+This is considered an error condition because it indicates that there is content that cannot be
+seen. If the content is legitimately bigger than the available space, consider clipping it with a
+ClipRect widget before putting it in the flex, or using a scrollable container rather than a Flex,
+like a ListView.
+The specific RenderFlex in question is: RenderFlex#cf249 relayoutBoundary=up21 OVERFLOWING:
+  creator: Row ← _AppBarTitleBox ← Semantics ← DefaultTextStyle ← MediaQuery ← Builder ←
+    LayoutId-[<_ToolbarSlot.middle>] ← CustomMultiChildLayout ← NavigationToolbar ← DefaultTextStyle ←
+    IconTheme ← Builder ← ⋯
+  parentData: offset=Offset(0.0, 0.0) (can use size)
+  constraints: BoxConstraints(0.0<=w<=144.1, 0.0<=h<=Infinity)
+  size: Size(144.1, 36.0)
+  direction: horizontal
+  mainAxisAlignment: start
+  mainAxisSize: max
+  crossAxisAlignment: center
+  textDirection: ltr
+  verticalDirection: down
+  spacing: 0.0
+◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following StateError was thrown building _WelcomeSection(dirty, dependencies:
+[InheritedCupertinoTheme, UncontrolledProviderScope, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#0803a]], state: _ConsumerState#77fa0):
+Bad state: GetIt: Object/factory with type GamificationRepository is not registered inside GetIt.
+(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;
+Did you forget to register it?)
+
+The relevant error-causing widget was:
+  _WelcomeSection
+  _WelcomeSection:file:///C:/Users/shiva/Desktop/windows_app/windows_app/lib/features/home/home_screen.dart:278:21
+
+When the exception was thrown, this was the stack:
+#1      _ProviderStateSubscription.read (package:riverpod/src/framework/provider_base.dart:181:28)
+#2      ConsumerStatefulElement.watch (package:flutter_riverpod/src/consumer.dart:568:8)
+#3      _WelcomeSection.build (package:learning_hub/features/home/home_screen.dart:469:30)
+#4      _ConsumerState.build (package:flutter_riverpod/src/consumer.dart:476:19)
+#5      StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#6      ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#7      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#8      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#9      Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#10     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5802:5)
+#11     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5976:11)
+#12     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5796:5)
+...     Normal element mounting (41 frames)
+#53     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#54     Element.updateChild (package:flutter/src/widgets/framework.dart:4059:18)
+#55     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1068:37)
+#56     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1052:20)
+#57     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3101:19)
+#58     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1042:12)
+#59     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:372:23)
+#60     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:2894:17)
+#61     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1219:15)
+#62     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:2893:14)
+#63     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:360:5)
+#64     RenderSliverMultiBoxAdaptor.addInitialChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:460:5)
+#65     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:79:12)
+#66     RenderObject.layout (package:flutter/src/rendering/object.dart:2775:7)
+#67     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:673:13)
+#68     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1684:12)
+#69     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1575:20)
+#70     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2623:7)
+#71     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1170:18)
+#72     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1183:15)
+#73     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1508:27)
+#74     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#75     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#76     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#77     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#80     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#81     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#82     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#85     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#86     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#87     main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:113:18)
+#88     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+#89     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+#91     throwIfNot (package:get_it/get_it_impl.dart:14:19)
+#92     _GetItImplementation._findFactoryByNameAndType (package:get_it/get_it_impl.dart:435:5)
+#93     _GetItImplementation.get (package:get_it/get_it_impl.dart:463:29)
+#94     _GetItImplementation.call (package:get_it/get_it_impl.dart:554:12)
+#95     GamificationNotifier.build (package:learning_hub/core/providers/gamification_provider.dart:82:21)
+#96     ProviderContainer.listen (package:riverpod/src/framework/container.dart:280:21)
+#97     ConsumerStatefulElement.listen (package:flutter_riverpod/src/consumer.dart:607:28)
+#98     _HomeScreenState.build (package:learning_hub/features/home/home_screen.dart:102:9)
+#99     StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#100    ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#101    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#102    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#103    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#104    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5802:5)
+#105    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5976:11)
+#106    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5796:5)
+...     Normal element mounting (260 frames)
+#366    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#367    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7269:36)
+#368    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7285:32)
+...     Normal element mounting (471 frames)
+#839    _UncontrolledProviderScopeElement.mount (package:flutter_riverpod/src/framework.dart:315:11)
+...     Normal element mounting (9 frames)
+#848    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#849    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#850    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#851    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#852    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#853    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#854    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#855    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#856    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#857    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#858    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#859    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#860    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#861    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#862    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#863    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#864    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#865    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#866    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#867    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#868    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#869    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#870    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#871    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#872    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#873    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#874    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#875    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#876    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#877    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#878    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#879    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#880    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#881    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#882    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#883    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#884    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#885    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#886    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#887    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#888    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#889    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#890    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#891    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#892    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#893    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#894    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#895    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#896    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#897    StatelessElement.update (package:flutter/src/widgets/framework.dart:5898:5)
+#898    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#899    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#900    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#901    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#902    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#903    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#904    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1782:16)
+#905    RootElement.update (package:flutter/src/widgets/binding.dart:1760:5)
+#906    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1774:7)
+#907    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#908    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#909    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#910    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#911    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#912    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#913    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#914    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#915    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#918    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#919    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#920    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#923    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#924    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#925    main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:101:18)
+#926    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+#928    main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:101:5)
+#929    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+#931    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:189:25)
+#932    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:19)
+#934    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1048:5)
+#937    TestWidgetsFlutterBinding._runTest (package:flutter_test/src/binding.dart:1033:10)
+#938    AutomatedTestWidgetsFlutterBinding.runTest.<anonymous closure> (package:flutter_test/src/binding.dart:1564:24)
+#939    FakeAsync.run.<anonymous closure>.<anonymous closure> (package:fake_async/fake_async.dart:182:47)
+#944    withClock (package:clock/src/default.dart:52:10)
+#945    FakeAsync.run.<anonymous closure> (package:fake_async/fake_async.dart:182:15)
+#950    FakeAsync.run (package:fake_async/fake_async.dart:181:52)
+#951    AutomatedTestWidgetsFlutterBinding.runTest (package:flutter_test/src/binding.dart:1561:15)
+#952    testWidgets.<anonymous closure> (package:flutter_test/src/widget_tester.dart:184:24)
+#953    Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:242:19)
+#955    Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:241:9)
+#960    Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:240:13)
+#961    Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:282:17)
+#966    Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:278:5)
+#967    Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:418:17)
+#969    Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:416:11)
+#974    Invoker._onRun.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:407:9)
+#975    Invoker._guardIfGuarded (package:test_api/src/backend/invoker.dart:450:15)
+#976    Invoker._onRun.<anonymous closure> (package:test_api/src/backend/invoker.dart:406:7)
+#983    Invoker._onRun (package:test_api/src/backend/invoker.dart:405:11)
+#984    LiveTestController.run (package:test_api/src/backend/live_test_controller.dart:153:11)
+#985    RemoteListener._runLiveTest.<anonymous closure> (package:test_api/src/backend/remote_listener.dart:275:16)
+#990    RemoteListener._runLiveTest (package:test_api/src/backend/remote_listener.dart:274:5)
+#991    RemoteListener._serializeTest.<anonymous closure> (package:test_api/src/backend/remote_listener.dart:221:7)
+#1009   _GuaranteeSink.add (package:stream_channel/src/guarantee_channel.dart:125:12)
+#1010   new _MultiChannel.<anonymous closure> (package:stream_channel/src/multi_channel.dart:159:31)
+#1012   CastStreamSubscription._onData (dart:_internal/async_cast.dart:95:11)
+#1038   new _WebSocketImpl._fromSocket.<anonymous closure> (dart:_http/websocket_impl.dart:1252:27)
+#1044   _WebSocketProtocolTransformer._messageFrameEnd (dart:_http/websocket_impl.dart:348:23)
+#1045   _WebSocketProtocolTransformer.add (dart:_http/websocket_impl.dart:238:46)
+#1053   _Socket._onData (dart:io-patch/socket_patch.dart:2880:41)
+#1060   new _RawSocket.<anonymous closure> (dart:io-patch/socket_patch.dart:2315:31)
+#1061   _NativeSocket.issueReadEvent.issue (dart:io-patch/socket_patch.dart:1655:14)
+(elided 109 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _WidgetPredicateWidgetFinder:<Found 0 widgets with widget matching predicate: []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart:116:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart line 116
+The test description was:
+  Integration: Home Screen Test with mock data
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (3) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +27 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+00:04 +27 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data [E]
+  Test failed. See exception logs above.
+  The test description was: Integration: Home Screen Test with mock data
+  
+00:04 +27 -2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow
+00:04 +27 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow [E]
+  Bad state: Tried to use ThemeModeNotifier after `dispose` was called.
+  
+  Consider checking `mounted`.
+  
+  package:state_notifier/state_notifier.dart 175:9               StateNotifier._debugIsMounted.<fn>
+  package:state_notifier/state_notifier.dart 182:6               StateNotifier._debugIsMounted
+  package:state_notifier/state_notifier.dart 212:12              StateNotifier.state=
+  package:learning_hub/core/providers/theme_provider.dart 33:9   ThemeModeNotifier._loadThemeMode
+  ===== asynchronous gap ===========================
+  dart:async                                                     _CustomZone.registerUnaryCallback
+  package:learning_hub/core/providers/theme_provider.dart 22:19  ThemeModeNotifier._loadThemeMode
+  package:learning_hub/core/providers/theme_provider.dart 15:5   new ThemeModeNotifier
+  package:learning_hub/core/providers/theme_provider.dart 9:10   themeModeProvider.<fn>
+  package:riverpod/src/state_notifier_provider/base.dart 119:21  StateNotifierProvider._create
+  package:riverpod/src/state_notifier_provider/base.dart 172:64  StateNotifierProviderElement.create.<fn>
+  package:riverpod/src/result.dart 21:28                         Result.guard
+  package:riverpod/src/state_notifier_provider/base.dart 172:43  StateNotifierProviderElement.create
+  package:riverpod/src/framework/element.dart 426:7              ProviderElementBase.buildState
+  package:riverpod/src/framework/element.dart 228:5              ProviderElementBase.mount
+  package:riverpod/src/framework/container.dart 47:11            _StateReader._create
+  package:riverpod/src/framework/container.dart 35:52            _StateReader.getElement
+  package:riverpod/src/framework/container.dart 440:40           ProviderContainer.readProviderElement.<fn>
+  package:riverpod/src/framework/container.dart 475:8            ProviderContainer.readProviderElement
+  package:riverpod/src/framework/provider_base.dart 105:26       ProviderBase.read
+  package:riverpod/src/framework/container.dart 241:21           ProviderContainer.read
+  test\comprehensive_functionality_test.dart 438:38              main.<fn>.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                                     _CustomZone.registerUnaryCallback
+  test\comprehensive_functionality_test.dart 433:26              main.<fn>.<fn>
+  
+00:06 +27 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)
+00:06 +27 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing
+00:06 +28 -3: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)
+00:06 +28 -3: Some tests failed.

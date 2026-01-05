@@ -1,0 +1,195 @@
+Analyzing windows_app...                                        
+
+   info - Statement should be on a separate line - lib\core\providers\ai_tutor_provider.dart:104:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\gamification_provider.dart:156:52 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:89:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:98:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:115:29 - always_put_control_body_on_new_line
+warning - The value of the local variable 'isCorrect' isn't used - lib\core\providers\quiz_provider.dart:130:15 - unused_local_variable
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:580:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:591:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:157:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:241:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:269:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:282:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:323:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\cart_service.dart:56:31 - always_put_control_body_on_new_line
+warning - The value of the field '_userInteractionsKey' isn't used - lib\core\services\content_recommendation_service.dart:14:23 - unused_field
+warning - The value of the field '_userVectorsKey' isn't used - lib\core\services\content_recommendation_service.dart:15:23 - unused_field
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:88:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:125:34 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:165:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:166:43 - always_put_control_body_on_new_line
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:171:11 - unused_local_variable
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:176:11 - unused_local_variable
+   info - The private field _cache could be 'final' - lib\core\services\course_service.dart:65:16 - prefer_final_fields
+   info - The private field _sync could be 'final' - lib\core\services\course_service.dart:66:15 - prefer_final_fields
+   info - Statement should be on a separate line - lib\core\services\course_service.dart:244:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:66:28 - always_put_control_body_on_new_line
+warning - The value of the field '_defaultCacheDuration' isn't used - lib\core\services\feature_flags_service.dart:180:25 - unused_field
+warning - The value of the field '_lastFetch' isn't used - lib\core\services\feature_flags_service.dart:185:13 - unused_field
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:193:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:394:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:397:27 - always_put_control_body_on_new_line
+warning - The declaration '_saveToCache' isn't referenced - lib\core\services\feature_flags_service.dart:516:16 - unused_element
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:180:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:187:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:326:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:549:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:588:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:678:24 - always_put_control_body_on_new_line
+  error - The named parameter 'description' isn't defined - lib\core\services\learning_path_service.dart:689:7 - undefined_named_parameter
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:725:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:736:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:754:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:765:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:785:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:798:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:49:25 - always_put_control_body_on_new_line
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:141:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:161:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:196:18 - avoid_slow_async_io
+   info - Statement should be on a separate line - lib\core\services\peer_review_service.dart:105:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\peer_review_service.dart:143:22 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:16:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:17:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:71:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:91:66 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:93:60 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:403:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:405:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:407:51 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:651:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:652:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:653:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:718:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:729:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:749:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:766:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:501:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:513:58 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:519:42 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\ui\web_shell.dart:92:53 - deprecated_member_use
+   info - Statement should be on a separate line - lib\core\ui\web_shell.dart:118:39 - always_put_control_body_on_new_line
+   info - Statements in an if should be enclosed in a block - lib\core\ui\web_shell.dart:120:7 - curly_braces_in_flow_control_structures
+   info - Statement should be on a separate line - lib\core\ui\web_shell.dart:122:45 - always_put_control_body_on_new_line
+   info - Statements in an if should be enclosed in a block - lib\core\ui\web_shell.dart:122:45 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\core\ui\web_shell.dart:124:7 - curly_braces_in_flow_control_structures
+   info - Use interpolation to compose strings and values - lib\features\ai_tutor\ai_tutor_screen.dart:342:19 - prefer_interpolation_to_compose_strings
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\cart\cart_screen.dart:127:33 - deprecated_member_use
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\features\certificates\certificates_screen.dart:530:5 - deprecated_member_use
+   info - 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\features\certificates\certificates_screen.dart:530:11 - deprecated_member_use
+  error - Expected an identifier - lib\features\course\course_detail_screen.dart:494:27 - missing_identifier
+  error - Expected to find ')' - lib\features\course\course_detail_screen.dart:494:27 - expected_token
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\features\course\course_detail_screen.dart:928:40 - deprecated_member_use
+  error - Target of URI doesn't exist: '../models/achievement_model.dart' - lib\features\gamification\data\datasources\gamification_data_sources.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../models/leaderboard_entry_model.dart' - lib\features\gamification\data\datasources\gamification_data_sources.dart:2:8 - uri_does_not_exist
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:7:15 - non_type_as_type_argument
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:8:15 - non_type_as_type_argument
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:16:15 - non_type_as_type_argument
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:17:39 - non_type_as_type_argument
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:18:38 - non_type_as_type_argument
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_data_sources.dart:19:15 - non_type_as_type_argument
+  error - Target of URI doesn't exist: '../models/achievement_model.dart' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../models/leaderboard_entry_model.dart' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:4:8 - uri_does_not_exist
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:23:15 - non_type_as_type_argument
+  error - Undefined name 'AchievementModel' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:27:23 - undefined_identifier
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:34:39 - non_type_as_type_argument
+  error - The method 'toJson' can't be unconditionally invoked because the receiver can be 'null' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:35:44 - unchecked_use_of_nullable_value
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:40:15 - non_type_as_type_argument
+  error - Undefined name 'LeaderboardEntryModel' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:45:15 - undefined_identifier
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:52:38 - non_type_as_type_argument
+  error - The method 'toJson' can't be unconditionally invoked because the receiver can be 'null' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:53:43 - unchecked_use_of_nullable_value
+  error - Target of URI doesn't exist: '../models/achievement_model.dart' - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:2:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../models/leaderboard_entry_model.dart' - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:3:8 - uri_does_not_exist
+  error - The name 'AchievementModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:22:15 - non_type_as_type_argument
+  error - Undefined name 'AchievementModel' - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:30:23 - undefined_identifier
+  error - The name 'LeaderboardEntryModel' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:38:15 - non_type_as_type_argument
+  error - Undefined name 'LeaderboardEntryModel' - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:47:23 - undefined_identifier
+   info - Statement should be on a separate line - lib\features\gamification\data\models\gamification_models.dart:57:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\gamification\data\models\gamification_models.dart:66:28 - always_put_control_body_on_new_line
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:28:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:35:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:48:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:55:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:68:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:75:21 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:88:20 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:98:20 - missing_required_argument
+  error - The named parameter 'message' is required, but there's no corresponding argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:107:19 - missing_required_argument
+  error - Target of URI doesn't exist: 'entities/achievement.dart' - lib\features\gamification\domain\repositories\gamification_repository.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'entities/leaderboard_entry.dart' - lib\features\gamification\domain\repositories\gamification_repository.dart:4:8 - uri_does_not_exist
+  error - The name 'Achievement' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:8:31 - non_type_as_type_argument
+  error - The name 'LeaderboardEntry' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:9:31 - non_type_as_type_argument
+  error - Directives must appear before any declarations - lib\features\home\home_screen.dart:73:1 - directive_after_declaration
+   info - The imported package 'confetti' isn't a dependency of the importing package - lib\features\home\home_screen.dart:73:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:confetti/confetti.dart' - lib\features\home\home_screen.dart:73:8 - uri_does_not_exist
+  error - Undefined class 'ConfettiController' - lib\features\home\home_screen.dart:84:8 - undefined_class
+  error - The method 'ConfettiController' isn't defined for the type '_HomeScreenState' - lib\features\home\home_screen.dart:89:27 - undefined_method
+  error - The method 'ConfettiWidget' isn't defined for the type '_HomeScreenState' - lib\features\home\home_screen.dart:373:18 - undefined_method
+  error - Undefined name 'BlastDirectionality' - lib\features\home\home_screen.dart:375:34 - undefined_identifier
+  error - The named parameter 'arguments' isn't defined - lib\features\home\home_screen.dart:944:27 - undefined_named_parameter
+  error - Undefined name 'course' - lib\features\home\home_screen.dart:944:68 - undefined_identifier
+   info - Statement should be on a separate line - lib\features\notes\logic\notes_provider.dart:13:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\notes\logic\notes_provider.dart:50:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\features\notes\presentation\notes_tab.dart:41:23 - always_put_control_body_on_new_line
+warning - The value of the local variable 'normalized' isn't used - lib\shared\widgets\activity_heatmap.dart:85:11 - unused_local_variable
+   info - Statement should be on a separate line - lib\shared\widgets\activity_heatmap.dart:118:25 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\activity_heatmap.dart:121:25 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\premium_loading_indicator.dart:27:41 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\shared\widgets\premium_loading_indicator.dart:46:31 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\premium_loading_indicator.dart:47:54 - deprecated_member_use
+  error - Target of URI doesn't exist: 'package:learning_hub/core/services/gamification_service.dart' - test\comprehensive_functionality_test.dart:13:8 - uri_does_not_exist
+  error - The function 'GamificationService' isn't defined - test\comprehensive_functionality_test.dart:115:35 - undefined_function
+  error - Undefined name 'GamificationService' - test\comprehensive_functionality_test.dart:121:47 - undefined_identifier
+   info - The imported package 'mockito' isn't a dependency of the importing package - test\features\gamification\gamification_logic_test.dart:8:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:mockito/annotations.dart' - test\features\gamification\gamification_logic_test.dart:8:8 - uri_does_not_exist
+   info - The imported package 'mockito' isn't a dependency of the importing package - test\features\gamification\gamification_logic_test.dart:9:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:mockito/mockito.dart' - test\features\gamification\gamification_logic_test.dart:9:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'gamification_logic_test.mocks.dart' - test\features\gamification\gamification_logic_test.dart:11:8 - uri_does_not_exist
+  error - Undefined name 'GenerateMocks' used as an annotation - test\features\gamification\gamification_logic_test.dart:13:1 - undefined_annotation
+  error - Undefined class 'MockNetworkInfo' - test\features\gamification\gamification_logic_test.dart:20:8 - undefined_class
+  error - Undefined class 'MockGamificationRemoteDataSource' - test\features\gamification\gamification_logic_test.dart:21:8 - undefined_class
+  error - Undefined class 'MockGamificationLocalDataSource' - test\features\gamification\gamification_logic_test.dart:22:8 - undefined_class
+  error - The function 'MockNetworkInfo' isn't defined - test\features\gamification\gamification_logic_test.dart:25:23 - undefined_function
+  error - The function 'MockGamificationRemoteDataSource' isn't defined - test\features\gamification\gamification_logic_test.dart:26:28 - undefined_function
+  error - The function 'MockGamificationLocalDataSource' isn't defined - test\features\gamification\gamification_logic_test.dart:27:27 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:40:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:41:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:42:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:49:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:50:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:55:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:56:7 - undefined_function
+  error - The function 'verifyZeroInteractions' isn't defined - test\features\gamification\gamification_logic_test.dart:63:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:64:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:83:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:84:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:86:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:93:7 - undefined_function
+  error - Target of URI doesn't exist: 'package:learning_hub/core/services/gamification_service.dart' - test\verification_test.dart:6:8 - uri_does_not_exist
+  error - The function 'GamificationService' isn't defined - test\verification_test.dart:145:33 - undefined_function
+warning - Unused import: 'dart:convert' - tool\conductor.dart:2:8 - unused_import
+   info - The referenced name isn't visible in scope - tool\conductor.dart:6:38 - comment_references
+   info - Don't invoke 'print' in production code - tool\conductor.dart:9:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:35:7 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:41:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:42:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:43:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:44:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:45:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:46:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:50:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:53:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:55:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:56:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:58:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:62:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:68:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:70:5 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:72:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:76:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:84:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:86:3 - avoid_print
+   info - Don't invoke 'print' in production code - tool\conductor.dart:87:3 - avoid_print
+

@@ -1,0 +1,7 @@
+﻿apps\courses\services.py:7:1: F401 '.models.Category' imported but unused
+apps\courses\services.py:19:89: E501 line too long (97 > 88 characters)
+apps\payments\models.py:70:89: E501 line too long (99 > 88 characters)
+apps\payments\views.py:4:1: F401 'rest_framework.status' imported but unused
+apps\payments\views.py:161:89: E501 line too long (93 > 88 characters)
+apps\users\services.py:17:89: E501 line too long (89 > 88 characters)
+apps\users\services.py:27:89: E501 line too long (103 > 88 characters)

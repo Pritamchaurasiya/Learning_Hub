@@ -1,0 +1,35 @@
+{
+    "@@locale": "en",
+    "appTitle": "Learning Hub",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "activeCourses": "Active Courses",
+    "@activeCourses": {
+        "description": "Section header for active courses"
+    },
+    "continueLearning": "Continue Learning",
+    "@continueLearning": {
+        "description": "Button text to continue learning"
+    },
+    "aiTutor": "AI Tutor",
+    "@aiTutor": {
+        "description": "Label for AI Tutor feature"
+    },
+    "leaderboard": "Leaderboard",
+    "@leaderboard": {
+        "description": "Label for Leaderboard feature"
+    },
+    "profile": "Profile",
+    "@profile": {
+        "description": "Label for Profile feature"
+    },
+    "searchHint": "What do you want to learn?",
+    "logIn": "Log In",
+    "joinFree": "Join for Free",
+    "featuredCourses": "Featured Courses",
+    "browseCategories": "Browse Categories",
+    "trendingNow": "Trending Now 🔥",
+    "recommendedForYou": "Recommended for You",
+    "upcomingLiveClasses": "Upcoming Live Classes"
+}

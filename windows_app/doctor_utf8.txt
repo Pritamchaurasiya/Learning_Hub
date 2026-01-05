@@ -1,0 +1,43 @@
+﻿[ΓêÜ] Flutter (Channel stable, 3.27.0, on Microsoft Windows [Version 10.0.26200.7462], locale en-US)
+    ΓÇó Flutter version 3.27.0 on channel stable at C:\src\flutter
+    ΓÇó Upstream repository https://github.com/flutter/flutter.git
+    ΓÇó Framework revision 8495dee1fd (1 year, 1 month ago), 2024-12-10 14:23:39 -0800
+    ΓÇó Engine revision 83bacfc525
+    ΓÇó Dart version 3.6.0
+    ΓÇó DevTools version 2.40.2
+
+[ΓêÜ] Windows Version (Installed version of Windows is version 10 or higher)
+
+[ΓêÜ] Android toolchain - develop for Android devices (Android SDK version 36.1.0)
+    ΓÇó Android SDK at C:\Users\shiva\AppData\Local\Android\Sdk
+    ΓÇó Platform android-36, build-tools 36.1.0
+    ΓÇó Java binary at: C:\Program Files\Android\Android Studio1\jbr\bin\java
+    ΓÇó Java version OpenJDK Runtime Environment (build 21.0.8+-14196175-b1038.72)
+    ΓÇó All Android licenses accepted.
+
+[ΓêÜ] Chrome - develop for the web
+    ΓÇó Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
+
+[ΓêÜ] Visual Studio - develop Windows apps (Visual Studio Professional 2022 17.14.23)
+    ΓÇó Visual Studio at C:\Program Files\Microsoft Visual Studio\2022\Professional
+    ΓÇó Visual Studio Professional 2022 version 17.14.36811.4
+    ΓÇó Windows 10 SDK version 10.0.26100.0
+
+[ΓêÜ] Android Studio (version 2025.2.2)
+    ΓÇó Android Studio at C:\Program Files\Android\Android Studio1
+    ΓÇó Flutter plugin can be installed from:
+       https://plugins.jetbrains.com/plugin/9212-flutter
+    ΓÇó Dart plugin can be installed from:
+       https://plugins.jetbrains.com/plugin/6351-dart
+    ΓÇó android-studio-dir = C:\Program Files\Android\Android Studio1
+    ΓÇó Java version OpenJDK Runtime Environment (build 21.0.8+-14196175-b1038.72)
+
+[ΓêÜ] Connected device (3 available)
+    ΓÇó Windows (desktop) ΓÇó windows ΓÇó windows-x64    ΓÇó Microsoft Windows [Version 10.0.26200.7462]
+    ΓÇó Chrome (web)      ΓÇó chrome  ΓÇó web-javascript ΓÇó Google Chrome 143.0.7499.170
+    ΓÇó Edge (web)        ΓÇó edge    ΓÇó web-javascript ΓÇó Microsoft Edge 143.0.3650.96
+
+[ΓêÜ] Network resources
+    ΓÇó All expected network resources are available.
+
+ΓÇó No issues found!

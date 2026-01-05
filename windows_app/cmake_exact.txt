@@ -1,0 +1,58 @@
+﻿
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:88:               }
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:89:             }
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:90:           ]
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:91:[   +6 ms] 
+Building Windows 
+application...
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:92:[  +24 ms] <- 
+compile package:test_env_a
+pp/main.dart
+> C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:93:[  +76 ms] 
+executing: C:\Program 
+Files\Microsoft Visual Stu
+dio\2022\Professional\Comm
+on7\IDE\CommonExtensions\M
+icrosoft\CMake\CMake\bin\c
+make.exe -S C:\Users\shiva
+\Desktop\test_env_app\wind
+ows -B C:\Users\shiva\Desk
+top\test_env_app\build\win
+dows\x64 -G Visual Studio 
+17 2022 -A x64 -DFLUTTER_T
+ARGET_PLATFORM=windows-x64
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:94:[ +184 ms] -- 
+Selecting Windows SDK 
+version 10.0.26100.0 to 
+target Windows 10.0.26200.
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:95:[+4534 ms] -- The 
+CXX compiler 
+identification is unknown
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:96:flutter : [  +83 
+ms] 
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:97:CMake Error at 
+  C:\Users\shiva\Desktop\t
+est_env_app\test_build_log
+.txt:98:CMakeLists.txt:3 
+
+

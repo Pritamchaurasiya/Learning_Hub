@@ -1,0 +1,9 @@
+apps\notifications\tests\test_models.py:11: error: Too many arguments for "create_user"  [call-arg]
+apps\courses\services.py:38: error: Returning Any from function declared to return "Enrollment"  [no-any-return]
+apps\courses\services.py:64: error: Returning Any from function declared to return "Review"  [no-any-return]
+apps\content\services.py:36: error: Returning Any from function declared to return "LessonProgress"  [no-any-return]
+apps\content\services.py:66: error: Returning Any from function declared to return "QuizAttempt"  [no-any-return]
+apps\content\tests\test_models.py:12: error: Too many arguments for "create_user"  [call-arg]
+apps\users\services.py:21: error: Missing return statement  [empty-body]
+config\settings\development.py:24: error: Unsupported target for indexed assignment ("object")  [index]
+Found 8 errors in 6 files (checked 84 source files)

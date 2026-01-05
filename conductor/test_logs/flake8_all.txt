@@ -1,0 +1,26 @@
+﻿apps\content\services.py:6:1: E303 too many blank lines (3)
+apps\content\services.py:28:1: W293 blank line contains whitespace
+apps\content\services.py:43:1: W293 blank line contains whitespace
+apps\content\services.py:47:31: W291 trailing whitespace
+apps\content\services.py:48:27: W291 trailing whitespace
+apps\content\services.py:49:31: W291 trailing whitespace
+apps\content\services.py:52:1: W293 blank line contains whitespace
+apps\content\services.py:83:1: W293 blank line contains whitespace
+apps\content\services.py:87:39: W291 trailing whitespace
+apps\content\services.py:88:27: W291 trailing whitespace
+apps\content\services.py:89:27: W291 trailing whitespace
+apps\content\services.py:94:39: W291 trailing whitespace
+apps\content\services.py:95:27: W291 trailing whitespace
+apps\content\services.py:96:27: W291 trailing whitespace
+apps\content\services.py:99:1: W293 blank line contains whitespace
+apps\courses\services.py:7:1: F401 'apps.users.models.User' imported but unused
+apps\courses\services.py:42:31: W291 trailing whitespace
+apps\courses\services.py:43:27: W291 trailing whitespace
+apps\courses\services.py:44:31: W291 trailing whitespace
+apps\gamification\apps.py:12:9: F401 'apps.gamification.receivers' imported but unused
+apps\gamification\receivers.py:8:1: F811 redefinition of unused 'transaction' from line 6
+apps\gamification\receivers.py:31:1: W293 blank line contains whitespace
+apps\gamification\receivers.py:44:1: W293 blank line contains whitespace
+apps\notifications\services.py:7:1: E302 expected 2 blank lines, found 1
+apps\notifications\services.py:9:89: E501 line too long (92 > 88 characters)
+25

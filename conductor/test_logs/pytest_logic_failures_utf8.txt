@@ -1,0 +1,127 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0
+django: version: 5.0.1, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: django-4.11.1
+collected 26 items
+
+tests\test_courses.py FF....F..F                                         [ 38%]
+tests\test_users.py .....F..........                                     [100%]
+
+================================== FAILURES ===================================
+______________________ TestCourseList.test_list_courses _______________________
+
+self = <tests.test_courses.TestCourseList object at 0x00000256EFCB1F90>
+api_client = <rest_framework.test.APIClient object at 0x00000256EFD1F230>
+course = <Course: Python Basics>
+
+    def test_list_courses(self, api_client, course):
+        """Test listing published courses."""
+        response = api_client.get("/api/v1/courses/")
+    
+        assert response.status_code == status.HTTP_200_OK
+>       assert len(response.data["results"]) >= 1
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'results'
+
+tests\test_courses.py:59: KeyError
+________________ TestCourseList.test_list_excludes_unpublished ________________
+
+self = <tests.test_courses.TestCourseList object at 0x00000256EFCB2490>
+api_client = <rest_framework.test.APIClient object at 0x00000256F039F750>
+instructor = <User: instructor@example.com>, category = <Category: Programming>
+
+    def test_list_excludes_unpublished(self, api_client, instructor, category):
+        """Test unpublished courses are excluded."""
+        Course.objects.create(
+            title="Draft Course",
+            slug="draft-course",
+            description="Not ready",
+            short_description="Draft",
+            instructor=instructor,
+            category=category,
+            is_published=False,
+        )
+    
+        response = api_client.get("/api/v1/courses/")
+    
+>       for course_data in response.data["results"]:
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'results'
+
+tests\test_courses.py:75: KeyError
+________ TestCourseEnrollment.test_enroll_paid_course_without_payment _________
+
+self = <tests.test_courses.TestCourseEnrollment object at 0x00000256EFC1AD70>
+authenticated_client = <rest_framework.test.APIClient object at 0x00000256F0342BE0>
+paid_course = <Course: Advanced Python>
+
+    def test_enroll_paid_course_without_payment(
+        self, authenticated_client, paid_course
+    ):
+        """Test paid course enrollment requires payment."""
+        response = authenticated_client.post(
+            f"/api/v1/courses/{paid_course.slug}/enroll/"
+        )
+    
+>       assert response.status_code == status.HTTP_402_PAYMENT_REQUIRED
+E       assert 400 == 402
+E        +  where 400 = <Response status_code=400, "application/json">.status_code
+E        +  and   402 = status.HTTP_402_PAYMENT_REQUIRED
+
+tests\test_courses.py:122: AssertionError
+---------------------------- Captured stderr call -----------------------------
+WARNING 2026-01-05 17:43:11,084 log 23212 5244 Bad Request: /api/v1/courses/advanced-python/enroll/
+______________ TestCourseReview.test_submit_review_not_enrolled _______________
+
+self = <tests.test_courses.TestCourseReview object at 0x00000256EFCB2990>
+authenticated_client = <rest_framework.test.APIClient object at 0x00000256F04FCF50>
+course = <Course: Python Basics>
+
+    def test_submit_review_not_enrolled(self, authenticated_client, course):
+        """Test review fails when not enrolled."""
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+        response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+    
+>       assert response.status_code == status.HTTP_403_FORBIDDEN
+E       assert 400 == 403
+E        +  where 400 = <Response status_code=400, "application/json">.status_code
+E        +  and   403 = status.HTTP_403_FORBIDDEN
+
+tests\test_courses.py:155: AssertionError
+---------------------------- Captured stderr call -----------------------------
+WARNING 2026-01-05 17:43:11,798 log 23212 5244 Bad Request: /api/v1/courses/python-basics/review/
+_____________________ TestUserModel.test_email_normalized _____________________
+
+self = <tests.test_users.TestUserModel object at 0x00000256EFCD89E0>
+create_user = <function create_user.<locals>._create_user at 0x00000256F04DAC00>
+
+    def test_email_normalized(self, create_user):
+        """Test email is normalized to lowercase."""
+        user = create_user(email="Test@EXAMPLE.COM", username="testcase")
+>       assert user.email == "test@example.com"
+E       AssertionError: assert 'Test@example.com' == 'test@example.com'
+E         
+E         - test@example.com
+E         ? ^
+E         + Test@example.com
+E         ? ^
+
+tests\test_users.py:61: AssertionError
+============================== warnings summary ===============================
+venv\Lib\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: pass_env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_courses.py::TestCourseList::test_list_courses - KeyError: '...
+FAILED tests/test_courses.py::TestCourseList::test_list_excludes_unpublished
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+FAILED tests/test_users.py::TestUserModel::test_email_normalized - AssertionE...
+=================== 5 failed, 21 passed, 1 warning in 8.16s ===================

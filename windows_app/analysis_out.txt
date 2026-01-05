@@ -1,0 +1,4 @@
+[warning] The value of the field '_streamUrl' isn't used (C:\Users\shiva\Desktop\windows_app\windows_app\lib\core\services\ai\gemini_client.dart:10:23)
+[warning] Dead code (C:\Users\shiva\Desktop\windows_app\windows_app\lib\core\services\ai_tutor_service.dart:749:5)
+[error] Missing concrete implementation of 'abstract class LLMClient.streamChat' (C:\Users\shiva\Desktop\windows_app\windows_app\lib\core\services\ai_tutor_service.dart:718:7)
+[warning] The declaration 'streamChat' isn't referenced (C:\Users\shiva\Desktop\windows_app\windows_app\lib\core\services\ai_tutor_service.dart:750:20)

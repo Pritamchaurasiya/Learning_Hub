@@ -1,0 +1,26 @@
+Analyzing my_flutter_app...                                     
+
+warning - 'invariant_booleans' was removed in Dart '3.0.0' - analysis_options.yaml:29:7 - removed_lint
+warning - 'iterable_contains_unrelated_type' was removed in Dart '3.3.0' - analysis_options.yaml:30:7 - removed_lint
+warning - 'list_remove_unrelated_type' was removed in Dart '3.3.0' - analysis_options.yaml:31:7 - removed_lint
+warning - 'always_require_non_null_named_parameters' was removed in Dart '3.3.0' - analysis_options.yaml:46:7 - removed_lint
+warning - 'prefer_equal_for_default_values' was removed in Dart '3.0.0' - analysis_options.yaml:114:7 - removed_lint
+   info - Method invocation or property access on a 'dynamic' target - lib\src\core\network\api_client.dart:98:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\core\network\api_client.dart:99:13 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\core\network\api_client.dart:102:20 - argument_type_not_assignable
+   info - Statement should be on a separate line - lib\src\core\router\app_router.dart:55:40 - always_put_control_body_on_new_line
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\features\auth\data\auth_repository.dart:30:34 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\auth\data\auth_repository.dart:34:25 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\auth\data\auth_repository.dart:34:33 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\features\auth\data\auth_repository.dart:59:34 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\auth\data\auth_repository.dart:63:25 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\auth\data\auth_repository.dart:63:33 - argument_type_not_assignable
+warning - The value of the local variable 'prefs' isn't used - lib\src\features\auth\data\auth_repository.dart:86:11 - unused_local_variable
+   info - The line length exceeds the 80-character limit - lib\src\features\auth\presentation\login_screen.dart:36:81 - lines_longer_than_80_chars
+warning - Unnecessary cast - lib\src\features\courses\data\course_repository.dart:21:28 - unnecessary_cast
+   info - Sort directive sections alphabetically - lib\src\features\gamification\data\gamification_repository.dart:3:1 - directives_ordering
+   info - Place 'dart:' imports before other imports - lib\src\features\gamification\presentation\gamification_controller.dart:4:1 - directives_ordering
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\gamification\presentation\widgets\gamification_widgets.dart:110:11 - argument_type_not_assignable
+   info - Sort directive sections alphabetically - test\widget_test.dart:6:1 - directives_ordering
+
+22 issues found. (ran in 8.8s)

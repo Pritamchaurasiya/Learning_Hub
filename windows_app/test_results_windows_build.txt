@@ -1,0 +1,242 @@
+﻿
+00:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:03 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:04 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:05 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:06 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:07 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:08 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:09 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:10 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:11 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:12 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:13 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:14 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:15 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:16 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:17 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:18 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:19 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:20 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:21 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:22 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:23 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:24 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:25 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:26 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:27 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:28 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:29 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:30 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:31 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:32 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:33 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:34 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:35 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:36 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:37 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:38 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:39 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:40 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:41 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:42 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:43 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:44 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:45 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:46 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:47 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:48 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:49 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:50 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:51 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:52 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:53 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:54 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:55 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:56 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:57 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:58 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+00:59 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:00 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:01 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:02 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:03 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:04 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:05 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:06 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:07 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:08 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:09 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:10 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:11 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:12 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:13 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:14 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:15 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:16 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:17 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:18 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:19 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:20 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:21 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:22 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:26 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:29 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:30 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:31 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:32 +0: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart                                                                                            
+01:33 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+01:33 +0: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+[Security] SSL Pinning active for: learninghub.com (Pin: 7a:12:f3:84:cc:21:44:8c:12:35 ...)
+DEBUG: MockApiClient matched login path: /auth/login
+
+01:33 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 1. Authentication System                          
+01:33 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+01:33 +1: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+DEBUG: MockApiClient POST path ignored: /courses/test-course-id/enroll
+DEBUG: MockApiClient GET path: /user/progress
+
+01:33 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 2. Course Management System                       
+01:33 +2: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System                            
+01:33 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 3. Gamification System                            
+01:33 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+01:33 +3: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+
+01:33 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 4. Analytics & Progress Tracking                  
+01:33 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+01:34 +4: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+01:34 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 5. Notification System                            
+01:34 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+01:34 +5: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+[AiTutorService] No Gemini API Key found. Using Mock AI.
+
+01:34 +6: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 6. AI Tutor System                                
+01:34 +6: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System                                   
+01:34 +7: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 7. Theme System                                   
+01:34 +7: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation                    
+01:34 +8: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 8. Security & Input Validation                    
+01:34 +8: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management                               
+01:35 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 9. Cache Management                               
+01:35 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget              
+01:36 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget              
+01:37 +9: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget              
+01:37 +10: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 10. App Initialization & Main Widget             
+01:37 +10: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation                 
+01:37 +11: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 11. Responsive Design Validation                 
+01:37 +11: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+01:37 +11: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+DEBUG: MockApiClient GET path: /user/profile
+
+01:37 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 12. Provider State Management                    
+01:37 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing                         
+01:38 +12: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing                         
+01:38 +13: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 13. Navigation & Routing                         
+01:38 +13: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+01:38 +13: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+DEBUG: MockApiClient GET path: /test
+DEBUG: MockApiClient GET path: /error
+
+01:38 +14: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 14. Error Handling & Resilience                  
+01:38 +14: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management              
+01:38 +15: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 15. Performance & Memory Management              
+01:38 +15: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features                       
+01:38 +16: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 16. Accessibility Features                       
+01:38 +16: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality                        
+01:38 +17: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 17. Offline Functionality                        
+01:38 +17: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization                  
+01:38 +18: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 18. Data Models & Serialization                  
+01:38 +18: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility                 
+01:38 +19: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 19. Cross-Platform Compatibility                 
+01:38 +19: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features                            
+01:39 +20: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 20. Security Features                            
+01:39 +20: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+01:39 +20: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+DEBUG: MockApiClient GET path: /user/profile
+
+01:39 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+01:40 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+01:41 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/comprehensive_functionality_test.dart: Learning Hub - Comprehensive Functionality Test 21. Integration & End-to-End Workflow            
+01:41 +21: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart                                                                                          
+01:41 +21: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Exact match returns high score                                              
+01:41 +22: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Exact match returns high score                                              
+01:41 +22: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Fuzzy match finds typo                                                      
+01:41 +23: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Fuzzy match finds typo                                                      
+01:41 +23: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Instructor search works                                                     
+01:41 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Instructor search works                                                     
+01:41 +24: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Filtering by category works                                                 
+01:41 +25: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Filtering by category works                                                 
+01:41 +25: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:41 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:42 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:43 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:44 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:45 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:46 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/core/services/search_service_test.dart: SearchService Tests Search suggestions work                                                     
+01:46 +26: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart                                                                              
+01:46 +26: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return remote data when network is connected                       
+01:46 +27: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return remote data when network is connected                       
+01:46 +27: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return local data when network is disconnected                     
+01:46 +28: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getUserXP should return local data when network is disconnected                     
+01:46 +28: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected                    
+01:46 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected                    
+01:47 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected                    
+01:48 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected                    
+01:49 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/features/gamification/gamification_logic_test.dart: getAchievements should return remote achievements when connected                    
+01:49 +29: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart                                                                                                           
+01:49 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: (setUpAll)                                                                                                       
+01:50 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: (setUpAll)                                                                                                       
+01:50 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:51 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:52 +29: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:52 +30: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:53 +30: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:54 +30: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:55 +30: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:55 +31: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:55 +32: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:56 +32: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+01:56 +32: C:/Users/shiva/Desktop/windows_app/windows_app/test/home_screen_test.dart: Integration: Home Screen Test with mock data                                                                     
+[Security] SSL Pinning active for: learninghub.com (Pin: 7a:12:f3:84:cc:21:44:8c:12:35 ...)
+
+01:56 +33: C:/Users/shiva/Desktop/windows_app/windows_app/test/simple_widget_test.dart: App renders with basic MaterialApp                                                                             
+01:56 +34: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+01:56 +34: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+Verifying Auth Flow...
+DEBUG: MockApiClient matched login path: /auth/login
+Login Successful: Test User
+Verifying Analytics...
+DEBUG: MockApiClient GET path: /analytics/summary
+DEBUG: MockApiClient POST path ignored: /analytics/session
+Analytics logged.
+Sync items queued: 1
+Verification Complete!
+
+01:56 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+01:57 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+01:58 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+01:59 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:00 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:01 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:02 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:03 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:04 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:05 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:06 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:07 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:08 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:09 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:10 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:11 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:12 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:13 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/verification_test.dart: Full Backend Flow Verification with Fakes                                                                       
+02:13 +35: loading C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart                                                                                                                
+02:13 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (setUpAll)                                                                                                            
+02:13 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                                
+02:14 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                                
+02:15 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                                
+02:16 +35: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                                
+02:16 +36: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: App smoke test - renders the main app without crashing                                                                
+02:16 +36: C:/Users/shiva/Desktop/windows_app/windows_app/test/widget_test.dart: (tearDownAll)                                                                                                         
+02:16 +36: All tests passed!                                                                                                                                                                           

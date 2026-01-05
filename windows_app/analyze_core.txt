@@ -1,0 +1,36 @@
+﻿Analyzing 5 items...                                            
+
+  error - Target of URI doesn't exist: '../../error/failures.dart' - lib\core\bloc\base_bloc.dart:4:8 - uri_does_not_exist
+  error - Undefined class 'Failure' - lib\core\bloc\base_bloc.dart:31:9 - undefined_class
+  error - The name 'Failure' isn't a type, so it can't be used as a type argument - lib\core\bloc\base_bloc.dart:55:12 - non_type_as_type_argument
+  error - Undefined class 'Failure' - lib\core\bloc\base_bloc.dart:57:16 - undefined_class
+  error - The class 'AiTutorService' doesn't have an unnamed constructor - lib\core\di\injection_container.dart:57:11 - new_with_undefined_constructor_default
+   info - Dangling library doc comment - lib\core\error\exceptions.dart:2:1 - dangling_library_doc_comments
+   info - The type parameter name 'Type' matches a visible type name - lib\core\usecases\usecase.dart:23:24 - avoid_types_as_parameter_names
+   info - The type parameter name 'Type' matches a visible type name - lib\core\usecases\usecase.dart:36:30 - avoid_types_as_parameter_names
+   info - The type parameter name 'Type' matches a visible type name - lib\core\usecases\usecase.dart:41:28 - avoid_types_as_parameter_names
+   info - Statement should be on a separate line - lib\core\utils\app_logger.dart:73:39 - always_put_control_body_on_new_line
+
+flutter : 10 issues 
+found. (ran in 11.6s)
+At line:1 char:1
++ flutter analyze 
+lib/core/di 
+lib/core/bloc 
+lib/core/error 
+lib/core/use ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (10 issu   
+ es found. (ran i    
+n 11.6s):String)     
+[], RemoteExcep    
+tion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

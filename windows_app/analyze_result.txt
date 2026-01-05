@@ -1,0 +1,33 @@
+﻿Resolving dependencies...
+flutter : Because 
+hive_ce_generator >=1.9.5 
+depends on build ^4.0.0 
+and riverpod_generator 
+<3.0.0-dev.17 depends on 
+build ^2.0.0, 
+hive_ce_generator >=1.9.5 
+is incompatible with 
+riverpod_generator 
+<3.0.0-dev.17.
+At line:1 char:1
++ flutter analyze 2>&1 | 
+Out-File -FilePath 
+analyze_result.txt 
+-Encodin ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (B  
+  ecause hive_ce... <3.   
+ 0.0-dev.17.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+So, because learning_hub 
+depends on both 
+riverpod_generator ^2.3.9 
+and hive_ce_generator 
+^1.11.0, version solving 
+failed.
+Failed to update packages.

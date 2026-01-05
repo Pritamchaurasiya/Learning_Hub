@@ -1,0 +1,109 @@
+﻿Analyzing windows_app...                                        
+
+   info - Statement should be on a separate line - lib\core\providers\ai_tutor_provider.dart:104:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:89:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:98:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\providers\quiz_provider.dart:115:29 - always_put_control_body_on_new_line
+warning - The value of the local variable 'isCorrect' isn't used - lib\core\providers\quiz_provider.dart:130:15 - unused_local_variable
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:580:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\ai_tutor_service.dart:591:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:157:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:241:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:269:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:282:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\background_job_service.dart:323:22 - always_put_control_body_on_new_line
+warning - The value of the field '_userInteractionsKey' isn't used - lib\core\services\content_recommendation_service.dart:14:23 - unused_field
+warning - The value of the field '_userVectorsKey' isn't used - lib\core\services\content_recommendation_service.dart:15:23 - unused_field
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:88:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:125:34 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:165:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\content_recommendation_service.dart:166:43 - always_put_control_body_on_new_line
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:171:11 - unused_local_variable
+warning - The value of the local variable 'prefs' isn't used - lib\core\services\content_recommendation_service.dart:176:11 - unused_local_variable
+   info - Invalid regular expression syntax - lib\core\services\course_service.dart:251:28 - valid_regexps
+  error - 2 positional arguments expected by 'replaceAll', but 1 found - lib\core\services\course_service.dart:251:34 - not_enough_positional_arguments
+  error - Expected to find ')' - lib\core\services\course_service.dart:251:34 - expected_token
+  error - Expected an identifier - lib\core\services\course_service.dart:251:35 - missing_identifier
+  error - Expected to find ';' - lib\core\services\course_service.dart:251:35 - expected_token
+  error - Expected an identifier - lib\core\services\course_service.dart:251:36 - missing_identifier
+  error - Expected to find ';' - lib\core\services\course_service.dart:251:36 - expected_token
+  error - Expected an identifier - lib\core\services\course_service.dart:251:37 - missing_identifier
+  error - Unexpected text ';' - lib\core\services\course_service.dart:251:37 - unexpected_token
+  error - Unterminated string literal - lib\core\services\course_service.dart:251:84 - unterminated_string_literal
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:66:28 - always_put_control_body_on_new_line
+warning - The value of the field '_defaultCacheDuration' isn't used - lib\core\services\feature_flags_service.dart:180:25 - unused_field
+warning - The value of the field '_lastFetch' isn't used - lib\core\services\feature_flags_service.dart:185:13 - unused_field
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:193:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:394:27 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\feature_flags_service.dart:397:27 - always_put_control_body_on_new_line
+warning - The declaration '_saveToCache' isn't referenced - lib\core\services\feature_flags_service.dart:516:16 - unused_element
+   info - Statement should be on a separate line - lib\core\services\health_check_service.dart:366:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:180:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:187:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:326:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:549:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:588:24 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:697:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:708:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:726:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:737:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:757:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\learning_path_service.dart:770:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:49:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:147:63 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:148:49 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:149:57 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:150:58 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:253:40 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\logging_service.dart:267:27 - always_put_control_body_on_new_line
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:141:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:161:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method - lib\core\services\offline_service.dart:196:18 - avoid_slow_async_io
+   info - Statement should be on a separate line - lib\core\services\peer_review_service.dart:81:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:16:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:17:33 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\progress_prediction_service.dart:71:44 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:91:66 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:93:60 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:403:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:405:54 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:407:51 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:651:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:652:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:653:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:718:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:729:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:749:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\quiz_generation_service.dart:766:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:253:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:260:25 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:301:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:327:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:328:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:366:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:442:32 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:487:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:499:58 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\core\services\search_service.dart:505:42 - always_put_control_body_on_new_line
+
+flutter : 85 issues 
+found. (ran in 6.9s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-FilePath analysis_po
+st_fix.txt -Enco ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecifi    ed: 
+(85 issues fou    
+nd. (ran in 6.9s):   
+ String) [], Remote  
+  Exception
+    + 
+FullyQualifiedEr    
+rorId : NativeComm   
+ andError
+ 

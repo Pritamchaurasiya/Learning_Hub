@@ -1,0 +1,20 @@
+-r base.txt
+
+# Testing
+pytest==8.0.0
+pytest-django==4.8.0
+pytest-cov==4.1.0
+factory-boy==3.3.0
+duckdb-engine==0.9.5  # Faster local analytics test
+
+# Linting & Formatting
+flake8==7.0.0
+black==24.1.0
+isort==5.13.2
+mypy==1.8.0
+django-stubs==4.2.7
+djangorestframework-stubs==3.14.5
+
+# Debugging
+django-debug-toolbar==4.3.0
+ipdb==0.13.13
