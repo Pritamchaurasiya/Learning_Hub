@@ -66,8 +66,10 @@ class LeaderboardScreen extends ConsumerWidget {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     itemCount: players.length,
                     itemBuilder: (context, index) {
+                      // Optimization: Cap animation delay to prevent long waits for items deep in the list
+                      // using modulo ensures a staggering effect that resets every 10 items.
                       return LeaderboardTile(entry: players[index])
-                          .animate(delay: (50 * index).ms)
+                          .animate(delay: (50 * (index % 10)).ms)
                           .slideX(begin: 0.2)
                           .fadeIn();
                     },
