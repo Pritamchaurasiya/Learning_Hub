@@ -58,6 +58,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.next,
                   validator: (value) =>
                       value == null || value.isEmpty ? 'Type your email' : null,
                 ),
@@ -65,6 +68,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(labelText: 'Password'),
+                  autofillHints: const [AutofillHints.password],
+                  textInputAction: TextInputAction.go,
+                  onFieldSubmitted: (_) => _login(),
                   obscureText: true,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Type your password'
@@ -72,7 +78,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 if (state is AsyncLoading)
-                  const CircularProgressIndicator()
+                  const CircularProgressIndicator(
+                    semanticsLabel: 'Logging in...',
+                  )
                 else
                   ElevatedButton(
                     onPressed: _login,

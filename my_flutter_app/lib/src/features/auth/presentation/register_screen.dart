@@ -59,6 +59,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.next,
                   validator: (value) =>
                       value == null || value.isEmpty ? 'Type your email' : null,
                 ),
@@ -66,6 +69,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _usernameController,
                   decoration: const InputDecoration(labelText: 'Username'),
+                  autofillHints: const [AutofillHints.username],
+                  textInputAction: TextInputAction.next,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Type your username'
                       : null,
@@ -74,6 +79,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(labelText: 'Password'),
+                  autofillHints: const [AutofillHints.newPassword],
+                  textInputAction: TextInputAction.go,
+                  onFieldSubmitted: (_) => _register(),
                   obscureText: true,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Type your password'
@@ -81,7 +89,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 if (state is AsyncLoading)
-                  const CircularProgressIndicator()
+                  const CircularProgressIndicator(
+                    semanticsLabel: 'Registering...',
+                  )
                 else
                   ElevatedButton(
                     onPressed: _register,
