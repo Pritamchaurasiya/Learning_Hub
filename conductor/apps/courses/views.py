@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,38 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Subcategory queryset with annotated course count
+        subcategory_qs = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # To optimize nested recursion, we prefetch one more level deep
+        # For deeper levels, we would need to continue this pattern or recurse
+        subcategory_qs_with_children = subcategory_qs.prefetch_related(
+            Prefetch(
+                "subcategories",
+                queryset=subcategory_qs,
+                to_attr="active_subcategories",
+            )
+        )
+
+        return qs.prefetch_related(
+            Prefetch(
+                "subcategories",
+                queryset=subcategory_qs_with_children,
+                to_attr="active_subcategories",
+            )
+        ).annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
 
 
 @extend_schema_view(
