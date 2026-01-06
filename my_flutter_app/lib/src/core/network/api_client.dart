@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:my_flutter_app/src/core/constants/api_constants.dart';
 import 'package:my_flutter_app/src/core/error/exceptions.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_flutter_app/src/core/storage/storage_provider.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(Dio());
+  return ApiClient(Dio(), ref.watch(flutterSecureStorageProvider));
 });
 
 class ApiClient {
-  ApiClient(this._dio) {
+  ApiClient(this._dio, this._secureStorage) {
     _dio.options = BaseOptions(
       baseUrl: ApiConstants.baseUrl,
       connectTimeout: ApiConstants.connectTimeout,
@@ -24,8 +25,7 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Add auth token if available
-          final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('access_token');
+          final token = await _secureStorage.read(key: 'access_token');
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -42,6 +42,7 @@ class ApiClient {
     );
   }
   final Dio _dio;
+  final FlutterSecureStorage _secureStorage;
 
   Future<Response<Map<String, dynamic>>> get(
     String path, {
