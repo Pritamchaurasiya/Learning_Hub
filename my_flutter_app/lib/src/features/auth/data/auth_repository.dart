@@ -4,14 +4,30 @@ import 'package:my_flutter_app/src/core/error/exceptions.dart';
 import 'package:my_flutter_app/src/core/network/api_client.dart';
 import 'package:my_flutter_app/src/features/auth/domain/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_flutter_app/src/core/storage/storage_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(apiClientProvider));
+  return AuthRepository(
+    ref.watch(apiClientProvider),
+    ref.watch(flutterSecureStorageProvider),
+  );
 });
 
 class AuthRepository {
-  AuthRepository(this._apiClient);
+  AuthRepository(this._apiClient, this._secureStorage);
   final ApiClient _apiClient;
+  final FlutterSecureStorage _secureStorage;
+
+  Future<String?> getAccessToken() async {
+    return await _secureStorage.read(key: 'access_token');
+  }
+
+  Future<String?> getRefreshToken() async {
+    return await _secureStorage.read(key: 'refresh_token');
+  }
 
   Future<User> login(String email, String password) async {
     try {
@@ -70,16 +86,18 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    await _secureStorage.delete(key: 'access_token');
+    await _secureStorage.delete(key: 'refresh_token');
     final prefs = await SharedPreferences.getInstance();
+    // Clean up legacy insecure tokens
     await prefs.remove('access_token');
     await prefs.remove('refresh_token');
     await prefs.remove('user_data');
   }
 
   Future<void> _saveTokens(String access, String refresh) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('access_token', access);
-    await prefs.setString('refresh_token', refresh);
+    await _secureStorage.write(key: 'access_token', value: access);
+    await _secureStorage.write(key: 'refresh_token', value: refresh);
   }
 
   Future<void> _saveUser(User user) async {
