@@ -1,0 +1,3 @@
+## 2024-02-14 - Optimized Category API
+**Learning:** When dealing with recursive relationships (like Category trees) in Django REST Framework, standard `prefetch_related` is insufficient if the serializer filters nested relationships (e.g., `is_active=True`). The serializer accessing the related manager again (e.g., `obj.subcategories.filter(...)`) invalidates the prefetch, causing N+1 queries.
+**Action:** Use `Prefetch` objects with `to_attr` to store the filtered, prefetched list in a separate attribute (e.g., `active_subcategories`). Update the serializer to check for this attribute first before falling back to the DB query. For deep trees, manual chaining of `Prefetch` (e.g., `queryset=Category.objects.prefetch_related(...)`) works for fixed depths.
