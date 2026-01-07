@@ -5,6 +5,7 @@ Course views for Learning Hub API.
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from django.db.models import Count, Prefetch, Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -49,10 +50,56 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Get categories with optimized fetching."""
+        # Base queryset for sub-subcategories (level 2) with course count
+        sub_sub_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Base queryset for subcategories (level 1) with course count and prefetch level 2
+        sub_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories",
+                    queryset=sub_sub_qs,
+                    to_attr="active_subcategories",
+                )
+            )
+        )
+
+        # Base queryset for root categories
+        qs = Category.objects.filter(is_active=True, parent__isnull=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Prefetch subcategories (level 1)
+        qs = qs.prefetch_related(
+            Prefetch("subcategories", queryset=sub_qs, to_attr="active_subcategories")
+        )
+
+        # Note: Ideally we would recurse deeper, but Django's prefetch_related
+        # doesn't easily support infinite recursion.
+        # However, we can chain for a fixed depth if needed.
+        # For now, 1 level deep is a significant improvement over N+1.
+        # If the tree is deep, a recursive CTE or specialized tree library (like mptt or treebeard)
+        # would be better, but that's a larger architectural change.
+
+        return qs
 
 
 @extend_schema_view(
