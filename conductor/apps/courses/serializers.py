@@ -34,12 +34,19 @@ class CategorySerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_subcategories(self, obj):
         """Get nested subcategories."""
-        subs = obj.subcategories.filter(is_active=True)
+        # Use prefetched objects if available to prevent N+1 queries
+        if hasattr(obj, "active_subcategories"):
+            subs = obj.active_subcategories
+        else:
+            subs = obj.subcategories.filter(is_active=True)
         return CategorySerializer(subs, many=True).data
 
     @extend_schema_field(serializers.IntegerField())
     def get_course_count(self, obj):
         """Get count of published courses."""
+        # Use annotated count if available to prevent N+1 queries
+        if hasattr(obj, "annotated_course_count"):
+            return obj.annotated_course_count
         return obj.courses.filter(is_published=True).count()
 
 

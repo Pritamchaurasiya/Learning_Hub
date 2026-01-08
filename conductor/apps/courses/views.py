@@ -5,6 +5,7 @@ Course views for Learning Hub API.
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from django.db.models import Count, Prefetch, Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -53,6 +54,50 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Optimize queryset with annotations and prefetching."""
+        # Level 2 subcategories (Sub-sub) - needed to prevent N+1 at deeper levels
+        # even if they are empty, as the serializer is recursive.
+        sub_qs_level_2 = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Level 1 subcategories (Sub) - prefetch level 2
+        sub_qs_level_1 = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                annotated_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories",
+                    queryset=sub_qs_level_2,
+                    to_attr="active_subcategories",
+                )
+            )
+        )
+
+        # Root categories - prefetch level 1
+        return (
+            Category.objects.filter(is_active=True, parent__isnull=True)
+            .annotate(
+                annotated_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories",
+                    queryset=sub_qs_level_1,
+                    to_attr="active_subcategories",
+                )
+            )
+        )
 
 
 @extend_schema_view(
