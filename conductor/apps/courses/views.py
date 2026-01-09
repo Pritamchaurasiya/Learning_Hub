@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Prefetch, Q
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -49,10 +50,53 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimize category retrieval by prefetching subcategories and annotating course counts.
+        """
+        # Annotation for counting published courses
+        course_count_annotation = Count(
+            'courses',
+            filter=Q(courses__is_published=True)
+        )
+
+        # Base queryset for subcategories with count annotation
+        subcategory_qs = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=course_count_annotation
+        )
+
+        # Level 2 subcategories (sub-sub)
+        # We assume 2 levels of nesting is sufficient for most UI needs
+        # This will populate 'active_subcategories' on level 1 subcategories
+        prefetch_level_2 = Prefetch(
+            'subcategories',
+            queryset=subcategory_qs,
+            to_attr='active_subcategories'
+        )
+
+        # Level 1 subcategories (sub)
+        # This will populate 'active_subcategories' on root categories
+        # And it also prefetches level 2 subcategories
+        prefetch_level_1 = Prefetch(
+            'subcategories',
+            queryset=subcategory_qs.prefetch_related(prefetch_level_2),
+            to_attr='active_subcategories'
+        )
+
+        qs = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=course_count_annotation
+        ).prefetch_related(prefetch_level_1)
+
+        # Only filter for root categories when listing
+        if self.action == 'list':
+            qs = qs.filter(parent__isnull=True)
+
+        return qs
 
 
 @extend_schema_view(
