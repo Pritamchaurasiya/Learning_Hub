@@ -1,0 +1,3 @@
+## 2024-05-22 - Recursive Serializer Optimization
+**Learning:** Django Rest Framework serializers do not automatically use prefetched data for `SerializerMethodField` or when recursively instantiating themselves. When optimizing recursive structures (like categories), we must manually check for attributes populated by `to_attr` in `prefetch_related` (e.g., `active_subcategories`) within the serializer methods to bypass default queries.
+**Action:** When working with recursive serializers, always pair `prefetch_related` (using `to_attr`) in the ViewSet with `hasattr` checks in the Serializer to ensure O(1) query performance instead of O(N) or O(N^2).
