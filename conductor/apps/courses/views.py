@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,45 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimize query by:
+        1. Prefetching subcategories to avoid N+1
+        2. Annotating course count to avoid N+1
+        """
+        # Base queryset of active categories
+        qs = Category.objects.filter(is_active=True)
+
+        # When listing, we only want top-level categories
+        if self.action == 'list':
+            qs = qs.filter(parent__isnull=True)
+
+        # Create a prefetch queryset for subcategories that also has the course count annotation
+        # This handles the recursive structure (at least for 1 level deep which is common)
+        # Note: Ideally we'd recurse deeper if needed, but 1-2 levels is usually enough for menus
+
+        # Subcategory QuerySet with annotated course count
+        sub_qs = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=Count(
+                "courses",
+                filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Main QuerySet with annotated course count and prefetched subcategories
+        return qs.annotate(
+            annotated_course_count=Count(
+                "courses",
+                filter=Q(courses__is_published=True)
+            )
+        ).prefetch_related(
+            Prefetch(
+                "subcategories",
+                queryset=sub_qs,
+                to_attr="active_subcategories"
+            )
+        )
 
 
 @extend_schema_view(
