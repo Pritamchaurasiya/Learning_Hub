@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,53 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimize category retrieval by prefetching subcategories and
+        annotating course counts.
+        """
+        qs = super().get_queryset()
+
+        # Annotate course count for root categories
+        qs = qs.annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Level 2 (Sub-subcategories) - Leaf nodes in our current assumed depth
+        # We prefetch them to avoid queries when serializing Level 1 categories
+        level2_qs = Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Level 1 (Subcategories)
+        # We prefetch subcategories (Level 2) for them
+        level1_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                annotated_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=level2_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        # Prefetch Level 1 subcategories for Root categories
+        qs = qs.prefetch_related(
+            Prefetch(
+                "subcategories", queryset=level1_qs, to_attr="active_subcategories"
+            )
+        )
+
+        return qs
 
 
 @extend_schema_view(
