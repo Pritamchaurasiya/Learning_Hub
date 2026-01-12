@@ -1,0 +1,3 @@
+## 2024-05-23 - [Form Accessibility Improvements]
+**Learning:** Users rely heavily on visual cues for security (password masking) but often need to verify their input. Combining `obscureText` with a visibility toggle solves this tension. Additionally, providing `autofillHints` and proper `TextInputAction`s drastically improves the experience for users on mobile devices by integrating with the OS's password manager and keyboard navigation.
+**Action:** Always include a visibility toggle for password fields and ensure `autofillHints` are set for all standard input fields (email, password, username).
