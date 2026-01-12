@@ -1,0 +1,4 @@
+## 2026-01-12 - Recursive Serialization Optimization
+**Learning:** Django Rest Framework's recursive serialization of tree structures (like Categories) can cause massive N+1 issues if not carefully optimized. While `prefetch_related` helps, deep recursion requires manual prefetch chaining with `Prefetch` objects to a fixed depth (e.g., Level 1 -> Level 2 -> Level 3). Relying on default lazy evaluation in serializers for nested trees leads to N queries per level.
+
+**Action:** When serializing recursive models, explicitly define the depth of prefetching in the ViewSet using nested `Prefetch` objects with `to_attr`. In the serializer, check for these attributes (e.g., `hasattr(obj, 'prefetched_children')`) to use the cached list, falling back to database queries only if the prefetch depth is exceeded.

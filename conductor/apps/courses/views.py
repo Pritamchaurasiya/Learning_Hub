@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Prefetch, Q
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -53,6 +54,40 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Optimize query with prefetch and annotation."""
+        qs = super().get_queryset()
+
+        if self.action == "list":
+            course_count = Count("courses", filter=Q(courses__is_published=True))
+
+            # Level 3 (Sub-subcategories)
+            level3_qs = Category.objects.filter(is_active=True).annotate(
+                annotated_course_count=course_count
+            )
+
+            # Level 2 (Subcategories)
+            level2_qs = (
+                Category.objects.filter(is_active=True)
+                .annotate(annotated_course_count=course_count)
+                .prefetch_related(
+                    Prefetch(
+                        "subcategories",
+                        queryset=level3_qs,
+                        to_attr="active_subcategories",
+                    )
+                )
+            )
+
+            # Level 1 (Roots)
+            qs = qs.annotate(annotated_course_count=course_count).prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=level2_qs, to_attr="active_subcategories"
+                )
+            )
+
+        return qs
 
 
 @extend_schema_view(
