@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Prefetch, Q
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -49,7 +50,39 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    # Level 2 (Sub-Sub) - assuming max depth 3
+    l3_prefetch = Prefetch(
+        "subcategories",
+        queryset=Category.objects.filter(is_active=True).annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        ),
+        to_attr="active_subcategories",
+    )
+
+    # Level 1 (Sub)
+    l2_prefetch = Prefetch(
+        "subcategories",
+        queryset=Category.objects.filter(is_active=True)
+        .annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+        .prefetch_related(l3_prefetch),
+        to_attr="active_subcategories",
+    )
+
+    queryset = (
+        Category.objects.filter(is_active=True, parent__isnull=True)
+        .annotate(
+            annotated_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+        .prefetch_related(l2_prefetch)
+    )
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
