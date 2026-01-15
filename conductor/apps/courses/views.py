@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Q, Prefetch
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,10 +50,38 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
+    # We override get_queryset, so this base queryset is used for metadata/router but overriden
     queryset = Category.objects.filter(is_active=True, parent__isnull=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimized queryset to avoid N+1 problems.
+        Pre-fetches subcategories and annotates course counts.
+        """
+        # Subcategory queryset with course count annotation
+        sub_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Main queryset for root categories
+        return (
+            Category.objects.filter(is_active=True, parent__isnull=True)
+            .annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=sub_qs, to_attr="active_subcategories"
+                )
+            )
+        )
 
 
 @extend_schema_view(
