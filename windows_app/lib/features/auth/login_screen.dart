@@ -180,6 +180,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         hintText: 'Enter your password',
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
@@ -434,12 +437,19 @@ class _SocialButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.dividerColor),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Icon(icon, color: color, size: 28),
+      child: Tooltip(
+        message: 'Sign in with $label',
+        child: Semantics(
+          label: 'Sign in with $label',
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Icon(icon, color: color, size: 28),
+            ),
+          ),
         ),
       ),
     );
