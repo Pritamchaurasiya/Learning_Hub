@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Prefetch, Q
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -49,10 +50,42 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Get categories with optimized fetching."""
+        course_count_annotation = Count(
+            "courses", filter=Q(courses__is_published=True)
+        )
+
+        # Level 2 subcategories (grandchildren)
+        l2_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=course_count_annotation
+        )
+
+        # Level 1 subcategories (children) - prefetch grandchildren
+        l1_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(published_course_count=course_count_annotation)
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=l2_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        # Root categories - prefetch children
+        return (
+            Category.objects.filter(is_active=True, parent__isnull=True)
+            .annotate(published_course_count=course_count_annotation)
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=l1_qs, to_attr="active_subcategories"
+                )
+            )
+        )
 
 
 @extend_schema_view(
