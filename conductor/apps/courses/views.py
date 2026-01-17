@@ -5,6 +5,7 @@ Course views for Learning Hub API.
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from django.db.models import Count, Prefetch, Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -49,7 +50,25 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    subcategories_qs = Category.objects.filter(is_active=True).annotate(
+        published_course_count=Count("courses", filter=Q(courses__is_published=True))
+    )
+
+    queryset = (
+        Category.objects.filter(is_active=True, parent__isnull=True)
+        .prefetch_related(
+            Prefetch(
+                "subcategories",
+                queryset=subcategories_qs,
+                to_attr="active_subcategories",
+            )
+        )
+        .annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+    )
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
