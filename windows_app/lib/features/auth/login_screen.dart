@@ -185,6 +185,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
@@ -428,18 +431,25 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Icon(icon, color: color, size: 28),
+    return Tooltip(
+      message: 'Sign in with $label',
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Semantics(
+              label: 'Sign in with $label',
+              button: true,
+              child: Icon(icon, color: color, size: 28),
+            ),
+          ),
         ),
       ),
     );
