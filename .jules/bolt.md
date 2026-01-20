@@ -1,0 +1,3 @@
+## 2026-01-20 - [Recursive N+1 Optimization]
+**Learning:** When dealing with recursive serializers (like categories with subcategories), standard `prefetch_related` is insufficient if the serializer depth is not explicitly controlled or if nested lookups are required. Using nested `Prefetch` objects with `to_attr` allows us to pre-load the recursive structure into custom attributes, which the serializer can then check for, bypassing the need for database queries at each level.
+**Action:** Use nested `Prefetch` objects with `to_attr` for recursive relationships to strictly control query count, and update serializers to check for these attributes before falling back to the related manager.

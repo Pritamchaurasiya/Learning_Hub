@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,48 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimized queryset with recursive prefetch and annotations.
+        """
+        # Base queryset - start with active categories
+        qs = Category.objects.filter(is_active=True)
+
+        # Apply parent filter only for list action
+        # This allows retrieving subcategories directly via detail endpoint
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+        # 1. Define reusable sub-queryset for subcategories
+        # This needs to include the course count annotation
+        sub_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # 2. Define Prefetch for Level 2 (Sub-Subcategories)
+        # We prefetch 'subcategories' into 'active_subcategories' attribute
+        level2_prefetch = Prefetch(
+            "subcategories", queryset=sub_qs, to_attr="active_subcategories"
+        )
+
+        # 3. Define Prefetch for Level 1 (Subcategories)
+        # This must also prefetch Level 2
+        level1_prefetch = Prefetch(
+            "subcategories",
+            queryset=sub_qs.prefetch_related(level2_prefetch),
+            to_attr="active_subcategories",
+        )
+
+        # 4. Apply to main queryset
+        # Main queryset also needs the course count annotation
+        return qs.annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        ).prefetch_related(level1_prefetch)
 
 
 @extend_schema_view(
