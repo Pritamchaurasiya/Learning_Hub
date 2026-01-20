@@ -1,0 +1,4 @@
+## 2026-01-20 - [Missing Default Rate Limiting]
+**Vulnerability:** The application was missing global default throttle rates in Django settings, and authentication views lacked explicit throttle classes. This exposed sensitive endpoints (Login, Register, Password Reset) to unlimited brute-force attacks.
+**Learning:** Even if `ScopedRateThrottle` is intended to be used, it requires both `DEFAULT_THROTTLE_RATES` to be defined in settings AND the `throttle_classes` to be explicitly added to the views (or set globally). Assuming it "just works" left the app vulnerable. Additionally, testing rate limits requires explicitly clearing the cache between tests to avoid state leakage causing false failures.
+**Prevention:** Always verify rate limiting with integration tests that attempt to exceed the limit. Ensure `DEFAULT_THROTTLE_RATES` is configured in `settings.py`. When testing, use a fixture to `cache.clear()` before/after tests that might trigger rate limits.
