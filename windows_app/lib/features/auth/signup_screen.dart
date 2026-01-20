@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -128,6 +129,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       controller: _nameController,
                       textInputAction: TextInputAction.next,
                       textCapitalization: TextCapitalization.words,
+                      autofillHints: const [AutofillHints.name],
                       decoration: const InputDecoration(
                         labelText: 'Full Name',
                         hintText: 'Enter your full name',
@@ -154,6 +156,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         hintText: 'Enter your email',
@@ -183,11 +186,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.newPassword],
                       decoration: InputDecoration(
                         labelText: 'Password',
                         hintText: 'Create a password',
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
@@ -228,11 +235,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       obscureText: _obscureConfirmPassword,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _handleSignup(),
+                      autofillHints: const [AutofillHints.newPassword],
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         hintText: 'Confirm your password',
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
+                          tooltip: _obscureConfirmPassword
+                              ? 'Show password'
+                              : 'Hide password',
                           icon: Icon(
                             _obscureConfirmPassword
                                 ? Icons.visibility_outlined
