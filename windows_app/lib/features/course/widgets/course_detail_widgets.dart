@@ -73,10 +73,12 @@ class MobileLayout extends StatelessWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.share),
+              tooltip: 'Share course',
               onPressed: () {},
             ),
             IconButton(
               icon: Icon(isEnrolled ? Icons.bookmark : Icons.bookmark_border),
+              tooltip: isEnrolled ? 'Remove from bookmarks' : 'Add to bookmarks',
               onPressed: () {},
             ),
             Consumer(
@@ -88,6 +90,7 @@ class MobileLayout extends StatelessWidget {
                     label: Text('$cartItemCount'),
                     child: const Icon(Icons.shopping_cart_outlined),
                   ),
+                  tooltip: 'View cart',
                   onPressed: () => context.push('/cart'),
                 );
               },
@@ -281,6 +284,7 @@ class DesktopLayout extends StatelessWidget {
                           label: Text('$cartItemCount'),
                           child: const Icon(Icons.shopping_cart_outlined),
                         ),
+                        tooltip: 'View cart',
                         onPressed: () => context.push('/cart'),
                       );
                     },
