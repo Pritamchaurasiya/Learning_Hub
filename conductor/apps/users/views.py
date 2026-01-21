@@ -44,6 +44,7 @@ class RegisterView(generics.CreateAPIView):
 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -77,6 +78,7 @@ class LoginView(generics.GenericAPIView):
 
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -169,6 +171,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
 
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -201,6 +204,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
     queryset = User.objects.none()
 
     def post(self, request, *args, **kwargs):
