@@ -9,7 +9,7 @@ duckdb-engine==0.9.5  # Faster local analytics test
 
 # Linting & Formatting
 flake8==7.0.0
-black==24.1.0
+black==24.1.1
 isort==5.13.2
 mypy==1.8.0
 django-stubs==4.2.7

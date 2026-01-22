@@ -22,10 +22,12 @@ argon2-cffi==23.1.0
 # Server
 gunicorn==21.2.0
 uvicorn==0.27.0
+celery==5.3.6
+django-celery-beat==2.6.0
 
 # Quality & Security
 mypy==1.8.0
 flake8==7.0.0
 black==24.1.1
 bandit==1.7.6
-snyk==1.1292.0
+# snyk==1.1292.0
