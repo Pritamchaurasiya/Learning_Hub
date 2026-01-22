@@ -1,0 +1,162 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-8.0.0, pluggy-1.6.0 -- /home/jules/.pyenv/versions/3.12.12/bin/python
+cachedir: .pytest_cache
+django: version: 5.0.1, settings: config.settings.development (from env)
+rootdir: /app/conductor
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.8.0, Faker-40.1.2
+collecting ... collected 1 item
+
+conductor/apps/courses/tests/test_performance.py::TestCategoryPerformance::test_category_list_performance FAILED [100%]
+
+=================================== FAILURES ===================================
+____________ TestCategoryPerformance.test_category_list_performance ____________
+
+self = <apps.courses.tests.test_performance.TestCategoryPerformance object at 0x7f1563dcbad0>
+
+    def test_category_list_performance(self):
+        # Create a user for instructor
+        instructor = User.objects.create_user(
+            email="instructor@example.com",
+            username="instructor",
+            password="StrongPassword123!"
+        )
+
+        # Create categories and subcategories
+        for i in range(5):
+            parent = Category.objects.create(name=f"Parent {i}", slug=f"parent-{i}")
+            for j in range(3):
+                sub = Category.objects.create(
+                    name=f"Sub {i}-{j}",
+                    slug=f"sub-{i}-{j}",
+                    parent=parent
+                )
+                # Add courses to subcategory
+                for k in range(2):
+                    Course.objects.create(
+                        title=f"Course {i}-{j}-{k}",
+                        slug=f"course-{i}-{j}-{k}",
+                        category=sub,
+                        instructor=instructor,
+                        is_published=True
+                    )
+
+        # Capture queries
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(self.url)
+
+        # Verify response structure (sanity check)
+        assert response.status_code == 200
+>       assert len(response.data) == 5
+E       assert 4 == 5
+E        +  where 4 = len({'data': [OrderedDict({'id': '3c140622-4270-463c-ad75-07aa792a4173', 'name': 'Parent 0', 'slug': 'parent-0', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '9619c8f5-3e55-4405-9b1b-19f72e90a833', 'name': 'Sub 0-0', 'slug': 'sub-0-0', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '0d93087c-6bd5-424b-97c5-fa7133650cc1', 'name': 'Sub 0-1', 'slug': 'sub-0-1', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'aef9fffa-023e-48ac-a6af-a0b270257100', 'name': 'Sub 0-2', 'slug': 'sub-0-2', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': 'f73098c6-46cc-43dd-ad71-9b3f73473127', 'name': 'Parent 1', 'slug': 'parent-1', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '3a105410-9cbc-4f10-974b-571e7a9a0a4e', 'name': 'Sub 1-0', 'slug': 'sub-1-0', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'd029ff21-9590-450b-a732-41f8b82577f8', 'name': 'Sub 1-1', 'slug': 'sub-1-1', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '68bc201f-ce54-4539-80ae-9a6f977cc3c1', 'name': 'Sub 1-2', 'slug': 'sub-1-2', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': '59e7c179-0664-4451-b2e4-bf93e142a1a8', 'name': 'Parent 2', 'slug': 'parent-2', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '3dce3e13-430a-40b9-9123-9e664c563f22', 'name': 'Sub 2-0', 'slug': 'sub-2-0', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '2b420c8e-6069-4bb7-a057-6bf91413a5b2', 'name': 'Sub 2-1', 'slug': 'sub-2-1', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '0ac46207-750f-4d8e-9071-53fc41fd25b7', 'name': 'Sub 2-2', 'slug': 'sub-2-2', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': 'b999bad8-d263-4366-af9f-a7f2417b8923', 'name': 'Parent 3', 'slug': 'parent-3', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '28336ab8-6678-4dcb-8dc2-37659149ce45', 'name': 'Sub 3-0', 'slug': 'sub-3-0', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'd96d9a0b-d949-4652-92f4-943c26feaaa4', 'name': 'Sub 3-1', 'slug': 'sub-3-1', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'a93f7a2f-25a3-4bb0-817f-f5bd6863c378', 'name': 'Sub 3-2', 'slug': 'sub-3-2', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': '8f246951-768d-4304-8a8a-9748a9750b19', 'name': 'Parent 4', 'slug': 'parent-4', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': 'b2500959-56d5-42c2-ae5b-9d659fc5b7dd', 'name': 'Sub 4-0', 'slug': 'sub-4-0', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'e7d82b6f-5372-4bed-a219-05438d0de551', 'name': 'Sub 4-1', 'slug': 'sub-4-1', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'f76acda1-dff3-4936-a0e3-2ffea0f1ed92', 'name': 'Sub 4-2', 'slug': 'sub-4-2', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2})], 'course_count': 0})], 'message': 'Data retrieved successfully', 'meta': {'has_next': False, 'has_previous': False, 'page': 1, 'page_size': 20, ...}, 'status': 'success'})
+E        +    where {'data': [OrderedDict({'id': '3c140622-4270-463c-ad75-07aa792a4173', 'name': 'Parent 0', 'slug': 'parent-0', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '9619c8f5-3e55-4405-9b1b-19f72e90a833', 'name': 'Sub 0-0', 'slug': 'sub-0-0', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '0d93087c-6bd5-424b-97c5-fa7133650cc1', 'name': 'Sub 0-1', 'slug': 'sub-0-1', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'aef9fffa-023e-48ac-a6af-a0b270257100', 'name': 'Sub 0-2', 'slug': 'sub-0-2', 'description': '', 'icon': '', 'parent': UUID('3c140622-4270-463c-ad75-07aa792a4173'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': 'f73098c6-46cc-43dd-ad71-9b3f73473127', 'name': 'Parent 1', 'slug': 'parent-1', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '3a105410-9cbc-4f10-974b-571e7a9a0a4e', 'name': 'Sub 1-0', 'slug': 'sub-1-0', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'd029ff21-9590-450b-a732-41f8b82577f8', 'name': 'Sub 1-1', 'slug': 'sub-1-1', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '68bc201f-ce54-4539-80ae-9a6f977cc3c1', 'name': 'Sub 1-2', 'slug': 'sub-1-2', 'description': '', 'icon': '', 'parent': UUID('f73098c6-46cc-43dd-ad71-9b3f73473127'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': '59e7c179-0664-4451-b2e4-bf93e142a1a8', 'name': 'Parent 2', 'slug': 'parent-2', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '3dce3e13-430a-40b9-9123-9e664c563f22', 'name': 'Sub 2-0', 'slug': 'sub-2-0', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '2b420c8e-6069-4bb7-a057-6bf91413a5b2', 'name': 'Sub 2-1', 'slug': 'sub-2-1', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': '0ac46207-750f-4d8e-9071-53fc41fd25b7', 'name': 'Sub 2-2', 'slug': 'sub-2-2', 'description': '', 'icon': '', 'parent': UUID('59e7c179-0664-4451-b2e4-bf93e142a1a8'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': 'b999bad8-d263-4366-af9f-a7f2417b8923', 'name': 'Parent 3', 'slug': 'parent-3', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': '28336ab8-6678-4dcb-8dc2-37659149ce45', 'name': 'Sub 3-0', 'slug': 'sub-3-0', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'd96d9a0b-d949-4652-92f4-943c26feaaa4', 'name': 'Sub 3-1', 'slug': 'sub-3-1', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'a93f7a2f-25a3-4bb0-817f-f5bd6863c378', 'name': 'Sub 3-2', 'slug': 'sub-3-2', 'description': '', 'icon': '', 'parent': UUID('b999bad8-d263-4366-af9f-a7f2417b8923'), 'subcategories': [], 'course_count': 2})], 'course_count': 0}), OrderedDict({'id': '8f246951-768d-4304-8a8a-9748a9750b19', 'name': 'Parent 4', 'slug': 'parent-4', 'description': '', 'icon': '', 'parent': None, 'subcategories': [OrderedDict({'id': 'b2500959-56d5-42c2-ae5b-9d659fc5b7dd', 'name': 'Sub 4-0', 'slug': 'sub-4-0', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'e7d82b6f-5372-4bed-a219-05438d0de551', 'name': 'Sub 4-1', 'slug': 'sub-4-1', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2}), OrderedDict({'id': 'f76acda1-dff3-4936-a0e3-2ffea0f1ed92', 'name': 'Sub 4-2', 'slug': 'sub-4-2', 'description': '', 'icon': '', 'parent': UUID('8f246951-768d-4304-8a8a-9748a9750b19'), 'subcategories': [], 'course_count': 2})], 'course_count': 0})], 'message': 'Data retrieved successfully', 'meta': {'has_next': False, 'has_previous': False, 'page': 1, 'page_size': 20, ...}, 'status': 'success'} = <Response status_code=200, "application/json">.data
+
+conductor/apps/courses/tests/test_performance.py:48: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+DEBUG 2026-01-22 17:59:03,752 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG 2026-01-22 17:59:03,757 factory 2683 139729924324224 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,763 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG 2026-01-22 17:59:03,766 factory 2683 139729924324224 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,768 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG 2026-01-22 17:59:03,770 factory 2683 139729924324224 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG 2026-01-22 17:59:03,772 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG 2026-01-22 17:59:03,773 factory 2683 139729924324224 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,789 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG 2026-01-22 17:59:03,791 factory 2683 139729924324224 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,793 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG 2026-01-22 17:59:03,796 factory 2683 139729924324224 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,798 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG 2026-01-22 17:59:03,799 factory 2683 139729924324224 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,800 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG 2026-01-22 17:59:03,802 factory 2683 139729924324224 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,804 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG 2026-01-22 17:59:03,807 factory 2683 139729924324224 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,809 factory 2683 139729924324224 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,809 factory 2683 139729924324224 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,809 factory 2683 139729924324224 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,809 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG 2026-01-22 17:59:03,810 factory 2683 139729924324224 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,812 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG 2026-01-22 17:59:03,815 factory 2683 139729924324224 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,816 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG 2026-01-22 17:59:03,817 factory 2683 139729924324224 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,818 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG 2026-01-22 17:59:03,821 factory 2683 139729924324224 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,823 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG 2026-01-22 17:59:03,825 factory 2683 139729924324224 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,825 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG 2026-01-22 17:59:03,826 factory 2683 139729924324224 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,827 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG 2026-01-22 17:59:03,828 factory 2683 139729924324224 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,830 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG 2026-01-22 17:59:03,835 factory 2683 139729924324224 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,848 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG 2026-01-22 17:59:03,853 factory 2683 139729924324224 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,855 factory 2683 139729924324224 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,856 factory 2683 139729924324224 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,856 factory 2683 139729924324224 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG 2026-01-22 17:59:03,857 factory 2683 139729924324224 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG 2026-01-22 17:59:03,861 factory 2683 139729924324224 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG 2026-01-22 17:59:03,864 factory 2683 139729924324224 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+Using existing test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+------------------------------ Captured log setup ------------------------------
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG    faker.factory:factory.py:88 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+=============================== warnings summary ===============================
+../home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1394
+  /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1394: PytestConfigWarning: Unknown config option: passenv
+
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.12.12-final-0 ----------
+Coverage HTML written to dir htmlcov
+
+=========================== short test summary info ============================
+FAILED conductor/apps/courses/tests/test_performance.py::TestCategoryPerformance::test_category_list_performance
+========================= 1 failed, 1 warning in 1.94s =========================
