@@ -2,9 +2,14 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from apps.users.models import User
+from django.core.cache import cache
 
 @pytest.mark.django_db
 class TestAuthViews:
+
+    @pytest.fixture(autouse=True)
+    def clear_cache(self):
+        cache.clear()
 
     def test_register_user(self, api_client):
         url = reverse("auth:register")
