@@ -3,6 +3,7 @@ Course views for Learning Hub API.
 """
 
 from django_filters import rest_framework as filters
+from django.db.models import Count, Prefetch, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from django.utils.decorators import method_decorator
@@ -53,6 +54,31 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        published_courses = Count("courses", filter=Q(courses__is_published=True))
+        base_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=published_courses
+        )
+
+        qs = base_qs.prefetch_related(
+            Prefetch(
+                "subcategories",
+                queryset=base_qs.prefetch_related(
+                    Prefetch(
+                        "subcategories",
+                        queryset=base_qs,
+                        to_attr="active_subcategories",
+                    )
+                ),
+                to_attr="active_subcategories",
+            )
+        )
+
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+        return qs
 
 
 @extend_schema_view(
