@@ -152,6 +152,9 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
     ],
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": "5/min",
+    },
 }
 
 # JWT Settings
