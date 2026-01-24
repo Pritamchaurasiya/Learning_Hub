@@ -12,6 +12,8 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
+from django.db.models import Count, Prefetch, Q
+
 from .models import Category, Course
 from .serializers import (
     CategorySerializer,
@@ -53,6 +55,36 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        # Base queryset with course count annotation
+        base_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Level 2 (Sub-subcategories)
+        # We prefetch them to avoid N+1 when accessing subcategories of subcategories
+        l2_prefetch = Prefetch(
+            "subcategories",
+            queryset=base_qs,
+            to_attr="active_subcategories",
+        )
+
+        # Level 1 (Subcategories)
+        # Prefetch subcategories using the base_qs (which has count)
+        # AND prefetch their subcategories (l2)
+        l1_prefetch = Prefetch(
+            "subcategories",
+            queryset=base_qs.prefetch_related(l2_prefetch),
+            to_attr="active_subcategories",
+        )
+
+        qs = base_qs.prefetch_related(l1_prefetch)
+
+        # Preserve original behavior: only roots
+        return qs.filter(parent__isnull=True)
 
 
 @extend_schema_view(
