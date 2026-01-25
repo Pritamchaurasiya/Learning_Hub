@@ -1,0 +1,3 @@
+## 2026-01-25 - [Flutter Custom Button Accessibility & Visuals]
+**Learning:** Custom buttons using `InkWell` inside a colored `Container` lose their ripple effect because the container paints over the ink. Also, passing labels to these widgets without connecting them to `Semantics` or `Tooltip` creates "phantom" props that mislead developers and fail accessibility checks.
+**Action:** Replace `Container` + `Decoration` with `Material` + `Shape` to fix ripples. Always wrap the interactive element in `Tooltip` and nest `Semantics(button: true, label: ...)` inside the `InkWell` to ensure both mouse hover and screen reader support work as expected.
