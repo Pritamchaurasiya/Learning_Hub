@@ -12,6 +12,8 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
+from django.db.models import Count, Prefetch, Q
+
 from .models import Category, Course
 from .serializers import (
     CategorySerializer,
@@ -49,10 +51,47 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Get categories with optimized queries."""
+        course_count = Count("courses", filter=Q(courses__is_published=True))
+
+        # Level 3: Sub-subcategories (annotated)
+        sub_sub_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=course_count
+        )
+
+        # Level 2: Subcategories (annotated + prefetched level 3)
+        sub_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(published_course_count=course_count)
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=sub_sub_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        # Level 1: Categories (annotated + prefetched level 2)
+        queryset = (
+            super()
+            .get_queryset()
+            .annotate(published_course_count=course_count)
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=sub_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        if self.action == "list":
+            queryset = queryset.filter(parent__isnull=True)
+
+        return queryset
 
 
 @extend_schema_view(
