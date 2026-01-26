@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,10 +50,49 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """Get categories with optimization."""
+        queryset = Category.objects.filter(is_active=True)
+
+        if self.action == "list":
+            queryset = queryset.filter(parent__isnull=True)
+
+            # Optimize with prefetch and annotations to prevent N+1
+            published_courses = Q(courses__is_published=True)
+
+            # Level 2 (Sub-subcategories)
+            level2 = Category.objects.filter(is_active=True).annotate(
+                published_course_count=Count("courses", filter=published_courses)
+            )
+
+            # Level 1 (Subcategories) - Prefetch Level 2
+            level1 = (
+                Category.objects.filter(is_active=True)
+                .annotate(
+                    published_course_count=Count("courses", filter=published_courses)
+                )
+                .prefetch_related(
+                    Prefetch(
+                        "subcategories", queryset=level2, to_attr="active_subcategories"
+                    )
+                )
+            )
+
+            # Root - Prefetch Level 1
+            queryset = queryset.annotate(
+                published_course_count=Count("courses", filter=published_courses)
+            ).prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=level1, to_attr="active_subcategories"
+                )
+            )
+
+        return queryset
 
 
 @extend_schema_view(
