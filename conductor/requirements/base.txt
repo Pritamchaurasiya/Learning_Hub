@@ -13,6 +13,8 @@ django-filter==23.5
 psycopg[binary]==3.1.18
 redis==5.0.1
 hiredis==2.3.2
+celery==5.3.6
+django-celery-beat==2.6.0
 
 # Utilities
 Pillow==10.2.0
