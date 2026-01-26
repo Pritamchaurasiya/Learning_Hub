@@ -427,19 +427,27 @@ class _SocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final semanticLabel = 'Sign in with $label';
 
-    return Container(
-      decoration: BoxDecoration(
+    return Tooltip(
+      message: semanticLabel,
+      child: Material(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Icon(icon, color: color, size: 28),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: theme.dividerColor),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Semantics(
+            label: semanticLabel,
+            button: true,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Icon(icon, color: color, size: 28),
+            ),
+          ),
         ),
       ),
     );
