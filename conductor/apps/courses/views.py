@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,10 +50,68 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        # Level 4: Great-grandchildren (leaves)
+        l4_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count(
+                "courses", filter=Q(courses__is_published=True)
+            )
+        )
+
+        # Level 3: Grandchildren
+        l3_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=l4_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        # Level 2: Children
+        l2_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=l3_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        # Level 1: Roots (or the main query)
+        qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "subcategories", queryset=l2_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+        return qs
 
 
 @extend_schema_view(
