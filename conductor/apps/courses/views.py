@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db import models
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,61 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        # Base optimization
+        published_courses_count = models.Count(
+            "courses", filter=models.Q(courses__is_published=True)
+        )
+
+        # Recursive prefetch setup
+
+        # Level 3 (Great-Grandchildren - explicit stop to prevent N+1)
+        great_grandchild_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=published_courses_count
+        )
+
+        # Level 2 (Grandchildren)
+        grandchild_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(published_course_count=published_courses_count)
+            .prefetch_related(
+                models.Prefetch(
+                    "subcategories",
+                    queryset=great_grandchild_qs,
+                    to_attr="active_subcategories",
+                )
+            )
+        )
+
+        # Level 1 (Children)
+        child_qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(published_course_count=published_courses_count)
+            .prefetch_related(
+                models.Prefetch(
+                    "subcategories",
+                    queryset=grandchild_qs,
+                    to_attr="active_subcategories",
+                )
+            )
+        )
+
+        # Root Level
+        qs = (
+            Category.objects.filter(is_active=True)
+            .annotate(published_course_count=published_courses_count)
+            .prefetch_related(
+                models.Prefetch(
+                    "subcategories", queryset=child_qs, to_attr="active_subcategories"
+                )
+            )
+        )
+
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+        return qs
 
 
 @extend_schema_view(
