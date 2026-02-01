@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,36 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Optimize query for hierarchy with course counts
+        course_count = Count("courses", filter=Q(courses__is_published=True))
+
+        # Level 3 (Great-grandchildren) - needed to prevent N+1 on leaves
+        level3_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=course_count
+        )
+
+        # Level 2 (Grandchildren)
+        level2_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=course_count
+        ).prefetch_related(
+            Prefetch("subcategories", queryset=level3_qs, to_attr="active_subcategories")
+        )
+
+        # Level 1 (Children)
+        level1_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=course_count
+        ).prefetch_related(
+            Prefetch("subcategories", queryset=level2_qs, to_attr="active_subcategories")
+        )
+
+        # Root (Level 0)
+        return qs.annotate(published_course_count=course_count).prefetch_related(
+            Prefetch("subcategories", queryset=level1_qs, to_attr="active_subcategories")
+        )
 
 
 @extend_schema_view(
