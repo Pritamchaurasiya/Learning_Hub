@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Prefetch, Count, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -53,6 +54,44 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimize category retrieval with recursive prefetching and annotation.
+        Only applies to list action to avoid overhead on single retrieval if deep nested.
+        """
+        if self.action == "list":
+            # Base optimization: Annotate published course count on all categories involved
+            base_qs = Category.objects.filter(is_active=True).annotate(
+                published_course_count=Count("courses", filter=Q(courses__is_published=True))
+            )
+
+            # Level 3 (Great-Grandchildren)
+            prefetch_level_3 = Prefetch(
+                "subcategories",
+                queryset=base_qs,
+                to_attr="active_subcategories"
+            )
+
+            # Level 2 (Grandchildren)
+            prefetch_level_2 = Prefetch(
+                "subcategories",
+                queryset=base_qs.prefetch_related(prefetch_level_3),
+                to_attr="active_subcategories"
+            )
+
+            # Level 1 (Children)
+            prefetch_level_1 = Prefetch(
+                "subcategories",
+                queryset=base_qs.prefetch_related(prefetch_level_2),
+                to_attr="active_subcategories"
+            )
+
+            return super().get_queryset().annotate(
+                published_course_count=Count("courses", filter=Q(courses__is_published=True))
+            ).prefetch_related(prefetch_level_1)
+
+        return super().get_queryset()
 
 
 @extend_schema_view(
