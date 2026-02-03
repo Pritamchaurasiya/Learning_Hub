@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,10 +50,51 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimize category retrieval with recursive prefetching and annotations.
+        """
+        qs = super().get_queryset()
+
+        # Annotate course count for all categories (including nested ones)
+        # We need to reuse this annotation logic for the prefetched querysets
+        published_courses = Q(courses__is_published=True)
+
+        # Base queryset for subcategories
+        base_qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=Count("courses", filter=published_courses)
+        )
+
+        # Build recursive prefetch (depth 3)
+        # Level 3 (Great-Grandchildren)
+        l3_qs = base_qs
+
+        # Level 2 (Grandchildren)
+        l2_qs = base_qs.prefetch_related(
+            Prefetch("subcategories", queryset=l3_qs, to_attr="active_subcategories")
+        )
+
+        # Level 1 (Children)
+        l1_qs = base_qs.prefetch_related(
+            Prefetch("subcategories", queryset=l2_qs, to_attr="active_subcategories")
+        )
+
+        # Apply to main queryset
+        qs = qs.annotate(
+            published_course_count=Count("courses", filter=published_courses)
+        ).prefetch_related(
+            Prefetch("subcategories", queryset=l1_qs, to_attr="active_subcategories")
+        )
+
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+        return qs
 
 
 @extend_schema_view(
