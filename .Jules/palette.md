@@ -1,0 +1,3 @@
+## 2026-02-04 - [Accessibility in Custom Flutter Widgets]
+**Learning:** Custom interactive widgets (like those built with `Container` + `InkWell`) often lack default accessibility traits found in standard buttons. Explicitly wrapping them in `Tooltip` and `Semantics` (with `button: true` and `label`) is essential for screen readers. Also, `Container` colors can obscure `InkWell` ripples; using `Material` + `InkWell` is the robust pattern.
+**Action:** When creating or auditing custom buttons, always verify: 1) Is there a Tooltip? 2) Is there a semantic label? 3) Are interaction ripples visible? 4) Are autofill hints present on form fields?
