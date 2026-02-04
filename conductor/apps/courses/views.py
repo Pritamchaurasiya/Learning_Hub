@@ -2,6 +2,7 @@
 Course views for Learning Hub API.
 """
 
+from django.db.models import Count, Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,10 +50,49 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Optimized queryset with recursive prefetching for list view.
+        """
+        published_courses = Count("courses", filter=Q(courses__is_published=True))
+
+        qs = Category.objects.filter(is_active=True).annotate(
+            published_course_count=published_courses
+        )
+
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
+
+            # Great-Grandchildren (Depth 4 - Leaf)
+            great_grandchild_qs = Category.objects.filter(is_active=True).annotate(
+                published_course_count=published_courses
+            )
+
+            # Grandchildren (Depth 3)
+            grandchild_qs = Category.objects.filter(is_active=True).annotate(
+                published_course_count=published_courses
+            ).prefetch_related(
+                Prefetch("subcategories", queryset=great_grandchild_qs, to_attr="active_subcategories")
+            )
+
+            # Children (Depth 2)
+            child_qs = Category.objects.filter(is_active=True).annotate(
+                published_course_count=published_courses
+            ).prefetch_related(
+                Prefetch("subcategories", queryset=grandchild_qs, to_attr="active_subcategories")
+            )
+
+            # Root (Depth 1)
+            qs = qs.prefetch_related(
+                Prefetch("subcategories", queryset=child_qs, to_attr="active_subcategories")
+            )
+
+        return qs
 
 
 @extend_schema_view(
