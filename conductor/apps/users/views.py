@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -44,6 +45,8 @@ class RegisterView(generics.CreateAPIView):
 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -77,6 +80,8 @@ class LoginView(generics.GenericAPIView):
 
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -114,6 +119,8 @@ class LogoutView(generics.GenericAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
     serializer_class = LogoutSerializer
 
     def post(self, request, *args, **kwargs):
@@ -142,6 +149,9 @@ class CustomTokenRefreshView(TokenRefreshView):
     POST /api/v1/auth/refresh/
     """
 
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -169,6 +179,8 @@ class PasswordResetRequestView(generics.GenericAPIView):
 
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -201,6 +213,8 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
     queryset = User.objects.none()
 
     def post(self, request, *args, **kwargs):
@@ -237,6 +251,8 @@ class ChangePasswordView(generics.GenericAPIView):
 
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
     queryset = User.objects.none()
 
     def post(self, request, *args, **kwargs):

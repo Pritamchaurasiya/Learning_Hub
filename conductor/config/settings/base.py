@@ -151,6 +151,11 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "1000/day",
+        "auth": "5/min",
+    },
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
 }
 
