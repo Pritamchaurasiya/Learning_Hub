@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Prefetch, Q
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -49,10 +50,52 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/categories/{id}/ - Category detail
     """
 
-    queryset = Category.objects.filter(is_active=True, parent__isnull=True)
+    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    def get_queryset(self):
+        queryset = Category.objects.filter(is_active=True)
+
+        if self.action == "list":
+            queryset = queryset.filter(parent__isnull=True)
+
+            # Optimization: Recursively prefetch subcategories and annotate course counts
+            subcategory_qs = Category.objects.filter(is_active=True).annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "subcategories",
+                    queryset=subcategory_qs,
+                    to_attr="active_subcategories",
+                ),
+                Prefetch(
+                    "active_subcategories__subcategories",
+                    queryset=subcategory_qs,
+                    to_attr="active_subcategories",
+                ),
+                Prefetch(
+                    "active_subcategories__active_subcategories__subcategories",
+                    queryset=subcategory_qs,
+                    to_attr="active_subcategories",
+                ),
+                Prefetch(
+                    "active_subcategories__active_subcategories__active_subcategories__subcategories",
+                    queryset=subcategory_qs,
+                    to_attr="active_subcategories",
+                ),
+            ).annotate(
+                published_course_count=Count(
+                    "courses", filter=Q(courses__is_published=True)
+                )
+            )
+
+        return queryset
 
 
 @extend_schema_view(
