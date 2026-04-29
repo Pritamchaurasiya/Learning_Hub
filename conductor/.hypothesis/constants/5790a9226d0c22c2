@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\serializers.py
+# hypothesis_version: 6.152.1
+
+['content', 'conversation', 'created_at', 'id', 'is_me', 'last_message', 'last_message_at', 'participants', 'request', 'sender']

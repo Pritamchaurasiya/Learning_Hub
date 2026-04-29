@@ -1,0 +1,11 @@
+# NLP Studio — robots.txt
+User-agent: *
+Allow: /
+Sitemap: /sitemap.xml
+
+# Disallow development/internal paths
+Disallow: /node_modules/
+Disallow: /tests/
+Disallow: /src/
+Disallow: /.github/
+Disallow: /.vscode/

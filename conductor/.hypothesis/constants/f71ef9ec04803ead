@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\migrations\0002_livesession_is_active_sessionattendee_is_active.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'is_active', 'live_sessions', 'livesession', 'sessionattendee']

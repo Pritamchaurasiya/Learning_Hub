@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\urls.py
+# hypothesis_version: 6.152.1
+
+['discussion-thread', 'replies', 'thread', 'thread-replies', 'threads']

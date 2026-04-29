@@ -1,0 +1,67 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../.github"
+		},
+		{
+			"path": "../.idea"
+		},
+		{
+			"path": "../.venv"
+		},
+		{
+			"path": "../.vs"
+		},
+		{
+			"path": "../.vscode"
+		},
+		{
+			"path": "../build"
+		},
+		{
+			"path": "../compose"
+		},
+		{
+			"path": "../conductor"
+		},
+		{
+			"path": "../k8s"
+		},
+		{
+			"path": "../learning"
+		},
+		{
+			"path": "../monitoring"
+		},
+		{
+			"path": "../my_flutter_app"
+		},
+		{
+			"path": "../nginx"
+		},
+		{
+			"path": "../-p"
+		},
+		{
+			"path": "../prometheus"
+		},
+		{
+			"path": "../scripts"
+		},
+		{
+			"path": "../t"
+		},
+		{
+			"path": "../terraform"
+		},
+		{
+			"path": "../windows"
+		},
+		{
+			"path": "../windows_app"
+		}
+	]
+}

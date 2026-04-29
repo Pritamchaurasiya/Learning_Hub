@@ -1,0 +1,35 @@
+name = "learninghub-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+node_compat = true
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+JWT_EXPIRES_IN = "7d"
+
+# Production environment
+[env.production]
+name = "learninghub-api-prod"
+vars = { ENVIRONMENT = "production" }
+
+# Secrets (set via wrangler secret put)
+# DATABASE_URL - Neon PostgreSQL connection string
+# JWT_SECRET - Secret key for JWT signing
+# HUGGINGFACE_API_KEY - Hugging Face API token
+
+# KV Namespaces for caching and rate limiting
+[[kv_namespaces]]
+binding = "LEARNINGHUB_KV"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
+
+# Rate limiting
+[limits]
+cpu_ms = 30000  # Increased to 30s for complex operations
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "learninghub"
+database_id = "your-d1-database-id"

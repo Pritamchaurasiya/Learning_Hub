@@ -1,0 +1,54 @@
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e9]:
+      - heading "Welcome to LearningHub" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Sign in to jump straight back into your courses.
+    - generic [ref=e12]:
+      - button "Quick login as Admin" [ref=e13] [cursor=pointer]:
+        - img [ref=e15]
+        - generic [ref=e17]:
+          - paragraph [ref=e18]: Admin Access
+          - paragraph [ref=e19]: Full privileges • Level 50 • 9999 XP
+        - img [ref=e20]
+      - button "Quick login as Demo User" [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e26]:
+          - paragraph [ref=e27]: Demo Mode
+          - paragraph [ref=e28]: Explore as guest • Level 5 • 250 XP
+        - img [ref=e29]
+    - generic [ref=e33]: or sign in with email
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: Email Address*
+        - generic [ref=e38]:
+          - img [ref=e40]
+          - textbox "Email Address*" [ref=e43]:
+            - /placeholder: you@example.com
+      - generic [ref=e44]:
+        - generic [ref=e45]: Password*
+        - generic [ref=e46]:
+          - img [ref=e48]
+          - textbox "Password*" [ref=e51]:
+            - /placeholder: ••••••••
+      - button "Sign In" [ref=e52] [cursor=pointer]
+    - paragraph [ref=e54]:
+      - text: Don't have an account?
+      - button "Sign up" [ref=e55] [cursor=pointer]
+  - dialog "Welcome to LearningHub" [ref=e56]:
+    - generic [ref=e57]:
+      - tablist "Onboarding steps" [ref=e58]:
+        - 'tab "Go to step 1: Welcome to LearningHub" [selected] [ref=e59] [cursor=pointer]'
+        - 'tab "Go to step 2: Explore Courses" [ref=e60] [cursor=pointer]'
+        - 'tab "Go to step 3: Track Progress" [ref=e61] [cursor=pointer]'
+        - 'tab "Go to step 4: Earn Achievements" [ref=e62] [cursor=pointer]'
+      - generic [ref=e63]:
+        - img [ref=e65]
+        - heading "Welcome to LearningHub" [level=2] [ref=e68]
+        - paragraph [ref=e69]: Your personalized learning journey starts here. Master programming with 70+ courses across 4 phases.
+      - generic [ref=e70]:
+        - button "Skip" [ref=e71] [cursor=pointer]:
+          - img [ref=e72]
+          - text: Skip
+        - button "Next" [ref=e74] [cursor=pointer]:
+          - text: Next
+          - img [ref=e75]

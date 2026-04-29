@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\models.py
+# hypothesis_version: 6.152.1
+
+[255, '-last_message_at', 'Audio', 'Direct Message', 'File', 'Group Chat', 'Image', 'Text', 'Video', 'audio', 'chat_attachments/', 'chat_rooms', 'created_at', 'created_rooms', 'direct', 'file', 'group', 'image', 'messages', 'read_messages', 'room_messages', 'sent_messages', 'text', 'video']

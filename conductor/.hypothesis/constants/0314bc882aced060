@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\serializers.py
+# hypothesis_version: 6.152.1
+
+[200, 10000, 'Activity', 'badge', 'criteria_type', 'criteria_value', 'current_streak', 'description', 'earned_at', 'emblem', 'icon', 'id', 'last_activity_date', 'leader.username', 'leader_name', 'level', 'longest_streak', 'max_members', 'member_count', 'name', 'total_xp', 'user.username', 'username', 'weekly_xp', 'xp_reward']

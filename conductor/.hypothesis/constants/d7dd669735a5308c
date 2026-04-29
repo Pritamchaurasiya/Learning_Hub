@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\views.py
+# hypothesis_version: 6.152.1
+
+['-scheduled_time', 'Already joined', 'Joined successfully', 'Left session', 'Live Sessions', 'Session cancelled', 'Session has ended', 'attendees', 'cancelled', 'course', 'data', 'description', 'duration_minutes', 'ended', 'error', 'get', 'host', 'meeting_url', 'message', 'page_size', 'post', 'scheduled', 'scheduled_time', 'status', 'success', 'title', 'updated_at']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\adversarial_robustness.py
+# hypothesis_version: 6.152.1
+
+[0.0, 1e-06, 0.01, 0.03, 0.1, 0.5, 0.7, 0.8, 0.95, 2.5, 'accuracy', 'attack_success_rate', 'awful', 'bad', 'content', 'dejected', 'detection_rate', 'epoch', 'epochs', 'excellent', 'fast', 'fgsm', 'final_accuracy', 'fine', 'glad', 'good', 'gradual', 'great', 'happy', 'history', 'joyful', 'leisurely', 'loss', 'melancholy', 'n_adversarial', 'n_clean', 'negative', 'pgd', 'pleased', 'poor', 'positive', 'quick', 'rapid', 'robustness_score', 'sad', 'samples_evaluated', 'semantic', 'slow', 'sluggish', 'sorrowful', 'speedy', 'swift', 'terrible', 'text_fooler', 'torch.Tensor', 'unhappy', 'unhurried']

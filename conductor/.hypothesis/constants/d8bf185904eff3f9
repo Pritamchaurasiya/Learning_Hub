@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\jamba_hybrid.py
+# hypothesis_version: 6.152.1
+
+[1024, 4096, 100000, 'Attention', 'Attention + MoE', 'Mamba SSM + MoE', 'context_window', 'inf', 'insight', 'jamba_kv_cache_gb', 'layers', 'memory_analysis', 'paradigm', 'total_layers']

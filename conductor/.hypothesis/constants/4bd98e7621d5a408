@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\cache.py
+# hypothesis_version: 6.152.1
+
+[200, 300, 900, 3600, 86400, ':', 'DAILY', 'LONG', 'MEDIUM', 'SHORT', 'VERY_LONG', 'anon', 'categories', 'courses', 'dashboard', 'delete_pattern', 'query_params', 'quizzes', 'search', 'status_code', 'users']

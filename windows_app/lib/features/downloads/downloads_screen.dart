@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/download_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Downloads screen for offline content management
 class DownloadsScreen extends ConsumerWidget {
@@ -84,12 +86,7 @@ class DownloadsScreen extends ConsumerWidget {
                 children: [
                   // Active downloads
                   activeDownloads.isEmpty
-                      ? const _EmptyState(
-                          icon: Icons.download_outlined,
-                          title: 'No active downloads',
-                          subtitle:
-                              'Start downloading courses for offline access',
-                        )
+                      ? EmptyStateView.noDownloads()
                       : ListView.builder(
                           padding: const EdgeInsets.all(16),
                           itemCount: activeDownloads.length,
@@ -104,7 +101,7 @@ class DownloadsScreen extends ConsumerWidget {
 
                   // Completed downloads
                   completedDownloads.isEmpty
-                      ? const _EmptyState(
+                      ? const EmptyStateView(
                           icon: Icons.download_done_outlined,
                           title: 'No completed downloads',
                           subtitle: 'Completed downloads will appear here',
@@ -130,7 +127,7 @@ class DownloadsScreen extends ConsumerWidget {
   }
 
   void _showClearConfirmation(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Completed'),
@@ -164,9 +161,7 @@ class DownloadsScreen extends ConsumerWidget {
           totalSizeBytes: 50 * 1024 * 1024, // 50 MB
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Demo download started!')),
-    );
+    AppFeedback.showSuccess(context, 'Demo download started!');
   }
 }
 
@@ -369,43 +364,6 @@ class _CompletedDownloadCard extends ConsumerWidget {
             },
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Empty state widget
-class _EmptyState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _EmptyState({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 64, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(height: 16),
-          Text(title, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }

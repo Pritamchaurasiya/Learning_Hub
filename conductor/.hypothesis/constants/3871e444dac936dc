@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\urls.py
+# hypothesis_version: 6.152.1
+
+['categories/', 'category-detail', 'category-list', 'certificate', 'certificates', 'course', 'get', 'list', 'public-certificate', 'public-certificates', 'retrieve', 'track', 'tracks']

@@ -50,7 +50,7 @@ void main() {
       final result = await repository.getUserXP();
 
       // Assert
-      expect(result, const Right(tXP));
+      expect(result, const Right<dynamic, int>(tXP));
       verify(mockRemoteDataSource.getUserXP());
       verify(mockLocalDataSource.cacheXP(tXP));
     });
@@ -64,7 +64,7 @@ void main() {
       final result = await repository.getUserXP();
 
       // Assert
-      expect(result, const Right(tXP));
+      expect(result, const Right<dynamic, int>(tXP));
       verifyZeroInteractions(mockRemoteDataSource);
       verify(mockLocalDataSource.getLastKnownXP());
     });

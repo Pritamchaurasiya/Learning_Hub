@@ -1,0 +1,32 @@
+Analyzing my_flutter_app...                                     
+
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:85:11 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:211:11 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:326:13 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:343:9 - cascade_invocations
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:252:38 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:254:39 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:259:11 - argument_type_not_assignable
+   info - Local variables should be final - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:318:5 - prefer_final_locals
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:451:5 - cascade_invocations
+
+flutter : 9 issues 
+found. (ran in 20.4s)
+At line:1 char:1
++ flutter analyze 
+--no-pub 
+--no-congratulate > 
+final_analyze.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (9 issues foun   
+ d. (ran in 20.4s):    
+String) [], Remote    
+Exception
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 

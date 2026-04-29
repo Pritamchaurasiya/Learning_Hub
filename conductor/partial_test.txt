@@ -1,0 +1,77 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\shiva\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+django: version: 5.2.10, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, Faker-40.1.0, locust-2.43.1, asyncio-1.3.0, cov-7.0.0, django-4.11.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 45 items
+
+tests/test_course_services.py::TestCourseServiceEnrollment::test_enroll_free_course PASSED [  2%]
+tests/test_course_services.py::TestCourseServiceEnrollment::test_enroll_paid_course_raises_error PASSED [  4%]
+tests/test_course_services.py::TestCourseServiceEnrollment::test_duplicate_enrollment_raises_error PASSED [  6%]
+tests/test_course_services.py::TestCourseServiceEnrollment::test_enrollment_updates_count PASSED [  8%]
+tests/test_course_services.py::TestCourseServiceReviews::test_add_review_when_enrolled PASSED [ 11%]
+tests/test_course_services.py::TestCourseServiceReviews::test_review_requires_enrollment PASSED [ 13%]
+tests/test_course_services.py::TestCourseServiceReviews::test_duplicate_review_raises_error PASSED [ 15%]
+tests/test_course_services.py::TestCourseServiceReviews::test_review_updates_course_stats PASSED [ 17%]
+tests/test_course_services.py::TestCourseServiceQueries::test_get_user_enrollments PASSED [ 20%]
+tests/test_course_services.py::TestCourseServiceQueries::test_get_featured_courses PASSED [ 22%]
+tests/test_dsa.py::TestTagModel::test_tag_creation PASSED                [ 24%]
+tests/test_dsa.py::TestTagModel::test_tag_str PASSED                     [ 26%]
+tests/test_dsa.py::TestProblemModel::test_problem_creation PASSED        [ 28%]
+tests/test_dsa.py::TestProblemModel::test_problem_str PASSED             [ 31%]
+tests/test_dsa.py::TestProblemModel::test_problem_tags PASSED            [ 33%]
+tests/test_dsa.py::TestProblemModel::test_difficulty_choices PASSED      [ 35%]
+tests/test_dsa.py::TestTestCaseModel::test_testcase_creation PASSED      [ 37%]
+tests/test_dsa.py::TestTestCaseModel::test_hidden_testcase PASSED        [ 40%]
+tests/test_dsa.py::TestTestCaseModel::test_testcase_str PASSED           [ 42%]
+tests/test_dsa.py::TestSubmissionModel::test_submission_creation PASSED  [ 44%]
+tests/test_dsa.py::TestSubmissionModel::test_submission_str PASSED       [ 46%]
+tests/test_dsa.py::TestSubmissionModel::test_status_choices PASSED       [ 48%]
+tests/test_dsa.py::TestProblemListAPI::test_list_problems_unauthenticated PASSED [ 51%]
+tests/test_dsa.py::TestProblemListAPI::test_list_problems_authenticated PASSED [ 53%]
+tests/test_dsa.py::TestProblemListAPI::test_filter_by_difficulty PASSED  [ 55%]
+tests/test_dsa.py::TestProblemListAPI::test_filter_by_tag PASSED         [ 57%]
+tests/test_dsa.py::TestProblemDetailAPI::test_get_problem_detail PASSED  [ 60%]
+tests/test_dsa.py::TestProblemDetailAPI::test_problem_not_found PASSED   [ 62%]
+tests/test_dsa.py::TestProblemDetailAPI::test_example_cases_included PASSED [ 64%]
+tests/test_dsa.py::TestSubmissionAPI::test_create_submission_authenticated PASSED [ 66%]
+tests/test_dsa.py::TestSubmissionAPI::test_create_submission_unauthenticated PASSED [ 68%]
+tests/test_dsa.py::TestSubmissionAPI::test_list_own_submissions PASSED   [ 71%]
+tests/test_dsa.py::TestSubmissionAPI::test_submission_includes_status PASSED [ 73%]
+tests/test_dsa.py::TestTagAPI::test_list_tags PASSED                     [ 75%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_clean_code PASSED   [ 77%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_blocks_os_import PASSED [ 80%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_blocks_subprocess PASSED [ 82%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_blocks_eval PASSED  [ 84%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_blocks_exec PASSED  [ 86%]
+tests/test_dsa.py::TestSandboxService::test_sanitize_blocks_open PASSED  [ 88%]
+tests/test_dsa.py::TestSecurityEdgeCases::test_inactive_problems_not_visible PASSED [ 91%]
+tests/test_dsa.py::TestSecurityEdgeCases::test_cannot_access_others_submissions PASSED [ 93%]
+apps/payments/tests/test_services.py::TestRazorpayService::test_create_order FAILED [ 95%]
+apps/payments/tests/test_services.py::TestRazorpayService::test_verify_signature_success FAILED [ 97%]
+apps/payments/tests/test_services.py::TestRazorpayService::test_verify_signature_failure PASSED [100%]
+
+================================== FAILURES ===================================
+____________________ TestRazorpayService.test_create_order ____________________
+apps\payments\tests\test_services.py:65: in test_create_order
+    order = service.create_order(mock_user, mock_course.id)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\payments\services.py:32: in create_order
+    from core.exceptions import AppError
+E   ImportError: cannot import name 'AppError' from 'core.exceptions' (C:\Users\shiva\Desktop\windows_app\conductor\core\exceptions.py)
+______________ TestRazorpayService.test_verify_signature_success ______________
+apps\payments\tests\test_services.py:91: in test_verify_signature_success
+    result = service.verify_payment('order_123', 'pay_123', 'sig_123')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\payments\services.py:129: in verify_payment
+    EnrollmentService.enroll(payment.user, payment.course)
+apps\courses\services.py:96: in enroll
+    raise PaymentRequiredException("Payment required for this course.")
+E   core.exceptions.PaymentRequiredException: Payment required for this course.
+=========================== short test summary info ===========================
+FAILED apps/payments/tests/test_services.py::TestRazorpayService::test_create_order
+FAILED apps/payments/tests/test_services.py::TestRazorpayService::test_verify_signature_success
+======================== 2 failed, 43 passed in 10.15s ========================

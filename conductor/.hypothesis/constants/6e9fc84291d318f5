@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0011_add_performance_indexes.py
+# hypothesis_version: 6.152.1
+
+['0010_userbehavior', 'activitylog', 'ai_engine', 'challenge', 'challengeparticipant', 'course', 'created_at', 'idx_behavior_created', 'idx_insight_user', 'is_active', 'is_completed', 'learninginsight', 'starts_at', 'user', 'userbehavior']

@@ -3,6 +3,7 @@ import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:learning_hub/core/services/api_client.dart';
 
 /// Health status levels
 enum HealthStatus {
@@ -144,6 +145,7 @@ class HealthCheckService {
   factory HealthCheckService() => _instance;
 
   final Map<String, HealthChecker> _checkers = {};
+  final ApiClient _api = ApiClient.instance;
   final Map<String, AlertThreshold> _thresholds = {};
   final List<PerformanceMetrics> _metricsHistory = [];
   Timer? _periodicCheckTimer;
@@ -170,6 +172,47 @@ class HealthCheckService {
 
     // Shared preferences check
     registerChecker('preferences', _checkPreferences);
+
+    // Backend API check
+    registerChecker('backend', _checkBackend);
+  }
+
+  /// Check backend API health
+  Future<ComponentHealth> _checkBackend() async {
+    final stopwatch = Stopwatch()..start();
+    try {
+      // Use a timeout to assume unhealthy if slow
+      final response = await _api
+          .get<Map<String, dynamic>>(
+            '/health/', // Assumes a standard health endpoint or root API
+          )
+          .timeout(const Duration(seconds: 5));
+
+      stopwatch.stop();
+
+      final isHealthy = response.success || response.statusCode == 200;
+
+      return ComponentHealth(
+        name: 'backend',
+        status: isHealthy ? HealthStatus.healthy : HealthStatus.unhealthy,
+        message: isHealthy ? 'Backend operational' : 'Backend returned error',
+        responseTime: stopwatch.elapsed,
+        details: {
+          'statusCode': response.statusCode,
+          'message': response.message,
+        },
+        checkedAt: DateTime.now(),
+      );
+    } catch (e) {
+      stopwatch.stop();
+      return ComponentHealth(
+        name: 'backend',
+        status: HealthStatus.unhealthy,
+        message: 'Backend unreachable: ${e.toString()}',
+        responseTime: stopwatch.elapsed,
+        checkedAt: DateTime.now(),
+      );
+    }
   }
 
   /// Check network connectivity

@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=learninghub_prod
+      - POSTGRES_USER=learninghub_admin
+      - POSTGRES_PASSWORD=secure_prod_password_change_me
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learninghub_admin -d learninghub_prod"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  payment_service:
+    build: ./windows_app/backend/payment_service
+    ports:
+      - "8080:8080"
+    restart: always
+
+  backend:
+    build: 
+      context: ./conductor
+      dockerfile: Dockerfile
+    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - 8000
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=prod_secret_key_change_me_in_real_deployment
+      - ALLOWED_HOSTS=backend,localhost,127.0.0.1
+      - DATABASE_URL=postgres://learninghub_admin:secure_prod_password_change_me@db:5432/learninghub_prod
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: always
+
+  nginx:
+    build:
+      context: ./windows_app/my_flutter_app
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/app/static
+      - media_volume:/app/media
+    depends_on:
+      - backend
+      - payment_service
+    restart: always
+
+  # Phase 8: Monitoring Stack
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+  grafana_data:

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0012_bookmark.py
+# hypothesis_version: 6.152.1
+
+['-created_at', '0001_initial', 'Bookmark', 'bookmark', 'bookmarked_by', 'bookmarks', 'course', 'courses', 'courses.course', 'created_at', 'db_table', 'id', 'notes', 'ordering', 'user', 'user_bookmarks', 'users']

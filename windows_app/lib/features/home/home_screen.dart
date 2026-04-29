@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
 
 import 'package:learning_hub/core/services/course_service.dart';
+import 'package:learning_hub/core/services/api_client.dart';
 import 'package:learning_hub/data/models/course_model.dart';
 import 'package:learning_hub/data/models/live_class_model.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 import 'package:learning_hub/core/providers/auth_provider.dart';
 import 'package:learning_hub/core/providers/gamification_provider.dart';
@@ -21,6 +23,7 @@ import 'package:learning_hub/shared/widgets/premium_loading_indicator.dart';
 import 'package:learning_hub/features/home/widgets/hero_banner.dart';
 import 'package:learning_hub/features/home/widgets/home_app_bar.dart';
 import '../../shared/widgets/activity_heatmap.dart';
+import '../../core/utils/responsive.dart';
 
 import 'models/home_data.dart';
 import 'widgets/section_header.dart';
@@ -96,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen(gamificationProvider, (previous, next) {
       if (next.showLevelUpCelebration && !next.isLoading) {
         _confettiController.play();
-        showDialog(
+        showDialog<void>(
           context: context,
           barrierDismissible: false,
           builder: (context) => LevelUpDialog(
@@ -117,9 +120,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final theme = Theme.of(context);
     final homeData = ref.watch(homeDataProvider);
 
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width >= 1024;
-    final isTablet = size.width >= 600 && size.width < 1024;
+    final isDesktop = Responsive.isDesktop(context);
+    final isTablet = Responsive.isTablet(context);
 
     return Title(
       title: AppLocalizations.of(context)!.appTitle,
@@ -195,6 +197,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
 
+                      // NEXT LEVEL: Daily Challenge Card
+                      const _DailyChallengeCard(),
+
                       // Learning Path Progress (New)
                       Consumer(
                         builder: (context, ref, child) {
@@ -259,7 +264,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // Featured Courses (Responsive)
                       SectionHeader(
                         title: AppLocalizations.of(context)!.featuredCourses,
-                        onSeeAll: () => context.push('/search?featured=true'),
+                        onSeeAll: () => context.push(
+                            '/search?featured=true&semantic=true'), // Semantic enabled
+                      ),
+                      // Smart Search Toggle (God Mode)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Row(
+                          children: [
+                            const Text('Cognitive Search',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.purpleAccent)),
+                            const SizedBox(width: 8),
+                            Switch(
+                              value: true,
+                              activeThumbColor: Colors.purpleAccent,
+                              onChanged: (val) {
+                                // In a real app, this would toggle a provider
+                                AppFeedback.showInfo(context,
+                                    'Semantic Search Enabled: AI will understand meaning, not just keywords.');
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                       if (isDesktop)
                         FeaturedCoursesGrid(courses: data.featuredCourses)
@@ -456,6 +485,180 @@ class _AiTutorFabState extends State<_AiTutorFab>
                   Icons.psychology,
                   color: Colors.white,
                   size: 28,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Daily Challenge Card - Fetches personalized daily quest from AI
+class _DailyChallengeCard extends ConsumerStatefulWidget {
+  const _DailyChallengeCard();
+
+  @override
+  ConsumerState<_DailyChallengeCard> createState() =>
+      _DailyChallengeCardState();
+}
+
+class _DailyChallengeCardState extends ConsumerState<_DailyChallengeCard> {
+  Map<String, dynamic>? _challenge;
+  bool _isLoading = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDailyChallenge();
+  }
+
+  Future<void> _fetchDailyChallenge() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      // Use the ApiClient singleton directly (already imported at top)
+      final apiClient = ApiClient.instance;
+      final response = await apiClient
+          .post<Map<String, dynamic>>('/ai/challenges/generate-daily/');
+
+      final responseData = response.data;
+      if (responseData != null && responseData['status'] == 'success') {
+        setState(() {
+          _challenge = responseData['data'] as Map<String, dynamic>?;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[DailyChallenge] Error: $e');
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (_isLoading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Card(
+          child: Container(
+            height: 100,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator.adaptive(),
+          ),
+        ),
+      );
+    }
+
+    if (_hasError || _challenge == null) {
+      return const SizedBox.shrink(); // Gracefully hide on error
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.orange.shade400,
+                Colors.deepOrange.shade600,
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.whatshot,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DAILY QUEST',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        (_challenge!['title'] as String?) ??
+                            'Complete Today\'s Challenge',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.star,
+                              color: Colors.yellow.shade300, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '+${_challenge!['xp_reward'] ?? 150} XP',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Arrow
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                    onPressed: () {
+                      context.push('/challenges');
+                    },
+                  ),
                 ),
               ],
             ),

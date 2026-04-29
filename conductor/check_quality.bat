@@ -1,4 +1,5 @@
 @echo off
+set DEBUG=True
 echo Running Black...
 python -m black .
 echo.

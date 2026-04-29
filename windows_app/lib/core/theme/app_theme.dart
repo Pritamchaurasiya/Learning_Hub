@@ -210,12 +210,64 @@ class AppTheme {
         ),
       ),
 
+      // Tab Bar
+      tabBarTheme: TabBarThemeData(
+        indicatorColor: AppColors.primary,
+        labelColor: AppColors.primary,
+        unselectedLabelColor: AppColors.textSecondaryLight,
+        indicatorSize: TabBarIndicatorSize.label,
+        dividerColor: AppColors.borderLight,
+        labelStyle: _textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: _textTheme.labelLarge,
+      ),
+
+      // FAB
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+
+      // Search Bar
+      searchBarTheme: SearchBarThemeData(
+        backgroundColor: WidgetStateProperty.all(AppColors.surfaceVariantLight),
+        elevation: WidgetStateProperty.all(0),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 16),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppColors.borderLight),
+          ),
+        ),
+        hintStyle: WidgetStateProperty.all(
+          _textTheme.bodyMedium?.copyWith(color: AppColors.textSecondaryLight),
+        ),
+      ),
+
+      // Tooltip
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: AppColors.textPrimaryLight,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: _textTheme.bodySmall?.copyWith(color: Colors.white),
+      ),
+
       // Page Transitions
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
           TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
         },
       ),
     );
@@ -402,12 +454,64 @@ class AppTheme {
         ),
       ),
 
+      // Tab Bar
+      tabBarTheme: TabBarThemeData(
+        indicatorColor: AppColors.primaryLight,
+        labelColor: AppColors.primaryLight,
+        unselectedLabelColor: AppColors.textSecondaryDark,
+        indicatorSize: TabBarIndicatorSize.label,
+        dividerColor: AppColors.borderDark,
+        labelStyle: _textThemeDark.labelLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: _textThemeDark.labelLarge,
+      ),
+
+      // FAB
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primaryLight,
+        foregroundColor: AppColors.backgroundDark,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+
+      // Search Bar
+      searchBarTheme: SearchBarThemeData(
+        backgroundColor: WidgetStateProperty.all(AppColors.surfaceVariantDark),
+        elevation: WidgetStateProperty.all(0),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 16),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppColors.borderDark),
+          ),
+        ),
+        hintStyle: WidgetStateProperty.all(
+          _textThemeDark.bodyMedium?.copyWith(color: AppColors.textSecondaryDark),
+        ),
+      ),
+
+      // Tooltip
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariantDark,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: _textThemeDark.bodySmall?.copyWith(color: AppColors.textPrimaryDark),
+      ),
+
       // Page Transitions
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
           TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
         },
       ),
     );

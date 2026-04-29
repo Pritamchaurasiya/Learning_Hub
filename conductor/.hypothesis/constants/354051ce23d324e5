@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-created_at', '-is_accepted_answer', '-is_pinned', 'Downvote', 'Upvote', 'author', 'content_type', 'course', 'courses.Course', 'created_at', 'discussion_replies', 'discussion_threads', 'nested_replies', 'object_id', 'replies', 'self', 'tags', 'thread', 'user']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\tasks.py
+# hypothesis_version: 6.152.1
+
+[100, 'FCM_CREDENTIALS', 'FCM_CREDENTIALS_PATH', 'in_app', 'max_retries', 'normal', 'problem', 'push', 'r', 'send_email_async', 'send_push_async', 'token']

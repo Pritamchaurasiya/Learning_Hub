@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/course_model.dart';
 import '../../../core/providers/cart_provider.dart';
 import '../../notes/presentation/notes_tab.dart';
+import '../../../shared/widgets/app_feedback.dart';
 
 /// Mobile layout for course detail
 class MobileLayout extends StatelessWidget {
@@ -1014,14 +1015,11 @@ class _PriceCardState extends ConsumerState<PriceCard> {
                 child: OutlinedButton(
                   onPressed: () {
                     ref.read(cartProvider.notifier).addToCart(widget.course);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${widget.course.title} added to cart'),
-                        action: SnackBarAction(
-                          label: 'View Cart',
-                          onPressed: () => context.push('/cart'),
-                        ),
-                      ),
+                    AppFeedback.showSuccess(
+                      context,
+                      '${widget.course.title} added to cart',
+                      action: 'View Cart',
+                      onAction: () => context.push('/cart'),
                     );
                   },
                   style: OutlinedButton.styleFrom(

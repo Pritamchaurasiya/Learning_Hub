@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:learning_hub/core/services/notification_service.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Notifications screen with categorized notifications
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -192,8 +193,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
 
 class _NotificationList extends StatelessWidget {
   final List<AppNotification> notifications;
-  final Function(AppNotification) onTap;
-  final Function(AppNotification) onDismiss;
+  final void Function(AppNotification) onTap;
+  final void Function(AppNotification) onDismiss;
 
   const _NotificationList({
     required this.notifications,
@@ -204,30 +205,7 @@ class _NotificationList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notifications.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.notifications_none,
-              size: 64,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No notifications',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'You\'re all caught up!',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
-        ),
-      );
+      return EmptyStateView.noNotifications();
     }
 
     return ListView.builder(

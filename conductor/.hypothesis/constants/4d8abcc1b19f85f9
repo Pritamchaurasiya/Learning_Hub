@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\migrations\0002_phase6_analytics.py
+# hypothesis_version: 6.152.1
+
+['-total_xp', '0001_initial', 'Elder', 'Emoji or Icon', 'Guild', 'GuildMembership', 'Leader', 'Member', 'contribution_xp', 'created_at', 'description', 'elder', 'emblem', 'gamification', 'gamification.guild', 'guild', 'guild_membership', 'id', 'leader', 'led_guilds', 'level', 'max_members', 'member', 'memberships', 'name', 'ordering', 'role', 'total_xp', 'unique_together', 'updated_at', 'user', '🛡️']

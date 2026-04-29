@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-03-28T16:42:15.409037",
+  "django_version": "5.0.1",
+  "features_enabled": [
+    "_enable_advanced_caching",
+    "_enable_query_optimization",
+    "_enable_security_headers",
+    "_enable_compression",
+    "_enable_rate_limiting",
+    "_enable_logging",
+    "_enable_health_checks"
+  ],
+  "statistics": {
+    "total_users": 1,
+    "active_users": 1,
+    "total_courses": 0
+  },
+  "settings_summary": {
+    "debug": true,
+    "installed_apps": 35,
+    "middleware": 21,
+    "databases": [
+      "default"
+    ]
+  }
+}

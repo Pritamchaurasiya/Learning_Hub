@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\serializers.py
+# hypothesis_version: 6.152.1
+
+['ai_feedback', 'code', 'constraints', 'description', 'difficulty', 'error_log', 'example_cases', 'examples', 'expected_output', 'explanation', 'get_status_display', 'id', 'input_data', 'input_format', 'is_active', 'language', 'memory_kb', 'name', 'output_format', 'points', 'problem', 'runtime_ms', 'slug', 'status', 'status_display', 'submitted_at', 'tags', 'title', 'user']

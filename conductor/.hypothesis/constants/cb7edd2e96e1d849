@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0005_remove_organization_idx_org_active_name_and_more.py
+# hypothesis_version: 6.152.1
+
+['idx_org_active_name', 'idx_user_last_login', 'idx_user_role_active', 'organization', 'organizationmember', 'user', 'users']

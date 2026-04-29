@@ -1,0 +1,7 @@
+[info] Catch clause should use 'on' to specify the type of exception being caught (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\ai\presentation\curriculum_screen.dart:27:5)
+[info] Catch clause should use 'on' to specify the type of exception being caught (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\ai\providers\ai_providers.dart:32:5)
+[info] 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\cart\presentation\cart_screen.dart:102:56)
+[info] 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\cart\presentation\cart_screen.dart:161:33)
+[info] Unnecessary use of a 'double' literal (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\cart\presentation\cart_screen.dart:29:33)
+[info] Catch clause should use 'on' to specify the type of exception being caught (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\dsa\data\dsa_repository.dart:140:5)
+[info] Catch clause should use 'on' to specify the type of exception being caught (C:\Users\shiva\Desktop\windows_app\my_flutter_app\lib\src\features\gamification\presentation\gamification_controller.dart:74:5)

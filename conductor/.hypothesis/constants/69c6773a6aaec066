@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[200, '-created_at', 'Achievement', 'Android', 'Course Update', 'DeviceToken', 'Notification', 'Reminder', 'System', 'Web', 'achievement', 'android', 'course', 'created_at', 'data', 'db_table', 'device_tokens', 'iOS', 'id', 'ios', 'is_active', 'is_read', 'message', 'notifications', 'ordering', 'platform', 'read_at', 'reminder', 'system', 'title', 'token', 'type', 'updated_at', 'web']

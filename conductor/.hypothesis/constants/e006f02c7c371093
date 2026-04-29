@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\urls.py
+# hypothesis_version: 6.152.1
+
+['delete', 'delete/', 'list', 'mark-read', 'mark-read/', 'register-device', 'register-device/']

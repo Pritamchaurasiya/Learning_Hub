@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\urls.py
+# hypothesis_version: 6.152.1
+
+[400, 'GET', 'Missing code', 'POST', 'active_contests', 'analyze/', 'analyze_complexity', 'category', 'code', 'contest_leaderboard', 'contests/', 'data', 'dsa_recommendations', 'dsa_stats', 'error', 'execution_time_ms', 'feedback', 'language', 'limit', 'memory_kb', 'message', 'passed_tests', 'problem', 'problem_id', 'problems', 'python', 'recommendations/', 'stats/', 'status', 'submission', 'submission_id', 'submissions', 'success', 'tag', 'tags', 'total_tests', 'validate/', 'validate_solution']

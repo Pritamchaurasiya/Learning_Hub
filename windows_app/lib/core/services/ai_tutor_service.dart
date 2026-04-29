@@ -4,8 +4,9 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'ai/backend_llm_client.dart';
 import 'ai/llm_client.dart';
-import 'ai/gemini_client.dart';
+
 import 'ai/embedding_client.dart';
 import 'ai/gemini_embedding_client.dart';
 import 'ai/mock_embedding_client.dart';
@@ -178,24 +179,29 @@ class AiTutorService {
   String? _activeConversationId;
 
   void _initializeClient() {
-    // Auto-detect based on API key presence instead of a separate flag
-    const geminiKey = String.fromEnvironment('GEMINI_API_KEY');
-    final isGeminiAvailable = geminiKey.isNotEmpty;
+    // 1. Try Backend (Primary)
+    // We assume backend is available if not in a pure offline/mock mode
+    // In a real app, we might check connectivity or feature flags
+    _client = BackendLLMClient();
 
-    if (isGeminiAvailable) {
+    // 2. Fallback to Gemini (Direct) if configured and backend fails?
+    // For now, we instantiate backend client.
+    // If we wanted a true fallback chain, we'd need a CompositeClient.
+    // But for this phase, we switch to Backend as primary.
+
+    // We keep Gemini for Embedding since backend embedding might not be ready
+    // or we want local RAG
+    const geminiKey = String.fromEnvironment('GEMINI_API_KEY');
+    if (geminiKey.isNotEmpty) {
       if (kDebugMode) {
         debugPrint(
-            '[AiTutorService] Gemini API Key detected. Enabling God Mode (Real AI).');
+            '[AiTutorService] Gemini Key found. Using Gemini for Embeddings.');
       }
-      _client = GeminiClient();
       _embeddingClient = GeminiEmbeddingClient();
     } else {
-      if (kDebugMode) {
-        debugPrint('[AiTutorService] No Gemini API Key found. Using Mock AI.');
-      }
-      _client = MockLLMClient(this);
       _embeddingClient = MockEmbeddingClient();
     }
+
     _knowledgeRepository = KnowledgeRepository(_embeddingClient);
   }
 
@@ -685,7 +691,49 @@ To master this effectively:
     );
     _addMessageToConversation(convId, userMessage);
 
-    // RAG Retrieval
+    // 0. Knowledge Base Match (Rule-based) - PRIORITY
+    // This preserves structured data (code examples, sources) that raw LLM text streams usually lose.
+    final lowerQuery = query.toLowerCase();
+    for (final entry in _knowledgeBase.entries) {
+      if (lowerQuery.contains(entry.key)) {
+        final cannedResponse = _buildKnowledgeResponse(entry.key, entry.value);
+
+        // Stream the canned response
+        final fullText = cannedResponse.message;
+        for (int i = 0; i < fullText.length; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 15));
+          yield TutorResponse(
+            message: fullText[i], // Yield char delta
+            suggestedFollowUps: cannedResponse.suggestedFollowUps,
+            sources: cannedResponse.sources,
+            codeExample: cannedResponse.codeExample,
+          );
+        }
+
+        _addAssistantMessage(convId, fullText, metadata: {
+          'sources': cannedResponse.sources,
+          'codeExample': cannedResponse.codeExample,
+          'suggestedFollowUps': cannedResponse.suggestedFollowUps,
+        });
+        return; // Exit after serving knowledge base response
+      }
+    }
+
+    // Special Handlers for "quiz" or "code" if not matched above
+    if (lowerQuery.contains('quiz') || lowerQuery.contains('test me')) {
+      final quizResponse = _generateQuizResponse(context);
+      final fullText = quizResponse.message;
+      for (int i = 0; i < fullText.length; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 15));
+        yield TutorResponse(
+            message: fullText[i],
+            suggestedFollowUps: quizResponse.suggestedFollowUps);
+      }
+      _addAssistantMessage(convId, fullText);
+      return;
+    }
+
+    // 1. RAG Retrieval
     String enrichedPrompt = query;
     List<String> sources = [];
     try {

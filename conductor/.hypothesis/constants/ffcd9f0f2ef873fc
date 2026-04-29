@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\rate_limit_service.py
+# hypothesis_version: 6.151.9
+
+[0.1, 1.0, 2.0, 5.0, 10.0, 100, 300, 429, 3600, ',', '/api/ai/', '/api/auth/', '/api/payments/', '/api/search/', '/api/upload/', '0', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR', 'Rate limit exceeded', 'Retry-After', 'Too many requests', 'X-RateLimit-Limit', 'X-RateLimit-Reset', 'ai', 'api', 'auth', 'basic', 'block', 'blocked_at', 'blocked_requests', 'duration', 'endpoint', 'enterprise', 'error', 'free', 'global', 'ip', 'last_update', 'payment', 'pro', 'reason', 'retry_after', 'search', 'throttle', 'tokens', 'top_requesters', 'total_requests', 'unknown', 'upload', 'user', 'warn']

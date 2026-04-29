@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0002_courseembedding.py
+# hypothesis_version: 6.152.1
+
+[384, '0001_initial', 'CourseEmbedding', 'Semantic Vector', 'ai_engine', 'chunk_text', 'content_type', 'contenttypes', 'course_embeddings', 'created_at', 'db_table', 'embedding', 'id', 'object_id', 'updated_at']

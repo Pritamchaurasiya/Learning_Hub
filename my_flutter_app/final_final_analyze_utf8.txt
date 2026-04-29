@@ -1,0 +1,37 @@
+Analyzing my_flutter_app...                                     
+
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dsa\data\submission_websocket_service.dart:24:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dsa\data\submission_websocket_service.dart:25:18 - avoid_dynamic_calls
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\dsa\data\submission_websocket_service.dart:27:9 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:7:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:8:1 - directives_ordering
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:91:13 - inference_failure_on_instance_creation
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:103:7 - avoid_catches_without_on_clauses
+   info - Unnecessary type annotation on a local variable - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:314:11 - omit_local_variable_types
+   info - Unnecessary type annotation on a local variable - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:315:11 - omit_local_variable_types
+   info - Local variables should be final - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:404:5 - prefer_final_locals
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:451:5 - cascade_invocations
+
+flutter : 11 issues 
+found. (ran in 8.4s)
+At line:1 char:1
++ flutter analyze 
+--no-pub 
+--no-congratulate > f
+inal_final_analyze.tx
+t  ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (11 issu   
+ es found. (ran i    
+n 8.4s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

@@ -6,7 +6,7 @@ from apps.users.serializers import (
     UserProfileUpdateSerializer,
     ChangePasswordSerializer,
 )
-from apps.users.models import User
+
 
 @pytest.mark.django_db
 class TestUserSerializers:
@@ -57,15 +57,16 @@ class TestUserSerializers:
         data = {"display_name": "New Name", "bio": "New Bio"}
         serializer = UserProfileUpdateSerializer(data=data)
         assert serializer.is_valid()
-        
+
     def test_change_password_serializer(self, user_factory):
         user = user_factory(email="user@test.com", password="old_password")
-        
+
         # Mock request context
         from collections import namedtuple
+
         Request = namedtuple("Request", ["user"])
         request = Request(user=user)
-        
+
         data = {
             "current_password": "old_password",
             "new_password": "new_password123",
@@ -73,4 +74,3 @@ class TestUserSerializers:
         }
         serializer = ChangePasswordSerializer(data=data, context={"request": request})
         assert serializer.is_valid()
-

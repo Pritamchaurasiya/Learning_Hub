@@ -1,0 +1,35 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: redis-chaos-pod-kill
+  namespace: conductor-prod
+spec:
+  action: pod-kill
+  mode: fixed-percent
+  value: "50" # Kills 50% of the matching pods
+  selector:
+    labelSelectors:
+      app: redis-cache
+      tier: backend
+  duration: "60s"
+  scheduler:
+    cron: "@every 10m" # Kills pods every 10 minutes to verify cache degradation logic
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: db-network-latency
+  namespace: conductor-prod
+spec:
+  action: delay
+  mode: all
+  selector:
+    labelSelectors:
+      app: postgres-db
+  delay:
+    latency: "500ms"
+    correlation: "100"
+    jitter: "0ms"
+  duration: "3m"
+  scheduler:
+    cron: "@every 30m" # Injects latency every 30m to evaluate DB connection pooling and timeouts

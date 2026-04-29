@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\cache_service.py
+# hypothesis_version: 6.151.9
+
+[0.1, 100, 300, 1000, '1', ':', 'T', 'default', 'delete_pattern', 'expires', 'factory', 'hit_rate_percent', 'hits', 'l1_cache_size', 'l1_hits', 'l2_hits', 'misses', 'refreshes', 'sets', 'ttl', 'value']

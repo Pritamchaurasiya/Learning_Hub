@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\migrations\0002_initial.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'device_tokens', 'devicetoken', 'notification', 'notifications', 'token', 'user']

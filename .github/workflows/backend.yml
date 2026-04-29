@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Tests
         env:
-          SECRET_KEY: testing_secret_key
+          SECRET_KEY: "${{ secrets.SECRET_KEY }}"
           DEBUG: "True"
           ALLOWED_HOSTS: localhost
           DATABASE_URL: postgres://conductor:conductor_password@localhost:5432/conductor

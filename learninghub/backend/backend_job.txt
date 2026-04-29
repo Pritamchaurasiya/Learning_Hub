@@ -1,0 +1,6 @@
+﻿
+Id     Name            PSJobTypeName   State         HasMoreData     Location             Command                  
+--     ----            -------------   -----         -----------     --------             -------                  
+1      Job1            BackgroundJob   Running       True            localhost             node dist/server.js     
+
+

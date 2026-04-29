@@ -1,0 +1,32 @@
+﻿Building Windows application...                                 
+flutter : CMake 
+Error at 
+CMakeLists.txt:3 
+(project):
+At line:1 char:1
++ flutter build 
+windows --debug 2>&1 
+| Out-File -FilePath 
+windows_debug ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (CMake E   
+ rror at ...xt:3     
+(project)::Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  No 
+CMAKE_CXX_COMPILER 
+could be found.
+
+
+
+Building Windows application...                                     9.2s
+Unable to generate 
+build files

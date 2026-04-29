@@ -1,0 +1,288 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Unnecessary use of a 'double' literal - integration_test\app_test.dart:25:9 - prefer_int_literals
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\main.dart:16:5 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\core\network\api_client.dart:8:1 - directives_ordering
+   info - The value of the argument is redundant because it matches the default value - lib\src\core\network\api_client.dart:31:18 - avoid_redundant_argument_values
+   info - Sort directive sections alphabetically - lib\src\core\network\network_info.dart:2:1 - directives_ordering
+   info - Constructor declarations should be before non-constructor declarations - lib\src\core\network\network_info.dart:11:3 - sort_constructors_first
+warning - The generic type 'Response<dynamic>' should have explicit type arguments but doesn't - lib\src\core\network\performance_interceptor.dart:12:19 - strict_raw_type
+   info - Sort directive sections alphabetically - lib\src\core\router\app_router.dart:31:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\core\router\app_router.dart:32:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\core\router\app_router.dart:33:1 - directives_ordering
+   info - The value of the argument is redundant because it matches the default value - lib\src\core\utils\logger.dart:6:23 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value - lib\src\core\utils\logger.dart:7:17 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value - lib\src\core\utils\logger.dart:8:13 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value - lib\src\core\utils\logger.dart:9:18 - avoid_redundant_argument_values
+   info - 'printTime' is deprecated and shouldn't be used. Use `dateTimeFormat` with `DateTimeFormat.onlyTimeAndSinceStart` or `DateTimeFormat.none` instead - lib\src\core\utils\logger.dart:10:5 - deprecated_member_use
+   info - Classes should define instance members - lib\src\core\utils\logger.dart:14:1 - avoid_classes_with_only_static_members
+   info - The parameter 'path' is not used in the constructor - lib\src\core\utils\web_file_dummy.dart:2:8 - avoid_unused_constructor_parameters
+   info - Statement should be on a separate line - lib\src\core\widgets\performance_overlay.dart:26:34 - always_put_control_body_on_new_line
+   info - Sort directive sections alphabetically - lib\src\features\ai\data\ai_repository.dart:6:1 - directives_ordering
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:30:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:44:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:50:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:73:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:76:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:87:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:90:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:109:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:121:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:129:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\data\ai_repository.dart:132:26 - always_put_control_body_on_new_line
+   info - Statements in an if should be enclosed in a block - lib\src\features\ai\data\ai_repository.dart:188:7 - curly_braces_in_flow_control_structures
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:18:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:19:18 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:20:17 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:20:44 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:21:24 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:22:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:24:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\data\recommendation_repository.dart:24:15 - avoid_dynamic_calls
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\data\recommendation_repository.dart:31:7 - avoid_catches_without_on_clauses
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\presentation\causal_graph_screen.dart:32:18 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\presentation\causal_graph_screen.dart:32:59 - avoid_dynamic_calls
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:33:15 - prefer_single_quotes
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\causal_graph_screen.dart:35:7 - avoid_catches_without_on_clauses
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:37:31 - prefer_single_quotes
+   info - The value of the argument is redundant because it matches the default value - lib\src\features\ai\presentation\causal_graph_screen.dart:61:19 - avoid_redundant_argument_values
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\causal_graph_screen.dart:65:47 - prefer_int_literals
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:69:26 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:74:41 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:75:61 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:83:41 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:84:61 - prefer_single_quotes
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\causal_graph_screen.dart:94:50 - deprecated_member_use
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\causal_graph_screen.dart:115:41 - prefer_int_literals
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:123:38 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:138:25 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:139:25 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:140:25 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\causal_graph_screen.dart:141:25 - prefer_single_quotes
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\causal_graph_screen.dart:156:39 - prefer_int_literals
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\causal_graph_screen.dart:159:34 - deprecated_member_use
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\curriculum_generator_screen.dart:25:27 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\curriculum_generator_screen.dart:41:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_screen.dart:34:41 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\quiz_screen.dart:46:7 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\ai\presentation\quiz_screen.dart:47:28 - use_build_context_synchronously
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_screen.dart:56:23 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\quiz_screen.dart:70:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\voice_tutor_controller.dart:72:7 - avoid_catches_without_on_clauses
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\ai\presentation\voice_tutor_controller.dart:109:9 - unawaited_futures
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\voice_tutor_controller.dart:117:31 - always_put_control_body_on_new_line
+   info - Use a string buffer rather than '+' to compose strings - lib\src\features\ai\presentation\voice_tutor_controller.dart:129:9 - use_string_buffers
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\voice_tutor_controller.dart:138:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:39:20 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:51:17 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:65:15 - unawaited_futures
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:72:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:74:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:108:23 - always_put_control_body_on_new_line
+   info - Use a string buffer rather than '+' to compose strings - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:110:9 - use_string_buffers
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:120:7 - unawaited_futures
+   info - Unnecessary type annotation on a local variable - lib\src\features\ai\presentation\widgets\proctoring_camera_view.dart:84:13 - omit_local_variable_types
+   info - Unnecessary type annotation on a local variable - lib\src\features\ai\presentation\widgets\proctoring_camera_view.dart:85:13 - omit_local_variable_types
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\widgets\proctoring_camera_view.dart:93:7 - avoid_catches_without_on_clauses
+   info - Don't invoke 'print' in production code - lib\src\features\ai\presentation\widgets\proctoring_camera_view.dart:94:7 - avoid_print
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\world_model_screen.dart:45:37 - prefer_int_literals
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\world_model_screen.dart:53:45 - prefer_int_literals
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:58:24 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:64:33 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:64:45 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:66:27 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:66:41 - prefer_single_quotes
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai\presentation\world_model_screen.dart:66:44 - avoid_dynamic_calls
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:67:33 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:67:51 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:75:16 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:94:23 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\src\features\ai\presentation\world_model_screen.dart:99:23 - prefer_single_quotes
+   info - Sort directive sections alphabetically - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:4:1 - directives_ordering
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:13:3 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:20:3 - sort_constructors_first
+   info - Unnecessary escape of ''' - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:37:19 - avoid_escaping_inner_quotes
+   info - Statement should be on a separate line - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:44:30 - always_put_control_body_on_new_line
+   info - Unnecessary escape of ''' - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:81:12 - avoid_escaping_inner_quotes
+   info - Statement should be on a separate line - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:115:30 - always_put_control_body_on_new_line
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:359:9 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\ai_chat\presentation\ai_chat_screen.dart:422:9 - sort_constructors_first
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:253:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:284:23 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:301:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:302:21 - always_put_control_body_on_new_line
+   info - Sort directive sections alphabetically - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:2:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:4:1 - directives_ordering
+   info - Unnecessary type annotation on a local variable - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:48:9 - omit_local_variable_types
+   info - Use of an async 'dart:io' method - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:56:21 - avoid_slow_async_io
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:64:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:73:24 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:85:7 - avoid_catches_without_on_clauses
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:124:14 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:125:14 - avoid_dynamic_calls
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai_engine\presentation\voice_assistant_button.dart:129:7 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\features\auth\data\auth_repository.dart:9:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\features\chat\data\chat_service.dart:5:1 - directives_ordering
+   info - Statement should be on a separate line - lib\src\features\chat\data\chat_service.dart:71:25 - always_put_control_body_on_new_line
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\chat\domain\chat_model.dart:21:19 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\chat\domain\chat_model.dart:23:16 - avoid_dynamic_calls
+   info - Statement should be on a separate line - lib\src\features\chat\presentation\chat_detail_screen.dart:43:23 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\chat\presentation\chat_detail_screen.dart:59:27 - unawaited_futures
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\chat\presentation\chat_detail_screen.dart:65:7 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\features\courses\data\course_repository.dart:2:1 - directives_ordering
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:60:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:81:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:98:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:115:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:130:7 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\features\courses\presentation\certificates_screen.dart:7:1 - directives_ordering
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\certificates_screen.dart:13:6 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\certificates_screen.dart:14:6 - avoid_types_on_closure_parameters
+   info - Sort directive sections alphabetically - lib\src\features\courses\presentation\course_controller.dart:5:1 - directives_ordering
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\course_controller.dart:96:8 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\course_controller.dart:103:8 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\course_controller.dart:147:6 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\courses\presentation\course_controller.dart:148:6 - avoid_types_on_closure_parameters
+   info - Sort directive sections alphabetically - lib\src\features\courses\presentation\course_detail_screen.dart:4:1 - directives_ordering
+warning - The value of the local variable 'size' isn't used - lib\src\features\courses\presentation\course_detail_screen.dart:61:11 - unused_local_variable
+warning - The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred - lib\src\features\courses\presentation\course_detail_screen.dart:225:31 - inference_failure_on_instance_creation
+  error - The method '_LessonPlayerRoute' isn't defined for the type '_CourseDetailContent' - lib\src\features\courses\presentation\course_detail_screen.dart:241:37 - undefined_method
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\presentation\course_detail_screen.dart:401:33 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:402:54 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:440:58 - use_build_context_synchronously
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\presentation\course_detail_screen.dart:446:35 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:447:56 - use_build_context_synchronously
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\src\features\courses\presentation\downloads_screen.dart:281:13 - deprecated_member_use
+  error - The named parameter 'format' isn't defined - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:106:29 - undefined_named_parameter
+  error - The named parameter 'format' isn't defined - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:108:30 - undefined_named_parameter
+   info - Statement should be on a separate line - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:181:29 - always_put_control_body_on_new_line
+warning - The value of the local variable 'theme' isn't used - lib\src\features\dashboard\presentation\learning_goals_screen.dart:12:11 - unused_local_variable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\discussions\presentation\discussion_controller.dart:38:7 - avoid_catches_without_on_clauses
+  error - The argument type 'int?' can't be assigned to the parameter type 'String?'.  - lib\src\features\discussions\presentation\discussion_screen.dart:9:36 - argument_type_not_assignable
+   info - Statement should be on a separate line - lib\src\features\downloads\domain\download_model.dart:42:26 - always_put_control_body_on_new_line
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\src\features\downloads\presentation\downloads_screen.dart:257:5 - inference_failure_on_function_invocation
+   info - Sort directive sections alphabetically - lib\src\features\dsa\data\dsa_ai_chat_service.dart:6:1 - directives_ordering
+   info - Statement should be on a separate line - lib\src\features\dsa\data\dsa_ai_chat_service.dart:49:24 - always_put_control_body_on_new_line
+   info - Sort directive sections alphabetically - lib\src\features\dsa\data\submission_websocket_service.dart:6:1 - directives_ordering
+   info - Statement should be on a separate line - lib\src\features\dsa\data\submission_websocket_service.dart:43:24 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\data\gamification_repository.dart:24:9 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\data\social_websocket_service.dart:71:7 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\data\social_websocket_service.dart:108:3 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\gamification\domain\gamification_models.dart:60:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\gamification_controller.dart:132:30 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\presentation\gamification_controller.dart:240:7 - avoid_catches_without_on_clauses
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\leaderboard_screen.dart:64:38 - avoid_dynamic_calls
+   info - Use the constant 'UserXP.empty' rather than a constructor returning the same object - lib\src\features\gamification\presentation\leaderboard_screen.dart:124:29 - use_named_constants
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\leaderboard_screen.dart:278:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:33:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:129:22 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:136:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:137:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:140:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:146:7 - cascade_invocations
+  error - Undefined name '_overlayEntry' - lib\src\features\gamification\presentation\xp_toast_overlay.dart:20:5 - undefined_identifier
+warning - The declaration '_showToast' isn't referenced - lib\src\features\gamification\presentation\xp_toast_overlay.dart:25:8 - unused_element
+  error - Undefined name '_overlayEntry' - lib\src\features\gamification\presentation\xp_toast_overlay.dart:26:5 - undefined_identifier
+   info - Use 'isEven' rather than '% 2' - lib\src\features\gamification\presentation\xp_toast_overlay.dart:45:25 - use_is_even_rather_than_modulo
+  error - Undefined name '_overlayEntry' - lib\src\features\gamification\presentation\xp_toast_overlay.dart:64:5 - undefined_identifier
+  error - Undefined name '_overlayEntry' - lib\src\features\gamification\presentation\xp_toast_overlay.dart:175:32 - undefined_identifier
+   info - Sort directive sections alphabetically - lib\src\features\home\presentation\landing_screen.dart:5:1 - directives_ordering
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\src\features\home\presentation\landing_screen.dart:51:15 - inference_failure_on_function_invocation
+  error - The named parameter 'border' isn't defined - lib\src\features\home\presentation\landing_screen.dart:160:23 - undefined_named_parameter
+   info - Unnecessary escape of ''' - lib\src\features\home\presentation\landing_screen.dart:218:35 - avoid_escaping_inner_quotes
+  error - The method '[]' can't be unconditionally invoked because the receiver can be 'null' - lib\src\features\home\presentation\landing_screen.dart:701:60 - unchecked_use_of_nullable_value
+  error - The argument type 'String?' can't be assigned to the parameter type 'String'.  - lib\src\features\home\presentation\landing_screen.dart:705:39 - argument_type_not_assignable
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\home\presentation\landing_screen.dart:912:6 - avoid_types_on_closure_parameters
+  error - Undefined class 'Failure' - lib\src\features\home\presentation\landing_screen.dart:912:6 - undefined_class
+   info - Unnecessary type annotation on a function expression parameter - lib\src\features\home\presentation\landing_screen.dart:913:6 - avoid_types_on_closure_parameters
+   info - Statement should be on a separate line - lib\src\features\live_sessions\data\live_session_repository.dart:45:24 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\live_sessions\data\live_session_repository.dart:71:7 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\live_sessions\data\live_session_repository.dart:100:3 - cascade_invocations
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:82:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:83:33 - avoid_dynamic_calls
+warning - The type argument(s) of 'List' can't be inferred - lib\src\features\notifications\data\notification_repository.dart:20:36 - inference_failure_on_collection_literal
+   info - Statement should be on a separate line - lib\src\features\notifications\data\notification_websocket_service.dart:26:24 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\notifications\data\notification_websocket_service.dart:48:13 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\notifications\data\notification_websocket_service.dart:61:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:204:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:205:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:206:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:207:26 - always_put_control_body_on_new_line
+warning - The value of the local variable 'kAccentColor' isn't used - lib\src\features\notifications\presentation\timeline_view.dart:12:11 - unused_local_variable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\onboarding\presentation\onboarding_profile_screen.dart:77:7 - avoid_catches_without_on_clauses
+warning - The return type of ' Function(String)' can't be inferred - lib\src\features\onboarding\presentation\onboarding_profile_screen.dart:279:9 - inference_failure_on_function_return_type
+warning - The return type of ' Function(String)' can't be inferred - lib\src\features\onboarding\presentation\onboarding_profile_screen.dart:397:9 - inference_failure_on_function_return_type
+   info - 'bool' parameters should be named parameters - lib\src\features\onboarding\presentation\onboarding_profile_screen.dart:424:45 - avoid_positional_boolean_parameters
+warning - The return type of ' Function(String)' can't be inferred - lib\src\features\onboarding\presentation\onboarding_profile_screen.dart:466:9 - inference_failure_on_function_return_type
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:20:5 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:21:5 - cascade_invocations
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:63:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:78:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:101:7 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:112:3 - cascade_invocations
+warning - The value of the field '_apiClient' isn't used - lib\src\features\profile\data\instructor_repository.dart:8:19 - unused_field
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\profile\data\instructor_repository.dart:18:11 - inference_failure_on_instance_creation
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\profile\presentation\instructor_controller.dart:15:7 - avoid_catches_without_on_clauses
+warning - The value of the local variable 'theme' isn't used - lib\src\features\profile\presentation\instructor_profile_screen.dart:33:11 - unused_local_variable
+   info - Statement should be on a separate line - lib\src\features\support\presentation\support_screen.dart:42:45 - always_put_control_body_on_new_line
+warning - The value of 'refresh' should be used - lib\src\features\support\presentation\support_screen.dart:61:13 - unused_result
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\support\presentation\support_screen.dart:63:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\support\presentation\support_screen.dart:70:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\tutors\presentation\booking_screen.dart:56:47 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\tutors\presentation\booking_screen.dart:57:47 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\tutors\presentation\booking_screen.dart:75:7 - avoid_catches_without_on_clauses
+warning - The type argument(s) of the constructor 'TableCalendar' can't be inferred - lib\src\features\tutors\presentation\booking_screen.dart:174:14 - inference_failure_on_instance_creation
+   info - Sort directive sections alphabetically - lib\src\features\tutors\presentation\tutors_list_screen.dart:5:1 - directives_ordering
+warning - The value of the field '_isLoading' isn't used - lib\voice_draft.dart:17:8 - unused_field
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\voice_draft.dart:29:7 - avoid_catches_without_on_clauses
+   info - Don't invoke 'print' in production code - lib\voice_draft.dart:30:7 - avoid_print
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\voice_draft.dart:45:7 - avoid_catches_without_on_clauses
+   info - Don't invoke 'print' in production code - lib\voice_draft.dart:46:7 - avoid_print
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\voice_draft.dart:54:11 - inference_failure_on_instance_creation
+   info - Dependencies not sorted alphabetically - pubspec.yaml:44:3 - sort_pub_dependencies
+   info - The value of the argument is redundant because it matches the default value - test\unit\ai_repository_test.dart:68:15 - avoid_redundant_argument_values
+  error - The returned type 'Response<Null>' isn't returnable from a 'Future<Response<Map<String, dynamic>>>' function, as required by the closure's context - test\unit\ai_repository_test.dart:71:68 - return_of_invalid_type_from_closure
+warning - The value of the local variable 'apiClient' isn't used - test\unit\api_client_test.dart:12:18 - unused_local_variable
+   info - The value of the argument is redundant because it matches the default value - test\unit\api_client_test.dart:19:30 - avoid_redundant_argument_values
+  error - The argument type 'Null' can't be assigned to the parameter type 'BaseOptions'.  - test\unit\api_client_test.dart:38:23 - argument_type_not_assignable
+  error - The argument type 'Null' can't be assigned to the parameter type 'BaseOptions'.  - test\unit\api_client_test.dart:67:54 - argument_type_not_assignable
+   info - Sort directive sections alphabetically - test\unit\course_repository_test.dart:3:1 - directives_ordering
+warning - Unused import: 'package:fpdart/fpdart.dart' - test\unit\course_repository_test.dart:3:8 - unused_import
+   info - Sort directive sections alphabetically - test\unit\course_repository_test.dart:4:1 - directives_ordering
+   info - Sort directive sections alphabetically - test\unit\course_repository_test.dart:6:1 - directives_ordering
+   info - Sort directive sections alphabetically - test\unit\course_repository_test.dart:7:1 - directives_ordering
+   info - The value of the argument is redundant because it matches the default value - test\unit\course_repository_test.dart:47:48 - avoid_redundant_argument_values
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:61:10 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:62:10 - avoid_types_on_closure_parameters
+   info - The value of the argument is redundant because it matches the default value - test\unit\course_repository_test.dart:74:48 - avoid_redundant_argument_values
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:85:10 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:86:10 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:101:10 - avoid_types_on_closure_parameters
+   info - Unnecessary type annotation on a function expression parameter - test\unit\course_repository_test.dart:102:10 - avoid_types_on_closure_parameters
+   info - Sort directive sections alphabetically - test\widget_test.dart:21:1 - directives_ordering
+  error - 2 positional arguments expected by 'CourseRepository.new', but 1 found - test\widget_test.dart:105:49 - not_enough_positional_arguments
+  error - 'FakeCourseRepository.getCourses' ('Future<List<Course>> Function({bool forceRefresh})') isn't a valid override of 'CourseRepository.getCourses' ('Future<Either<Failure, List<Course>>> Function({bool forceRefresh})') - test\widget_test.dart:108:24 - invalid_override
+  error - 'FakeCourseRepository.getCourseDetail' ('Future<Course> Function(String)') isn't a valid override of 'CourseRepository.getCourseDetail' ('Future<Either<Failure, Course>> Function(String)') - test\widget_test.dart:111:18 - invalid_override
+  error - 'FakeCourseRepository.getRecommendations' ('Future<List<Course>> Function()') isn't a valid override of 'CourseRepository.getRecommendations' ('Future<Either<Failure, List<Course>>> Function()') - test\widget_test.dart:115:24 - invalid_override
+  error - 'FakeCourseRepository.getCertificates' ('Future<List<Certificate>> Function()') isn't a valid override of 'CourseRepository.getCertificates' ('Future<Either<Failure, List<Certificate>>> Function()') - test\widget_test.dart:118:29 - invalid_override
+warning - The type argument(s) of 'List' can't be inferred - test\widget_test.dart:132:21 - inference_failure_on_collection_literal
+
+flutter : 266 issues 
+found. (ran in 5.8s)
+At line:1 char:1
++ flutter analyze 
+--no-fatal-infos 2>&1 | 
+Out-File -Encoding utf8 
+analy ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpe    cified: 
+(266 iss    ues found. 
+(ran     in 5.8s):String) 
+    [], RemoteExcep    
+tion
+    + FullyQualified    
+ErrorId : Native    
+CommandError
+ 

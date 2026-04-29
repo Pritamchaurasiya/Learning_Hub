@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\serializers.py
+# hypothesis_version: 6.152.1
+
+['ai_summary', 'author', 'author.get_full_name', 'author_avatar', 'author_name', 'avatar', 'content', 'course', 'created_at', 'id', 'is_accepted_answer', 'is_instructor_reply', 'is_pinned', 'is_resolved', 'like_count', 'name', 'nested_replies', 'parent', 'replies', 'reply_count', 'request', 'tags', 'thread', 'title', 'user_vote', 'views']

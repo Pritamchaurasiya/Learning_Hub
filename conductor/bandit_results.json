@@ -1,0 +1,5673 @@
+{
+  "errors": [
+    {
+      "filename": "apps\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\action_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\active_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\adaptive_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\adaptive_learning_engine_v2.py",
+      "reason": "syntax error while parsing AST from file"
+    },
+    {
+      "filename": "apps\\ai_engine\\advanced_caching.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\advanced_reasoning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\adversarial_robustness.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\affective_computing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\agentic_loop.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\agents.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\agi_orchestrator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ai_client.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\analytics_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\anomaly_detector.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\automl_tuner.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\bandit_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\bayesian_knowledge_tracing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\bayesian_optimization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\capsule_networks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\causal_inference.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\causal_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\chain_of_thought.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\code_generation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\concept_bottleneck.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\constitutional_ai.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\content_intelligence.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\continual_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\contrastive_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\counterfactual.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\curriculum_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\curriculum_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ddpm_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\differential_privacy.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\diffusion_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\digital_twin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\distillation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\dkt_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\dna_transformer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\document_understanding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\dp_sgd.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\dpo_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\drug_target_interaction.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\efficient_attention.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\embedding_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\energy_based.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\energy_based_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\engagement_predictor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\enhanced_rag.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\enhanced_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ensemble_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\episodic_memory.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\evaluate_rag.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\evaluation_framework.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\explainability.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\federated\\coordinator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\federated_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\fim_code_generation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\fine_tuning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\fl_fedavg.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\flow_matching.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\gan_synthesizer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\gaussian_splatting_sim.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\generative_agents.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\generative_content.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\genetic_algorithm.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\gnn_knowledge.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\gnn_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\graph_attention.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\graph_neural.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\graph_node2vec.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\graph_rag.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\graph_recommender.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\guardrails.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\hybrid_search.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\hyperbolic_embeddings.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\hyperdimensional_comp.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\hypernetworks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\inference_optimization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\information_bottleneck.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\integrated_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\irt_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\jamba_hybrid.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\kan_network.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\knowledge_distillation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\knowledge_graph.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\knowledge_graph_v2.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\kolmogorov_arnold.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\liquid_networks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\liquid_neural_network.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\llm_orchestrator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\long_context.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\management\\commands\\self_heal.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\mechanistic_interpretability.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\meta_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0002_courseembedding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0003_alter_courseembedding_embedding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0004_phase6_analytics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0005_enable_pgvector.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0006_alter_courseembedding_embedding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0007_learninginsight_ai_narrative_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\migrations\\0008_semanticcache_humanpreference.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\mixture_of_depths.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\mixture_of_experts.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ml_inference_gateway.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ml_integration.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\ml_monitoring.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\mlops_registry.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\model_editing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\model_merging.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\model_serving.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\moderation_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\moe_router.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\monitoring.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multi_agent.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multi_agent_swarm.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multimodal_audio_bridge.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multimodal_fusion.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multimodal_ml.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\multimodal_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\nas_controller.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\nas_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neural_architecture_search.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neural_cellular_automata.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neural_ode.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neuro_symbolic.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neuro_symbolic_v2.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neuromorphic_htm.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neuromorphic_lsm.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neuromorphic_snn.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\neurosymbolic_ai.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\optimized_queries.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\orchestrator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\preference_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\prompt_engineering.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\protein_folding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quantization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quantization_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quantum_ml.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quantum_ml_sim.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quantum_optimization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\quiz_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\raft_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rag_pipeline.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\realtime_inference.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\recommendation_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\recommendation_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\remediation_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\reranking_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\review_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_gail.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_her.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_inverse.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_maddpg.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_path_optimizer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_ppo.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_preferences.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\rl_sac.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\sc_rna_autoencoder.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\schemas.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\self_improvement.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\semantic_parsing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\seq2seq_predictor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\session_adaptation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\simclr_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\smart_scheduler.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\soar_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\sparse_autoencoder.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\sparse_distributed_memory.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\sparse_transformers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\spatial_transcriptomics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\speculative_decoding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\speech_recognition.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\spiking_nn.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\state_space_model.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\state_space_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\structured_output.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\swarm_aco.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\swarm_intelligence.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\swarm_pso.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\synthetic_data_gen.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\synthetic_data_pipeline.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tensor_networks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_advanced_ml.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_multimodal_reasoning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_quantum_neuromorphic.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_time_adaptation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_time_compute.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\test_ultimate_ml.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_action_robot.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_adversarial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_ai_client_wrapper.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_ai_research.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_hyperspace.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tests\\test_import_debug.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\token_management.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tool_use.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\transformer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\transformer_block.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\transformer_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tree_of_thought.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\tutor_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\uncertainty_quantification.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\vae_clustering.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\vector_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\vision_language.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\vla_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\world_model_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ai_engine\\world_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\api\\spatial_views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\automation\\workflow_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\bio\\dna_storage.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\chat\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\commerce\\pricing_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\admin_site.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\advanced_caching.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\analytics_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\api_caching.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\api_compressor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\api_versioning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\ascension\\cognitive_dna.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\ascension\\fusion.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\ascension\\neuromorphic.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\async_optimizer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\audit_logging.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\audit_middleware.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\audit_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\background_tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\bio\\feedback.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\cache_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\channels_middleware.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\connection_pool_tuner.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\content_moderation.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\economics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\edge.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\email_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\enhanced_query_optimization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\error_tracking.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\event_bus.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\event_subscribers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\evolution\\code_genetics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\evolution\\dreaming.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\evolution\\sentient_ux.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\exception_handler.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\exceptions.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\federated_search.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\file_storage_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\genesis\\generative_ui.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\genesis\\holographic.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\genesis\\temporal.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\health.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\health_check.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\health_monitor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\index_manager.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\input_validation.py",
+      "reason": "syntax error while parsing AST from file"
+    },
+    {
+      "filename": "apps\\core\\management\\commands\\deep_health.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\memory_optimizer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\metrics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\middleware.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\mixins.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\observability.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\omniscience\\dtn.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\omniscience\\neural_link.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\omniscience\\precog.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\pagination.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\performance_monitor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\permissions.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\query_optimization.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\rate_limit_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\rate_limiting.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\redis_cache_config.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\scheduler.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\search_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\security\\quantum.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\security_headers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\security_middleware.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\simulation\\traffic.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\static_file_optimizer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\storage\\ipfs.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\tests\\test_permissions.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\tests\\test_security.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\throttles.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\translation_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\ultra_db.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\universal\\translator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\validators.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\vector_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\web3\\auth.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\core\\websocket_handlers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\certificate_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\content_analyzer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\management\\commands\\translate_course.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0002_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0003_certificate.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0004_course_embedding.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0005_course_hls_playlist_alter_course_preview_video.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0006_careertrack_lesson_module_trackcourse_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0007_lessoncompletion.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0008_lessonprogress.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0009_enrollment_enrollments_complet_ddc915_idx_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\migrations\\0010_trackcourse_created_at_trackcourse_updated_at_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\tests.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\tests\\test_certificates.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\tests\\test_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\tests\\test_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\video_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\courses\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\crypto\\secure_compute.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\curriculum\\auto_generator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\advanced_analytics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\analytics_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\code_runner.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\god_mode_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\predictive_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\retention_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\tests\\test_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dashboard\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\data\\synthetic_factory.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\enhanced_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\tests\\test_discussions.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\discussions\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\downloads\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\ai_chat_consumer.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\ai_services.py",
+      "reason": "syntax error while parsing AST from file"
+    },
+    {
+      "filename": "apps\\dsa\\algorithms.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\management\\commands\\seed_dsa.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0002_submission_ai_feedback.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0003_tag_problem_examples_problem_tags.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0004_alter_problem_options_alter_submission_options_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0005_alter_tag_options_alter_problem_title.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\migrations\\0006_submission_dsa_submiss_user_id_ed9615_idx.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\practice_engine.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\repositories.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\sandbox.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\schemas.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\tests\\test_algorithms.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\tests\\test_views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\validator.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\dsa\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\leaderboard_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\migrations\\0002_phase6_analytics.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\migrations\\0003_update_streak_and_xp_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\gamification\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\enhanced_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\live_sessions\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\media\\video_processor.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\metaverse\\spatial_state.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\mlops\\infrastructure.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\monitoring\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\monitoring\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\bci_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\spiking_network.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\neuro\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\migrations\\0002_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\migrations\\0003_smart_notifications.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\notification_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\smart_notifications.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\tests\\test_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\tests\\test_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\notifications\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\ops\\guardian.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\optimization\\evolutionary.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\optimization\\swarm.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\advanced_payment.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\invoice_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\migrations\\0002_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\migrations\\0003_alter_coupon_is_active_alter_coupon_valid_until_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\migrations\\0004_add_coupon_fields.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\migrations\\0005_payment_payments_pa_status_343680_idx_and_more.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\service_plan.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\tests\\test_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\tests\\test_services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\payments\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\photonics\\optical_compute.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\rl\\deep_q_learning.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\saas\\tenant_manager.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\science\\quantum_sandbox.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\science\\reservoir_computing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\science\\symbolic_regression.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\security\\compliance_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\security\\content_filter.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\security\\intrusion_detection.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\security\\ml_waf.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\consumers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\enhanced_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\migrations\\0002_groupmessage.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\routing.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\schemas.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\signals.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\study_groups\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\tasks.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\support\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\tutors\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\admin.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\b2b_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\migrations\\0002_organization_organizationmember.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\services.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\tests\\test_models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\tests\\test_serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\tests\\test_views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\urls\\__init__.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\urls\\auth.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\urls\\orgs.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\urls\\users.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\views.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\users\\views_org.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\apps.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\credential_service.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\migrations\\0001_initial.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\models.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\serializers.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\urls.py",
+      "reason": "exception while scanning file"
+    },
+    {
+      "filename": "apps\\web3\\views.py",
+      "reason": "exception while scanning file"
+    }
+  ],
+  "generated_at": "2026-04-12T08:25:44Z",
+  "metrics": {
+    "_totals": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 69021,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\__init__.py": {
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\action_service.py": {
+      "loc": 274,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\active_learning.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\adaptive_engine.py": {
+      "loc": 560,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\adaptive_learning_engine_v2.py": {
+      "loc": 889,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\advanced_caching.py": {
+      "loc": 539,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\advanced_reasoning.py": {
+      "loc": 302,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\adversarial_robustness.py": {
+      "loc": 254,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\affective_computing.py": {
+      "loc": 90,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\agentic_loop.py": {
+      "loc": 260,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\agents.py": {
+      "loc": 63,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\agi_orchestrator.py": {
+      "loc": 72,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ai_client.py": {
+      "loc": 652,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\analytics_service.py": {
+      "loc": 331,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\anomaly_detector.py": {
+      "loc": 142,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\apps.py": {
+      "loc": 7,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\automl_tuner.py": {
+      "loc": 237,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\bandit_engine.py": {
+      "loc": 258,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\bayesian_knowledge_tracing.py": {
+      "loc": 182,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\bayesian_optimization.py": {
+      "loc": 119,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\capsule_networks.py": {
+      "loc": 89,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\causal_inference.py": {
+      "loc": 289,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\causal_service.py": {
+      "loc": 77,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\chain_of_thought.py": {
+      "loc": 192,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\code_generation.py": {
+      "loc": 248,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\concept_bottleneck.py": {
+      "loc": 111,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\constitutional_ai.py": {
+      "loc": 232,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\content_intelligence.py": {
+      "loc": 153,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\continual_learning.py": {
+      "loc": 72,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\contrastive_learning.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\counterfactual.py": {
+      "loc": 195,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\curriculum_learning.py": {
+      "loc": 383,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\curriculum_service.py": {
+      "loc": 65,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ddpm_engine.py": {
+      "loc": 184,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\differential_privacy.py": {
+      "loc": 76,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\diffusion_models.py": {
+      "loc": 104,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\digital_twin.py": {
+      "loc": 93,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\distillation.py": {
+      "loc": 79,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\dkt_engine.py": {
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\dna_transformer.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\document_understanding.py": {
+      "loc": 234,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\dp_sgd.py": {
+      "loc": 65,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\dpo_engine.py": {
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\drug_target_interaction.py": {
+      "loc": 97,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\efficient_attention.py": {
+      "loc": 138,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\embedding_models.py": {
+      "loc": 197,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\energy_based.py": {
+      "loc": 112,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\energy_based_models.py": {
+      "loc": 58,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\engagement_predictor.py": {
+      "loc": 160,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\enhanced_rag.py": {
+      "loc": 570,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\enhanced_services.py": {
+      "loc": 654,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ensemble_engine.py": {
+      "loc": 238,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\episodic_memory.py": {
+      "loc": 181,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\evaluate_rag.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\evaluation_framework.py": {
+      "loc": 125,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\explainability.py": {
+      "loc": 385,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\federated\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\federated\\coordinator.py": {
+      "loc": 45,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\federated_learning.py": {
+      "loc": 78,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\fim_code_generation.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\fine_tuning.py": {
+      "loc": 137,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\fl_fedavg.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\flow_matching.py": {
+      "loc": 65,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\gan_synthesizer.py": {
+      "loc": 113,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\gaussian_splatting_sim.py": {
+      "loc": 72,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\generative_agents.py": {
+      "loc": 95,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\generative_content.py": {
+      "loc": 193,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\genetic_algorithm.py": {
+      "loc": 96,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\gnn_knowledge.py": {
+      "loc": 100,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\gnn_service.py": {
+      "loc": 61,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\graph_attention.py": {
+      "loc": 96,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\graph_neural.py": {
+      "loc": 103,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\graph_node2vec.py": {
+      "loc": 115,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\graph_rag.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\graph_recommender.py": {
+      "loc": 326,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\guardrails.py": {
+      "loc": 371,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\hybrid_search.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\hyperbolic_embeddings.py": {
+      "loc": 135,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\hyperdimensional_comp.py": {
+      "loc": 58,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\hypernetworks.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\inference_optimization.py": {
+      "loc": 152,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\information_bottleneck.py": {
+      "loc": 172,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\integrated_services.py": {
+      "loc": 67,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\irt_engine.py": {
+      "loc": 115,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\jamba_hybrid.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\kan_network.py": {
+      "loc": 168,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\knowledge_distillation.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\knowledge_graph.py": {
+      "loc": 261,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\knowledge_graph_v2.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\kolmogorov_arnold.py": {
+      "loc": 67,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\liquid_networks.py": {
+      "loc": 69,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\liquid_neural_network.py": {
+      "loc": 62,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\llm_orchestrator.py": {
+      "loc": 111,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\long_context.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\management\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\management\\commands\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\management\\commands\\self_heal.py": {
+      "loc": 37,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\mechanistic_interpretability.py": {
+      "loc": 179,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\meta_learning.py": {
+      "loc": 131,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0001_initial.py": {
+      "loc": 76,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0002_courseembedding.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0003_alter_courseembedding_embedding.py": {
+      "loc": 17,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0004_phase6_analytics.py": {
+      "loc": 135,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0005_enable_pgvector.py": {
+      "loc": 13,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0006_alter_courseembedding_embedding.py": {
+      "loc": 17,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0007_learninginsight_ai_narrative_and_more.py": {
+      "loc": 17,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\0008_semanticcache_humanpreference.py": {
+      "loc": 48,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\mixture_of_depths.py": {
+      "loc": 141,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\mixture_of_experts.py": {
+      "loc": 100,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ml_inference_gateway.py": {
+      "loc": 309,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ml_integration.py": {
+      "loc": 341,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\ml_monitoring.py": {
+      "loc": 667,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\mlops_registry.py": {
+      "loc": 214,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\model_editing.py": {
+      "loc": 176,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\model_merging.py": {
+      "loc": 154,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\model_serving.py": {
+      "loc": 152,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\models.py": {
+      "loc": 249,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\moderation_service.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\moe_router.py": {
+      "loc": 182,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\monitoring.py": {
+      "loc": 89,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multi_agent.py": {
+      "loc": 798,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multi_agent_swarm.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multimodal_audio_bridge.py": {
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multimodal_fusion.py": {
+      "loc": 112,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multimodal_ml.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\multimodal_service.py": {
+      "loc": 44,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\nas_controller.py": {
+      "loc": 222,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\nas_engine.py": {
+      "loc": 220,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neural_architecture_search.py": {
+      "loc": 290,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neural_cellular_automata.py": {
+      "loc": 95,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neural_ode.py": {
+      "loc": 106,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neuro_symbolic.py": {
+      "loc": 105,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neuro_symbolic_v2.py": {
+      "loc": 173,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neuromorphic_htm.py": {
+      "loc": 97,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neuromorphic_lsm.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neuromorphic_snn.py": {
+      "loc": 58,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\neurosymbolic_ai.py": {
+      "loc": 67,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\optimized_queries.py": {
+      "loc": 635,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\orchestrator.py": {
+      "loc": 263,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\preference_learning.py": {
+      "loc": 181,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\prompt_engineering.py": {
+      "loc": 165,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\protein_folding.py": {
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quantization.py": {
+      "loc": 139,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quantization_engine.py": {
+      "loc": 188,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quantum_ml.py": {
+      "loc": 106,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quantum_ml_sim.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quantum_optimization.py": {
+      "loc": 198,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\quiz_service.py": {
+      "loc": 82,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\raft_engine.py": {
+      "loc": 179,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rag_pipeline.py": {
+      "loc": 152,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\realtime_inference.py": {
+      "loc": 359,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\recommendation_engine.py": {
+      "loc": 408,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\recommendation_service.py": {
+      "loc": 114,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\remediation_service.py": {
+      "loc": 62,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\reranking_models.py": {
+      "loc": 216,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\review_service.py": {
+      "loc": 55,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_gail.py": {
+      "loc": 83,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_her.py": {
+      "loc": 71,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_inverse.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_maddpg.py": {
+      "loc": 71,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_path_optimizer.py": {
+      "loc": 207,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_ppo.py": {
+      "loc": 88,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_preferences.py": {
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\rl_sac.py": {
+      "loc": 65,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\sc_rna_autoencoder.py": {
+      "loc": 62,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\schemas.py": {
+      "loc": 26,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\self_improvement.py": {
+      "loc": 320,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\semantic_parsing.py": {
+      "loc": 182,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\seq2seq_predictor.py": {
+      "loc": 162,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\serializers.py": {
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\services.py": {
+      "loc": 208,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\session_adaptation.py": {
+      "loc": 180,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\signals.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\simclr_engine.py": {
+      "loc": 80,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\smart_scheduler.py": {
+      "loc": 159,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\soar_engine.py": {
+      "loc": 76,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\sparse_autoencoder.py": {
+      "loc": 138,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\sparse_distributed_memory.py": {
+      "loc": 84,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\sparse_transformers.py": {
+      "loc": 98,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\spatial_transcriptomics.py": {
+      "loc": 88,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\speculative_decoding.py": {
+      "loc": 167,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\speech_recognition.py": {
+      "loc": 170,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\spiking_nn.py": {
+      "loc": 104,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\state_space_model.py": {
+      "loc": 177,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\state_space_models.py": {
+      "loc": 128,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\structured_output.py": {
+      "loc": 262,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\swarm_aco.py": {
+      "loc": 97,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\swarm_intelligence.py": {
+      "loc": 270,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\swarm_pso.py": {
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\synthetic_data_gen.py": {
+      "loc": 226,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\synthetic_data_pipeline.py": {
+      "loc": 199,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tasks.py": {
+      "loc": 211,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tensor_networks.py": {
+      "loc": 92,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_advanced_ml.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_multimodal_reasoning.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_quantum_neuromorphic.py": {
+      "loc": 36,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_time_adaptation.py": {
+      "loc": 150,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_time_compute.py": {
+      "loc": 238,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\test_ultimate_ml.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\__init__.py": {
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_action_robot.py": {
+      "loc": 32,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_adversarial.py": {
+      "loc": 69,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_ai_client_wrapper.py": {
+      "loc": 55,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_ai_research.py": {
+      "loc": 38,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_hyperspace.py": {
+      "loc": 34,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tests\\test_import_debug.py": {
+      "loc": 7,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\token_management.py": {
+      "loc": 139,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tool_use.py": {
+      "loc": 184,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\transformer.py": {
+      "loc": 231,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\transformer_block.py": {
+      "loc": 309,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\transformer_engine.py": {
+      "loc": 242,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tree_of_thought.py": {
+      "loc": 72,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\tutor_service.py": {
+      "loc": 136,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\uncertainty_quantification.py": {
+      "loc": 180,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\urls.py": {
+      "loc": 230,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\vae_clustering.py": {
+      "loc": 156,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\vector_service.py": {
+      "loc": 124,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\views.py": {
+      "loc": 4462,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\vision_language.py": {
+      "loc": 180,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\vla_engine.py": {
+      "loc": 60,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\world_model_service.py": {
+      "loc": 78,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ai_engine\\world_models.py": {
+      "loc": 238,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\api\\spatial_views.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\automation\\workflow_engine.py": {
+      "loc": 106,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\bio\\dna_storage.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\admin.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\consumers.py": {
+      "loc": 228,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\migrations\\0001_initial.py": {
+      "loc": 41,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\models.py": {
+      "loc": 47,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\routing.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\serializers.py": {
+      "loc": 28,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\urls.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\chat\\views.py": {
+      "loc": 93,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\commerce\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\commerce\\pricing_engine.py": {
+      "loc": 83,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\admin.py": {
+      "loc": 10,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\admin_site.py": {
+      "loc": 24,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\advanced_caching.py": {
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\analytics_service.py": {
+      "loc": 364,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\api_caching.py": {
+      "loc": 43,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\api_compressor.py": {
+      "loc": 86,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\api_versioning.py": {
+      "loc": 204,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\apps.py": {
+      "loc": 14,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\ascension\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\ascension\\cognitive_dna.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\ascension\\fusion.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\ascension\\neuromorphic.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\async_optimizer.py": {
+      "loc": 83,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\audit_logging.py": {
+      "loc": 131,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\audit_middleware.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\audit_service.py": {
+      "loc": 374,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\background_tasks.py": {
+      "loc": 313,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\bio\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\bio\\feedback.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\cache_service.py": {
+      "loc": 365,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\channels_middleware.py": {
+      "loc": 31,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\connection_pool_tuner.py": {
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\content_moderation.py": {
+      "loc": 317,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\economics.py": {
+      "loc": 36,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\edge.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\email_service.py": {
+      "loc": 353,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\enhanced_query_optimization.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\error_tracking.py": {
+      "loc": 376,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\event_bus.py": {
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\event_subscribers.py": {
+      "loc": 163,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\evolution\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\evolution\\code_genetics.py": {
+      "loc": 51,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\evolution\\dreaming.py": {
+      "loc": 37,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\evolution\\sentient_ux.py": {
+      "loc": 47,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\exception_handler.py": {
+      "loc": 88,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\exceptions.py": {
+      "loc": 59,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\federated_search.py": {
+      "loc": 59,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\file_storage_service.py": {
+      "loc": 298,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\genesis\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\genesis\\generative_ui.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\genesis\\holographic.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\genesis\\temporal.py": {
+      "loc": 43,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\health.py": {
+      "loc": 64,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\health_check.py": {
+      "loc": 275,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\health_monitor.py": {
+      "loc": 105,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\index_manager.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\input_validation.py": {
+      "loc": 108,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\management\\commands\\deep_health.py": {
+      "loc": 55,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\memory_optimizer.py": {
+      "loc": 95,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\metrics.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\middleware.py": {
+      "loc": 265,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\mixins.py": {
+      "loc": 61,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\models.py": {
+      "loc": 140,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\observability.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\omniscience\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\omniscience\\dtn.py": {
+      "loc": 26,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\omniscience\\neural_link.py": {
+      "loc": 19,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\omniscience\\precog.py": {
+      "loc": 33,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\pagination.py": {
+      "loc": 42,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\performance_monitor.py": {
+      "loc": 101,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\permissions.py": {
+      "loc": 25,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\query_optimization.py": {
+      "loc": 35,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\rate_limit_service.py": {
+      "loc": 290,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\rate_limiting.py": {
+      "loc": 84,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\redis_cache_config.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\routing.py": {
+      "loc": 15,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\scheduler.py": {
+      "loc": 36,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\search_service.py": {
+      "loc": 503,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\security\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\security\\quantum.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\security_headers.py": {
+      "loc": 41,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\security_middleware.py": {
+      "loc": 337,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\signals.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\simulation\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\simulation\\traffic.py": {
+      "loc": 70,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\static_file_optimizer.py": {
+      "loc": 69,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\storage\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\storage\\ipfs.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\tasks.py": {
+      "loc": 26,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\tests\\test_permissions.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\tests\\test_security.py": {
+      "loc": 251,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\throttles.py": {
+      "loc": 103,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\translation_service.py": {
+      "loc": 77,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\ultra_db.py": {
+      "loc": 197,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\universal\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\universal\\translator.py": {
+      "loc": 26,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\urls.py": {
+      "loc": 23,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\validators.py": {
+      "loc": 322,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\vector_service.py": {
+      "loc": 53,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\views.py": {
+      "loc": 96,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\web3\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\web3\\auth.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\core\\websocket_handlers.py": {
+      "loc": 387,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\__init__.py": {
+      "loc": 2,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\admin.py": {
+      "loc": 99,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\apps.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\certificate_service.py": {
+      "loc": 279,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\content_analyzer.py": {
+      "loc": 171,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\management\\commands\\translate_course.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0001_initial.py": {
+      "loc": 165,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0002_initial.py": {
+      "loc": 86,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0003_certificate.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0004_course_embedding.py": {
+      "loc": 12,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0005_course_hls_playlist_alter_course_preview_video.py": {
+      "loc": 17,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0006_careertrack_lesson_module_trackcourse_and_more.py": {
+      "loc": 124,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0007_lessoncompletion.py": {
+      "loc": 26,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0008_lessonprogress.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0009_enrollment_enrollments_complet_ddc915_idx_and_more.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\0010_trackcourse_created_at_trackcourse_updated_at_and_more.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\models.py": {
+      "loc": 268,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\serializers.py": {
+      "loc": 193,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\services.py": {
+      "loc": 255,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\signals.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tasks.py": {
+      "loc": 56,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tests.py": {
+      "loc": 64,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tests\\test_certificates.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tests\\test_models.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\tests\\test_services.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\urls.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\video_service.py": {
+      "loc": 77,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\courses\\views.py": {
+      "loc": 539,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\crypto\\secure_compute.py": {
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\curriculum\\auto_generator.py": {
+      "loc": 82,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\admin.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\advanced_analytics.py": {
+      "loc": 657,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\analytics_service.py": {
+      "loc": 67,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\code_runner.py": {
+      "loc": 120,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\consumers.py": {
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\god_mode_service.py": {
+      "loc": 59,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\migrations\\0001_initial.py": {
+      "loc": 47,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\models.py": {
+      "loc": 36,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\predictive_service.py": {
+      "loc": 55,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\retention_service.py": {
+      "loc": 72,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\routing.py": {
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\serializers.py": {
+      "loc": 12,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\services.py": {
+      "loc": 118,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\tests\\test_services.py": {
+      "loc": 40,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\urls.py": {
+      "loc": 19,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dashboard\\views.py": {
+      "loc": 380,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\data\\synthetic_factory.py": {
+      "loc": 77,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\__init__.py": {
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\admin.py": {
+      "loc": 16,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\apps.py": {
+      "loc": 7,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\enhanced_service.py": {
+      "loc": 377,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\migrations\\0001_initial.py": {
+      "loc": 94,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\models.py": {
+      "loc": 95,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\serializers.py": {
+      "loc": 78,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\signals.py": {
+      "loc": 41,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\tests\\test_discussions.py": {
+      "loc": 107,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\urls.py": {
+      "loc": 7,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\discussions\\views.py": {
+      "loc": 230,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\migrations\\0001_initial.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\models.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\serializers.py": {
+      "loc": 12,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\urls.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\downloads\\views.py": {
+      "loc": 71,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\admin.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\ai_chat_consumer.py": {
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\ai_services.py": {
+      "loc": 354,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\algorithms.py": {
+      "loc": 1026,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\apps.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\consumers.py": {
+      "loc": 25,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\management\\commands\\seed_dsa.py": {
+      "loc": 118,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0001_initial.py": {
+      "loc": 53,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0002_submission_ai_feedback.py": {
+      "loc": 12,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0003_tag_problem_examples_problem_tags.py": {
+      "loc": 25,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0004_alter_problem_options_alter_submission_options_and_more.py": {
+      "loc": 37,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0005_alter_tag_options_alter_problem_title.py": {
+      "loc": 16,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\0006_submission_dsa_submiss_user_id_ed9615_idx.py": {
+      "loc": 13,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\models.py": {
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\practice_engine.py": {
+      "loc": 488,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\repositories.py": {
+      "loc": 34,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\routing.py": {
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\sandbox.py": {
+      "loc": 182,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\schemas.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\serializers.py": {
+      "loc": 40,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\services.py": {
+      "loc": 310,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\signals.py": {
+      "loc": 56,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\tasks.py": {
+      "loc": 42,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\tests\\test_algorithms.py": {
+      "loc": 222,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\tests\\test_views.py": {
+      "loc": 62,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\urls.py": {
+      "loc": 93,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\validator.py": {
+      "loc": 137,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\dsa\\views.py": {
+      "loc": 69,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\admin.py": {
+      "loc": 37,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\apps.py": {
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\leaderboard_service.py": {
+      "loc": 119,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\migrations\\0001_initial.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\migrations\\0002_phase6_analytics.py": {
+      "loc": 44,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\migrations\\0003_update_streak_and_xp_models.py": {
+      "loc": 12,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\models.py": {
+      "loc": 112,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\serializers.py": {
+      "loc": 52,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\services.py": {
+      "loc": 378,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\signals.py": {
+      "loc": 23,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\tasks.py": {
+      "loc": 29,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\urls.py": {
+      "loc": 16,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\gamification\\views.py": {
+      "loc": 260,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\admin.py": {
+      "loc": 15,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\consumers.py": {
+      "loc": 103,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\enhanced_service.py": {
+      "loc": 464,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\migrations\\0001_initial.py": {
+      "loc": 46,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\models.py": {
+      "loc": 42,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\routing.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\serializers.py": {
+      "loc": 19,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\tests.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\urls.py": {
+      "loc": 118,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\live_sessions\\views.py": {
+      "loc": 156,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\media\\video_processor.py": {
+      "loc": 114,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\apps.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\consumers.py": {
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\migrations\\0001_initial.py": {
+      "loc": 47,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\models.py": {
+      "loc": 33,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\routing.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\metaverse\\spatial_state.py": {
+      "loc": 102,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\mlops\\infrastructure.py": {
+      "loc": 115,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\monitoring\\urls.py": {
+      "loc": 13,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\monitoring\\views.py": {
+      "loc": 134,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\apps.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\bci_service.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\migrations\\0001_initial.py": {
+      "loc": 32,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\models.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\spiking_network.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\urls.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\neuro\\views.py": {
+      "loc": 67,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\__init__.py": {
+      "loc": 2,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\admin.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\apps.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\consumers.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\migrations\\0001_initial.py": {
+      "loc": 77,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\migrations\\0002_initial.py": {
+      "loc": 33,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\migrations\\0003_smart_notifications.py": {
+      "loc": 40,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\models.py": {
+      "loc": 86,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\notification_service.py": {
+      "loc": 402,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\routing.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\serializers.py": {
+      "loc": 24,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\services.py": {
+      "loc": 142,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\signals.py": {
+      "loc": 18,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\smart_notifications.py": {
+      "loc": 427,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\tasks.py": {
+      "loc": 124,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\tests\\test_models.py": {
+      "loc": 16,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\tests\\test_services.py": {
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\urls.py": {
+      "loc": 14,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\notifications\\views.py": {
+      "loc": 135,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\ops\\guardian.py": {
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\optimization\\evolutionary.py": {
+      "loc": 159,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\optimization\\swarm.py": {
+      "loc": 132,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\__init__.py": {
+      "loc": 2,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\admin.py": {
+      "loc": 22,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\advanced_payment.py": {
+      "loc": 543,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\apps.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\invoice_service.py": {
+      "loc": 60,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\0001_initial.py": {
+      "loc": 97,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\0002_initial.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\0003_alter_coupon_is_active_alter_coupon_valid_until_and_more.py": {
+      "loc": 22,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\0004_add_coupon_fields.py": {
+      "loc": 94,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\0005_payment_payments_pa_status_343680_idx_and_more.py": {
+      "loc": 18,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\models.py": {
+      "loc": 78,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\serializers.py": {
+      "loc": 46,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\service_plan.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\services.py": {
+      "loc": 179,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\signals.py": {
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\tests\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\tests\\test_models.py": {
+      "loc": 18,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\tests\\test_services.py": {
+      "loc": 87,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\urls.py": {
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\payments\\views.py": {
+      "loc": 383,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\photonics\\optical_compute.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\rl\\deep_q_learning.py": {
+      "loc": 97,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\saas\\tenant_manager.py": {
+      "loc": 62,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\science\\quantum_sandbox.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\science\\reservoir_computing.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\science\\symbolic_regression.py": {
+      "loc": 258,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\security\\compliance_service.py": {
+      "loc": 79,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\security\\content_filter.py": {
+      "loc": 58,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\security\\intrusion_detection.py": {
+      "loc": 74,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\security\\ml_waf.py": {
+      "loc": 109,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\admin.py": {
+      "loc": 25,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\apps.py": {
+      "loc": 10,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\consumers.py": {
+      "loc": 114,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\enhanced_service.py": {
+      "loc": 491,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\migrations\\0001_initial.py": {
+      "loc": 46,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\migrations\\0002_groupmessage.py": {
+      "loc": 23,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\models.py": {
+      "loc": 56,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\routing.py": {
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\schemas.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\serializers.py": {
+      "loc": 25,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\signals.py": {
+      "loc": 19,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\tasks.py": {
+      "loc": 31,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\urls.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\study_groups\\views.py": {
+      "loc": 190,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\admin.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\migrations\\0001_initial.py": {
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\models.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\serializers.py": {
+      "loc": 14,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\tasks.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\tests.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\urls.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\support\\views.py": {
+      "loc": 114,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\admin.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\apps.py": {
+      "loc": 4,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\migrations\\0001_initial.py": {
+      "loc": 47,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\models.py": {
+      "loc": 45,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\serializers.py": {
+      "loc": 28,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\tests.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\urls.py": {
+      "loc": 9,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\tutors\\views.py": {
+      "loc": 172,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\__init__.py": {
+      "loc": 2,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\admin.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\apps.py": {
+      "loc": 13,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\b2b_service.py": {
+      "loc": 76,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\migrations\\0001_initial.py": {
+      "loc": 149,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\migrations\\0002_organization_organizationmember.py": {
+      "loc": 41,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\models.py": {
+      "loc": 136,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\serializers.py": {
+      "loc": 159,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\services.py": {
+      "loc": 110,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\tests\\test_models.py": {
+      "loc": 34,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\tests\\test_serializers.py": {
+      "loc": 64,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\tests\\test_views.py": {
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\urls\\__init__.py": {
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\urls\\auth.py": {
+      "loc": 27,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\urls\\orgs.py": {
+      "loc": 8,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\urls\\users.py": {
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\views.py": {
+      "loc": 275,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\users\\views_org.py": {
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\apps.py": {
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\credential_service.py": {
+      "loc": 93,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\migrations\\0001_initial.py": {
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\migrations\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\models.py": {
+      "loc": 39,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\serializers.py": {
+      "loc": 23,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\urls.py": {
+      "loc": 10,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps\\web3\\views.py": {
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 0
+    }
+  },
+  "results": []
+}

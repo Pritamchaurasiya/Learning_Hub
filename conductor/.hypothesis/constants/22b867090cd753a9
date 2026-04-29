@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\serializers.py
+# hypothesis_version: 6.152.1
+
+[4096, 'android', 'created_at', 'data', 'id', 'ios', 'is_read', 'message', 'read_at', 'title', 'type', 'web']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, '-total_xp', 'Badge', 'Streak', 'UserBadge', 'UserXP', 'abstract', 'awarded_to', 'badge', 'badges', 'created_at', 'criteria_type', 'criteria_value', 'current_streak', 'description', 'earned_at', 'gamification.badge', 'icon', 'id', 'indexes', 'last_activity_date', 'level', 'max_streak', 'name', 'streak_profile', 'total_xp', 'unique_together', 'updated_at', 'user', 'weekly_xp', 'xp_profile', 'xp_reward', '🏅']

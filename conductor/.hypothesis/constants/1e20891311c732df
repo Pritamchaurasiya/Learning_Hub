@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\pagination.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 'data', 'has_next', 'has_previous', 'message', 'meta', 'page', 'page_size', 'status', 'success', 'total_count', 'total_pages']

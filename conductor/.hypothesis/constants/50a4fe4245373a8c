@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\causal_inference.py
+# hypothesis_version: 6.152.1
+
+[1e-08, 0.05, 0.2, 0.3, 0.5, 0.7, 0.999, 1.0, 100, 'ate_smoking_cancer', 'cancer', 'changed', 'counterfactual', 'discovered_edges', 'factual', 'genetics', 'graph_edges', 'intervention', 'smoking', 'yellow_fingers']

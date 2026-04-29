@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\admin.py
+# hypothesis_version: 6.151.9
+
+['author', 'author__username', 'content', 'course', 'course__title', 'created_at', 'id', 'is_accepted_answer', 'is_pinned', 'is_resolved', 'like_count', 'parent', 'thread', 'thread__title', 'title', 'updated_at', 'views']

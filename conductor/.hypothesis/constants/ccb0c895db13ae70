@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\courses\admin.py
+# hypothesis_version: 6.151.9
+
+['Basic Info', 'Content', 'Details', 'Media', 'Pricing', 'Relationships', 'SEO', 'Stats', 'Status', 'Timestamps', 'avg_rating', 'category', 'certificate_code', 'completed_at', 'content', 'course', 'course__title', 'created_at', 'description', 'difficulty', 'duplicate_course', 'duration_hours', 'enrollment_count', 'fields', 'instructor', 'instructor__email', 'is_active', 'is_approved', 'is_featured', 'is_free', 'is_published', 'issued_at', 'learning_objectives', 'lessons_count', 'meta_description', 'meta_title', 'name', 'order', 'parent', 'preview_video', 'price', 'progress_percentage', 'publish_courses', 'published_at', 'rating', 'requirements', 'review_count', 'short_description', 'slug', 'thumbnail', 'title', 'unpublish_courses', 'updated_at', 'user', 'user__email']

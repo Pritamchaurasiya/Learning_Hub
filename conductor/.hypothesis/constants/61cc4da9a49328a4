@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\gaussian_splatting_sim.py
+# hypothesis_version: 6.152.1
+
+[-10.0, -5.0, 0.0, 0.01, 0.1, 1.0, 5.0, 50.0, 255, 1000, 5000, 'alpha', 'b', 'depth', 'g', 'gaussians_in_frustum', 'gaussians_processed', 'insight', 'paradigm', 'r', 'scene_geometry', 'u', 'v', 'view_1_statistics', 'view_2_statistics']

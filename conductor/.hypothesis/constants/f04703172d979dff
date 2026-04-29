@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\neuro_symbolic.py
+# hypothesis_version: 6.151.9
+
+[-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 'High', 'Low', 'Medium', 'algebra_101', 'calculus_101', 'confidence', 'course', 'creative_writing', 'deep_learning', 'eligible', 'linear_algebra', 'machine_learning', 'missing', 'nlp_advanced', 'physics_101', 'python_101', 'reason', 'reasoning', 'statistics_101', 'student_id', 'symbolic_validation', 'trigonometry_101']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\web3\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, 500, 'NFTCertificate', 'UserProfileWeb3', 'Web3 Profile', 'Web3 Profiles', 'course', 'courses', 'courses.course', 'created_at', 'db_table', 'did', 'id', 'indexes', 'is_revoked', 'merkle_proof', 'merkle_root', 'metadata_uri', 'nft_certificates', 'nonce', 'token_id', 'transaction_hash', 'unique_together', 'updated_at', 'user', 'users_web3_profiles', 'verbose_name', 'verbose_name_plural', 'wallet_address', 'web3_profile']

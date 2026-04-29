@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\services.py
+# hypothesis_version: 6.152.1
+
+['achievement', 'action_url', 'challenge', 'course_update', 'data', 'email', 'general', 'id', 'in_app', 'message', 'normal', 'push', 'reminder', 'send_notification', 'system', 'title', 'total', 'type']

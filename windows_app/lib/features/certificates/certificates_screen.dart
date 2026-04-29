@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/certificate_service.dart';
 import '../../data/models/certificate_model.dart';
+import '../../shared/widgets/app_feedback.dart';
 
 /// Certificates screen displaying earned certificates
 class CertificatesScreen extends ConsumerWidget {
@@ -48,7 +49,7 @@ class CertificatesScreen extends ConsumerWidget {
   void _showVerifyDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Verify Certificate'),
@@ -99,7 +100,7 @@ class CertificatesScreen extends ConsumerWidget {
       BuildContext context, CertificateVerificationResult result) {
     final theme = Theme.of(context);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         icon: Icon(
@@ -316,7 +317,7 @@ class _CertificateCard extends ConsumerWidget {
   void _showCertificateDetails(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
@@ -489,13 +490,8 @@ class _CertificateCard extends ConsumerWidget {
                               .downloadCertificate(certificate);
                         } catch (e) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Error downloading certificate: $e'),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
+                            AppFeedback.showError(
+                                context, 'Error downloading certificate: $e');
                           }
                         }
                       },

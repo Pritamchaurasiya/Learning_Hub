@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse our extensive catalog of courses in Programming, AI, Web Development, and Data Science">
+    <meta property="og:title" content="Courses | Learning Hub">
+    <meta property="og:description" content="Discover 500+ courses taught by industry experts.">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/courses">
+    <title>Courses | Learning Hub - Explore Our Catalog</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Skip to Content -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+  <!-- Navigation -->    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                Learning Hub
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/courses" class="active">Courses</a></li>
+                <li><a href="/quiz">Quiz</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Courses Hero -->
+    <main id="main-content">
+    <section class="hero" style="min-height: auto; padding: 120px 0 60px;">
+        <div class="container">
+            <div class="section-header" style="max-width: 100%;">
+                <h1>Explore Our <span class="text-gradient">Courses</span></h1>
+                <p>Discover 500+ courses taught by industry experts and start learning today</p>
+            </div>
+            
+            <!-- Search Bar -->
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div style="display: flex; gap: var(--space-md);">
+                    <div style="flex: 1; position: relative;">
+                        <input type="text" id="courseSearch" placeholder="Search courses..." 
+                            style="width: 100%; padding: var(--space-md) var(--space-md) var(--space-md) 48px; border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                        <i class="fas fa-search" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    </div>
+                    <button class="btn btn-primary" id="courseSearchBtn" type="button">Search</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <!-- Filters -->
+            <div class="courses-filters" style="margin-bottom: var(--space-2xl);">
+                <button class="filter-btn active" data-filter="all">All Courses</button>
+                <button class="filter-btn" data-filter="programming">Programming</button>
+                <button class="filter-btn" data-filter="ai">AI & Machine Learning</button>
+                <button class="filter-btn" data-filter="web">Web Development</button>
+                <button class="filter-btn" data-filter="data">Data Science</button>
+                <button class="filter-btn" data-filter="cloud">Cloud & DevOps</button>
+                <button class="filter-btn" data-filter="security">Cybersecurity</button>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Python -->
+                <div class="course-card" data-category="programming">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80" alt="Python">
+                        <span class="course-badge">Bestseller</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Programming</span>
+                        <h4>Complete Python Developer</h4>
+                        <p>Master Python from zero to hero with real-world projects.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 40h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.9</span>
+                        </div>
+                        <span class="course-price">$49.99</span>
+                    </div>
+                </div>
+
+                <!-- JavaScript -->
+                <div class="course-card" data-category="web">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=600&q=80" alt="JavaScript">
+                        <span class="course-badge" style="background: var(--accent-cyan);">Updated</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Web Development</span>
+                        <h4>Modern JavaScript ES6+</h4>
+                        <p>Learn modern JavaScript with async/await, modules, and more.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 35h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.8</span>
+                        </div>
+                        <span class="course-price">$39.99</span>
+                    </div>
+                </div>
+
+                <!-- Machine Learning -->
+                <div class="course-card" data-category="ai">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80" alt="ML">
+                        <span class="course-badge" style="background: var(--secondary-500);">New</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">AI & Machine Learning</span>
+                        <h4>Machine Learning A-Z</h4>
+                        <p>Complete ML course from basic algorithms to deep learning.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 55h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.9</span>
+                        </div>
+                        <span class="course-price">$79.99</span>
+                    </div>
+                </div>
+
+                <!-- React -->
+                <div class="course-card" data-category="web">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&q=80" alt="React">
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Web Development</span>
+                        <h4>React - The Complete Guide</h4>
+                        <p>Build powerful React apps with hooks, Redux, and Next.js.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 48h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.8</span>
+                        </div>
+                        <span class="course-price">$59.99</span>
+                    </div>
+                </div>
+
+                <!-- Data Science -->
+                <div class="course-card" data-category="data">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data Science">
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Data Science</span>
+                        <h4>Data Science Bootcamp</h4>
+                        <p>Master pandas, numpy, visualization, and statistical analysis.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 60h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.7</span>
+                        </div>
+                        <span class="course-price free">Free</span>
+                    </div>
+                </div>
+
+                <!-- AWS -->
+                <div class="course-card" data-category="cloud">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=80" alt="AWS">
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Cloud & DevOps</span>
+                        <h4>AWS Certified Solutions Architect</h4>
+                        <p>Prepare for AWS certification with hands-on labs.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 45h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.9</span>
+                        </div>
+                        <span class="course-price">$69.99</span>
+                    </div>
+                </div>
+
+                <!-- Deep Learning -->
+                <div class="course-card" data-category="ai">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&q=80" alt="Deep Learning">
+                        <span class="course-badge" style="background: var(--accent-pink);">Advanced</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">AI & Machine Learning</span>
+                        <h4>Deep Learning Specialization</h4>
+                        <p>Neural networks, CNNs, RNNs, and transformers mastery.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 70h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.9</span>
+                        </div>
+                        <span class="course-price">$99.99</span>
+                    </div>
+                </div>
+
+                <!-- Cybersecurity -->
+                <div class="course-card" data-category="security">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&q=80" alt="Security">
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Cybersecurity</span>
+                        <h4>Ethical Hacking Masterclass</h4>
+                        <p>Learn penetration testing, network security, and defense.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 50h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.8</span>
+                        </div>
+                        <span class="course-price">$79.99</span>
+                    </div>
+                </div>
+
+                <!-- Node.js -->
+                <div class="course-card" data-category="web">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80" alt="Node.js">
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Web Development</span>
+                        <h4>Node.js Complete Course</h4>
+                        <p>Backend development with Express, MongoDB, and REST APIs.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 42h</span>
+                            <span><i class="fas fa-star" style="color: var(--accent-yellow);"></i> 4.7</span>
+                        </div>
+                        <span class="course-price">$49.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More -->
+            <div style="text-align: center; margin-top: var(--space-2xl);">
+                <button class="btn btn-secondary" id="loadMoreBtn">
+                    Load More Courses
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="navbar-brand" style="color: white;">
+                        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                        Learning Hub
+                    </a>
+                    <p>Empowering learners worldwide with cutting-edge AI-powered education.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Platform</h5>
+                    <ul><li><a href="/courses">Courses</a></li><li><a href="/quiz">Quizzes</a></li><li><a href="#" title="Coming Soon">Leaderboard</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li><li><a href="#" title="Coming Soon">Blog</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Support</h5>
+                    <ul><li><a href="/contact">Help</a></li><li><a href="#" title="Coming Soon">Privacy</a></li><li><a href="#" title="Coming Soon">Terms</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Learning Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

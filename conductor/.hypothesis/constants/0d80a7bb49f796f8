@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 255, 'ModuleProgress', 'QuizChoice', 'QuizQuestion', 'Research Quizzes', 'ResearchQuiz', 'choices', 'completed_at', 'created_at', 'db_table', 'id', 'is_completed', 'is_correct', 'module_progress', 'module_slug', 'order', 'ordering', 'question', 'questions', 'quiz', 'quiz_choices', 'quiz_passed', 'quiz_questions', 'quizquestion', 'research_quizzes', 'text', 'title', 'unique_together', 'updated_at', 'user', 'verbose_name_plural', 'xp_reward']

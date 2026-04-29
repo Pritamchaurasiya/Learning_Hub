@@ -5,6 +5,7 @@
 pytest>=8.0.0
 pytest-django>=4.8.0
 pytest-cov>=4.1.0
+pytest-mock>=3.12.0
 factory-boy>=3.3.0
 
 # Debug
@@ -15,5 +16,7 @@ ipython>=8.20.0
 black>=24.1.0
 isort>=5.13.0
 flake8>=7.0.0
+bandit>=1.7.6
+safety>=3.0.0
 mypy>=1.8.0
 django-stubs>=4.2.0

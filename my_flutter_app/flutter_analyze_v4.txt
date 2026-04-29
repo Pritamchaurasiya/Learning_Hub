@@ -1,0 +1,4 @@
+Analyzing my_flutter_app...                                     
+
+   info - Unnecessary duplication of receiver - lib\src\core\network\api_client.dart:63:5 - cascade_invocations
+

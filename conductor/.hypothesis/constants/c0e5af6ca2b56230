@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\admin.py
+# hypothesis_version: 6.151.9
+
+['created_at', 'description', 'difficulty', 'input_data', 'is_active', 'is_hidden', 'language', 'memory_kb', 'points', 'problem', 'problem__title', 'runtime_ms', 'slug', 'status', 'submitted_at', 'title', 'user', 'user__username']

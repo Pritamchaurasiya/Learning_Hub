@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\study_groups\admin.py
+# hypothesis_version: 6.151.9
+
+['...', 'Content', 'content', 'content_snippet', 'created_at', 'creator', 'creator__email', 'creator__username', 'description', 'group', 'group__name', 'is_public', 'joined_at', 'max_members', 'name', 'role', 'sender', 'sender__username', 'topic', 'updated_at', 'user', 'user__email', 'user__username']

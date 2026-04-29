@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0003_certificate.py
+# hypothesis_version: 6.152.1
+
+['-issued_at', '0002_initial', 'Certificate', 'certificate', 'certificate_code', 'certificates', 'certificates/', 'course', 'courses', 'courses.course', 'courses.enrollment', 'created_at', 'db_table', 'enrollment', 'file', 'id', 'issued_at', 'ordering', 'unique_together', 'updated_at', 'user']

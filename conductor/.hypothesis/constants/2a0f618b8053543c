@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\admin.py
+# hypothesis_version: 6.151.9
+
+['action', 'actor', 'actor__email', 'actor__username', 'created_at', 'details', 'ip_address', 'resource', 'severity', 'updated_at']

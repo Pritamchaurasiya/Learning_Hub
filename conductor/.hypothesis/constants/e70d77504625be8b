@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\signal_handlers.py
+# hypothesis_version: 6.152.1
+
+['api:*courses*list*', 'courses.Course', 'courses.Enrollment', 'quiz.QuizAttempt', 'user_id', 'users.Bookmark']

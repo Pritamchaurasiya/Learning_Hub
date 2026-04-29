@@ -1,0 +1,12 @@
+{
+  "appTitle": "Learning Hub",
+  "welcomeBack": "वापसी पर स्वागत है, {name}!",
+  "readyToContinue": "क्या आप अपनी यात्रा जारी रखने के लिए तैयार हैं?",
+  "hoursSpent": "घंटे बिताए",
+  "courses": "पाठ्यक्रम",
+  "streak": "streak",
+  "continueLearning": "सीखना जारी रखें",
+  "viewAll": "सब देखें",
+  "recommendedForYou": "आपके लिए अनुशंसित",
+  "exploreCourses": "पाठ्यक्रम खोजें"
+}

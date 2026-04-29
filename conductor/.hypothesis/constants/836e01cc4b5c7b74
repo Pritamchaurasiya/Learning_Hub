@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\web3\serializers.py
+# hypothesis_version: 6.152.1
+
+['course', 'course.title', 'course_title', 'created_at', 'did', 'id', 'is_revoked', 'merkle_proof', 'merkle_root', 'metadata_uri', 'token_id', 'transaction_hash', 'user', 'user.username', 'username', 'wallet_address']

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../logic/notes_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 class NotesTab extends ConsumerStatefulWidget {
   final String courseId;
@@ -182,11 +183,8 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                         ),
                         TextButton.icon(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('AI Summarization Coming Soon!')),
-                            );
+                            AppFeedback.showInfo(
+                                context, 'AI Summarization Coming Soon!');
                           },
                           icon: const Icon(Icons.auto_awesome, size: 16),
                           label: const Text('Summarize with AI'),

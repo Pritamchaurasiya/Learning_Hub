@@ -1,0 +1,36 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: backend-pod-failure
+  namespace: default
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: backend
+  duration: "10s"
+  scheduler:
+    cron: "@every 5m"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: payment-network-delay
+  namespace: default
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: payment-service
+  delay:
+    latency: "200ms"
+    jitter: "50ms"
+  duration: "30s"
+  scheduler:
+    cron: "@every 10m"

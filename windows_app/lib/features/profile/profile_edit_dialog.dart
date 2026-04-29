@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 class EditProfileDialog extends ConsumerStatefulWidget {
   const EditProfileDialog({super.key});
@@ -38,23 +39,20 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
     try {
       // Mock update - in real app call AuthProvider.updateProfile
       // For demonstration let's assume valid
-      await Future.delayed(const Duration(seconds: 1)); // Simulating network
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulating network
 
       if (mounted) {
         // Here we would actually update the User object in AuthProvider
         // Since api_client mocks it, we can't persist effectively without real backend
         // But we can trigger a refresh if we had one.
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
+        AppFeedback.showSuccess(context, 'Profile updated successfully!');
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating profile: $e')),
-        );
+        AppFeedback.showError(context, 'Error updating profile: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -91,7 +89,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _isLoading ? _save : null,
+          onPressed: _isLoading ? null : _save,
           child: _isLoading
               ? const SizedBox(
                   width: 20,

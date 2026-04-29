@@ -22,7 +22,22 @@ avatar_view = UserProfileViewSet.as_view(
     }
 )
 
+bookmarks_view = UserProfileViewSet.as_view(
+    {
+        "get": "bookmarks",
+        "post": "add_bookmark",
+    }
+)
+
+bookmark_detail_view = UserProfileViewSet.as_view(
+    {
+        "delete": "remove_bookmark",
+    }
+)
+
 urlpatterns = [
     path("profile/", profile_view, name="profile"),
     path("avatar/", avatar_view, name="avatar"),
+    path("profile/bookmarks/", bookmarks_view, name="bookmarks"),
+    path("profile/bookmarks/<uuid:course_id>/", bookmark_detail_view, name="bookmark-detail"),
 ]

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\monitoring\urls.py
+# hypothesis_version: 6.152.1
+
+['api/cache/', 'api/database/', 'api/disk-io/', 'api/metrics/', 'api/processes/', 'api_cache', 'api_database', 'api_disk_io', 'api_metrics', 'api_processes', 'monitoring_dashboard']

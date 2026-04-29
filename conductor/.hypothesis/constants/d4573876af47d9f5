@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dashboard\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, '0008_lessonprogress', 'Complete', 'Heartbeat', 'LessonActivity', 'Pause', 'Play', 'Seek', 'VideoInteraction', 'activities', 'complete', 'courses', 'courses.lesson', 'created_at', 'db_table', 'duration_seconds', 'event_type', 'heartbeat', 'id', 'indexes', 'last_heartbeat', 'lesson', 'lesson_activities', 'pause', 'play', 'real_timestamp', 'seek', 'session_id', 'started_at', 'updated_at', 'user', 'video_interactions', 'video_timestamp']

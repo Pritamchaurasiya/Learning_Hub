@@ -1,0 +1,334 @@
+﻿Compiling lib\main.dart for the Web...                          
+flutter : Wasm dry 
+run findings:
+At line:1 char:1
++ flutter build web 
+--release 2>&1 | 
+Out-File -Encoding 
+utf8 -FilePath  ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (W    
+asm dry run 
+findings:    
+:String) [], 
+RemoteEx    ception
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+Found 
+incompatibilities 
+with WebAssembly.
+
+package:sentry_flutte
+r/src/native/cocoa/se
+ntry_native_cocoa.dar
+t 1:1 - 'dart:ffi' 
+can't be imported 
+when compiling to 
+Wasm. (2)
+package:sentry_flutte
+r/src/native/cocoa/bi
+nding.dart 5:1 - 
+'dart:ffi' can't be 
+imported when 
+compiling to Wasm. 
+(2)
+package:ffi/src/alloc
+ation.dart 5:1 - 
+'dart:ffi' can't be 
+imported when 
+compiling to Wasm. 
+(2)
+package:ffi/src/arena
+.dart 8:1 - 
+'dart:ffi' can't be 
+imported when 
+compiling to Wasm. 
+(2)
+package:ffi/src/utf16
+.dart 5:1 - 
+'dart:ffi' can't be 
+imported when 
+compiling to Wasm. 
+(2)
+package:ffi/src/utf8.
+dart 6:1 - 
+'dart:ffi' can't be 
+imported when 
+compiling to Wasm. 
+(2)
+file:///C:/Users/shiv
+a/AppData/Local/Pub/C
+ache/hosted/pub.dev/i
+mage-4.5.4/lib/src/ex
+if/ifd_directory.dart
+ 174:26 - avoid_doubl
+e_and_int_checks 
+lint violation: 
+Explicit check for 
+double or int. (13)
+file:///C:/Users/shiv
+a/AppData/Local/Pub/C
+ache/hosted/pub.dev/i
+mage-4.5.4/lib/src/ex
+if/ifd_directory.dart
+ 183:26 - avoid_doubl
+e_and_int_checks 
+lint violation: 
+Explicit check for 
+double or int. (13)
+file:///C:/Users/shiv
+a/AppData/Local/Pub/C
+ache/hosted/pub.dev/f
+lutter_timezone-5.0.1
+/lib/flutter_timezone
+_web.dart 39:22 - inv
+alid_runtime_check_wi
+th_js_interop_types 
+lint violation: Cast 
+from 'JSFunction?' 
+to 'List<String> 
+Function(String)?' 
+casts a JS interop 
+value to a Dart 
+type, which might 
+not be 
+platform-consistent. 
+(8)
+
+Consider addressing 
+these issues to 
+enable wasm builds. 
+See docs for more 
+info: https://docs.fl
+utter.dev/platform-in
+tegration/web/wasm
+
+Use 
+--no-wasm-dry-run to 
+disable these 
+warnings.
+Failed to open 
+output file 'C:\Users
+\shiva\Desktop\window
+s_app\windows_app\bui
+ld\web\assets\package
+s/cupertino_icons/ass
+ets/CupertinoIcons.tt
+f'. The parent 
+directory may not 
+exist, or the user 
+does not have 
+permission to create 
+this file.
+
+Failed to open 
+output file 'C:\Users
+\shiva\Desktop\window
+s_app\windows_app\bui
+ld\web\assets\fonts/M
+aterialIcons-Regular.
+otf'. The parent 
+directory may not 
+exist, or the user 
+does not have 
+permission to create 
+this file.
+
+Target 
+web_release_bundle 
+failed: PathNotFoundE
+xception: Cannot 
+copy file to 'C:\User
+s\shiva\Desktop\windo
+ws_app\windows_app\bu
+ild\web\assets\packag
+es/syncfusion_flutter
+_pdfviewer/assets/fon
+ts/RobotoMono-Regular
+.ttf', path = 'C:\Use
+rs\shiva\AppData\Loca
+l\Pub\Cache\hosted\pu
+b.dev\syncfusion_flut
+ter_pdfviewer-32.1.21
+\assets\fonts\RobotoM
+ono-Regular.ttf' (OS 
+Error: The system 
+cannot find the path 
+specified, errno = 3)
+#0      _checkForErro
+rResponse (dart:io/co
+mmon.dart:58:9)
+#1      _File.copy.<a
+nonymous closure> (da
+rt:io/file_impl.dart:
+410:7)
+#2      
+_rootRunUnary (dart:a
+sync/zone.dart:1538:4
+7)
+#3      
+_CustomZone.runUnary 
+(dart:async/zone.dart
+:1429:19)
+<asynchronous 
+suspension>
+#4      
+ForwardingFile.copy (
+package:file/src/forw
+arding/forwarding_fil
+e.dart:29:51)
+<asynchronous 
+suspension>
+#5      
+ForwardingFile.copy (
+package:file/src/forw
+arding/forwarding_fil
+e.dart:29:51)
+<asynchronous 
+suspension>
+#6      copyAssets.<a
+nonymous closure> (pa
+ckage:flutter_tools/s
+rc/build_system/targe
+ts/assets.dart:164:13
+)
+<asynchronous 
+suspension>
+#7      Future.wait.<
+anonymous closure> (d
+art:async/future.dart
+:546:21)
+<asynchronous 
+suspension>
+#8      copyAssets (p
+ackage:flutter_tools/
+src/build_system/targ
+ets/assets.dart:111:3
+)
+<asynchronous 
+suspension>
+#9      WebReleaseBun
+dle.build (package:fl
+utter_tools/src/build
+_system/targets/web.d
+art:528:29)
+<asynchronous 
+suspension>
+#10     _BuildInstanc
+e._invokeInternal (pa
+ckage:flutter_tools/s
+rc/build_system/build
+_system.dart:895:9)
+<asynchronous 
+suspension>
+#11     Future.wait.<
+anonymous closure> (d
+art:async/future.dart
+:546:21)
+<asynchronous 
+suspension>
+#12     _BuildInstanc
+e.invokeTarget (packa
+ge:flutter_tools/src/
+build_system/build_sy
+stem.dart:833:32)
+<asynchronous 
+suspension>
+#13     FlutterBuildS
+ystem.build (package:
+flutter_tools/src/bui
+ld_system/build_syste
+m.dart:653:16)
+<asynchronous 
+suspension>
+#14     
+WebBuilder.buildWeb (
+package:flutter_tools
+/src/web/compile.dart
+:94:34)
+<asynchronous 
+suspension>
+#15     BuildWebComma
+nd.runCommand (packag
+e:flutter_tools/src/c
+ommands/build_web.dar
+t:296:5)
+<asynchronous 
+suspension>
+#16     FlutterComman
+d.run.<anonymous 
+closure> (package:flu
+tter_tools/src/runner
+/flutter_command.dart
+:1559:27)
+<asynchronous 
+suspension>
+#17     AppContext.ru
+n.<anonymous 
+closure> (package:flu
+tter_tools/src/base/c
+ontext.dart:154:19)
+<asynchronous 
+suspension>
+#18     CommandRunner
+.runCommand (package:
+args/command_runner.d
+art:212:13)
+<asynchronous 
+suspension>
+#19     FlutterComman
+dRunner.runCommand.<a
+nonymous closure> (pa
+ckage:flutter_tools/s
+rc/runner/flutter_com
+mand_runner.dart:487:
+9)
+<asynchronous 
+suspension>
+#20     AppContext.ru
+n.<anonymous 
+closure> (package:flu
+tter_tools/src/base/c
+ontext.dart:154:19)
+<asynchronous 
+suspension>
+#21     FlutterComman
+dRunner.runCommand (p
+ackage:flutter_tools/
+src/runner/flutter_co
+mmand_runner.dart:422
+:5)
+<asynchronous 
+suspension>
+#22     
+run.<anonymous 
+closure>.<anonymous 
+closure> (package:flu
+tter_tools/runner.dar
+t:104:11)
+<asynchronous 
+suspension>
+#23     AppContext.ru
+n.<anonymous 
+closure> (package:flu
+tter_tools/src/base/c
+ontext.dart:154:19)
+<asynchronous 
+suspension>
+#24     main (package
+:flutter_tools/execut
+able.dart:103:3)
+<asynchronous 
+suspension>
+
+Compiling lib\main.dart for the Web...                            402.1s
+Error: Failed to 
+compile application 
+for the Web.

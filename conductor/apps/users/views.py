@@ -3,10 +3,11 @@ User views for Learning Hub API.
 """
 
 from rest_framework import generics, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, throttle_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -30,11 +31,12 @@ from .serializers import (
     LogoutSerializer,
 )
 
-
 from .services import UserService
+from apps.core.throttles import LoginRateThrottle, RegistrationRateThrottle
 
 
 @extend_schema_view(post=extend_schema(responses={201: UserProfileSerializer}))
+@extend_schema(tags=["Auth"])
 class RegisterView(generics.CreateAPIView):
     """
     User registration endpoint.
@@ -44,6 +46,7 @@ class RegisterView(generics.CreateAPIView):
 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [RegistrationRateThrottle]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -52,6 +55,17 @@ class RegisterView(generics.CreateAPIView):
 
         # Generate tokens using Service
         tokens = UserService.generate_tokens(user)
+
+        # Publish to EventBus — fires welcome notification + gamification XP
+        try:
+            from apps.core.event_bus import EventBus
+            EventBus.publish("user.registered", {
+                "user_id": user.id,
+                "username": user.username,
+                "email": user.email,
+            })
+        except Exception:
+            pass  # EventBus is non-critical
 
         return Response(
             {
@@ -68,6 +82,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 @extend_schema_view(post=extend_schema(responses={200: UserProfileSerializer}))
+@extend_schema(tags=["Auth"])
 class LoginView(generics.GenericAPIView):
     """
     User login endpoint.
@@ -77,6 +92,7 @@ class LoginView(generics.GenericAPIView):
 
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -106,6 +122,7 @@ class LoginView(generics.GenericAPIView):
         responses={200: OpenApiResponse(description="Logout successful")}
     )
 )
+@extend_schema(tags=["Auth"])
 class LogoutView(generics.GenericAPIView):
     """
     User logout endpoint - blacklists the refresh token.
@@ -129,12 +146,13 @@ class LogoutView(generics.GenericAPIView):
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.warning(f"Failed to blacklist token during logout: {str(e)}")
+            logger.warning("Failed to blacklist token during logout: %s", str(e))
 
         return Response({"status": "success", "message": "Logout successful"})
 
 
 @extend_schema_view(post=extend_schema(responses={200: TokenRefreshResponseSerializer}))
+@extend_schema(tags=["Auth"])
 class CustomTokenRefreshView(TokenRefreshView):
     """
     Custom token refresh view with consistent response format.
@@ -160,6 +178,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         return response
 
 
+@extend_schema(tags=["Auth"])
 class PasswordResetRequestView(generics.GenericAPIView):
     """
     Request password reset - sends email with reset link.
@@ -169,6 +188,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
 
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -192,6 +212,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
         responses={200: OpenApiResponse(description="Password reset successful")}
     )
 )
+@extend_schema(tags=["Auth"])
 class PasswordResetConfirmView(generics.GenericAPIView):
     """
     Confirm password reset with token.
@@ -201,6 +222,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
     queryset = User.objects.none()
 
     def post(self, request, *args, **kwargs):
@@ -228,7 +250,8 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         responses={200: OpenApiResponse(description="Password changed successfully")}
     )
 )
-class ChangePasswordView(generics.GenericAPIView):
+@extend_schema(tags=["Auth"])
+class ChangePasswordView(generics.UpdateAPIView):
     """
     Change password for authenticated user.
 
@@ -256,6 +279,7 @@ class ChangePasswordView(generics.GenericAPIView):
     profile=extend_schema(responses={200: UserProfileSerializer}),
     avatar=extend_schema(responses={200: AvatarResponseSerializer}),
 )
+@extend_schema(tags=["Users"])
 class UserProfileViewSet(viewsets.GenericViewSet):
     """
     User profile management.
@@ -308,14 +332,32 @@ class UserProfileViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["post"], parser_classes=[MultiPartParser])
     def avatar(self, request):
-        """Upload user avatar."""
+        """Upload user avatar with security validation."""
         if "avatar" not in request.FILES:
             return Response(
                 {"status": "error", "message": "No avatar file provided."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        avatar_url = UserService.update_avatar(request.user, request.FILES["avatar"])
+        avatar_file = request.FILES["avatar"]
+        
+        # Validate file size (max 5MB)
+        max_size = 5 * 1024 * 1024  # 5MB
+        if avatar_file.size > max_size:
+            return Response(
+                {"status": "error", "message": "File too large. Maximum size is 5MB."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if avatar_file.content_type not in allowed_types:
+            return Response(
+                {"status": "error", "message": "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        avatar_url = UserService.update_avatar(request.user, avatar_file)
 
         return Response(
             {
@@ -324,3 +366,109 @@ class UserProfileViewSet(viewsets.GenericViewSet):
                 "data": {"avatar_url": avatar_url},
             }
         )
+
+    @extend_schema(
+        description="Get user's bookmarked courses",
+        responses={200: dict}
+    )
+    @action(detail=False, methods=["get"], throttle_classes=[])
+    def bookmarks(self, request):
+        """Get user's bookmarked courses."""
+        from apps.courses.serializers import CourseListSerializer
+        from .models import Bookmark
+
+        bookmarks = Bookmark.objects.filter(
+            user=request.user
+        ).select_related('course', 'course__instructor', 'course__category').order_by('-created_at')
+
+        data = []
+        for bookmark in bookmarks:
+            course = bookmark.course
+            data.append({
+                'id': str(course.id),
+                'title': course.title,
+                'description': course.short_description or course.description[:200],
+                'duration': f"{course.duration_hours} hours" if course.duration_hours else "Self-paced",
+                'level': course.difficulty,
+                'thumbnail': course.thumbnail.url if course.thumbnail else None,
+                'instructor': course.instructor.display_name or course.instructor.username,
+                'bookmark_id': str(bookmark.id),
+                'bookmarked_at': bookmark.created_at.isoformat(),
+                'notes': bookmark.notes,
+            })
+
+        return Response({
+            'status': 'success',
+            'count': len(data),
+            'data': data
+        })
+
+    @extend_schema(
+        description="Add a course to bookmarks",
+        request=None,
+        responses={201: dict}
+    )
+    @bookmarks.mapping.post
+    @throttle_classes([ScopedRateThrottle])
+    def add_bookmark(self, request):
+        """Add a course to bookmarks."""
+        from apps.courses.models import Course
+        from .models import Bookmark
+
+        course_id = request.data.get('course_id')
+        notes = request.data.get('notes', '')
+
+        if not course_id:
+            return Response(
+                {'status': 'error', 'message': 'course_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response(
+                {'status': 'error', 'message': 'Course not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if already bookmarked
+        bookmark, created = Bookmark.objects.get_or_create(
+            user=request.user,
+            course=course,
+            defaults={'notes': notes}
+        )
+
+        if not created:
+            # Test expects 400 when bookmark already exists and 'error' in response
+            return Response({
+                'error': 'Course already in bookmarks'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'status': 'success',
+            'message': 'Course bookmarked successfully',
+            'data': {'bookmark_id': str(bookmark.id)}
+        }, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        description="Remove a course from bookmarks",
+        responses={200: dict}
+    )
+    @action(detail=False, methods=["delete"], url_path='bookmarks/(?P<course_id>[^/.]+)', throttle_classes=[])
+    def remove_bookmark(self, request, course_id=None):
+        """Remove a course from bookmarks."""
+        from .models import Bookmark
+
+        try:
+            bookmark = Bookmark.objects.get(user=request.user, course_id=course_id)
+            bookmark.delete()
+            return Response({
+                'status': 'success',
+                'message': 'Bookmark removed successfully'
+            })
+        except Bookmark.DoesNotExist:
+            return Response(
+                {'error': 'Bookmark not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )

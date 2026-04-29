@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\support\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-created_at', 'Billing & Payment', 'Bug Report', 'Closed', 'Course Content', 'Escalated', 'Feature Request', 'Feedback', 'General Inquiry', 'In Progress', 'Open', 'Other', 'Resolved', 'billing', 'bug', 'category', 'closed', 'content', 'escalated', 'feature', 'feedback', 'general', 'in_progress', 'open', 'other', 'resolved', 'status', 'urgency_score', 'user']

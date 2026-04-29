@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-scheduled_time', 'Cancelled', 'Ended', 'Live', 'Scheduled', 'Zoom/Meet link', 'attendees', 'cancelled', 'ended', 'hosted_sessions', 'live', 'live_sessions', 'live_sessions/', 'scheduled', 'session', 'user']

@@ -1,0 +1,18 @@
+{
+  "phase": "Debug & Fix",
+  "start_time": "2026-03-29T13:13:26.093253",
+  "fixes_applied": [
+    "pydantic-core installed via: pip install pydantic-core --only-binary :all:"
+  ],
+  "issues_resolved": [
+    "Syntax checked 696 files"
+  ],
+  "issues_remaining": [],
+  "test_results": {},
+  "end_time": "2026-03-29T13:13:54.111272",
+  "total_fixes": 1,
+  "pydantic_core_status": "Fixed",
+  "django_status": "OK",
+  "database_status": "OK",
+  "syntax_status": "Errors found"
+}

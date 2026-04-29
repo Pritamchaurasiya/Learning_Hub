@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NLP Studio — Enterprise-grade client-side Natural Language Processing. Perform sentiment analysis, named entity recognition, summarization, translation, and intent detection directly in your browser with zero server dependencies." />
+  <meta name="keywords" content="NLP, sentiment analysis, NER, named entity recognition, text summarization, translation, intent detection, AI, natural language processing" />
+  <meta name="author" content="NLP Studio" />
+  <meta name="theme-color" content="#0f0f23" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NLP Studio — AI-Powered Text Analysis" />
+  <meta property="og:description" content="Enterprise-grade client-side NLP: sentiment analysis, NER, summarization, translation, and intent detection — running entirely in the browser." />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NLP Studio — AI-Powered Text Analysis" />
+  <meta name="twitter:description" content="Enterprise-grade client-side NLP running entirely in the browser." />
+
+  <!-- Security -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.mymemory.translated.net; img-src 'self' data: blob:;" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="/" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <title>NLP Studio — AI-Powered Text Analysis</title>
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link" id="skip-link">Skip to main content</a>
+
+  <div id="app" role="application" aria-label="NLP Studio Application">
+    <!-- Loading screen -->
+    <div id="loader" class="loader" role="status" aria-live="polite">
+      <div class="loader__orb">
+        <div class="loader__ring"></div>
+        <div class="loader__ring"></div>
+        <div class="loader__ring"></div>
+      </div>
+      <p class="loader__text">Initializing NLP Studio</p>
+    </div>
+  </div>
+
+  <!-- Toast container for notifications -->
+  <div id="toast-container" class="toast-container" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

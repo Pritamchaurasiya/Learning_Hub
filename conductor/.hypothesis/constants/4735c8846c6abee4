@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, 500, '-created_at', 'AuditLog', 'Critical', 'Debug', 'Error', 'Info', 'Warning', 'action', 'actor', 'audit_logs', 'created_at', 'critical', 'debug', 'details', 'error', 'id', 'indexes', 'info', 'ip_address', 'is_active', 'ordering', 'resource', 'severity', 'updated_at', 'user_agent', 'warning']

@@ -4,8 +4,12 @@ import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/theme_provider.dart';
 import 'package:learning_hub/core/providers/biometric_provider.dart';
 import 'package:learning_hub/core/providers/offline_provider.dart';
+import 'package:learning_hub/core/providers/settings_provider.dart';
+import 'package:learning_hub/core/providers/auth_provider.dart';
 import 'package:learning_hub/core/services/offline_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Settings screen with app preferences and account settings
 class SettingsScreen extends ConsumerWidget {
@@ -16,6 +20,8 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final biometricState = ref.watch(biometricProvider);
     final offlineState = ref.watch(offlineProvider);
+    final settings = ref.watch(appSettingsProvider);
+    final settingsNotifier = ref.read(appSettingsProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -68,32 +74,33 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.download_outlined,
             title: 'Auto-download',
             subtitle: 'Download lessons on Wi-Fi',
-            value: true,
-            onChanged: (value) {},
+            value: settings.autoDownload,
+            onChanged: settingsNotifier.setAutoDownload,
           ),
           _SwitchTile(
             icon: Icons.play_circle_outline,
             title: 'Autoplay',
             subtitle: 'Play next lesson automatically',
-            value: true,
-            onChanged: (value) {},
+            value: settings.autoplay,
+            onChanged: settingsNotifier.setAutoplay,
           ),
           _SettingsTile(
             icon: Icons.speed,
             title: 'Default Playback Speed',
-            subtitle: '1.0x',
-            onTap: () {},
+            subtitle: '${settings.playbackSpeed}x',
+            onTap: () =>
+                _showPlaybackSpeedDialog(context, ref, settings.playbackSpeed),
           ),
           _SettingsTile(
             icon: Icons.subtitles_outlined,
             title: 'Subtitles',
-            subtitle: 'English',
+            subtitle: settings.subtitleLanguage,
             onTap: () {},
           ),
           _SettingsTile(
             icon: Icons.high_quality,
             title: 'Video Quality',
-            subtitle: 'Auto (recommended)',
+            subtitle: '${settings.videoQuality} (recommended)',
             onTap: () {},
           ),
           const Divider(height: 32),
@@ -104,22 +111,22 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             title: 'Push Notifications',
             subtitle: 'Receive push notifications',
-            value: true,
-            onChanged: (value) {},
+            value: settings.pushNotifications,
+            onChanged: settingsNotifier.setPushNotifications,
           ),
           _SwitchTile(
             icon: Icons.local_fire_department,
             title: 'Streak Reminders',
             subtitle: 'Daily learning reminders',
-            value: true,
-            onChanged: (value) {},
+            value: settings.streakReminders,
+            onChanged: settingsNotifier.setStreakReminders,
           ),
           _SwitchTile(
             icon: Icons.campaign_outlined,
             title: 'Promotions',
             subtitle: 'Receive promotional offers',
-            value: false,
-            onChanged: (value) {},
+            value: settings.promotions,
+            onChanged: settingsNotifier.setPromotions,
           ),
           const Divider(height: 32),
 
@@ -129,8 +136,8 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.analytics_outlined,
             title: 'Analytics',
             subtitle: 'Help improve the app',
-            value: true,
-            onChanged: (value) {},
+            value: settings.analyticsEnabled,
+            onChanged: settingsNotifier.setAnalyticsEnabled,
           ),
           _SettingsTile(
             icon: Icons.fingerprint,
@@ -176,10 +183,26 @@ class SettingsScreen extends ConsumerWidget {
 
           // About
           const _SectionHeader(title: 'About'),
-          const _SettingsTile(
+          _SettingsTile(
             icon: Icons.info_outline,
             title: 'App Version',
-            subtitle: '1.0.0 (Build 100)',
+            subtitle: null, // Filled dynamically
+            trailing: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final info = snapshot.data!;
+                  return Text(
+                    '${info.version} (Build ${info.buildNumber})',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  );
+                }
+                return Text(
+                  '...',
+                  style: Theme.of(context).textTheme.bodySmall,
+                );
+              },
+            ),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
@@ -194,7 +217,15 @@ class SettingsScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.code,
             title: 'Open Source Licenses',
-            onTap: () {},
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: 'Learning Hub',
+              applicationVersion: '1.0.0',
+              applicationIcon: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.school, size: 48, color: AppColors.primary),
+              ),
+            ),
           ),
           const Divider(height: 32),
 
@@ -204,7 +235,7 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.logout,
             title: 'Sign Out',
             iconColor: AppColors.warning,
-            onTap: () {},
+            onTap: () => _showSignOutDialog(context, ref),
           ),
           _SettingsTile(
             icon: Icons.delete_forever,
@@ -246,9 +277,70 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  void _showSignOutDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text(
+            'Are you sure you want to sign out? You will need to sign in again to access your account.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.warning,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPlaybackSpeedDialog(
+      BuildContext context, WidgetRef ref, double current) {
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Playback Speed'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: speeds.map((speed) {
+            final isSelected = speed == current;
+            return ListTile(
+              leading: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color:
+                    isSelected ? Theme.of(context).colorScheme.primary : null,
+              ),
+              title: Text('${speed}x'),
+              onTap: () {
+                ref.read(appSettingsProvider.notifier).setPlaybackSpeed(speed);
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   void _showThemeDialog(
       BuildContext context, WidgetRef ref, ThemeMode current) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Choose Theme'),
@@ -295,7 +387,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showClearCacheDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Cache'),
@@ -315,9 +407,7 @@ class SettingsScreen extends ConsumerWidget {
               // ref.read(offlineProvider.notifier).refresh(); // Assuming method exists or init
 
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cache cleared successfully')),
-                );
+                AppFeedback.showSuccess(context, 'Cache cleared successfully');
               }
             },
             child: const Text('Clear'),
@@ -328,7 +418,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Account'),

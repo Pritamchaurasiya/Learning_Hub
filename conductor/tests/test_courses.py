@@ -56,7 +56,9 @@ class TestCourseList:
         response = api_client.get("/api/v1/courses/")
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["data"]) >= 1
+        # Handle both paginated (results) and non-paginated (data) responses
+        results = response.data.get("results") or response.data.get("data", [])
+        assert len(results) >= 1
 
     def test_list_excludes_unpublished(self, api_client, instructor, category):
         """Test unpublished courses are excluded."""
@@ -72,7 +74,9 @@ class TestCourseList:
 
         response = api_client.get("/api/v1/courses/")
 
-        for course_data in response.data["data"]:
+        # Handle both paginated (results) and non-paginated (data) responses
+        results = response.data.get("results") or response.data.get("data", [])
+        for course_data in results:
             assert course_data["title"] != "Draft Course"
 
 
@@ -119,13 +123,15 @@ class TestCourseEnrollment:
             f"/api/v1/courses/{paid_course.slug}/enroll/"
         )
 
+        # API returns 402 for payment required
         assert response.status_code == status.HTTP_402_PAYMENT_REQUIRED
 
-    def test_duplicate_enrollment(self, authenticated_client, course, user):
+    def test_duplicate_enrollment(self, api_client, course, user):
         """Test cannot enroll twice in same course."""
+        api_client.force_authenticate(user=user)
         Enrollment.objects.create(user=user, course=course)
 
-        response = authenticated_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+        response = api_client.post(f"/api/v1/courses/{course.slug}/enroll/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -134,12 +140,13 @@ class TestCourseEnrollment:
 class TestCourseReview:
     """Tests for course reviews."""
 
-    def test_submit_review_enrolled(self, authenticated_client, course, user):
+    def test_submit_review_enrolled(self, api_client, course, user):
         """Test submitting review when enrolled."""
+        api_client.force_authenticate(user=user)
         Enrollment.objects.create(user=user, course=course)
 
         data = {"rating": 5, "title": "Great!", "content": "Loved it"}
-        response = authenticated_client.post(
+        response = api_client.post(
             f"/api/v1/courses/{course.slug}/review/", data
         )
 
@@ -152,4 +159,5 @@ class TestCourseReview:
             f"/api/v1/courses/{course.slug}/review/", data
         )
 
+        # API returns 403 for permission errors (not enrolled)
         assert response.status_code == status.HTTP_403_FORBIDDEN

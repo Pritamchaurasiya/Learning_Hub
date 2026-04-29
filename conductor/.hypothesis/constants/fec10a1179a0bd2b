@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\sparse_autoencoder.py
+# hypothesis_version: 6.152.1
+
+[0.0, 0.01, 0.04, 0.05, 0.1, 1.0, 2.0, 200, 'activation_count', 'active_features', 'd_model', 'dead_feature_ratio', 'dead_features', 'expansion_factor', 'feature_analysis', 'feature_id', 'final_loss', 'final_sparsity', 'frequency', 'initial_loss', 'insight', 'l1_loss', 'n_features', 'paradigm', 'recon_loss', 'sparsity', 'top_10_features', 'total_features', 'total_loss', 'training']

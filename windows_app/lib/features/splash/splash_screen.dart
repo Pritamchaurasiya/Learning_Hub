@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/biometric_provider.dart';
 import 'package:learning_hub/core/services/api_client.dart';
@@ -16,17 +17,29 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
+    _loadVersion();
     _initializeAndNavigate();
   }
 
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() => _version = 'v${info.version}');
+    }
+  }
+
   Future<void> _initializeAndNavigate() async {
-    // Wait for animations to complete
     if (!mounted) {
       return;
     }
+
+    // Ensure splash animations complete before navigating (minimum 2.5s display)
+    final minDisplayFuture = Future<void>.delayed(const Duration(milliseconds: 2500));
 
     // Check if user has completed onboarding
     final prefs = await SharedPreferences.getInstance();
@@ -34,6 +47,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         prefs.getBool('hasCompletedOnboarding') ?? false;
     // Use ApiClient to check for valid auth token (stored in secure storage)
     final isLoggedIn = await ApiClient.instance.hasToken;
+
+    // Wait for minimum display time
+    await minDisplayFuture;
 
     if (!mounted) {
       return;
@@ -45,7 +61,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final success =
           await ref.read(biometricProvider.notifier).authenticateUser();
       if (!success) {
-        // Init failed or user cancelled. Go to login or exit.
         if (mounted) {
           context.go('/login');
         }
@@ -141,6 +156,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
               ),
             ).animate(delay: 800.ms).fadeIn(duration: 400.ms),
+
+            const SizedBox(height: 24),
+
+            // Version text
+            if (_version.isNotEmpty)
+              Text(
+                _version,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  letterSpacing: 1.2,
+                ),
+              ).animate(delay: 1000.ms).fadeIn(duration: 400.ms),
           ],
         ),
       ),

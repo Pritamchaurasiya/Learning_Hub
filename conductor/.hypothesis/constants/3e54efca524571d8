@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\audit_middleware.py
+# hypothesis_version: 6.151.9
+
+[',', 'GET', 'HEAD', 'HTTP_X_FORWARDED_FOR', 'OPTIONS', 'REMOTE_ADDR']

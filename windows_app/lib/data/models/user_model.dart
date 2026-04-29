@@ -64,26 +64,38 @@ class User {
       id: json['id'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String?,
-      displayName: json['displayName'] as String,
-      firstName: json['firstName'] as String?,
-      lastName: json['lastName'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
+      displayName: (json['display_name'] as String?) ?? json['email'] as String,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      avatarUrl: json['avatar'] as String?,
       bio: json['bio'] as String?,
       role: UserRole.values.byName(json['role'] as String),
-      enrolledCourseIds: List<String>.from(json['enrolledCourseIds'] as List),
-      completedCourseIds: List<String>.from(json['completedCourseIds'] as List),
-      wishlistCourseIds: List<String>.from(json['wishlistCourseIds'] as List),
-      preferences:
-          UserPreferences.fromJson(json['preferences'] as Map<String, dynamic>),
+      enrolledCourseIds: json['enrolled_courses'] != null
+          ? List<String>.from(json['enrolled_courses'] as List)
+          : [],
+      completedCourseIds: json['completed_courses'] != null
+          ? List<String>.from(json['completed_courses'] as List)
+          : [],
+      wishlistCourseIds: json['wishlist_courses'] != null
+          ? List<String>.from(json['wishlist_courses'] as List)
+          : [],
+      preferences: json['preferences'] != null
+          ? UserPreferences.fromJson(
+              json['preferences'] as Map<String, dynamic>)
+          : UserPreferences.defaultPreferences(),
       subscription: json['subscription'] != null
           ? UserSubscription.fromJson(
               json['subscription'] as Map<String, dynamic>)
           : null,
-      stats: UserStats.fromJson(json['stats'] as Map<String, dynamic>),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      lastLoginAt: DateTime.parse(json['lastLoginAt'] as String),
-      isVerified: json['isVerified'] as bool,
-      isActive: json['isActive'] as bool,
+      stats: json['stats'] != null
+          ? UserStats.fromJson(json['stats'] as Map<String, dynamic>)
+          : UserStats.empty(),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      lastLoginAt: json['last_login_at'] != null
+          ? DateTime.parse(json['last_login_at'] as String)
+          : DateTime.now(),
+      isVerified: json['is_verified'] as bool? ?? false,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
 

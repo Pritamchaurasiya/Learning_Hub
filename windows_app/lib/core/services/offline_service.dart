@@ -33,7 +33,9 @@ class OfflineService {
   /// Dispose of resources - close Hive box and Dio client
   /// Call this at app shutdown if needed
   Future<void> dispose() async {
-    if (!_isInitialized) return;
+    if (!_isInitialized) {
+      return;
+    }
     try {
       await _offlineBox.close();
       _dio.close();
@@ -82,15 +84,15 @@ class OfflineService {
 
       final dir = await getApplicationDocumentsDirectory();
       final sanitizedId = _sanitizeFileName(id);
-      final fileName =
-          '${sanitizedId}_$type.${type == 'video' ? 'mp4' : 'pdf'}';
+      final extension = type == 'video' ? 'mp4' : 'pdf';
+      final fileName = '${sanitizedId}_$type.$extension';
       final savePath = '${dir.path}/offline/$fileName';
 
       // Ensure directory exists
       await Directory('${dir.path}/offline').create(recursive: true);
 
       // Check if already downloaded
-      if (_fileValid(savePath)) {
+      if (await _fileValid(savePath)) {
         return savePath;
       }
 
@@ -112,6 +114,7 @@ class OfflineService {
         'type': type,
         'url': url,
         'timestamp': DateTime.now().toIso8601String(),
+        // ignore: avoid_slow_async_io
         'size': File(savePath).lengthSync(),
       });
 
@@ -125,19 +128,22 @@ class OfflineService {
     }
   }
 
-  /// Get local path for a resource if exists
   String? getLocalPath(String id) {
     if (kIsWeb) {
       return null;
     }
-    final data = _offlineBox.get(id);
-    if (data != null && data['path'] != null) {
-      final path = data['path'] as String;
-      if (File(path).existsSync()) {
-        return path;
-      } else {
-        // File missing, remove metadata
-        _offlineBox.delete(id);
+    final rawData = _offlineBox.get(id);
+    if (rawData != null) {
+      final data = Map<String, dynamic>.from(rawData as Map);
+      final path = data['path'] as String?;
+      if (path != null) {
+        // ignore: avoid_slow_async_io
+        if (File(path).existsSync()) {
+          return path;
+        } else {
+          // File missing, remove metadata
+          _offlineBox.delete(id);
+        }
       }
     }
     return null;
@@ -148,12 +154,16 @@ class OfflineService {
     if (kIsWeb) {
       return;
     }
-    final data = _offlineBox.get(id);
-    if (data != null) {
-      final path = data['path'] as String;
-      final file = File(path);
-      if (file.existsSync()) {
-        await file.delete();
+    final rawData = _offlineBox.get(id);
+    if (rawData != null) {
+      final data = Map<String, dynamic>.from(rawData as Map);
+      final path = data['path'] as String?;
+      if (path != null) {
+        final file = File(path);
+        // ignore: avoid_slow_async_io
+        if (await file.exists()) {
+          await file.delete();
+        }
       }
       await _offlineBox.delete(id);
     }
@@ -174,6 +184,7 @@ class OfflineService {
     }
     final dir = await getApplicationDocumentsDirectory();
     final offlineDir = Directory('${dir.path}/offline');
+    // ignore: avoid_slow_async_io
     if (offlineDir.existsSync()) {
       await offlineDir.delete(recursive: true);
     }
@@ -207,8 +218,9 @@ class OfflineService {
     return fileName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
   }
 
-  bool _fileValid(String path) {
+  Future<bool> _fileValid(String path) async {
     final file = File(path);
+    // ignore: avoid_slow_async_io
     return file.existsSync() && file.lengthSync() > 0;
   }
 }

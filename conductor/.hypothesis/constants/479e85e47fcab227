@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\migrations\0006_submission_dsa_submiss_user_id_ed9615_idx.py
+# hypothesis_version: 6.152.1
+
+['-submitted_at', 'dsa', 'submission', 'user']

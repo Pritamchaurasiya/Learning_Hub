@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\study_groups\views.py
+# hypothesis_version: 6.152.1
+
+['-created_at', 'Already a member', 'Cannot kick an admin', 'Group is full', 'Invalid payload', 'Join a study group.', 'Joined successfully', 'Leave a study group.', 'Left group', 'Member removed', 'Not a member', 'Study Groups', 'User is not a member', 'admin', 'create', 'created_at', 'data', 'details', 'email', 'error', 'get', 'joined_at', 'member', 'memberships', 'message', 'name', 'partial_update', 'post', 'role', 'search', 'status', 'success', 'topic', 'update', 'user', 'user_id']

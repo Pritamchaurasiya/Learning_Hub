@@ -44,12 +44,14 @@ class _PaymentModalState extends State<PaymentModal> {
   }
 
   Future<void> _processPayment() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isProcessing = true);
 
     // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     if (mounted) {
       setState(() {
@@ -59,7 +61,7 @@ class _PaymentModalState extends State<PaymentModal> {
       _confettiController.play();
 
       // Close dialog after success animation
-      await Future.delayed(const Duration(seconds: 3));
+      await Future<void>.delayed(const Duration(seconds: 3));
       if (mounted) {
         Navigator.of(context).pop(true);
       }
@@ -79,146 +81,148 @@ class _PaymentModalState extends State<PaymentModal> {
         constraints: const BoxConstraints(maxWidth: 400),
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Enroll in ${widget.course.title}',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Total: \$${widget.course.price.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 24),
-
-              // Card Number
-              TextFormField(
-                controller: _cardNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Card Number',
-                  prefixIcon: const Icon(Icons.credit_card),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  isDense: true,
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(16),
-                  _CardNumberFormatter(),
-                ],
-                validator: (value) {
-                  if (value == null || value.length < 19) {
-                    return 'Invalid card number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  // Expiry
-                  Expanded(
-                    child: TextFormField(
-                      controller: _expiryController,
-                      decoration: InputDecoration(
-                        labelText: 'MM/YY',
-                        prefixIcon: const Icon(Icons.calendar_today),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        isDense: true,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enroll in ${widget.course.title}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(4),
-                        _ExpiryDateFormatter(),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.length < 5) {
-                          return 'Invalid Date';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // CVV
-                  Expanded(
-                    child: TextFormField(
-                      controller: _cvvController,
-                      decoration: InputDecoration(
-                        labelText: 'CVV',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        isDense: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Total: \$${widget.course.price.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
                       ),
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(3),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.length < 3) {
-                          return 'Invalid CVV';
-                        }
-                        return null;
-                      },
-                    ),
+                ),
+                const SizedBox(height: 24),
+
+                // Card Number
+                TextFormField(
+                  controller: _cardNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Card Number',
+                    prefixIcon: const Icon(Icons.credit_card),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    isDense: true,
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Name
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Cardholder Name',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  isDense: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(16),
+                    _CardNumberFormatter(),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.length < 19) {
+                      return 'Invalid card number';
+                    }
+                    return null;
+                  },
                 ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Name is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                  onPressed: _isProcessing ? null : _processPayment,
-                  child: _isProcessing
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Pay Now'),
+                Row(
+                  children: [
+                    // Expiry
+                    Expanded(
+                      child: TextFormField(
+                        controller: _expiryController,
+                        decoration: InputDecoration(
+                          labelText: 'MM/YY',
+                          prefixIcon: const Icon(Icons.calendar_today),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          isDense: true,
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(4),
+                          _ExpiryDateFormatter(),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.length < 5) {
+                            return 'Invalid Date';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // CVV
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cvvController,
+                        decoration: InputDecoration(
+                          labelText: 'CVV',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          isDense: true,
+                        ),
+                        obscureText: true,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(3),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.length < 3) {
+                            return 'Invalid CVV';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // Name
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Cardholder Name',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    isDense: true,
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: _isProcessing ? null : _processPayment,
+                    child: _isProcessing
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Pay Now'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

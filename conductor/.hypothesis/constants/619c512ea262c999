@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dashboard\urls.py
+# hypothesis_version: 6.152.1
+
+['analytics', 'content_reputation', 'dashboard', 'god-mode/', 'god_mode_stats', 'home/', 'home_dashboard', 'instructor', 'instructor-dashboard', 'instructor-v2/', 'learner/', 'learner_dashboard', 'learning_streak', 'moderate/', 'moderate_content', 'platform/', 'platform_metrics', 'recommendations', 'recommendations/', 'reputation/', 'similar_courses', 'streak/']

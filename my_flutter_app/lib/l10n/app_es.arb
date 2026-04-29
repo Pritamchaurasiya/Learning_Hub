@@ -1,0 +1,20 @@
+{
+  "appTitle": "Centro de Aprendizaje",
+  "welcomeBack": "¡Bienvenido de nuevo, {name}!",
+  "@welcomeBack": {
+    "description": "El mensaje de bienvenida en el tablero",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readyToContinue": "¿Listo para continuar tu viaje?",
+  "hoursSpent": "Horas dedicadas",
+  "courses": "Cursos",
+  "streak": "Racha",
+  "continueLearning": "Continuar aprendiendo",
+  "viewAll": "Ver todo",
+  "recommendedForYou": "Recomendado para ti",
+  "exploreCourses": "Explorar cursos"
+}

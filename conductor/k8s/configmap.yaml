@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learning-hub-config
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "yourdomain.com,www.yourdomain.com"
+  SECURE_SSL_REDIRECT: "True"
+  SESSION_COOKIE_SECURE: "True"
+  CSRF_COOKIE_SECURE: "True"
+  RATE_LIMITING_ENABLED: "True"
+  CELERY_BROKER_URL: "redis://redis-service:6379/0"
+  CELERY_RESULT_BACKEND: "redis://redis-service:6379/0"

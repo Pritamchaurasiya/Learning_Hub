@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/ui/desktop_shortcuts.dart';
+import 'core/services/websocket_service.dart';
 
 /// Main LearningHub Application Widget
 ///
@@ -69,11 +70,103 @@ class _LearningHubAppState extends ConsumerState<LearningHubApp> {
               MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.2),
             ),
           ),
-          child: DesktopShortcuts(
-            child: child ?? const SizedBox.shrink(),
+          child: _WebSocketListener(
+            child: DesktopShortcuts(
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         );
       },
     );
+  }
+}
+
+class _WebSocketListener extends StatefulWidget {
+  final Widget child;
+  const _WebSocketListener({required this.child});
+
+  @override
+  State<_WebSocketListener> createState() => _WebSocketListenerState();
+}
+
+class _WebSocketListenerState extends State<_WebSocketListener> {
+  @override
+  void initState() {
+    super.initState();
+    // Lazy connect if we have a token (mocking check for now)
+    // In real app, AuthProvider triggers this.
+    // Lazy connect if we have a token (mocking check for now)
+    // In real app, AuthProvider triggers this.
+    // webSocketService is a singleton from the imported file
+    webSocketService.events.listen(_handleEvent);
+  }
+
+  void _handleEvent(Map<String, dynamic> event) {
+    if (event['event_type'] == 'level_up') {
+      final data = event['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final level = data['new_level'] as int? ?? 1;
+        final message = data['message'] as String? ?? 'Level Up!';
+        _showLevelUpToast(level, message);
+      }
+    }
+  }
+
+  void _showLevelUpToast(int level, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        content: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A), // Slate 900
+            borderRadius: BorderRadius.circular(12),
+            border:
+                Border.all(color: const Color(0xFF38BDF8), width: 2), // Sky 400
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.rocket_launch,
+                  color: Color(0xFF38BDF8), size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'LEVEL UP!',
+                      style: TextStyle(
+                        color: Color(0xFF38BDF8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      message,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

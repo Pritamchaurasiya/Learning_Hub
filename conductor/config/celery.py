@@ -30,6 +30,19 @@ app.conf.update(
     # Task execution
     task_acks_late=True,
     task_reject_on_worker_lost=True,
+    # Task routing
+    task_queues={
+        "default": {"exchange": "default", "routing_key": "default"},
+        "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
+    },
+    task_routes={
+        "apps.ai_engine.*": {"queue": "ai_computation"},
+        "*": {"queue": "default"},
+    },
+    # Limits
+    task_time_limit=300,  # 5 minutes soft limit
+    task_soft_time_limit=240,
+    worker_prefetch_multiplier=1,  # Prevent worker from hogging tasks
     # Rate limits
     task_default_rate_limit="100/m",
     # Logging

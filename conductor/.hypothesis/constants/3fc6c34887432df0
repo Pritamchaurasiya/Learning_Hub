@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\serializers.py
+# hypothesis_version: 6.152.1
+
+['active_subcategories', 'avg_rating', 'category', 'category.name', 'category_name', 'certificate_code', 'completed_at', 'content', 'content_type', 'course', 'course.title', 'course_count', 'course_title', 'courses', 'created_at', 'description', 'difficulty', 'duration_hours', 'duration_minutes', 'enrollment_count', 'hls_playlist', 'icon', 'id', 'instructor', 'is_enrolled', 'is_featured', 'is_free', 'is_preview', 'is_pro_only', 'is_published', 'is_required', 'issued_at', 'last_accessed_at', 'learning_objectives', 'lessons', 'lessons_count', 'modules', 'name', 'order', 'parent', 'preview_video', 'price', 'progress_percentage', 'published_at', 'rating', 'request', 'requirements', 'review_count', 'short_description', 'signature', 'slug', 'student_name', 'subcategories', 'thumbnail', 'title', 'user', 'user.get_full_name', 'user_progress']

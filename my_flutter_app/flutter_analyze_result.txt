@@ -1,0 +1,20 @@
+Analyzing my_flutter_app...                                     
+
+   info - The value of the argument is redundant because it matches the default value - lib\src\features\profile\presentation\instructor_profile_screen.dart:32:18 - avoid_redundant_argument_values
+
+flutter : 1 issue found. 
+(ran in 9.7s)
+At line:1 char:1
++ flutter analyze 2>&1 | 
+Out-File -Encoding ASCII 
+flutter_analyze_resul ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (1  
+   issue found. (ran in   
+  9.7s):String) [], Re    
+moteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 

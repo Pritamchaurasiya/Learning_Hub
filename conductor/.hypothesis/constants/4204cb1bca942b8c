@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\information_bottleneck.py
+# hypothesis_version: 6.151.9
+
+[-0.5, 0.0, 1e-12, 1e-05, 0.0001, 0.001, 0.01, 0.1, 1.0, 256, 512, 784, 'beta', 'distortion', 'distortion_ce', 'loss', 'mean', 'rate', 'rate_I_XZ']

@@ -1,0 +1,127 @@
+
+================================================================================
+                    PHASE 10: ALGORITHMIC MASTERY (DSA)
+================================================================================
+
+## 10.1 The Big O Notation (Time & Space Complexity)
+
+### What is Big O?
+It measures how "heavy" an algorithm gets as data grows.
+
+- **O(1) - Constant**: Instant. (e.g., Accessing array index `arr[5]`)
+- **O(log n) - Logarithmic**: Fast. Cuts problem in half. (e.g., Binary Search)
+- **O(n) - Linear**: Fair. Checks every item. (e.g., Simple Loop)
+- **O(n log n) - Linearithmic**: Good for sorting. (e.g., Merge Sort)
+- **O(n²)** - Quadratic**: Slow. Nested loops. (e.g., Bubble Sort)
+
+```python
+# O(1)
+def get_first(arr):
+    return arr[0]
+
+# O(n)
+def find_max(arr):
+    max_val = arr[0]
+    for x in arr:
+        if x > max_val: max_val = x
+    return max_val
+
+# O(n²)
+def print_pairs(arr):
+    for i in arr:
+        for j in arr:
+            print(i, j)
+```
+
+## 10.2 Core Data Structures
+
+### Arrays & Strings
+- **Use when**: You need simple storage, fast access by index.
+- **Mistake**: Inserting at start of large array (shifts everything → O(n)).
+
+### Hash Maps (Dictionaries)
+- **Use when**: You need fast lookups O(1).
+- **Example**: Counting frequency of characters.
+```python
+def char_counts(s):
+    counts = {}
+    for char in s:
+        counts[char] = counts.get(char, 0) + 1
+    return counts
+```
+
+### Linked Lists
+- **Use when**: You need fast insertions/deletions at ends.
+
+### Stacks (LIFO) & Queues (FIFO)
+- **Stack**: Undo button, Browser history.
+- **Queue**: Printer jobs, Task processing.
+
+### Trees & Graphs
+- **Trees**: Hierarchies (File system, HTML DOM).
+- **Graphs**: Social networks, Maps (GPS).
+
+================================================================================
+                    PHASE 11: SYSTEM DESIGN AT SCALE
+================================================================================
+
+## 11.1 Scalability Concepts
+
+### Vertical vs Horizontal Scaling
+- **Vertical (Scale Up)**: Bigger server (more RAM/CPU). Easiest but has limits.
+- **Horizontal (Scale Out)**: More servers. harder to manage but limitless.
+
+### Load Balancing
+- Distributes traffic across multiple servers.
+- **Nginx**, **HAProxy**, **AWS ALB**.
+
+### Caching
+- "Reading memory is fast, reading disk is slow."
+- **Redis**, **Memcached**.
+- Cache Strategy: Cache Aside (Lazy Loading).
+
+### Database Sharding
+- Splitting one giant database into smaller chunks (Shards) based on a key (e.g., UserID).
+
+## 11.2 The CAP Theorem
+In a distributed system, you can pick only 2:
+1. **Consistency**: Everyone sees the same data at the same time.
+2. **Availability**: System always responds (even if data is old).
+3. **Partition Tolerance**: System works even if network fails.
+
+- **CA**: RDBMS (Postgres, MySQL) - Good for banking.
+- **AP**: Cassandra, DynamoDB - Good for social media feeds.
+
+================================================================================
+                    PHASE 12: ARTIFICIAL INTELLIGENCE & LLMs
+================================================================================
+
+## 12.1 Large Language Models (LLMs)
+- **Transformer Architecture**: Attention mechanism ("Pay attention to relevant words").
+- **Tokens**: Chunks of text (roughly 0.75 words).
+- **Context Window**: How much text the model can "remember" at once.
+
+## 12.2 RAG (Retrieval Augmented Generation)
+Give the LLM a "textbook" to answer from.
+
+1. **Ingest**: Read PDF/Docs.
+2. **Chunk**: Split into small pieces.
+3. **Embed**: Convert text to numbers (Vectors).
+4. **Store**: Save in Vector DB (Pinecone, Chroma).
+5. **Retrieve**: Find relevant chunks for user query.
+6. **Generate**: Send chunks + query to LLM.
+
+```python
+# Pseudo-code for RAG
+query = "How do I fix a flat tire?"
+# 1. Search Vector DB
+relevant_docs = vector_db.similarity_search(query)
+# 2. Construct Prompt
+prompt = f"""
+Context: {relevant_docs}
+Question: {query}
+Answer the question based only on the context.
+"""
+# 3. Call LLM
+answer = llm.generate(prompt)
+```

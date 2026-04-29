@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\downloads\serializers.py
+# hypothesis_version: 6.152.1
+
+['content_id', 'content_type', 'downloaded_at', 'expires_at', 'file_size', 'file_url', 'id', 'is_expired', 'title']

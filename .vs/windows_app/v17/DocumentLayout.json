@@ -3,6 +3,54 @@
   "WorkspaceRootPath": "C:\\Users\\shiva\\Desktop\\windows_app\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\Release.xcconfig||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\ios\\Flutter\\Release.xcconfig||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\AppFrameworkInfo.plist||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\ios\\Flutter\\AppFrameworkInfo.plist||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\RunnerTests\\RunnerTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\ios\\RunnerTests\\RunnerTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\payment_service\\main.py||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\backend\\payment_service\\main.py||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\test_final.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\test_final.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\web\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\flutter_service_worker.js||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\web\\flutter_service_worker.js||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\linux\\runner\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\linux\\runner\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\run.py||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:windows_app\\backend\\run.py||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
@@ -23,19 +71,175 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Contents.json",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json",
+              "RelativeDocumentMoniker": "windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json",
+              "RelativeToolTip": "windows_app\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-18T15:24:50.881Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Release.xcconfig",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\Release.xcconfig",
+              "RelativeDocumentMoniker": "windows_app\\ios\\Flutter\\Release.xcconfig",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\Release.xcconfig",
+              "RelativeToolTip": "windows_app\\ios\\Flutter\\Release.xcconfig",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-18T15:24:44.568Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AppFrameworkInfo.plist",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\AppFrameworkInfo.plist",
+              "RelativeDocumentMoniker": "windows_app\\ios\\Flutter\\AppFrameworkInfo.plist",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\Flutter\\AppFrameworkInfo.plist",
+              "RelativeToolTip": "windows_app\\ios\\Flutter\\AppFrameworkInfo.plist",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-18T15:24:43.285Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "RunnerTests.swift",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\RunnerTests\\RunnerTests.swift",
+              "RelativeDocumentMoniker": "windows_app\\ios\\RunnerTests\\RunnerTests.swift",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\ios\\RunnerTests\\RunnerTests.swift",
+              "RelativeToolTip": "windows_app\\ios\\RunnerTests\\RunnerTests.swift",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-18T15:24:38.493Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "main.py",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\payment_service\\main.py",
+              "RelativeDocumentMoniker": "windows_app\\backend\\payment_service\\main.py",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\payment_service\\main.py",
+              "RelativeToolTip": "windows_app\\backend\\payment_service\\main.py",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-18T15:24:18.669Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "test_final.txt",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\test_final.txt",
+              "RelativeDocumentMoniker": "my_flutter_app\\test_final.txt",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\test_final.txt",
+              "RelativeToolTip": "my_flutter_app\\test_final.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-01-18T15:24:05.118Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\index.html",
+              "RelativeDocumentMoniker": "my_flutter_app\\web\\index.html",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\index.html",
+              "RelativeToolTip": "my_flutter_app\\web\\index.html",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-01-18T15:22:22.609Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "flutter_service_worker.js",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\flutter_service_worker.js",
+              "RelativeDocumentMoniker": "my_flutter_app\\web\\flutter_service_worker.js",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\web\\flutter_service_worker.js",
+              "RelativeToolTip": "my_flutter_app\\web\\flutter_service_worker.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-01-18T15:22:12.608Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CMakeLists.txt",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\linux\\runner\\CMakeLists.txt",
+              "RelativeDocumentMoniker": "my_flutter_app\\linux\\runner\\CMakeLists.txt",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\linux\\runner\\CMakeLists.txt",
+              "RelativeToolTip": "my_flutter_app\\linux\\runner\\CMakeLists.txt",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-01-18T15:22:00.07Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml",
+              "RelativeToolTip": "my_flutter_app\\android\\app\\src\\profile\\AndroidManifest.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2026-01-18T15:21:08.455Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "RelativeToolTip": "my_flutter_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2026-01-18T15:20:11.38Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "launch_background.xml",
+              "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml",
+              "RelativeDocumentMoniker": "my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml",
+              "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml",
+              "RelativeToolTip": "my_flutter_app\\android\\app\\src\\main\\res\\drawable\\launch_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2026-01-18T15:20:01.259Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "run.py",
               "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\run.py",
               "RelativeDocumentMoniker": "windows_app\\backend\\run.py",
               "ToolTip": "C:\\Users\\shiva\\Desktop\\windows_app\\windows_app\\backend\\run.py",
               "RelativeToolTip": "windows_app\\backend\\run.py",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2026-01-04T15:40:30.661Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 13,
               "Title": "MainActivity.kt",
               "DocumentMoniker": "C:\\Users\\shiva\\Desktop\\windows_app\\my_flutter_app\\android\\app\\src\\main\\kotlin\\com\\example\\my_flutter_app\\MainActivity.kt",
               "RelativeDocumentMoniker": "my_flutter_app\\android\\app\\src\\main\\kotlin\\com\\example\\my_flutter_app\\MainActivity.kt",

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\migrations\0003_update_streak_and_xp_models.py
+# hypothesis_version: 6.152.1
+
+['gamification', 'longest_streak', 'max_streak', 'streak']

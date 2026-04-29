@@ -128,13 +128,19 @@ class GeminiClient implements LLMClient {
 
             try {
               final data = jsonDecode(jsonStr) as Map<String, dynamic>;
-              if (data['candidates'] != null &&
-                  (data['candidates'] as List).isNotEmpty) {
-                final content = data['candidates'][0]['content'];
-                if (content != null && content['parts'] != null) {
-                  final parts = content['parts'] as List;
-                  if (parts.isNotEmpty && parts[0]['text'] != null) {
-                    yield parts[0]['text'] as String;
+              final candidates = data['candidates'] as List<dynamic>?;
+              if (candidates != null && candidates.isNotEmpty) {
+                final candidateMap = candidates[0] as Map<String, dynamic>;
+                final content =
+                    candidateMap['content'] as Map<String, dynamic>?;
+                if (content != null) {
+                  final parts = content['parts'] as List<dynamic>?;
+                  if (parts != null && parts.isNotEmpty) {
+                    final firstPart = parts[0] as Map<String, dynamic>;
+                    final text = firstPart['text'] as String?;
+                    if (text != null) {
+                      yield text;
+                    }
                   }
                 }
               }
@@ -180,7 +186,8 @@ class GeminiClient implements LLMClient {
               as Map<String, dynamic>;
           if (content['parts'] != null &&
               (content['parts'] as List).isNotEmpty) {
-            return content['parts'][0]['text'] as String;
+            final part = (content['parts'] as List)[0] as Map<String, dynamic>;
+            return part['text'] as String;
           }
         }
       }

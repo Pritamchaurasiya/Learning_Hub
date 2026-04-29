@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-03-28T16:52:46.461246",
+  "fixes_applied": [],
+  "warnings_fixed": [
+    {
+      "type": "escape_sequences",
+      "count": 42
+    }
+  ],
+  "issues_remaining": [
+    {
+      "type": "SECURITY",
+      "issue": "DEBUG mode is enabled",
+      "fix": "Set DEBUG = False in config/settings/production.py",
+      "severity": "HIGH"
+    },
+    {
+      "type": "SECURITY",
+      "issue": "Weak SECRET_KEY",
+      "fix": "Generate a strong SECRET_KEY with at least 50 characters",
+      "severity": "CRITICAL"
+    },
+    {
+      "type": "SECURITY",
+      "issue": "Missing 3 security settings",
+      "fix": "Enable security headers in production settings",
+      "severity": "MEDIUM"
+    },
+    {
+      "type": "ML_CONFIG",
+      "issue": "Missing AI API keys: GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY",
+      "fix": "Configure production API keys in environment variables",
+      "severity": "MEDIUM"
+    },
+    {
+      "type": "PERFORMANCE",
+      "issue": "Many middleware layers (21)",
+      "fix": "Review and optimize middleware stack",
+      "severity": "LOW"
+    }
+  ],
+  "validation": {
+    "django_checks": false,
+    "database_connection": true,
+    "cache_working": true
+  },
+  "summary": {
+    "fixes_applied": 0,
+    "issues_remaining": 5,
+    "critical_issues": 1,
+    "high_issues": 1,
+    "medium_issues": 2,
+    "low_issues": 1
+  }
+}

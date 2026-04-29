@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your free Learning Hub account and start learning today">
+    <meta property="og:title" content="Sign Up | Learning Hub">
+    <meta property="og:description" content="Create your free account and start learning with AI-powered courses.">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/signup">
+    <title>Sign Up | Learning Hub</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Skip to Content -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+  <!-- Navigation -->    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                Learning Hub
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/courses">Courses</a></li>
+                <li><a href="/quiz">Quiz</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary active">Sign Up</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Signup Section -->
+    <main id="main-content">
+    <section class="auth-section">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Create Account</h2>
+                <p>Join thousands of learners and start your journey</p>
+            </div>
+
+            <div id="signupMessage" class="form-message" role="alert" aria-live="polite"></div>
+
+            <form class="auth-form" id="signupForm" novalidate>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" placeholder="John Doe" required autocomplete="name" aria-required="true">
+                    <span class="field-error" id="signupNameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" name="email" placeholder="you@example.com" required autocomplete="email" aria-required="true">
+                    <span class="field-error" id="signupEmailError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupPassword" name="password" placeholder="Create a strong password" required minlength="8" autocomplete="new-password" aria-required="true">
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="signupPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                        <span class="strength-text" id="strengthText"></span>
+                    </div>
+                    <span class="field-error" id="signupPasswordError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupConfirmPassword" name="confirmPassword" placeholder="Confirm your password" required minlength="8" autocomplete="new-password" aria-required="true">
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="signupConfirmPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <span class="field-error" id="signupConfirmPasswordError"></span>
+                </div>
+
+                <div class="auth-extras">
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="terms" required> I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="signupSubmitBtn">
+                    <span class="btn-text">Create Account <i class="fas fa-user-plus"></i></span>
+                    <span class="btn-loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Creating...</span>
+                </button>
+            </form>
+
+            <div class="auth-divider">Or sign up with</div>
+
+            <div class="social-login">
+                <a href="javascript:void(0)" class="social-btn" data-action="social-login" data-provider="google"><i class="fab fa-google"></i> Google</a>
+                <a href="javascript:void(0)" class="social-btn" data-action="social-login" data-provider="github"><i class="fab fa-github"></i> GitHub</a>
+            </div>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="/login">Log in</a></p>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="navbar-brand footer-brand-link">
+                        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                        Learning Hub
+                    </a>
+                    <p>Empowering learners worldwide with cutting-edge AI-powered education.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Platform</h5>
+                    <ul><li><a href="/courses">Courses</a></li><li><a href="/quiz">Quizzes</a></li><li><a href="#" title="Coming Soon">Leaderboard</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li><li><a href="#" title="Coming Soon">Blog</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Support</h5>
+                    <ul><li><a href="/contact">Help</a></li><li><a href="#" title="Coming Soon">Privacy</a></li><li><a href="#" title="Coming Soon">Terms</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Learning Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

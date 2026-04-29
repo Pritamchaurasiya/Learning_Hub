@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views_org.py
+# hypothesis_version: 6.152.1
+
+['__all__', 'active_licenses', 'data', 'email', 'get', 'message', 'post', 'status', 'success', 'top_learners', 'total_members', 'total_xp', 'username', 'xp', 'xp_profile']

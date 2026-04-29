@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\admin.py
+# hypothesis_version: 6.151.9
+
+['course', 'course__title', 'created_at', 'description', 'duration_minutes', 'host', 'host__username', 'joined_at', 'scheduled_time', 'session', 'session__title', 'status', 'title', 'updated_at', 'user', 'user__username']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\state_space_model.py
+# hypothesis_version: 6.152.1
+
+[0.0, 0.01, 1.0, 'activation_stats', 'architecture', 'complexity', 'd_model', 'key_innovation', 'max', 'mean', 'min', 'output_shape', 'seq_len', 'vs_transformer']

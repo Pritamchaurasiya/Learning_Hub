@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\models.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 255, 500, '-created_at', 'Admin', 'Bookmark', 'Bookmarks', 'Instructor', 'Manager', 'Member', 'Student', 'User', 'Users', 'admin', 'avatars/', 'bookmarked_by', 'bookmarks', 'course', 'courses.Course', 'created_at', 'email', 'free', 'instructor', 'is_active', 'is_staff', 'is_superuser', 'is_verified', 'last_login_at', 'manager', 'member', 'members', 'organization', 'organization_members', 'organizations', 'owned_organizations', 'role', 'student', 'subscription', 'user', 'user_bookmarks', 'username', 'users']

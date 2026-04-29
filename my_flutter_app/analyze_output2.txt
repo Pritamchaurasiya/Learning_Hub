@@ -1,0 +1,19 @@
+﻿Analyzing my_flutter_app...                                     
+
+warning - The exception variable 'e' isn't used, so the 'catch' clause can be removed - lib\src\features\courses\presentation\course_controller.dart:99:27 - unused_catch_clause
+
+flutter : 1 issue found. 
+(ran in 17.4s)
+At line:1 char:1
++ flutter analyze 2>&1 | 
+Out-File -Encoding utf8 
+analyze_output2.txt; G ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (1 iss  
+  ue found. (ran in 17.4s   
+ ):String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 

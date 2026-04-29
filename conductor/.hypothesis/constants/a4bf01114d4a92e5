@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\concept_bottleneck.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-10, 0.01, 0.1, 'concept_loss', 'task_loss', 'total_loss']

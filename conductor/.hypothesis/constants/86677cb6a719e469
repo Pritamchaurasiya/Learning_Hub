@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0010_userbehavior.py
+# hypothesis_version: 6.152.1
+
+[100, 255, '-created_at', 'Added to Wishlist', 'Category Filtered', 'Course Clicked', 'Course Enrolled', 'Course Viewed', 'Difficulty Filtered', 'Price Filtered', 'Reviews Viewed', 'Search Performed', 'Time Spent on Page', 'Time spent on action', 'UserBehavior', 'ai_engine', 'behavior_logs', 'behavior_type', 'category_filter', 'course', 'course_click', 'course_view', 'courses', 'courses.course', 'created_at', 'db_table', 'device_type', 'difficulty_filter', 'duration_seconds', 'enroll', 'id', 'indexes', 'instructor_view', 'is_active', 'metadata', 'ordering', 'price_filter', 'review_view', 'search', 'source_page', 'time_spent', 'updated_at', 'user', 'user_behaviors', 'value', 'wishlist']

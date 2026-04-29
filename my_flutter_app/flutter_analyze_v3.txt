@@ -1,0 +1,5 @@
+Analyzing my_flutter_app...                                     
+
+   info - Unnecessary duplication of receiver - lib\src\core\network\api_client.dart:63:5 - cascade_invocations
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\core\network\token_manager.dart:79:7 - avoid_catches_without_on_clauses
+

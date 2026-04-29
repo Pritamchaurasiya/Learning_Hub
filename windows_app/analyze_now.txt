@@ -1,0 +1,67 @@
+﻿Analyzing windows_app...                                        
+
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:134:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:135:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:136:43 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:137:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+  error - Undefined name 'payload' - lib\core\services\api_client.dart:308:37 - undefined_identifier
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:134:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:135:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:153:20 - avoid_dynamic_calls
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\achievements\achievements_screen.dart:426:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\bookmarks\bookmarks_screen.dart:144:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\cart\cart_screen.dart:182:15 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\certificates\certificates_screen.dart:51:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\certificates\certificates_screen.dart:102:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\certificates\certificates_screen.dart:319:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\course\lesson_player_screen.dart:633:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\course\lesson_player_screen.dart:668:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\discussions\discussions_screen.dart:168:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\discussions\discussions_screen.dart:380:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\downloads\downloads_screen.dart:133:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'post' can't be inferred - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:71:38 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'post' can't be inferred - lib\features\gamification\data\datasources\gamification_remote_data_source_impl.dart:86:38 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\home\home_screen.dart:99:9 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\home\home_screen_v2.dart:102:9 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\learning_path\learning_path_screen.dart:98:5 - inference_failure_on_function_invocation
+warning - The return type of ' Function(AppNotification)' can't be inferred - lib\features\notifications\notifications_screen.dart:195:9 - inference_failure_on_function_return_type
+warning - The return type of ' Function(AppNotification)' can't be inferred - lib\features\notifications\notifications_screen.dart:196:9 - inference_failure_on_function_return_type
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\features\payment\presentation\widgets\payment_modal.dart:52:11 - inference_failure_on_instance_creation
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\features\payment\presentation\widgets\payment_modal.dart:62:13 - inference_failure_on_instance_creation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\peer_review\peer_review_screen.dart:77:5 - inference_failure_on_function_invocation
+warning - The return type of ' Function(PeerReviewAssignment)' can't be inferred - lib\features\peer_review\peer_review_screen.dart:90:9 - inference_failure_on_function_return_type
+  error - The method '_downloadCertificate' isn't defined for the type '_CertificateCard' - lib\features\profile\certificates_screen.dart:120:19 - undefined_method
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\features\profile\profile_edit_dialog.dart:41:13 - inference_failure_on_instance_creation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\profile\profile_screen.dart:66:17 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\profile\profile_screen.dart:118:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\settings\settings_screen.dart:251:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\settings\settings_screen.dart:298:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\settings\settings_screen.dart:331:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\features\study_planner\study_planner_screen.dart:91:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\study_planner\study_planner_screen.dart:140:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\study_planner\study_planner_screen.dart:192:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\features\study_planner\study_planner_screen.dart:263:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\shared\widgets\video_player_widget.dart:422:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\shared\widgets\video_player_widget.dart:445:5 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'get' can't be inferred - test\comprehensive_functionality_test.dart:356:40 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'get' can't be inferred - test\comprehensive_functionality_test.dart:362:45 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:31:11 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:113:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:134:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:142:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the constructor 'Right' can't be inferred - test\features\gamification\gamification_logic_test.dart:53:28 - inference_failure_on_instance_creation
+warning - The type argument(s) of the constructor 'Right' can't be inferred - test\features\gamification\gamification_logic_test.dart:67:28 - inference_failure_on_instance_creation
+warning - The type argument(s) of the function 'get' can't be inferred - test\verification_test.dart:164:42 - inference_failure_on_function_invocation
+warning - The type argument(s) of 'Map' can't be inferred - test\widget_test.dart:68:20 - inference_failure_on_collection_literal
+
+flutter : 57 issues found. (ran in 165.9s)
+At line:1 char:1
++ flutter analyze 2>&1 | Out-File -Encoding utf8 analyze_now.txt
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (57 issues found. (ran in 165.9s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

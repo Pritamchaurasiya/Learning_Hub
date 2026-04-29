@@ -1,0 +1,15 @@
+﻿Analyzing my_flutter_app...                                     
+
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\src\features\ai\presentation\module_detail_screen.dart:36:11 - inference_failure_on_function_invocation
+   info - Closure should be a tearoff - lib\src\features\ai\presentation\quiz_view.dart:49:31 - unnecessary_lambdas
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\src\features\ai\presentation\quiz_view.dart:80:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\src\features\ai\presentation\quiz_view.dart:81:17 - deprecated_member_use
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_view.dart:83:38 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\quiz_view.dart:135:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_view.dart:136:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_view.dart:140:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:26:23 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:43:7 - avoid_catches_without_on_clauses
+   info - Use 'const' with the constructor to improve performance - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:46:25 - prefer_const_constructors
+   info - Unnecessary use of a 'double' literal - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:118:39 - prefer_int_literals
+

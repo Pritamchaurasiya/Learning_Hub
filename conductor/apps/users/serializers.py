@@ -59,7 +59,9 @@ class UserLoginSerializer(serializers.Serializer):
         email = attrs.get("email")
         password = attrs.get("password")
 
-        user = authenticate(username=email, password=password)
+        # Get request from context for django-axes compatibility
+        request = self.context.get("request")
+        user = authenticate(request=request, username=email, password=password)
 
         if not user:
             raise serializers.ValidationError({"detail": "Invalid email or password."})
@@ -73,7 +75,7 @@ class UserLoginSerializer(serializers.Serializer):
 
         attrs["user"] = user
         attrs["tokens"] = {
-            "access_token": str(refresh.access_token), # type: ignore
+            "access_token": str(refresh.access_token),  # type: ignore
             "refresh_token": str(refresh),
         }
 
@@ -82,6 +84,9 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
+    xp = serializers.IntegerField(source='xp_profile.total_xp', read_only=True, default=0)
+    level = serializers.IntegerField(source='xp_profile.level', read_only=True, default=1)
+    streak = serializers.IntegerField(source='xp_profile.current_streak', read_only=True, default=0)
 
     class Meta:
         model = User
@@ -98,6 +103,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "preferences",
             "created_at",
             "last_login_at",
+            "xp",
+            "level",
+            "streak",
         ]
         read_only_fields = [
             "id",
@@ -106,6 +114,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_verified",
             "created_at",
             "last_login_at",
+            "xp",
+            "level",
+            "streak",
         ]
 
 
@@ -206,3 +217,38 @@ class AvatarResponseSerializer(serializers.Serializer):
 class TokenRefreshResponseSerializer(serializers.Serializer):
     accessToken = serializers.CharField()
     refreshToken = serializers.CharField()
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    """Serializer for user bookmarks."""
+    from apps.users.models import Bookmark
+    
+    course_title = serializers.CharField(source='course.title', read_only=True)
+    course_slug = serializers.CharField(source='course.slug', read_only=True)
+    course_id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        from apps.users.models import Bookmark
+        model = Bookmark
+        fields = ['course_id', 'course_title', 'course_slug', 'notes', 'created_at']
+        read_only_fields = ['created_at']
+        
+    def validate_course_id(self, value):
+        from apps.courses.models import Course
+        if not Course.objects.filter(id=value).exists():
+            raise serializers.ValidationError('Course does not exist.')
+        return value
+        
+    def create(self, validated_data):
+        from apps.courses.models import Course
+        from apps.users.models import Bookmark
+        
+        user = self.context['request'].user
+        course_id = validated_data.pop('course_id')
+        course = Course.objects.get(id=course_id)
+        
+        if Bookmark.objects.filter(user=user, course=course).exists():
+            raise serializers.ValidationError('Bookmark already exists.')
+            
+        bookmark = Bookmark.objects.create(user=user, course=course, **validated_data)
+        return bookmark

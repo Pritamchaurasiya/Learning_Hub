@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\config\celery.py
+# hypothesis_version: 6.151.9
+
+[240, 300, '*', '100/m', 'CELERY', 'UTC', 'ai_computation', 'apps.ai_engine.*', 'default', 'django.conf:settings', 'exchange', 'json', 'learning_hub', 'queue', 'routing_key']

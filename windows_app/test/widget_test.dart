@@ -65,7 +65,7 @@ void main() {
       // Return mock HTTP responses
       return {
         'statusCode': 400, // Bad request to simulate test environment
-        'headers': {},
+        'headers': <String, dynamic>{},
         'body': '{"error": "Mock response for testing"}',
       };
     });

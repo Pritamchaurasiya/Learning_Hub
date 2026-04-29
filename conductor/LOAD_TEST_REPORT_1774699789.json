@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-03-28T17:39:49.913744",
+  "performance_score": 33.3,
+  "baseline_metrics": {
+    "baseline": {
+      "database_avg_ms": 0.08,
+      "database_max_ms": 6.58,
+      "database_min_ms": 0.01,
+      "cache_avg_ms": 0.04
+    },
+    "memory": {
+      "initial_mb": 244.88,
+      "peak_mb": 254.2,
+      "final_mb": 245.26,
+      "used_mb": 9.32
+    }
+  },
+  "load_tests": [
+    {
+      "concurrent_users": 10,
+      "successful_requests": 2,
+      "errors": 8,
+      "total_time": 66.49,
+      "throughput": 0.15,
+      "avg_response_ms": 61151.27
+    },
+    {
+      "concurrent_users": 25,
+      "successful_requests": 7,
+      "errors": 18,
+      "total_time": 145.14,
+      "throughput": 0.17,
+      "avg_response_ms": 119473.77
+    },
+    {
+      "concurrent_users": 50,
+      "successful_requests": 11,
+      "errors": 39,
+      "total_time": 278.25,
+      "throughput": 0.18,
+      "avg_response_ms": 236938.54
+    },
+    {
+      "type": "api",
+      "endpoints_tested": 1,
+      "requests_per_endpoint": 50,
+      "successful": 0,
+      "errors": 50
+    }
+  ],
+  "stress_tests": [
+    {
+      "type": "database",
+      "queries": 100,
+      "successful": 100,
+      "errors": 0,
+      "avg_time_ms": 9.63
+    },
+    {
+      "type": "cache",
+      "operations": 500,
+      "successful": 500,
+      "errors": 0,
+      "avg_time_ms": 0.03
+    }
+  ],
+  "bottlenecks": [
+    "Errors in 10 user load test",
+    "Errors in 25 user load test",
+    "Errors in 50 user load test",
+    "Errors in unknown user load test"
+  ],
+  "recommendations": [
+    "Increase server resources or optimize code",
+    "Increase server resources or optimize code",
+    "Increase server resources or optimize code",
+    "Increase server resources or optimize code",
+    "Enable database connection pooling",
+    "Implement query result caching",
+    "Use CDN for static files",
+    "Enable gzip compression",
+    "Consider horizontal scaling for high loads",
+    "Implement rate limiting to prevent overload",
+    "Monitor memory usage in production"
+  ]
+}

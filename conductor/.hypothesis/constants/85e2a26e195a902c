@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0007_lessoncompletion.py
+# hypothesis_version: 6.152.1
+
+['LessonCompletion', 'completed_at', 'completed_lessons', 'completions', 'courses', 'courses.lesson', 'created_at', 'db_table', 'id', 'lesson', 'lesson_completions', 'unique_together', 'updated_at', 'user']

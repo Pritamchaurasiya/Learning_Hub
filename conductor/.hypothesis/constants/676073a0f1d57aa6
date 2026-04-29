@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0004_add_coupon_fields.py
+# hypothesis_version: 6.152.1
+
+[100, 'Enterprise Plan', 'INR', 'Pro Plan', 'Subscription', 'abstract', 'auto_renew', 'code', 'coupon', 'coupons', 'course', 'courses', 'courses.course', 'created_at', 'currency', 'discount_percent', 'end_date', 'enterprise', 'expires_at', 'gateway_payment_id', 'id', 'is_active', 'max_uses', 'payment', 'payments', 'plan_type', 'pro', 'start_date', 'subscription', 'updated_at', 'user', 'valid_from', 'valid_until']

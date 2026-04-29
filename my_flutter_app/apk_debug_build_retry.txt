@@ -1,0 +1,668 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : Warning: 
+Flutter support for 
+your project's 
+Gradle version 
+(8.3.0) will soon be 
+dropped. Please 
+upgrade your Gradle 
+version to a version 
+of at least 8.7.0 
+soon.
+At line:1 char:1
++ flutter build apk 
+--debug 2>&1 | 
+Out-File -FilePath 
+apk_debug_build_r ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Warning   
+ : Flutte...ast 8    
+.7.0 soon.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's gradle 
+version is typically 
+defined in the 
+gradle wrapper file. 
+By default, this can 
+be found at C:\Users\
+shiva\Desktop\windows
+_app\my_flutter_app\a
+ndroid/gradle/wrapper
+/gradle-wrapper.prope
+rties. 
+For more 
+information, see http
+s://docs.gradle.org/c
+urrent/userguide/grad
+le_wrapper.html.
+
+Warning: Flutter 
+support for your 
+project's Android 
+Gradle Plugin 
+version (Android 
+Gradle Plugin 
+version 8.2.2) will 
+soon be dropped. 
+Please upgrade your 
+Android Gradle 
+Plugin version to a 
+version of at least 
+Android Gradle 
+Plugin version 8.6.0 
+soon.
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's AGP 
+version is typically 
+defined in the 
+plugins block of the 
+`settings.gradle` 
+file (C:\Users\shiva\
+Desktop\windows_app\m
+y_flutter_app\android
+/settings.gradle), 
+by a plugin with the 
+id of com.android.app
+lication. 
+If you don't see a 
+plugins block, your 
+project was likely 
+created with an 
+older template 
+version. In this 
+case it is most 
+likely defined in 
+the top-level 
+build.gradle file (C:
+\Users\shiva\Desktop\
+windows_app\my_flutte
+r_app\android/build.g
+radle) by the 
+following line in 
+the dependencies 
+block of the 
+buildscript: 
+"classpath 'com.andro
+id.tools.build:gradle
+:<version>'".
+
+Warning: Flutter 
+support for your 
+project's Kotlin 
+version (1.9.24) 
+will soon be 
+dropped. Please 
+upgrade your Kotlin 
+version to a version 
+of at least 2.1.0 
+soon.
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's KGP 
+version is typically 
+defined in the 
+plugins block of the 
+`settings.gradle` 
+file (C:\Users\shiva\
+Desktop\windows_app\m
+y_flutter_app\android
+/settings.gradle), 
+by a plugin with the 
+id of org.jetbrains.k
+otlin.android. 
+If you don't see a 
+plugins block, your 
+project was likely 
+created with an 
+older template 
+version, in which 
+case it is most 
+likely defined in 
+the top-level 
+build.gradle file (C:
+\Users\shiva\Desktop\
+windows_app\my_flutte
+r_app\android/build.g
+radle) by the 
+ext.kotlin_version 
+property.
+
+Warning: package.xml parsing problem. unexpected element (uri:"", local:"abis"). Expected elements are <{}vendor>,<{}codename>,<{}base-extension>,<{}abi>,<{}api-level>,<{}extension-level>,<{}tag>
+Warning: package.xml parsing problem. unexpected element (uri:"", local:"translatedAbis"). Expected elements are <{}vendor>,<{}codename>,<{}base-extension>,<{}abi>,<{}api-level>,<{}extension-level>,<{}tag>
+Warning: package.xml parsing problem. unexpected element (uri:"", local:"abis"). Expected elements are <{}vendor>,<{}codename>,<{}base-extension>,<{}abi>,<{}api-level>,<{}extension-level>,<{}tag>
+Warning: package.xml parsing problem. Errors limit exceeded. To receive all errors set com.sun.xml.bind logger to FINEST level.
+Warning: package.xml parsing problem. unexpected element (uri:"", local:"translatedAbis"). Expected elements are <{}vendor>,<{}codename>,<{}base-extension>,<{}abi>,<{}api-level>,<{}extension-level>,<{}tag>
+Warning: Still waiting for package manifests to be fetched remotely.
+Warning: Still waiting for package manifests to be fetched remotely.
+Warning: IO exception while downloading manifest:
+Warning: IO exception while downloading manifest:
+java.net.ConnectException: Connection timed out: connect
+java.net.ConnectException: Connection timed out: connect
+	at java.base/sun.nio.ch.Net.connect0(Native Method)
+	at java.base/sun.nio.ch.Net.connect0(Native Method)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(Unknown Source)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(Unknown Source)
+	at java.base/java.net.SocksSocketImpl.connect(Unknown Source)
+	at java.base/java.net.SocksSocketImpl.connect(Unknown Source)
+	at java.base/java.net.Socket.connect(Unknown Source)
+	at java.base/java.net.Socket.connect(Unknown Source)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.security.ssl.BaseSSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.security.ssl.BaseSSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.net.NetworkClient.doConnect(Unknown Source)
+	at java.base/sun.net.NetworkClient.doConnect(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(Unknown Source)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(Unknown Source)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(Unknown Source)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(Unknown Source)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openUrl(DownloadCache.java:245)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.downloadAndCache(DownloadCache.java:622)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(Unknown Source)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openCachedUrl(DownloadCache.java:453)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(Unknown Source)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(Unknown Source)
+	at com.android.sdklib.repository.legacy.LegacyDownloader.downloadAndStream(LegacyDownloader.java:82)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+	at com.android.repository.impl.downloader.LocalFileAwareDownloader.downloadAndStream(LocalFileAwareDownloader.java:51)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(Unknown Source)
+	at com.android.repository.impl.manager.RemoteRepoLoaderImpl.lambda$fetchPackages$0(RemoteRepoLoaderImpl.java:138)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(Unknown Source)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openUrl(DownloadCache.java:245)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.downloadAndCache(DownloadCache.java:622)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openCachedUrl(DownloadCache.java:453)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at com.android.sdklib.repository.legacy.LegacyDownloader.downloadAndStream(LegacyDownloader.java:82)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at com.android.repository.impl.downloader.LocalFileAwareDownloader.downloadAndStream(LocalFileAwareDownloader.java:51)
+	at java.base/java.lang.Thread.run(Unknown Source)
+	at com.android.repository.impl.manager.RemoteRepoLoaderImpl.lambda$fetchPackages$0(RemoteRepoLoaderImpl.java:138)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Warning: Still waiting for package manifests to be fetched remotely.
+Checking the license for package NDK (Side by side) 28.2.13676358 in C:\Users\shiva\AppData\Local\Android\Sdk\licenses
+License for package NDK (Side by side) 28.2.13676358 accepted.
+Preparing "Install NDK (Side by side) 28.2.13676358 v.28.2.13676358".
+"Install NDK (Side by side) 28.2.13676358 v.28.2.13676358" ready.
+Installing NDK (Side by side) 28.2.13676358 in C:\Users\shiva\AppData\Local\Android\Sdk\ndk\28.2.13676358
+"Install NDK (Side by side) 28.2.13676358 v.28.2.13676358" complete.
+"Install NDK (Side by side) 28.2.13676358 v.28.2.13676358" finished.
+Checking the license for package Android SDK Build-Tools 34 in C:\Users\shiva\AppData\Local\Android\Sdk\licenses
+License for package Android SDK Build-Tools 34 accepted.
+Preparing "Install Android SDK Build-Tools 34 v.34.0.0".
+"Install Android SDK Build-Tools 34 v.34.0.0" ready.
+Installing Android SDK Build-Tools 34 in C:\Users\shiva\AppData\Local\Android\Sdk\build-tools\34.0.0
+"Install Android SDK Build-Tools 34 v.34.0.0" complete.
+"Install Android SDK Build-Tools 34 v.34.0.0" finished.
+Checking the license for package CMake 3.22.1 in C:\Users\shiva\AppData\Local\Android\Sdk\licenses
+License for package CMake 3.22.1 accepted.
+Preparing "Install CMake 3.22.1 v.3.22.1".
+Warning: An error occurred while preparing SDK package CMake 3.22.1: Connection timed out: connect.:
+java.net.ConnectException: Connection timed out: connect
+	at java.base/sun.nio.ch.Net.connect0(Native Method)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.Net.connect(Unknown Source)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(Unknown Source)
+	at java.base/java.net.SocksSocketImpl.connect(Unknown Source)
+	at java.base/java.net.Socket.connect(Unknown Source)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.security.ssl.BaseSSLSocketImpl.connect(Unknown Source)
+	at java.base/sun.net.NetworkClient.doConnect(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.http.HttpClient.openServer(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(Unknown Source)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(Unknown Source)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(Unknown Source)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(Unknown Source)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(Unknown Source)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openUrl(DownloadCache.java:245)
+	at com.android.sdklib.repository.legacy.remote.internal.DownloadCache.openDirectUrl(DownloadCache.java:329)
+	at com.android.sdklib.repository.legacy.LegacyDownloader.downloadFully(LegacyDownloader.java:121)
+	at com.android.repository.impl.downloader.LocalFileAwareDownloader.downloadFully(LocalFileAwareDownloader.java:82)
+	at com.android.repository.api.Downloader.downloadFullyWithCaching(Downloader.java:104)
+	at com.android.repository.impl.installer.BasicInstaller.doPrepare(BasicInstaller.java:75)
+	at com.android.repository.impl.installer.AbstractPackageOperation.prepare(AbstractPackageOperation.java:340)
+	at com.android.builder.sdk.DefaultSdkLoader.installRemotePackages(DefaultSdkLoader.java:365)
+	at com.android.builder.sdk.DefaultSdkLoader.installSdkTool(DefaultSdkLoader.java:454)
+	at com.android.build.gradle.internal.SdkHandler.installCMake(SdkHandler.java:343)
+	at com.android.build.gradle.internal.SdkComponentsBuildService.installCmake(SdkComponents.kt:384)
+	at com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService$locateCMake$1$location$2.accept(NativeLocationsBuildService.kt:81)
+	at com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService$locateCMake$1$location$2.accept(NativeLocationsBuildService.kt:75)
+	at com.android.build.gradle.internal.cxx.configure.CmakeLocatorKt.findCmakePathLogic(CmakeLocator.kt:424)
+	at com.android.build.gradle.internal.cxx.configure.CmakeLocator.findCmakePath(CmakeLocator.kt:475)
+	at com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService.locateCMake(NativeLocationsBuildService.kt:75)
+	at com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildServiceKt.rewriteWithLocations(NativeLocationsBuildService.kt:187)
+	at com.android.build.gradle.tasks.ExternalNativeBuildJsonTask.doTaskAction(ExternalNativeBuildJsonTask.kt:87)
+	at com.android.build.gradle.internal.tasks.UnsafeOutputsTask$taskAction$$inlined$recordTaskAction$1.invoke(BaseTask.kt:65)
+	at com.android.build.gradle.internal.tasks.Blocks.recordSpan(Blocks.java:51)
+	at com.android.build.gradle.internal.tasks.UnsafeOutputsTask.taskAction(UnsafeOutputsTask.kt:63)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.doExecute(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:248)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:233)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:216)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:199)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:166)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:37)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:41)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:74)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.CreateOutputsStep.execute(CreateOutputsStep.java:50)
+	at org.gradle.internal.execution.steps.CreateOutputsStep.execute(CreateOutputsStep.java:28)
+	at org.gradle.internal.execution.steps.CaptureStateAfterExecutionStep.executeDelegateBroadcastingChanges(CaptureStateAfterExecutionStep.java:100)
+	at org.gradle.internal.execution.steps.CaptureStateAfterExecutionStep.execute(CaptureStateAfterExecutionStep.java:72)
+	at org.gradle.internal.execution.steps.CaptureStateAfterExecutionStep.execute(CaptureStateAfterExecutionStep.java:50)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:40)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:29)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:179)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:70)
+	at org.gradle.internal.Either$Right.fold(Either.java:175)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:59)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:68)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:25)
+	at org.gradle.internal.execution.steps.RecordOutputsStep.execute(RecordOutputsStep.java:36)
+	at org.gradle.internal.execution.steps.RecordOutputsStep.execute(RecordOutputsStep.java:22)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:91)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:55)
+	at java.base/java.util.Optional.orElseGet(Unknown Source)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:55)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:37)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:65)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:36)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveCachingStateStep.execute(ResolveCachingStateStep.java:77)
+	at org.gradle.internal.execution.steps.ResolveCachingStateStep.execute(ResolveCachingStateStep.java:38)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:94)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:49)
+	at org.gradle.internal.execution.steps.CaptureStateBeforeExecutionStep.execute(CaptureStateBeforeExecutionStep.java:71)
+	at org.gradle.internal.execution.steps.CaptureStateBeforeExecutionStep.execute(CaptureStateBeforeExecutionStep.java:45)
+	at org.gradle.internal.execution.steps.SkipEmptyWorkStep.executeWithNonEmptySources(SkipEmptyWorkStep.java:177)
+	at org.gradle.internal.execution.steps.SkipEmptyWorkStep.execute(SkipEmptyWorkStep.java:81)
+	at org.gradle.internal.execution.steps.SkipEmptyWorkStep.execute(SkipEmptyWorkStep.java:53)
+	at org.gradle.internal.execution.steps.RemoveUntrackedExecutionStateStep.execute(RemoveUntrackedExecutionStateStep.java:32)
+	at org.gradle.internal.execution.steps.RemoveUntrackedExecutionStateStep.execute(RemoveUntrackedExecutionStateStep.java:21)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.CleanupStaleOutputsStep.execute(CleanupStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.steps.CleanupStaleOutputsStep.execute(CleanupStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:66)
+	at java.base/java.util.Optional.orElseGet(Unknown Source)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:66)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:38)
+	at org.gradle.internal.execution.steps.AssignWorkspaceStep.lambda$execute$0(AssignWorkspaceStep.java:32)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:293)
+	at org.gradle.internal.execution.steps.AssignWorkspaceStep.execute(AssignWorkspaceStep.java:30)
+	at org.gradle.internal.execution.steps.AssignWorkspaceStep.execute(AssignWorkspaceStep.java:21)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:37)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:27)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:47)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:34)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:64)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:146)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:463)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:380)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+"Install CMake 3.22.1 v.3.22.1" failed.
+
+FAILURE: Build 
+failed with an 
+exception.
+
+* What went wrong:
+Execution failed for 
+task ':app:configureC
+MakeDebug[arm64-v8a]'
+.
+> com.android.builder
+.sdk.InstallFailedExc
+eption: Failed to 
+install the 
+following SDK 
+components:
+      cmake;3.22.1 
+CMake 3.22.1
+  Install the 
+missing components 
+using the SDK 
+manager in Android 
+Studio.
+
+
+* Try:
+> Run with 
+--stacktrace option 
+to get the stack 
+trace.
+> Run with --info or 
+--debug option to 
+get more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at ht
+tps://help.gradle.org
+.
+
+BUILD FAILED in 15m 
+49s
+Running Gradle task 'assembleDebug'...                            952.3s
+[!] Gradle threw an 
+error while 
+downloading 
+artifacts from the 
+network.
+Retrying Gradle Build: #1, wait time: 100ms
+Running Gradle task 'assembleDebug'...                          
+Warning: Flutter 
+support for your 
+project's Gradle 
+version (8.3.0) will 
+soon be dropped. 
+Please upgrade your 
+Gradle version to a 
+version of at least 
+8.7.0 soon.
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's gradle 
+version is typically 
+defined in the 
+gradle wrapper file. 
+By default, this can 
+be found at C:\Users\
+shiva\Desktop\windows
+_app\my_flutter_app\a
+ndroid/gradle/wrapper
+/gradle-wrapper.prope
+rties. 
+For more 
+information, see http
+s://docs.gradle.org/c
+urrent/userguide/grad
+le_wrapper.html.
+
+Warning: Flutter 
+support for your 
+project's Android 
+Gradle Plugin 
+version (Android 
+Gradle Plugin 
+version 8.2.2) will 
+soon be dropped. 
+Please upgrade your 
+Android Gradle 
+Plugin version to a 
+version of at least 
+Android Gradle 
+Plugin version 8.6.0 
+soon.
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's AGP 
+version is typically 
+defined in the 
+plugins block of the 
+`settings.gradle` 
+file (C:\Users\shiva\
+Desktop\windows_app\m
+y_flutter_app\android
+/settings.gradle), 
+by a plugin with the 
+id of com.android.app
+lication. 
+If you don't see a 
+plugins block, your 
+project was likely 
+created with an 
+older template 
+version. In this 
+case it is most 
+likely defined in 
+the top-level 
+build.gradle file (C:
+\Users\shiva\Desktop\
+windows_app\my_flutte
+r_app\android/build.g
+radle) by the 
+following line in 
+the dependencies 
+block of the 
+buildscript: 
+"classpath 'com.andro
+id.tools.build:gradle
+:<version>'".
+
+Warning: Flutter 
+support for your 
+project's Kotlin 
+version (1.9.24) 
+will soon be 
+dropped. Please 
+upgrade your Kotlin 
+version to a version 
+of at least 2.1.0 
+soon.
+Alternatively, use 
+the flag "--android-s
+kip-build-dependency-
+validation" to 
+bypass this check.
+
+Potential fix: Your 
+project's KGP 
+version is typically 
+defined in the 
+plugins block of the 
+`settings.gradle` 
+file (C:\Users\shiva\
+Desktop\windows_app\m
+y_flutter_app\android
+/settings.gradle), 
+by a plugin with the 
+id of org.jetbrains.k
+otlin.android. 
+If you don't see a 
+plugins block, your 
+project was likely 
+created with an 
+older template 
+version, in which 
+case it is most 
+likely defined in 
+the top-level 
+build.gradle file (C:
+\Users\shiva\Desktop\
+windows_app\my_flutte
+r_app\android/build.g
+radle) by the 
+ext.kotlin_version 
+property.
+
+
+FAILURE: Build 
+failed with an 
+exception.
+
+* What went wrong:
+A problem was found 
+with the 
+configuration of 
+task ':app:mergeExtDe
+xDebug' (type 
+'DexMergingTask').
+  - In plugin 'com.an
+droid.internal.versio
+n-check' type 'com.an
+droid.build.gradle.in
+ternal.tasks.DexMergi
+ngTask' property 'fil
+eDependencyDexDir' 
+specifies directory '
+C:\Users\shiva\Deskto
+p\windows_app\my_flut
+ter_app\build\app\int
+ermediates\external_f
+ile_lib_dex_archives\
+debug' which doesn't 
+exist.
+
+    Reason: An input 
+file was expected to 
+be present but it 
+doesn't exist.
+
+    Possible 
+solutions:
+      1. Make sure 
+the directory exists 
+before the task is 
+called.
+      2. Make sure 
+that the task which 
+produces the 
+directory is 
+declared as an input.
+
+    For more 
+information, please 
+refer to https://docs
+.gradle.org/8.3/userg
+uide/validation_probl
+ems.html#input_file_d
+oes_not_exist in the 
+Gradle documentation.
+
+* Try:
+> Run with 
+--stacktrace option 
+to get the stack 
+trace.
+> Run with --info or 
+--debug option to 
+get more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at ht
+tps://help.gradle.org
+.
+
+BUILD FAILED in 1m 
+57s
+Running Gradle task 'assembleDebug'...                            120.0s
+Gradle task 
+assembleDebug failed 
+with exit code 1

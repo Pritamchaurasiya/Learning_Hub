@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\bayesian_knowledge_tracing.py
+# hypothesis_version: 6.152.1
+
+[0.0, 1e-10, 0.01, 0.1, 0.15, 0.2, 0.25, 0.3, 0.5, 0.6, 0.8, 0.85, 0.95, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 'REVIEW NOW', 'SCHEDULED', 'accuracy', 'algebra', 'algebra_basics', 'attempt', 'attempts', 'bkt_result', 'calculus', 'correct', 'current_retention', 'final_mastery', 'geometry', 'history', 'insight', 'is_mastered', 'last_review', 'next_review_at', 'p_mastery_after', 'p_mastery_before', 'schedule', 'skill', 'skill_id', 'spaced_repetition', 'stability', 'stability_days', 'statistics', 'student', 'student_42', 'target_retention', 'urgency']

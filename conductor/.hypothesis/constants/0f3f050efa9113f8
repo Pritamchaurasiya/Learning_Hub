@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0003_organization_is_active_organizationmember_is_active_and_more.py
+# hypothesis_version: 6.152.1
+
+['is_active', 'organization', 'organizationmember', 'passwordresettoken', 'users']

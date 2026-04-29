@@ -3,6 +3,9 @@
 
 import os
 import sys
+import platform
+def dummy_win32_ver(*args, **kwargs): return ('10', '10.0.19041', '', 'Multiprocessor Free')
+platform.win32_ver = dummy_win32_ver
 
 
 def main():
@@ -21,3 +24,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

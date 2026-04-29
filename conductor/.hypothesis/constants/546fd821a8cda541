@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\event_bus.py
+# hypothesis_version: 6.151.9
+
+['SERVICE_NAME', 'correlation_id', 'course.enrolled', 'data', 'id', 'lesson.completed', 'monolith', 'payment.completed', 'source', 'system.alert', 'timestamp', 'type', 'user.registered']

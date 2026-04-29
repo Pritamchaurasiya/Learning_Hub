@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\conftest.py
+# hypothesis_version: 6.151.9
+
+[0.1, 4.0, 4.5, 768, '1 <= n <= 45', '2 + 7 = 9', 'Arrays', 'Climbing Stairs', 'Dynamic Programming', 'First Course', 'HTML & CSS', 'Learn HTML and CSS', 'Mock Course', 'Mock Description', 'Obj 1', 'Python Basics', 'Python Programming', 'Single integer n', 'Test Course', 'Test description', 'TestPass123!', 'Two Sum', 'Web Development', '[0, 1]', '[1, 2]', '[2,7,11,15]\\n9', '[3,2,4]\\n6', 'admin', 'admin@example.com', 'arrays', 'avg_rating', 'category', 'climbing-stairs', 'courses_completed', 'description', 'dp', 'explanation', 'html-css', 'input', 'instructor', 'is_published', 'learning_objectives', 'modules', 'output', 'price', 'python', 'python-basics', 'slug', 'test-course', 'test@example.com', 'testuser', 'title', 'two-sum', 'web', '🎓']

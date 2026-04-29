@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\tutors\serializers.py
+# hypothesis_version: 6.152.1
+
+['bio', 'confirmed', 'end_time', 'hourly_rate', 'id', 'is_verified', 'meeting_link', 'notes', 'rating', 'skills', 'start_time', 'status', 'student', 'student_details', 'total_reviews', 'tutor', 'tutor_details', 'user']

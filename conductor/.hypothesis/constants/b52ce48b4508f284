@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\metaverse\consumers.py
+# hypothesis_version: 6.152.1
+
+['action', 'anim', 'channel_id', 'idle', 'kwargs', 'move', 'payload', 'player_left', 'room_slug', 'ry', 'sender_channel', 'spatial_message', 'target_channel', 'type', 'url_route', 'webrtc_answer', 'webrtc_ice', 'webrtc_offer', 'x', 'y', 'z']

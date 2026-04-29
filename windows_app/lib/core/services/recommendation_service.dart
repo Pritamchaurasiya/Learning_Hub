@@ -33,6 +33,7 @@ class CourseRecommendation {
     if (reasons.isEmpty) {
       return 'Recommended for you';
     }
+
     switch (reasons.first) {
       case RecommendationReason.basedOnHistory:
         return 'Based on your learning history';
@@ -173,6 +174,7 @@ class RecommendationService {
     } catch (e) {
       // Log error securely without exposing sensitive information
       if (kDebugMode) {
+        // ignore: avoid_print
         debugPrint('Failed to load learning profile');
       }
       _profile = LearningProfile(lastUpdated: DateTime.now());
@@ -191,6 +193,7 @@ class RecommendationService {
     } catch (e) {
       // Log error securely without exposing sensitive information
       if (kDebugMode) {
+        // ignore: avoid_print
         debugPrint('Failed to save learning profile');
       }
     }
@@ -212,6 +215,7 @@ class RecommendationService {
     } catch (e) {
       // Log error securely without exposing sensitive information
       if (kDebugMode) {
+        // ignore: avoid_print
         debugPrint('Failed to load cached recommendations');
       }
     }
@@ -226,6 +230,7 @@ class RecommendationService {
     } catch (e) {
       // Log error securely without exposing sensitive information
       if (kDebugMode) {
+        // ignore: avoid_print
         debugPrint('Failed to save cached recommendations');
       }
     }

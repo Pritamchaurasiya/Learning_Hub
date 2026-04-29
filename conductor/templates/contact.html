@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact Learning Hub - Get in touch with our team">
+    <meta property="og:title" content="Contact Us | Learning Hub">
+    <meta property="og:description" content="Have a question or feedback? Get in touch with the Learning Hub team.">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/contact">
+    <title>Contact Us | Learning Hub</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Skip to Content -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+  <!-- Navigation -->    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                Learning Hub
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/courses">Courses</a></li>
+                <li><a href="/quiz">Quiz</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact" class="active">Contact</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Contact Hero -->
+    <main id="main-content">
+    <section class="hero" style="min-height: auto; padding: 120px 0 60px;">
+        <div class="container">
+            <div class="section-header" style="max-width: 100%;">
+                <h1>Get in <span class="text-gradient">Touch</span></h1>
+                <p>Have a question or feedback? We'd love to hear from you!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="contact-wrapper">
+                <div class="contact-info">
+                    <h2>Contact <span class="text-gradient">Information</span></h2>
+                    <p>Fill out the form and our team will get back to you within 24 hours.</p>
+                    
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4>Email</h4>
+                                <p style="margin: 0; color: var(--text-secondary);">support@learninghub.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon" style="background: var(--gradient-secondary);">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4>Phone</h4>
+                                <p style="margin: 0; color: var(--text-secondary);">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon" style="background: var(--gradient-accent);">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4>Location</h4>
+                                <p style="margin: 0; color: var(--text-secondary);">123 Innovation Drive<br>San Francisco, CA 94105</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: var(--space-2xl);">
+                        <h4>Follow Us</h4>
+                        <div style="display: flex; gap: var(--space-md); margin-top: var(--space-md);">
+                            <a href="#" class="contact-social-icon" aria-label="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="contact-social-icon" aria-label="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="contact-social-icon" aria-label="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="contact-social-icon" aria-label="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <form id="contactForm">
+                        <div class="contact-form-grid">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="john@example.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <select id="subject" name="subject">
+                                <option value="">Select a topic</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="courses">Course Related</option>
+                                <option value="technical">Technical Support</option>
+                                <option value="billing">Billing</option>
+                                <option value="partnership">Partnership</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" placeholder="How can we help you?" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2>Frequently Asked <span class="text-gradient">Questions</span></h2>
+                <p>Find quick answers to common questions</p>
+            </div>
+            
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        How do I get started with Learning Hub?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        Simply create a free account, browse our course catalog, and enroll in any course that interests you. Many courses offer free previews so you can try before you buy!
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        Are certificates included with courses?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        Yes! Upon successful completion of any paid course, you'll receive a verified certificate that you can share on LinkedIn and include in your resume.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        What is your refund policy?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        We offer a 30-day money-back guarantee on all courses. If you're not satisfied with your purchase, simply contact us for a full refund.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        How does the AI-powered learning work?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        Our AI analyzes your learning patterns, progress, and preferences to recommend personalized content, suggest optimal study times, and provide targeted feedback on your work.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="navbar-brand" style="color: white;">
+                        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                        Learning Hub
+                    </a>
+                    <p>Empowering learners worldwide with cutting-edge AI-powered education.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Platform</h5>
+                    <ul><li><a href="/courses">Courses</a></li><li><a href="/quiz">Quizzes</a></li><li><a href="#" title="Coming Soon">Leaderboard</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li><li><a href="#" title="Coming Soon">Blog</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Support</h5>
+                    <ul><li><a href="/contact">Help</a></li><li><a href="#" title="Coming Soon">Privacy</a></li><li><a href="#" title="Coming Soon">Terms</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Learning Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

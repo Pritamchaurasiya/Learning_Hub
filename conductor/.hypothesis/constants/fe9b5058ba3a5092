@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\urls\auth.py
+# hypothesis_version: 6.152.1
+
+['auth', 'change-password/', 'change_password', 'get', 'login', 'login/', 'logout', 'logout/', 'me', 'me/', 'password-reset/', 'password_reset', 'profile', 'refresh/', 'register', 'register/', 'token_refresh']

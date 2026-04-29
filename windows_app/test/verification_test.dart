@@ -161,7 +161,7 @@ void main() {
       debugPrint('Login Successful: ${authResult.user?.displayName}');
       expect(authResult.user, isNotNull);
 
-      final cachedUser = await fakeCache.get('user_current');
+      final cachedUser = await fakeCache.get<dynamic>('user_current');
       // UserService caches user data after successful login.
       // This confirms caching is working correctly.
       expect(cachedUser, isNotNull);

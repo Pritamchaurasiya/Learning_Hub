@@ -95,7 +95,7 @@ class _LearningPathListScreenState
   void _showCreatePathDialog(BuildContext context, WidgetRef ref) {
     // For now, simple dialog to generate a path from templates
     // In a real app, this would be a multi-step wizard
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => _CreatePathDialog(),
     );

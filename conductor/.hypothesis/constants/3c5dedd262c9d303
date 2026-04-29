@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\study_groups\migrations\0002_groupmessage.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'GroupMessage', 'ID', 'content', 'created_at', 'group', 'id', 'messages', 'ordering', 'sender', 'study_groups']

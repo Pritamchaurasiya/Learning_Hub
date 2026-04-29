@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\services.py
+# hypothesis_version: 6.152.1
+
+[2.0, 1024, 50000, '-created_at', '.py', '/sandbox', '50m', 'AC', 'ALL', 'PENDING', 'RE', 'StatusCode', 'WA', 'bind', 'error', 'error_log', 'input.txt', 'memory_bytes', 'memory_kb', 'mode', 'no-new-privileges', 'output', 'previous_status', 'problem', 'python:3.11-alpine', 'ro', 'runtime_ms', 'solution.py', 'status', 'tags', 'utf-8', 'w']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\downloads\views.py
+# hypothesis_version: 6.152.1
+
+[1024, 3600, 'Downloads', 'SECRET_KEY', 'create', 'error', 'expires_in_seconds', 'fallback_secret', 'get', 'marked as expired', 'post', 'secure_url', 'status', 'success', 'total_downloads', 'total_size_bytes', 'total_size_mb', 'utf-8']

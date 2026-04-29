@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=learninghub
+      - POSTGRES_USER=godmode
+      - POSTGRES_PASSWORD=secure_god_mode_pass
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U godmode"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  app:
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    # In God Mode, we map the host's db file if using SQLite, but here we use Postgres
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_started
+    environment:
+      - SECRET_KEY=god_mode_secret_key_production_2026
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DATABASE_URL=postgres://godmode:secure_god_mode_pass@db:5432/learninghub
+      - REDIS_URL=redis://redis:6379/1
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "80:8080"  # Expose on standard HTTP port
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - static_volume:/app/backend/staticfiles
+      - media_volume:/app/backend/media
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

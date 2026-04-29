@@ -1,0 +1,320 @@
+- generic [ref=e56]:
+  - link "Skip to main content" [ref=e57] [cursor=pointer]:
+    - /url: "#main-content"
+  - complementary [ref=e58]:
+    - heading "Navigation" [level=2] [ref=e60]
+    - navigation [ref=e61]:
+      - generic [ref=e62]:
+        - link "Home" [ref=e63] [cursor=pointer]:
+          - /url: /
+          - img [ref=e64]
+          - generic [ref=e67]: Home
+        - link "Search" [ref=e68] [cursor=pointer]:
+          - /url: /search
+          - img [ref=e69]
+          - generic [ref=e72]: Search
+        - link "DSA Practice" [ref=e73] [cursor=pointer]:
+          - /url: /problems
+          - img [ref=e74]
+          - generic [ref=e78]: DSA Practice
+        - link "Quiz" [ref=e79] [cursor=pointer]:
+          - /url: /quiz
+          - img [ref=e80]
+          - generic [ref=e83]: Quiz
+        - link "Bookmarks" [ref=e84] [cursor=pointer]:
+          - /url: /bookmarks
+          - img [ref=e85]
+          - generic [ref=e87]: Bookmarks
+        - link "Achievements" [ref=e88] [cursor=pointer]:
+          - /url: /achievements
+          - img [ref=e89]
+          - generic [ref=e92]: Achievements
+        - link "Contests" [ref=e93] [cursor=pointer]:
+          - /url: /contest
+          - img [ref=e94]
+          - generic [ref=e100]: Contests
+      - generic [ref=e101]:
+        - heading "Learning Path" [level=3] [ref=e102]
+        - generic [ref=e103]:
+          - 'button "Toggle Phase 1: Beginner phase" [expanded] [ref=e104] [cursor=pointer]':
+            - generic [ref=e107]: "Phase 1: Beginner"
+            - generic [ref=e108]:
+              - generic [ref=e109]: 0/8
+              - img [ref=e111]
+          - 'progressbar "Phase 1: Beginner progress" [ref=e114]'
+          - generic [ref=e115]:
+            - link "00. Introduction" [ref=e116] [cursor=pointer]:
+              - /url: /course/00_Introduction
+              - img [ref=e117]
+              - generic [ref=e120]: 00. Introduction
+            - link "01. Learning Objectives & Goals" [ref=e121] [cursor=pointer]:
+              - /url: /course/01_Learning_Objectives_Goals
+              - img [ref=e122]
+              - generic [ref=e125]: 01. Learning Objectives & Goals
+            - link "Research Methodology" [ref=e126] [cursor=pointer]:
+              - /url: /course/research-methodology
+              - img [ref=e127]
+              - generic [ref=e130]: Research Methodology
+            - link "ML & AI Fundamentals" [ref=e131] [cursor=pointer]:
+              - /url: /course/ml-fundamentals
+              - img [ref=e132]
+              - generic [ref=e135]: ML & AI Fundamentals
+            - link "ML Data Preparation" [ref=e136] [cursor=pointer]:
+              - /url: /course/ml-data-prep
+              - img [ref=e137]
+              - generic [ref=e140]: ML Data Preparation
+            - link "Backend Architecture" [ref=e141] [cursor=pointer]:
+              - /url: /course/backend-architecture
+              - img [ref=e142]
+              - generic [ref=e145]: Backend Architecture
+            - link "Security Foundations" [ref=e146] [cursor=pointer]:
+              - /url: /course/security-foundations
+              - img [ref=e147]
+              - generic [ref=e150]: Security Foundations
+            - link "CI/CD Basics" [ref=e151] [cursor=pointer]:
+              - /url: /course/ci-cd-basics
+              - img [ref=e152]
+              - generic [ref=e155]: CI/CD Basics
+        - generic [ref=e156]:
+          - 'button "Toggle Phase 2: Intermediate phase" [ref=e157] [cursor=pointer]':
+            - generic [ref=e160]: "Phase 2: Intermediate"
+            - generic [ref=e161]:
+              - generic [ref=e162]: 0/4
+              - img [ref=e164]
+          - 'progressbar "Phase 2: Intermediate progress" [ref=e167]'
+        - generic [ref=e168]:
+          - 'button "Toggle Phase 3: Advanced phase" [ref=e169] [cursor=pointer]':
+            - generic [ref=e172]: "Phase 3: Advanced"
+            - generic [ref=e173]:
+              - generic [ref=e174]: 0/3
+              - img [ref=e176]
+          - 'progressbar "Phase 3: Advanced progress" [ref=e179]'
+        - generic [ref=e180]:
+          - 'button "Toggle Phase 4: Singularity phase" [ref=e181] [cursor=pointer]':
+            - generic [ref=e184]: "Phase 4: Singularity"
+            - generic [ref=e185]:
+              - generic [ref=e186]: 0/3
+              - img [ref=e188]
+          - 'progressbar "Phase 4: Singularity progress" [ref=e191]'
+    - generic [ref=e193]:
+      - generic [ref=e194]: 0 courses completed
+      - generic [ref=e195]: Level 1
+  - generic [ref=e196]:
+    - banner [ref=e197]:
+      - heading "LearningHub" [level=1] [ref=e199] [cursor=pointer]
+      - search [ref=e200]:
+        - generic [ref=e201]:
+          - img [ref=e202]
+          - textbox "Search courses" [ref=e205]:
+            - /placeholder: Search courses...
+          - generic [ref=e206]: Ctrl+K
+      - generic [ref=e207]:
+        - 'img "Daily Goal Progress: 0 of 50 XP" [ref=e208]':
+          - progressbar "0% complete" [ref=e209]
+        - status [ref=e212]:
+          - generic "0 experience points" [ref=e213]:
+            - img [ref=e214]
+            - generic [ref=e216]: "0"
+          - generic "Level 1" [ref=e217]:
+            - img [ref=e218]
+            - generic [ref=e224]: Lv.1
+        - button "System mode (click for light)" [ref=e225] [cursor=pointer]:
+          - img [ref=e226]
+        - button "User menu" [ref=e229] [cursor=pointer]:
+          - img [ref=e231]
+          - img [ref=e234]
+    - main [ref=e236]:
+      - generic [ref=e238]:
+        - generic [ref=e241]:
+          - generic [ref=e242]:
+            - img [ref=e243]
+            - generic [ref=e245]: Your Learning Journey
+          - heading "Welcome to LearningHub" [level=1] [ref=e246]:
+            - text: Welcome to
+            - text: LearningHub
+          - paragraph [ref=e247]: Master software engineering from fundamentals to cutting-edge technologies. Your journey to becoming an expert developer starts here.
+          - generic [ref=e248]:
+            - paragraph [ref=e249]: Continue learning
+            - generic [ref=e250]:
+              - generic [ref=e251]:
+                - paragraph [ref=e252]: 00. Introduction
+                - paragraph [ref=e253]: "Phase 1: Beginner"
+              - button "Resume" [ref=e254] [cursor=pointer]:
+                - text: Resume
+                - img [ref=e255]
+          - generic [ref=e259]:
+            - generic [ref=e260]: 0 of 18 courses
+            - generic [ref=e261]: 0%
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - img [ref=e268]
+            - generic [ref=e271]:
+              - paragraph [ref=e272]: "0"
+              - paragraph [ref=e273]: Completed
+          - generic [ref=e274]:
+            - img [ref=e276]
+            - generic [ref=e278]:
+              - paragraph [ref=e279]: "0"
+              - paragraph [ref=e280]: XP Earned
+          - generic [ref=e281]:
+            - img [ref=e283]
+            - generic [ref=e289]:
+              - paragraph [ref=e290]: "1"
+              - paragraph [ref=e291]: Level
+          - generic [ref=e292]:
+            - img [ref=e294]
+            - generic [ref=e296]:
+              - paragraph [ref=e297]: "0"
+              - paragraph [ref=e298]: Day Streak
+        - generic [ref=e300]:
+          - generic [ref=e301]:
+            - img [ref=e302]
+            - heading "Daily Goal" [level=3] [ref=e306]
+          - generic [ref=e307]: 0/50 XP
+        - generic [ref=e309]:
+          - generic [ref=e310]:
+            - heading "Learning Path" [level=2] [ref=e311]:
+              - img [ref=e312]
+              - text: Learning Path
+            - button "View all" [ref=e315] [cursor=pointer]:
+              - text: View all
+              - img [ref=e316]
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - 'heading "Phase 1: Beginner" [level=3] [ref=e323]'
+                - generic [ref=e324]: 0/8 courses
+              - generic [ref=e326]:
+                - button "View 00. Introduction course - easy difficulty, 30 minutes" [ref=e327] [cursor=pointer]:
+                  - img [ref=e330]
+                  - heading "00. Introduction" [level=3] [ref=e333]
+                  - paragraph [ref=e334]: Welcome to the Software Engineering Mastery Course
+                  - generic [ref=e335]:
+                    - generic [ref=e336]: 30 min
+                    - generic [ref=e337]: easy
+                - button "View 01. Learning Objectives & Goals course - easy difficulty, 45 minutes" [ref=e338] [cursor=pointer]:
+                  - img [ref=e341]
+                  - heading "01. Learning Objectives & Goals" [level=3] [ref=e344]
+                  - paragraph [ref=e345]: Understanding what you will achieve
+                  - generic [ref=e346]:
+                    - generic [ref=e347]: 45 min
+                    - generic [ref=e348]: easy
+                - button "View Research Methodology course - medium difficulty, 60 minutes" [ref=e349] [cursor=pointer]:
+                  - img [ref=e352]
+                  - heading "Research Methodology" [level=3] [ref=e355]
+                  - paragraph [ref=e356]: Systematic approach to gathering and analyzing information
+                  - generic [ref=e357]:
+                    - generic [ref=e358]: 60 min
+                    - generic [ref=e359]: medium
+                - button "View all 8 courses" [ref=e360] [cursor=pointer]:
+                  - generic [ref=e361]: View all 8 courses
+                  - img [ref=e362]
+            - generic [ref=e364]:
+              - generic [ref=e365]:
+                - generic [ref=e366]:
+                  - 'heading "Phase 2: Intermediate" [level=3] [ref=e368]'
+                  - generic [ref=e369]: 🔒 Complete previous phase
+                - generic [ref=e370]: 0/4 courses
+              - generic [ref=e372]:
+                - button "View Mobile Development course - medium difficulty, 120 minutes" [ref=e373] [cursor=pointer]:
+                  - img [ref=e376]
+                  - heading "Mobile Development" [level=3] [ref=e379]
+                  - paragraph [ref=e380]: Building applications for iOS and Android platforms
+                  - generic [ref=e381]:
+                    - generic [ref=e382]: 120 min
+                    - generic [ref=e383]: medium
+                - button "View Full Stack Development course - hard difficulty, 150 minutes" [ref=e384] [cursor=pointer]:
+                  - img [ref=e387]
+                  - heading "Full Stack Development" [level=3] [ref=e390]
+                  - paragraph [ref=e391]: End-to-end web application development
+                  - generic [ref=e392]:
+                    - generic [ref=e393]: 150 min
+                    - generic [ref=e394]: hard
+                - button "View Cloud Services course - hard difficulty, 120 minutes" [ref=e395] [cursor=pointer]:
+                  - img [ref=e398]
+                  - heading "Cloud Services" [level=3] [ref=e401]
+                  - paragraph [ref=e402]: Leveraging cloud platforms for scalable solutions
+                  - generic [ref=e403]:
+                    - generic [ref=e404]: 120 min
+                    - generic [ref=e405]: hard
+                - button "View all 4 courses" [ref=e406] [cursor=pointer]:
+                  - generic [ref=e407]: View all 4 courses
+                  - img [ref=e408]
+            - generic [ref=e410]:
+              - generic [ref=e411]:
+                - generic [ref=e412]:
+                  - 'heading "Phase 3: Advanced" [level=3] [ref=e414]'
+                  - generic [ref=e415]: 🔒 Complete previous phase
+                - generic [ref=e416]: 0/3 courses
+              - generic [ref=e418]:
+                - button "View System Design course - expert difficulty, 180 minutes" [ref=e419] [cursor=pointer]:
+                  - img [ref=e422]
+                  - heading "System Design" [level=3] [ref=e425]
+                  - paragraph [ref=e426]: Designing large-scale distributed systems
+                  - generic [ref=e427]:
+                    - generic [ref=e428]: 180 min
+                    - generic [ref=e429]: expert
+                - button "View Microservices Architecture course - expert difficulty, 150 minutes" [ref=e430] [cursor=pointer]:
+                  - img [ref=e433]
+                  - heading "Microservices Architecture" [level=3] [ref=e436]
+                  - paragraph [ref=e437]: Building modular and maintainable services
+                  - generic [ref=e438]:
+                    - generic [ref=e439]: 150 min
+                    - generic [ref=e440]: expert
+                - button "View DevOps Mastery course - expert difficulty, 135 minutes" [ref=e441] [cursor=pointer]:
+                  - img [ref=e444]
+                  - heading "DevOps Mastery" [level=3] [ref=e447]
+                  - paragraph [ref=e448]: Advanced deployment and operations practices
+                  - generic [ref=e449]:
+                    - generic [ref=e450]: 135 min
+                    - generic [ref=e451]: expert
+            - generic [ref=e452]:
+              - generic [ref=e453]:
+                - generic [ref=e454]:
+                  - 'heading "Phase 4: Singularity" [level=3] [ref=e456]'
+                  - generic [ref=e457]: 🔒 Complete previous phase
+                - generic [ref=e458]: 0/3 courses
+              - generic [ref=e460]:
+                - button "View AI Engineering course - expert difficulty, 200 minutes" [ref=e461] [cursor=pointer]:
+                  - img [ref=e464]
+                  - heading "AI Engineering" [level=3] [ref=e467]
+                  - paragraph [ref=e468]: Production-grade AI system development
+                  - generic [ref=e469]:
+                    - generic [ref=e470]: 200 min
+                    - generic [ref=e471]: expert
+                - button "View Blockchain Development course - expert difficulty, 180 minutes" [ref=e472] [cursor=pointer]:
+                  - img [ref=e475]
+                  - heading "Blockchain Development" [level=3] [ref=e478]
+                  - paragraph [ref=e479]: Decentralized application development
+                  - generic [ref=e480]:
+                    - generic [ref=e481]: 180 min
+                    - generic [ref=e482]: expert
+                - button "View Quantum Computing course - expert difficulty, 240 minutes" [ref=e483] [cursor=pointer]:
+                  - img [ref=e486]
+                  - heading "Quantum Computing" [level=3] [ref=e489]
+                  - paragraph [ref=e490]: Introduction to quantum algorithms and computing
+                  - generic [ref=e491]:
+                    - generic [ref=e492]: 240 min
+                    - generic [ref=e493]: expert
+        - generic [ref=e494]:
+          - button "Bookmarks 0 courses saved for later" [ref=e495] [cursor=pointer]:
+            - generic [ref=e496]:
+              - img [ref=e498]
+              - heading "Bookmarks" [level=3] [ref=e502]
+            - paragraph [ref=e503]: 0 courses saved for later
+          - button "Achievements 0 of 1 unlocked" [ref=e504] [cursor=pointer]:
+            - generic [ref=e505]:
+              - img [ref=e507]
+              - heading "Achievements" [level=3] [ref=e513]
+            - paragraph [ref=e514]: 0 of 1 unlocked
+          - button "All Courses Browse 18 courses across 4 phases" [ref=e515] [cursor=pointer]:
+            - generic [ref=e516]:
+              - img [ref=e518]
+              - heading "All Courses" [level=3] [ref=e521]
+            - paragraph [ref=e522]: Browse 18 courses across 4 phases
+  - generic "Notifications":
+    - generic [ref=e524]:
+      - img [ref=e527]
+      - paragraph [ref=e530]: 🎓 Welcome to the demo!
+      - button "Dismiss notification" [ref=e531] [cursor=pointer]:
+        - img [ref=e532]

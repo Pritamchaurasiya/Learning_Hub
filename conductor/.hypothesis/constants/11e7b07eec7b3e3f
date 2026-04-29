@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\serializers.py
+# hypothesis_version: 6.152.1
+
+['choices', 'completed_at', 'created_at', 'id', 'is_completed', 'module_slug', 'order', 'question_count', 'questions', 'quiz_passed', 'text', 'title', 'xp_reward']

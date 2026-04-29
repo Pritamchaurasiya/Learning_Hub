@@ -4,6 +4,7 @@ import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/cart_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -179,7 +180,7 @@ class _CheckoutSectionState extends ConsumerState<_CheckoutSection> {
     if (mounted) {
       setState(() => _isCheckingOut = false);
       if (success) {
-        await showDialog(
+        await showDialog<void>(
           context: context,
           barrierDismissible: false,
           builder: (ctx) => AlertDialog(
@@ -202,9 +203,7 @@ class _CheckoutSectionState extends ConsumerState<_CheckoutSection> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Checkout failed. Please try again.')),
-        );
+        AppFeedback.showError(context, 'Checkout failed. Please try again.');
       }
     }
   }

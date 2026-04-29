@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\throttles.py
+# hypothesis_version: 6.152.1
+
+['ai_chat', 'ai_critic', 'ai_generation', 'bulk_operation', 'dsa_submission', 'file_upload', 'health_check', 'login', 'password_reset', 'payment', 'quiz_submission', 'register', 'search', 'semantic_search', 'subscription', 'websocket_connect']

@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\payments\admin.py
+# hypothesis_version: 6.151.9
+
+['amount', 'code', 'course', 'course__title', 'created_at', 'discount_percent', 'expires_at', 'gateway', 'max_uses', 'refund_payments', 'status', 'used_count', 'user', 'user__email']

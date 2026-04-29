@@ -19,6 +19,7 @@ class MockApiClient extends Mock implements ApiClient {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic)? fromJson,
   }) async {
+    // ignore: avoid_print
     debugPrint('DEBUG: MockApiClient GET path: $path');
     if (path == '/test') {
       return ApiResponse.success(<String, dynamic>{} as T);
@@ -37,6 +38,7 @@ class MockApiClient extends Mock implements ApiClient {
   }) async {
     // Return mock data for auth/login endpoint to fix type cast error
     if (path.contains('/auth/login')) {
+      // ignore: avoid_print
       debugPrint('DEBUG: MockApiClient matched login path: $path');
       final mockData = <String, dynamic>{
         'data': {
@@ -44,17 +46,16 @@ class MockApiClient extends Mock implements ApiClient {
           'refreshToken': 'mock_refresh_123',
           'user': {
             'id': 'user_001',
-            'displayName': 'Test User',
             'email': 'test@example.com',
-            'phone': null,
-            'firstName': 'Test',
-            'lastName': 'User',
-            'avatarUrl': null,
-            'bio': null,
             'role': 'student',
-            'enrolledCourseIds': <String>[],
-            'completedCourseIds': <String>[],
-            'wishlistCourseIds': <String>[],
+            'display_name': 'Test User',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'avatar': null,
+            'bio': null,
+            'phone': null,
+            'is_verified': true,
+            'is_active': true,
             'preferences': <String, dynamic>{
               'interests': <String>[],
               'goals': <String>[],
@@ -80,15 +81,17 @@ class MockApiClient extends Mock implements ApiClient {
               'totalPoints': 0,
               'lastLearningDate': null,
             },
-            'createdAt': DateTime.now().toIso8601String(),
-            'lastLoginAt': DateTime.now().toIso8601String(),
-            'isVerified': true,
-            'isActive': true,
+            'enrolled_courses': <String>[],
+            'completed_courses': <String>[],
+            'wishlist_courses': <String>[],
+            'created_at': DateTime.now().toIso8601String(),
+            'last_login_at': DateTime.now().toIso8601String(),
           }
         }
       };
       return ApiResponse<T>.success(mockData as T);
     }
+    // ignore: avoid_print
     debugPrint('DEBUG: MockApiClient POST path ignored: $path');
     return ApiResponse<T>.success(<String, dynamic>{} as T);
   }
@@ -147,4 +150,10 @@ class MockApiClient extends Mock implements ApiClient {
 
   @override
   Future<bool> get hasToken async => true;
+
+  @override
+  Future<String?> getRefreshToken() async => 'mock_refresh_token';
+
+  @override
+  Future<String?> getAccessToken() async => 'mock_access_token';
 }

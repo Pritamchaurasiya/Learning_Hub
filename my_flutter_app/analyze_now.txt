@@ -1,0 +1,218 @@
+﻿Analyzing my_flutter_app...                                     
+
+warning - The generic type 'Response<dynamic>' should have explicit type arguments but doesn't - lib\src\core\network\performance_interceptor.dart:12:19 - strict_raw_type
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:166:21 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:167:44 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:168:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:170:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:171:34 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:172:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:176:30 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:177:31 - avoid_dynamic_calls
+   info - An uninitialized field should have an explicit type annotation - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:1 - prefer_typing_uninitialized_variables
+   info - Missing type annotation on a public API - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:1 - type_annotate_public_apis
+warning - The type of import can't be inferred without either a type or initializer - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:1 - inference_failure_on_uninitialized_variable
+  error - Expected to find ';' - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:1 - expected_token
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:1 - missing_const_final_var_or_type
+  error - Expected a class member - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:8 - expected_class_member
+  error - Expected a class member - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:241:79 - expected_class_member
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:247:23 - always_put_control_body_on_new_line
+warning - The type argument(s) of the function 'read' can't be inferred - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:271:24 - inference_failure_on_function_invocation
+  error - Undefined name 'aiRepositoryProvider' - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:271:29 - undefined_identifier
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:276:33 - avoid_dynamic_calls
+  error - The type 'dynamic' used in the 'for' loop must implement 'Stream' - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:276:33 - for_in_of_invalid_type
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:278:24 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:294:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\ai_engine\presentation\ai_tutor_screen.dart:295:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\chat\data\chat_service.dart:36:25 - always_put_control_body_on_new_line
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\chat\domain\chat_model.dart:17:18 - avoid_dynamic_calls
+   info - Statement should be on a separate line - lib\src\features\chat\presentation\chat_detail_screen.dart:43:23 - always_put_control_body_on_new_line
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\chat\presentation\chat_detail_screen.dart:59:27 - unawaited_futures
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\chat\presentation\chat_detail_screen.dart:65:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:76:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\data\course_repository.dart:89:7 - avoid_catches_without_on_clauses
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:86:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:87:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:103:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:216:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:219:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\course_detail_screen.dart:253:56 - deprecated_member_use
+  error - The argument type 'String' can't be assigned to the parameter type 'int'.  - lib\src\features\courses\presentation\course_detail_screen.dart:295:51 - argument_type_not_assignable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\presentation\course_detail_screen.dart:299:37 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:300:60 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:328:67 - use_build_context_synchronously
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\courses\presentation\course_detail_screen.dart:332:41 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\courses\presentation\course_detail_screen.dart:333:64 - use_build_context_synchronously
+  error - Expected to find ';' - lib\src\features\courses\presentation\course_detail_screen.dart:346:25 - expected_token
+  error - Expected an identifier - lib\src\features\courses\presentation\course_detail_screen.dart:346:26 - missing_identifier
+  error - Unexpected text ';' - lib\src\features\courses\presentation\course_detail_screen.dart:346:26 - unexpected_token
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\downloads_screen.dart:184:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\downloads_screen.dart:195:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\downloads_screen.dart:233:46 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\src\features\courses\presentation\downloads_screen.dart:260:13 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\downloads_screen.dart:280:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\courses\presentation\downloads_screen.dart:368:54 - deprecated_member_use
+  error - A value of type 'Map<String, dynamic>?' can't be returned from the method 'getStats' because it has a return type of 'Future<Map<String, dynamic>>' - lib\src\features\dashboard\data\dashboard_repository.dart:19:12 - return_of_invalid_type
+  error - A value of type 'Map<String, dynamic>?' can't be returned from the method 'getCoursePerformance' because it has a return type of 'Future<List<dynamic>>' - lib\src\features\dashboard\data\dashboard_repository.dart:24:12 - return_of_invalid_type
+  error - A value of type 'Map<String, dynamic>?' can't be returned from the method 'getRevenueChartData' because it has a return type of 'Future<List<dynamic>>' - lib\src\features\dashboard\data\dashboard_repository.dart:29:12 - return_of_invalid_type
+   info - Statement should be on a separate line - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:65:29 - always_put_control_body_on_new_line
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:69:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:69:64 - avoid_dynamic_calls
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dashboard\presentation\instructor_dashboard_screen.dart:89:77 - deprecated_member_use
+warning - The value of the local variable 'theme' isn't used - lib\src\features\dashboard\presentation\learning_goals_screen.dart:12:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dashboard\presentation\learning_goals_screen.dart:220:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dashboard\presentation\learning_goals_screen.dart:401:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dashboard\presentation\learning_goals_screen.dart:420:45 - deprecated_member_use
+  error - A value of type 'dynamic' can't be returned from the method 'getThreads' because it has a return type of 'Future<List<dynamic>>' - lib\src\features\discussions\data\discussion_repository.dart:16:12 - return_of_invalid_type
+  error - The method '[]' can't be unconditionally invoked because the receiver can be 'null' - lib\src\features\discussions\data\discussion_repository.dart:16:25 - unchecked_use_of_nullable_value
+  error - A value of type 'Map<String, dynamic>?' can't be returned from the method 'getThreadDetail' because it has a return type of 'Future<Map<String, dynamic>>' - lib\src\features\discussions\data\discussion_repository.dart:22:12 - return_of_invalid_type
+  error - A value of type 'dynamic' can't be returned from the method 'getReplies' because it has a return type of 'Future<List<dynamic>>' - lib\src\features\discussions\data\discussion_repository.dart:45:13 - return_of_invalid_type
+  error - The method '[]' can't be unconditionally invoked because the receiver can be 'null' - lib\src\features\discussions\data\discussion_repository.dart:45:26 - unchecked_use_of_nullable_value
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\discussion_detail_screen.dart:106:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\discussion_detail_screen.dart:262:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\discussion_detail_screen.dart:285:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\discussion_detail_screen.dart:352:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\discussion_detail_screen.dart:354:41 - deprecated_member_use
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\discussions\presentation\discussion_screen.dart:48:31 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\discussions\presentation\discussion_screen.dart:48:31 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\discussions\presentation\discussion_screen.dart:49:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\discussions\presentation\discussion_screen.dart:49:77 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\discussions\presentation\discussion_screen.dart:50:29 - avoid_dynamic_calls
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\widgets\ai_summary_card.dart:21:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\widgets\ai_summary_card.dart:24:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\widgets\ai_summary_card.dart:82:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\discussions\presentation\widgets\ai_summary_card.dart:85:62 - deprecated_member_use
+   info - Statement should be on a separate line - lib\src\features\downloads\domain\download_model.dart:42:26 - always_put_control_body_on_new_line
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\src\features\downloads\presentation\downloads_screen.dart:257:5 - inference_failure_on_function_invocation
+  error - The argument type 'Animate' can't be assigned to the parameter type 'PreferredSizeWidget?'.  - lib\src\features\dsa\presentation\dsa_screen.dart:46:19 - argument_type_not_assignable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\data\gamification_repository.dart:24:9 - avoid_catches_without_on_clauses
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\gamification\data\social_websocket_service.dart:48:37 - argument_type_not_assignable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\data\social_websocket_service.dart:57:13 - avoid_catches_without_on_clauses
+warning - The type of error can't be inferred; a type must be explicitly provided - lib\src\features\gamification\data\social_websocket_service.dart:61:19 - inference_failure_on_untyped_parameter
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\data\social_websocket_service.dart:70:7 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\data\social_websocket_service.dart:107:3 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\gamification\domain\gamification_models.dart:60:35 - always_put_control_body_on_new_line
+  error - Undefined name 'socialWebSocketServiceProvider' - lib\src\features\gamification\presentation\gamification_controller.dart:45:16 - undefined_identifier
+  error - The method 'whenData' can't be unconditionally invoked because the receiver can be 'null' - lib\src\features\gamification\presentation\gamification_controller.dart:46:12 - unchecked_use_of_nullable_value
+warning - The type of data can't be inferred; a type must be explicitly provided - lib\src\features\gamification\presentation\gamification_controller.dart:46:22 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:47:13 - avoid_dynamic_calls
+  error - Undefined name 'socialWebSocketServiceProvider' - lib\src\features\gamification\presentation\gamification_controller.dart:119:16 - undefined_identifier
+  error - The method 'whenData' can't be unconditionally invoked because the receiver can be 'null' - lib\src\features\gamification\presentation\gamification_controller.dart:120:12 - unchecked_use_of_nullable_value
+warning - The type of message can't be inferred; a type must be explicitly provided - lib\src\features\gamification\presentation\gamification_controller.dart:120:22 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:121:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:122:26 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\features\gamification\presentation\gamification_controller.dart:122:26 - argument_type_not_assignable
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\gamification_controller.dart:130:31 - always_put_control_body_on_new_line
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:137:63 - avoid_dynamic_calls
+  error - The operands of the operator '||' must be assignable to 'bool' - lib\src\features\gamification\presentation\gamification_controller.dart:149:35 - non_bool_operand
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:149:36 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:152:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:153:29 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\gamification_controller.dart:175:57 - avoid_dynamic_calls
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\gamification\presentation\gamification_controller.dart:230:7 - avoid_catches_without_on_clauses
+  error - Undefined name 'socialWebSocketServiceProvider' - lib\src\features\gamification\presentation\leaderboard_screen.dart:49:16 - undefined_identifier
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\leaderboard_screen.dart:52:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\leaderboard_screen.dart:56:22 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\leaderboard_screen.dart:56:49 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\leaderboard_screen.dart:56:77 - avoid_dynamic_calls
+   info - Use the constant 'UserXP.empty' rather than a constructor returning the same object - lib\src\features\gamification\presentation\leaderboard_screen.dart:116:29 - use_named_constants
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\leaderboard_screen.dart:270:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:33:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:129:22 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:136:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:137:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:140:7 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\gamification\presentation\widgets\celebration_overlay.dart:146:7 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\live_sessions\data\live_session_repository.dart:23:24 - always_put_control_body_on_new_line
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\live_sessions\data\live_session_repository.dart:37:37 - argument_type_not_assignable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\live_sessions\data\live_session_repository.dart:41:13 - avoid_catches_without_on_clauses
+warning - The type of e can't be inferred; a type must be explicitly provided - lib\src\features\live_sessions\data\live_session_repository.dart:45:19 - inference_failure_on_untyped_parameter
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\live_sessions\data\live_session_repository.dart:48:7 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\live_sessions\data\live_session_repository.dart:75:3 - cascade_invocations
+  error - Undefined class 'StreamSubscription' - lib\src\features\live_sessions\presentation\live_session_controller.dart:45:14 - undefined_class
+   info - Don't invoke 'print' in production code - lib\src\features\live_sessions\presentation\live_session_controller.dart:48:5 - avoid_print
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>?'.  - lib\src\features\live_sessions\presentation\live_session_controller.dart:55:26 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_controller.dart:60:22 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'List<dynamic>?'.  - lib\src\features\live_sessions\presentation\live_session_controller.dart:60:22 - argument_type_not_assignable
+  error - The method 'getUpcomingSessions' isn't defined for the type 'LiveSessionRepository' - lib\src\features\live_sessions\presentation\live_session_list_screen.dart:33:57 - undefined_method
+  error - The method 'joinSession' isn't defined for the type 'LiveSessionRepository' - lib\src\features\live_sessions\presentation\live_session_list_screen.dart:49:57 - undefined_method
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\live_sessions\presentation\live_session_screen.dart:54:17 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:82:27 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\live_sessions\presentation\live_session_screen.dart:82:27 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:83:33 - avoid_dynamic_calls
+warning - The type argument(s) of 'List' can't be inferred - lib\src\features\notifications\data\notification_repository.dart:20:36 - inference_failure_on_collection_literal
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:204:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:205:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:206:28 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\notifications\presentation\notifications_screen.dart:207:26 - always_put_control_body_on_new_line
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\onboarding\presentation\onboarding_screen.dart:89:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\onboarding\presentation\onboarding_screen.dart:161:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\onboarding\presentation\onboarding_screen.dart:243:44 - deprecated_member_use
+  error - A value of type 'Map<String, dynamic>?' can't be returned from the method 'createOrder' because it has a return type of 'Future<Map<String, dynamic>>' - lib\src\features\payments\data\payment_repository.dart:21:12 - return_of_invalid_type
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:21:6 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:22:6 - cascade_invocations
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\payments\services\payment_service.dart:62:15 - inference_failure_on_instance_creation
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\payments\services\payment_service.dart:63:9 - unawaited_futures
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\payments\services\payment_service.dart:63:28 - argument_type_not_assignable
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:68:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:84:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\payments\services\payment_service.dart:107:8 - avoid_catches_without_on_clauses
+   info - Unnecessary duplication of receiver - lib\src\features\payments\services\payment_service.dart:118:3 - cascade_invocations
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:71:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:74:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:173:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:175:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:201:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:212:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:299:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:331:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:410:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:458:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:459:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_dashboard_view.dart:503:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:110:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:111:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:130:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:170:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:326:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:433:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:437:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\profile\presentation\instructor_profile_screen.dart:469:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\settings\presentation\language_settings_screen.dart:136:45 - deprecated_member_use
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\study_groups\presentation\study_groups_screen.dart:63:7 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\study_groups\presentation\study_groups_screen.dart:83:7 - unawaited_futures
+   info - Missing an 'await' for the 'Future' computed by this expression - lib\src\features\study_groups\presentation\study_groups_screen.dart:367:19 - unawaited_futures
+   info - Statement should be on a separate line - lib\src\features\support\presentation\support_screen.dart:42:45 - always_put_control_body_on_new_line
+warning - The value of 'refresh' should be used - lib\src\features\support\presentation\support_screen.dart:61:13 - unused_result
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\support\presentation\support_screen.dart:63:7 - avoid_catches_without_on_clauses
+   info - Statement should be on a separate line - lib\src\features\support\presentation\support_screen.dart:70:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\tutors\presentation\booking_screen.dart:56:47 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\tutors\presentation\booking_screen.dart:57:47 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\tutors\presentation\booking_screen.dart:75:7 - avoid_catches_without_on_clauses
+warning - The type argument(s) of the constructor 'TableCalendar' can't be inferred - lib\src\features\tutors\presentation\booking_screen.dart:174:14 - inference_failure_on_instance_creation
+   info - Dependencies not sorted alphabetically - pubspec.yaml:41:3 - sort_pub_dependencies
+  error - Missing concrete implementation of 'class ApiClient.streamPost' - test\widget_test.dart:21:7 - non_abstract_class_inherits_abstract_member
+  error - 'FakeCourseRepository.getCourses' ('Future<List<Course>> Function()') isn't a valid override of 'CourseRepository.getCourses' ('Future<List<Course>> Function({bool forceRefresh})') - test\widget_test.dart:81:24 - invalid_override
+warning - The type argument(s) of 'List' can't be inferred - test\widget_test.dart:102:21 - inference_failure_on_collection_literal
+
+flutter : 194 issues 
+found. (ran in 10.0s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-Encoding utf8 
+analyze_now.txt; 
+Get-C ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (194 iss   
+ ues found. (ran     
+in 10.0s):String    
+) [], RemoteExce    
+ption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

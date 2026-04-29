@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\vla_engine.py
+# hypothesis_version: 6.152.1
+
+[-0.05, 0.0, 0.05, 0.1, 0.5, 1.0, 'CLOSED', 'Image', 'OPEN', 'Text', 'action_trajectory', 'dx', 'dy', 'dz', 'gripper_state', 'input_modalities', 'insight', 'instruction', 'output_modality', 'paradigm']

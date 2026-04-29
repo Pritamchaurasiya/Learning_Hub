@@ -1,0 +1,301 @@
+# 🏗️ NATIVE PLATFORM HARDENING GUIDE
+
+## Windows & Linux C++/CMake Security Configuration
+
+---
+
+## 📋 TABLE OF CONTENTS
+
+1. [Windows Security Hardening](#-windows-security-hardening)
+2. [Linux Security Hardening](#-linux-security-hardening)
+3. [Common Vulnerabilities Prevention](#-common-vulnerabilities-prevention)
+4. [Build Optimization](#-build-optimization)
+5. [Debugging Native Code](#-debugging-native-code)
+
+---
+
+## 🪟 WINDOWS SECURITY HARDENING
+
+### CMake Security Flags Explained
+
+Our `windows/CMakeLists.txt` uses production-grade security settings:
+
+```cmake
+function(APPLY_STANDARD_SETTINGS TARGET)
+  # C++17 standard
+  target_compile_features(${TARGET} PUBLIC cxx_std_17)
+  
+  # Warnings as errors (W4 = high warning level)
+  target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
+  
+  # Security hardening
+  target_compile_options(${TARGET} PRIVATE /EHsc /guard:cf /GS)
+  target_link_options(${TARGET} PRIVATE /guard:cf /DYNAMICBASE /HIGHENTROPYVA)
+  
+  # No exceptions in native code
+  target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
+endfunction()
+```
+
+### Flag Breakdown
+
+| Flag | Purpose | Security Benefit |
+|------|---------|-----------------|
+| `/W4` | Warning level 4 | Catches subtle bugs |
+| `/WX` | Warnings as errors | Forces clean code |
+| `/EHsc` | Exception handling | Proper stack unwinding |
+| `/guard:cf` | Control Flow Guard | Prevents ROP attacks |
+| `/GS` | Buffer Security Check | Detects stack buffer overruns |
+| `/DYNAMICBASE` | ASLR enable | Randomizes memory layout |
+| `/HIGHENTROPYVA` | High entropy ASLR | 64-bit address randomization |
+
+### Control Flow Guard (CFG)
+
+**What it prevents**: Return-Oriented Programming (ROP) attacks
+
+```
+Without CFG:
+Attacker overwrites return address → jumps to malicious "gadgets"
+
+With CFG:
+Each indirect call validated against CFG table → attack blocked
+```
+
+### ASLR (Address Space Layout Randomization)
+
+**Protection**: Makes it harder to predict memory addresses
+
+```
+Without ASLR:
+malloc() always returns 0x10000000 → predictable exploit targets
+
+With ASLR:
+malloc() returns random address → exploit fails
+```
+
+---
+
+## 🐧 LINUX SECURITY HARDENING
+
+### CMake Security Flags
+
+Our `linux/CMakeLists.txt` uses:
+
+```cmake
+function(APPLY_STANDARD_SETTINGS TARGET)
+  target_compile_features(${TARGET} PUBLIC cxx_std_17)
+  
+  # Warnings + errors + stack protection
+  target_compile_options(${TARGET} PRIVATE -Wall -Werror -fstack-protector-strong)
+  
+  # Position Independent Executable
+  target_compile_options(${TARGET} PRIVATE -pie -fPIE)
+  
+  # Fortify source + assertions
+  target_compile_definitions(${TARGET} PRIVATE "_FORTIFY_SOURCE=2")
+  target_compile_definitions(${TARGET} PRIVATE "_GLIBCXX_ASSERTIONS")
+  
+  # Optimization for release
+  target_compile_options(${TARGET} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-O3>")
+endfunction()
+```
+
+### Flag Breakdown
+
+| Flag | Purpose | Security Benefit |
+|------|---------|-----------------|
+| `-Wall` | All warnings | Catches potential issues |
+| `-Werror` | Warnings as errors | Forces clean code |
+| `-fstack-protector-strong` | Stack canaries | Detects buffer overflows |
+| `-pie -fPIE` | Position Independent Executable | ASLR support |
+| `_FORTIFY_SOURCE=2` | Runtime checks | Detects buffer overflows |
+| `_GLIBCXX_ASSERTIONS` | STL assertions | Debug checks in containers |
+
+### Stack Canaries
+
+**What they detect**: Stack buffer overflows
+
+```c
+// Vulnerable code
+void foo(char* input) {
+    char buffer[64];
+    strcpy(buffer, input);  // No bounds check!
+}
+
+// With stack canary:
+// [buffer][CANARY][return_addr]
+// If canary changes → abort()
+```
+
+### FORTIFY_SOURCE
+
+**Runtime protection for common functions**:
+
+```c
+// Without FORTIFY
+memcpy(dest, src, n);  // No bounds check
+
+// With FORTIFY_SOURCE=2
+__memcpy_chk(dest, src, n, __bos(dest));  // Checks dest size at runtime
+```
+
+---
+
+## 🛡️ COMMON VULNERABILITIES PREVENTION
+
+### 1. Buffer Overflow
+
+**Attack**: Write beyond buffer bounds to overwrite return address
+
+**Defense**:
+- Stack canaries (`-fstack-protector-strong` / `/GS`)
+- ASLR (`-pie` / `/DYNAMICBASE`)
+- `_FORTIFY_SOURCE`
+
+### 2. Code Injection
+
+**Attack**: Execute attacker-controlled code
+
+**Defense**:
+- DEP (Data Execution Prevention) - enabled by default
+- ASLR (Address Space Layout Randomization)
+- CFG (Control Flow Guard on Windows)
+
+### 3. DLL Hijacking (Windows)
+
+**Attack**: Replace legitimate DLLs with malicious ones
+
+**Defense**:
+- SafeDllSearchMode (registry setting)
+- Explicit DLL paths in code
+- Code signing verification
+
+### 4. Privilege Escalation
+
+**Attack**: Gain higher privileges than intended
+
+**Defense**:
+- Principle of least privilege
+- Proper file permissions
+- Sandboxing (like our Docker setup)
+
+---
+
+## ⚡ BUILD OPTIMIZATION
+
+### Debug vs Release
+
+```cmake
+# Debug: Full symbols, no optimization
+set(CMAKE_BUILD_TYPE "Debug")
+# Adds: -g (symbols), -O0 (no optimization)
+
+# Release: Full optimization
+set(CMAKE_BUILD_TYPE "Release")
+# Adds: -O3 (full optimization), NDEBUG defined
+```
+
+### Profile-Guided Optimization (PGO)
+
+For maximum performance:
+
+```bash
+# Step 1: Build with instrumentation
+cmake -DCMAKE_BUILD_TYPE=Profile ..
+make
+
+# Step 2: Run typical workloads
+./app <typical_inputs>
+
+# Step 3: Rebuild with profile data
+make clean
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_PGO=ON ..
+make
+```
+
+---
+
+## 🔧 DEBUGGING NATIVE CODE
+
+### Windows (Visual Studio)
+
+1. Open `build/windows/*.sln` in Visual Studio
+2. Set breakpoints in native code
+3. Press F5 to debug
+
+### Linux (GDB)
+
+```bash
+# Build with debug symbols
+flutter build linux --debug
+
+# Attach GDB
+gdb ./build/linux/x64/debug/bundle/my_flutter_app
+
+# Set breakpoint
+(gdb) break my_flutter_window.cc:42
+
+# Run
+(gdb) run
+```
+
+### Common Debug Commands
+
+```bash
+# Print stack trace
+(gdb) backtrace
+
+# Print variable
+(gdb) print my_variable
+
+# Step into function
+(gdb) step
+
+# Continue execution
+(gdb) continue
+```
+
+---
+
+## 📊 SECURITY AUDIT CHECKLIST
+
+- [ ] Compile with all warnings enabled
+- [ ] Warnings treated as errors
+- [ ] Stack protection enabled
+- [ ] ASLR enabled (PIE on Linux, DYNAMICBASE on Windows)
+- [ ] Control Flow Guard enabled (Windows)
+- [ ] FORTIFY_SOURCE=2 (Linux)
+- [ ] Debug symbols stripped in release
+- [ ] No hardcoded credentials
+- [ ] Secure random number generation
+- [ ] Input validation on all user data
+
+---
+
+## 🎯 MENTAL MODEL: Defense in Depth
+
+```
+                   ┌─────────────────────────┐
+                   │    Application Code     │
+                   │  (Input Validation)     │
+                   ├─────────────────────────┤
+                   │    Compiler Checks      │
+                   │  (Warnings, Static)     │
+                   ├─────────────────────────┤
+                   │    Runtime Checks       │
+                   │  (Canaries, FORTIFY)    │
+                   ├─────────────────────────┤
+                   │    OS Protection        │
+                   │  (ASLR, DEP, CFG)       │
+                   ├─────────────────────────┤
+                   │    Hardware Protection  │
+                   │  (NX bit, Virtualization)│
+                   └─────────────────────────┘
+```
+
+Each layer catches what the previous layer missed.
+
+---
+
+**SINGULARITY ENGINE v15.0**  
+_"Security is not a feature, it's the foundation."_

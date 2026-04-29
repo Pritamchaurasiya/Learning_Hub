@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, '-scheduled_time', '0003_certificate', 'Cancelled', 'Ended', 'Live', 'LiveSession', 'Scheduled', 'SessionAttendee', 'Zoom/Meet link', 'attendees', 'cancelled', 'course', 'courses', 'courses.course', 'created_at', 'description', 'duration_minutes', 'ended', 'host', 'hosted_sessions', 'id', 'joined_at', 'live', 'live_sessions', 'live_sessions/', 'meeting_url', 'ordering', 'scheduled', 'scheduled_time', 'session', 'status', 'thumbnail', 'title', 'unique_together', 'updated_at', 'user']

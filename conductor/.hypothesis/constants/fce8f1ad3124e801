@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\migrations\0004_message_is_edited_message_type.py
+# hypothesis_version: 6.152.1
+
+['Audio', 'File', 'Image', 'Text', 'Video', 'audio', 'chat', 'file', 'image', 'is_edited', 'message', 'text', 'type', 'video']

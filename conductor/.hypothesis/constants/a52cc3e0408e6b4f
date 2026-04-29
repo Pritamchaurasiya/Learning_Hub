@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\tutors\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[0.0, 255, '-start_time', 'Booking', 'Cancelled', 'Completed', 'Confirmed', 'Pending', 'TutorProfile', 'abstract', 'bio', 'bookings', 'cancelled', 'completed', 'confirmed', 'created_at', 'end_time', 'hourly_rate', 'id', 'is_verified', 'meeting_link', 'notes', 'ordering', 'pending', 'rating', 'skills', 'start_time', 'status', 'student', 'total_reviews', 'tutor', 'tutor_profile', 'tutors.tutorprofile', 'updated_at', 'user']

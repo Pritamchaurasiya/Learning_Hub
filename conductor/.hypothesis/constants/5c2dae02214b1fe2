@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\migrations\0002_remove_message_is_read_conversation_group_name_and_more.py
+# hypothesis_version: 6.152.1
+
+[255, '0001_initial', 'attachment', 'chat', 'chat_attachments/', 'conversation', 'group_name', 'is_active', 'is_encrypted', 'is_group', 'is_read', 'message', 'read_by', 'read_chat_messages']

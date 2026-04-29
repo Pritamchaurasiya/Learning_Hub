@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\migrations\0004_alter_problem_options_alter_submission_options_and_more.py
+# hypothesis_version: 6.152.1
+
+['-created_at', '-submitted_at', 'difficulty', 'dsa', 'is_active', 'ordering', 'problem', 'status', 'submission', 'user']

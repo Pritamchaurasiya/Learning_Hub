@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\core\exceptions.py
+# hypothesis_version: 6.151.9
+
+['An error occurred', 'Bad request', 'Payment required', 'Permission denied', 'Resource conflict', 'Resource not found', 'Validation error', 'detail', 'error', 'errors', 'message', 'non_field_errors', 'status']

@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\core\middleware.py
+# hypothesis_version: 6.151.9
+
+[403, 1000, '/admin/', '<iframe\\b[^>]*>', 'CORS_ALLOWED_ORIGINS', 'DELETE', 'HTTP_ORIGIN', 'Origin not allowed', 'PATCH', 'POST', 'PUT', 'Server-Timing', 'anon', 'error', 'id', 'javascript:', 'json', 'message', 'on\\w+\\s*=', 'replace', 'security', 'status', 'user', 'utf-8']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\migrations\0003_alter_message_read_by_chatroom_message_room_and_more.py
+# hypothesis_version: 6.152.1
+
+[255, '-last_message_at', 'ChatRoom', 'Conversation', 'Direct Message', 'Group Chat', 'chat', 'chat.chatroom', 'chat_rooms', 'conversation', 'created_at', 'created_by', 'created_rooms', 'db_table', 'direct', 'group', 'id', 'is_active', 'last_message_at', 'message', 'messages', 'name', 'ordering', 'participants', 'read_by', 'read_messages', 'room', 'room_messages', 'type', 'updated_at']

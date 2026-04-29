@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
+import 'package:learning_hub/core/utils/responsive.dart';
 import 'quick_actions_fab.dart';
+import 'connectivity_banner.dart';
 
 /// Provider for tracking current navigation index
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -15,17 +17,29 @@ class MainScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDesktop = MediaQuery.of(context).size.width >= 1024;
-    final isTablet = MediaQuery.of(context).size.width >= 600 &&
-        MediaQuery.of(context).size.width < 1024;
+    final isDesktop = Responsive.isDesktop(context);
+    final isTablet = Responsive.isTablet(context);
 
+    Widget scaffold;
     if (isDesktop) {
-      return _DesktopScaffold(child: child);
+      scaffold = _DesktopScaffold(child: child);
     } else if (isTablet) {
-      return _TabletScaffold(child: child);
+      scaffold = _TabletScaffold(child: child);
     } else {
-      return _MobileScaffold(child: child);
+      scaffold = _MobileScaffold(child: child);
     }
+
+    return Stack(
+      children: [
+        scaffold,
+        const Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: ConnectivityBanner(),
+        ),
+      ],
+    );
   }
 }
 
@@ -302,7 +316,7 @@ class _DesktopScaffold extends ConsumerWidget {
                         selectedIcon: Icons.download,
                         label: 'Downloads',
                         isSelected: false,
-                        onTap: () {},
+                        onTap: () => context.go('/downloads'),
                       ),
                     ],
                   ),

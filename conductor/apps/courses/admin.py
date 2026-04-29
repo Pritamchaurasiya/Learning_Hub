@@ -21,6 +21,27 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     """Admin for Course model."""
+    
+    actions = ["duplicate_course", "publish_courses", "unpublish_courses"]
+
+    @admin.action(description="Duplicate selected courses")
+    def duplicate_course(self, request, queryset):
+        for course in queryset:
+            course.pk = None
+            course.slug = f"{course.slug}-copy"
+            course.title = f"{course.title} (Copy)"
+            course.is_published = False
+            course.save()
+        self.message_user(request, f"{queryset.count()} courses duplicated successfully.")
+
+    @admin.action(description="Publish selected courses")
+    def publish_courses(self, request, queryset):
+        queryset.update(is_published=True)
+    
+    @admin.action(description="Unpublish selected courses")
+    def unpublish_courses(self, request, queryset):
+        queryset.update(is_published=False)
+
 
     list_display = [
         "title",
@@ -42,6 +63,7 @@ class CourseAdmin(admin.ModelAdmin):
         "updated_at",
     ]
     date_hierarchy = "created_at"
+    list_select_related = ["instructor", "category"]
 
     fieldsets = (
         (
@@ -74,6 +96,7 @@ class EnrollmentAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "completed_at"]
     search_fields = ["user__email", "course__title"]
     readonly_fields = ["created_at"]
+    list_select_related = ["user", "course"]
 
 
 @admin.register(Review)
@@ -84,3 +107,18 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ["rating", "is_approved", "created_at"]
     search_fields = ["user__email", "course__title", "content"]
     readonly_fields = ["created_at"]
+    list_select_related = ["user", "course"]
+
+
+from .models import Certificate
+
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    """Admin for Certificate model."""
+    
+    list_display = ["certificate_code", "user", "course", "issued_at"]
+    list_filter = ["issued_at"]
+    search_fields = ["certificate_code", "user__email", "course__title"]
+    readonly_fields = ["certificate_code", "issued_at"]
+    list_select_related = ["user", "course"]
+

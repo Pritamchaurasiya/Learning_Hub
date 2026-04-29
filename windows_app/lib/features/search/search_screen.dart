@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/providers/search_provider.dart';
+import 'package:learning_hub/core/utils/debouncer.dart';
+import 'package:learning_hub/core/utils/responsive.dart';
 import 'package:learning_hub/data/models/course_model.dart';
 import 'package:learning_hub/shared/widgets/course_card.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Search screen with filters and course results
 class SearchScreen extends ConsumerStatefulWidget {
@@ -16,6 +19,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  final _debouncer = Debouncer(milliseconds: 300);
   bool _showFilters = false;
 
   final List<String> _categories = [
@@ -54,14 +58,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width >= 1024;
+    final isDesktop = Responsive.isDesktop(context);
 
     final state = ref.watch(searchProvider);
     final notifier = ref.read(searchProvider.notifier);
@@ -107,7 +111,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ),
                   ),
                   onChanged: (value) {
-                    notifier.updateQuery(value);
+                    _debouncer.run(() {
+                      notifier.updateQuery(value);
+                    });
                   },
                 ),
                 // Suggestions
@@ -274,21 +280,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 : state.filters.query.isEmpty && state.filters.category == 'All'
                     ? _buildDiscoverView(theme, state.recentSearches, notifier)
                     : state.results.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 64,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(height: 16),
-                                Text('No courses found',
-                                    style: theme.textTheme.titleMedium),
-                              ],
-                            ),
-                          )
+                        ? EmptyStateView.noSearchResults()
                         : isDesktop
                             ? _buildDesktopGrid(state.results)
                             : _buildMobileList(state.results),

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\study_groups\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, 200, '-created_at', 'Admin', 'GroupMembership', 'ID', 'Member', 'Moderator', 'StudyGroup', 'admin', 'created_at', 'created_groups', 'creator', 'description', 'group', 'groupmembership', 'id', 'is_public', 'joined_at', 'max_members', 'member', 'members', 'memberships', 'moderator', 'name', 'ordering', 'role', 'study_groups', 'topic', 'updated_at', 'user']

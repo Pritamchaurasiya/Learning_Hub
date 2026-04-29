@@ -10,6 +10,9 @@ import 'package:learning_hub/core/services/offline_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
+import '../../core/providers/backend_ai_provider.dart';
+import 'package:learning_hub/core/services/api_client.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 /// Lesson player screen with video, transcript, and notes
 class LessonPlayerScreen extends ConsumerStatefulWidget {
@@ -39,7 +42,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadProgress();
   }
 
@@ -60,17 +63,56 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
   }
 
   Future<void> _saveProgress(double position) async {
-    if (_saveDebouncer?.isActive ?? false) return;
+    if (_saveDebouncer?.isActive ?? false) {
+      return;
+    }
 
-    _saveDebouncer = Timer(const Duration(seconds: 1), () async {
+    _saveDebouncer = Timer(const Duration(seconds: 2), () async {
       try {
+        // 1. Local Save
         final prefs = await SharedPreferences.getInstance();
         final key = 'video_progress_${widget.lessonId}';
         await prefs.setDouble(key, position);
+
+        // 2. Cloud Sync
+        // Only sync if user is online (Handled by ApiClient or separate check)
+        // We use the new endpoint
+        try {
+          await ApiClient.instance.post<Map<String, dynamic>>(
+            '/api/v1/courses/${widget.courseId}/update-progress/',
+            data: {'lesson_id': widget.lessonId, 'seconds': position},
+          );
+        } catch (_) {
+          // Silent fail for cloud sync (offline is fine)
+        }
       } catch (e) {
         debugPrint('Error saving video progress: $e');
       }
     });
+  }
+
+  Future<void> _markLessonComplete() async {
+    try {
+      final apiClient = ApiClient.instance; // Use singleton
+
+      // Assuming courseId is slug. If it's ID, backend needs to handle or we need slug.
+      // We Post to /api/v1/courses/{slug}/complete-lesson/
+
+      await apiClient.post<Map<String, dynamic>>(
+        '/api/v1/courses/${widget.courseId}/complete-lesson/',
+        data: {'lesson_id': widget.lessonId},
+      );
+
+      if (mounted) {
+        AppFeedback.showSuccess(context, 'Lesson marked as complete! +50 XP');
+        // Could also trigger a confetti animation here
+      }
+    } catch (e) {
+      debugPrint('Error marking lesson complete: $e');
+      if (mounted) {
+        AppFeedback.showError(context, 'Failed to sync progress: $e');
+      }
+    }
   }
 
   @override
@@ -138,6 +180,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
                 initialPosition: _savedPosition,
                 onPositionChanged: _saveProgress,
                 isLoading: _isLoadingProgress,
+                onComplete: _markLessonComplete,
               )
             : Column(
                 children: [
@@ -238,6 +281,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
                               tabs: const [
                                 Tab(text: 'Transcript'),
                                 Tab(text: 'Notes'),
+                                Tab(text: 'Code'),
                                 Tab(text: 'Discussion'),
                               ],
                             ),
@@ -249,6 +293,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
                                 children: [
                                   _TranscriptTab(),
                                   _NotesTab(),
+                                  _CodeTab(),
                                   _DiscussionTab(),
                                 ],
                               ),
@@ -259,6 +304,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
                               courseId: widget.courseId,
                               onPrevious: () {},
                               onNext: () {},
+                              onComplete: _markLessonComplete,
                             ),
                           ],
                         ),
@@ -285,6 +331,7 @@ class _DesktopLayout extends StatelessWidget {
   final double initialPosition;
   final ValueChanged<double> onPositionChanged;
   final bool isLoading;
+  final VoidCallback? onComplete;
 
   const _DesktopLayout({
     required this.videoUrl,
@@ -299,6 +346,7 @@ class _DesktopLayout extends StatelessWidget {
     this.initialPosition = 0.0,
     required this.onPositionChanged,
     this.isLoading = false,
+    this.onComplete,
   });
 
   @override
@@ -374,6 +422,7 @@ class _DesktopLayout extends StatelessWidget {
                   courseId: courseId,
                   onPrevious: () {},
                   onNext: () {},
+                  onComplete: onComplete,
                 ),
               ),
             ],
@@ -396,6 +445,7 @@ class _DesktopLayout extends StatelessWidget {
                 tabs: const [
                   Tab(text: 'Transcript'),
                   Tab(text: 'Notes'),
+                  Tab(text: 'Code'),
                   Tab(text: 'Discussion'),
                 ],
               ),
@@ -405,6 +455,7 @@ class _DesktopLayout extends StatelessWidget {
                   children: [
                     _TranscriptTab(),
                     _NotesTab(),
+                    _CodeTab(),
                     _DiscussionTab(),
                   ],
                 ),
@@ -630,7 +681,7 @@ class _VideoPlayerSectionState extends State<_VideoPlayerSection> {
   }
 
   void _showSettingsSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -665,7 +716,7 @@ class _VideoPlayerSectionState extends State<_VideoPlayerSection> {
   }
 
   void _showSpeedSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -1099,11 +1150,13 @@ class _LessonNavigationBar extends StatelessWidget {
   final String courseId;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final VoidCallback? onComplete;
 
   const _LessonNavigationBar({
     required this.courseId,
     required this.onPrevious,
     required this.onNext,
+    this.onComplete,
   });
 
   @override
@@ -1126,6 +1179,18 @@ class _LessonNavigationBar extends StatelessWidget {
             onPressed: onPrevious,
           ),
           const Spacer(),
+          if (onComplete != null) ...[
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Mark Complete'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: onComplete,
+            ),
+            const SizedBox(width: 16),
+          ],
           ElevatedButton.icon(
             icon: const Icon(Icons.arrow_forward),
             label: const Text('Next Lesson'),
@@ -1134,5 +1199,114 @@ class _LessonNavigationBar extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _CodeTab extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    const codeSnippet = '''
+final counterProvider = StateProvider<int>((ref) => 0);
+
+class Counter extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(counterProvider);
+    return Text('Count: \$count');
+  }
+}
+''';
+
+    return SelectionArea(
+      contextMenuBuilder: (context, editableTextState) {
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: editableTextState.contextMenuAnchors,
+          buttonItems: [
+            ...editableTextState.contextMenuButtonItems,
+            /*
+            ContextMenuButtonItem(
+              onPressed: () {
+                // TODO: Fix text extraction from SelectableRegionState
+                // final selectedContent = editableTextState.getSelectedContent();
+                // final selectedText = selectedContent?.plainText;
+                
+                // if (selectedText != null && selectedText.isNotEmpty) {
+                //   _explainCode(context, ref, selectedText);
+                // }
+              },
+              label: 'Explain Code',
+            ),
+            */
+          ],
+        );
+      },
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text('Example Code:',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              codeSnippet,
+              style: TextStyle(
+                fontFamily: 'monospace',
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+              'Tip: Select any part of the code and click "Explain Code" in the context menu.',
+              style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic)),
+        ],
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Future<void> _explainCode(
+      BuildContext context, WidgetRef ref, String code) async {
+    // Show loading dialog
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final explanation =
+          await ref.read(backendAiServiceProvider).explainCode(code);
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('AI Explanation'),
+            content: SingleChildScrollView(child: Text(explanation)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        AppFeedback.showError(context, 'Error: $e');
+      }
+    }
   }
 }

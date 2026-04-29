@@ -19,6 +19,7 @@ import 'package:learning_hub/features/home/mentorship_banner.dart';
 import 'package:learning_hub/shared/widgets/home_skeleton.dart';
 import 'package:learning_hub/shared/widgets/premium_loading_indicator.dart';
 import 'package:learning_hub/features/home/widgets/hero_banner.dart';
+import 'package:learning_hub/core/providers/user_stats_provider.dart';
 import '../../shared/widgets/activity_heatmap.dart';
 
 import 'models/home_data.dart';
@@ -99,7 +100,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
     ref.listen(gamificationProvider, (previous, next) {
       if (next.showLevelUpCelebration && !next.isLoading) {
         _confettiController.play();
-        showDialog(
+        showDialog<void>(
           context: context,
           barrierDismissible: false,
           builder: (context) => LevelUpDialog(
@@ -174,8 +175,11 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
       bool isDesktop, bool isTablet) {
     return homeData.when(
       loading: () => const HomeSkeleton(),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (data) => CustomScrollView(
+      error: (error, stack) => _buildErrorState(error, () => ref.refresh(homeDataProvider)),
+      data: (data) => RefreshIndicator(
+        onRefresh: () async => ref.refresh(homeDataProvider.future),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverList(
             delegate: SliverChildListDelegate([
@@ -188,13 +192,18 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ActivityHeatmap(
-                  activityData: {
-                    DateTime.now(): 45,
-                    DateTime.now().subtract(const Duration(days: 1)): 30,
-                    DateTime.now().subtract(const Duration(days: 2)): 60,
-                    DateTime.now().subtract(const Duration(days: 3)): 15,
-                    DateTime.now().subtract(const Duration(days: 5)): 90,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final statsAsync = ref.watch(userStatsProvider);
+                    return statsAsync.when(
+                      data: (stats) => ActivityHeatmap(
+                        activityData: stats.activityHeatmap,
+                      ),
+                      loading: () => const SizedBox(
+                          height: 100,
+                          child: Center(child: CircularProgressIndicator())),
+                      error: (_, __) => const SizedBox.shrink(),
+                    );
                   },
                 ),
               ),
@@ -258,6 +267,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -265,8 +275,11 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
       bool isDesktop, bool isTablet) {
     return homeData.when(
       loading: () => const HomeSkeleton(),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (data) => CustomScrollView(
+      error: (error, stack) => _buildErrorState(error, () => ref.refresh(homeDataProvider)),
+      data: (data) => RefreshIndicator(
+        onRefresh: () async => ref.refresh(homeDataProvider.future),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverList(
             delegate: SliverChildListDelegate([
@@ -318,6 +331,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -325,8 +339,11 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
       bool isDesktop, bool isTablet) {
     return homeData.when(
       loading: () => const HomeSkeleton(),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (data) => CustomScrollView(
+      error: (error, stack) => _buildErrorState(error, () => ref.refresh(homeDataProvider)),
+      data: (data) => RefreshIndicator(
+        onRefresh: () async => ref.refresh(homeDataProvider.future),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverList(
             delegate: SliverChildListDelegate([
@@ -340,6 +357,57 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
             ]),
           ),
         ],
+      ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(Object error, VoidCallback onRetry) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.cloud_off_rounded,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Oops! Connection Lost',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'We had trouble fetching your learning data. Please check your connection and try again.',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

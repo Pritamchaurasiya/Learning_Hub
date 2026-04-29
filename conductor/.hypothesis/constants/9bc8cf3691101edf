@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\models.py
+# hypothesis_version: 6.151.9
+
+[100, '-earned_at', '-total_xp', 'Elder', 'Emoji or Icon', 'Leader', 'Member', 'awarded_to', 'badge', 'badges', 'elder', 'guild', 'guild_membership', 'leader', 'led_guilds', 'member', 'memberships', 'streak_profile', 'user', 'xp_profile', '🏅', '🛡️']

@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\config\settings\development.py
+# hypothesis_version: 6.152.1
+
+['ANTHROPIC_API_KEY', 'BACKEND', 'DEBUG', 'ENGINE', 'GEMINI_API_KEY', 'LOCATION', 'NAME', 'OPENAI_API_KEY', 'db.sqlite3', 'default', 'dev-anthropic-key', 'dev-gemini-key', 'dev-openai-key', 'django_prometheus', 'level', 'pgvector', 'root', 'static']

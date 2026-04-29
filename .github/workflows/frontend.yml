@@ -40,3 +40,6 @@ jobs:
 
       - name: Run Tests
         run: flutter test
+
+      - name: Build Web (Release Verification)
+        run: flutter build web --release

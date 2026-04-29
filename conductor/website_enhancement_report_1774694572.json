@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-03-28T16:12:51.395423",
+  "django_available": false,
+  "components": {
+    "system_health": {
+      "status": "warning",
+      "score": 80,
+      "cpu": 59.4,
+      "memory": 89.7,
+      "disk": 39.1
+    },
+    "database": {
+      "status": "django_unavailable"
+    },
+    "api": {
+      "status": "checked",
+      "endpoints": [],
+      "total": 0
+    },
+    "static_files": {
+      "status": "configured",
+      "static_exists": true,
+      "staticfiles_exists": true,
+      "static_size": 87656
+    },
+    "security": {
+      "score": 50,
+      "status": "critical",
+      "issues": [
+        "Django not available for security checks"
+      ]
+    },
+    "performance": {
+      "score": 100,
+      "status": "optimized",
+      "response_time": null
+    },
+    "code_quality": {
+      "status": "unknown",
+      "score": 50,
+      "error": "[WinError 2] The system cannot find the file specified"
+    }
+  },
+  "issues": [],
+  "enhancements": [],
+  "recommendations": [
+    "\ud83d\udd12 Fix security issues: Django not available for security checks",
+    "\ud83d\udcdd Improve code quality: Fix linting errors and style issues",
+    "\ud83d\uddc4\ufe0f Check database: Ensure database is properly configured and running",
+    "\u2705 Enable DEBUG=False in production",
+    "\u2705 Use strong SECRET_KEY in production",
+    "\u2705 Configure proper ALLOWED_HOSTS",
+    "\u2705 Set up SSL/TLS for production",
+    "\u2705 Configure logging for production",
+    "\u2705 Set up automated backups",
+    "\u2705 Implement rate limiting",
+    "\u2705 Configure caching properly"
+  ]
+}

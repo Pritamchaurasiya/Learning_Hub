@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\error_tracking.py
+# hypothesis_version: 6.151.9
+
+[1.0, 60.0, 100, 200, 400, 401, 403, 404, 429, 500, 3600, 86400, 'CLOSED', 'HALF_OPEN', 'INTERNAL_ERROR', 'OPEN', 'RETRY_EXHAUSTED', 'authentication', 'authorization', 'by_category', 'by_severity', 'category', 'code', 'critical', 'database', 'debug', 'details', 'error', 'error_tracking:', 'errors', 'external_api', 'function', 'info', 'internal', 'last_hour', 'max_retries', 'message', 'method', 'not_found', 'path', 'rate_limit', 'recent_errors', 'request', 'request_id', 'severity', 'stack_trace', 'status', 'timestamp', 'total_errors', 'unknown', 'user', 'user_id', 'validation', 'view', 'warning', 'window']

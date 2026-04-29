@@ -1,0 +1,18 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\xp_toast_overlay.dart:188:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\xp_toast_overlay.dart:189:26 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\xp_toast_overlay.dart:192:26 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\gamification\presentation\xp_toast_overlay.dart:195:29 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:340:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\live_sessions\presentation\live_session_screen.dart:360:34 - avoid_dynamic_calls
+   info - Dependencies not sorted alphabetically - pubspec.yaml:33:3 - sort_pub_dependencies
+
+flutter : 7 issues found. (ran in 89.7s)
+At line:1 char:55
++ ... hiva\Desktop\windows_app\my_flutter_app; flutter analyze 2>&1 | Out-F ...
++                                              ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (7 issues found. (ran in 89.7s):St 
+   ring) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

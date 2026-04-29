@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\web3\migrations\0002_nftcertificate_is_active_userprofileweb3_is_active.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'is_active', 'nftcertificate', 'userprofileweb3', 'web3']

@@ -1,0 +1,134 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\shiva\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+django: version: 5.2.10, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, Faker-40.1.0, locust-2.43.1, asyncio-1.3.0, cov-7.0.0, django-4.11.1, mock-3.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 9 items
+
+tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_no_enrollments FAILED [ 11%]
+tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_with_enrollments FAILED [ 22%]
+tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_completed FAILED [ 33%]
+tests/test_ai_engine.py::TestUserBehaviorService::test_predict_course_completion_no_history FAILED [ 44%]
+tests/test_ai_engine.py::TestUserBehaviorService::test_predict_course_completion_with_history PASSED [ 55%]
+tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_course_performance_no_enrollments FAILED [ 66%]
+tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_course_performance_with_enrollments FAILED [ 77%]
+tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_popular_categories FAILED [ 88%]
+tests/test_dsa_chat.py::test_ai_chat_flow FAILED                         [100%]
+
+================================== FAILURES ===================================
+_____ TestUserBehaviorService.test_get_user_learning_stats_no_enrollments _____
+tests\test_ai_engine.py:98: in test_get_user_learning_stats_no_enrollments
+    assert stats["total_courses"] == 0
+E   assert 5 == 0
+---------------------------- Captured stderr setup ----------------------------
+Using existing test database for alias 'default'...
+
+----------------------------- Captured log setup ------------------------------
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG    faker.factory:factory.py:88 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+____ TestUserBehaviorService.test_get_user_learning_stats_with_enrollments ____
+tests\test_ai_engine.py:107: in test_get_user_learning_stats_with_enrollments
+    assert stats["total_courses"] == 1
+E   assert 5 == 1
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:28,477 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+_______ TestUserBehaviorService.test_get_user_learning_stats_completed ________
+tests\test_ai_engine.py:120: in test_get_user_learning_stats_completed
+    assert stats["completed_courses"] == 1
+E   assert 2 == 1
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:28,765 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+______ TestUserBehaviorService.test_predict_course_completion_no_history ______
+tests\test_ai_engine.py:127: in test_predict_course_completion_no_history
+    assert prediction == 0.5  # Neutral prediction
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+E   assert 0.75 == 0.5
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:29,076 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+____ TestCourseAnalyticsService.test_get_course_performance_no_enrollments ____
+tests\test_ai_engine.py:166: in test_get_course_performance_no_enrollments
+    assert metrics["total_enrollments"] == 0
+E   assert 100 == 0
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:29,480 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+___ TestCourseAnalyticsService.test_get_course_performance_with_enrollments ___
+tests\test_ai_engine.py:174: in test_get_course_performance_with_enrollments
+    assert metrics["total_enrollments"] == 1
+E   assert 100 == 1
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:29,633 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+___________ TestCourseAnalyticsService.test_get_popular_categories ____________
+tests\test_ai_engine.py:185: in test_get_popular_categories
+    assert "slug" in categories[0]
+E   AssertionError: assert 'slug' in {'count': 150, 'name': 'Programming'}
+---------------------------- Captured stderr setup ----------------------------
+ERROR 2026-02-01 17:12:29,936 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+ERROR 2026-02-01 17:12:29,939 vector_service 3216 6236 Error generating embedding: 'Settings' object has no attribute 'GEMINI_API_KEY'
+______________________________ test_ai_chat_flow ______________________________
+tests\test_dsa_chat.py:70: in test_ai_chat_flow
+    assert response['message'] == "This is a mocked AI response."
+E   AssertionError: assert 'AI Service U...ing API Key).' == 'This is a mo... AI response.'
+E     
+E     - This is a mocked AI response.
+E     + AI Service Unavailable (Missing API Key).
+----------------------------- Captured log setup ------------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: SelectSelector
+DEBUG    asyncio:selector_events.py:64 Using selector: SelectSelector
+---------------------------- Captured stdout call -----------------------------
+WARNING: GEMINI_API_KEY not found in environment.
+=========================== short test summary info ===========================
+FAILED tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_no_enrollments
+FAILED tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_with_enrollments
+FAILED tests/test_ai_engine.py::TestUserBehaviorService::test_get_user_learning_stats_completed
+FAILED tests/test_ai_engine.py::TestUserBehaviorService::test_predict_course_completion_no_history
+FAILED tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_course_performance_no_enrollments
+FAILED tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_course_performance_with_enrollments
+FAILED tests/test_ai_engine.py::TestCourseAnalyticsService::test_get_popular_categories
+FAILED tests/test_dsa_chat.py::test_ai_chat_flow - AssertionError: assert 'AI...
+========================= 8 failed, 1 passed in 5.18s =========================

@@ -86,33 +86,41 @@ class LeaderboardTile extends StatelessWidget {
     final rank = entry['rank'] as int;
     final isTop3 = rank <= 3;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isTop3
-          ? Colors.amber.withValues(alpha: 0.1)
-          : Colors.white.withValues(alpha: 0.05),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getRankColor(rank),
-          child: Text(
-            '$rank',
-            style: const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
+    final username = (entry['display_name'] ?? entry['username']).toString();
+    final level = entry['level'];
+    final xp = entry['total_xp'];
+
+    return Semantics(
+      label: 'Rank $rank, $username, Level $level, $xp XP',
+      excludeSemantics: true,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        color: isTop3
+            ? Colors.amber.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.05),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: _getRankColor(rank),
+            child: Text(
+              '$rank',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        title: Text(
-          (entry['display_name'] ?? entry['username']).toString(),
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text('Level ${entry['level']}'),
-        trailing: Text(
-          '${entry['total_xp']} XP',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: Colors.amber,
+          title: Text(
+            username,
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text('Level $level'),
+          trailing: Text(
+            '$xp XP',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: Colors.amber,
+            ),
           ),
         ),
       ),

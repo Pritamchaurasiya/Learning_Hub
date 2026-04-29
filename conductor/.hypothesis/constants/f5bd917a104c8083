@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0003_alter_coupon_is_active_alter_coupon_valid_until_and_more.py
+# hypothesis_version: 6.152.1
+
+[100, '0002_initial', 'coupon', 'gateway_payment_id', 'is_active', 'payment', 'payments', 'valid_until']

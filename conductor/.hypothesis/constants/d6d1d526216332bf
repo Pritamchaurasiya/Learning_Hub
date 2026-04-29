@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0007_alter_subscription_end_date.py
+# hypothesis_version: 6.152.1
+
+['end_date', 'payments', 'subscription']

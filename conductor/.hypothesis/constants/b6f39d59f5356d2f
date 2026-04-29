@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\views.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 201, 86400, '-earned_at', 'Activity', 'Error awarding XP', 'GET', 'Gamification', 'POST', 'achievementId', 'all', 'amount', 'badge', 'badgeCount', 'badge_id', 'badges', 'current', 'currentStreak', 'current_streak', 'data', 'error', 'isUnlocked', 'level', 'limit', 'longest', 'longestStreak', 'longest_streak', 'message', 'period', 'rank', 'reason', 'status', 'streak', 'success', 'total', 'totalBadges', 'totalXP', 'total_badge_count', 'total_xp', 'weekly', 'weeklyXP', 'weekly_xp', 'xp']

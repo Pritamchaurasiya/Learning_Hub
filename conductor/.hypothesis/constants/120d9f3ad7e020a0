@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\support\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, '-created_at', 'Billing & Payment', 'Bug Report', 'Course Content', 'Feature Request', 'Feedback', 'General Inquiry', 'Other', 'admin_response', 'billing', 'bug', 'category', 'content', 'created_at', 'db_table', 'feature', 'feedback', 'general', 'id', 'is_resolved', 'message', 'ordering', 'other', 'subject', 'updated_at', 'user', 'verbose_name_plural']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\tutors\models.py
+# hypothesis_version: 6.152.1
+
+[0.0, 255, '-start_time', 'Cancelled', 'Completed', 'Confirmed', 'Pending', 'bookings', 'cancelled', 'completed', 'confirmed', 'pending', 'tutor_profile']

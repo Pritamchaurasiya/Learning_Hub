@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\users\admin.py
+# hypothesis_version: 6.151.9
+
+['-created_at', 'Personal Info', 'Preferences', 'Role & Status', 'Timestamps', 'avatar', 'bio', 'classes', 'created_at', 'deactivate_users', 'display_name', 'email', 'expires_at', 'fields', 'is_active', 'is_staff', 'is_superuser', 'is_used', 'is_verified', 'last_login_at', 'password', 'password1', 'password2', 'phone', 'preferences', 'role', 'token', 'updated_at', 'user', 'user__email', 'username', 'verified_at', 'verify_users', 'wide']

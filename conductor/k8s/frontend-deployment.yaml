@@ -1,0 +1,78 @@
+# Flutter Frontend Kubernetes Deployment
+# Learning Hub Platform - Frontend Service Configuration
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learning-hub-frontend
+  namespace: learning-hub
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: learning-hub-frontend
+  template:
+    metadata:
+      labels:
+        app: learning-hub-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: learninghub/frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: learning-hub
+spec:
+  selector:
+    app: learning-hub-frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+# Horizontal Pod Autoscaler for Frontend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: learning-hub-frontend-hpa
+  namespace: learning-hub
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: learning-hub-frontend
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

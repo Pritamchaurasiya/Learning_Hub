@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\neuro\views.py
+# hypothesis_version: 6.152.1
+
+[0.1, 0.5, 1.5, 'MAINTAIN_PACE', 'SUGGEST_REVIEW', 'SUGGEST_SKIP', 'adaptive_action', 'alpha', 'beta', 'course_id', 'end-session', 'error', 'ingest', 'ingested', 'lesson_id', 'post', 'samples_processed', 'session_ended', 'session_id', 'status', 'telemetry']

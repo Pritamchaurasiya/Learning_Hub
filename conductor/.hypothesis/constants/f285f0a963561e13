@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\signals.py
+# hypothesis_version: 6.151.9
+
+['Started a Discussion', 'author_id', 'comment_id', 'commenter_id', 'discussion.commented', 'discussion_id']

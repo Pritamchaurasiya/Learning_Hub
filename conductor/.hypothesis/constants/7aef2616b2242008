@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-created_at', '-submitted_at', 'AC', 'Accepted', 'CE', 'Compilation Error', 'EASY', 'Easy', 'HARD', 'Hard', 'MEDIUM', 'Markdown supported', 'Medium', 'PENDING', 'Pending', 'RE', 'Runtime Error', 'TLE', 'Time Limit Exceeded', 'WA', 'Wrong Answer', 'difficulty', 'is_active', 'name', 'problem', 'problems', 'python', 'status', 'submissions', 'test_cases', 'user']

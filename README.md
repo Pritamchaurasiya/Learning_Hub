@@ -1,66 +1,145 @@
-﻿#  Learning Hub: The Infinite Intelligence Platform
+﻿# Learning Hub — Production-Ready AI-Powered E-Learning Platform
 
-[![Build Status](https://img.shields.io/badge/Build-Production--Ready-brightgreen)](https://github.com/Pritamchaurasiya/Learning_Hub)
-[![Tech Stack](https://img.shields.io/badge/Stack-Flutter%20%7C%20Django%20%7C%20AI-blue)](https://github.com/Pritamchaurasiya/Learning_Hub)
-
-**Learning Hub** is an enterprise-grade, AI-powered educational ecosystem. It combines a high-performance Python/Django backend with a pixel-perfect Flutter frontend to deliver a state-of-the-art learning experience.
-
----
-
-##  Project Components
-
-### 1.  Flutter Frontend (/windows_app)
-The "Experience" layer. A feature-rich mobile/web/desktop application.
-- **State Management**: Riverpod (Unidirectional Data Flow).
-- **Persistence**: Hive (Offline-first architecture).
-- **UI/UX**: Premium God-Tier design with glassmorphism and custom animations.
-- **Features**: AI Tutor, Gamification, Adaptive Quizzes, and Social Leaderboards.
-
-### 2.  Django Backend (/conductor)
-The "Brain" layer. A high-concurrency RESTful API.
-- **Framework**: Django Ninja (Async execution).
-- **Architecture**: Event-Driven via Domain Signals.
-- **Async Tasks**: Celery + Redis for leaderboard and status computations.
-- **Security**: Hardened JWT rotation and RBAC (Role-Based Access Control).
-
-### 3.  Learning Lab (/learning)
-The "Knowledge" layer. A structured curriculum for engineering excellence.
-- **Content**: Deep dives into architecture, security, and AI integration.
-- **Practices**: Industry-standard CI/CD and production hardening guides.
+> **Status:** Phase 8 Complete (Production Ready + Observability)  
+> **Version:** 1.0.1-PROD (Secured)  
+> **CI:** [![Learning Hub CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
 ---
 
-##  Architecture Overview
+## 🚀 Quick Start
 
-The system follows a **Decoupled Micro-modular Architecture**:
-- **Communication**: Frontend and Backend communicate via high-speed JSON APIs.
-- **Events**: Internal backend logic is triggered by domain events (e.g., Quiz Done -> Update Leaderboard).
-- **Privacy**: Strict separation of concerns ensuring security and scalability.
+### Prerequisites
 
-##  Quick Start
+| Tool        | Version | Notes                              |
+| ----------- | ------- | ---------------------------------- |
+| Flutter SDK | 3.24+   | Windows/Web/Android                |
+| Python      | 3.11+   | Backend runtime                    |
+| Docker      | 24+     | Production deployment              |
+| PostgreSQL  | 15+     | Database (or SQLite for local dev) |
+| Redis       | 7+      | Caching, Celery, WebSockets        |
 
-### Backend
-`ash
+### Local Development
+
+#### Backend (Django)
+
+```bash
 cd conductor
-pip install -r requirements.txt
+python -m venv venv
+venv\Scripts\activate       # Windows
+pip install -r requirements/base.txt
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
-`
+```
 
-### Frontend
-`ash
+Backend runs at `http://localhost:8000`  
+API docs at `http://localhost:8000/api/docs/` (Swagger UI)
+
+#### Frontend (Flutter)
+
+```bash
 cd windows_app
 flutter pub get
-flutter run
-`
+flutter run -d windows      # or -d chrome for web
+```
+
+### Docker Deployment
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+Access at `http://localhost`. Admin at `http://localhost/admin/`.
 
 ---
 
-##  Workflows & Maintenance
-This project uses the **Anti-Gravity Master Prompt** system for autonomous maintenance:
-- /n: Deep structural analysis & stability.
-- /m: AI/ML pipeline optimization.
-- /t: Unified task execution engine.
+## 🏗️ Architecture
+
+```
+windows_app/
+├── conductor/              # Django Backend (DRF + Channels + Celery)
+│   ├── apps/
+│   │   ├── ai_engine/      # 96 AI/ML modules (Gemini, RAG, Knowledge Graph)
+│   │   ├── courses/        # Course CRUD, enrollment, content
+│   │   ├── gamification/   # XP, badges, streaks, guilds, leaderboard
+│   │   ├── payments/       # Razorpay integration, subscriptions
+│   │   ├── users/          # Auth, JWT, profiles
+│   │   └── ...             # 14 Django apps total
+│   ├── config/             # Settings, URLs, ASGI/WSGI
+│   └── Dockerfile
+├── windows_app/            # Flutter Frontend (Clean Architecture)
+│   ├── lib/
+│   │   ├── core/           # Services, providers, theme, DI
+│   │   ├── features/       # 28 feature modules
+│   │   └── shared/         # Reusable widgets
+│   └── test/
+└── .github/workflows/      # CI/CD Pipeline
+```
+
+| Layer         | Technology                      | Key Features                                                 |
+| ------------- | ------------------------------- | ------------------------------------------------------------ |
+| **Frontend**  | Flutter (Dart)                  | Riverpod state management, Clean Architecture, responsive UI |
+| **Backend**   | Django Rest Framework           | JWT Auth, Celery Task Queue, WebSocket (Channels)            |
+| **AI Engine** | Google Gemini + 96 ML Modules   | Tutoring, RAG, Knowledge Graph, Causal Inference, Guardrails |
+| **Infra**     | Docker + Nginx + GitHub Actions | Multi-stage builds, CI/CD, reverse proxy, secure headers     |
 
 ---
-_Built with  for the next generation of architects._
+
+## 🌟 Key Features
+
+- **AI Tutor Chat** — Real-time context-aware tutoring with streaming, markdown, and code review
+- **Gamification** — XP, Levels, Badges, Streaks, Guilds, and Live Leaderboards
+- **DSA Lab** — Sandboxed code execution environment
+- **Knowledge Graph** — Visual concept mapping with prerequisite tracking
+- **Adaptive Learning** — AI-powered skill assessment and personalized learning paths
+- **Discussion Forums** — Threaded discussions with AI-generated summaries
+- **God Mode Admin** — Custom admin dashboard with backend health monitoring
+- **Observability** — Prometheus/Grafana stack for real-time monitoring
+
+---
+
+## 📡 API Documentation
+
+Interactive API docs available at `/api/docs/` (Swagger UI).
+
+**Key Endpoints:**
+
+| Prefix                   | Description                 |
+| ------------------------ | --------------------------- |
+| `/api/v1/auth/`          | Authentication (JWT)        |
+| `/api/v1/courses/`       | Course CRUD & enrollment    |
+| `/api/v1/ai/`            | AI Engine (50+ endpoints)   |
+| `/api/v1/gamification/`  | XP, badges, leaderboard     |
+| `/api/v1/payments/`      | Subscriptions & webhooks    |
+| `/api/v1/notifications/` | Push & in-app notifications |
+| `/health/`               | Health check                |
+| `/health/deep/`          | Deep health (DB + Redis)    |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Backend
+cd conductor && python manage.py test --verbosity 2
+
+# Frontend
+cd windows_app && flutter test --reporter expanded
+
+# Flutter Analysis
+cd windows_app && flutter analyze
+```
+
+---
+
+## 📦 CI/CD
+
+GitHub Actions pipeline (`.github/workflows/ci.yml`):
+
+1. **Backend:** Lint (flake8) → Security (Bandit) → Django Check → Migrate → Test
+2. **Docker:** Build production image (main branch only)
+3. **Frontend:** Flutter analyze → Flutter test
+
+---
+
+_Built with ❤️ by Learning Hub Team — Powered by Antigravity AI Engine_

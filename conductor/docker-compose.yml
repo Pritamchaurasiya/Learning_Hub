@@ -1,93 +1,91 @@
-# Learning Hub Backend - Docker Configuration
 version: '3.8'
 
 services:
-  # Django Web Application
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 60 config.wsgi:application
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+    ports:
+      - "8000:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-      - DEBUG=True
-    env_file:
-      - .env
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     depends_on:
       - db
       - redis
-    command: python manage.py runserver 0.0.0.0:8000
-    networks:
-      - backend
+      - celery
 
-  # PostgreSQL Database
   db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=learning_hub
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - "5432:5432"
-    networks:
-      - backend
 
-  # Redis for caching and Celery
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-    networks:
-      - backend
 
-  # Celery Worker (for async tasks)
   celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     command: celery -A config worker -l info
     volumes:
       - .:/app
     environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
       - redis
-    networks:
-      - backend
 
-  # Celery Beat (for scheduled tasks)
   celery-beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     command: celery -A config beat -l info
     volumes:
       - .:/app
     environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       - db
       - redis
-    networks:
-      - backend
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
 
 volumes:
   postgres_data:
   static_volume:
   media_volume:
-
-networks:
-  backend:
-    driver: bridge

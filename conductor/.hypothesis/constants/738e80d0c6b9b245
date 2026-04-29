@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, '-created_at', '-is_accepted_answer', '-is_pinned', 'DiscussionReply', 'DiscussionThread', 'DiscussionVote', 'Downvote', 'ThreadTag', 'Upvote', 'abstract', 'ai_summary', 'author', 'content', 'content_type', 'contenttypes', 'course', 'courses', 'courses.course', 'created_at', 'discussion_replies', 'discussion_threads', 'discussionreply', 'discussionthread', 'discussionvote', 'id', 'is_accepted_answer', 'is_pinned', 'is_resolved', 'like_count', 'name', 'object_id', 'ordering', 'replies', 'tags', 'thread', 'threads', 'title', 'updated_at', 'user', 'value', 'views']

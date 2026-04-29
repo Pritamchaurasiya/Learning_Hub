@@ -1,0 +1,27 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Statement should be on a separate line - lib\src\features\ai\presentation\quiz_view.dart:173:33 - always_put_control_body_on_new_line
+  error - Expected a method, getter, setter or operator declaration - lib\src\features\courses\presentation\course_detail_screen.dart:252:1 - expected_executable
+warning - The declaration '_CourseImage' isn't referenced - lib\src\features\courses\presentation\course_detail_screen.dart:254:7 - unused_element
+
+flutter : 3 issues 
+found. (ran in 11.9s)
+At line:1 char:1
++ flutter analyze 
+--no-fatal-infos 
+2>&1 | Out-File 
+-FilePath analysis_o 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (3 issue   
+ s found. (ran in    
+ 11.9s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

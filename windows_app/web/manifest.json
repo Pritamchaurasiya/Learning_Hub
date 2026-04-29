@@ -1,12 +1,15 @@
 {
     "name": "LearningHub",
     "short_name": "LearningHub",
-    "start_url": ".",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#2196F3",
-    "theme_color": "#2196F3",
-    "description": "Premium Learning Platform for Everyone.",
-
+    "orientation": "any",
+    "background_color": "#0F172A",
+    "theme_color": "#6366F1",
+    "description": "Premium AI-Powered Learning Platform - Master Any Skill.",
+    "lang": "en-US",
+    "dir": "ltr",
     "prefer_related_applications": false,
     "icons": [
         {
@@ -46,5 +49,23 @@
             "type": "image/png",
             "form_factor": "narrow"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "My Courses",
+            "short_name": "Courses",
+            "description": "View your enrolled courses",
+            "url": "/my-courses",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "AI Tutor",
+            "short_name": "AI",
+            "description": "Ask the AI Tutor anything",
+            "url": "/ai-tutor",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        }
+    ],
+    "related_applications": [],
+    "handle_links": "preferred"
 }

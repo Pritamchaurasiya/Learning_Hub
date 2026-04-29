@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\neuro\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[0.0, 'BCI Session', 'BCI Sessions', 'BrainwaveSession', 'avg_attention', 'avg_meditation', 'bci_sessions', 'course', 'courses', 'courses.course', 'courses.lesson', 'created_at', 'db_table', 'id', 'is_completed', 'lesson', 'neuro_bci_sessions', 'raw_telemetry', 'updated_at', 'user', 'verbose_name', 'verbose_name_plural']

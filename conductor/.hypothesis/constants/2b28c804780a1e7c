@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+['-last_message_at', 'Conversation', 'Message', 'chat.conversation', 'content', 'conversation', 'conversations', 'created_at', 'db_table', 'id', 'is_read', 'last_message_at', 'messages', 'ordering', 'participants', 'sender', 'sent_messages', 'updated_at']

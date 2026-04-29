@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\dpo_engine.py
+# hypothesis_version: 6.152.1
+
+[-15.0, 0.1, 0.5, 1.0, 'beta_parameter', 'chosen_logprob_shift', 'final_loss', 'final_margin', 'insight', 'loss', 'margin', 'paradigm', 'step', 'training_trajectory']

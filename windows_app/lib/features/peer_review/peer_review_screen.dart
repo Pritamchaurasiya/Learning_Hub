@@ -74,7 +74,7 @@ class _PeerReviewScreenState extends ConsumerState<PeerReviewScreen>
 
   void _showGradingSheet(
       BuildContext context, PeerReviewAssignment assignment, WidgetRef ref) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -87,7 +87,7 @@ class _PeerReviewScreenState extends ConsumerState<PeerReviewScreen>
 class _PendingReviewsTab extends StatelessWidget {
   final List<PeerReviewAssignment> reviews;
   final bool isLoading;
-  final Function(PeerReviewAssignment) onReviewPressed;
+  final void Function(PeerReviewAssignment) onReviewPressed;
 
   const _PendingReviewsTab({
     required this.reviews,

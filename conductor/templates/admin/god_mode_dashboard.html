@@ -1,0 +1,146 @@
+{% extends "admin/base_site.html" %} {% block content %}
+<div
+  id="god-mode-app"
+  style="
+    padding: 20px;
+    background: #0f172a;
+    color: #fff;
+    min-height: 80vh;
+    border-radius: 8px;
+  "
+>
+  <h1
+    style="
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+      padding-bottom: 10px;
+    "
+  >
+    🚀 God Mode System Status
+  </h1>
+
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    "
+  >
+    <!-- DB Status -->
+    <div
+      class="card"
+      style="
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      "
+    >
+      <h2 style="margin-top: 0">📡 Database</h2>
+      <div
+        id="db-status"
+        style="font-size: 1.5em; font-weight: bold; color: #fbbf24"
+      >
+        Checking...
+      </div>
+    </div>
+
+    <!-- Cache Status -->
+    <div
+      class="card"
+      style="
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      "
+    >
+      <h2 style="margin-top: 0">⚡ Redis Cache</h2>
+      <div
+        id="cache-status"
+        style="font-size: 1.5em; font-weight: bold; color: #fbbf24"
+      >
+        Checking...
+      </div>
+    </div>
+
+    <!-- System Vitals -->
+    <div
+      class="card"
+      style="
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      "
+    >
+      <h2 style="margin-top: 0">🖥️ System Vitals</h2>
+      <div id="sys-status" style="font-family: monospace">
+        Fetching metrics...
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px">
+    <button
+      onclick="refreshHealth()"
+      style="
+        background: #38bdf8;
+        color: #000;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      "
+    >
+      🔄 Refresh Vitals
+    </button>
+  </div>
+</div>
+
+<script>
+  async function refreshHealth() {
+    try {
+      const response = await fetch("/health/deep/");
+      const data = await response.json();
+
+      // DB
+      const dbEl = document.getElementById("db-status");
+      if (data.components.database.status === "connected") {
+        dbEl.textContent = "ONLINE ✅";
+        dbEl.style.color = "#4ade80";
+      } else {
+        dbEl.textContent = "OFFLINE ❌";
+        dbEl.style.color = "#f87171";
+      }
+
+      // Cache
+      const cacheEl = document.getElementById("cache-status");
+      if (data.components.cache.status === "connected") {
+        cacheEl.textContent = "ONLINE ⚡";
+        cacheEl.style.color = "#4ade80";
+      } else {
+        cacheEl.textContent = "OFFLINE ⚠️";
+        cacheEl.style.color = "#fbbf24";
+      }
+
+      // System
+      const sysEl = document.getElementById("sys-status");
+      const sys = data.components.system;
+      sysEl.innerHTML = `
+            CPU: ${sys.cpu_percent}% <br>
+            RAM: ${sys.memory_percent}% <br>
+            Disk: ${sys.disk_usage.percent}%
+        `;
+    } catch (e) {
+      console.error("Health check failed", e);
+    }
+  }
+
+  // Auto refresh
+  refreshHealth();
+  setInterval(refreshHealth, 5000);
+</script>
+{% endblock %}

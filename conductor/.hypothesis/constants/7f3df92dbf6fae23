@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\vector_service.py
+# hypothesis_version: 6.152.1
+
+[0.0, 0.5, 0.6, 1.0, 'cosine', 'distance', 'embedding', 'inf']

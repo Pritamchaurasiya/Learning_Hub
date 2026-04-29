@@ -1,0 +1,4 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Use 'const' with the constructor to improve performance - lib\src\features\ai\presentation\widgets\ai_tutor_drawer.dart:48:25 - prefer_const_constructors
+

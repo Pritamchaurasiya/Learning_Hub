@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\dashboard\services.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.5, 0.8, 100, 180, '-created_at', 'Low', 'amount', 'avg', 'avg_rating', 'avg_weekly_velocity', 'burnout_risk', 'created_at', 'current_velocity_xp', 'drop_offs', 'enrollment_count', 'enrollments', 'event_type', 'id', 'month', 'pause', 'price', 'rating', 'revenue', 'seek', 'students', 'thumbnail', 'time', 'title', 'total', 'total_courses', 'total_revenue', 'total_students', 'user', 'video_timestamp', 'x', 'xp_profile', 'y']

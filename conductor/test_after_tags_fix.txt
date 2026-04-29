@@ -1,0 +1,178 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\shiva\Desktop\windows_app\conductor\venv\Scripts\python.exe
+cachedir: .pytest_cache
+django: version: 5.0.1, settings: config.settings.development (from env)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, django-4.12.0, mock-3.15.1
+collecting ... collected 26 items
+
+tests/test_courses.py::TestCourseList::test_list_courses PASSED          [  3%]
+tests/test_courses.py::TestCourseList::test_list_excludes_unpublished PASSED [  7%]
+tests/test_courses.py::TestCourseDetail::test_get_course_detail PASSED   [ 11%]
+tests/test_courses.py::TestCourseDetail::test_course_not_found PASSED    [ 15%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course PASSED [ 19%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated PASSED [ 23%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment FAILED [ 26%]
+tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment PASSED [ 30%]
+tests/test_courses.py::TestCourseReview::test_submit_review_enrolled PASSED [ 34%]
+tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled FAILED [ 38%]
+tests/test_users.py::TestUserModel::test_create_user PASSED              [ 42%]
+tests/test_users.py::TestUserModel::test_create_superuser PASSED         [ 46%]
+tests/test_users.py::TestUserModel::test_user_str PASSED                 [ 50%]
+tests/test_users.py::TestUserModel::test_user_full_name PASSED           [ 53%]
+tests/test_users.py::TestUserModel::test_is_instructor_property PASSED   [ 57%]
+tests/test_users.py::TestUserModel::test_email_normalized PASSED         [ 61%]
+tests/test_users.py::TestUserRegistration::test_register_success PASSED  [ 65%]
+tests/test_users.py::TestUserRegistration::test_register_password_mismatch PASSED [ 69%]
+tests/test_users.py::TestUserRegistration::test_register_duplicate_email PASSED [ 73%]
+tests/test_users.py::TestUserRegistration::test_register_weak_password PASSED [ 76%]
+tests/test_users.py::TestUserLogin::test_login_success FAILED            [ 80%]
+tests/test_users.py::TestUserLogin::test_login_wrong_password FAILED     [ 84%]
+tests/test_users.py::TestUserLogin::test_login_nonexistent_user FAILED   [ 88%]
+tests/test_users.py::TestUserProfile::test_get_profile_authenticated PASSED [ 92%]
+tests/test_users.py::TestUserProfile::test_get_profile_unauthenticated PASSED [ 96%]
+tests/test_users.py::TestUserProfile::test_update_profile PASSED         [100%]
+
+================================== FAILURES ===================================
+________ TestCourseEnrollment.test_enroll_paid_course_without_payment _________
+
+self = <test_courses.TestCourseEnrollment object at 0x0000024C456E4050>
+authenticated_client = <rest_framework.test.APIClient object at 0x0000024C4D55D9D0>
+paid_course = <Course: Advanced Python>
+
+    def test_enroll_paid_course_without_payment(
+        self, authenticated_client, paid_course
+    ):
+        """Test paid course enrollment requires payment."""
+        response = authenticated_client.post(
+            f"/api/v1/courses/{paid_course.slug}/enroll/"
+        )
+    
+        # API returns 400 for payment required (handled as ValueError in service)
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 402 == 400
+E        +  where 402 = <Response status_code=402, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_courses.py:127: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/advanced-python/enroll/\", \"status\": 402, \"duration_ms\": 20.4, \"event\": \"request_completed\", \"ip\": \"127.0.0.1\", \"request_id\": \"35e70031-4ba7-4993-b3e2-9ce3e84278f2\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:27:07.621716Z\"}"}
+{"event": "{\"status_code\": 402, \"duration_ms\": 22.14, \"user_agent\": \"\", \"event\": \"request_client_error\", \"ip\": \"127.0.0.1\", \"request_id\": \"35e70031-4ba7-4993-b3e2-9ce3e84278f2\", \"method\": \"POST\", \"user_id\": \"1c1b2f82-81bb-48d8-b524-cb6939a155b4\", \"path\": \"/api/v1/courses/advanced-python/enroll/\", \"level\": \"warning\", \"timestamp\": \"2026-04-14T07:27:07.623155Z\"}"}
+{"event": "Payment Required: /api/v1/courses/advanced-python/enroll/"}
+______________ TestCourseReview.test_submit_review_not_enrolled _______________
+
+self = <test_courses.TestCourseReview object at 0x0000024C45691950>
+authenticated_client = <rest_framework.test.APIClient object at 0x0000024C4D6CAD50>
+course = <Course: Python Basics>
+
+    def test_submit_review_not_enrolled(self, authenticated_client, course):
+        """Test review fails when not enrolled."""
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+        response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+    
+        # API returns 400 for permission errors (validation error)
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 403 == 400
+E        +  where 403 = <Response status_code=403, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_courses.py:161: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"You must be enrolled to review this course.\", \"code\": \"PermissionDenied\", \"category\": \"authorization\", \"severity\": \"warning\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/review/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:27:10.660396+00:00\", \"user_id\": \"13585d97-adf4-4931-8346-8d679bb6ae14\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/python-basics/review/\", \"status\": 403, \"duration_ms\": 22.94, \"event\": \"request_completed\", \"ip\": \"127.0.0.1\", \"request_id\": \"b76a6322-bdd8-44f8-a403-ac7fad7e47e0\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:27:10.664844Z\"}"}
+{"event": "{\"status_code\": 403, \"duration_ms\": 23.98, \"user_agent\": \"\", \"event\": \"request_client_error\", \"ip\": \"127.0.0.1\", \"request_id\": \"b76a6322-bdd8-44f8-a403-ac7fad7e47e0\", \"method\": \"POST\", \"user_id\": \"13585d97-adf4-4931-8346-8d679bb6ae14\", \"path\": \"/api/v1/courses/python-basics/review/\", \"level\": \"warning\", \"timestamp\": \"2026-04-14T07:27:10.665660Z\"}"}
+{"event": "Forbidden: /api/v1/courses/python-basics/review/"}
+______________________ TestUserLogin.test_login_success _______________________
+
+self = <test_users.TestUserLogin object at 0x0000024C456920D0>
+api_client = <rest_framework.test.APIClient object at 0x0000024C4D851090>
+user = <User: test@example.com>
+
+    def test_login_success(self, api_client, user):
+        """Test successful login."""
+        data = {"email": user.email, "password": "TestPass123!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_200_OK
+E       assert 500 == 200
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   200 = status.HTTP_200_OK
+
+tests\test_users.py:134: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:27:12.745737+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 21.46, \"event\": \"request_completed\", \"ip\": \"127.0.0.1\", \"request_id\": \"e6a773a4-de8d-4f2d-9c10-6207f1609d07\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:27:12.763345Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 22.23, \"user_agent\": \"\", \"event\": \"request_failed\", \"ip\": \"127.0.0.1\", \"request_id\": \"e6a773a4-de8d-4f2d-9c10-6207f1609d07\", \"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:27:12.763874Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+___________________ TestUserLogin.test_login_wrong_password ___________________
+
+self = <test_users.TestUserLogin object at 0x0000024C45692210>
+api_client = <rest_framework.test.APIClient object at 0x0000024C4D228110>
+user = <User: test@example.com>
+
+    def test_login_wrong_password(self, api_client, user):
+        """Test login fails with wrong password."""
+        data = {"email": user.email, "password": "WrongPassword!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_users.py:144: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:27:12.983590+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 9.47, \"event\": \"request_completed\", \"ip\": \"127.0.0.1\", \"request_id\": \"f22a90de-22d1-4d81-916e-559c3d093003\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:27:12.989622Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 10.57, \"user_agent\": \"\", \"event\": \"request_failed\", \"ip\": \"127.0.0.1\", \"request_id\": \"f22a90de-22d1-4d81-916e-559c3d093003\", \"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:27:12.990080Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+__________________ TestUserLogin.test_login_nonexistent_user __________________
+
+self = <test_users.TestUserLogin object at 0x0000024C456E69E0>
+api_client = <rest_framework.test.APIClient object at 0x0000024C4AE32BD0>
+
+    def test_login_nonexistent_user(self, api_client):
+        """Test login fails with non-existent email."""
+        data = {"email": "nonexistent@test.com", "password": "SomePass123!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_users.py:151: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:27:13.044840+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 6.74, \"event\": \"request_completed\", \"ip\": \"127.0.0.1\", \"request_id\": \"fb9c4236-26e1-4c9b-ae10-27115e04515f\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:27:13.049346Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 7.55, \"user_agent\": \"\", \"event\": \"request_failed\", \"ip\": \"127.0.0.1\", \"request_id\": \"fb9c4236-26e1-4c9b-ae10-27115e04515f\", \"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:27:13.049946Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+============================== warnings summary ===============================
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.WindowsSelectorEventLoopPolicy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.set_event_loop_policy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\_pytest\config\__init__.py:1434
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\_pytest\config\__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_courses.py::TestCourseList::test_list_courses
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\google\genai\types.py:43: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+FAILED tests/test_users.py::TestUserLogin::test_login_success - assert 500 ==...
+FAILED tests/test_users.py::TestUserLogin::test_login_wrong_password - assert...
+FAILED tests/test_users.py::TestUserLogin::test_login_nonexistent_user - asse...
+============= 5 failed, 21 passed, 4 warnings in 61.33s (0:01:01) =============

@@ -1,0 +1,57 @@
+{
+  "name": "learning-hub-sdk",
+  "version": "1.0.0",
+  "description": "JavaScript/TypeScript SDK for Learning Hub API",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "learning-hub",
+    "api",
+    "sdk",
+    "javascript",
+    "typescript",
+    "client"
+  ],
+  "author": "Learning Hub Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/learninghub/learning-hub-js-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/learninghub/learning-hub-js-sdk/issues"
+  },
+  "homepage": "https://github.com/learninghub/learning-hub-js-sdk#readme",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

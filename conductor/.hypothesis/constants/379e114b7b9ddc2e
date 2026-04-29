@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\urls.py
+# hypothesis_version: 6.152.1
+
+['admin/analytics/', 'admin/audit/', 'admin/cache/', 'admin/errors/', 'admin/health/', 'admin/rate-limits/', 'admin/system-logs/', 'admin/system-status/', 'admin/users/', 'admin_analytics', 'admin_approve_course', 'admin_audit', 'admin_cache', 'admin_errors', 'admin_health', 'admin_rate_limits', 'admin_system_logs', 'admin_system_status', 'admin_user_bulk', 'admin_users', 'client-errors/', 'client_error_log', 'global_search', 'health/', 'health/cache/', 'health/db/', 'health/detailed/', 'health/metrics/', 'health_check', 'health_check_cache', 'health_check_db', 'my-analytics/', 'search/', 'system_metrics', 'user_analytics']

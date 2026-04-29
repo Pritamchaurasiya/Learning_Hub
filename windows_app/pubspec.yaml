@@ -106,6 +106,7 @@ dependencies:
 
   # Security & Encryption
   encrypt: ^5.0.3
+  pointycastle: ^3.7.4
 
   # Monitoring & Analytics
   sentry_flutter: ^7.14.0
@@ -114,6 +115,8 @@ dependencies:
   rxdart: ^0.27.7 # Use a specific version instead of any
   # printing: ^5.14.2
   universal_io: ^2.3.1
+  url_strategy: ^0.3.0
+  package_info_plus: ^9.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -128,6 +131,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/.env
     - assets/images/
     - assets/icons/
     - assets/animations/

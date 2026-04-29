@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0005_payment_payments_pa_status_343680_idx_and_more.py
+# hypothesis_version: 6.152.1
+
+['0008_lessonprogress', 'courses', 'created_at', 'gateway_payment_id', 'payment', 'payments', 'status']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\serializers.py
+# hypothesis_version: 6.152.1
+
+['access_token', 'avatar', 'bio', 'created_at', 'detail', 'display_name', 'email', 'id', 'input_type', 'is_verified', 'last_login_at', 'new_password', 'new_password_confirm', 'password', 'password_confirm', 'phone', 'preferences', 'refresh_token', 'request', 'required', 'role', 'tokens', 'user', 'username']

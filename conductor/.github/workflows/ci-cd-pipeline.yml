@@ -1,0 +1,397 @@
+# CI/CD Pipeline Automation
+# GitHub Actions Workflow for Learning Hub Platform
+
+name: Learning Hub CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: learning-hub
+
+jobs:
+  # Code Quality and Security Checks
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/development.txt
+
+    - name: Run code formatting check
+      run: black --check .
+
+    - name: Run import sorting check
+      run: isort --check-only .
+
+    - name: Run linting
+      run: flake8 .
+
+    - name: Run type checking
+      run: mypy .
+
+    - name: Run security scan
+      run: bandit -r .
+
+    - name: Run dependency security check
+      run: safety check
+
+    - name: Run tests with coverage
+      run: |
+        coverage run -m pytest
+        coverage xml
+        coverage report
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+
+  # Backend Tests
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: learninghub_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/base.txt
+        pip install -r requirements/development.txt
+
+    - name: Run database migrations
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/learninghub_test
+        REDIS_URL: redis://localhost:6379/0
+      run: |
+        python manage.py migrate
+
+    - name: Run unit tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/learninghub_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        pytest tests/unit/ -v
+
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/learninghub_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        pytest tests/integration/ -v
+
+    - name: Run API tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/learninghub_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        pytest tests/api/ -v
+
+    - name: Run security tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/learninghub_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: config.settings.test
+      run: |
+        pytest tests/security/ -v
+
+  # Frontend Tests
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+
+    - name: Install dependencies
+      run: |
+        cd my_flutter_app
+        flutter pub get
+
+    - name: Run Flutter tests
+      run: |
+        cd my_flutter_app
+        flutter test --coverage
+
+    - name: Build Flutter web app
+      run: |
+        cd my_flutter_app
+        flutter build web --release
+
+    - name: Upload Flutter build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: flutter-web-build
+        path: my_flutter_app/build/web/
+
+  # Build and Push Docker Images
+  build-and-push:
+    needs: [code-quality, backend-tests, frontend-tests]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.{{ matrix.service }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Security Scanning
+  security-scan:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:latest
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Deploy to Staging
+  deploy-staging:
+    needs: [build-and-push, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to staging
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl set image deployment/learning-hub-backend backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }} -n learning-hub-staging
+        kubectl set image deployment/learning-hub-frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} -n learning-hub-staging
+        kubectl rollout status deployment/learning-hub-backend -n learning-hub-staging
+        kubectl rollout status deployment/learning-hub-frontend -n learning-hub-staging
+
+    - name: Run smoke tests
+      run: |
+        # Wait for deployment to be ready
+        sleep 30
+        
+        # Run smoke tests against staging environment
+        curl -f https://staging.learninghub.com/health/ || exit 1
+        curl -f https://staging.learninghub.com/api/v1/courses/ || exit 1
+
+  # Deploy to Production
+  deploy-production:
+    needs: [build-and-push, security-scan]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to production
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Update backend deployment
+        kubectl set image deployment/learning-hub-backend backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.ref_name }} -n learning-hub
+        kubectl rollout status deployment/learning-hub-backend -n learning-hub
+        
+        # Update frontend deployment
+        kubectl set image deployment/learning-hub-frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.ref_name }} -n learning-hub
+        kubectl rollout status deployment/learning-hub-frontend -n learning-hub
+        
+        # Restart Celery workers
+        kubectl rollout restart deployment/celery-worker -n learning-hub
+        kubectl rollout restart deployment/celery-beat -n learning-hub
+
+    - name: Run production health checks
+      run: |
+        # Wait for deployment to be ready
+        sleep 60
+        
+        # Run comprehensive health checks
+        curl -f https://learninghub.com/health/ || exit 1
+        curl -f https://learninghub.com/api/v1/courses/ || exit 1
+        curl -f https://learninghub.com/admin/ || exit 1
+
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+
+  # Post-Deployment Tests
+  post-deployment-tests:
+    needs: [deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pytest
+
+    - name: Run post-deployment tests
+      env:
+        TEST_ENVIRONMENT: ${{ needs.deploy-staging.result == 'success' && 'staging' || 'production' }}
+        TEST_BASE_URL: ${{ needs.deploy-staging.result == 'success' && 'https://staging.learninghub.com' || 'https://learninghub.com' }}
+      run: |
+        python -m pytest tests/post_deployment/ -v --base-url=$TEST_BASE_URL
+
+  # Performance Tests
+  performance-tests:
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    if: needs.deploy-staging.result == 'success'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install locust
+
+    - name: Run performance tests
+      run: |
+        locust -f load_tests/locustfile.py --headless --users 100 --spawn-rate 10 --run-time 60s --host https://staging.learninghub.com --html performance-report.html
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance-report.html

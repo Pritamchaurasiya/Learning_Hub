@@ -1,0 +1,21 @@
+﻿Analyzing windows_app...                                        
+
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:134:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:135:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:136:43 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:137:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:134:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:135:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:153:20 - avoid_dynamic_calls
+
+flutter : 11 issues found. (ran in 16.5s)
+At line:1 char:1
++ flutter analyze 2>&1 | Out-File -Encoding utf8 analyze_final.txt; Get ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (11 issues found. (ran in 16.5s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

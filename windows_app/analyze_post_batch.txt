@@ -1,0 +1,49 @@
+﻿Analyzing windows_app...                                        
+
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:133:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:134:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:135:33 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:136:43 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:137:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\ai\gemini_client.dart:183:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:134:25 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:135:20 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:153:20 - avoid_dynamic_calls
+warning - The return type of ' Function(AppNotification)' can't be inferred - lib\features\notifications\notifications_screen.dart:195:9 - inference_failure_on_function_return_type
+warning - The return type of ' Function(AppNotification)' can't be inferred - lib\features\notifications\notifications_screen.dart:196:9 - inference_failure_on_function_return_type
+warning - The return type of ' Function(PeerReviewAssignment)' can't be inferred - lib\features\peer_review\peer_review_screen.dart:90:9 - inference_failure_on_function_return_type
+warning - The type argument(s) of the function 'get' can't be inferred - test\comprehensive_functionality_test.dart:356:40 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'get' can't be inferred - test\comprehensive_functionality_test.dart:362:45 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:31:11 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:113:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:134:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'any' can't be inferred - test\core\services\user_service_test.dart:142:19 - inference_failure_on_function_invocation
+warning - The type argument(s) of the constructor 'Right' can't be inferred - test\features\gamification\gamification_logic_test.dart:53:28 - inference_failure_on_instance_creation
+warning - The type argument(s) of the constructor 'Right' can't be inferred - test\features\gamification\gamification_logic_test.dart:67:28 - inference_failure_on_instance_creation
+warning - The type argument(s) of the function 'get' can't be inferred - test\verification_test.dart:164:42 - inference_failure_on_function_invocation
+warning - The type argument(s) of 'Map' can't be inferred - test\widget_test.dart:68:20 - inference_failure_on_collection_literal
+
+flutter : 24 issues 
+found. (ran in 
+103.1s)
+At line:1 char:1
++ flutter analyze 
+--no-pub 2>&1 | 
+Out-File -Encoding 
+utf8 -FilePath ana 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (24 issu   
+ es found. (ran i    
+n 103.1s):String    
+) [], RemoteExce    
+ption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

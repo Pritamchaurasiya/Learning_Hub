@@ -1,0 +1,9 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dsa\data\dsa_ai_chat_service.dart:26:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\src\features\dsa\data\dsa_ai_chat_service.dart:28:19 - avoid_dynamic_calls
+   info - Statement should be on a separate line - lib\src\features\dsa\data\dsa_repository.dart:17:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\data\dsa_repository.dart:18:22 - always_put_control_body_on_new_line
+warning - The return type of ' Function(bool)' can't be inferred - lib\src\features\dsa\presentation\widgets\challenge_list.dart:107:9 - inference_failure_on_function_return_type
+   info - 'bool' parameters should be named parameters - lib\src\features\dsa\presentation\widgets\challenge_list.dart:107:18 - avoid_positional_boolean_parameters
+

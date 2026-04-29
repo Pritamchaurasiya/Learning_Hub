@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0009_enrollment_enrollments_complet_ddc915_idx_and_more.py
+# hypothesis_version: 6.152.1
+
+['0008_lessonprogress', 'completed_at', 'courses', 'created_at', 'enrollment', 'is_approved', 'review']

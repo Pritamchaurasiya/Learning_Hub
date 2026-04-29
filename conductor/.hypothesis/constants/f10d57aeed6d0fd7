@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\routing.py
+# hypothesis_version: 6.151.9
+
+['ws/ai/assist/$', 'ws/notifications/$', 'ws/progress/$', 'ws/social/$']

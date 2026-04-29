@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/bookmark_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Bookmarks screen for saved lessons and notes
 class BookmarksScreen extends ConsumerStatefulWidget {
@@ -114,9 +116,11 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
           // Bookmarks list
           Expanded(
             child: filteredBookmarks.isEmpty
-                ? _EmptyState(
-                    hasSearch:
-                        bookmarkState.value?.searchQuery.isNotEmpty ?? false)
+                ? ((bookmarkState.value?.searchQuery.isNotEmpty ?? false)
+                    ? EmptyStateView.noSearchResults()
+                    : EmptyStateView.noBookmarks(
+                        onAction: () => context.go('/courses'),
+                      ))
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: filteredBookmarks.length,
@@ -141,7 +145,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   void _showCreateFolderDialog(BuildContext context) {
     String folderName = '';
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('New Folder'),
@@ -183,9 +187,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
           note: 'Important concept to review',
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Demo bookmark added!')),
-    );
+    AppFeedback.showSuccess(context, 'Demo bookmark added!');
   }
 }
 
@@ -302,46 +304,6 @@ class _BookmarkCard extends ConsumerWidget {
             },
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Empty state widget
-class _EmptyState extends StatelessWidget {
-  final bool hasSearch;
-
-  const _EmptyState({this.hasSearch = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            hasSearch ? Icons.search_off : Icons.bookmark_outline,
-            size: 64,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            hasSearch ? 'No bookmarks found' : 'No bookmarks yet',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            hasSearch
-                ? 'Try a different search term'
-                : 'Bookmark lessons to find them easily later',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }

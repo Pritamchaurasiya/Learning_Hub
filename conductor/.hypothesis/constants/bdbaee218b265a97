@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\middleware.py
+# hypothesis_version: 6.151.9
+
+[300, 1000, 2000, 'API_SECRET_KEY', 'ConnectionError', 'GET', 'HEAD', 'HS256', 'OPTIONS', 'OperationalError', 'RedisError', 'Retry-After', 'X-API-Signature', 'X-API-Timestamp', 'application/json', 'code', 'connection', 'db_healing_failed', 'error', 'message', 'query_string', 'request_completed', 'request_failed', 'status', 'status_code', 'system_healing', 'token', 'user', 'user_id']

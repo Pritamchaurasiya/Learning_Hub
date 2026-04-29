@@ -88,7 +88,7 @@ class _StudyPlannerScreenState extends ConsumerState<StudyPlannerScreen>
     final plannerState = ref.read(studyPlannerProvider);
     final notifier = ref.read(studyPlannerProvider.notifier);
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => Padding(
@@ -137,7 +137,7 @@ class _StudyPlannerScreenState extends ConsumerState<StudyPlannerScreen>
     int currentValue =
         isDaily ? state.dailyTargetMinutes : state.weeklyTargetMinutes;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isDaily ? 'Daily Target' : 'Weekly Target'),
@@ -189,7 +189,7 @@ class _StudyPlannerScreenState extends ConsumerState<StudyPlannerScreen>
     int duration = 30;
     String courseName = 'Flutter Bootcamp';
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Study Session'),
@@ -260,7 +260,7 @@ class _StudyPlannerScreenState extends ConsumerState<StudyPlannerScreen>
     String title = '';
     int targetMinutes = 120;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Study Goal'),

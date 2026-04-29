@@ -68,7 +68,7 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
 
   @override
   Future<void> unlockAchievement(String achievementId) async {
-    final response = await apiClient.post(
+    final response = await apiClient.post<Map<String, dynamic>>(
       '/gamification/achievements/unlock',
       data: {'achievementId': achievementId},
     );
@@ -83,7 +83,7 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
 
   @override
   Future<void> addXP(int amount) async {
-    final response = await apiClient.post(
+    final response = await apiClient.post<Map<String, dynamic>>(
       '/gamification/xp/add',
       data: {'amount': amount},
     );

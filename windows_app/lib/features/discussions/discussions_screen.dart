@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/discussion_provider.dart';
+import 'package:learning_hub/core/utils/debouncer.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Discussions screen for course Q&A
 class DiscussionsScreen extends ConsumerStatefulWidget {
@@ -17,6 +19,7 @@ class DiscussionsScreen extends ConsumerStatefulWidget {
 
 class _DiscussionsScreenState extends ConsumerState<DiscussionsScreen> {
   final _searchController = TextEditingController();
+  final _debouncer = Debouncer(milliseconds: 300);
 
   @override
   void initState() {
@@ -30,6 +33,7 @@ class _DiscussionsScreenState extends ConsumerState<DiscussionsScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -129,7 +133,9 @@ class _DiscussionsScreenState extends ConsumerState<DiscussionsScreen> {
                         : null,
               ),
               onChanged: (value) {
-                ref.read(discussionProvider.notifier).setSearchQuery(value);
+                _debouncer.run(() {
+                  ref.read(discussionProvider.notifier).setSearchQuery(value);
+                });
               },
             ),
           ),
@@ -137,9 +143,20 @@ class _DiscussionsScreenState extends ConsumerState<DiscussionsScreen> {
           // Posts list
           Expanded(
             child: posts.isEmpty
-                ? _EmptyState(
-                    hasSearch:
-                        discussionState.value?.searchQuery.isNotEmpty ?? false)
+                ? EmptyStateView(
+                    icon:
+                        (discussionState.value?.searchQuery.isNotEmpty ?? false)
+                            ? Icons.search_off
+                            : Icons.forum_outlined,
+                    title:
+                        (discussionState.value?.searchQuery.isNotEmpty ?? false)
+                            ? 'No discussions found'
+                            : 'No discussions yet',
+                    subtitle:
+                        (discussionState.value?.searchQuery.isNotEmpty ?? false)
+                            ? 'Try a different search term'
+                            : 'Start a conversation with fellow learners',
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: posts.length,
@@ -165,7 +182,7 @@ class _DiscussionsScreenState extends ConsumerState<DiscussionsScreen> {
     String title = '';
     String content = '';
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => Padding(
@@ -377,7 +394,7 @@ class _PostCard extends ConsumerWidget {
   void _showPostDetail(BuildContext context, WidgetRef ref) {
     final replies = <DiscussionReply>[]; // TODO: Implement getRepliesForPost
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
@@ -660,46 +677,6 @@ class _ReplyCard extends StatelessWidget {
           Text(
             reply.content,
             style: theme.textTheme.bodySmall,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Empty state widget
-class _EmptyState extends StatelessWidget {
-  final bool hasSearch;
-
-  const _EmptyState({this.hasSearch = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            hasSearch ? Icons.search_off : Icons.forum_outlined,
-            size: 64,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            hasSearch ? 'No discussions found' : 'No discussions yet',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            hasSearch
-                ? 'Try a different search term'
-                : 'Start a conversation with fellow learners',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

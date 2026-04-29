@@ -1,0 +1,36 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Use 'const' with the constructor to improve performance - lib\src\features\home\presentation\skill_assessment_hub.dart:405:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\features\home\presentation\skill_assessment_hub.dart:407:26 - prefer_const_constructors
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:423:33 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:452:27 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:537:43 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:547:37 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:552:29 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:553:36 - cast_nullable_to_non_nullable
+   info - Don't cast a nullable value to a non-nullable type - lib\src\features\home\presentation\skill_assessment_hub.dart:559:27 - cast_nullable_to_non_nullable
+
+flutter : 9 issues 
+found. (ran in 
+104.0s)
+At line:1 char:1
++ flutter analyze 
+2>&1 | Out-File 
+-Encoding UTF8 
+analyze_result.txt; 
+Ge ...
++ 
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (9     
+issues found. (ran i 
+   n 104.0s):String) 
+[],     
+RemoteException
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 

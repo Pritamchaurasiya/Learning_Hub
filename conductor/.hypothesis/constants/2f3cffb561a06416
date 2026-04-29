@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0012_add_performance_indexes.py
+# hypothesis_version: 6.152.1
+
+['avg_rating', 'category', 'certificate', 'certificate_code', 'course', 'courses', 'created_at', 'difficulty', 'enrollment', 'idx_cert_code', 'idx_cert_user_date', 'idx_review_user_date', 'instructor', 'is_active', 'is_published', 'issued_at', 'lesson', 'module', 'name', 'order', 'price', 'progress_percentage', 'review', 'user']

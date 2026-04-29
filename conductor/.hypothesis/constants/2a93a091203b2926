@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\analytics\urls.py
+# hypothesis_version: 6.152.1
+
+['course-analytics', 'courses/', 'dashboard-stats', 'dashboard/', 'download-report', 'engagement-analytics', 'engagement/', 'generate-report', 'reports/generate/', 'revenue-analytics', 'revenue/', 'user-analytics', 'users/']

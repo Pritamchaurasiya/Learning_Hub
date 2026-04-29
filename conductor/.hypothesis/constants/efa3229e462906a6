@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\migrations\0004_badge_is_active_guild_is_active_and_more.py
+# hypothesis_version: 6.152.1
+
+['-earned_at', 'badge', 'gamification', 'guild', 'guildmembership', 'is_active', 'streak', 'user', 'userbadge', 'userxp']

@@ -1,0 +1,6 @@
+﻿00:00 +0: loading C:/Users/shiva/Desktop/windows_app/my_flutter_app/test/widget_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: App smoke test
+ApiClient: Bad response - Status: 400, Message: Unknown server error
+00:02 +1: (tearDownAll)
+00:02 +1: All tests passed!

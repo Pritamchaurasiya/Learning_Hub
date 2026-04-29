@@ -1,0 +1,729 @@
+﻿Analyzing windows_app...                                        
+
+warning - The include file 'package:lints/recommended.yaml' in 'C:\Users\shiva\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_lints-6.0.0\lib\flutter.yaml' can't be found when analyzing 'C:\Users\shiva\Desktop\windows_app\windows_app' - analysis_options.yaml:1:10 - include_file_not_found
+  error - Target of URI doesn't exist: 'package:flutter_bloc/flutter_bloc.dart' - lib\core\bloc\base_bloc.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\core\bloc\base_bloc.dart:2:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - lib\core\bloc\base_bloc.dart:3:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\core\bloc\base_bloc.dart:7:34 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\bloc\base_bloc.dart:16:21 - override_on_non_overriding_member
+warning - The getter doesn't override an inherited getter - lib\core\bloc\base_bloc.dart:26:21 - override_on_non_overriding_member
+warning - The getter doesn't override an inherited getter - lib\core\bloc\base_bloc.dart:40:21 - override_on_non_overriding_member
+  error - Classes can only extend other classes - lib\core\bloc\base_bloc.dart:44:34 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\bloc\base_bloc.dart:48:21 - override_on_non_overriding_member
+  error - Only classes and mixins can be used as superclass constraints - lib\core\bloc\base_bloc.dart:52:68 - mixin_super_class_constraint_non_interface
+  error - Undefined class 'Bloc' - lib\core\bloc\base_bloc.dart:52:68 - undefined_class
+  error - Undefined class 'Either' - lib\core\bloc\base_bloc.dart:55:5 - undefined_class
+warning - The type of failure can't be inferred; a type must be explicitly provided - lib\core\bloc\base_bloc.dart:60:8 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Failure'.  - lib\core\bloc\base_bloc.dart:60:30 - argument_type_not_assignable
+warning - The type of data can't be inferred; a type must be explicitly provided - lib\core\bloc\base_bloc.dart:61:8 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'T'.  - lib\core\bloc\base_bloc.dart:61:27 - argument_type_not_assignable
+  error - Undefined name 'isClosed' - lib\core\bloc\base_bloc.dart:67:10 - undefined_identifier
+  error - The method 'emit' isn't defined for the type 'BlocHelperMixin' - lib\core\bloc\base_bloc.dart:69:7 - undefined_method
+  error - Classes can only extend other classes - lib\core\bloc\base_bloc.dart:75:31 - extends_non_class
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:77:8 - override_on_non_overriding_member
+  error - Undefined class 'BlocBase' - lib\core\bloc\base_bloc.dart:77:17 - undefined_class
+  error - The method 'onCreate' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:78:11 - undefined_super_member
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:83:8 - override_on_non_overriding_member
+  error - Undefined class 'Bloc' - lib\core\bloc\base_bloc.dart:83:16 - undefined_class
+  error - The method 'onEvent' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:84:11 - undefined_super_member
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:89:8 - override_on_non_overriding_member
+  error - Undefined class 'BlocBase' - lib\core\bloc\base_bloc.dart:89:17 - undefined_class
+  error - Undefined class 'Change' - lib\core\bloc\base_bloc.dart:89:41 - undefined_class
+  error - The method 'onChange' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:90:11 - undefined_super_member
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:98:8 - override_on_non_overriding_member
+  error - Undefined class 'Bloc' - lib\core\bloc\base_bloc.dart:99:5 - undefined_class
+  error - Undefined class 'Transition' - lib\core\bloc\base_bloc.dart:100:5 - undefined_class
+  error - The method 'onTransition' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:102:11 - undefined_super_member
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:106:8 - override_on_non_overriding_member
+  error - Undefined class 'BlocBase' - lib\core\bloc\base_bloc.dart:106:16 - undefined_class
+  error - The method 'onError' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:107:11 - undefined_super_member
+warning - The method doesn't override an inherited method - lib\core\bloc\base_bloc.dart:116:8 - override_on_non_overriding_member
+  error - Undefined class 'BlocBase' - lib\core\bloc\base_bloc.dart:116:16 - undefined_class
+  error - The method 'onClose' isn't defined in a superclass of 'AppBlocObserver' - lib\core\bloc\base_bloc.dart:117:11 - undefined_super_member
+  error - Target of URI doesn't exist: 'package:get_it/get_it.dart' - lib\core\di\injection_container.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\core\di\injection_container.dart:21:8 - uri_does_not_exist
+  error - Undefined class 'GetIt' - lib\core\di\injection_container.dart:24:7 - undefined_class
+  error - Undefined name 'GetIt' - lib\core\di\injection_container.dart:24:18 - undefined_identifier
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'ApiClient'.  - lib\core\di\injection_container.dart:77:55 - argument_type_not_assignable
+  error - Undefined name 'Hive' - lib\core\di\injection_container.dart:82:26 - undefined_identifier
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'GamificationRemoteDataSource'.  - lib\core\di\injection_container.dart:90:25 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'GamificationLocalDataSource'.  - lib\core\di\injection_container.dart:91:24 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'NetworkInfo'.  - lib\core\di\injection_container.dart:92:20 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'SyncService'.  - lib\core\di\injection_container.dart:93:20 - argument_type_not_assignable
+  error - A value of type 'dynamic' can't be returned from the function 'get' because it has a return type of 'T' - lib\core\di\injection_container.dart:113:30 - return_of_invalid_type
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\core\error\failures.dart:1:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\core\error\failures.dart:5:32 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\error\failures.dart:17:21 - override_on_non_overriding_member
+  error - A value of type 'dynamic' can't be assigned to a variable of type 'GamificationRepository' - lib\core\providers\gamification_provider.dart:82:19 - invalid_assignment
+warning - The type of r can't be inferred; a type must be explicitly provided - lib\core\providers\gamification_provider.dart:101:35 - inference_failure_on_untyped_parameter
+warning - The type of r can't be inferred; a type must be explicitly provided - lib\core\providers\gamification_provider.dart:102:35 - inference_failure_on_untyped_parameter
+warning - The type of r can't be inferred; a type must be explicitly provided - lib\core\providers\gamification_provider.dart:104:29 - inference_failure_on_untyped_parameter
+warning - The type of leaderboard can't be inferred; a type must be explicitly provided - lib\core\providers\gamification_provider.dart:126:8 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'List<LeaderboardEntry>?'.  - lib\core\providers\gamification_provider.dart:127:22 - argument_type_not_assignable
+  error - Target of URI doesn't exist: 'package:rxdart/rxdart.dart' - lib\core\providers\search_provider.dart:3:8 - uri_does_not_exist
+  error - The method 'PublishSubject' isn't defined for the type 'SearchNotifier' - lib\core\providers\search_provider.dart:82:26 - undefined_method
+warning - The type of query can't be inferred; a type must be explicitly provided - lib\core\providers\search_provider.dart:91:18 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\providers\search_provider.dart:92:22 - argument_type_not_assignable
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\core\router\app_router.dart:3:8 - uri_does_not_exist
+  error - The name 'GoRouter' isn't a type, so it can't be used as a type argument - lib\core\router\app_router.dart:46:33 - non_type_as_type_argument
+  error - The function 'GoRouter' isn't defined - lib\core\router\app_router.dart:47:10 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:53:25 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:58:24 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:59:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:60:11 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:75:18 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:75:18 - avoid_dynamic_calls
+  error - The returned type 'dynamic' isn't returnable from a 'bool' function, as required by the closure's context - lib\core\router\app_router.dart:75:18 - return_of_invalid_type_from_closure
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:88:11 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:88:11 - avoid_dynamic_calls
+  error - Conditions must have a static type of 'bool' - lib\core\router\app_router.dart:88:11 - non_bool_condition
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:99:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:106:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:115:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:120:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:125:7 - undefined_function
+  error - The function 'ShellRoute' isn't defined - lib\core\router\app_router.dart:132:7 - undefined_function
+warning - The type of child can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:134:35 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Widget'.  - lib\core\router\app_router.dart:134:65 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:137:11 - undefined_function
+  error - The name 'NoTransitionPage' isn't a class - lib\core\router\app_router.dart:140:52 - creation_with_non_type
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:146:11 - undefined_function
+  error - The name 'NoTransitionPage' isn't a class - lib\core\router\app_router.dart:149:52 - creation_with_non_type
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:155:11 - undefined_function
+  error - The name 'NoTransitionPage' isn't a class - lib\core\router\app_router.dart:158:52 - creation_with_non_type
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:164:11 - undefined_function
+  error - The name 'NoTransitionPage' isn't a class - lib\core\router\app_router.dart:167:52 - creation_with_non_type
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:175:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:182:7 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:185:28 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:186:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:186:28 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:187:47 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:191:11 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:194:32 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:195:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:195:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:196:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:196:32 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:198:27 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:199:27 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:205:11 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:208:32 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:209:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:209:32 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:210:30 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:210:30 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:212:27 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:213:25 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:221:7 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:224:28 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:225:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:225:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:225:28 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String?'.  - lib\core\router\app_router.dart:226:42 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:231:7 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:234:28 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:235:27 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:235:27 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:236:43 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:241:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:248:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:255:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:262:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:269:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:276:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:283:7 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:286:28 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:287:28 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:287:28 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:288:46 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:293:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:300:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:307:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:314:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:321:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:328:7 - undefined_function
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:333:11 - undefined_function
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:336:32 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:337:30 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:337:30 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:338:55 - argument_type_not_assignable
+  error - The function 'GoRoute' isn't defined - lib\core\router\app_router.dart:345:7 - undefined_function
+warning - The type of context can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:353:20 - inference_failure_on_untyped_parameter
+warning - The type of state can't be inferred; a type must be explicitly provided - lib\core\router\app_router.dart:353:29 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'BuildContext'.  - lib\core\router\app_router.dart:354:30 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:425:23 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:425:23 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\router\app_router.dart:425:23 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:438:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:449:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:470:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:473:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:476:40 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\router\app_router.dart:479:40 - avoid_dynamic_calls
+  error - Undefined class 'GoRouter' - lib\core\router\app_router.dart:493:33 - undefined_class
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - lib\core\services\ai\gemini_client.dart:2:8 - uri_does_not_exist
+  error - Undefined class 'Dio' - lib\core\services\ai\gemini_client.dart:14:9 - undefined_class
+  error - The method 'Dio' isn't defined for the type 'GeminiClient' - lib\core\services\ai\gemini_client.dart:18:16 - undefined_method
+  error - The method 'BaseOptions' isn't defined for the type 'GeminiClient' - lib\core\services\ai\gemini_client.dart:18:20 - undefined_method
+  error - The name 'ResponseBody' isn't a type, so it can't be used as a type argument - lib\core\services\ai\gemini_client.dart:89:40 - non_type_as_type_argument
+  error - The method 'Options' isn't defined for the type 'GeminiClient' - lib\core\services\ai\gemini_client.dart:102:18 - undefined_method
+  error - Undefined name 'ResponseType' - lib\core\services\ai\gemini_client.dart:103:25 - undefined_identifier
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\ai\gemini_client.dart:154:10 - non_type_in_catch_clause
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\ai\gemini_client.dart:199:10 - non_type_in_catch_clause
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - lib\core\services\ai\gemini_embedding_client.dart:1:8 - uri_does_not_exist
+  error - Undefined class 'Dio' - lib\core\services\ai\gemini_embedding_client.dart:14:9 - undefined_class
+  error - The method 'Dio' isn't defined for the type 'GeminiEmbeddingClient' - lib\core\services\ai\gemini_embedding_client.dart:18:16 - undefined_method
+  error - The method 'BaseOptions' isn't defined for the type 'GeminiEmbeddingClient' - lib\core\services\ai\gemini_embedding_client.dart:18:20 - undefined_method
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\ai\gemini_embedding_client.dart:56:10 - non_type_in_catch_clause
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\ai\gemini_embedding_client.dart:102:10 - non_type_in_catch_clause
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\core\services\ai_tutor_service.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - lib\core\services\ai_tutor_service.dart:6:8 - uri_does_not_exist
+  error - Undefined class 'Box' - lib\core\services\ai_tutor_service.dart:172:3 - undefined_class
+  error - Undefined class 'FlutterSecureStorage' - lib\core\services\ai_tutor_service.dart:174:9 - undefined_class
+  error - The name 'FlutterSecureStorage' isn't a class - lib\core\services\ai_tutor_service.dart:174:53 - creation_with_non_type
+  error - Undefined name 'Hive' - lib\core\services\ai_tutor_service.dart:376:19 - undefined_identifier
+  error - Undefined name 'Hive' - lib\core\services\ai_tutor_service.dart:387:31 - undefined_identifier
+  error - The method 'HiveAesCipher' isn't defined for the type 'AiTutorService' - lib\core\services\ai_tutor_service.dart:389:25 - undefined_method
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\core\services\analytics_service.dart:1:8 - uri_does_not_exist
+  error - Undefined class 'Box' - lib\core\services\analytics_service.dart:40:8 - undefined_class
+  error - Undefined name 'Hive' - lib\core\services\analytics_service.dart:59:12 - undefined_identifier
+  error - Undefined name 'Hive' - lib\core\services\analytics_service.dart:60:15 - undefined_identifier
+  error - Undefined name 'Hive' - lib\core\services\analytics_service.dart:66:27 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - lib\core\services\api_client.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - lib\core\services\api_client.dart:6:8 - uri_does_not_exist
+  error - Undefined class 'DioException' - lib\core\services\api_client.dart:39:37 - undefined_class
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:41:12 - undefined_identifier
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:42:12 - undefined_identifier
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:43:12 - undefined_identifier
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:48:12 - undefined_identifier
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:53:12 - undefined_identifier
+  error - Undefined name 'DioExceptionType' - lib\core\services\api_client.dart:58:12 - undefined_identifier
+  error - Undefined class 'Dio' - lib\core\services\api_client.dart:169:14 - undefined_class
+  error - Undefined class 'FlutterSecureStorage' - lib\core\services\api_client.dart:170:9 - undefined_class
+  error - The name 'FlutterSecureStorage' isn't a class - lib\core\services\api_client.dart:170:53 - creation_with_non_type
+  error - The method 'Dio' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:247:12 - undefined_method
+  error - The method 'BaseOptions' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:247:16 - undefined_method
+  error - The method 'InterceptorsWrapper' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:354:29 - undefined_method
+warning - The type of options can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:355:21 - inference_failure_on_untyped_parameter
+warning - The type of handler can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:355:30 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:359:38 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\services\api_client.dart:359:38 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:362:11 - avoid_dynamic_calls
+  error - The method 'InterceptorsWrapper' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:369:7 - undefined_method
+warning - The type of options can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:370:21 - inference_failure_on_untyped_parameter
+warning - The type of handler can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:370:30 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:373:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:373:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:377:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:378:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:378:13 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:379:15 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\services\api_client.dart:379:15 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:380:15 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\core\services\api_client.dart:380:15 - argument_type_not_assignable
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:381:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:385:11 - avoid_dynamic_calls
+warning - The type of error can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:387:19 - inference_failure_on_untyped_parameter
+warning - The type of handler can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:387:26 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:388:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:388:15 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:394:54 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:395:17 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:398:17 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:403:11 - avoid_dynamic_calls
+  error - The method 'LogInterceptor' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:409:9 - undefined_method
+warning - The type of obj can't be inferred; a type must be explicitly provided - lib\core\services\api_client.dart:413:22 - inference_failure_on_untyped_parameter
+  error - Undefined class 'RequestInterceptorHandler' - lib\core\services\api_client.dart:419:46 - undefined_class
+  error - Undefined class 'RequestOptions' - lib\core\services\api_client.dart:420:7 - undefined_class
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:462:22 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:478:25 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:503:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:527:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:549:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:691:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:700:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:775:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:792:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:806:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:820:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:832:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:883:23 - undefined_method
+  error - The method 'Response' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:892:23 - undefined_method
+  error - The method 'Dio' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:952:30 - undefined_method
+  error - The method 'Options' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:955:18 - undefined_method
+  error - The name 'Response' isn't a type, so it can't be used as a type argument - lib\core\services\api_client.dart:985:10 - non_type_as_type_argument
+  error - Undefined class 'RequestOptions' - lib\core\services\api_client.dart:985:43 - undefined_class
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\api_client.dart:1001:12 - non_type_in_catch_clause
+warning - The type argument(s) of the function '_executeWithRetry' can't be inferred - lib\core\services\api_client.dart:1029:30 - inference_failure_on_function_invocation
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1034:39 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1034:56 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1035:52 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int?'.  - lib\core\services\api_client.dart:1035:52 - argument_type_not_assignable
+warning - The type argument(s) of the function '_executeWithRetry' can't be inferred - lib\core\services\api_client.dart:1048:30 - inference_failure_on_function_invocation
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1053:39 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1053:56 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1054:60 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int?'.  - lib\core\services\api_client.dart:1054:60 - argument_type_not_assignable
+warning - The type argument(s) of the function '_executeWithRetry' can't be inferred - lib\core\services\api_client.dart:1067:30 - inference_failure_on_function_invocation
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1072:39 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1072:56 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1073:60 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int?'.  - lib\core\services\api_client.dart:1073:60 - argument_type_not_assignable
+warning - The type argument(s) of the function '_executeWithRetry' can't be inferred - lib\core\services\api_client.dart:1085:30 - inference_failure_on_function_invocation
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1090:39 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1090:56 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1091:52 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int?'.  - lib\core\services\api_client.dart:1091:52 - argument_type_not_assignable
+  error - Undefined name 'FormData' - lib\core\services\api_client.dart:1107:24 - undefined_identifier
+  error - Undefined name 'MultipartFile' - lib\core\services\api_client.dart:1108:26 - undefined_identifier
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\api_client.dart:1121:10 - non_type_in_catch_clause
+  error - Undefined class 'CancelToken' - lib\core\services\api_client.dart:1132:5 - undefined_class
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\api_client.dart:1142:10 - non_type_in_catch_clause
+  error - Undefined class 'CancelToken' - lib\core\services\api_client.dart:1187:5 - undefined_class
+warning - The type argument(s) of the function '_executeWithRetry' can't be inferred - lib\core\services\api_client.dart:1194:30 - inference_failure_on_function_invocation
+  error - The name 'ResponseBody' isn't a type, so it can't be used as a type argument - lib\core\services\api_client.dart:1195:28 - non_type_as_type_argument
+  error - The method 'Options' isn't defined for the type 'ApiClient' - lib\core\services\api_client.dart:1200:20 - undefined_method
+  error - Undefined name 'ResponseType' - lib\core\services\api_client.dart:1202:27 - undefined_identifier
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1207:22 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\api_client.dart:1207:22 - avoid_dynamic_calls
+  error - The type 'dynamic' used in the 'for' loop must implement 'Stream' - lib\core\services\api_client.dart:1209:35 - for_in_of_invalid_type
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'List<int>'.  - lib\core\services\api_client.dart:1210:36 - argument_type_not_assignable
+  error - The name 'DioException' isn't a type and can't be used in an on-catch clause - lib\core\services\api_client.dart:1214:10 - non_type_in_catch_clause
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - lib\core\services\auth_service.dart:1:8 - uri_does_not_exist
+  error - Undefined class 'FlutterSecureStorage' - lib\core\services\auth_service.dart:11:9 - undefined_class
+  error - The name 'FlutterSecureStorage' isn't a class - lib\core\services\auth_service.dart:11:53 - creation_with_non_type
+  error - Target of URI doesn't exist: 'package:local_auth/local_auth.dart' - lib\core\services\biometric_service.dart:1:8 - uri_does_not_exist
+  error - Undefined class 'LocalAuthentication' - lib\core\services\biometric_service.dart:8:9 - undefined_class
+  error - Undefined class 'LocalAuthentication' - lib\core\services\biometric_service.dart:10:21 - undefined_class
+  error - The method 'LocalAuthentication' isn't defined for the type 'BiometricService' - lib\core\services\biometric_service.dart:11:24 - undefined_method
+  error - The name 'BiometricType' isn't a type, so it can't be used as a type argument - lib\core\services\biometric_service.dart:21:15 - non_type_as_type_argument
+  error - The name 'BiometricType' isn't a type, so it can't be used as a type argument - lib\core\services\biometric_service.dart:25:15 - non_type_as_type_argument
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - lib\core\services\cache_manager.dart:4:8 - uri_does_not_exist
+  error - Undefined class 'FlutterSecureStorage' - lib\core\services\cache_manager.dart:65:9 - undefined_class
+  error - The name 'FlutterSecureStorage' isn't a class - lib\core\services\cache_manager.dart:65:53 - creation_with_non_type
+  error - Target of URI doesn't exist: 'package:pdf/pdf.dart' - lib\core\services\certificate_service.dart:6:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:pdf/widgets.dart' - lib\core\services\certificate_service.dart:7:8 - uri_does_not_exist
+  error - Undefined name 'PdfPageFormat' - lib\core\services\certificate_service.dart:133:21 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:137:44 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:148:28 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:181:34 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:193:34 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:206:28 - undefined_identifier
+  error - Undefined name 'PdfColors' - lib\core\services\certificate_service.dart:213:28 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:universal_io/io.dart' - lib\core\services\health_check_service.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'Directory' - lib\core\services\health_check_service.dart:264:23 - undefined_identifier
+  error - The method 'File' isn't defined for the type 'HealthCheckService' - lib\core\services\health_check_service.dart:265:24 - undefined_method
+  error - Undefined name 'Platform' - lib\core\services\health_check_service.dart:437:19 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\services\health_check_service.dart:438:26 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\services\health_check_service.dart:439:22 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\services\health_check_service.dart:440:29 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\services\health_check_service.dart:441:17 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - lib\core\services\notification_service.dart:5:8 - uri_does_not_exist
+  error - Undefined class 'FlutterSecureStorage' - lib\core\services\notification_service.dart:138:9 - undefined_class
+  error - The name 'FlutterSecureStorage' isn't a class - lib\core\services\notification_service.dart:138:53 - creation_with_non_type
+  error - Target of URI doesn't exist: 'package:universal_io/io.dart' - lib\core\services\offline_service.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - lib\core\services\offline_service.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\core\services\offline_service.dart:4:8 - uri_does_not_exist
+  error - Undefined class 'Box' - lib\core\services\offline_service.dart:15:8 - undefined_class
+  error - Undefined class 'Dio' - lib\core\services\offline_service.dart:16:9 - undefined_class
+  error - The method 'Dio' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:16:20 - undefined_method
+  error - Undefined name 'Hive' - lib\core\services\offline_service.dart:25:11 - undefined_identifier
+  error - Undefined name 'Hive' - lib\core\services\offline_service.dart:28:25 - undefined_identifier
+  error - The method 'Directory' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:90:13 - undefined_method
+warning - The type of received can't be inferred; a type must be explicitly provided - lib\core\services\offline_service.dart:101:29 - inference_failure_on_untyped_parameter
+warning - The type of total can't be inferred; a type must be explicitly provided - lib\core\services\offline_service.dart:101:39 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\core\services\offline_service.dart:103:24 - avoid_dynamic_calls
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'double'.  - lib\core\services\offline_service.dart:103:24 - argument_type_not_assignable
+  error - The method 'File' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:115:17 - undefined_method
+  error - The method 'File' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:137:13 - undefined_method
+  error - The method 'File' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:158:22 - undefined_method
+warning - The type of e can't be inferred; a type must be explicitly provided - lib\core\services\offline_service.dart:170:15 - inference_failure_on_untyped_parameter
+  error - The method 'Directory' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:181:24 - undefined_method
+  error - The method 'File' isn't defined for the type 'OfflineService' - lib\core\services\offline_service.dart:216:18 - undefined_method
+  error - Target of URI doesn't exist: 'package:web_socket_channel/web_socket_channel.dart' - lib\core\services\websocket_service.dart:3:8 - uri_does_not_exist
+  error - Undefined class 'WebSocketChannel' - lib\core\services\websocket_service.dart:15:3 - undefined_class
+  error - Undefined name 'WebSocketChannel' - lib\core\services\websocket_service.dart:45:18 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\core\ui\desktop_shortcuts.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\core\ui\desktop_shortcuts.dart:46:23 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\core\ui\desktop_shortcuts.dart:52:23 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\core\ui\desktop_shortcuts.dart:58:23 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\core\ui\web_shell.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'GoRouterState' - lib\core\ui\web_shell.dart:117:29 - undefined_identifier
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\core\ui\web_shell.dart:135:17 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\core\ui\web_shell.dart:138:17 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\core\ui\web_shell.dart:141:17 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\core\ui\web_shell.dart:144:17 - undefined_method
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - lib\core\usecases\usecase.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\core\usecases\usecase.dart:2:8 - uri_does_not_exist
+   info - The referenced name isn't visible in scope - lib\core\usecases\usecase.dart:7:32 - comment_references
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\core\usecases\usecase.dart:24:10 - non_type_as_type_argument
+  error - Classes can only extend other classes - lib\core\usecases\usecase.dart:28:24 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\usecases\usecase.dart:32:21 - override_on_non_overriding_member
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\core\usecases\usecase.dart:37:10 - non_type_as_type_argument
+  error - Undefined class 'Either' - lib\core\usecases\usecase.dart:42:3 - undefined_class
+  error - Classes can only extend other classes - lib\core\usecases\usecase.dart:46:32 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\usecases\usecase.dart:60:21 - override_on_non_overriding_member
+  error - Classes can only extend other classes - lib\core\usecases\usecase.dart:71:28 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\core\usecases\usecase.dart:85:21 - override_on_non_overriding_member
+  error - Target of URI doesn't exist: 'package:bitsdojo_window/bitsdojo_window.dart' - lib\core\utils\window_manager_io.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:universal_io/io.dart' - lib\core\utils\window_manager_io.dart:5:8 - uri_does_not_exist
+  error - Undefined name 'Platform' - lib\core\utils\window_manager_io.dart:8:19 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\utils\window_manager_io.dart:8:41 - undefined_identifier
+  error - Undefined name 'Platform' - lib\core\utils\window_manager_io.dart:8:61 - undefined_identifier
+  error - The function 'doWhenWindowReady' isn't defined - lib\core\utils\window_manager_io.dart:9:5 - undefined_function
+  error - Undefined name 'appWindow' - lib\core\utils\window_manager_io.dart:11:7 - undefined_identifier
+  error - Undefined name 'appWindow' - lib\core\utils\window_manager_io.dart:12:7 - undefined_identifier
+  error - Undefined name 'appWindow' - lib\core\utils\window_manager_io.dart:13:7 - undefined_identifier
+  error - Undefined name 'appWindow' - lib\core\utils\window_manager_io.dart:14:7 - undefined_identifier
+  error - Undefined name 'appWindow' - lib\core\utils\window_manager_io.dart:15:7 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\features\auth\domain\entities\user_entity.dart:1:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\features\auth\domain\entities\user_entity.dart:5:26 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\features\auth\domain\entities\user_entity.dart:94:21 - override_on_non_overriding_member
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - lib\features\auth\domain\repositories\user_repository.dart:1:8 - uri_does_not_exist
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:9:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:12:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:18:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:25:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:28:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:36:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:39:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:45:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:51:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\auth\domain\repositories\user_repository.dart:57:10 - non_type_as_type_argument
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\auth\forgot_password_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\auth\forgot_password_screen.dart:68:36 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\forgot_password_screen.dart:210:54 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\forgot_password_screen.dart:295:38 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\auth\login_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\login_screen.dart:62:15 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\auth\login_screen.dart:238:52 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\login_screen.dart:366:41 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\auth\login_screen.dart:394:52 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\auth\signup_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\signup_screen.dart:101:15 - undefined_method
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\auth\signup_screen.dart:120:36 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\auth\signup_screen.dart:493:52 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\bookmarks\bookmarks_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\bookmarks\bookmarks_screen.dart:36:36 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\bookmarks\bookmarks_screen.dart:122:49 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\bookmarks\bookmarks_screen.dart:302:23 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\cart\cart_screen.dart:5:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\cart\cart_screen.dart:198:27 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\cart\cart_screen.dart:229:38 - undefined_method
+  error - Target of URI doesn't exist: 'package:qr_flutter/qr_flutter.dart' - lib\features\certificates\certificates_screen.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:share_plus/share_plus.dart' - lib\features\certificates\certificates_screen.dart:6:8 - uri_does_not_exist
+  error - The method 'QrImageView' isn't defined for the type '_CertificateCard' - lib\features\certificates\certificates_screen.dart:464:24 - undefined_method
+  error - Undefined name 'QrVersions' - lib\features\certificates\certificates_screen.dart:466:28 - undefined_identifier
+  error - Undefined name 'SharePlus' - lib\features\certificates\certificates_screen.dart:526:5 - undefined_identifier
+  error - The method 'ShareParams' isn't defined for the type '_CertificateCard' - lib\features\certificates\certificates_screen.dart:527:7 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\course\lesson_player_screen.dart:5:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\course\lesson_player_screen.dart:217:62 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\lesson_player_screen.dart:245:62 - undefined_method
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\course\lesson_player_screen.dart:368:48 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\lesson_player_screen.dart:383:35 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\course\widgets\course_detail_widgets.dart:4:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\widgets\course_detail_widgets.dart:92:44 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\widgets\course_detail_widgets.dart:285:50 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\widgets\course_detail_widgets.dart:644:33 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\course\widgets\course_detail_widgets.dart:1022:47 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\discussions\discussions_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\discussions\discussions_screen.dart:49:36 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\downloads\downloads_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\downloads\downloads_screen.dart:27:38 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\downloads\downloads_screen.dart:362:23 - undefined_method
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - lib\features\dsa\dsa_problems_screen.dart:3:8 - uri_does_not_exist
+  error - Undefined class 'Dio' - lib\features\dsa\dsa_problems_screen.dart:43:9 - undefined_class
+  error - The function 'Dio' isn't defined - lib\features\dsa\dsa_problems_screen.dart:94:15 - undefined_function
+  error - The function 'BaseOptions' isn't defined - lib\features\dsa\dsa_problems_screen.dart:94:19 - undefined_function
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:1:8 - uri_does_not_exist
+  error - Undefined class 'Box' - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:6:9 - undefined_class
+warning - The type of event can't be inferred; a type must be explicitly provided - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:73:15 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\features\gamification\data\datasources\gamification_local_data_source_impl.dart:73:26 - avoid_dynamic_calls
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:1:8 - uri_does_not_exist
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:24:10 - non_type_as_type_argument
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:29:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:31:16 - undefined_method
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:36:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:38:16 - undefined_method
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:44:10 - non_type_as_type_argument
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:49:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:51:16 - undefined_method
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:56:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:58:16 - undefined_method
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:64:10 - non_type_as_type_argument
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:71:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:73:16 - undefined_method
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:79:16 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:81:16 - undefined_method
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:87:10 - non_type_as_type_argument
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:102:22 - creation_with_non_type
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:105:22 - creation_with_non_type
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:109:18 - creation_with_non_type
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:113:10 - non_type_as_type_argument
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:134:22 - creation_with_non_type
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:137:22 - creation_with_non_type
+  error - The name 'Right' isn't a class - lib\features\gamification\data\repositories\gamification_repository_impl.dart:141:18 - creation_with_non_type
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\data\repositories\gamification_repository_impl.dart:145:10 - non_type_as_type_argument
+  error - The method 'Right' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:147:14 - undefined_method
+  error - The method 'Left' isn't defined for the type 'GamificationRepositoryImpl' - lib\features\gamification\data\repositories\gamification_repository_impl.dart:149:14 - undefined_method
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\features\gamification\domain\entities\achievement.dart:1:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\features\gamification\domain\entities\achievement.dart:54:27 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\features\gamification\domain\entities\achievement.dart:84:21 - override_on_non_overriding_member
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\features\gamification\domain\entities\leaderboard_entry.dart:1:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\features\gamification\domain\entities\leaderboard_entry.dart:3:32 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\features\gamification\domain\entities\leaderboard_entry.dart:21:21 - override_on_non_overriding_member
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - lib\features\gamification\domain\repositories\gamification_repository.dart:1:8 - uri_does_not_exist
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:7:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:8:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:9:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:11:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:12:10 - non_type_as_type_argument
+  error - The name 'Either' isn't a type, so it can't be used as a type argument - lib\features\gamification\domain\repositories\gamification_repository.dart:13:10 - non_type_as_type_argument
+  error - Target of URI doesn't exist: 'package:confetti/confetti.dart' - lib\features\gamification\screens\leaderboard_screen.dart:4:8 - uri_does_not_exist
+  error - Undefined class 'ConfettiController' - lib\features\gamification\screens\leaderboard_screen.dart:18:8 - undefined_class
+  error - The method 'ConfettiController' isn't defined for the type '_LeaderboardScreenState' - lib\features\gamification\screens\leaderboard_screen.dart:24:9 - undefined_method
+  error - Undefined name 'ConfettiControllerState' - lib\features\gamification\screens\leaderboard_screen.dart:48:42 - undefined_identifier
+  error - The method 'ConfettiWidget' isn't defined for the type '_LeaderboardScreenState' - lib\features\gamification\screens\leaderboard_screen.dart:178:20 - undefined_method
+  error - Undefined name 'BlastDirectionality' - lib\features\gamification\screens\leaderboard_screen.dart:180:36 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\home_screen.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:confetti/confetti.dart' - lib\features\home\home_screen.dart:6:8 - uri_does_not_exist
+  error - Undefined class 'ConfettiController' - lib\features\home\home_screen.dart:81:8 - undefined_class
+  error - The method 'ConfettiController' isn't defined for the type '_HomeScreenState' - lib\features\home\home_screen.dart:87:9 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:222:59 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:254:58 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:267:49 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:307:49 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:318:37 - undefined_method
+  error - The method 'ConfettiWidget' isn't defined for the type '_HomeScreenState' - lib\features\home\home_screen.dart:362:20 - undefined_method
+  error - Undefined name 'BlastDirectionality' - lib\features\home\home_screen.dart:364:36 - undefined_identifier
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:433:32 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen.dart:659:31 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\home_screen_v2.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:confetti/confetti.dart' - lib\features\home\home_screen_v2.dart:6:8 - uri_does_not_exist
+  error - Undefined class 'ConfettiController' - lib\features\home\home_screen_v2.dart:79:8 - undefined_class
+  error - The method 'ConfettiController' isn't defined for the type '_HomeScreenV2State' - lib\features\home\home_screen_v2.dart:86:9 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen_v2.dart:228:51 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen_v2.dart:258:41 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen_v2.dart:290:41 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen_v2.dart:301:41 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\home_screen_v2.dart:309:41 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\mentorship_banner.dart:2:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\mentorship_banner.dart:25:32 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\widgets\categories_section.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\categories_section.dart:60:23 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\widgets\course_list_horizontal.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\course_list_horizontal.dart:33:38 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\widgets\featured_course_card.dart:2:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\featured_course_card.dart:20:30 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\widgets\home_app_bar.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\home_app_bar.dart:51:34 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\home_app_bar.dart:88:42 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\home_app_bar.dart:92:38 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\home_app_bar.dart:131:42 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\home_app_bar.dart:136:42 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\home\widgets\live_classes_section.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\home\widgets\live_classes_section.dart:32:38 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\learning_path\learning_path_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\learning_path\learning_path_screen.dart:119:30 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\learning_path\learning_path_screen.dart:559:43 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\library\library_screen.dart:3:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:90:33 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:243:30 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:295:33 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:377:30 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:457:33 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\library\library_screen.dart:471:34 - undefined_method
+  error - Target of URI doesn't exist: 'package:equatable/equatable.dart' - lib\features\notes\data\models\note_model.dart:1:8 - uri_does_not_exist
+  error - Classes can only extend other classes - lib\features\notes\data\models\note_model.dart:3:20 - extends_non_class
+warning - The getter doesn't override an inherited getter - lib\features\notes\data\models\note_model.dart:59:21 - override_on_non_overriding_member
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\notifications\notifications_screen.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\notifications\notifications_screen.dart:97:25 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\notifications\notifications_screen.dart:145:25 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\notifications\notifications_screen.dart:157:25 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\notifications\notifications_screen.dart:169:25 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\notifications\notifications_screen.dart:181:25 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\onboarding\onboarding_screen.dart:3:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\onboarding\onboarding_screen.dart:104:13 - undefined_method
+  error - Target of URI doesn't exist: 'package:confetti/confetti.dart' - lib\features\payment\presentation\widgets\payment_modal.dart:7:8 - uri_does_not_exist
+  error - Undefined class 'ConfettiController' - lib\features\payment\presentation\widgets\payment_modal.dart:27:8 - undefined_class
+  error - The method 'ConfettiController' isn't defined for the type '_PaymentModalState' - lib\features\payment\presentation\widgets\payment_modal.dart:33:9 - undefined_method
+  error - The method 'ConfettiWidget' isn't defined for the type '_PaymentModalState' - lib\features\payment\presentation\widgets\payment_modal.dart:261:11 - undefined_method
+  error - Undefined name 'BlastDirectionality' - lib\features\payment\presentation\widgets\payment_modal.dart:263:34 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\profile\profile_screen.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:image_picker/image_picker.dart' - lib\features\profile\profile_screen.dart:10:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\profile\profile_screen.dart:35:38 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\profile\profile_screen.dart:77:36 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\profile\profile_screen.dart:93:36 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\profile\profile_screen.dart:135:39 - undefined_method
+  error - The method 'ImagePicker' isn't defined for the type '_ProfileHeader' - lib\features\profile\profile_screen.dart:168:20 - undefined_method
+  error - Undefined name 'ImageSource' - lib\features\profile\profile_screen.dart:169:49 - undefined_identifier
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\profile\profile_screen.dart:430:44 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\quiz\quiz_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\quiz\quiz_screen.dart:59:35 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\search\search_screen.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\search\search_screen.dart:307:32 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\search\search_screen.dart:324:34 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\settings\settings_screen.dart:10:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\settings\settings_screen.dart:255:34 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\features\settings\settings_screen.dart:261:34 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\settings\settings_screen.dart:297:25 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\splash\splash_screen.dart:3:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\splash\splash_screen.dart:65:19 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\splash\splash_screen.dart:77:15 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\splash\splash_screen.dart:79:15 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\features\splash\splash_screen.dart:81:15 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\features\study_planner\study_planner_screen.dart:4:8 - uri_does_not_exist
+  error - The method 'pop' isn't defined for the type 'BuildContext' - lib\features\study_planner\study_planner_screen.dart:41:36 - undefined_method
+  error - Target of URI doesn't exist: 'package:flutter_bloc/flutter_bloc.dart' - lib\main.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - lib\main.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:sentry_flutter/sentry_flutter.dart' - lib\main.dart:6:8 - uri_does_not_exist
+  error - Undefined name 'SentryFlutter' - lib\main.dart:22:9 - undefined_identifier
+warning - The type of options can't be inferred; a type must be explicitly provided - lib\main.dart:23:6 - inference_failure_on_untyped_parameter
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:24:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:25:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:26:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:27:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:28:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:29:7 - avoid_dynamic_calls
+   info - Method invocation or property access on a 'dynamic' target - lib\main.dart:30:7 - avoid_dynamic_calls
+  error - Undefined name 'Hive' - lib\main.dart:34:13 - undefined_identifier
+  error - Undefined name 'Hive' - lib\main.dart:35:13 - undefined_identifier
+  error - Undefined name 'Bloc' - lib\main.dart:45:9 - undefined_identifier
+  error - The function 'SentryAssetBundle' isn't defined - lib\main.dart:62:19 - undefined_function
+  error - Target of URI doesn't exist: 'package:shimmer/shimmer.dart' - lib\shared\widgets\course_card.dart:4:8 - uri_does_not_exist
+  error - Undefined name 'Shimmer' - lib\shared\widgets\course_card.dart:535:38 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:percent_indicator/circular_percent_indicator.dart' - lib\shared\widgets\daily_goals_widget.dart:4:8 - uri_does_not_exist
+  error - The method 'CircularPercentIndicator' isn't defined for the type 'DailyGoalsWidget' - lib\shared\widgets\daily_goals_widget.dart:46:13 - undefined_method
+  error - Undefined name 'CircularStrokeCap' - lib\shared\widgets\daily_goals_widget.dart:81:34 - undefined_identifier
+  error - The method 'CircularPercentIndicator' isn't defined for the type 'DailyGoalsBadge' - lib\shared\widgets\daily_goals_widget.dart:172:11 - undefined_method
+  error - Undefined name 'CircularStrokeCap' - lib\shared\widgets\daily_goals_widget.dart:181:32 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:shimmer/shimmer.dart' - lib\shared\widgets\home_skeleton.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'Shimmer' - lib\shared\widgets\home_skeleton.dart:16:16 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\shared\widgets\main_scaffold.dart:3:8 - uri_does_not_exist
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:237:35 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:247:35 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:257:35 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:280:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:287:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:294:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:301:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:312:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:319:46 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:336:31 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:348:42 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:434:15 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:437:15 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:440:15 - undefined_method
+  error - The method 'go' isn't defined for the type 'BuildContext' - lib\shared\widgets\main_scaffold.dart:443:15 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\shared\widgets\quick_actions_fab.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\shared\widgets\quick_actions_fab.dart:72:53 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\shared\widgets\quick_actions_fab.dart:79:53 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\shared\widgets\quick_actions_fab.dart:88:23 - undefined_method
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\shared\widgets\quick_actions_fab.dart:99:53 - undefined_method
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - lib\shared\widgets\recently_viewed_widget.dart:3:8 - uri_does_not_exist
+  error - The method 'push' isn't defined for the type 'BuildContext' - lib\shared\widgets\recently_viewed_widget.dart:132:28 - undefined_method
+  error - Target of URI doesn't exist: 'package:universal_io/io.dart' - lib\shared\widgets\video_player_widget.dart:5:8 - uri_does_not_exist
+  error - The method 'File' isn't defined for the type '_VideoPlayerWidgetState' - lib\shared\widgets\video_player_widget.dart:78:49 - undefined_method
+  error - Target of URI doesn't exist: 'package:flutter_secure_storage/flutter_secure_storage.dart' - test\comprehensive_functionality_test.dart:6:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:hive_flutter/hive_flutter.dart' - test\comprehensive_functionality_test.dart:7:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:get_it/get_it.dart' - test\comprehensive_functionality_test.dart:22:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - test\comprehensive_functionality_test.dart:26:8 - uri_does_not_exist
+  error - Undefined name 'FlutterSecureStorage' - test\comprehensive_functionality_test.dart:52:7 - undefined_identifier
+warning - The type argument(s) of 'Map' can't be inferred - test\comprehensive_functionality_test.dart:52:49 - inference_failure_on_collection_literal
+  error - Undefined name 'GetIt' - test\comprehensive_functionality_test.dart:55:13 - undefined_identifier
+  error - The name 'Right' isn't a class - test\comprehensive_functionality_test.dart:58:42 - creation_with_non_type
+  error - The name 'Right' isn't a class - test\comprehensive_functionality_test.dart:60:42 - creation_with_non_type
+warning - The type argument(s) of the constructor 'Stream.empty' can't be inferred - test\comprehensive_functionality_test.dart:60:48 - inference_failure_on_instance_creation
+  error - The name 'Right' isn't a class - test\comprehensive_functionality_test.dart:62:42 - creation_with_non_type
+  error - The name 'Right' isn't a class - test\comprehensive_functionality_test.dart:65:42 - creation_with_non_type
+  error - Undefined name 'GetIt' - test\comprehensive_functionality_test.dart:66:7 - undefined_identifier
+  error - Undefined name 'Hive' - test\comprehensive_functionality_test.dart:70:7 - undefined_identifier
+  error - Undefined name 'Hive' - test\comprehensive_functionality_test.dart:87:13 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:go_router/go_router.dart' - test\features\auth\auth_integration_test.dart:4:8 - uri_does_not_exist
+  error - The function 'GoRouter' isn't defined - test\features\auth\auth_integration_test.dart:46:20 - undefined_function
+  error - The function 'GoRoute' isn't defined - test\features\auth\auth_integration_test.dart:49:9 - undefined_function
+  error - The function 'GoRoute' isn't defined - test\features\auth\auth_integration_test.dart:53:9 - undefined_function
+  error - The function 'GoRouter' isn't defined - test\features\auth\auth_integration_test.dart:105:20 - undefined_function
+  error - The function 'GoRoute' isn't defined - test\features\auth\auth_integration_test.dart:108:9 - undefined_function
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - test\features\gamification\gamification_logic_test.dart:1:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:mockito/annotations.dart' - test\features\gamification\gamification_logic_test.dart:9:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:mockito/mockito.dart' - test\features\gamification\gamification_logic_test.dart:10:8 - uri_does_not_exist
+  error - Undefined name 'GenerateMocks' used as an annotation - test\features\gamification\gamification_logic_test.dart:14:1 - undefined_annotation
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:45:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:46:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:47:7 - undefined_function
+warning - The type argument(s) of 'Map' can't be inferred - test\features\gamification\gamification_logic_test.dart:47:70 - inference_failure_on_collection_literal
+  error - The name 'Right' isn't a class - test\features\gamification\gamification_logic_test.dart:53:28 - creation_with_non_type
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:54:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:55:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:60:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:61:7 - undefined_function
+  error - The name 'Right' isn't a class - test\features\gamification\gamification_logic_test.dart:67:28 - creation_with_non_type
+  error - The function 'verifyZeroInteractions' isn't defined - test\features\gamification\gamification_logic_test.dart:68:7 - undefined_function
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:69:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:88:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:89:7 - undefined_function
+  error - The function 'when' isn't defined - test\features\gamification\gamification_logic_test.dart:91:7 - undefined_function
+warning - The type argument(s) of 'Map' can't be inferred - test\features\gamification\gamification_logic_test.dart:92:36 - inference_failure_on_collection_literal
+  error - The function 'verify' isn't defined - test\features\gamification\gamification_logic_test.dart:98:7 - undefined_function
+  error - Target of URI doesn't exist: 'package:mockito/mockito.dart' - test\features\gamification\gamification_logic_test.mocks.dart:14:8 - uri_does_not_exist
+  error - Missing concrete implementations of 'getter class SyncResult.failed', 'getter class SyncResult.hasErrors', 'getter class SyncResult.isComplete', 'getter class SyncResult.pending', and 1 more - test\features\gamification\gamification_logic_test.mocks.dart:31:7 - non_abstract_class_inherits_abstract_member
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:52:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:71:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:81:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:92:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:103:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:104:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:113:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:114:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:133:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:142:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:143:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:153:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:165:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:166:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:180:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:181:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:193:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:203:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:212:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:213:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:222:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:237:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:243:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:249:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:255:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:261:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:270:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:271:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:287:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:306:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:307:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:316:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:331:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:332:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:341:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:342:9 - undefined_named_parameter
+  error - The named parameter 'returnValue' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:351:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:352:9 - undefined_named_parameter
+  error - The named parameter 'returnValueForMissingStub' isn't defined - test\features\gamification\gamification_logic_test.mocks.dart:361:9 - undefined_named_parameter
+  error - Target of URI doesn't exist: 'package:get_it/get_it.dart' - test\home_screen_test.dart:13:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: 'package:dartz/dartz.dart' - test\home_screen_test.dart:17:8 - uri_does_not_exist
+  error - Undefined name 'GetIt' - test\home_screen_test.dart:113:11 - undefined_identifier
+  error - The name 'Right' isn't a class - test\home_screen_test.dart:117:40 - creation_with_non_type
+  error - The name 'Right' isn't a class - test\home_screen_test.dart:119:40 - creation_with_non_type
+warning - The type argument(s) of the constructor 'Stream.empty' can't be inferred - test\home_screen_test.dart:119:46 - inference_failure_on_instance_creation
+  error - The name 'Right' isn't a class - test\home_screen_test.dart:121:40 - creation_with_non_type
+  error - The name 'Right' isn't a class - test\home_screen_test.dart:124:40 - creation_with_non_type
+  error - Undefined name 'GetIt' - test\home_screen_test.dart:126:5 - undefined_identifier
+  error - Undefined name 'GetIt' - test\home_screen_test.dart:130:5 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:dio/dio.dart' - test\mocks.dart:1:8 - uri_does_not_exist
+  error - Classes and mixins can only implement other classes and mixins - test\mocks.dart:8:39 - implements_non_class
+  error - Undefined class 'CancelToken' - test\mocks.dart:130:5 - undefined_class
+  error - Target of URI doesn't exist: 'package:local_auth/local_auth.dart' - test\verification_test.dart:11:8 - uri_does_not_exist
+  error - Undefined class 'LocalAuthentication' - test\verification_test.dart:50:9 - undefined_class
+  error - The method 'LocalAuthentication' isn't defined for the type 'FakeBiometricService' - test\verification_test.dart:50:36 - undefined_method
+  error - The name 'BiometricType' isn't a type, so it can't be used as a type argument - test\verification_test.dart:59:15 - non_type_as_type_argument
+  error - Undefined name 'BiometricType' - test\verification_test.dart:60:9 - undefined_identifier
+

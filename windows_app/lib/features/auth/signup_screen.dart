@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/auth_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 /// Signup screen with email/password registration
 class SignupScreen extends ConsumerStatefulWidget {
@@ -23,9 +24,46 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
   String? _errorMessage;
+  double _passwordStrength = 0.0;
+  Color _passwordStrengthColor = AppColors.error;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_updatePasswordStrength);
+  }
+
+  void _updatePasswordStrength() {
+    final password = _passwordController.text;
+    double strength = 0;
+    
+    if (password.length >= 8) strength += 0.25;
+    if (RegExp(r'(?=.*[A-Z])').hasMatch(password)) strength += 0.25;
+    if (RegExp(r'(?=.*[a-z])').hasMatch(password)) strength += 0.25;
+    if (RegExp(r'(?=.*[0-9])').hasMatch(password)) strength += 0.25;
+
+    Color color;
+    if (strength <= 0.25) {
+      color = AppColors.error;
+    } else if (strength <= 0.5) {
+      color = Colors.orange;
+    } else if (strength <= 0.75) {
+      color = Colors.lightGreen;
+    } else {
+      color = AppColors.success;
+    }
+
+    if (mounted) {
+      setState(() {
+        _passwordStrength = strength;
+        _passwordStrengthColor = color;
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _passwordController.removeListener(_updatePasswordStrength);
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -39,12 +77,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     }
 
     if (!_agreeToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please agree to the Terms of Service'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppFeedback.showWarning(context, 'Please agree to the Terms of Service');
       return;
     }
 
@@ -262,16 +295,56 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Password requirements
+                    // Password requirements & strength indicator
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Password Strength',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                _passwordStrength == 0 
+                                    ? 'None' 
+                                    : _passwordStrength <= 0.25 
+                                        ? 'Weak' 
+                                        : _passwordStrength <= 0.5 
+                                            ? 'Fair' 
+                                            : _passwordStrength <= 0.75 
+                                                ? 'Good' 
+                                                : 'Strong',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: _passwordStrengthColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: _passwordStrength,
+                              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                              color: _passwordStrengthColor,
+                              minHeight: 6,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           Text(
                             'Password must contain:',
                             style: theme.textTheme.labelMedium?.copyWith(
@@ -286,6 +359,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           _PasswordRequirement(
                             text: 'One uppercase letter',
                             isMet: RegExp(r'(?=.*[A-Z])')
+                                .hasMatch(_passwordController.text),
+                          ),
+                          _PasswordRequirement(
+                            text: 'One lowercase letter',
+                            isMet: RegExp(r'(?=.*[a-z])')
                                 .hasMatch(_passwordController.text),
                           ),
                           _PasswordRequirement(

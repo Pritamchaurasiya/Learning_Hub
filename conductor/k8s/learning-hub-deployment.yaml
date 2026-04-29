@@ -1,0 +1,627 @@
+# Kubernetes Deployment Configurations
+# Learning Hub Platform - Production Ready K8s Setup
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: learning-hub
+  labels:
+    name: learning-hub
+    environment: production
+---
+# ConfigMap for Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learning-hub-config
+  namespace: learning-hub
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "learninghub.com,www.learninghub.com"
+  CORS_ALLOWED_ORIGINS: "https://learninghub.com,https://www.learninghub.com"
+  REDIS_URL: "redis://redis-service:6379/0"
+  DATABASE_URL: "postgresql://learninghub:${DB_PASSWORD}@postgres-service:5432/learninghub"
+  CELERY_BROKER_URL: "redis://redis-service:6379/0"
+  CELERY_RESULT_BACKEND: "redis://redis-service:6379/0"
+  EMAIL_HOST: "smtp.sendgrid.net"
+  EMAIL_PORT: "587"
+  DEFAULT_FROM_EMAIL: "noreply@learninghub.com"
+  SENTRY_DSN: "${SENTRY_DSN}"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+---
+# Secret for Sensitive Data
+apiVersion: v1
+kind: Secret
+metadata:
+  name: learning-hub-secrets
+  namespace: learning-hub
+type: Opaque
+data:
+  SECRET_KEY: <base64-encoded-secret-key>
+  DB_PASSWORD: <base64-encoded-db-password>
+  EMAIL_HOST_PASSWORD: <base64-encoded-email-password>
+  SENTRY_DSN: <base64-encoded-sentry-dsn>
+---
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: learning-hub
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: learninghub
+        - name: POSTGRES_USER
+          value: learninghub
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: learning-hub-secrets
+              key: DB_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - learninghub
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - learninghub
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 20Gi
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: learning-hub
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: learning-hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        command:
+        - redis-server
+        - --appendonly
+        - "yes"
+        - --requirepass
+        - ${REDIS_PASSWORD}
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: learning-hub
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+---
+# Redis Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: learning-hub
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Learning Hub Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learning-hub-backend
+  namespace: learning-hub
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: learning-hub-backend
+  template:
+    metadata:
+      labels:
+        app: learning-hub-backend
+    spec:
+      containers:
+      - name: backend
+        image: learninghub/backend:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: learning-hub-config
+        - secretRef:
+            name: learning-hub-secrets
+        volumeMounts:
+        - name: media-storage
+          mountPath: /app/media
+        - name: static-storage
+          mountPath: /app/static
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+      volumes:
+      - name: media-storage
+        persistentVolumeClaim:
+          claimName: media-pvc
+      - name: static-storage
+        persistentVolumeClaim:
+          claimName: static-pvc
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: learning-hub-backend-service
+  namespace: learning-hub
+spec:
+  selector:
+    app: learning-hub-backend
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP
+---
+# Celery Worker Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: learning-hub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: learninghub/backend:latest
+        command: ["celery", "-A", "config", "worker", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: learning-hub-config
+        - secretRef:
+            name: learning-hub-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - config
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - config
+            - inspect
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+# Celery Beat Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: learning-hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: learninghub/backend:latest
+        command: ["celery", "-A", "config", "beat", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: learning-hub-config
+        - secretRef:
+            name: learning-hub-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - pgrep
+            - -f
+            - celery
+            - beat
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - pgrep
+            - -f
+            - celery
+            - beat
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+# Nginx Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: learning-hub-ingress
+  namespace: learning-hub
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+spec:
+  tls:
+  - hosts:
+    - learninghub.com
+    - www.learninghub.com
+    secretName: learning-hub-tls
+  rules:
+  - host: learninghub.com
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /ws(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /admin(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /health(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+  - host: www.learninghub.com
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /ws(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /admin(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /health(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: learning-hub-backend-service
+            port:
+              number: 8000
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+---
+# Horizontal Pod Autoscaler for Backend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: learning-hub-backend-hpa
+  namespace: learning-hub
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: learning-hub-backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# Persistent Volume Claims
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-pvc
+  namespace: learning-hub
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: nfs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: static-pvc
+  namespace: learning-hub
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: nfs
+---
+# Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: learning-hub-network-policy
+  namespace: learning-hub
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: learning-hub-backend
+    - podSelector:
+        matchLabels:
+          app: celery-worker
+    - podSelector:
+        matchLabels:
+          app: celery-beat
+  - from:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - from:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: UDP
+      port: 53
+---
+# Resource Quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: learning-hub-quota
+  namespace: learning-hub
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+    services: "10"
+    secrets: "10"
+    configmaps: "10"

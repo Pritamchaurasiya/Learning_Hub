@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\models.py
+# hypothesis_version: 6.152.1
+
+[100, '-created_at', 'Completed', 'Enterprise Plan', 'Failed', 'INR', 'Pending', 'Pro Plan', 'Refunded', 'completed', 'coupons', 'courses.Course', 'created_at', 'enterprise', 'failed', 'gateway_payment_id', 'payments', 'pending', 'pro', 'refunded', 'status', 'subscription']

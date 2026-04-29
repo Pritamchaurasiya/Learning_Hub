@@ -1,10 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/course_model.dart';
 import '../../core/providers/course_provider.dart';
+import '../../core/utils/responsive.dart';
 import 'package:learning_hub/features/payment/presentation/widgets/payment_modal.dart';
 import 'widgets/course_detail_widgets.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
+import 'package:learning_hub/shared/widgets/error_view.dart';
+import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
 /// Course detail screen with curriculum, reviews, enrollment, and notes
 class CourseDetailScreen extends ConsumerStatefulWidget {
@@ -60,19 +64,13 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen>
   }
 
   void _showSuccessConfetti() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Enrollment Successful! Welcome to the course.'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppFeedback.showSuccess(
+        context, 'Enrollment Successful! Welcome to the course.');
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width >= 1024;
+    final isDesktop = Responsive.isDesktop(context);
 
     final courseAsync = ref.watch(courseDetailsProvider(widget.courseId));
 
@@ -80,7 +78,11 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen>
       body: courseAsync.when(
         data: (course) {
           if (course == null) {
-            return const Center(child: Text('Course not found'));
+            return const EmptyStateView(
+              icon: Icons.school_outlined,
+              title: 'Course Not Found',
+              subtitle: 'This course may have been removed or is unavailable.',
+            );
           }
           return isDesktop
               ? DesktopLayout(
@@ -97,8 +99,10 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen>
                 );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Error loading course: $err'),
+        error: (err, stack) => ErrorView(
+          title: 'Failed to Load Course',
+          subtitle: err.toString(),
+          onRetry: () => ref.invalidate(courseDetailsProvider(widget.courseId)),
         ),
       ),
       bottomNavigationBar: !isDesktop

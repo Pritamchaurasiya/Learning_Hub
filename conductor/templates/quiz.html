@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Test your knowledge with our interactive quizzes on Programming, AI, Web Development and more">
+    <meta property="og:title" content="Quiz | Learning Hub">
+    <meta property="og:description" content="Challenge yourself with interactive quizzes and track your progress.">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/quiz">
+    <title>Quiz | Learning Hub - Test Your Knowledge</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Skip to Content -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+  <!-- Navigation -->    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                Learning Hub
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/courses">Courses</a></li>
+                <li><a href="/quiz" class="active">Quiz</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Quiz Hero -->
+    <main id="main-content">
+    <section class="hero quiz-hero">
+        <div class="container">
+            <div class="section-header section-header-full">
+                <h1>Test Your <span class="text-gradient">Knowledge</span></h1>
+                <p>Challenge yourself with our interactive quizzes and track your progress</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Categories -->
+    <section class="section quiz-categories-section">
+        <div class="container">
+            <div class="courses-grid" id="quizCategories">
+                <div class="course-card quiz-category" data-quiz="python">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80" alt="Python Quiz">
+                        <span class="course-badge">10 Questions</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Programming</span>
+                        <h4>Python Fundamentals</h4>
+                        <p>Test your understanding of Python basics, data types, and control flow.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Easy</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="startQuiz('python')">Start Quiz</button>
+                    </div>
+                </div>
+
+                <div class="course-card quiz-category" data-quiz="javascript">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=600&q=80" alt="JavaScript Quiz">
+                        <span class="course-badge badge-orange">10 Questions</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Web Development</span>
+                        <h4>JavaScript Mastery</h4>
+                        <p>Challenge your JavaScript skills with ES6+, async/await, and more.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Medium</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="startQuiz('javascript')">Start Quiz</button>
+                    </div>
+                </div>
+
+                <div class="course-card quiz-category" data-quiz="ml">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&q=80" alt="ML Quiz">
+                        <span class="course-badge badge-purple">10 Questions</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">AI & ML</span>
+                        <h4>Machine Learning Basics</h4>
+                        <p>Test your knowledge of ML algorithms, concepts, and applications.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Hard</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="startQuiz('ml')">Start Quiz</button>
+                    </div>
+                </div>
+
+                <div class="course-card quiz-category" data-quiz="dsa">
+                    <div class="course-image">
+                        <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80" alt="DSA Quiz">
+                        <span class="course-badge badge-cyan">10 Questions</span>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-category">Computer Science</span>
+                        <h4>Data Structures & Algorithms</h4>
+                        <p>Master arrays, trees, graphs, and algorithmic problem-solving.</p>
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-stats">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Hard</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="startQuiz('dsa')">Start Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Modal -->
+    <div class="quiz-modal" id="quizModal">
+        <div class="container">
+            <div class="quiz-container">
+                <div class="quiz-card">
+                    <div class="quiz-header">
+                        <div class="quiz-progress">
+                            <span id="questionNumber">Question 1/10</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+                        <div class="quiz-timer">
+                            <i class="fas fa-clock"></i>
+                            <span id="timerDisplay">10:00</span>
+                        </div>
+                        <button onclick="closeQuiz()" class="quiz-close-btn" aria-label="Close quiz">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="quiz-question" id="quizQuestion">
+                    </div>
+                    
+                    <div class="quiz-actions">
+                        <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="quiz-modal" id="resultsModal">
+        <div class="container">
+            <div class="quiz-container">
+                <div class="quiz-card results-card">
+                    <div id="resultsIcon" class="results-icon">🎉</div>
+                    <h2 id="resultsTitle">Congratulations!</h2>
+                    <p id="resultsMessage" class="results-message">You scored 8 out of 10!</p>
+                    
+                    <div class="results-stats">
+                        <div class="stat">
+                            <div class="stat-number" id="scorePercent">80%</div>
+                            <div class="stat-label">Score</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="timeTaken">5:23</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="correctCount">8/10</div>
+                            <div class="stat-label">Correct</div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" onclick="closeResults()">Back to Quizzes</button>
+                        <button class="btn btn-outline" onclick="reviewAnswers()"><i class="fas fa-list-check"></i> Review Answers</button>
+                        <button class="btn btn-primary" onclick="retryQuiz()">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="quiz-modal" id="reviewModal">
+        <div class="container">
+            <div class="quiz-container review-container">
+                <div class="quiz-card">
+                    <div class="review-header">
+                        <h2><i class="fas fa-clipboard-check"></i> Answer Review</h2>
+                        <button onclick="closeReview()" class="quiz-close-btn" aria-label="Close review">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="reviewContent"></div>
+                    <div class="review-footer">
+                        <button class="btn btn-secondary" onclick="closeReview()">Close</button>
+                        <button class="btn btn-primary" onclick="closeReview(); retryQuiz();">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="navbar-brand footer-brand-link">
+                        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                        Learning Hub
+                    </a>
+                    <p>Empowering learners worldwide with cutting-edge AI-powered education.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Platform</h5>
+                    <ul><li><a href="/courses">Courses</a></li><li><a href="/quiz">Quizzes</a></li><li><a href="#" title="Coming Soon">Leaderboard</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li><li><a href="#" title="Coming Soon">Blog</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Support</h5>
+                    <ul><li><a href="/contact">Help</a></li><li><a href="#" title="Coming Soon">Privacy</a></li><li><a href="#" title="Coming Soon">Terms</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Learning Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+﻿..........................................F............................. [ 35%]
+........................................................................ [ 70%]
+.............................................................            [100%]
+================================== FAILURES ===================================
+__________ TestGamificationService.test_broadcast_leaderboard_update __________
+apps\gamification\tests\test_services.py:44: in test_broadcast_leaderboard_update
+    assert args[0][0] == 'social_updates'
+E   AssertionError: assert 'social_global' == 'social_updates'
+E     
+E     - social_updates
+E     + social_global
+---------------------------- Captured stderr call -----------------------------
+ERROR 2026-01-25 21:06:05,420 services 23144 13760 Failed to broadcast leaderboard update: object MagicMock can't be used in 'await' expression
+------------------------------ Captured log call ------------------------------
+DEBUG    asyncio:selector_events.py:64 Using selector: SelectSelector
+============================== warnings summary ===============================
+apps/gamification/tests/test_services.py::TestGamificationService::test_broadcast_leaderboard_update
+  C:\Users\shiva\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\asgiref\sync.py:606: UserWarning: async_to_sync was passed a non-async-marked callable
+    return AsyncToSync(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED apps/gamification/tests/test_services.py::TestGamificationService::test_broadcast_leaderboard_update
+1 failed, 204 passed, 1 warning in 91.06s (0:01:31)

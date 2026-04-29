@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn about Learning Hub - Our mission, team, and story">
+    <meta property="og:title" content="About Us | Learning Hub">
+    <meta property="og:description" content="Empowering millions of learners worldwide with AI-powered education.">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/about">
+    <title>About Us | Learning Hub</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Skip to Content -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+  <!-- Navigation -->    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                Learning Hub
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/courses">Courses</a></li>
+                <li><a href="/quiz">Quiz</a></li>
+                <li><a href="/about" class="active">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- About Hero -->
+    <main id="main-content">
+    <section class="hero" style="min-height: auto; padding: 120px 0 60px;">
+        <div class="container">
+            <div class="section-header" style="max-width: 100%;">
+                <h1>About <span class="text-gradient">Learning Hub</span></h1>
+                <p>Empowering millions of learners worldwide with AI-powered education</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" alt="Team collaboration at Learning Hub" loading="lazy" width="800" height="533">
+                </div>
+                <div class="about-text">
+                    <h2>Our <span class="text-gradient">Mission</span></h2>
+                    <p>We believe that quality education should be accessible to everyone, everywhere. Our mission is to democratize learning by combining cutting-edge AI technology with expert instruction to create personalized learning experiences.</p>
+                    <p>Founded in 2024, Learning Hub has grown from a small startup to a global platform serving over 10,000 students across 100+ countries. We're proud to have helped countless individuals transform their careers and lives through education.</p>
+                    
+                    <div style="display: flex; gap: var(--space-xl); margin-top: var(--space-xl);">
+                        <div class="stat">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Courses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="features section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our <span class="text-gradient">Values</span></h2>
+                <p>The principles that guide everything we do</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h4>Innovation</h4>
+                    <p>We constantly push boundaries to create better learning experiences using the latest technology.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: var(--gradient-secondary);"><i class="fas fa-users"></i></div>
+                    <h4>Accessibility</h4>
+                    <p>Quality education should be available to everyone, regardless of location or background.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: var(--gradient-accent);"><i class="fas fa-heart"></i></div>
+                    <h4>Community</h4>
+                    <p>We foster a supportive community where learners help each other succeed.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Meet Our <span class="text-gradient">Team</span></h2>
+                <p>The passionate people behind Learning Hub</p>
+            </div>
+            
+            <div class="team-grid">
+                <div class="team-member">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80" alt="John Smith - CEO and Founder" class="team-avatar" loading="lazy" width="300" height="300">
+                    <h4>John Smith</h4>
+                    <p class="team-role">CEO & Founder</p>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">Former Google engineer passionate about education technology.</p>
+                    <div class="team-socials">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="team-member">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80" alt="Sarah Johnson - CTO" class="team-avatar" loading="lazy" width="300" height="300">
+                    <h4>Sarah Johnson</h4>
+                    <p class="team-role">CTO</p>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">AI researcher with 10+ years in machine learning.</p>
+                    <div class="team-socials">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="team-member">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80" alt="Mike Chen - Head of Content" class="team-avatar" loading="lazy" width="300" height="300">
+                    <h4>Mike Chen</h4>
+                    <p class="team-role">Head of Content</p>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">Curriculum designer with expertise in online education.</p>
+                    <div class="team-socials">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="team-member">
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80" alt="Emily Davis - Head of Design" class="team-avatar" loading="lazy" width="300" height="300">
+                    <h4>Emily Davis</h4>
+                    <p class="team-role">Head of Design</p>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">UX expert focused on creating delightful user experiences.</p>
+                    <div class="team-socials">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-dribbble"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="background: var(--gradient-primary); color: white; text-align: center;">
+        <div class="container">
+            <h2 style="color: white;">Join Our Journey</h2>
+            <p style="max-width: 600px; margin: 0 auto var(--space-xl); opacity: 0.9;">We're always looking for talented individuals to join our team.</p>
+            <a href="#" class="btn" style="background: white; color: var(--primary-600);" title="Coming Soon">
+                View Open Positions
+            </a>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="navbar-brand" style="color: white;">
+                        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                        Learning Hub
+                    </a>
+                    <p>Empowering learners worldwide with cutting-edge AI-powered education.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Platform</h5>
+                    <ul><li><a href="/courses">Courses</a></li><li><a href="/quiz">Quizzes</a></li><li><a href="#" title="Coming Soon">Leaderboard</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li><li><a href="#" title="Coming Soon">Blog</a></li></ul>
+                </div>
+                <div class="footer-links">
+                    <h5>Support</h5>
+                    <ul><li><a href="/contact">Help</a></li><li><a href="#" title="Coming Soon">Privacy</a></li><li><a href="#" title="Coming Soon">Terms</a></li></ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Learning Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

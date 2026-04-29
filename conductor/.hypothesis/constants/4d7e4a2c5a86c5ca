@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0006_payment_is_active.py
+# hypothesis_version: 6.152.1
+
+['is_active', 'payment', 'payments']

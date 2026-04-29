@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, 120, 160, 200, 220, 300, '-created_at', 'Advanced', 'Beginner', 'Categories', 'Category', 'Course', 'Enrollment', 'Intermediate', 'Review', 'advanced', 'avg_rating', 'beginner', 'categories', 'category', 'completed_at', 'content', 'courses', 'courses.category', 'courses/thumbnails/', 'created_at', 'db_table', 'description', 'difficulty', 'duration_hours', 'enrollment_count', 'enrollments', 'icon', 'id', 'intermediate', 'is_active', 'is_approved', 'is_featured', 'is_free', 'is_published', 'last_accessed_at', 'learning_objectives', 'lessons_count', 'meta_description', 'meta_title', 'name', 'order', 'ordering', 'parent', 'preview_video', 'price', 'progress_percentage', 'published_at', 'rating', 'requirements', 'review_count', 'reviews', 'short_description', 'slug', 'subcategories', 'thumbnail', 'title', 'updated_at', 'verbose_name_plural']

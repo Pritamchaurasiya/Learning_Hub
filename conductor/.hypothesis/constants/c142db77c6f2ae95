@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0002_organization_organizationmember.py
+# hypothesis_version: 6.152.1
+
+[200, '0001_initial', 'Admin', 'Manager', 'Member', 'Organization', 'OrganizationMember', 'admin', 'created_at', 'db_table', 'free', 'id', 'manager', 'max_seats', 'member', 'members', 'name', 'organization', 'organization_members', 'organizations', 'owned_organizations', 'owner', 'role', 'slug', 'subscription_plan', 'unique_together', 'updated_at', 'user', 'users', 'users.organization']

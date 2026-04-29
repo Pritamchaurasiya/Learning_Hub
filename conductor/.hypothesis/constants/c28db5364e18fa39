@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\downloads\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-downloaded_at', 'Certificate', 'Document', 'Quiz', 'Size in bytes', 'Video', 'certificate', 'content_id', 'content_type', 'document', 'downloads', 'quiz', 'user', 'video']

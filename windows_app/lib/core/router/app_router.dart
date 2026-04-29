@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/user_model.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
@@ -99,6 +100,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+
+      // Onboarding Screen
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
 
       // ... (existing routes)
@@ -341,28 +349,143 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
 
-    // Error page
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Page Not Found')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Page not found: ${state.matchedLocation}',
-              style: Theme.of(context).textTheme.titleMedium,
+    // Premium Error Page
+    errorBuilder: (context, state) {
+      final theme = Theme.of(context);
+      final isDark = theme.brightness == Brightness.dark;
+      return Scaffold(
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Animated 404 illustration
+                  Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary.withValues(alpha: 0.1),
+                          theme.colorScheme.secondary.withValues(alpha: 0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '404',
+                        style: theme.textTheme.displayLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          foreground: Paint()
+                            ..shader = LinearGradient(
+                              colors: [
+                                theme.colorScheme.primary,
+                                theme.colorScheme.secondary,
+                              ],
+                            ).createShader(
+                                const Rect.fromLTWH(0, 0, 200, 70)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Oops! Page Not Found',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'The page you\'re looking for doesn\'t exist or has been moved. Let\'s get you back on track.',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      state.uri.path,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontFamily: 'monospace',
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  // Primary CTA
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.go('/'),
+                      icon: const Icon(Icons.home_outlined),
+                      label: const Text('Go to Home'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Secondary CTA
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.go('/search'),
+                      icon: const Icon(Icons.search),
+                      label: const Text('Search Courses'),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // Quick links
+                  Text(
+                    'Popular Destinations',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _QuickLink(
+                          label: 'My Learning',
+                          onTap: () => context.go('/library')),
+                      _QuickLink(
+                          label: 'AI Tutor',
+                          onTap: () => context.go('/ai-tutor')),
+                      _QuickLink(
+                          label: 'Live Classes',
+                          onTap: () => context.go('/')),
+                      _QuickLink(
+                          label: 'Profile',
+                          onTap: () => context.go('/profile')),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Go Home'),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 });
 
@@ -430,5 +553,33 @@ extension GoRouterExtensions on GoRouter {
   /// Navigate to peer reviews
   void goToPeerReviews() {
     go('/peer-reviews');
+  }
+}
+
+/// Quick link chip widget for 404 error page
+class _QuickLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ActionChip(
+      label: Text(label),
+      onPressed: onTap,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      labelStyle: theme.textTheme.labelMedium?.copyWith(
+        color: theme.colorScheme.primary,
+        fontWeight: FontWeight.w500,
+      ),
+      side: BorderSide(
+        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
   }
 }

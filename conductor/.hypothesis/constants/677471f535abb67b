@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\quiz\admin.py
+# hypothesis_version: 6.152.1
+
+['...', 'Question', 'attempt', 'attempt_number', 'course', 'created_at', 'description', 'is_correct', 'is_published', 'marks', 'marks_obtained', 'max_score', 'order', 'passing_score', 'percentage_score', 'question', 'question__text', 'question_preview', 'question_type', 'quiz', 'quiz__title', 'score', 'selected_option', 'started_at', 'status', 'text', 'text_answer', 'text_preview', 'time_limit_minutes', 'time_taken_seconds', 'title', 'user', 'user__username']

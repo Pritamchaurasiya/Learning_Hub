@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0013_remove_category_idx_category_active_name_and_more.py
+# hypothesis_version: 6.152.1
+
+['category', 'certificate', 'course', 'courses', 'created_at', 'enrollment', 'idx_cert_code', 'idx_cert_user_date', 'idx_review_rating', 'idx_review_user_date', 'lesson', 'module', 'progress_percentage', 'rating', 'rating__gte', 'rating__lte', 'review', 'user']

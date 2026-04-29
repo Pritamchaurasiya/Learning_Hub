@@ -1,0 +1,33 @@
+Analyzing lib...
+
+warning - core\services\ai\backend_llm_client.dart:45:53 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - core\services\ai\backend_llm_client.dart:47:31 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - core\services\ai\backend_llm_client.dart:70:53 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - core\services\ai\backend_llm_client.dart:72:31 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - core\services\ai_tutor_service.dart:9:8 - Unused import: 'ai/gemini_client.dart'. Try removing the import directive. - unused_import
+warning - core\services\backend_ai_service.dart:10:41 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - core\services\backend_ai_service.dart:34:41 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - core\services\backend_ai_service.dart:53:41 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - features\analytics\analytics_dashboard_screen.dart:38:49 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - features\analytics\analytics_dashboard_screen.dart:46:27 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - features\course\lesson_player_screen.dart:79:36 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - features\course\lesson_player_screen.dart:99:23 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - features\dsa\dsa_problem_controller.dart:53:41 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - features\dsa\dsa_problem_controller.dart:76:41 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - features\gamification\challenges_screen.dart:134:50 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - features\gamification\challenges_screen.dart:144:45 - The type argument(s) of the function 'get' can't be inferred. Use explicit type argument(s) for 'get'. - inference_failure_on_function_invocation
+warning - features\gamification\challenges_screen.dart:160:23 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+warning - features\home\home_screen.dart:527:40 - The type argument(s) of the function 'post' can't be inferred. Use explicit type argument(s) for 'post'. - inference_failure_on_function_invocation
+   info - core\services\ai\backend_llm_client.dart:75:13 - Unnecessary use of double quotes. Try using single quotes unless the string contains single quotes. - prefer_single_quotes
+   info - features\analytics\analytics_dashboard_screen.dart:39:11 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\analytics\analytics_dashboard_screen.dart:41:39 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\analytics\analytics_dashboard_screen.dart:47:11 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\analytics\analytics_dashboard_screen.dart:49:35 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\gamification\challenges_screen.dart:135:11 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\gamification\challenges_screen.dart:137:14 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\gamification\challenges_screen.dart:145:11 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\gamification\challenges_screen.dart:146:19 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\home\home_screen.dart:529:36 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+   info - features\home\home_screen.dart:531:24 - Method invocation or property access on a 'dynamic' target. Try giving the target a type. - avoid_dynamic_calls
+
+29 issues found.

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\tutors\views.py
+# hypothesis_version: 6.152.1
+
+['-rating', '-start_time', '-total_reviews', 'Booking cancelled', 'Booking completed', 'Booking confirmed', 'Tutors', 'cancelled', 'completed', 'confirmed', 'data', 'end_time', 'error', 'get', 'hourly_rate', 'limit', 'message', 'notes', 'pending', 'post', 'rating', 'reason', 'skills', 'start_time', 'status', 'student', 'success', 'total_reviews', 'tutor', 'tutor__user', 'tutor_profile', 'updated_at', 'user', 'user__first_name', 'user__last_name']

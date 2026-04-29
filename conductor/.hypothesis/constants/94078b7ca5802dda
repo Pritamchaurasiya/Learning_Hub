@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0014_lesson_lessons_module__1db223_idx_and_more.py
+# hypothesis_version: 6.152.1
+
+['course', 'courses', 'lesson', 'module', 'order', 'track_courses', 'trackcourse']

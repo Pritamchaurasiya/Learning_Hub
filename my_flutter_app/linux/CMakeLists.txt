@@ -1,6 +1,7 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.13)
-isproject(runner LANGUAGES CXX)
+
+project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
@@ -40,8 +41,11 @@ endif()
 # default. In most cases, you should add new options to specific targets instead
 # of modifying this function.
 function(APPLY_STANDARD_SETTINGS TARGET)
-  target_compile_features(${TARGET} PUBLIC cxx_std_14)
-  target_compile_options(${TARGET} PRIVATE -Wall -Werror)
+  target_compile_features(${TARGET} PUBLIC cxx_std_17)
+  target_compile_options(${TARGET} PRIVATE -Wall -Werror -fstack-protector-strong)
+  target_compile_options(${TARGET} PRIVATE -pie -fPIE)
+  target_compile_definitions(${TARGET} PRIVATE "_FORTIFY_SOURCE=2")
+  target_compile_definitions(${TARGET} PRIVATE "_GLIBCXX_ASSERTIONS")
   target_compile_options(${TARGET} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-O3>")
   target_compile_definitions(${TARGET} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:NDEBUG>")
 endfunction()

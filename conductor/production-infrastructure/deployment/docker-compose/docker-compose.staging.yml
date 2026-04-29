@@ -1,0 +1,63 @@
+version: "3.8"
+
+services:
+  web:
+    image: learning-hub:staging
+    container_name: learning-hub-web-staging
+    env_file:
+      - .env.staging
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:13-alpine
+    container_name: learning-hub-postgres-staging
+    env_file:
+      - .env.staging
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+      - ./secrets/db_password_staging.txt:/run/secrets/db_password:ro
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    container_name: learning-hub-redis-staging
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_staging:/data
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: learning-hub-nginx-staging
+    ports:
+      - "8080:80"
+    volumes:
+      - ./security/nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/static:ro
+      - media_volume:/media:ro
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  postgres_data_staging:
+  redis_data_staging:
+  static_volume:
+  media_volume:

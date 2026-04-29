@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\live_sessions\urls.py
+# hypothesis_version: 6.152.1
+
+[400, '+00:00', 'GET', 'POST', 'Title required', 'Z', 'course_id', 'create/', 'create_poll', 'create_session', 'data', 'description', 'duration_minutes', 'duration_seconds', 'end_session', 'error', 'get_participants', 'join_session', 'limit', 'live-session', 'live/', 'live_now', 'message', 'option_index', 'options', 'poll_results', 'question', 'scheduled_time', 'sessions', 'start_session', 'status', 'success', 'title', 'upcoming/', 'upcoming_sessions', 'vote_poll']

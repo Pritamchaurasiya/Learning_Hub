@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, 128, 255, 500, '-created_at', 'Admin', 'Instructor', 'PasswordResetToken', 'Student', 'User', 'Users', 'admin', 'auth', 'auth.group', 'auth.permission', 'avatar', 'avatars/', 'bio', 'created_at', 'db_table', 'display_name', 'email', 'expires_at', 'groups', 'id', 'instructor', 'is_active', 'is_staff', 'is_superuser', 'is_used', 'is_verified', 'last login', 'last_login', 'last_login_at', 'ordering', 'password', 'phone', 'preferences', 'role', 'student', 'superuser status', 'token', 'updated_at', 'user', 'user permissions', 'user_permissions', 'user_set', 'username', 'users', 'verbose_name', 'verbose_name_plural', 'verified_at']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\video_service.py
+# hypothesis_version: 6.152.1
+
+[360, 720, '#EXT-X-VERSION:3\n', '#EXTM3U\n', '1080p.m3u8', '360p.m3u8', '720p.m3u8', 'Error', 'fast', 'hls', 'hls_playlist', 'libx264', 'master.m3u8', 'scale', 'w']

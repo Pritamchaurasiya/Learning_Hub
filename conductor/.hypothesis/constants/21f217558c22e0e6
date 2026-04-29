@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\ai_client.py
+# hypothesis_version: 6.152.1
+
+[0.1, 0.2, 0.3, 0.4, 0.7, 300, 3600, "'text' or 'quiz'", 'AI Request Latency', 'AI Unavailable', 'Beginner', 'Empty AI Response', 'Error', 'GEMINI_API_KEY', 'Moderation Error', 'No Response', 'Review Material', 'Score from 0-100', 'Total AI errors', '_embedder', 'action_items', 'ai_errors_total', 'ai_tokens_total', 'all-MiniLM-L6-v2', 'application/json', 'audio', 'audio/mp3', 'description', 'dsa_chat', 'dsa_chat_input', 'dsa_chat_output', 'en', 'error', 'error_type', 'flagged', 'flags', 'gemini-1.5-flash', 'gemini-2.0-flash', 'image/jpeg', 'is_safe', 'model', 'open', 'operation', 'reason', 'resources', 'response_mime_type', 'root_cause', 'title', 'tts']

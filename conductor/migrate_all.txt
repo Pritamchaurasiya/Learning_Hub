@@ -1,0 +1,33 @@
+﻿.\venv\Scripts\python : {"event": "DSA signals registered successfully"}
+At line:1 char:109
++ ... s_app\conductor; .\venv\Scripts\python manage.py migrate 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({"event": "DSA ... successfully"} 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+{"event": "Handler subscribed to user.registered"}
+{"event": "Handler subscribed to course.enrolled"}
+{"event": "Handler subscribed to payment.completed"}
+{"event": "Handler subscribed to lesson.completed"}
+{"event": "Handler subscribed to security.threat_detected"}
+{"event": "Handler subscribed to system.alert"}
+{"event": "[EventBus] All 6 subscribers registered successfully."}
+Operations to perform:
+  Apply all migrations: admin, ai_engine, auth, axes, chat, contenttypes, courses, dashboard, discussions, downloads, dsa, gamification, live_sessions, metaverse, neuro, notifications, payments, sessions, study_groups, support, token_blacklist, tutors, users, web3
+Running migrations:
+  Applying ai_engine.0009_activitylog_is_active_challengeparticipant_is_active_and_more... OK
+  Applying chat.0002_remove_message_is_read_conversation_group_name_and_more... OK
+  Applying courses.0011_certificate_is_active_course_is_active_and_more... OK
+  Applying dashboard.0002_lessonactivity_is_active_videointeraction_is_active... OK
+  Applying discussions.0002_discussionreply_is_active_discussionreply_parent_and_more... OK
+  Applying gamification.0004_badge_is_active_guild_is_active_and_more... OK
+  Applying live_sessions.0002_livesession_is_active_sessionattendee_is_active... OK
+  Applying metaverse.0002_avatarstate_is_active... OK
+  Applying neuro.0002_brainwavesession_is_active... OK
+  Applying notifications.0004_notification_is_active_smartnotification_is_active_and_more... OK
+  Applying payments.0006_payment_is_active... OK
+  Applying support.0002_remove_feedback_is_resolved_and_more... OK
+  Applying tutors.0002_booking_is_active_tutorprofile_is_active... OK
+  Applying users.0003_organization_is_active_organizationmember_is_active_and_more... OK
+  Applying web3.0002_nftcertificate_is_active_userprofileweb3_is_active... OK

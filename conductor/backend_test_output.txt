@@ -1,0 +1,105 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.0.2, pluggy-1.6.0
+django: version: 5.2.10, settings: config.settings.development (from ini)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, Faker-40.1.0, locust-2.43.1, asyncio-1.3.0, cov-7.0.0, django-4.11.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 5 items
+
+apps\courses\tests\test_services.py EEEEE                                [100%]
+
+=================================== ERRORS ====================================
+___________ ERROR at setup of TestCourseService.test_search_courses ___________
+file C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py, line 12
+      def test_search_courses(self, course_factory):
+E       fixture 'course_factory' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_faker, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, auth_client, authenticated_client, badge, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, category, category_web, client, course, course_web, cov, create_course, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, enrollment, event_loop_policy, faker, fastsession, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, hidden_test_case, instructor, instructor_client, live_server, mailoutbox, monkeypatch, no_cover, problem, problem_medium, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session, settings, streak, submission, subtests, tag, tag_dp, test_case, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, user, user_factory, user_xp
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py:12
+----------------------------- Captured log setup ------------------------------
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.address`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.address` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.automotive`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.automotive` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.bank`.
+DEBUG    faker.factory:factory.py:88 Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.barcode`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.barcode` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.color`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.color` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.company`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.company` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.credit_card`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.credit_card` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.currency`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.currency` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.date_time`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.date_time` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.doi` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.geo`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.geo` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.internet`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.internet` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.isbn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.isbn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.job`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.job` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.lorem`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.lorem` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.misc`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.misc` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.passport`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.passport` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.person`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.person` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.phone_number`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.phone_number` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not used for this provider.
+DEBUG    faker.factory:factory.py:78 Looking for locale `en_US` in provider `faker.providers.ssn`.
+DEBUG    faker.factory:factory.py:97 Provider `faker.providers.ssn` has been localized to `en_US`.
+DEBUG    faker.factory:factory.py:108 Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not used for this provider.
+__________ ERROR at setup of TestEnrollmentService.test_enroll_user ___________
+file C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py, line 29
+      def test_enroll_user(self, user_factory, course_factory):
+E       fixture 'course_factory' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_faker, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, auth_client, authenticated_client, badge, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, category, category_web, client, course, course_web, cov, create_course, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, enrollment, event_loop_policy, faker, fastsession, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, hidden_test_case, instructor, instructor_client, live_server, mailoutbox, monkeypatch, no_cover, problem, problem_medium, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session, settings, streak, submission, subtests, tag, tag_dp, test_case, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, user, user_factory, user_xp
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py:29
+____ ERROR at setup of TestEnrollmentService.test_enroll_already_enrolled _____
+file C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py, line 38
+      def test_enroll_already_enrolled(self, user_factory, course_factory):
+E       fixture 'course_factory' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_faker, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, auth_client, authenticated_client, badge, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, category, category_web, client, course, course_web, cov, create_course, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, enrollment, event_loop_policy, faker, fastsession, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, hidden_test_case, instructor, instructor_client, live_server, mailoutbox, monkeypatch, no_cover, problem, problem_medium, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session, settings, streak, submission, subtests, tag, tag_dp, test_case, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, user, user_factory, user_xp
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py:38
+___________ ERROR at setup of TestEnrollmentService.test_add_review ___________
+file C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py, line 46
+      def test_add_review(self, user_factory, course_factory):
+E       fixture 'course_factory' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_faker, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, auth_client, authenticated_client, badge, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, category, category_web, client, course, course_web, cov, create_course, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, enrollment, event_loop_policy, faker, fastsession, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, hidden_test_case, instructor, instructor_client, live_server, mailoutbox, monkeypatch, no_cover, problem, problem_medium, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session, settings, streak, submission, subtests, tag, tag_dp, test_case, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, user, user_factory, user_xp
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py:46
+____ ERROR at setup of TestEnrollmentService.test_add_review_not_enrolled _____
+file C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py, line 58
+      def test_add_review_not_enrolled(self, user_factory, course_factory):
+E       fixture 'course_factory' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_faker, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, auth_client, authenticated_client, badge, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, category, category_web, client, course, course_web, cov, create_course, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, enrollment, event_loop_policy, faker, fastsession, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, hidden_test_case, instructor, instructor_client, live_server, mailoutbox, monkeypatch, no_cover, problem, problem_medium, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session, settings, streak, submission, subtests, tag, tag_dp, test_case, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, user, user_factory, user_xp
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\tests\test_services.py:58
+=========================== short test summary info ===========================
+ERROR apps/courses/tests/test_services.py::TestCourseService::test_search_courses
+ERROR apps/courses/tests/test_services.py::TestEnrollmentService::test_enroll_user
+ERROR apps/courses/tests/test_services.py::TestEnrollmentService::test_enroll_already_enrolled
+ERROR apps/courses/tests/test_services.py::TestEnrollmentService::test_add_review
+ERROR apps/courses/tests/test_services.py::TestEnrollmentService::test_add_review_not_enrolled
+============================== 5 errors in 1.23s ==============================

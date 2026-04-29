@@ -86,6 +86,7 @@ class Certificate {
       if (i > 0 && i % 4 == 0) {
         buffer.write('-');
       }
+
       buffer.write(chars[random.nextInt(chars.length)]);
     }
 

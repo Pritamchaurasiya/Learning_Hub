@@ -12,14 +12,19 @@ from ..views import (
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
+    UserProfileViewSet,
 )
 
 app_name = "auth"
+
+# ViewSet action for /auth/me/
+me_view = UserProfileViewSet.as_view({"get": "profile"})
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("me/", me_view, name="me"),
     path("refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),
@@ -29,3 +34,4 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
 ]
+

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0002_initial.py
+# hypothesis_version: 6.152.1
+
+['-enrollment_count', '0001_initial', 'category', 'course', 'courses', 'courses.course', 'courses_taught', 'enrollment', 'enrollments', 'instructor', 'is_published', 'review', 'reviews', 'slug', 'user']

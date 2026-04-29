@@ -1,0 +1,23 @@
+﻿.\venv\Scripts\python : {"event": "DSA signals registered successfully"}
+At line:1 char:109
++ ... s_app\conductor; .\venv\Scripts\python manage.py migrate 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({"event": "DSA ... successfully"} 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+{"event": "Handler subscribed to user.registered"}
+{"event": "Handler subscribed to course.enrolled"}
+{"event": "Handler subscribed to payment.completed"}
+{"event": "Handler subscribed to lesson.completed"}
+{"event": "Handler subscribed to security.threat_detected"}
+{"event": "Handler subscribed to system.alert"}
+{"event": "[EventBus] All 6 subscribers registered successfully."}
+Operations to perform:
+  Apply all migrations: admin, ai_engine, auth, axes, chat, contenttypes, courses, dashboard, discussions, downloads, dsa, gamification, live_sessions, metaverse, neuro, notifications, payments, sessions, study_groups, support, token_blacklist, tutors, users, web3
+Running migrations:
+  Applying ai_engine.0008_semanticcache_humanpreference... OK
+  Applying courses.0010_trackcourse_created_at_trackcourse_updated_at_and_more... OK
+  Applying metaverse.0001_initial... OK
+  Applying neuro.0001_initial... OK
+  Applying web3.0001_initial... OK

@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from apps.users.serializers import UserListSerializer
 
-from .models import Category, Course, Enrollment, Review
+from .models import Category, Course, Enrollment, Review, Certificate, Module, Lesson, CareerTrack, TrackCourse
 
 
 from drf_spectacular.utils import extend_schema_field
@@ -34,12 +34,19 @@ class CategorySerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_subcategories(self, obj):
         """Get nested subcategories."""
-        subs = obj.subcategories.filter(is_active=True)
+        # Use active_subcategories from prefetch if available, else fallback to query
+        if hasattr(obj, "active_subcategories"):
+            subs = obj.active_subcategories
+        else:
+            subs = obj.subcategories.filter(is_active=True)
         return CategorySerializer(subs, many=True).data
 
     @extend_schema_field(serializers.IntegerField())
     def get_course_count(self, obj):
         """Get count of published courses."""
+        # Use annotated count if available
+        if hasattr(obj, "published_course_count"):
+            return obj.published_course_count
         return obj.courses.filter(is_published=True).count()
 
 
@@ -71,6 +78,20 @@ class CourseListSerializer(serializers.ModelSerializer):
         ]
 
 
+class LessonSerializer(serializers.ModelSerializer):
+    """Serializer for individual lessons."""
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'slug', 'content_type', 'duration_minutes', 'is_preview', 'is_pro_only', 'order']
+
+class ModuleSerializer(serializers.ModelSerializer):
+    """Serializer for course modules."""
+    lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'description', 'order', 'lessons']
+
 class CourseDetailSerializer(serializers.ModelSerializer):
     """Serializer for course detail view."""
 
@@ -78,6 +99,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     is_enrolled = serializers.SerializerMethodField()
     user_progress = serializers.SerializerMethodField()
+    modules = ModuleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -89,6 +111,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "preview_video",
+            "hls_playlist",
             "instructor",
             "category",
             "price",
@@ -105,6 +128,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "is_featured",
             "is_enrolled",
             "user_progress",
+            "modules",
             "created_at",
             "published_at",
         ]
@@ -163,7 +187,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Rating must be between 1 and 5.")
         return value
 
-
 class CreateReviewSerializer(serializers.ModelSerializer):
     """Serializer for creating a review."""
 
@@ -176,3 +199,44 @@ class CreateReviewSerializer(serializers.ModelSerializer):
         if value < 1 or value > 5:
             raise serializers.ValidationError("Rating must be between 1 and 5.")
         return value
+
+
+class CertificateSerializer(serializers.ModelSerializer):
+    """Serializer for course certificates."""
+    
+    course_title = serializers.CharField(source='course.title', read_only=True)
+    student_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Certificate
+        fields = ['id', 'certificate_code', 'course_title', 'student_name', 'issued_at', 'signature']
+        read_only_fields = ['id', 'certificate_code', 'issued_at']
+
+
+class TrackCourseSerializer(serializers.ModelSerializer):
+    """Serializer for courses within a track."""
+    course = CourseListSerializer()
+    
+    class Meta:
+        model = TrackCourse
+        fields = ['course', 'order', 'is_required']
+
+class CareerTrackSerializer(serializers.ModelSerializer):
+    """Serializer for Career Tracks."""
+    courses = serializers.SerializerMethodField()
+    course_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CareerTrack
+        fields = ['id', 'title', 'slug', 'description', 'thumbnail', 'courses', 'course_count']
+    
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
+    def get_courses(self, obj):
+        """Get courses in this track."""
+        track_courses = obj.trackcourse_set.select_related('course').order_by('order')
+        return TrackCourseSerializer(track_courses, many=True).data
+    
+    @extend_schema_field(serializers.IntegerField())
+    def get_course_count(self, obj):
+        """Get count of courses in this track."""
+        return obj.courses.count()

@@ -1,4 +1,3 @@
-
 import os
 import django
 import sys
@@ -15,4 +14,5 @@ try:
 except Exception as e:
     print(f"Django setup FAILED: {e}")
     import traceback
+
     traceback.print_exc()

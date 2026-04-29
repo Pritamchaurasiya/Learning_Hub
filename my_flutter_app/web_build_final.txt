@@ -1,0 +1,26 @@
+﻿flutter : Could not find 
+an option named 
+"--web-renderer".
+At line:1 char:1
++ flutter build web 
+--release --web-renderer 
+canvaskit 2>&1 | Out-File 
+ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpe    cified: 
+(Could n    ot find 
+...-web-    
+renderer".:Strin    g) 
+[], RemoteExc    eption
+    + FullyQualified    
+ErrorId : Native    
+CommandError
+ 
+
+Run 'flutter -h' (or 
+'flutter <command> -h') 
+for available flutter 
+commands and options.

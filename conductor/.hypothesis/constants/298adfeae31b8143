@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, 'AC', 'Accepted', 'CE', 'Compilation Error', 'EASY', 'Easy', 'HARD', 'Hard', 'ID', 'MEDIUM', 'Markdown supported', 'Medium', 'PENDING', 'Pending', 'Problem', 'RE', 'Runtime Error', 'Submission', 'TLE', 'TestCase', 'Time Limit Exceeded', 'WA', 'Wrong Answer', 'code', 'constraints', 'created_at', 'description', 'difficulty', 'dsa.problem', 'error_log', 'expected_output', 'explanation', 'id', 'input_data', 'input_format', 'is_active', 'is_hidden', 'language', 'memory_kb', 'output_format', 'points', 'problem', 'python', 'runtime_ms', 'slug', 'status', 'submissions', 'submitted_at', 'test_cases', 'title', 'updated_at', 'user']

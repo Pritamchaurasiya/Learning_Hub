@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\urls.py
+# hypothesis_version: 6.152.1
+
+['apply-coupon', 'apply-coupon/', 'create-order', 'create-order/', 'history', 'history/', 'refund', 'refund/', 'stats', 'stats/', 'subscribe', 'subscribe/', 'verify', 'verify/']

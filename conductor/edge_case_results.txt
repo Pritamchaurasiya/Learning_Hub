@@ -1,0 +1,189 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\shiva\Desktop\windows_app\conductor\venv\Scripts\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+django: version: 5.0.1, settings: config.settings.test (from option)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, hypothesis-6.152.1, asyncio-1.3.0, django-4.12.0, mock-3.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 24 items
+
+tests/test_edge_cases.py::TestSystemEdgeCases::test_study_group_overflow_prevention PASSED [  4%]
+tests/test_edge_cases.py::TestSystemEdgeCases::test_payment_duplicate_order_prevention ERROR [  8%]
+tests/test_edge_cases.py::TestSystemEdgeCases::test_gamification_streak_resilience PASSED [ 12%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_list_pagination_boundary ERROR [ 16%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_search_special_characters FAILED [ 20%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_detail_invalid_slug PASSED [ 25%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_enrollment_already_enrolled ERROR [ 29%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_enrollment_unauthenticated ERROR [ 33%]
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_with_extremely_long_title ERROR [ 37%]
+tests/test_edge_cases_courses.py::TestCourseReviewEdgeCases::test_review_invalid_rating_values ERROR [ 41%]
+tests/test_edge_cases_courses.py::TestCourseReviewEdgeCases::test_review_very_long_content ERROR [ 45%]
+tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_xp_calculation_extreme_values ERROR [ 50%]
+tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_leaderboard_pagination_edge_cases PASSED [ 54%]
+tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_streak_calculation_timezone_edge_cases ERROR [ 58%]
+tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_badge_awarding_duplicate ERROR [ 62%]
+tests/test_edge_cases_gamification.py::TestGamificationPerformanceEdgeCases::test_leaderboard_with_no_users PASSED [ 66%]
+tests/test_edge_cases_gamification.py::TestGamificationPerformanceEdgeCases::test_concurrent_xp_updates ERROR [ 70%]
+tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_login_invalid_credentials PASSED [ 75%]
+tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_register_duplicate_email ERROR [ 79%]
+tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_register_weak_passwords PASSED [ 83%]
+tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_register_mismatched_passwords PASSED [ 87%]
+tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_token_refresh_invalid_token PASSED [ 91%]
+tests/test_edge_cases_users.py::TestUserProfileEdgeCases::test_update_profile_invalid_data ERROR [ 95%]
+tests/test_edge_cases_users.py::TestUserProfileEdgeCases::test_unauthorized_profile_access PASSED [100%]
+
+=================================== ERRORS ====================================
+_ ERROR at setup of TestSystemEdgeCases.test_payment_duplicate_order_prevention _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases.py, line 42
+      def test_payment_duplicate_order_prevention(self, db, create_user, course):
+E       fixture 'course' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases.py:42
+_ ERROR at setup of TestCourseEdgeCases.test_course_list_pagination_boundary __
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 15
+      def test_course_list_pagination_boundary(self, api_client, course):
+E       fixture 'course' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:15
+_ ERROR at setup of TestCourseEdgeCases.test_course_enrollment_already_enrolled _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 63
+      def test_course_enrollment_already_enrolled(self, api_client, user, course):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:63
+_ ERROR at setup of TestCourseEdgeCases.test_course_enrollment_unauthenticated _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 80
+      def test_course_enrollment_unauthenticated(self, api_client, course):
+E       fixture 'course' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:80
+_ ERROR at setup of TestCourseEdgeCases.test_course_with_extremely_long_title _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 85
+      def test_course_with_extremely_long_title(self, api_client, instructor):
+E       fixture 'instructor' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:85
+_ ERROR at setup of TestCourseReviewEdgeCases.test_review_invalid_rating_values _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 107
+      def test_review_invalid_rating_values(self, api_client, user, course):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:107
+__ ERROR at setup of TestCourseReviewEdgeCases.test_review_very_long_content __
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py, line 132
+      def test_review_very_long_content(self, api_client, user, course):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:132
+_ ERROR at setup of TestGamificationEdgeCases.test_xp_calculation_extreme_values _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py, line 15
+      def test_xp_calculation_extreme_values(self, user):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py:15
+_ ERROR at setup of TestGamificationEdgeCases.test_streak_calculation_timezone_edge_cases _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py, line 46
+      def test_streak_calculation_timezone_edge_cases(self, user):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py:46
+__ ERROR at setup of TestGamificationEdgeCases.test_badge_awarding_duplicate __
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py, line 58
+      def test_badge_awarding_duplicate(self, user, badge):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py:58
+_ ERROR at setup of TestGamificationPerformanceEdgeCases.test_concurrent_xp_updates _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py, line 83
+      def test_concurrent_xp_updates(self, user):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_gamification.py:83
+____ ERROR at setup of TestUserAuthEdgeCases.test_register_duplicate_email ____
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_users.py, line 33
+      def test_register_duplicate_email(self, api_client, user):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_users.py:33
+_ ERROR at setup of TestUserProfileEdgeCases.test_update_profile_invalid_data _
+file C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_users.py, line 111
+      def test_update_profile_invalid_data(self, api_client, user):
+E       fixture 'user' not found
+>       available fixtures: _class_scoped_runner, _dj_autoclear_mailbox, _django_clear_site_cache, _django_db_helper, _django_db_marker, _django_isolate_apps, _django_set_urlconf, _django_setup_unittest, _fail_for_invalid_template_variable, _function_scoped_runner, _live_server_helper, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, _template_string_if_invalid_marker, admin_client, admin_user, anyio_backend, anyio_backend_name, anyio_backend_options, api_client, async_client, async_rf, authenticated_client, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, class_mocker, client, create_user, db, django_assert_max_num_queries, django_assert_num_queries, django_capture_on_commit_callbacks, django_db_blocker, django_db_createdb, django_db_keepdb, django_db_modify_db_settings, django_db_modify_db_settings_parallel_suffix, django_db_modify_db_settings_tox_suffix, django_db_modify_db_settings_xdist_suffix, django_db_reset_sequences, django_db_serialized_rollback, django_db_setup, django_db_use_migrations, django_isolated_apps, django_mail_dnsname, django_mail_patch_dns, django_test_environment, django_user_model, django_username_field, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, instructor_client, live_server, mailoutbox, mocker, module_mocker, monkeypatch, package_mocker, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, rf, session_mocker, settings, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, transactional_db, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_users.py:111
+================================== FAILURES ===================================
+E   assert 500 in [200, 400]
+     +  where 500 = <Response status_code=500, "application/json">.status_code
+---------------------------- Captured stderr call -----------------------------
+{"event": "Error generating embedding: No module named 'sentence_transformers'"}
+{"event": "STRUCTURED_ERROR: {\"message\": \"'list' object has no attribute 'select_related'\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/\", \"method\": \"GET\"}, \"timestamp\": \"2026-04-25T08:48:33.556784+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"GET\", \"path\": \"/api/v1/courses/\", \"status\": 500, \"duration_ms\": 88.66, \"event\": \"request_completed\", \"request_id\": \"7c563206-bbe8-4aa7-ad28-dde8224d6fad\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-25T08:48:33.565943Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 89.65, \"user_agent\": \"\", \"event\": \"request_failed\", \"method\": \"GET\", \"path\": \"/api/v1/courses/\", \"request_id\": \"7c563206-bbe8-4aa7-ad28-dde8224d6fad\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-25T08:48:33.566805Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/"}
+C:\Users\shiva\Desktop\windows_app\conductor\tests\test_edge_cases_courses.py:41: assert 500 in [200, 400]
+============================== warnings summary ===============================
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.WindowsSelectorEventLoopPolicy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.set_event_loop_policy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\_hypothesis_pytestplugin.py:481
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\_hypothesis_pytestplugin.py:481: UserWarning: Skipping collection of '.hypothesis' directory - this usually means you've explicitly set the `norecursedirs` pytest config option, replacing rather than extending the default ignores.
+    warnings.warn(
+
+tests/test_edge_cases.py::TestSystemEdgeCases::test_study_group_overflow_prevention
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\google\genai\types.py:43: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+
+tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_search_special_characters
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\django\core\cache\backends\base.py:118: CacheKeyWarning: Cache key contains characters that will cause errors if used with memcached: ":1:course_search:' OR '1'='1"
+    warnings.warn(warning, CacheKeyWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_search_special_characters
+ERROR tests/test_edge_cases.py::TestSystemEdgeCases::test_payment_duplicate_order_prevention
+ERROR tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_list_pagination_boundary
+ERROR tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_enrollment_already_enrolled
+ERROR tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_enrollment_unauthenticated
+ERROR tests/test_edge_cases_courses.py::TestCourseEdgeCases::test_course_with_extremely_long_title
+ERROR tests/test_edge_cases_courses.py::TestCourseReviewEdgeCases::test_review_invalid_rating_values
+ERROR tests/test_edge_cases_courses.py::TestCourseReviewEdgeCases::test_review_very_long_content
+ERROR tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_xp_calculation_extreme_values
+ERROR tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_streak_calculation_timezone_edge_cases
+ERROR tests/test_edge_cases_gamification.py::TestGamificationEdgeCases::test_badge_awarding_duplicate
+ERROR tests/test_edge_cases_gamification.py::TestGamificationPerformanceEdgeCases::test_concurrent_xp_updates
+ERROR tests/test_edge_cases_users.py::TestUserAuthEdgeCases::test_register_duplicate_email
+ERROR tests/test_edge_cases_users.py::TestUserProfileEdgeCases::test_update_profile_invalid_data
+============ 1 failed, 10 passed, 5 warnings, 13 errors in 32.62s =============

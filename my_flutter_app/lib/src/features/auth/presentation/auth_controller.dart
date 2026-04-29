@@ -27,6 +27,20 @@ class AuthController extends AsyncNotifier<User?> {
     );
   }
 
+  /// Login as a guest user without requiring API authentication.
+  /// This allows users to explore the app before creating an account.
+  Future<void> loginAsGuest() async {
+    state = const AsyncValue.loading();
+    // Create a local guest user - no API call needed
+    const guestUser = User(
+      id: 'guest-user',
+      email: 'guest@learninghub.local',
+      username: 'Guest',
+      role: 'guest',
+    );
+    state = const AsyncValue.data(guestUser);
+  }
+
   Future<void> logout() async {
     state = const AsyncValue.loading();
     await ref.read(authRepositoryProvider).logout();

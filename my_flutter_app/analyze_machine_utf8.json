@@ -1,0 +1,92 @@
+﻿
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\main.dart:9:5 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\core\constants\api_constants.dart:13:7 - avoid_catches_without_on_clauses
+   info - Sort directive sections alphabetically - lib\src\core\router\app_router.dart:13:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\features\ai\presentation\curriculum_screen.dart:5:1 - directives_ordering
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\curriculum_screen.dart:32:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\curriculum_screen.dart:33:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\curriculum_screen.dart:68:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\curriculum_screen.dart:71:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\ai\presentation\curriculum_screen.dart:115:35 - deprecated_member_use
+   info - Sort directive sections alphabetically - lib\src\features\ai\presentation\module_detail_screen.dart:3:1 - directives_ordering
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\data\dsa_repository.dart:12:3 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:13:3 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:26:11 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:50:3 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:57:11 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:88:3 - sort_constructors_first
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\domain\dsa_models.dart:101:11 - sort_constructors_first
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\dsa_screen.dart:4:1 - directives_ordering
+   info - The method '==' should not be overridden in classes not annotated with '@immutable' - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:32:3 - avoid_equals_and_hash_code_on_mutable_classes
+   info - The method 'hashCode' should not be overridden in classes not annotated with '@immutable' - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:36:3 - avoid_equals_and_hash_code_on_mutable_classes
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:75:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:80:20 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:88:11 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:96:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:114:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:161:26 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:208:11 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:247:21 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:248:29 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:296:38 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:317:13 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\pathfinding_visualizer.dart:334:9 - cascade_invocations
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:3:1 - directives_ordering
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:5:1 - directives_ordering
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:9:9 - sort_constructors_first
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:30:26 - always_put_control_body_on_new_line
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:45:7 - avoid_catches_without_on_clauses
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:46:28 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:121:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dsa\presentation\screens\problem_detail_screen.dart:180:26 - deprecated_member_use
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\sorting_visualizer.dart:26:21 - always_put_control_body_on_new_line
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\dsa\presentation\sorting_visualizer.dart:48:17 - inference_failure_on_instance_creation
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\sorting_visualizer.dart:50:23 - always_put_control_body_on_new_line
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\dsa\presentation\sorting_visualizer.dart:76:15 - inference_failure_on_instance_creation
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\sorting_visualizer.dart:78:21 - always_put_control_body_on_new_line
+warning - The type argument(s) of the constructor 'Future.delayed' can't be inferred - lib\src\features\dsa\presentation\sorting_visualizer.dart:85:11 - inference_failure_on_instance_creation
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:67:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:71:42 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:73:26 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:108:23 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:117:5 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:131:20 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:154:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:168:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:180:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:188:35 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:196:30 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:197:31 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:206:19 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:209:7 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:216:23 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:218:5 - cascade_invocations
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:226:23 - always_put_control_body_on_new_line
+   info - Statement should be on a separate line - lib\src\features\dsa\presentation\tree_visualizer.dart:363:23 - always_put_control_body_on_new_line
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:417:5 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\features\dsa\presentation\tree_visualizer.dart:418:5 - cascade_invocations
+   info - Sort directive sections alphabetically - lib\src\features\dsa\presentation\widgets\challenge_list.dart:5:1 - directives_ordering
+   info - Constructor declarations should be before non-constructor declarations - lib\src\features\dsa\presentation\widgets\challenge_list.dart:31:9 - sort_constructors_first
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\dsa\presentation\widgets\challenge_list.dart:64:40 - deprecated_member_use
+
+flutter : 69 issues 
+found. (ran in 9.5s)
+At line:1 char:1
++ flutter analyze 
+--machine > 
+analyze_machine.json 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (69 issu   
+ es found. (ran i    
+n 9.5s):String)     
+[], RemoteExcept    
+ion
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

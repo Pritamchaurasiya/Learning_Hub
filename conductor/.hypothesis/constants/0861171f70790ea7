@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dashboard\models.py
+# hypothesis_version: 6.152.1
+
+[100, 'Complete', 'Heartbeat', 'Pause', 'Play', 'Seek', 'activities', 'complete', 'heartbeat', 'lesson', 'lesson_activities', 'pause', 'play', 'seek', 'started_at', 'user', 'video_interactions', 'video_timestamp']

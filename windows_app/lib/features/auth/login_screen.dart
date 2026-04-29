@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/auth_provider.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 /// Login screen with email/password and social login options
 class LoginScreen extends ConsumerStatefulWidget {
@@ -33,12 +34,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$platform login coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    AppFeedback.showInfo(context, '$platform login coming soon!');
   }
 
   Future<void> _handleLogin() async {
@@ -209,10 +207,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
 
                     // Remember me & Forgot password
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             SizedBox(
                               width: 24,
@@ -364,13 +366,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               if (success) {
                                 context.go('/');
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Biometric authentication failed or not available'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                AppFeedback.showError(context,
+                                    'Biometric authentication failed or not available');
                               }
                             },
                       icon: const Icon(Icons.fingerprint, size: 20),
@@ -384,8 +381,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 32),
 
                     // Sign up link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           "Don't have an account? ",

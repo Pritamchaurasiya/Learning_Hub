@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\realtime_inference.py
+# hypothesis_version: 6.152.1
+
+[0.0, 0.001, 0.01, 0.02, 0.03, 0.05, 0.1, 0.95, 0.99, 128, 256, 300, 512, 1000, 30000, '.', '.onnx', '/', 'CPUExecutionProvider', 'Cache hit rate', 'Current queue size', '_optimized.onnx', '_value', 'adaptive-learning', 'advanced', 'attention_mask', 'avg_latency_ms', 'basic', 'batch_size', 'cache_efficiency', 'cached', 'embedding', 'error', 'inf', 'input_ids', 'inputs', 'latencies', 'max_latency', 'max_latency_ms', 'min_latency', 'min_latency_ms', 'ml_batch_size', 'ml_cache_efficiency', 'ml_inference_total', 'ml_queue_size', 'model', 'none', 'optimized', 'output', 'p50_latency_ms', 'p95_latency_ms', 'p99_latency_ms', 'realtime', 'recommendation', 'result', 'scores', 'sentiment-analysis', 'text', 'text-embedding', 'timestamp', 'tolist', 'total_latency', 'total_requests', 'ultra', 'utf-8']

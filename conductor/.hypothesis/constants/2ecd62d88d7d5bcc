@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\views.py
+# hypothesis_version: 6.152.1
+
+['-created_at', '-like_count', '-reply_count_recent', 'Post a reply', 'author', 'content', 'count', 'course', 'created_at', 'data', 'error', 'get', 'is_accepted_answer', 'is_pinned', 'is_resolved', 'like_count', 'limit', 'list', 'message', 'meta', 'moderate_text', 'nested_replies', 'parent_id', 'post', 'q', 'query', 'replies', 'reply_count', 'retrieve', 'status', 'success', 'tags', 'thread_pk', 'title', 'user_vote', 'value']

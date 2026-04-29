@@ -353,13 +353,13 @@ void main() {
       final apiClient = MockApiClient();
 
       // Should handle successful responses
-      final response = await apiClient.get('/test');
+      final response = await apiClient.get<Map<String, dynamic>>('/test');
       expect(response.success, true);
 
       // Should handle errors gracefully
       // when(() => apiClient.get('/error')) handled in MockApiClient
       //    .thenAnswer((_) async => ApiResponse.error('Simulated Error'));
-      final errorResponse = await apiClient.get('/error');
+      final errorResponse = await apiClient.get<Map<String, dynamic>>('/error');
       expect(errorResponse.success, false);
     });
 

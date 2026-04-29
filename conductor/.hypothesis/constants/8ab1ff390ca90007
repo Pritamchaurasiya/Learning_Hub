@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\migrations\0003_alter_discussionvote_object_id.py
+# hypothesis_version: 6.152.1
+
+['discussions', 'discussionvote', 'object_id']

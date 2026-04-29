@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\config\settings\test.py
+# hypothesis_version: 6.152.1
+
+['1000/minute', '10000/minute', ':memory:', 'ENGINE', 'NAME', 'anon', 'config.urls_test', 'default', 'login', 'register', 'test-anthropic-key', 'test-gemini-key', 'test-openai-key', 'user']

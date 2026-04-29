@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\support\views.py
+# hypothesis_version: 6.152.1
+
+['-count', '-created_at', 'Support', 'Ticket resolved', 'admin_response', 'by_category', 'category', 'closed', 'created_at', 'critical_backlog', 'critical_count', 'data', 'error', 'get', 'id', 'in_progress', 'in_progress_count', 'message', 'open', 'open_count', 'post', 'resolved', 'resolved_count', 'status', 'subject', 'success', 'total', 'updated_at']

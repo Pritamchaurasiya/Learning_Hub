@@ -1,0 +1,376 @@
+﻿Compiling lib\main.dart for the Web...                          
+flutter : Wasm dry run 
+findings:
+At line:1 char:1
++ flutter build web 
+--release 2>&1 | Out-File 
+-Encoding utf8 web_build_ 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo        
+      : NotSpe    cified: 
+(Wasm dr    y run 
+findings::    String) [], 
+Remo    teException
+    + FullyQualified    
+ErrorId : Native    
+CommandError
+ 
+Found incompatibilities 
+with WebAssembly.
+
+package:flutter_secure_sto
+rage_web/flutter_secure_st
+orage_web.dart 5:1 - 
+dart:html unsupported (0)
+package:flutter_secure_sto
+rage_web/src/subtle.dart 
+21:1 - dart:html 
+unsupported (0)
+package:js/js.dart 10:1 - 
+dart:js unsupported (1)
+package:flutter_secure_sto
+rage_web/flutter_secure_st
+orage_web.dart 6:1 - JS 
+interop library 
+'dart:js_util' can't be 
+imported when compiling 
+to Wasm. (2)
+package:flutter_secure_sto
+rage_web/src/subtle.dart 
+22:1 - JS interop library 
+'dart:js_util' can't be 
+imported when compiling 
+to Wasm. (2)
+package:flutter_secure_sto
+rage_web/src/subtle.dart 
+26:1 - JS interop library 
+'package:js/js.dart' 
+can't be imported when 
+compiling to Wasm. (2)
+
+Consider addressing these 
+issues to enable wasm 
+builds. See docs for more 
+info: https://docs.flutter
+.dev/platform-integration/
+web/wasm
+
+Use --no-wasm-dry-run to 
+disable these warnings.
+Target dart2js failed: 
+ProcessException: Process 
+exited abnormally with 
+exit code 1:
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:505:3:
+Error: Can't have 
+modifier 'const' here.
+  const InstructorDashboar
+dView({super.key});
+  ^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:505:45:
+Error: Expected a 
+function body or '=>'.
+  const InstructorDashboar
+dView({super.key});
+                          
+                  ^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:800:1:
+Error: Expected a 
+declaration, but got '}'.
+}
+^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:505:9:
+Error: 
+'InstructorDashboardView' 
+is already declared in 
+this scope.
+  const InstructorDashboar
+dView({super.key});
+        
+^^^^^^^^^^^^^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:7:7:
+Info: Previous 
+declaration of 
+'InstructorDashboardView'.
+class 
+InstructorDashboardView 
+extends StatelessWidget {
+      
+^^^^^^^^^^^^^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:802:7:
+Error: '_MetricCard' is 
+already declared in this 
+scope.
+class _MetricCard extends 
+StatelessWidget {
+      ^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:305:7:
+Info: Previous 
+declaration of 
+'_MetricCard'.
+class _MetricCard extends 
+StatelessWidget {
+      ^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:870:7:
+Error: 
+'_TimeRangeSelector' is 
+already declared in this 
+scope.
+class _TimeRangeSelector 
+extends StatelessWidget {
+      ^^^^^^^^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:369:7:
+Info: Previous 
+declaration of 
+'_TimeRangeSelector'.
+class _TimeRangeSelector 
+extends StatelessWidget {
+      ^^^^^^^^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:889:7:
+Error: '_TimeOption' is 
+already declared in this 
+scope.
+class _TimeOption extends 
+StatelessWidget {
+      ^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:388:7:
+Info: Previous 
+declaration of 
+'_TimeOption'.
+class _TimeOption extends 
+StatelessWidget {
+      ^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:924:7:
+Error: 
+'_LessonPerformanceItem' 
+is already declared in 
+this scope.
+class 
+_LessonPerformanceItem 
+extends StatelessWidget {
+      
+^^^^^^^^^^^^^^^^^^^^^^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:421:7:
+Info: Previous 
+declaration of 
+'_LessonPerformanceItem'.
+class 
+_LessonPerformanceItem 
+extends StatelessWidget {
+      
+^^^^^^^^^^^^^^^^^^^^^^
+lib/src/features/auth/data
+/auth_repository.dart:97:2
+2:
+Error: Member not found: 
+'profile'.
+        
+ApiConstants.profile, // 
+Ensure this constant 
+exists or use string
+                     
+^^^^^^^
+lib/src/features/auth/data
+/auth_repository.dart:101:
+41:
+Error: Operator '[]' 
+cannot be called on 
+'Map<String, dynamic>?' 
+because it is potentially 
+null.
+ - 'Map' is from 
+'dart:core'.
+      final responseData 
+= response.data['data'] 
+as Map<String, dynamic>;
+                          
+              ^
+lib/src/features/profile/p
+resentation/instructor_das
+hboard_view.dart:505:34:
+Error: Super-initializer 
+formal parameters can 
+only be used in 
+generative constructors.
+  const InstructorDashboar
+dView({super.key});
+                          
+       ^^^^^
+Error: Compilation failed.
+  Command: C:\src\flutter\
+bin\cache\dart-sdk\bin\dar
+t.exe compile js --platfor
+m-binaries=C:\src\flutter\
+bin\cache\flutter_web_sdk\
+kernel 
+--invoker=flutter_tool 
+-Ddart.vm.product=true 
+-DFLUTTER_VERSION=3.38.5 
+-DFLUTTER_CHANNEL=stable -
+DFLUTTER_GIT_URL=https://g
+ithub.com/flutter/flutter.
+git -DFLUTTER_FRAMEWORK_RE
+VISION=f6ff1529fd -DFLUTTE
+R_ENGINE_REVISION=1527ae0e
+c5 -DFLUTTER_DART_VERSION=
+3.10.4 -DFLUTTER_WEB_USE_S
+KIA=true -DFLUTTER_WEB_USE
+_SKWASM=false -DFLUTTER_WE
+B_CANVASKIT_URL=https://ww
+w.gstatic.com/flutter-canv
+askit/1527ae0ec577a4ef50e6
+5f6fefcfc1326707d9bf/ 
+--native-null-assertions 
+--no-source-maps -O4 
+--minify -o C:\Users\shiva
+\Desktop\windows_app\my_fl
+utter_app\.dart_tool\flutt
+er_build\5e13f8c23ae939030
+e78702bd8b68a42\app.dill -
+-packages=C:\Users\shiva\D
+esktop\windows_app\my_flut
+ter_app\.dart_tool\package
+_config.json --cfe-only C:
+\Users\shiva\Desktop\windo
+ws_app\my_flutter_app\.dar
+t_tool\flutter_build\5e13f
+8c23ae939030e78702bd8b68a4
+2\main.dart
+#0      
+RunResult.throwException (
+package:flutter_tools/src/
+base/process.dart:153:5)
+#1      
+_DefaultProcessUtils.run (
+package:flutter_tools/src/
+base/process.dart:379:19)
+<asynchronous suspension>
+#2      
+Dart2JSTarget.build (packa
+ge:flutter_tools/src/build
+_system/targets/web.dart:2
+07:5)
+<asynchronous suspension>
+#3      _BuildInstance._in
+vokeInternal (package:flut
+ter_tools/src/build_system
+/build_system.dart:895:9)
+<asynchronous suspension>
+#4      
+Future.wait.<anonymous 
+closure> (dart:async/futur
+e.dart:546:21)
+<asynchronous suspension>
+#5      _BuildInstance.inv
+okeTarget (package:flutter
+_tools/src/build_system/bu
+ild_system.dart:833:32)
+<asynchronous suspension>
+#6      
+Future.wait.<anonymous 
+closure> (dart:async/futur
+e.dart:546:21)
+<asynchronous suspension>
+#7      _BuildInstance.inv
+okeTarget (package:flutter
+_tools/src/build_system/bu
+ild_system.dart:833:32)
+<asynchronous suspension>
+#8      
+FlutterBuildSystem.build (
+package:flutter_tools/src/
+build_system/build_system.
+dart:653:16)
+<asynchronous suspension>
+#9      
+WebBuilder.buildWeb (packa
+ge:flutter_tools/src/web/c
+ompile.dart:94:34)
+<asynchronous suspension>
+#10     BuildWebCommand.ru
+nCommand (package:flutter_
+tools/src/commands/build_w
+eb.dart:296:5)
+<asynchronous suspension>
+#11     FlutterCommand.run
+.<anonymous closure> (pack
+age:flutter_tools/src/runn
+er/flutter_command.dart:15
+59:27)
+<asynchronous suspension>
+#12     
+AppContext.run.<anonymous 
+closure> (package:flutter_
+tools/src/base/context.dar
+t:154:19)
+<asynchronous suspension>
+#13     
+CommandRunner.runCommand (
+package:args/command_runne
+r.dart:212:13)
+<asynchronous suspension>
+#14     FlutterCommandRunn
+er.runCommand.<anonymous 
+closure> (package:flutter_
+tools/src/runner/flutter_c
+ommand_runner.dart:487:9)
+<asynchronous suspension>
+#15     
+AppContext.run.<anonymous 
+closure> (package:flutter_
+tools/src/base/context.dar
+t:154:19)
+<asynchronous suspension>
+#16     FlutterCommandRunn
+er.runCommand (package:flu
+tter_tools/src/runner/flut
+ter_command_runner.dart:42
+2:5)
+<asynchronous suspension>
+#17     run.<anonymous 
+closure>.<anonymous 
+closure> (package:flutter_
+tools/runner.dart:104:11)
+<asynchronous suspension>
+#18     
+AppContext.run.<anonymous 
+closure> (package:flutter_
+tools/src/base/context.dar
+t:154:19)
+<asynchronous suspension>
+#19     main (package:flut
+ter_tools/executable.dart:
+103:3)
+<asynchronous suspension>
+
+Compiling lib\main.dart for the Web...                            159.2s
+Error: Failed to compile 
+application for the Web.

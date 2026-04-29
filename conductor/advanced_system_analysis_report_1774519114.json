@@ -1,0 +1,550 @@
+{
+  "timestamp": "2026-03-26T15:28:34.056672",
+  "analysis_level": "comprehensive",
+  "analysis_duration": 1.7940802574157715,
+  "system_metrics": {
+    "total_components": 20,
+    "healthy_components": 1,
+    "critical_issues": 0,
+    "warnings": 16,
+    "overall_score": 47.05,
+    "performance_score": 79.0,
+    "security_score": 50.0,
+    "scalability_score": 0.0,
+    "ml_score": 50.0
+  },
+  "component_results": [
+    {
+      "component": "User Experience",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for UX analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 8.344650268554688e-06
+    },
+    {
+      "component": "Authentication System",
+      "component_type": "authentication",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for auth analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 4.76837158203125e-06
+    },
+    {
+      "component": "Integration Points",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for integration analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 5.7220458984375e-06
+    },
+    {
+      "component": "Database Performance",
+      "component_type": "database",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for database analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 7.3909759521484375e-06
+    },
+    {
+      "component": "Caching Strategy",
+      "component_type": "cache",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for cache analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 7.867813110351562e-06
+    },
+    {
+      "component": "Scalability Potential",
+      "component_type": "scalability",
+      "status": "ERROR",
+      "score": 0.0,
+      "issues": [
+        "Scalability analysis failed: name 'settings' is not defined"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 1.33514404296875e-05
+    },
+    {
+      "component": "Compliance Standards",
+      "component_type": "security",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for compliance analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 2.6226043701171875e-06
+    },
+    {
+      "component": "Configuration",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for configuration analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 1.3113021850585938e-05
+    },
+    {
+      "component": "Security Posture",
+      "component_type": "security",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for security analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 3.5762786865234375e-06
+    },
+    {
+      "component": "ML Services",
+      "component_type": "ml_services",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for ML analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 5.7220458984375e-06
+    },
+    {
+      "component": "Business Logic",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for business logic analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 2.6226043701171875e-06
+    },
+    {
+      "component": "Error Handling",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for error handling analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 2.6226043701171875e-06
+    },
+    {
+      "component": "Backend Architecture",
+      "component_type": "backend",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for analysis"
+      ],
+      "recommendations": [
+        "Install Django to analyze backend architecture"
+      ],
+      "metrics": {},
+      "execution_time": 1.5020370483398438e-05
+    },
+    {
+      "component": "API Endpoints",
+      "component_type": "api",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for API analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 3.5762786865234375e-06
+    },
+    {
+      "component": "Data Integrity",
+      "component_type": "database",
+      "status": "WARNING",
+      "score": 50.0,
+      "issues": [
+        "Django not available for data integrity analysis"
+      ],
+      "recommendations": [],
+      "metrics": {},
+      "execution_time": 3.0994415283203125e-06
+    },
+    {
+      "component": "Monitoring System",
+      "component_type": "monitoring",
+      "status": "ERROR",
+      "score": 0.0,
+      "issues": [
+        "Monitoring analysis failed: name 'settings' is not defined"
+      ],
+      "recommendations": [],
+      "metrics": {
+        "prometheus_available": false
+      },
+      "execution_time": 0.0014662742614746094
+    },
+    {
+      "component": "Dependencies",
+      "component_type": "backend",
+      "status": "ERROR",
+      "score": 0.0,
+      "issues": [
+        "Dependencies analysis failed: 'WorkingSet' object is not callable"
+      ],
+      "recommendations": [],
+      "metrics": {
+        "requirements_files": {
+          "requirements/base.txt": {
+            "exists": true,
+            "count": 43,
+            "dependencies": [
+              "Django==5.0.1",
+              "python-dotenv==1.0.1",
+              "channels==4.0.0",
+              "daphne==4.0.0",
+              "channels-redis==4.1.0",
+              "djangorestframework==3.14.0",
+              "djangorestframework-simplejwt==5.3.1",
+              "drf-spectacular==0.27.1",
+              "django-cors-headers==4.3.1",
+              "django-filter==23.5"
+            ]
+          },
+          "requirements/local.txt": {
+            "exists": true,
+            "count": 16,
+            "dependencies": [
+              "-r base.txt",
+              "pytest==8.0.0",
+              "pytest-django==4.8.0",
+              "pytest-asyncio==0.23.5",
+              "pytest-cov==4.1.0",
+              "pytest-mock==3.12.0",
+              "factory-boy==3.3.0",
+              "duckdb-engine==0.9.5  # Faster local analytics test",
+              "flake8==7.0.0",
+              "black==24.1.1"
+            ]
+          },
+          "requirements/production.txt": {
+            "exists": true,
+            "count": 3,
+            "dependencies": [
+              "-r base.txt",
+              "sentry-sdk==1.40.0",
+              "django-structlog==7.1.0"
+            ]
+          }
+        },
+        "total_dependencies": 57
+      },
+      "execution_time": 0.16153454780578613
+    },
+    {
+      "component": "Performance Metrics",
+      "component_type": "performance",
+      "status": "WARNING",
+      "score": 79.0,
+      "issues": [
+        "High memory usage: 91.8%"
+      ],
+      "recommendations": [],
+      "metrics": {
+        "cpu_percent": 39.7,
+        "memory_percent": 91.8,
+        "disk_percent": 39.21301071148662,
+        "memory_available_gb": 0.6077156066894531,
+        "disk_free_gb": 289.0815010070801,
+        "process_memory_mb": 41.87109375,
+        "process_cpu_percent": 0.0,
+        "process_threads": 13,
+        "performance_issues_count": 1
+      },
+      "execution_time": 1.0071518421173096
+    },
+    {
+      "component": "Resource Usage",
+      "component_type": "performance",
+      "status": "WARNING",
+      "score": 79.0,
+      "issues": [
+        "High memory usage: 91.8%"
+      ],
+      "recommendations": [
+        "Optimize memory usage"
+      ],
+      "metrics": {
+        "cpu_percent": 39.7,
+        "memory_percent": 91.8,
+        "memory_available_gb": 0.6077384948730469,
+        "disk_percent": 39.21301071148662,
+        "disk_free_gb": 289.0815010070801,
+        "process_memory_mb": 42.47265625,
+        "process_cpu_percent": 0.0,
+        "process_threads": 13,
+        "process_open_files": 0,
+        "network_bytes_sent": 353948059,
+        "network_bytes_recv": 1436159907,
+        "disk_read_bytes": 1058156629504,
+        "disk_write_bytes": 496964206592,
+        "resource_issues_count": 1
+      },
+      "execution_time": 1.0204603672027588
+    },
+    {
+      "component": "Code Quality",
+      "component_type": "backend",
+      "status": "HEALTHY",
+      "score": 83.0,
+      "issues": [],
+      "recommendations": [
+        "Add comments for better code understanding"
+      ],
+      "metrics": {
+        "flake8_config": true,
+        "mypy_config": true,
+        "pytest_config": true,
+        "python_files_count": 10511,
+        "files_with_docstrings": 34,
+        "docstring_ratio": 0.68,
+        "total_lines": 28187,
+        "comment_lines": 1941,
+        "comment_ratio": 0.06886153191187427,
+        "requirements_files": [
+          "requirements/base.txt",
+          "requirements/local.txt",
+          "requirements/production.txt"
+        ],
+        "requirements_count": 3,
+        "test_files_count": 20,
+        "tests_available": true,
+        "env_files": [
+          ".env",
+          ".env.example"
+        ],
+        "env_files_count": 2,
+        "code_quality_issues_count": 0
+      },
+      "execution_time": 1.7883093357086182
+    }
+  ],
+  "summary": {
+    "total_issues": 19,
+    "total_recommendations": 3,
+    "critical_components": [],
+    "healthy_components": [
+      "Code Quality"
+    ],
+    "top_issues": [
+      "Scalability Potential: Scalability analysis failed: name 'settings' is not defined",
+      "Monitoring System: Monitoring analysis failed: name 'settings' is not defined",
+      "Dependencies: Dependencies analysis failed: 'WorkingSet' object is not callable",
+      "User Experience: Django not available for UX analysis",
+      "Authentication System: Django not available for auth analysis",
+      "Integration Points: Django not available for integration analysis",
+      "Database Performance: Django not available for database analysis",
+      "Caching Strategy: Django not available for cache analysis",
+      "Compliance Standards: Django not available for compliance analysis",
+      "Configuration: Django not available for configuration analysis"
+    ],
+    "priority_recommendations": [
+      "Backend Architecture: Install Django to analyze backend architecture",
+      "Resource Usage: Optimize memory usage",
+      "Code Quality: Add comments for better code understanding"
+    ]
+  },
+  "action_items": [
+    {
+      "priority": "HIGH",
+      "component": "User Experience",
+      "action": "Improve User Experience (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Authentication System",
+      "action": "Improve Authentication System (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Integration Points",
+      "action": "Improve Integration Points (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Database Performance",
+      "action": "Improve Database Performance (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Caching Strategy",
+      "action": "Improve Caching Strategy (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Scalability Potential",
+      "action": "Improve Scalability Potential (current score: 0.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Compliance Standards",
+      "action": "Improve Compliance Standards (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Configuration",
+      "action": "Improve Configuration (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Security Posture",
+      "action": "Improve Security Posture (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "ML Services",
+      "action": "Improve ML Services (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Business Logic",
+      "action": "Improve Business Logic (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Error Handling",
+      "action": "Improve Error Handling (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Backend Architecture",
+      "action": "Improve Backend Architecture (current score: 50.0)",
+      "recommendations": [
+        "Install Django to analyze backend architecture"
+      ],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "API Endpoints",
+      "action": "Improve API Endpoints (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Data Integrity",
+      "action": "Improve Data Integrity (current score: 50.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Monitoring System",
+      "action": "Improve Monitoring System (current score: 0.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "HIGH",
+      "component": "Dependencies",
+      "action": "Improve Dependencies (current score: 0.0)",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "HIGH"
+    },
+    {
+      "priority": "MEDIUM",
+      "component": "Performance Metrics",
+      "action": "Address warnings in Performance Metrics",
+      "recommendations": [],
+      "estimated_effort": "MEDIUM",
+      "impact": "MEDIUM"
+    },
+    {
+      "priority": "MEDIUM",
+      "component": "Resource Usage",
+      "action": "Address warnings in Resource Usage",
+      "recommendations": [
+        "Optimize memory usage"
+      ],
+      "estimated_effort": "MEDIUM",
+      "impact": "MEDIUM"
+    }
+  ],
+  "next_steps": [
+    "Address critical issues immediately",
+    "Implement high-priority recommendations",
+    "Schedule follow-up analysis in 2 weeks",
+    "Focus on security improvements",
+    "Optimize performance bottlenecks",
+    "Prepare for scaling challenges",
+    "Enhance ML services reliability"
+  ]
+}

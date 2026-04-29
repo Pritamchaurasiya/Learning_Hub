@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Learning Hub</title>
+    <meta name="description" content="Your personal Learning Hub dashboard - track courses and progress">
+    <meta property="og:title" content="Dashboard | Learning Hub">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="/dashboard">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <!-- Skip to Content -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+      <div class="container">
+        <a href="/" class="navbar-brand">
+          <div class="logo-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          Learning Hub
+        </a>
+
+        <ul class="navbar-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/courses">Courses</a></li>
+          <li><a href="/quiz">Quiz</a></li>
+          <li><a href="/dashboard" class="active">Dashboard</a></li>
+        </ul>
+
+        <div class="navbar-actions">
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="logoutBtn" class="btn btn-secondary">Log Out</button>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <main id="main-content">
+    <div style="padding-top: 100px;"></div>
+
+    <section class="dashboard-section section">
+      <div class="container">
+        <div class="dashboard-header">
+          <div class="user-info">
+            <div class="user-avatar" id="dashboardAvatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div>
+              <h1 id="dashboardName">Welcome, Student!</h1>
+              <p id="dashboardEmail" style="color: var(--text-muted);">student@example.com</p>
+            </div>
+          </div>
+          <div class="dashboard-stats">
+            <div class="stat-card glass-card">
+              <i class="fas fa-book-open" style="color: var(--primary-500); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+              <div class="stat-value" id="coursesEnrolled">0</div>
+              <div class="stat-label">Enrolled Courses</div>
+            </div>
+            <div class="stat-card glass-card">
+              <i class="fas fa-check-circle" style="color: var(--accent-green); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+              <div class="stat-value" id="coursesCompleted">0</div>
+              <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card glass-card">
+              <i class="fas fa-star" style="color: var(--accent-yellow); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+              <div class="stat-value" id="userXP">0</div>
+              <div class="stat-label">Total XP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-content">
+          <div class="dashboard-main">
+            <h3>Your Learning Progress</h3>
+            <div id="courseList" class="courses-list">
+              <!-- Dynamically populated -->
+              <p style="color: var(--text-muted);">No active courses found. <a href="/courses">Explore courses</a> to get started!</p>
+            </div>
+          </div>
+          <div class="dashboard-sidebar">
+            <div class="glass-card sidebar-card">
+              <h4>Recent Activity</h4>
+              <ul class="activity-list">
+                <li><i class="fas fa-sign-in-alt text-gradient"></i> Logged in today</li>
+                <li><i class="fas fa-user-plus text-gradient"></i> Account created</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: auto;">
+      <div class="container">
+        <div class="footer-bottom">
+          <p>&copy; 2026 Learning Hub. All rights reserved. Made with <i class="fas fa-heart" style="color: var(--accent-pink)"></i> for learners worldwide.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/main.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+
+        // Fetch user data
+        try {
+          const res = await apiRequest('/users/profile/', 'GET');
+          if (res.ok) {
+            const userData = res.data.data;
+            if (userData) {
+              document.getElementById('dashboardName').textContent = 'Welcome, ' + (userData.display_name || userData.username || 'Student') + '!';
+              document.getElementById('dashboardEmail').textContent = userData.email || '';
+              
+              // Update stats if available
+              if (userData.preferences) {
+                if (userData.preferences.courses_enrolled) document.getElementById('coursesEnrolled').textContent = userData.preferences.courses_enrolled;
+                if (userData.preferences.courses_completed) document.getElementById('coursesCompleted').textContent = userData.preferences.courses_completed;
+                if (userData.preferences.xp) document.getElementById('userXP').textContent = userData.preferences.xp;
+              }
+            }
+          } else if (res.status === 401) {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+          }
+        } catch (e) {
+          console.error('Failed to fetch profile:', e);
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+        });
+      });
+    </script>
+  </body>
+</html>

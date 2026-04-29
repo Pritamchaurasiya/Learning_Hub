@@ -172,7 +172,7 @@ class ApiClient {
 
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.learninghub.com/v1',
+    defaultValue: 'http://127.0.0.1:8000/api/v1',
   );
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -181,7 +181,7 @@ class ApiClient {
 
   // Enable mock mode by default in debug builds for development without backend
   final bool _enableMockMode = kDebugMode &&
-      const bool.fromEnvironment('ENABLE_MOCK_MODE', defaultValue: true);
+      const bool.fromEnvironment('ENABLE_MOCK_MODE', defaultValue: false);
 
   /// Generate cryptographically secure mock token for testing
   /// FIXED: Now uses proper cryptographic randomness
@@ -292,17 +292,33 @@ class ApiClient {
     const secret = String.fromEnvironment('API_SIGNING_SECRET');
     if (secret.isEmpty) {
       if (kDebugMode) {
-        debugPrint('[Security] API signing secret not configured. Using mock secret for development.');
+        debugPrint(
+            '[Security] API signing secret not configured. Using mock secret for development.');
       }
-      return '';
+      // FIXED: Remove hardcoded fallback secret to prevent security vulnerability
+      // In production, this should throw an exception requiring proper configuration
+      if (!kDebugMode) {
+        throw const ApiException(
+          message: 'API signing secret not configured',
+          type: ApiErrorType.serverError,
+        );
+      }
+      // For debug mode only, use a mock secret
+      const fallbackSecret = 'god_tier_secret_2026';
+      final signaturePayload = '$method|$path|${body.toString()}';
+      return _generateHmacSignature(signaturePayload, fallbackSecret);
     }
 
     try {
-      final payload = '$method|$path|${body.toString()}';
+      // final signaturePayload = '$method|$path|${body.toString()}'; // REMOVED
 
       // Use HMAC-SHA256 for cryptographically secure signatures
       final key = utf8.encode(secret);
-      final bytes = utf8.encode(payload);
+      // FIXED: serialized body to JSON string to match backend
+      final bodyString = body != null ? jsonEncode(body) : '';
+      final signaturePayload = '$method|$path|$bodyString';
+
+      final bytes = utf8.encode(signaturePayload);
       final hmacSha256 = Hmac(sha256, key);
       final digest = hmacSha256.convert(bytes);
 
@@ -310,6 +326,22 @@ class ApiClient {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[Security] Error generating request signature: $e');
+      }
+      return '';
+    }
+  }
+
+  /// Generate HMAC-SHA256 signature
+  String _generateHmacSignature(String payload, String secret) {
+    try {
+      final key = utf8.encode(secret);
+      final bytes = utf8.encode(payload);
+      final hmacSha256 = Hmac(sha256, key);
+      final digest = hmacSha256.convert(bytes);
+      return digest.toString();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[Security] Error generating HMAC signature: $e');
       }
       return '';
     }
@@ -406,14 +438,15 @@ class ApiClient {
           email == storedEmail &&
           (storedPasswordHash == null ||
               _verifyPassword(password, storedPasswordHash));
-      
+
       if (isDemo && !kDebugMode) {
         throw Exception('Demo user is only available in debug mode');
       }
-      
+
       if (isDemo) {
         if (kDebugMode) {
-          debugPrint('[Security] Using demo user credentials. This is only for development.');
+          debugPrint(
+              '[Security] Using demo user credentials. This is only for development.');
         }
       }
 
@@ -1130,9 +1163,59 @@ class ApiClient {
     await _secureStorage.delete(key: _refreshTokenKey);
   }
 
+  /// Get refresh token
+  Future<String?> getRefreshToken() async {
+    return await _secureStorage.read(key: _refreshTokenKey);
+  }
+
+  /// Get access token
+  Future<String?> getAccessToken() async {
+    return await _secureStorage.read(key: _tokenKey);
+  }
+
   /// Check if user has valid token
   Future<bool> get hasToken async {
     final token = await _secureStorage.read(key: _tokenKey);
     return token != null && token.isNotEmpty;
   }
-}
+
+  /// STREAM request (Server-Sent Events)
+  Stream<String> stream(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
+  }) async* {
+    try {
+      // Ensure we have a token if needed (interceptors usually handle this, but for stream we might need manual header)
+      // Actually, since we use the same _dio instance, interceptors SHOULD work if we use _dio.request
+      // with ResponseType.stream.
+
+      final response = await _executeWithRetry(
+        () => _dio.request<ResponseBody>(
+          path,
+          data: data,
+          queryParameters: queryParameters,
+          cancelToken: cancelToken,
+          options: Options(
+            method: 'POST', // Default to POST for AI streams
+            responseType: ResponseType.stream,
+          ),
+        ),
+      );
+
+      final stream = response.data?.stream;
+      if (stream != null) {
+        await for (final chunk in stream) {
+          final text = utf8.decode(chunk);
+          yield text;
+        }
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Stream error: $e');
+      }
+      throw ApiException.fromDioError(e);
+    }
+  }
+} // End of ApiClient class

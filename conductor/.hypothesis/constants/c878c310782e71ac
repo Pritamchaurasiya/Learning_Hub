@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\action_service.py
+# hypothesis_version: 6.151.9
+
+['-enrollment_count', 'ASK_QUESTION', 'ENROLL_COURSE', 'GET_RECOMMENDATIONS', 'GET_SCHEDULE', 'GET_STATS', 'SEARCH_COURSE', 'SHOW_CERTIFICATES', 'START_QUIZ', 'Task completed.', '```', '```json', 'accepted', 'action_required', 'agent_data', 'ai_topics', 'async_task_reference', 'body', 'bookings', 'certificates', 'code', 'course', 'course__title', 'course_id', 'course_title', 'courses', 'data', 'desc', 'description', 'details', 'error', 'final_observation', 'func', 'message', 'params', 'query', 'question_count', 'quiz_id', 'quiz_launch', 'recommendations', 'risk_score', 'schedule', 'search_results', 'slot', 'slot__start_time', 'slug', 'start', 'start_time', 'stats', 'status', 'string', 'success', 'task_id', 'thread_created', 'thread_id', 'time', 'time_limit', 'title', 'topic', 'tutor', 'type', 'upcoming_sessions', 'xp', 'xp_profile']

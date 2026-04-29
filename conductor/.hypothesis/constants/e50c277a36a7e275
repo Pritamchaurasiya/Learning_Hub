@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\consumers.py
+# hypothesis_version: 6.151.9
+
+['data', 'kwargs', 'message', 'submission_update', 'type', 'url_route', 'user', 'user_id']

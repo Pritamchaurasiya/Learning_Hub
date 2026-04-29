@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[100, '-created_at', '0001_initial', 'Completed', 'Coupon', 'Failed', 'INR', 'Payment', 'Pending', 'Refunded', 'amount', 'code', 'completed', 'completed_at', 'coupon', 'coupons', 'course', 'courses', 'courses.course', 'created_at', 'currency', 'db_table', 'discount_amount', 'discount_percent', 'failed', 'gateway', 'gateway_order_id', 'gateway_payment_id', 'id', 'is_active', 'max_uses', 'ordering', 'payments', 'payments.coupon', 'pending', 'refunded', 'status', 'updated_at', 'used_count', 'valid_from', 'valid_until']

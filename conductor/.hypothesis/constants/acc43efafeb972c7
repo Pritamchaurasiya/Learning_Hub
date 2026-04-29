@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\support\migrations\0002_remove_feedback_is_resolved_and_more.py
+# hypothesis_version: 6.152.1
+
+['-created_at', '0001_initial', 'Closed', 'Escalated', 'In Progress', 'Open', 'Resolved', 'category', 'closed', 'escalated', 'feedback', 'in_progress', 'is_active', 'is_resolved', 'open', 'resolved', 'status', 'support', 'urgency_score', 'user']

@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learning Hub - Premium Online Learning Platform with AI-Powered Courses, Interactive Quizzes, and Expert Instructors"
+    />
+    <meta
+      name="keywords"
+      content="online learning, courses, education, AI, programming, web development"
+    />
+    <title>Learning Hub - Transform Your Future with AI-Powered Learning</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Learning Hub - Transform Your Future with AI-Powered Learning" />
+    <meta property="og:description" content="Master in-demand skills with AI-powered courses, interactive quizzes, and expert instructors." />
+    <meta property="og:url" content="/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Learning Hub - AI-Powered Learning Platform" />
+    <link rel="canonical" href="/" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <!-- Skip to Content -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress-bar" id="scrollProgress"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+      <div class="container">
+        <a href="/" class="navbar-brand">
+          <div class="logo-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          Learning Hub
+        </a>
+
+        <ul class="navbar-links">
+          <li><a href="/" class="active">Home</a></li>
+          <li><a href="/courses">Courses</a></li>
+          <li><a href="/quiz">Quiz</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+
+        <div class="navbar-actions">
+          <button
+            class="theme-toggle"
+            id="themeToggle"
+            aria-label="Toggle theme"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
+          <a href="/login" class="btn btn-secondary">Log In</a>
+          <a href="/signup" class="btn btn-primary">Sign Up</a>
+        </div>
+
+        <button
+          class="mobile-menu-btn"
+          id="mobileMenuBtn"
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1>
+              Transform Your <span class="text-gradient">Future</span> with
+              AI-Powered Learning
+            </h1>
+            <p>
+              Master in-demand skills with our cutting-edge courses. Learn from
+              industry experts and get personalized AI guidance at every step.
+            </p>
+            <div class="hero-buttons">
+              <a href="/courses" class="btn btn-primary">
+                <i class="fas fa-play"></i>
+                Start Learning
+              </a>
+              <a href="/about" class="btn btn-secondary">
+                <i class="fas fa-info-circle"></i>
+                Learn More
+              </a>
+            </div>
+            <div class="hero-stats">
+              <div class="stat">
+                <div class="stat-number">10K+</div>
+                <div class="stat-label">Students</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Courses</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Success Rate</div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <img
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
+              alt="Students learning together in a collaborative study environment"
+              class="hero-image"
+              loading="lazy"
+              width="800"
+              height="533"
+            />
+            <div class="floating-card card-1">
+              <i class="fas fa-code" style="color: var(--primary-500)"></i>
+              <span>500+ Coding Projects</span>
+            </div>
+            <div class="floating-card card-2">
+              <i
+                class="fas fa-certificate"
+                style="color: var(--accent-green)"
+              ></i>
+              <span>Verified Certificates</span>
+            </div>
+            <div class="floating-card card-3">
+              <i class="fas fa-robot" style="color: var(--secondary-500)"></i>
+              <span>AI-Powered</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <h2>Why Choose <span class="text-gradient">Learning Hub</span>?</h2>
+          <p>
+            Experience the future of education with our innovative features
+            designed to accelerate your learning journey.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h4>AI-Powered Learning</h4>
+            <p>
+              Get personalized course recommendations and adaptive learning
+              paths powered by advanced AI algorithms.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: var(--gradient-secondary)"
+            >
+              <i class="fas fa-users"></i>
+            </div>
+            <h4>Expert Instructors</h4>
+            <p>
+              Learn from industry professionals with years of real-world
+              experience in their respective fields.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: var(--gradient-accent)"
+            >
+              <i class="fas fa-laptop-code"></i>
+            </div>
+            <h4>Hands-On Projects</h4>
+            <p>
+              Apply your knowledge with practical projects that build your
+              portfolio and boost your career.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  var(--accent-orange),
+                  var(--accent-yellow)
+                );
+              "
+            >
+              <i class="fas fa-trophy"></i>
+            </div>
+            <h4>Gamified Learning</h4>
+            <p>
+              Earn badges, track streaks, and compete on leaderboards to stay
+              motivated throughout your journey.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: linear-gradient(135deg, #10b981, #059669)"
+            >
+              <i class="fas fa-certificate"></i>
+            </div>
+            <h4>Verified Certificates</h4>
+            <p>
+              Receive industry-recognized certificates upon course completion to
+              showcase your achievements.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: linear-gradient(135deg, #8b5cf6, #6366f1)"
+            >
+              <i class="fas fa-headset"></i>
+            </div>
+            <h4>24/7 Support</h4>
+            <p>
+              Get help whenever you need it with our dedicated support team and
+              AI assistant chatbot.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Courses Section -->
+    <section class="courses section" id="courses-preview">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured <span class="text-gradient">Courses</span></h2>
+          <p>
+            Explore our most popular courses and start your learning journey
+            today.
+          </p>
+        </div>
+
+        <div class="courses-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="programming">
+            Programming
+          </button>
+          <button class="filter-btn" data-filter="ai">AI & ML</button>
+          <button class="filter-btn" data-filter="web">Web Dev</button>
+          <button class="filter-btn" data-filter="data">Data Science</button>
+        </div>
+
+        <div class="courses-grid">
+          <div class="course-card" data-category="programming">
+            <div class="course-image">
+              <img
+                src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80"
+                alt="Python Programming course showing code on screen"
+                loading="lazy"
+                width="600"
+                height="338"
+              />
+              <span class="course-badge">Bestseller</span>
+            </div>
+            <div class="course-content">
+              <span class="course-category">Programming</span>
+              <h4>Complete Python Developer</h4>
+              <p>
+                Master Python from zero to hero with real-world projects and
+                exercises.
+              </p>
+            </div>
+            <div class="course-meta">
+              <div class="course-stats">
+                <span><i class="fas fa-clock"></i> 40h</span>
+                <span><i class="fas fa-user"></i> 5.2k</span>
+              </div>
+              <span class="course-price">$49.99</span>
+            </div>
+          </div>
+
+          <div class="course-card" data-category="ai">
+            <div class="course-image">
+              <img
+                src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80"
+                alt="Machine Learning concepts with neural network visualization"
+                loading="lazy"
+                width="600"
+                height="338"
+              />
+              <span
+                class="course-badge"
+                style="background: var(--secondary-500)"
+                >New</span
+              >
+            </div>
+            <div class="course-content">
+              <span class="course-category">AI & ML</span>
+              <h4>Machine Learning A-Z</h4>
+              <p>
+                Learn machine learning algorithms and build AI-powered
+                applications.
+              </p>
+            </div>
+            <div class="course-meta">
+              <div class="course-stats">
+                <span><i class="fas fa-clock"></i> 55h</span>
+                <span><i class="fas fa-user"></i> 3.8k</span>
+              </div>
+              <span class="course-price">$79.99</span>
+            </div>
+          </div>
+
+          <div class="course-card" data-category="web">
+            <div class="course-image">
+              <img
+                src="https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80"
+                alt="Full Stack Development with modern web technologies"
+                loading="lazy"
+                width="600"
+                height="338"
+              />
+            </div>
+            <div class="course-content">
+              <span class="course-category">Web Development</span>
+              <h4>Full Stack Web Developer</h4>
+              <p>
+                Build modern web applications with React, Node.js, and MongoDB.
+              </p>
+            </div>
+            <div class="course-meta">
+              <div class="course-stats">
+                <span><i class="fas fa-clock"></i> 60h</span>
+                <span><i class="fas fa-user"></i> 8.1k</span>
+              </div>
+              <span class="course-price">$59.99</span>
+            </div>
+          </div>
+
+          <div class="course-card" data-category="data">
+            <div class="course-image">
+              <img
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80"
+                alt="Data Science analytics dashboard with charts and graphs"
+                loading="lazy"
+                width="600"
+                height="338"
+              />
+            </div>
+            <div class="course-content">
+              <span class="course-category">Data Science</span>
+              <h4>Data Science Bootcamp</h4>
+              <p>
+                Master data analysis, visualization, and predictive modeling.
+              </p>
+            </div>
+            <div class="course-meta">
+              <div class="course-stats">
+                <span><i class="fas fa-clock"></i> 45h</span>
+                <span><i class="fas fa-user"></i> 4.5k</span>
+              </div>
+              <span class="course-price free">Free</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--space-2xl)">
+          <a href="/courses" class="btn btn-primary">
+            View All Courses
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section section" id="testimonials">
+      <div class="container">
+        <div class="section-header">
+          <h2>What Our <span class="text-gradient">Students</span> Say</h2>
+          <p>
+            Real stories from learners who transformed their careers with
+            Learning Hub.
+          </p>
+        </div>
+
+        <div class="testimonials-grid">
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              Learning Hub completely transformed my career. The AI-powered
+              recommendations helped me focus on exactly what I needed to learn.
+              I went from zero coding knowledge to a full-stack developer role
+              in just 6 months!
+            </p>
+            <div class="testimonial-author">
+              <img
+                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80"
+                alt="Priya Sharma testimonial portrait"
+                class="testimonial-avatar"
+                loading="lazy"
+                width="100"
+                height="100"
+              />
+              <div class="testimonial-info">
+                <h5>Priya Sharma</h5>
+                <p>Full Stack Developer at TechCorp</p>
+              </div>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              The gamification features kept me motivated every single day.
+              Earning badges and competing on leaderboards made learning feel
+              like a game. The course quality is exceptional — better than
+              expensive bootcamps I've tried.
+            </p>
+            <div class="testimonial-author">
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80"
+                alt="Alex Chen testimonial portrait"
+                class="testimonial-avatar"
+                loading="lazy"
+                width="100"
+                height="100"
+              />
+              <div class="testimonial-info">
+                <h5>Alex Chen</h5>
+                <p>ML Engineer at DataFlow</p>
+              </div>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <p class="testimonial-text">
+              As a working mom, I needed flexible learning. Learning Hub's
+              personalized paths let me study at my own pace. The quizzes and
+              hands-on projects ensured I actually retained everything. Highly
+              recommend!
+            </p>
+            <div class="testimonial-author">
+              <img
+                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80"
+                alt="Sarah Mitchell testimonial portrait"
+                class="testimonial-avatar"
+                loading="lazy"
+                width="100"
+                height="100"
+              />
+              <div class="testimonial-info">
+                <h5>Sarah Mitchell</h5>
+                <p>Data Analyst at FinanceWorks</p>
+              </div>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section
+      class="cta section"
+      style="background: var(--gradient-primary); color: white"
+    >
+      <div class="container" style="text-align: center">
+        <h2 style="color: white; margin-bottom: var(--space-lg)">
+          Ready to Start Your Journey?
+        </h2>
+        <p
+          style="max-width: 600px; margin: 0 auto var(--space-xl); opacity: 0.9"
+        >
+          Join thousands of learners who are already transforming their careers
+          with our AI-powered platform.
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <a
+            href="/signup"
+            class="btn"
+            style="background: white; color: var(--primary-600)"
+          >
+            Get Started for Free
+          </a>
+          <a
+            href="/quiz"
+            class="btn btn-secondary"
+            style="border-color: white; color: white"
+          >
+            Take a Quiz
+          </a>
+        </div>
+      </div>
+    </section>
+
+    </main><!-- /main-content -->
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="/" class="navbar-brand" style="color: white">
+              <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              Learning Hub
+            </a>
+            <p>
+              Empowering learners worldwide with cutting-edge AI-powered
+              education technology.
+            </p>
+            <div
+              style="
+                display: flex;
+                gap: var(--space-md);
+                margin-top: var(--space-lg);
+              "
+            >
+              <a href="#" class="team-socials" aria-label="Follow us on Twitter"
+                ><i class="fab fa-twitter"></i
+              ></a>
+              <a href="#" class="team-socials" aria-label="Follow us on LinkedIn"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a href="#" class="team-socials" aria-label="Follow us on GitHub"><i class="fab fa-github"></i></a>
+              <a href="#" class="team-socials" aria-label="Follow us on YouTube"
+                ><i class="fab fa-youtube"></i
+              ></a>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <h5>Platform</h5>
+            <ul>
+              <li><a href="/courses">All Courses</a></li>
+              <li><a href="/quiz">Quizzes</a></li>
+              <li><a href="#" title="Coming Soon">Leaderboard</a></li>
+              <li><a href="#" title="Coming Soon">Certificates</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-links">
+            <h5>Company</h5>
+            <ul>
+              <li><a href="/about">About Us</a></li>
+              <li><a href="#" title="Coming Soon">Careers</a></li>
+              <li><a href="#" title="Coming Soon">Blog</a></li>
+              <li><a href="/contact">Contact</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-links">
+            <h5>Support</h5>
+            <ul>
+              <li><a href="/contact">Help Center</a></li>
+              <li><a href="/contact#faq">FAQ</a></li>
+              <li><a href="#" title="Coming Soon">Privacy Policy</a></li>
+              <li><a href="#" title="Coming Soon">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>
+            &copy; 2026 Learning Hub. All rights reserved. Made with
+            <i class="fas fa-heart" style="color: var(--accent-pink)"></i> for
+            learners worldwide.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/main.js"></script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "Learning Hub",
+      "description": "Premium Online Learning Platform with AI-Powered Courses",
+      "url": "/",
+      "sameAs": [],
+      "offers": {
+        "@type": "Offer",
+        "category": "Online Courses"
+      }
+    }
+    </script>
+  </body>
+</html>

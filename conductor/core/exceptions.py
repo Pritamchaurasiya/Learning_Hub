@@ -106,3 +106,7 @@ class PaymentRequiredException(APIException):
 
     status_code = status.HTTP_402_PAYMENT_REQUIRED
     default_detail = "Payment required"
+
+
+# Alias for backward compatibility
+AppError = BadRequestException

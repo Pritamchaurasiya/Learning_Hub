@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\chat\views.py
+# hypothesis_version: 6.152.1
+
+['Chat', 'User not found', 'conversation', 'created_at', 'data', 'error', 'last_message_at', 'message', 'messages', 'participant_ids', 'participants', 'post', 'sender', 'status', 'success', 'swagger_fake_view', 'user_id', 'user_id required']

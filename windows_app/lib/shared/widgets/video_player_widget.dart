@@ -419,7 +419,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   }
 
   void _showSettingsSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -442,7 +442,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   }
 
   void _showSpeedSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),

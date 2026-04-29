@@ -1,0 +1,111 @@
+﻿.\venv\Scripts\python : {"event": "DSA signals registered successfully"}
+At line:1 char:109
++ ... \conductor; .\venv\Scripts\python manage.py makemigrations --check 2> ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({"event": "DSA ... successfully"} 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+{"event": "Handler subscribed to user.registered"}
+{"event": "Handler subscribed to course.enrolled"}
+{"event": "Handler subscribed to payment.completed"}
+{"event": "Handler subscribed to lesson.completed"}
+{"event": "Handler subscribed to security.threat_detected"}
+{"event": "Handler subscribed to system.alert"}
+{"event": "[EventBus] All 6 subscribers registered successfully."}
+Migrations for 'ai_engine':
+  apps\ai_engine\migrations\0009_activitylog_is_active_challengeparticipant_is_active_and_more.py
+    - Add field is_active to activitylog
+    - Add field is_active to challengeparticipant
+    - Add field is_active to courseembedding
+    - Add field is_active to humanpreference
+    - Add field is_active to learninginsight
+    - Add field is_active to moduleprogress
+    - Add field is_active to quizchoice
+    - Add field is_active to quizquestion
+    - Add field is_active to remedialplan
+    - Add field is_active to researchquiz
+    - Add field is_active to semanticcache
+Migrations for 'chat':
+  apps\chat\migrations\0002_remove_message_is_read_conversation_group_name_and_more.py
+    - Remove field is_read from message
+    - Add field group_name to conversation
+    - Add field is_active to conversation
+    - Add field is_group to conversation
+    - Add field attachment to message
+    - Add field is_active to message
+    - Add field is_encrypted to message
+    - Add field read_by to message
+Migrations for 'courses':
+  apps\courses\migrations\0011_certificate_is_active_course_is_active_and_more.py
+    - Add field is_active to certificate
+    - Add field is_active to course
+    - Add field is_active to enrollment
+    - Add field is_active to lesson
+    - Add field is_active to lessoncompletion
+    - Add field is_active to lessonprogress
+    - Add field is_active to module
+    - Add field is_active to review
+    - Add field is_active to trackcourse
+Migrations for 'dashboard':
+  apps\dashboard\migrations\0002_lessonactivity_is_active_videointeraction_is_active.py
+    - Add field is_active to lessonactivity
+    - Add field is_active to videointeraction
+Migrations for 'discussions':
+  apps\discussions\migrations\0002_discussionreply_is_active_discussionreply_parent_and_more.py
+    - Add field is_active to discussionreply
+    - Add field parent to discussionreply
+    - Add field is_active to discussionthread
+    - Add field is_active to discussionvote
+    - Add field is_active to threadtag
+Migrations for 'gamification':
+  apps\gamification\migrations\0004_badge_is_active_guild_is_active_and_more.py
+    - Add field is_active to badge
+    - Add field is_active to guild
+    - Add field is_active to guildmembership
+    - Add field is_active to streak
+    - Add field is_active to userbadge
+    - Add field is_active to userxp
+    - Create index gamificatio_user_id_44649b_idx on field(s) user, -earned_at of model userbadge
+Migrations for 'live_sessions':
+  apps\live_sessions\migrations\0002_livesession_is_active_sessionattendee_is_active.py
+    - Add field is_active to livesession
+    - Add field is_active to sessionattendee
+Migrations for 'metaverse':
+  apps\metaverse\migrations\0002_avatarstate_is_active.py
+    - Add field is_active to avatarstate
+Migrations for 'neuro':
+  apps\neuro\migrations\0002_brainwavesession_is_active.py
+    - Add field is_active to brainwavesession
+Migrations for 'notifications':
+  apps\notifications\migrations\0004_notification_is_active_smartnotification_is_active_and_more.py
+    - Add field is_active to notification
+    - Add field is_active to smartnotification
+    - Create index notificatio_user_id_c4e471_idx on field(s) user, is_read, -created_at of model notification
+Migrations for 'payments':
+  apps\payments\migrations\0006_payment_is_active.py
+    - Add field is_active to payment
+Migrations for 'support':
+  apps\support\migrations\0002_remove_feedback_is_resolved_and_more.py
+    - Remove field is_resolved from feedback
+    - Add field ai_suggested_response to feedback
+    - Add field is_active to feedback
+    - Add field status to feedback
+    - Add field urgency_score to feedback
+    - Create index feedback_status_711338_idx on field(s) status, -created_at of model feedback
+    - Create index feedback_user_id_6a3e47_idx on field(s) user, status of model feedback
+    - Create index feedback_urgency_c1d61f_idx on field(s) urgency_score, status of model feedback
+    - Create index feedback_categor_2a8dde_idx on field(s) category of model feedback
+Migrations for 'tutors':
+  apps\tutors\migrations\0002_booking_is_active_tutorprofile_is_active.py
+    - Add field is_active to booking
+    - Add field is_active to tutorprofile
+Migrations for 'users':
+  apps\users\migrations\0003_organization_is_active_organizationmember_is_active_and_more.py
+    - Add field is_active to organization
+    - Add field is_active to organizationmember
+    - Add field is_active to passwordresettoken
+Migrations for 'web3':
+  apps\web3\migrations\0002_nftcertificate_is_active_userprofileweb3_is_active.py
+    - Add field is_active to nftcertificate
+    - Add field is_active to userprofileweb3

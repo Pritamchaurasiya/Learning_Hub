@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py
+# hypothesis_version: 6.152.1
+
+[200, 201, '-created_at', 'Auth', 'Avatar uploaded', 'Bookmark not found', 'Course not found', 'Login successful', 'Logout successful', 'Profile retrieved', 'Profile updated', 'Self-paced', 'Token refreshed', 'Users', 'access', 'accessToken', 'access_token', 'avatar', 'avatar_url', 'bookmark_id', 'bookmarked_at', 'count', 'course', 'course__category', 'course__instructor', 'course_id', 'data', 'delete', 'description', 'duration', 'email', 'error', 'get', 'id', 'instructor', 'level', 'message', 'new_password', 'notes', 'post', 'refresh', 'refreshToken', 'refresh_token', 'status', 'success', 'thumbnail', 'title', 'token', 'tokens', 'update_profile', 'user', 'user.registered', 'user_id', 'username']

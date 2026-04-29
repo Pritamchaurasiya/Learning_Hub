@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+
+# Start Gunicorn with Uvicorn workers for Async support
+# Adjust workers and threads based on CPU resources
+exec gunicorn config.asgi:application \
+    --bind 0.0.0.0:8000 \
+    --chdir /app \
+    --workers 4 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --log-level info \
+    --access-logfile - \
+    --error-logfile -

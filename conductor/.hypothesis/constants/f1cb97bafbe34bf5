@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\models.py
+# hypothesis_version: 6.151.9
+
+[200, 500, '-created_at', 'Achievement', 'Android', 'Course Update', 'Reminder', 'System', 'Web', 'achievement', 'android', 'course', 'created_at', 'device_tokens', 'dismissed_at', 'iOS', 'in_app', 'ios', 'is_dismissed', 'is_read', 'is_sent', 'notifications', 'read_at', 'reminder', 'scheduled_for', 'smart_notifications', 'system', 'token', 'user', 'web']

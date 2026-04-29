@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\mlops_registry.py
+# hypothesis_version: 6.152.1
+
+[0.0, 1e-10, 0.0005, 0.001, 0.05, 0.5, 0.72, 0.78, 0.82, 0.87, 1.1, 115, 120, 200, 300, 'Baseline tutor model', 'Fine-tuned with RLHF', 'Keep v1', 'Promote v2', 'ab_test', 'accuracy', 'accuracy_delta', 'archived', 'comparison', 'description', 'development', 'epochs', 'error', 'error_rate', 'hyperparameters', 'insight', 'latency_delta_ms', 'latency_ms', 'lr', 'memory_mb', 'metrics', 'model', 'model_a_rate', 'model_b_rate', 'name', 'p_value', 'production', 'recommendation', 'registry', 'rolled_back_to', 'significant_at_005', 'stage', 'staging', 'status', 'success', 'throughput_delta_qps', 'throughput_qps', 'transition', 'tutor_llm', 'tutor_llm_v1', 'tutor_llm_v2', 'version', 'z_statistic']

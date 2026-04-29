@@ -10,6 +10,7 @@ import 'core/bloc/base_bloc.dart';
 import 'core/utils/app_logger.dart';
 import 'core/services/ai_tutor_service.dart';
 import 'package:learning_hub/core/utils/window_manager.dart';
+import 'core/services/app_lifecycle_observer.dart';
 
 import 'package:learning_hub/core/config/url_strategy.dart'; // Web Path Routing
 
@@ -48,6 +49,9 @@ void main() async {
       if (kReleaseMode) {
         AppLogger.disable();
       }
+
+      // Register lifecycle observer for session tracking
+      AppLifecycleObserver.instance.register();
 
       AppLogger.info('LearningHub app starting...');
 

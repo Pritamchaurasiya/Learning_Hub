@@ -1,0 +1,88 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: learning_hub
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          cd conductor
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Backend Tests
+        env:
+          SECRET_KEY: ci_secret_key_for_testing
+          DATABASE_URL: postgres://admin:password@localhost:5432/learning_hub
+          REDIS_URL: redis://localhost:6379/1
+        run: |
+          cd conductor
+          python manage.py migrate
+          pytest tests/
+
+  frontend-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.x"
+          channel: "stable"
+          cache: true
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd my_flutter_app
+          flutter pub get
+
+      - name: Static Analysis
+        run: |
+          cd my_flutter_app
+          flutter analyze
+
+      - name: Run Unit Tests
+        run: |
+          cd my_flutter_app
+          flutter test
+
+  docker-build:
+    needs: [backend-tests, frontend-analyze]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t learning_hub_backend:latest ./conductor

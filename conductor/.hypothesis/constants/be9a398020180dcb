@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\services.py
+# hypothesis_version: 6.152.1
+
+[1024, 'access_token', 'avatar', 'content_type', 'email', 'first_name', 'image/jpeg', 'image/png', 'image/webp', 'last_name', 'password', 'refresh_token', 'user', 'user.registered', 'user_id', 'username']

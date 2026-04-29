@@ -10,6 +10,7 @@ import '../../core/services/certificate_service.dart';
 import 'package:image_picker/image_picker.dart';
 import '../gamification/domain/entities/achievement.dart';
 import 'profile_edit_dialog.dart';
+import 'package:learning_hub/shared/widgets/app_feedback.dart';
 
 /// Profile screen with user info, stats, and settings
 class ProfileScreen extends ConsumerWidget {
@@ -63,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
               icon: Icons.person_outline,
               title: 'Edit Profile',
               onTap: () {
-                showDialog(
+                showDialog<void>(
                   context: context,
                   builder: (context) => const EditProfileDialog(),
                 );
@@ -115,7 +116,7 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
-                  showDialog(
+                  showDialog<void>(
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Sign Out'),
@@ -173,10 +174,8 @@ class _ProfileHeader extends ConsumerWidget {
       // Since backend is mocked, we can't upload.
       // We'll show a snackbar saying it's ready for upload.
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Profile picture upload (mock) successful!')),
-        );
+        AppFeedback.showInfo(
+            context, 'Profile picture upload (mock) successful!');
       }
     }
   }

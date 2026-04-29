@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\core\models.py
+# hypothesis_version: 6.151.9
+
+[100, 255, 500, '"cvv": "[REDACTED]"', '"cvv"\\s*:\\s*"[^"]*"', '%Y-%m-%d %H:%M:%S', '-created_at', 'Critical', 'Debug', 'Error', 'Info', 'LOGIN_FAILURE', 'RATE_LIMIT', 'SUSPICIOUS', 'System', 'UNAUTHORIZED', 'Unknown', 'Warning', 'action', 'actor', 'audit_logs', 'created_at', 'critical', 'debug', 'error', 'info', 'ip_address', 'isoformat', 'severity', 'warning']

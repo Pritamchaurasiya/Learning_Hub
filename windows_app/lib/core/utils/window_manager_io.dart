@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart'; // Explicitly imported for Alignment
 import 'package:universal_io/io.dart';
 
 Future<void> initializeWindowManager() async {

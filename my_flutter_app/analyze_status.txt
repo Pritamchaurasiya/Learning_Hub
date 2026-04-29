@@ -1,0 +1,25 @@
+﻿Analyzing my_flutter_app...                                     
+
+  error - All final variables must be initialized, but 'avatarUrl' isn't - lib\src\features\profile\presentation\instructor_profile_screen.dart:330:9 - final_not_initialized_constructor
+
+flutter : 1 issue 
+found. (ran in 13.3s)
+At line:1 char:1
++ flutter analyze 
+--no-fatal-infos 
+2>&1 | Out-File 
+-Encoding UTF8 analy 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (1 issue   
+  found. (ran in     
+13.3s):String) [    
+], RemoteExcepti    
+on
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dashboard\views.py
+# hypothesis_version: 6.152.1
+
+[0.0, 365, 500, '%Y-%m', '%Y-%m-%d', '%b %Y', '-enrolled_at', 'Content-Disposition', 'Course', 'Enrolled At', 'GET', 'Instructor', 'N/A', 'No', 'POST', 'Progress', 'Published', 'Students', 'Title', 'Type not supported', 'User', 'Yes', 'at_risk_students', 'avg_rating', 'avg_rating__avg', 'comment', 'content', 'content_type', 'course', 'courses', 'current_streak', 'data', 'date_range', 'end', 'enrolled_at', 'enrollments', 'export-csv', 'get', 'instructor', 'label', 'last_activity', 'limit', 'longest_streak', 'message', 'results', 'revenue', 'start', 'stats', 'status', 'success', 'text/csv', 'today_active', 'total_courses', 'total_revenue', 'total_students', 'type', 'updated_at', 'user', 'x', 'y']

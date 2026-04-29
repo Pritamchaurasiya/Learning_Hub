@@ -1,0 +1,105 @@
+{
+  "test_suite": "Load Testing",
+  "timestamp": "2026-03-29T18:29:42.719713",
+  "tests": {
+    "baseline": {
+      "test_name": "Baseline Performance",
+      "endpoints_tested": [
+        {
+          "endpoint": "GET /api/v1/courses/",
+          "response_time_ms": 134.59,
+          "status": "OK"
+        },
+        {
+          "endpoint": "GET /api/v1/categories/",
+          "response_time_ms": 88.28,
+          "status": "OK"
+        },
+        {
+          "endpoint": "GET /api/v1/users/me/",
+          "response_time_ms": 127.18,
+          "status": "OK"
+        },
+        {
+          "endpoint": "GET /api/v1/health/",
+          "response_time_ms": 57.61,
+          "status": "OK"
+        }
+      ],
+      "average_response_time": 101.91,
+      "status": "PASSED"
+    },
+    "concurrent": {
+      "test_name": "Concurrent Users",
+      "concurrent_users": 50,
+      "requests_per_user": 10,
+      "success_rate": 96.0,
+      "average_response_time": 175.05,
+      "status": "PASSED"
+    },
+    "database": {
+      "test_name": "Database Load",
+      "queries_executed": 1000,
+      "average_query_time": 21.78,
+      "slow_queries": 95,
+      "status": "FAILED",
+      "slow_query_percentage": 9.5
+    },
+    "cache": {
+      "test_name": "Cache Performance",
+      "total_requests": 1000,
+      "cache_hits": 760,
+      "cache_misses": 240,
+      "hit_rate": 76.0,
+      "avg_cache_time": 2.98,
+      "avg_db_time": 30.65,
+      "status": "PASSED"
+    },
+    "api_endpoints": {
+      "test_name": "API Endpoint Load",
+      "endpoints": {
+        "courses_list": {
+          "requests": 500,
+          "avg_response_time_ms": 150.63,
+          "success_rate": 98.8,
+          "status": "PASSED"
+        },
+        "course_detail": {
+          "requests": 300,
+          "avg_response_time_ms": 98.84,
+          "success_rate": 98.0,
+          "status": "PASSED"
+        },
+        "user_profile": {
+          "requests": 200,
+          "avg_response_time_ms": 80.09,
+          "success_rate": 99.0,
+          "status": "PASSED"
+        },
+        "enrollments": {
+          "requests": 150,
+          "avg_response_time_ms": 121.65,
+          "success_rate": 96.67,
+          "status": "PASSED"
+        }
+      },
+      "overall_status": "PASSED"
+    },
+    "memory": {
+      "test_name": "Memory Usage",
+      "baseline_mb": 150,
+      "under_load_mb": 262.85,
+      "peak_mb": 289.14,
+      "increase_percentage": 75.23,
+      "status": "PASSED"
+    }
+  },
+  "overall_status": "PASSED_WITH_WARNINGS",
+  "summary": {
+    "total_tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "pass_rate": 83.33
+  },
+  "end_time": "2026-03-29T18:29:43.076110"
+}

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\study_groups\serializers.py
+# hypothesis_version: 6.152.1
+
+['created_at', 'creator', 'description', 'id', 'is_member', 'is_public', 'joined_at', 'max_members', 'member_count', 'name', 'request', 'role', 'topic', 'user']

@@ -1,0 +1,9 @@
+Analyzing my_flutter_app...                                     
+
+   info - Unnecessary duplication of receiver - lib\src\core\network\api_client.dart:63:5 - cascade_invocations
+   info - Unnecessary duplication of receiver - lib\src\core\network\token_manager.dart:28:7 - cascade_invocations
+warning - The type argument(s) of the function 'post' can't be inferred - lib\src\core\network\token_manager.dart:38:34 - inference_failure_on_function_invocation
+   info - Method invocation or property access on a 'dynamic' target - lib\src\core\network\token_manager.dart:51:28 - avoid_dynamic_calls
+   info - Catch clause should use 'on' to specify the type of exception being caught - lib\src\core\network\token_manager.dart:79:7 - avoid_catches_without_on_clauses
+   info - Unnecessary 'await' - lib\src\core\network\token_manager.dart:86:12 - unnecessary_await_in_return
+

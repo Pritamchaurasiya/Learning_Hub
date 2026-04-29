@@ -4,30 +4,27 @@ description: Learning & Documentation - Create comprehensive learning materials
 
 # /l - Learning & Documentation Workflow
 
-This workflow creates and updates the `/learning/learningProjects.txt` file with comprehensive educational content.
+This workflow automatically updates the `/learning/learningProjects.txt` file with new insights, patterns, and best practices discovered during development.
 
 ## Steps
 
-1. **Analyze Current Project State**
+1. **Analyze Recent Changes**
+   - Review architectural decisions made in the current session
+   - Identify new patterns (e.g., specific Riverpod providers, Django service layers)
+   - Note security improvements and performance optimizations
 
-   - Review all project files, architecture, and dependencies
-   - Identify key concepts, patterns, and technologies used
+2. **Draft New Section**
+   - Title: Clear and descriptive (e.g., "Automated Code Quality Pipeline")
+   - Concept: Explain "Why" before "How"
+   - Implementation: Provide code snippets or command examples
+   - Production Tip: Add a "God-Mode" insight for specific edge cases
 
-2. **Create/Update Learning Documentation**
+3. **Update Learning File**
+   - Append the new section to `/learning/learningProjects.txt`
+   - Ensure consistent formatting with existing sections
+   - Add "Updated by Antigravity AI" footer
 
-   - Write comprehensive explanations from beginner to advanced
-   - Include: programming concepts, logic, system thinking, cybersecurity (defensive & offensive)
-   - Cover: performance optimization, real-world engineering practices
-   - Explain: what each concept is, why it's needed, when/where used, how it works
-   - Include: common mistakes, security vulnerabilities, scalability considerations
-
-3. **Add Examples & Mental Models**
-
-   - Provide real-life examples for each concept
-   - Include code samples with explanations
-   - Add diagrams and flowcharts where helpful
-
-4. **Verification**
-   - Ensure content is accurate and comprehensive
-   - Verify all code examples are correct
-   - Check for completeness across all skill levels
+4. **Verify Content**
+   - Check for clarity and accuracy
+   - Ensure code examples are correct
+   - Verify alignment with "God-Tier" quality standards

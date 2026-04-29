@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\views.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 'Device registered', 'Notifications', 'Page number', 'data', 'ids', 'is_active', 'is_read', 'message', 'notifications', 'page', 'page_size', 'platform', 'request', 'status', 'success', 'token', 'type', 'unread_count']

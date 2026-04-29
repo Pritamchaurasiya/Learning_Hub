@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\neurosymbolic_ai.py
+# hypothesis_version: 6.152.1
+
+[')', ',', 'alice', 'bobby', 'insight', 'john', 'mary', 'paradigm', 'parent(john, mary)', 'parent(mary, alice)', 'parent(mary, tom)', 'results', 'tom', 'verified_knowledge']

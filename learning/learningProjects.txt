@@ -1,47 +1,53 @@
-﻿#  Learning Hub Academy: The "God-Tier" Full-Stack Curriculum
+# OpenCode CLI & Terminal Agentic AI Masterclass
 
-This curriculum is designed to transform a beginner into a **Principal Systems Architect**. It is based on the actual architecture of your Learning Hub project.
+Welcome to the deep-dive learning guide for OpenCode AI. This tool represents the next generation of open-source coding agents.
+
+---
+
+## 1. What is OpenCode?
+OpenCode is an open-source, terminal-based AI coding agent. It is designed to:
+- **Operate Locally**: It runs in your terminal, having direct access to your local files and shell.
+- **TUI (Terminal User Interface)**: It provides a rich interactive environment within the terminal (built with libraries like Charm Bracelet's Bubble Tea).
+- **Multi-Model Support**: You can connect it to Gemini, Claude, or OpenAI.
+
+### Why use OpenCode?
+While tools like Claude Code are official and powerful, OpenCode offers an open-source alternative that is highly customizable and supports a wider range of models out of the box.
 
 ---
 
-##  Phase 1: The Blueprint (Clean & DDD)
-- **Goal**: Understand why the project is split into windows_app, conductor, and learning.
-- **Key Concepts**:
-  - **Separation of Concerns**: UI (Flutter) is a consumer; API (Django) is the producer.
-  - **Bounded Contexts**: Why pps/gamification is separate from pps/users.
-- **Exercise**: Draw a data flow diagram from a user clicking "Start Quiz" in Flutter to the XP being awarded in Django.
-
-##  Phase 2: The Engine (Django Ninja & Event-Driven)
-- **Goal**: Master high-performance Python backends.
-- **Key Concepts**:
-  - **Async APIs**: Handling high concurrency with Django Ninja.
-  - **Domain Signals**: Using signals.py to trigger logic without coupling.
-  - **Task Queues**: Scaling background work with Celery and Redis.
-- **Exercise**: Create a new signal in conductor that triggers an email when a user reaches a streak of 10 days.
-
-##  Phase 3: The Presence (Flutter & Reactive State)
-- **Goal**: Build pixel-perfect, lightning-fast interfaces.
-- **Key Concepts**:
-  - **Riverpod Architecture**: Unidirectional data flow and provider dependency.
-  - **Offline-First**: Using Hive or Isar for reliable data persistence.
-  - **UI/UX Excellence**: Master glassmorphism and custom animation controllers.
-- **Exercise**: Implementation of a new leaderboard widget that updates in real-time when a user gains XP.
-
-##  Phase 4: The Shield (Cyber-Security & Hardening)
-- **Goal**: Protect user data and system integrity.
-- **Key Concepts**:
-  - **JWT Mastery**: Rotation, blacklisting, and double-token authentication.
-  - **Security Audits**: Using Snyk and Bandit to find vulnerabilities.
-  - **Database Safety**: Preventing SQLi and enforcing ACID properties.
-- **Exercise**: Run a snyk code test on the conductor folder and fix one high-severity finding.
-
-##  Phase 5: The Horizon (Scalability & AI)
-- **Goal**: Preparing for millions of users and AI integration.
-- **Key Concepts**:
-  - **CI/CD Pipelines**: Automated deployment and zero-downtime migrations.
-  - **RAG Integration**: Powering the AI Tutor with specific course data.
-  - **Vector DBs**: Understanding how to search semantic information.
-- **Exercise**: Document the RAG flow for a new "Math Tutor" feature.
+## 2. Key Commands & Workflow
+- `opencode`: Launch the main interface.
+- `/connect`: Connect your AI provider (Gemini, Anthropic, etc.).
+- `/init`: Initialize a project to help the AI understand your specific architecture.
+- `/run <prompt>`: Execute a task without entering the full TUI.
 
 ---
-**Learning is the only true Anti-Gravity force.**
+
+## 3. Advanced Concepts
+
+### Level 1: TUI Fundamentals
+- **True Color & Unicode**: OpenCode relies on modern terminal features. If symbols look broken, ensure you're using a font like "Nerd Fonts".
+- **Shell Integration**: How the AI translates your request into a series of `cd`, `ls`, and `git` commands.
+
+### Level 2: Project Indexing
+- **agents.md**: When you run `/init`, OpenCode creates this file. It's like a "manual" for the AI to understand your project's soul (tech stack, folder structure, main goals).
+
+### Level 3: Security & Trust
+- **Sandboxing**: Unlike cloud-based AIs, OpenCode runs on *your* machine.
+- **Safety Prompts**: Always verify what code the agent wants to write or delete.
+
+---
+
+## 4. Troubleshooting
+1. **"Command not found"**: Ensure `C:\Users\shiva\AppData\Roaming\npm` is in your system PATH.
+2. **Key Errors**: If the AI stops responding, check your API usage limits or refresh the key with `/connect`.
+
+---
+
+## 5. Summary Checklist
+- [ ] Install via NPM.
+- [ ] Link your Gemini or OpenAI API key.
+- [ ] Navigate to your project and run `opencode`.
+- [ ] Run `/init` to index your code.
+
+*Happy coding with OpenCode!*

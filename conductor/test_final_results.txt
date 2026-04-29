@@ -1,0 +1,299 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\shiva\Desktop\windows_app\conductor\venv\Scripts\python.exe
+cachedir: .pytest_cache
+django: version: 5.0.1, settings: config.settings.development (from env)
+rootdir: C:\Users\shiva\Desktop\windows_app\conductor
+configfile: pytest.ini
+plugins: anyio-4.12.1, django-4.12.0, mock-3.15.1
+collecting ... collected 26 items
+
+tests/test_courses.py::TestCourseList::test_list_courses FAILED          [  3%]
+tests/test_courses.py::TestCourseList::test_list_excludes_unpublished PASSED [  7%]
+tests/test_courses.py::TestCourseDetail::test_get_course_detail FAILED   [ 11%]
+tests/test_courses.py::TestCourseDetail::test_course_not_found PASSED    [ 15%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course FAILED [ 19%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_unauthenticated PASSED [ 23%]
+tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment FAILED [ 26%]
+tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment FAILED [ 30%]
+tests/test_courses.py::TestCourseReview::test_submit_review_enrolled FAILED [ 34%]
+tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled FAILED [ 38%]
+tests/test_users.py::TestUserModel::test_create_user PASSED              [ 42%]
+tests/test_users.py::TestUserModel::test_create_superuser PASSED         [ 46%]
+tests/test_users.py::TestUserModel::test_user_str PASSED                 [ 50%]
+tests/test_users.py::TestUserModel::test_user_full_name PASSED           [ 53%]
+tests/test_users.py::TestUserModel::test_is_instructor_property PASSED   [ 57%]
+tests/test_users.py::TestUserModel::test_email_normalized PASSED         [ 61%]
+tests/test_users.py::TestUserRegistration::test_register_success PASSED  [ 65%]
+tests/test_users.py::TestUserRegistration::test_register_password_mismatch PASSED [ 69%]
+tests/test_users.py::TestUserRegistration::test_register_duplicate_email PASSED [ 73%]
+tests/test_users.py::TestUserRegistration::test_register_weak_password PASSED [ 76%]
+tests/test_users.py::TestUserLogin::test_login_success FAILED            [ 80%]
+tests/test_users.py::TestUserLogin::test_login_wrong_password FAILED     [ 84%]
+tests/test_users.py::TestUserLogin::test_login_nonexistent_user FAILED   [ 88%]
+tests/test_users.py::TestUserProfile::test_get_profile_authenticated PASSED [ 92%]
+tests/test_users.py::TestUserProfile::test_get_profile_unauthenticated PASSED [ 96%]
+tests/test_users.py::TestUserProfile::test_update_profile PASSED         [100%]
+
+================================== FAILURES ===================================
+______________________ TestCourseList.test_list_courses _______________________
+
+self = <test_courses.TestCourseList object at 0x00000147140E4CD0>
+api_client = <rest_framework.test.APIClient object at 0x00000147141C38C0>
+course = <Course: Python Basics>
+
+    def test_list_courses(self, api_client, course):
+        """Test listing published courses."""
+        response = api_client.get("/api/v1/courses/")
+    
+>       assert response.status_code == status.HTTP_200_OK
+E       assert 500 == 200
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   200 = status.HTTP_200_OK
+
+tests\test_courses.py:58: AssertionError
+---------------------------- Captured stderr setup ----------------------------
+Creating test database for alias 'default'...
+
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/\", \"method\": \"GET\"}, \"timestamp\": \"2026-04-14T07:22:08.171515+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"GET\", \"path\": \"/api/v1/courses/\", \"status\": 500, \"duration_ms\": 405.42, \"event\": \"request_completed\", \"request_id\": \"9c14b7af-9d5b-4d55-a184-3ba2559e3086\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:08.187813Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 406.66, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"9c14b7af-9d5b-4d55-a184-3ba2559e3086\", \"path\": \"/api/v1/courses/\", \"method\": \"GET\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:08.188631Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/"}
+___________________ TestCourseDetail.test_get_course_detail ___________________
+
+self = <test_courses.TestCourseDetail object at 0x00000147140E47D0>
+api_client = <rest_framework.test.APIClient object at 0x0000014717D44E10>
+course = <Course: Python Basics>
+
+    def test_get_course_detail(self, api_client, course):
+        """Test getting course details by slug."""
+        response = api_client.get(f"/api/v1/courses/{course.slug}/")
+    
+>       assert response.status_code == status.HTTP_200_OK
+E       assert 500 == 200
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   200 = status.HTTP_200_OK
+
+tests\test_courses.py:91: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/\", \"method\": \"GET\"}, \"timestamp\": \"2026-04-14T07:22:09.425526+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"GET\", \"path\": \"/api/v1/courses/python-basics/\", \"status\": 500, \"duration_ms\": 13.95, \"event\": \"request_completed\", \"request_id\": \"5ee087ec-a647-4fc5-b338-22d44c503eae\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:09.430996Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 14.53, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"5ee087ec-a647-4fc5-b338-22d44c503eae\", \"path\": \"/api/v1/courses/python-basics/\", \"method\": \"GET\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:09.431376Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/python-basics/"}
+________________ TestCourseEnrollment.test_enroll_free_course _________________
+
+self = <test_courses.TestCourseEnrollment object at 0x00000147140E42D0>
+authenticated_client = <rest_framework.test.APIClient object at 0x000001471BDE6520>
+course = <Course: Python Basics>
+
+    def test_enroll_free_course(self, authenticated_client, course):
+        """Test enrolling in a free course."""
+        response = authenticated_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+    
+>       assert response.status_code == status.HTTP_201_CREATED
+E       assert 500 == 201
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   201 = status.HTTP_201_CREATED
+
+tests\test_courses.py:109: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:09.744584+00:00\", \"user_id\": \"08004c2f-91cb-4e38-87d4-503891eb4097\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"status\": 500, \"duration_ms\": 13.97, \"event\": \"request_completed\", \"request_id\": \"b61aadbe-16b4-4588-ac79-fcd8c6ebe63a\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:09.749369Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 14.61, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"b61aadbe-16b4-4588-ac79-fcd8c6ebe63a\", \"user_id\": \"08004c2f-91cb-4e38-87d4-503891eb4097\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:09.749870Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/python-basics/enroll/"}
+________ TestCourseEnrollment.test_enroll_paid_course_without_payment _________
+
+self = <test_courses.TestCourseEnrollment object at 0x0000014714138050>
+authenticated_client = <rest_framework.test.APIClient object at 0x000001471BF296A0>
+paid_course = <Course: Advanced Python>
+
+    def test_enroll_paid_course_without_payment(
+        self, authenticated_client, paid_course
+    ):
+        """Test paid course enrollment requires payment."""
+        response = authenticated_client.post(
+            f"/api/v1/courses/{paid_course.slug}/enroll/"
+        )
+    
+        # API returns 400 for payment required (handled as ValueError in service)
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_courses.py:127: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/advanced-python/enroll/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:10.178136+00:00\", \"user_id\": \"f16cd98a-a73b-4796-acbf-d2db7c72a40e\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/advanced-python/enroll/\", \"status\": 500, \"duration_ms\": 12.1, \"event\": \"request_completed\", \"request_id\": \"51dacab3-4482-440c-b9e5-663325af6c81\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:10.182978Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 12.74, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"51dacab3-4482-440c-b9e5-663325af6c81\", \"user_id\": \"f16cd98a-a73b-4796-acbf-d2db7c72a40e\", \"path\": \"/api/v1/courses/advanced-python/enroll/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:10.183475Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/advanced-python/enroll/"}
+_______________ TestCourseEnrollment.test_duplicate_enrollment ________________
+
+self = <test_courses.TestCourseEnrollment object at 0x0000014714138640>
+authenticated_client = <rest_framework.test.APIClient object at 0x000001471BFE86B0>
+course = <Course: Python Basics>, user = <User: test@example.com>
+
+    def test_duplicate_enrollment(self, authenticated_client, course, user):
+        """Test cannot enroll twice in same course."""
+        Enrollment.objects.create(user=user, course=course)
+    
+        response = authenticated_client.post(f"/api/v1/courses/{course.slug}/enroll/")
+    
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_courses.py:135: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:10.428893+00:00\", \"user_id\": \"5efd12b1-2026-47a7-af50-66d3a96fea11\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"status\": 500, \"duration_ms\": 11.77, \"event\": \"request_completed\", \"request_id\": \"d761c309-ba06-4ef0-99f4-8fd9c80cf1bc\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:10.433526Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 12.54, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"d761c309-ba06-4ef0-99f4-8fd9c80cf1bc\", \"user_id\": \"5efd12b1-2026-47a7-af50-66d3a96fea11\", \"path\": \"/api/v1/courses/python-basics/enroll/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:10.434120Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/python-basics/enroll/"}
+________________ TestCourseReview.test_submit_review_enrolled _________________
+
+self = <test_courses.TestCourseReview object at 0x00000147140E5810>
+authenticated_client = <rest_framework.test.APIClient object at 0x000001471BECFE50>
+course = <Course: Python Basics>, user = <User: test@example.com>
+
+    def test_submit_review_enrolled(self, authenticated_client, course, user):
+        """Test submitting review when enrolled."""
+        Enrollment.objects.create(user=user, course=course)
+    
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+        response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+    
+>       assert response.status_code == status.HTTP_201_CREATED
+E       assert 500 == 201
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   201 = status.HTTP_201_CREATED
+
+tests\test_courses.py:151: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/review/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:10.686743+00:00\", \"user_id\": \"c31cf27c-6fe9-4a53-8c82-00aa06b45a41\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/python-basics/review/\", \"status\": 500, \"duration_ms\": 12.38, \"event\": \"request_completed\", \"request_id\": \"bdedeacb-cb40-400e-a3e6-e99092d4f7a8\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:10.691000Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 12.87, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"bdedeacb-cb40-400e-a3e6-e99092d4f7a8\", \"user_id\": \"c31cf27c-6fe9-4a53-8c82-00aa06b45a41\", \"path\": \"/api/v1/courses/python-basics/review/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:10.691343Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/python-basics/review/"}
+______________ TestCourseReview.test_submit_review_not_enrolled _______________
+
+self = <test_courses.TestCourseReview object at 0x00000147140E5950>
+authenticated_client = <rest_framework.test.APIClient object at 0x000001471C03EA50>
+course = <Course: Python Basics>
+
+    def test_submit_review_not_enrolled(self, authenticated_client, course):
+        """Test review fails when not enrolled."""
+        data = {"rating": 5, "title": "Great!", "content": "Loved it"}
+        response = authenticated_client.post(
+            f"/api/v1/courses/{course.slug}/review/", data
+        )
+    
+        # API returns 400 for permission errors (validation error)
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_courses.py:161: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"Cannot find 'tags' on Course object, 'tags' is an invalid parameter to prefetch_related()\", \"code\": \"AttributeError\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"CourseViewSet\", \"path\": \"/api/v1/courses/python-basics/review/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:10.950780+00:00\", \"user_id\": \"a70bfaad-fdd0-4b20-8000-09d1ca548e30\", \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/courses/python-basics/review/\", \"status\": 500, \"duration_ms\": 13.27, \"event\": \"request_completed\", \"request_id\": \"f0e0d0cd-9b6d-4951-8a16-b72ac84eec1f\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:10.955770Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 13.82, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"f0e0d0cd-9b6d-4951-8a16-b72ac84eec1f\", \"user_id\": \"a70bfaad-fdd0-4b20-8000-09d1ca548e30\", \"path\": \"/api/v1/courses/python-basics/review/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:10.956157Z\"}"}
+{"event": "Internal Server Error: /api/v1/courses/python-basics/review/"}
+______________________ TestUserLogin.test_login_success _______________________
+
+self = <test_users.TestUserLogin object at 0x00000147140E60D0>
+api_client = <rest_framework.test.APIClient object at 0x000001471C0BEF70>
+user = <User: test@example.com>
+
+    def test_login_success(self, api_client, user):
+        """Test successful login."""
+        data = {"email": user.email, "password": "TestPass123!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_200_OK
+E       assert 500 == 200
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   200 = status.HTTP_200_OK
+
+tests\test_users.py:134: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:12.400427+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 12.75, \"event\": \"request_completed\", \"request_id\": \"19b15f44-5dc8-4143-a51e-e0a8dfe5c3a9\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:12.410426Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 13.35, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"19b15f44-5dc8-4143-a51e-e0a8dfe5c3a9\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:12.410913Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+___________________ TestUserLogin.test_login_wrong_password ___________________
+
+self = <test_users.TestUserLogin object at 0x00000147140E6210>
+api_client = <rest_framework.test.APIClient object at 0x00000147198FB350>
+user = <User: test@example.com>
+
+    def test_login_wrong_password(self, api_client, user):
+        """Test login fails with wrong password."""
+        data = {"email": user.email, "password": "WrongPassword!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_users.py:144: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:12.557259+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 5.93, \"event\": \"request_completed\", \"request_id\": \"ebdf05c5-e424-4080-9914-abb849474f6a\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:12.560849Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 6.4, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"ebdf05c5-e424-4080-9914-abb849474f6a\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:12.561164Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+__________________ TestUserLogin.test_login_nonexistent_user __________________
+
+self = <test_users.TestUserLogin object at 0x000001471413A9E0>
+api_client = <rest_framework.test.APIClient object at 0x000001471C040650>
+
+    def test_login_nonexistent_user(self, api_client):
+        """Test login fails with non-existent email."""
+        data = {"email": "nonexistent@test.com", "password": "SomePass123!"}
+        response = api_client.post("/api/v1/auth/login/", data)
+    
+>       assert response.status_code == status.HTTP_400_BAD_REQUEST
+E       assert 500 == 400
+E        +  where 500 = <Response status_code=500, "application/json">.status_code
+E        +  and   400 = status.HTTP_400_BAD_REQUEST
+
+tests\test_users.py:151: AssertionError
+---------------------------- Captured stderr call -----------------------------
+{"event": "STRUCTURED_ERROR: {\"message\": \"AxesBackend requires a request as an argument to authenticate\", \"code\": \"AxesBackendRequestParameterRequired\", \"category\": \"internal\", \"severity\": \"error\", \"details\": {\"view\": \"LoginView\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\"}, \"timestamp\": \"2026-04-14T07:22:12.599722+00:00\", \"user_id\": null, \"request_id\": null, \"stack_trace\": null}"}
+{"event": "{\"method\": \"POST\", \"path\": \"/api/v1/auth/login/\", \"status\": 500, \"duration_ms\": 7.09, \"event\": \"request_completed\", \"request_id\": \"433062ce-44b5-47f8-9144-191c58158e9e\", \"ip\": \"127.0.0.1\", \"level\": \"info\", \"timestamp\": \"2026-04-14T07:22:12.604422Z\"}"}
+{"event": "{\"status_code\": 500, \"duration_ms\": 7.72, \"user_agent\": \"\", \"event\": \"request_failed\", \"request_id\": \"433062ce-44b5-47f8-9144-191c58158e9e\", \"path\": \"/api/v1/auth/login/\", \"method\": \"POST\", \"ip\": \"127.0.0.1\", \"level\": \"error\", \"timestamp\": \"2026-04-14T07:22:12.604887Z\"}"}
+{"event": "Internal Server Error: /api/v1/auth/login/"}
+============================== warnings summary ===============================
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.WindowsSelectorEventLoopPolicy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\daphne\__init__.py:14
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\daphne\__init__.py:14: DeprecationWarning: 'asyncio.set_event_loop_policy' is deprecated and slated for removal in Python 3.16
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+venv\Lib\site-packages\_pytest\config\__init__.py:1434
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\_pytest\config\__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_courses.py::TestCourseList::test_list_courses
+  C:\Users\shiva\Desktop\windows_app\conductor\venv\Lib\site-packages\google\genai\types.py:43: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_courses.py::TestCourseList::test_list_courses - assert 500 ...
+FAILED tests/test_courses.py::TestCourseDetail::test_get_course_detail - asse...
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_free_course
+FAILED tests/test_courses.py::TestCourseEnrollment::test_enroll_paid_course_without_payment
+FAILED tests/test_courses.py::TestCourseEnrollment::test_duplicate_enrollment
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_enrolled
+FAILED tests/test_courses.py::TestCourseReview::test_submit_review_not_enrolled
+FAILED tests/test_users.py::TestUserLogin::test_login_success - assert 500 ==...
+FAILED tests/test_users.py::TestUserLogin::test_login_wrong_password - assert...
+FAILED tests/test_users.py::TestUserLogin::test_login_nonexistent_user - asse...
+================= 10 failed, 16 passed, 4 warnings in 23.06s ==================

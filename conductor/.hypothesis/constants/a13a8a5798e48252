@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\metaverse\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[0.0, 255, 500, 'AvatarState', 'Metaverse Room', 'Metaverse Rooms', 'MetaverseRoom', 'avatar_state', 'course', 'courses', 'courses.course', 'created_at', 'db_table', 'id', 'is_active', 'last_x', 'last_y', 'last_z', 'max_capacity', 'mesh_url', 'metaverse_rooms', 'room_slug', 'title', 'updated_at', 'user', 'verbose_name', 'verbose_name_plural']

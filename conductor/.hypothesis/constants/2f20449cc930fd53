@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\downloads\migrations\0001_initial.py
+# hypothesis_version: 6.152.1
+
+[255, '-downloaded_at', 'Certificate', 'Document', 'Download', 'ID', 'Quiz', 'Size in bytes', 'Video', 'certificate', 'content_id', 'content_type', 'document', 'downloaded_at', 'downloads', 'expires_at', 'file_size', 'file_url', 'id', 'is_expired', 'ordering', 'quiz', 'title', 'unique_together', 'user', 'video']

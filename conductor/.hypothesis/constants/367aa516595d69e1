@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\chat\models.py
+# hypothesis_version: 6.151.9
+
+[255, '-last_message_at', 'chat_attachments/', 'conversations', 'created_at', 'messages', 'read_chat_messages', 'sent_messages']

@@ -1,0 +1,11 @@
+﻿Analyzing dsa...                                                
+
+   info - Method invocation or property access on a 'dynamic' target - lib\features\dsa\dsa_problems_screen.dart:29:28 - avoid_dynamic_calls
+
+flutter : 1 issue found. (ran in 33.8s)
+At line:1 char:1
++ flutter analyze lib/features/dsa 2>&1 | Out-File -Encoding utf8 dsa_a ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (1 issue found. (ran in 33.8s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

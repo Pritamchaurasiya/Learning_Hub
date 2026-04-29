@@ -1,0 +1,20 @@
+{
+  "appTitle": "Learning Hub",
+  "welcomeBack": "Welcome back, {name}!",
+  "@welcomeBack": {
+    "description": "The welcome message on the dashboard",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readyToContinue": "Ready to continue your journey?",
+  "hoursSpent": "Hours Spent",
+  "courses": "Courses",
+  "streak": "Streak",
+  "continueLearning": "Continue Learning",
+  "viewAll": "View All",
+  "recommendedForYou": "Recommended for You",
+  "exploreCourses": "Explore Courses"
+}

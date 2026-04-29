@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\middleware.py
+# hypothesis_version: 6.152.1
+
+[300, 403, 1000, 2000, '/admin/', '<iframe\\b[^>]*>', 'API_SECRET_KEY', 'CORS_ALLOWED_ORIGINS', 'ConnectionError', 'DELETE', 'GET', 'HEAD', 'HS256', 'HTTP_ORIGIN', 'OPTIONS', 'OperationalError', 'Origin not allowed', 'PATCH', 'POST', 'PUT', 'RedisError', 'Retry-After', 'X-API-Signature', 'X-API-Timestamp', 'anon', 'application/json', 'code', 'connection', 'db_healing_failed', 'error', 'id', 'javascript:', 'json', 'message', 'on\\w+\\s*=', 'query_string', 'replace', 'request_completed', 'request_failed', 'status', 'status_code', 'system_healing', 'token', 'user', 'user_id', 'utf-8']

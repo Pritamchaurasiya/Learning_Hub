@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\ai_chat_consumer.py
+# hypothesis_version: 6.151.9
+
+['ai_feedback', 'ai_message', 'code', 'error', 'kwargs', 'message', 'problem', 'problem_title', 'submission_id', 'type', 'url_route', 'user']

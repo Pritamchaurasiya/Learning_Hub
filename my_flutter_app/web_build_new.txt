@@ -1,0 +1,58 @@
+﻿flutter : ../../runti
+me/vm/os_thread.cc: 
+349: error: Could 
+not start thread 
+DartWorker: 22 (The 
+device does not 
+recognize the 
+command.
+At line:1 char:1
++ flutter build web 
+--release 2>&1 | 
+Out-File -FilePath 
+web_build_new.t ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (.    
+./../runtime/v...ze 
+t    he 
+command.:String) [   
+ ], RemoteException
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+
+)
+version=3.10.4 
+(stable) (Tue Dec 9 
+00:01:55 2025 -0800) 
+on "windows_x64"
+pid=15916, 
+thread=26536, isolate
+_group=vm-service(000
+00284EC7AD2D0), isola
+te=(nil)(000000000000
+0000)
+os=windows, 
+arch=x64, comp=no, 
+sim=no
+isolate_instructions=
+7ff62b448060, vm_inst
+ructions=7ff62b448080
+fp=86e19fedb0, 
+sp=86e19fed68, 
+pc=7ff62b72dc73
+  pc 
+0x00007ff62b72dc73 
+fp 
+0x00000086e19fedb0 Da
+rt_DetectNullSafety+0
+x2dd563
+-- End of 
+DumpStackTrace
+Compiling lib\main.dart for the Web...                          

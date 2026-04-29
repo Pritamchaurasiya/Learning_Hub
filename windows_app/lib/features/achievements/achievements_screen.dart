@@ -423,7 +423,7 @@ class _AchievementCard extends StatelessWidget {
   void _showAchievementDetails(BuildContext context) {
     final theme = Theme.of(context);
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Padding(
         padding: const EdgeInsets.all(24),

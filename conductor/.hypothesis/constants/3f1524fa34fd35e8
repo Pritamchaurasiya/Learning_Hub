@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0008_semanticcache_humanpreference.py
+# hypothesis_version: 6.152.1
+
+[384, '-created_at', 'HumanPreference', 'SemanticCache', 'ai_engine', 'ai_human_preferences', 'ai_preferences', 'applied_to_dpo', 'chosen', 'created_at', 'db_table', 'id', 'metadata', 'ordering', 'prompt', 'query_embedding', 'query_text', 'rejected', 'response_payload', 'semantic_cache', 'updated_at', 'user']

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\migrations\0009_activitylog_is_active_challengeparticipant_is_active_and_more.py
+# hypothesis_version: 6.152.1
+
+['activitylog', 'ai_engine', 'challengeparticipant', 'courseembedding', 'humanpreference', 'is_active', 'learninginsight', 'moduleprogress', 'quizchoice', 'quizquestion', 'remedialplan', 'researchquiz', 'semanticcache']

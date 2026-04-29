@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\migrations\0002_initial.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'payment', 'payments', 'user']

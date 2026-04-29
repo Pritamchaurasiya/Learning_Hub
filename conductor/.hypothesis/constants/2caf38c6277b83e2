@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\neuro_symbolic_v2.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-06, 0.1, 0.3, 0.5, 100, 1000, ', ', 'Formula', 'Program', 'ProgramSpec', 'Term', 'abs', 'add', 'inf', 'mul', 'neg', 'sub', '¬', '→', '∀', '∃', '∧', '∨']

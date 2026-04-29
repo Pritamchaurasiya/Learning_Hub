@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\discussions\migrations\0002_discussionreply_is_active_discussionreply_parent_and_more.py
+# hypothesis_version: 6.152.1
+
+['0001_initial', 'discussionreply', 'discussions', 'discussionthread', 'discussionvote', 'is_active', 'nested_replies', 'parent', 'threadtag']

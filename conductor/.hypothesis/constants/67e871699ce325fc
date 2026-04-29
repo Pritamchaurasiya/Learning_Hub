@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\speculative_decoding.py
+# hypothesis_version: 6.152.1
+
+[0.0, 1e-10, 0.1, 0.6, 0.8, 0.9, 1.0, 'Speculative Decoding', 'acceptance_rate', 'draft_7B', 'draft_forward_passes', 'draft_model', 'estimated_speedup', 'forward_passes', 'insight', 'lookahead_k', 'method', 'model', 'naive_forward_passes', 'paradigm', 'quality', 'result', 'speculative_steps', 'target_70B', 'target_model', 'tokens_generated']

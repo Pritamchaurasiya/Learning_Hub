@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\services.py
+# hypothesis_version: 6.152.1
+
+[100, 'Course not found', 'INR', 'Invalid Coupon Code', 'Invalid Payment ID', 'USD', 'amount', 'card', 'course_id', 'currency', 'description', 'id', 'images', 'key', 'name', 'payment', 'payment.completed', 'payment_capture', 'payment_id', 'price_data', 'product_data', 'quantity', 'razorpay', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'receipt', 'stripe', 'timestamp', 'unit_amount', 'url', 'usd', 'user_id']

@@ -1,0 +1,19 @@
+# 🔐 SECURE CREDENTIALS VAULT
+# WARNING: DO NOT COMMIT THIS FILE TO GIT
+
+---
+
+## 👤 Django Admin Superuser
+- **Username**: admin
+- **Email**: admin@example.com
+- **Password**: password123
+- **Login URL**: http://127.0.0.1:8000/admin/login/
+
+---
+
+## 🔑 Environment Secrets (Dev)
+- **SECRET_KEY**: django-insecure-change-this-in-production-for-dev-only (Found in base.py)
+
+---
+
+_Last Updated: 2026-01-06_

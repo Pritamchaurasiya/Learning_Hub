@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\migrations\0005_alter_tag_options_alter_problem_title.py
+# hypothesis_version: 6.152.1
+
+[255, 'dsa', 'name', 'ordering', 'problem', 'tag', 'title']

@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-03-28T16:39:00.806124",
+  "components": {
+    "django": {
+      "status": "operational",
+      "version": "5.0.1",
+      "apps": 35,
+      "users": 1,
+      "debug": true
+    },
+    "database": {
+      "status": "connected",
+      "engine": "sqlite",
+      "host": ""
+    },
+    "system": {
+      "status": "healthy",
+      "cpu": 53.6,
+      "memory": 89.5,
+      "disk": 39.2
+    },
+    "apis": {
+      "status": "error",
+      "error": "No module named 'inflection'"
+    },
+    "security": {
+      "status": "checked",
+      "issues": [
+        "DEBUG mode enabled"
+      ],
+      "score": 90
+    },
+    "performance": {
+      "status": "optimized",
+      "db_response_time": "0.0001s"
+    }
+  }
+}

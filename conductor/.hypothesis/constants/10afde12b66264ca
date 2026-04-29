@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\admin.py
+# hypothesis_version: 6.151.9
+
+['badge', 'badge__name', 'contribution_xp', 'criteria_type', 'criteria_value', 'current_streak', 'description', 'earned_at', 'guild', 'guild__name', 'last_activity_date', 'leader', 'leader__username', 'level', 'longest_streak', 'name', 'role', 'total_xp', 'user', 'user__email', 'user__username', 'weekly_xp', 'xp_reward']

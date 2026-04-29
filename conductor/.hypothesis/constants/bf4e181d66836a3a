@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0010_trackcourse_created_at_trackcourse_updated_at_and_more.py
+# hypothesis_version: 6.152.1
+
+['course', 'course_embedding_idx', 'courses', 'created_at', 'description', 'embedding', 'gin_trgm_ops', 'id', 'title', 'trackcourse', 'updated_at', 'vector_cosine_ops']

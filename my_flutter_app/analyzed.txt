@@ -1,0 +1,12 @@
+﻿Analyzing my_flutter_app...                                     
+
+   info - Statement should be on a separate line - lib\src\core\widgets\testimonial_card.dart:173:31 - always_put_control_body_on_new_line
+  error - The getter 'rating' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:205:33 - undefined_getter
+  error - The getter 'totalStudents' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:205:56 - undefined_getter
+  error - The getter 'rating' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:326:34 - undefined_getter
+  error - The getter 'totalStudents' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:337:38 - undefined_getter
+  error - The getter 'rating' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:364:33 - undefined_getter
+  error - The getter 'totalStudents' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:364:56 - undefined_getter
+  error - The getter 'rating' isn't defined for the type 'Course' - lib\src\features\courses\presentation\course_list_screen.dart:467:30 - undefined_getter
+warning - A value for optional parameter 'avatarUrl' isn't ever given - lib\src\features\profile\presentation\instructor_profile_screen.dart:333:10 - unused_element_parameter
+

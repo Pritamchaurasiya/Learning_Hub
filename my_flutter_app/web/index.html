@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <base href="$FLUTTER_BASE_HREF" />
@@ -6,12 +6,34 @@
 
     <meta charset="UTF-8" />
     <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-    <meta name="description" content="Master Flutter development with the Learning Hub. A premium, production-ready educational platform." />
 
     <!-- SEO & Performance -->
+    <meta
+      id="metaTitle"
+      name="title"
+      content="Learning Hub | Master Future Skills"
+    />
+    <meta
+      id="metaDescription"
+      name="description"
+      content="Master Flutter development with the Learning Hub. A premium, production-ready educational platform."
+    />
+    <meta
+      id="metaKeywords"
+      name="keywords"
+      content="Flutter, AI, System Design, Learning, Courses, Engineering, Masterclass"
+    />
     <meta name="theme-color" content="#1a1c19" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://learninghub.dev/" />
+
+    <!-- Preload Critical Assets -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- iOS meta tags & icons -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -19,13 +41,37 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="apple-mobile-web-app-title" content="My Flutter App" />
+    <meta name="apple-mobile-web-app-title" content="Learning Hub" />
     <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png" />
 
-    <title>My Flutter App</title>
+    <title>Learning Hub | Master Future Skills</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://learninghub.dev/" />
+    <meta property="og:title" content="Learning Hub | Master Future Skills" />
+    <meta
+      property="og:description"
+      content="Join Learning Hub to master Flutter, AI, and System Design. A premium educational platform for elite engineers."
+    />
+    <meta property="og:image" content="icons/Icon-512.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://learninghub.dev/" />
+    <meta
+      property="twitter:title"
+      content="Learning Hub | Master Future Skills"
+    />
+    <meta
+      property="twitter:description"
+      content="Join Learning Hub to master Flutter, AI, and System Design. A premium educational platform for elite engineers."
+    />
+    <meta property="twitter:image" content="icons/Icon-512.png" />
+
     <link rel="manifest" href="manifest.json" />
 
     <style>
@@ -39,22 +85,48 @@
         overflow: hidden;
       }
       .loading-indicator {
-        width: 60px;
-        height: 60px;
-        border: 4px solid rgba(255, 255, 255, 0.1);
-        border-top: 4px solid #7c4dff; /* Polished Deep Purple */
+        width: 80px;
+        height: 80px;
+        border: 4px solid rgba(124, 77, 255, 0.1);
+        border-top: 4px solid #7c4dff;
         border-radius: 50%;
-        animation: spin 0.8s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
-        box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+        animation:
+          spin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite,
+          pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 30px rgba(124, 77, 255, 0.4);
       }
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.8;
+        }
       }
     </style>
   </head>
   <body>
     <div class="loading-indicator"></div>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register(
+            "flutter_service_worker.js?v=20260124",
+          );
+        });
+      }
+    </script>
     <script src="flutter_bootstrap.js" async></script>
   </body>
 </html>

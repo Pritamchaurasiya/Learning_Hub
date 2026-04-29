@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\views.py
+# hypothesis_version: 6.152.1
+
+[200, 201, 'Auth', 'Avatar uploaded', 'Login successful', 'Logout successful', 'Profile retrieved', 'Profile updated', 'Token refreshed', 'Users', 'access', 'accessToken', 'access_token', 'avatar', 'avatar_url', 'data', 'email', 'error', 'get', 'message', 'new_password', 'post', 'refresh', 'refreshToken', 'refresh_token', 'status', 'success', 'token', 'tokens', 'update_profile', 'user', 'user.registered', 'user_id', 'username']

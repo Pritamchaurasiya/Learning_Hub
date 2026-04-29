@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\courses\migrations\0011_certificate_is_active_course_is_active_and_more.py
+# hypothesis_version: 6.152.1
+
+['certificate', 'course', 'courses', 'enrollment', 'is_active', 'lesson', 'lessoncompletion', 'lessonprogress', 'module', 'review', 'trackcourse']

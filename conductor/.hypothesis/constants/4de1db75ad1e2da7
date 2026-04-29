@@ -1,0 +1,4 @@
+# file: c:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\admin.py
+# hypothesis_version: 6.151.9
+
+['created_at', 'is_read', 'message', 'title', 'type', 'user', 'user__email', 'user__username']

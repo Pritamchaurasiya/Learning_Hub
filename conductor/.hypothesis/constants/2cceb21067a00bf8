@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\notifications\migrations\0003_smart_notifications.py
+# hypothesis_version: 6.152.1
+
+[200, 500, '-created_at', '0002_initial', 'SmartNotification', 'action_url', 'body', 'created_at', 'data', 'db_table', 'delivery_channel', 'dismissed_at', 'id', 'image_url', 'in_app', 'indexes', 'is_dismissed', 'is_read', 'is_sent', 'notification_type', 'notifications', 'ordering', 'priority', 'read_at', 'scheduled_for', 'sent_at', 'smart_notifications', 'title', 'updated_at', 'user']

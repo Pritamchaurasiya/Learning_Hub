@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\migrations\0003_tag_problem_examples_problem_tags.py
+# hypothesis_version: 6.152.1
+
+['ID', 'Tag', 'dsa', 'dsa.tag', 'examples', 'id', 'name', 'problem', 'problems', 'slug', 'tags']

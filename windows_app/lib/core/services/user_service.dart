@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../../data/models/user_model.dart';
 import 'api_client.dart';
 import 'cache_manager.dart';
@@ -72,7 +73,7 @@ class UserService {
     bool rememberMe = true,
   }) async {
     final response = await api.post<Map<String, dynamic>>(
-      '/auth/login',
+      '/auth/login/',
       data: {
         'email': email,
         'password': password,
@@ -128,11 +129,13 @@ class UserService {
     required String password,
   }) async {
     final response = await api.post<Map<String, dynamic>>(
-      '/auth/register',
+      '/auth/register/',
       data: {
-        'name': name,
+        'username': email.split('@')[0],
+        'display_name': name,
         'email': email,
         'password': password,
+        'password_confirm': password,
       },
     );
 
@@ -149,6 +152,22 @@ class UserService {
 
   /// Logout
   Future<void> logout() async {
+    try {
+      // Get refresh token
+      final refreshToken = await api.getRefreshToken();
+      if (refreshToken != null) {
+        // Call backend logout to blacklist token
+        await api.post<dynamic>(
+          '/auth/logout/',
+          data: {'refresh_token': refreshToken},
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Logout warning: $e');
+      }
+    }
+
     // Clear tokens
     await api.clearTokens();
 
@@ -164,7 +183,7 @@ class UserService {
   Future<User?> refreshProfile() async {
     if (!await isLoggedIn) return null;
 
-    final response = await api.get<Map<String, dynamic>>('/user/profile');
+    final response = await api.get<Map<String, dynamic>>('/users/profile/');
 
     if (response.success && response.data != null) {
       final payload = response.data!;
@@ -195,10 +214,10 @@ class UserService {
     Map<String, dynamic>? preferences,
   }) async {
     final response = await api.put<Map<String, dynamic>>(
-      '/user/profile',
+      '/users/profile/',
       data: {
-        if (displayName != null) 'displayName': displayName,
-        if (photoUrl != null) 'photoUrl': photoUrl,
+        if (displayName != null) 'display_name': displayName,
+        // Backend UserProfileUpdateSerializer fields: display_name, bio, phone, preferences. Avatar is separate.
         if (preferences != null) 'preferences': preferences,
       },
     );
@@ -220,10 +239,11 @@ class UserService {
     required String newPassword,
   }) async {
     final response = await api.post<dynamic>(
-      '/auth/change-password',
+      '/auth/change-password/',
       data: {
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirm': newPassword,
       },
     );
 
@@ -236,7 +256,7 @@ class UserService {
   /// Forgot password
   Future<void> forgotPassword(String email) async {
     await api.post<dynamic>(
-      '/auth/forgot-password',
+      '/auth/password-reset/',
       data: {'email': email},
     );
   }

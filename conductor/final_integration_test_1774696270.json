@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-03-28T16:41:10.353098",
+  "passed": 12,
+  "failed": 1,
+  "pass_rate": 92.3076923076923,
+  "results": {
+    "django_core": {
+      "status": "PASS",
+      "version": "5.0.1",
+      "apps": 35,
+      "users": 1
+    },
+    "database": {
+      "status": "PASS",
+      "engine": "sqlite",
+      "response": [
+        1
+      ]
+    },
+    "frameworks": {
+      "tested": 6
+    },
+    "apis": {
+      "status": "FAIL",
+      "error": "No module named 'inflection'"
+    },
+    "security": {
+      "status": "PASS",
+      "score": 75,
+      "checks": [
+        "DEBUG mode enabled (development)",
+        "SECRET_KEY configured",
+        "ALLOWED_HOSTS configured"
+      ]
+    },
+    "performance": {
+      "status": "PASS",
+      "db_response": "0.0001s"
+    },
+    "caching": {
+      "status": "PASS"
+    },
+    "monitoring": {
+      "status": "PASS",
+      "cpu": 15.7,
+      "memory": 92.5
+    }
+  }
+}

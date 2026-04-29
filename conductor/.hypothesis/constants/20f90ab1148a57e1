@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\mixins.py
+# hypothesis_version: 6.152.1
+
+['deleted_at', 'is_deleted', 'order']

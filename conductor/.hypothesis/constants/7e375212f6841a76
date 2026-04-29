@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\migrations\0004_add_performance_indexes.py
+# hypothesis_version: 6.152.1
+
+['created_at', 'idx_org_active_name', 'idx_user_last_login', 'idx_user_role_active', 'is_active', 'is_verified', 'last_login', 'name', 'organization', 'organizationmember', 'role', 'user', 'users']

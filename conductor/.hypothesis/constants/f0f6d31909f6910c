@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\payments\serializers.py
+# hypothesis_version: 6.152.1
+
+['amount', 'code', 'completed_at', 'course.title', 'course_title', 'created_at', 'currency', 'discount_amount', 'discount_percent', 'id', 'pro', 'status', 'valid_until']
