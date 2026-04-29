@@ -577,4 +577,50 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {/* Confirm Submissi
+      {/* Confirm Submission Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl"
+          >
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-black mb-2">Submit Quiz?</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                You have answered {Object.keys(answers).length} of {questions.length} questions.
+              </p>
+              {flaggedQuestions.length > 0 && (
+                <p className="text-amber-600 text-sm mt-2 font-medium">
+                  <Flag className="w-4 h-4 inline mr-1" />
+                  {flaggedQuestions.length} question{flaggedQuestions.length > 1 ? 's' : ''} flagged for review
+                </p>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <Button
+                onClick={handleConfirmSubmit}
+                isLoading={isSubmitting}
+                className="w-full py-4 rounded-2xl font-bold"
+              >
+                Yes, Submit Now
+              </Button>
+              <Button
+                onClick={() => setShowConfirmDialog(false)}
+                variant="outline"
+                className="w-full py-4 rounded-2xl font-bold border-2"
+              >
+                Go Back & Review
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatedPage>
+  );
+}
