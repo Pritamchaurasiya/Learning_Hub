@@ -19,6 +19,7 @@ import { CourseCardSkeleton } from '../components/ui/Skeleton'
 
 const difficultyOptions = ['all', 'easy', 'medium', 'hard', 'expert'] as const
 const phaseOptions = ['all', 'beginner', 'intermediate', 'advanced', 'singularity'] as const
+const durationOptions = ['all', 'short', 'medium', 'long'] as const
 
 type SortOption = 'relevance' | 'time-asc' | 'time-desc' | 'name'
 
@@ -35,8 +36,10 @@ const SearchPage = React.memo(function SearchPage() {
 
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [phaseFilter, setPhaseFilter] = useState<string>('all')
+  const [durationFilter, setDurationFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<SortOption>('relevance')
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Fetch courses from API
   useEffect(() => {
@@ -46,7 +49,8 @@ const SearchPage = React.memo(function SearchPage() {
         const response = await courseService.getCourses({ 
           search: debouncedQuery,
           difficulty: difficultyFilter !== 'all' ? difficultyFilter : '',
-          phase: phaseFilter !== 'all' ? phaseFilter : ''
+          phase: phaseFilter !== 'all' ? phaseFilter : '',
+          duration: durationFilter !== 'all' ? durationFilter : ''
         })
         // Backend data structure might differ, map if needed
         const data = response.data || response as any
@@ -61,7 +65,7 @@ const SearchPage = React.memo(function SearchPage() {
       }
     }
     fetchCourses()
-  }, [debouncedQuery, difficultyFilter, phaseFilter])
+  }, [debouncedQuery, difficultyFilter, phaseFilter, durationFilter])
 
   const fuse = useMemo(() => {
     return new Fuse(allCourses, {
@@ -92,6 +96,16 @@ const SearchPage = React.memo(function SearchPage() {
       results = results.filter(c => c.phase === phaseFilter)
     }
 
+    if (durationFilter !== 'all') {
+      results = results.filter(c => {
+        const duration = typeof c.estimatedTime === 'number' ? c.estimatedTime : 0
+        if (durationFilter === 'short') return duration < 5
+        if (durationFilter === 'medium') return duration >= 5 && duration <= 20
+        if (durationFilter === 'long') return duration > 20
+        return true
+      })
+    }
+
     // Sort
     if (sortBy === 'time-asc') {
       results.sort((a, b) => {
@@ -99,20 +113,16 @@ const SearchPage = React.memo(function SearchPage() {
         const tb = typeof b.estimatedTime === 'number' ? b.estimatedTime : 0
         return ta - tb
       })
-    } else if (sortBy === 'time-desc') {
-      results.sort((a, b) => {
-        const ta = typeof a.estimatedTime === 'number' ? a.estimatedTime : 0
-        const tb = typeof b.estimatedTime === 'number' ? b.estimatedTime : 0
-        return tb - ta
-      })
-    } else if (sortBy === 'name') {
       results.sort((a, b) => a.title.localeCompare(b.title))
     }
 
     return results
-  }, [debouncedQuery, difficultyFilter, phaseFilter, sortBy, fuse, apiCourses])
+  }, [debouncedQuery, difficultyFilter, phaseFilter, durationFilter, sortBy, fuse, apiCourses])
 
-  const activeFiltersCount = (difficultyFilter !== 'all' ? 1 : 0) + (phaseFilter !== 'all' ? 1 : 0)
+  const activeFiltersCount = 
+    (difficultyFilter !== 'all' ? 1 : 0) + 
+    (phaseFilter !== 'all' ? 1 : 0) + 
+    (durationFilter !== 'all' ? 1 : 0)
 
   // Sync debounced query to URL params & recent searches
   useEffect(() => {
