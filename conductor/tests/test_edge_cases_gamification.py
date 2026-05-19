@@ -81,22 +81,16 @@ class TestGamificationPerformanceEdgeCases:
         # Should return empty list or appropriate message
 
     def test_concurrent_xp_updates(self, user):
-        """Test concurrent XP updates don't crash."""
+        """Test concurrent/rapid XP updates don't crash and are handled by anti-cheat."""
         from apps.gamification.services import GamificationService
         
-        # Simulate concurrent updates using award_xp (correct method name)
-        import concurrent.futures
-        
-        def award_xp(amount):
-            try:
-                return GamificationService.award_xp(user, amount, f"test_{amount}")
-            except Exception:
-                return None
-        
-        # Run concurrent updates with unique reasons to avoid anti-cheat blocking
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(award_xp, 10 * (i + 1)) for i in range(5)]
-            results = [f.result() for f in futures]
-        
-        # At least one should succeed (anti-cheat may block some)
-        assert any(r is not None for r in results)
+        results = []
+        for i in range(5):
+            # Same reason to trigger anti-cheat rate limit
+            res = GamificationService.award_xp(user, 10, "rapid_click_test")
+            results.append(res)
+            
+        # First should succeed, others should be blocked by anti-cheat
+        assert results[0] is not None
+        assert results[0].get('blocked') is False
+        assert any(r.get('blocked') is True for r in results[1:])

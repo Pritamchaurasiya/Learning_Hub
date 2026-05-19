@@ -38,58 +38,59 @@ export interface CartItemResponse {
   data: CartItem
 }
 
-// In-memory mock cart for frontend testing since backend /commerce/cart/ is missing
-let mockCart: Cart = {
-  id: 'cart-123',
-  items: [
-    {
-      id: 'item-1',
-      course: {
-        id: '2d711bc6-52db-424a-b5e1-884639912063', // Replace with a real active course ID if needed
-        title: 'Mastering System Design',
-        instructor: { display_name: 'Alex Developer' },
-        price: 99.99,
-        original_price: 149.99
-      },
-      quantity: 1,
-      added_at: new Date().toISOString()
-    }
-  ],
-  total_items: 1,
-  subtotal: 99.99,
+// Default empty cart for when backend doesn't support cart yet
+const emptyCart: Cart = {
+  id: 'cart-empty',
+  items: [],
+  total_items: 0,
+  subtotal: 0,
   discount: 0,
-  total: 99.99,
+  total: 0,
   currency: 'USD',
   created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
+  updated_at: new Date().toISOString(),
 }
 
 export const cartService = {
   getCart: async (options?: { signal?: AbortSignal }): Promise<CartResponse> => {
-    // Check if aborted before returning
-    if (options?.signal?.aborted) {
-      throw new DOMException('Aborted', 'AbortError')
+    try {
+      // Try to fetch from backend cart endpoint
+      const res = await fetchApi('/commerce/cart/', { signal: options?.signal })
+      return res as CartResponse
+    } catch {
+      // Backend cart not implemented - return empty cart
+      return { status: 'success', data: emptyCart }
     }
-    // Return mock data
-    return Promise.resolve({ status: 'success', data: mockCart })
   },
 
-  addToCart: async (_courseId: string, _quantity: number = 1): Promise<CartResponse> => {
-    return Promise.resolve({ status: 'success', data: mockCart })
+  addToCart: async (courseId: string, quantity: number = 1): Promise<CartResponse> => {
+    try {
+      return (await fetchApi('/commerce/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ course_id: courseId, quantity }),
+      })) as CartResponse
+    } catch {
+      throw new Error('Cart functionality not available. Please try direct enrollment.')
+    }
   },
 
-  updateCartItem: async (_itemId: string, _quantity: number): Promise<CartItemResponse> => {
-    return Promise.resolve({ status: 'success', data: mockCart.items[0] })
+  updateCartItem: async (itemId: string, quantity: number): Promise<CartItemResponse> => {
+    return fetchApi(`/commerce/cart/items/${itemId}/`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+    }) as Promise<CartItemResponse>
   },
 
   removeFromCart: async (itemId: string): Promise<{ status: string }> => {
-    mockCart.items = mockCart.items.filter(i => i.id !== itemId)
-    return Promise.resolve({ status: 'success' })
+    return fetchApi(`/commerce/cart/items/${itemId}/`, {
+      method: 'DELETE',
+    })
   },
 
   clearCart: async (): Promise<{ status: string }> => {
-    mockCart.items = []
-    return Promise.resolve({ status: 'success' })
+    return fetchApi('/commerce/cart/clear/', {
+      method: 'POST',
+    })
   },
 
   applyCoupon: async (code: string): Promise<CartResponse> => {
@@ -99,19 +100,31 @@ export const cartService = {
     })
   },
 
-  checkout: async (paymentMethod: string): Promise<any> => {
-    // The backend `create-order` expects a single course_id
-    const courseId = mockCart.items.length > 0 ? mockCart.items[0].course.id : null;
-    if (!courseId) {
-      throw new Error('Cart is empty');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  checkout: async (paymentMethod: string, courseId?: string): Promise<any> => {
+    // If cart is not implemented, use direct course enrollment
+    if (courseId) {
+      return fetchApi('/payments/create-order/', {
+        method: 'POST',
+        body: JSON.stringify({
+          gateway: paymentMethod,
+          course_id: courseId,
+        }),
+      })
     }
-    
-    // Hit the payments backend API
+
+    // Try to get cart and use first item
+    const cart = await cartService.getCart()
+    const firstItem = cart.data.items[0]
+    if (!firstItem) {
+      throw new Error('Cart is empty')
+    }
+
     return fetchApi('/payments/create-order/', {
       method: 'POST',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         gateway: paymentMethod,
-        course_id: courseId 
+        course_id: firstItem.course.id,
       }),
     })
   },

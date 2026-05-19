@@ -152,11 +152,6 @@ class SearchRepository {
 
 /// Search result model
 class SearchResult {
-  final String query;
-  final List<CourseSearchResult> courses;
-  final List<InstructorSearchResult> instructors;
-  final int totalCount;
-  final PaginationInfo? pagination;
 
   SearchResult({
     required this.query,
@@ -181,22 +176,15 @@ class SearchResult {
           : null,
     );
   }
+  final String query;
+  final List<CourseSearchResult> courses;
+  final List<InstructorSearchResult> instructors;
+  final int totalCount;
+  final PaginationInfo? pagination;
 }
 
 /// Course search result
 class CourseSearchResult {
-  final String id;
-  final String slug;
-  final String title;
-  final String description;
-  final String? thumbnail;
-  final String instructor;
-  final String? category;
-  final String level;
-  final String price;
-  final double? rating;
-  final int enrollmentCount;
-  final int? duration;
 
   CourseSearchResult({
     required this.id,
@@ -229,16 +217,22 @@ class CourseSearchResult {
       duration: json['duration'] as int?,
     );
   }
+  final String id;
+  final String slug;
+  final String title;
+  final String description;
+  final String? thumbnail;
+  final String instructor;
+  final String? category;
+  final String level;
+  final String price;
+  final double? rating;
+  final int enrollmentCount;
+  final int? duration;
 }
 
 /// Instructor search result
 class InstructorSearchResult {
-  final String id;
-  final String username;
-  final String name;
-  final String? avatar;
-  final String bio;
-  final int courseCount;
 
   InstructorSearchResult({
     required this.id,
@@ -259,13 +253,16 @@ class InstructorSearchResult {
       courseCount: json['course_count'] as int? ?? 0,
     );
   }
+  final String id;
+  final String username;
+  final String name;
+  final String? avatar;
+  final String bio;
+  final int courseCount;
 }
 
 /// Search suggestion
 class SearchSuggestion {
-  final String type;
-  final String text;
-  final String highlight;
 
   SearchSuggestion({
     required this.type,
@@ -280,14 +277,13 @@ class SearchSuggestion {
       highlight: json['highlight'] as String,
     );
   }
+  final String type;
+  final String text;
+  final String highlight;
 }
 
 /// Trending searches
 class TrendingSearches {
-  final List<String> popularSearches;
-  final List<CategoryInfo> popularCategories;
-  final List<TrendingCourse> trendingCourses;
-  final List<NewCourse> newCourses;
 
   TrendingSearches({
     required this.popularSearches,
@@ -312,12 +308,13 @@ class TrendingSearches {
           .toList(),
     );
   }
+  final List<String> popularSearches;
+  final List<CategoryInfo> popularCategories;
+  final List<TrendingCourse> trendingCourses;
+  final List<NewCourse> newCourses;
 }
 
 class CategoryInfo {
-  final String slug;
-  final String name;
-  final int courseCount;
 
   CategoryInfo({
     required this.slug,
@@ -332,15 +329,12 @@ class CategoryInfo {
       courseCount: json['course_count'] as int? ?? 0,
     );
   }
+  final String slug;
+  final String name;
+  final int courseCount;
 }
 
 class TrendingCourse {
-  final String id;
-  final String slug;
-  final String title;
-  final String? thumbnail;
-  final String instructor;
-  final int recentEnrollments;
 
   TrendingCourse({
     required this.id,
@@ -361,13 +355,15 @@ class TrendingCourse {
       recentEnrollments: json['recent_enrollments'] as int? ?? 0,
     );
   }
-}
-
-class NewCourse {
   final String id;
   final String slug;
   final String title;
   final String? thumbnail;
+  final String instructor;
+  final int recentEnrollments;
+}
+
+class NewCourse {
 
   NewCourse({
     required this.id,
@@ -384,14 +380,14 @@ class NewCourse {
       thumbnail: json['thumbnail'] as String?,
     );
   }
+  final String id;
+  final String slug;
+  final String title;
+  final String? thumbnail;
 }
 
 /// Pagination info
 class PaginationInfo {
-  final int page;
-  final int perPage;
-  final int totalCount;
-  final int totalPages;
 
   PaginationInfo({
     required this.page,
@@ -408,4 +404,8 @@ class PaginationInfo {
       totalPages: json['total_pages'] as int? ?? 1,
     );
   }
+  final int page;
+  final int perPage;
+  final int totalCount;
+  final int totalPages;
 }

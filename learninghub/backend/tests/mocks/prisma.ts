@@ -1,27 +1,27 @@
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
-import { PrismaClient } from '@prisma/client';
+import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
+import { PrismaClient } from '@prisma/client'
 
 export type Context = {
-  prisma: DeepMockProxy<PrismaClient>;
-};
+  prisma: DeepMockProxy<PrismaClient>
+}
 
 export const createMockContext = (): Context => {
   return {
     prisma: mockDeep<PrismaClient>(),
-  };
-};
+  }
+}
 
 // Singleton for test context
-let mockContext: Context;
+let mockContext: Context
 
 export const getMockContext = (): Context => {
   if (!mockContext) {
-    mockContext = createMockContext();
+    mockContext = createMockContext()
   }
-  return mockContext;
-};
+  return mockContext
+}
 
 // Reset mock context between tests
 export const resetMockContext = (): void => {
-  mockContext = createMockContext();
-};
+  mockContext = createMockContext()
+}

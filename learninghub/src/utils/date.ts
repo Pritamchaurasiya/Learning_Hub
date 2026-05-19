@@ -1,18 +1,24 @@
 export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('en-US', options || {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  return d.toLocaleDateString(
+    'en-US',
+    options ?? {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }
+  )
 }
 
 export function formatTime(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleTimeString('en-US', options || {
-    hour: 'numeric',
-    minute: '2-digit'
-  })
+  return d.toLocaleTimeString(
+    'en-US',
+    options ?? {
+      hour: 'numeric',
+      minute: '2-digit',
+    }
+  )
 }
 
 export function formatDateTime(date: string | Date): string {

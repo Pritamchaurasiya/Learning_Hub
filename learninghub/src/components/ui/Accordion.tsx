@@ -32,7 +32,7 @@ export function Accordion({ items, allowMultiple = false, className }: Accordion
 
   return (
     <div className={cn('space-y-2', className)}>
-      {items.map((item) => (
+      {items.map(item => (
         <AccordionItemComponent
           key={item.id}
           id={item.id}
@@ -55,7 +55,13 @@ interface AccordionItemComponentProps {
   onToggle: () => void
 }
 
-function AccordionItemComponent({ id, title, children, isOpen, onToggle }: AccordionItemComponentProps) {
+function AccordionItemComponent({
+  id,
+  title,
+  children,
+  isOpen,
+  onToggle,
+}: AccordionItemComponentProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
       <button
@@ -65,9 +71,7 @@ function AccordionItemComponent({ id, title, children, isOpen, onToggle }: Accor
         aria-controls={`accordion-content-${id}`}
       >
         <span className="font-medium">{title}</span>
-        <ChevronDown
-          className={cn('w-5 h-5 transition-transform', isOpen && 'rotate-180')}
-        />
+        <ChevronDown className={cn('w-5 h-5 transition-transform', isOpen && 'rotate-180')} />
       </button>
       <div
         id={`accordion-content-${id}`}
@@ -78,9 +82,7 @@ function AccordionItemComponent({ id, title, children, isOpen, onToggle }: Accor
         role="region"
         aria-label={title}
       >
-        <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700">
-          {children}
-        </div>
+        <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700">{children}</div>
       </div>
     </div>
   )

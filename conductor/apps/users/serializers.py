@@ -84,9 +84,27 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
-    xp = serializers.IntegerField(source='xp_profile.total_xp', read_only=True, default=0)
-    level = serializers.IntegerField(source='xp_profile.level', read_only=True, default=1)
-    streak = serializers.IntegerField(source='xp_profile.current_streak', read_only=True, default=0)
+    xp = serializers.SerializerMethodField()
+    level = serializers.SerializerMethodField()
+    streak = serializers.SerializerMethodField()
+
+    def get_xp(self, obj):
+        try:
+            return obj.xp_profile.total_xp
+        except Exception:
+            return 0
+
+    def get_level(self, obj):
+        try:
+            return obj.xp_profile.level
+        except Exception:
+            return 1
+
+    def get_streak(self, obj):
+        try:
+            return obj.xp_profile.current_streak
+        except Exception:
+            return 0
 
     class Meta:
         model = User

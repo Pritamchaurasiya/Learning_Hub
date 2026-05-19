@@ -11,15 +11,19 @@ export default function AchievementsPage() {
 
   const handleShare = (achievementName: string) => {
     if (navigator.share) {
-      navigator.share({
-        title: 'Achievement Unlocked!',
-        text: `I just unlocked the ${achievementName} achievement on LearningHub!`,
-        url: window.location.href,
-      }).catch(() => {
-        addToast({ message: 'Error sharing', type: 'error' })
-      })
+      navigator
+        .share({
+          title: 'Achievement Unlocked!',
+          text: `I just unlocked the ${achievementName} achievement on LearningHub!`,
+          url: window.location.href,
+        })
+        .catch(() => {
+          addToast({ message: 'Error sharing', type: 'error' })
+        })
     } else {
-      navigator.clipboard.writeText(`I just unlocked the ${achievementName} achievement on LearningHub!`)
+      void navigator.clipboard.writeText(
+        `I just unlocked the ${achievementName} achievement on LearningHub!`
+      )
       addToast({ message: 'Link copied to clipboard', type: 'success' })
     }
   }
@@ -44,10 +48,14 @@ export default function AchievementsPage() {
         <div className="flex flex-col md:flex-row md:items-center gap-6">
           <div className="flex-1">
             <div className="flex justify-between text-xs mb-2">
-              <span className="font-semibold text-gray-600 dark:text-gray-300">Overall Progress</span>
-              <span className="text-gray-400 font-medium tabular-nums">{Math.round(progressPercent)}%</span>
+              <span className="font-semibold text-gray-600 dark:text-gray-300">
+                Overall Progress
+              </span>
+              <span className="text-gray-400 font-medium tabular-nums">
+                {Math.round(progressPercent)}%
+              </span>
             </div>
-            <div 
+            <div
               className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
               role="progressbar"
               aria-valuenow={Math.round(progressPercent)}
@@ -70,11 +78,15 @@ export default function AchievementsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-500 tabular-nums">{progress.level}</p>
-              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Level</p>
+              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                Level
+              </p>
             </div>
             <div>
               <p className="text-2xl font-bold text-orange-500 tabular-nums">{progress.streak}</p>
-              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Streak</p>
+              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+                Streak
+              </p>
             </div>
           </div>
         </div>
@@ -92,12 +104,18 @@ export default function AchievementsPage() {
             }`}
           >
             <div className="flex items-start gap-4">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0 transition-all duration-300 ${
-                achievement.unlocked
-                  ? 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-800'
-              }`}>
-                {achievement.unlocked ? achievement.icon : <Lock className="w-6 h-6 text-gray-400" />}
+              <div
+                className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0 transition-all duration-300 ${
+                  achievement.unlocked
+                    ? 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-800'
+                }`}
+              >
+                {achievement.unlocked ? (
+                  achievement.icon
+                ) : (
+                  <Lock className="w-6 h-6 text-gray-400" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">

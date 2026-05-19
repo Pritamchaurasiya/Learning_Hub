@@ -48,7 +48,7 @@ export function LazyImage({
     >
       {!isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center">
-          {placeholder || (
+          {placeholder ?? (
             <div className="w-full h-full animate-pulse bg-gray-300 dark:bg-gray-700" />
           )}
         </div>
@@ -73,7 +73,7 @@ export function LazyImage({
 }
 
 interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
- webpSrc?: string
+  webpSrc?: string
   fallbackSrc?: string
   nativeLazy?: boolean
 }
@@ -94,7 +94,7 @@ export function OptimizedImage({
         const webpData = 'data:image/webp;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQ=='
         const img = new Image()
         img.src = webpData
-        await new Promise((resolve) => {
+        await new Promise(resolve => {
           img.onload = resolve
           img.onerror = resolve
         })
@@ -103,18 +103,16 @@ export function OptimizedImage({
         setSupportsWebP(false)
       }
     }
-    checkWebP()
+    void checkWebP()
   }, [])
 
-  const currentSrc = supportsWebP === null 
-    ? src 
-    : supportsWebP 
-      ? (webpSrc || src) 
-      : (fallbackSrc || src)
+  const currentSrc =
+    supportsWebP === null ? src : supportsWebP ? (webpSrc ?? src) : (fallbackSrc ?? src)
 
   return (
     <img
       src={currentSrc}
+      alt={props.alt ?? ''}
       onLoad={() => setIsLoaded(true)}
       loading={nativeLazy ? 'lazy' : 'eager'}
       decoding="async"

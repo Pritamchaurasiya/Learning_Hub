@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 
 /**
  * LoadingScreen - Full-page loading component with smooth animation
@@ -20,7 +20,7 @@ export function LoadingScreen() {
           transition={{
             duration: 1,
             repeat: Infinity,
-            ease: 'linear'
+            ease: 'linear',
           }}
         >
           <Loader2 className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
@@ -35,7 +35,7 @@ export function LoadingScreen() {
         </motion.p>
       </div>
     </motion.div>
-  );
+  )
 }
 
-export default LoadingScreen;
+export default LoadingScreen

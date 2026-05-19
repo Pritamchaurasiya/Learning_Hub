@@ -80,29 +80,34 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    # Core production apps
     "apps.users",
     "apps.courses",
-    # "apps.content", # Legacy app, conflicting with courses
+    "apps.exams",           # NEW: Exam taxonomy (Country → Exam → Subject → Topic)
+    "apps.test_engine",     # NEW: Robust test engine with AI generation
     "apps.notifications",
     "apps.gamification",
     "apps.payments",
-    "apps.ai_engine",  # New AI Engine
+    "apps.ai_engine",
     "apps.dsa",
     "apps.core",
-    "apps.discussions",  # NEW: Discussion Forum
-    "apps.support",      # NEW: Feedback & Support
-    "apps.chat",         # NEW: Real-time Chat
-    "apps.dashboard",    # NEW: Instructor Dashboard
-    "apps.tutors",       # NEW: Tutor Booking System
-    "apps.live_sessions", # NEW: Live Class Sessions
-    "apps.downloads",      # NEW: Downloads/Offline Hub
-    "apps.study_groups",   # NEW: Study Groups Hub
-    "apps.web3",           # NEW: Web3 Credentialing (Phase 130+)
-    "apps.metaverse",      # NEW: Spatial Learning (Phase 130+)
-    "apps.neuro",          # NEW: Neuro-Adaptive Learning (Phase 130+)
-    "apps.search",         # NEW: Global search functionality
-    "apps.analytics",      # NEW: Analytics and reporting
-    "apps.quiz",           # NEW: Quiz Management System
+    "apps.discussions",
+    "apps.support",
+    "apps.chat",
+    "apps.dashboard",
+    "apps.tutors",
+    "apps.live_sessions",
+    "apps.search",
+    "apps.analytics",
+    "apps.analytics_v2",     # NEW: Advanced analytics & performance tracking
+    "apps.subscriptions",    # NEW: Monetization, subscriptions, usage limits
+    "apps.quiz",            # Legacy quiz (deprecated, use test_engine)
+    # Archived apps (disabled to reduce startup time & attack surface):
+    # "apps.web3",
+    # "apps.metaverse",
+    # "apps.neuro",
+    # "apps.downloads",
+    # "apps.study_groups",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -197,12 +202,17 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# Axes Configuration
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1  # 1 Hour
+# Axes Configuration — brute-force protection
+# In production (DEBUG=False), defaults to 5 failed attempts before lockout.
+# Override with AXES_FAILURE_LIMIT env var for development flexibility.
+AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", "5"))
+AXES_COOLOFF_TIME = 1  # 1 Hour lockout
 AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
+AXES_LOCK_OUT_AT_FAILURE = True  # Immediately lock on exceeding limit
+AXES_RESET_ON_SUCCESS = True  # Clear failure counter on successful login
 AXES_USE_GEOIP = False
 AXES_ENABLE_DOS_SITE = False
+AXES_ENABLED = os.getenv("AXES_ENABLED", "True").lower() == "true" and not DEBUG
 
 # Password hashing - Use Argon2 for security
 PASSWORD_HASHERS = [
@@ -451,7 +461,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 86400,  # Daily
     },
     "check-streak-expiry": {
-        "task": "tasks.tasks.check_streak_expiry",
+        "task": "apps.gamification.tasks.check_streak_expiry",
         "schedule": 86400,  # Daily
     },
     "check-achievements-batch": {
@@ -481,7 +491,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 86400,  # Daily (Midnight)
     },
     "calculate-course-stats": {
-        "task": "tasks.tasks.calculate_course_stats",
+        "task": "apps.courses.tasks.calculate_course_stats",
         "schedule": 86400,  # Daily
     },
     # Notifications
@@ -493,6 +503,32 @@ CELERY_BEAT_SCHEDULE = {
     "system-health-check": {
         "task": "apps.core.background_tasks.system_health_check",
         "schedule": 300,  # Every 5 minutes
+    },
+    # Test Engine Tasks
+    "check-expired-attempts": {
+        "task": "apps.test_engine.tasks.check_expired_attempts",
+        "schedule": 60,  # Every minute
+    },
+    "cleanup-abandoned-attempts": {
+        "task": "apps.test_engine.tasks.cleanup_abandoned_attempts",
+        "schedule": 3600,  # Every hour
+    },
+    "recalculate-question-stats": {
+        "task": "apps.test_engine.tasks.recalculate_question_stats",
+        "schedule": 86400,  # Daily
+    },
+    # Subscription Tasks
+    "cleanup-expired-subscriptions": {
+        "task": "apps.subscriptions.tasks.cleanup_expired_subscriptions",
+        "schedule": 3600,  # Every hour
+    },
+    "send-expiry-reminders": {
+        "task": "apps.subscriptions.tasks.send_expiry_reminders",
+        "schedule": 86400,  # Daily at 09:00 UTC
+    },
+    "convert-expired-trials": {
+        "task": "apps.subscriptions.tasks.convert_expired_trials",
+        "schedule": 86400,  # Daily
     },
 }
 
@@ -537,9 +573,9 @@ CONTENT_SECURITY_POLICY = {
 
 # CSP and session security settings below (HSTS already configured at top)
 
-# Session Security (enforce HTTPS cookies everywhere per security hardening plan)
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Session Security (enforce HTTPS cookies only in production)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = 'Lax'

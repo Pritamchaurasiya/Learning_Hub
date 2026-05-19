@@ -7,7 +7,14 @@ import { Input } from '../components/ui/Input'
 import { mentorService, type Mentor } from '../services/mentorService'
 import { useStore } from '../stores/useStore'
 
-const expertiseAreas = ['All', 'Web Development', 'Mobile Development', 'Data Science', 'DevOps', 'System Design']
+const expertiseAreas = [
+  'All',
+  'Web Development',
+  'Mobile Development',
+  'Data Science',
+  'DevOps',
+  'System Design',
+]
 
 export default function MentorshipPage() {
   const [mentors, setMentors] = useState<Mentor[]>([])
@@ -19,26 +26,27 @@ export default function MentorshipPage() {
     try {
       const res = await mentorService.getMentors({
         available: availabilityFilter === 'available' ? true : undefined,
-        expertise: selectedExpertise !== 'All' ? selectedExpertise : undefined
+        expertise: selectedExpertise !== 'All' ? selectedExpertise : undefined,
       })
       setMentors(res.data)
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[MentorshipPage] Failed to fetch mentors:', err);
+        console.error('[MentorshipPage] Failed to fetch mentors:', err)
       }
     }
   }, [availabilityFilter, selectedExpertise])
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchMentors().then(() => { 
-      if (controller.signal.aborted) return 
+    void fetchMentors().then(() => {
+      if (controller.signal.aborted) return
     })
     return () => controller.abort()
   }, [fetchMentors])
 
   const filteredMentors = mentors.filter(mentor => {
-    const matchesSearch = searchQuery === '' ||
+    const matchesSearch =
+      searchQuery === '' ||
       mentor.user.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mentor.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mentor.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -51,7 +59,7 @@ export default function MentorshipPage() {
   const bookSession = async (mentorId: string) => {
     if (!mentorId) return
     setIsBooking(mentorId)
-    
+
     try {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
@@ -61,14 +69,14 @@ export default function MentorshipPage() {
         mentor_id: mentorId,
         scheduled_at: tomorrow.toISOString(),
         duration_minutes: 60,
-        topic: 'General Mentorship & Career Guidance'
+        topic: 'General Mentorship & Career Guidance',
       })
-      
+
       addToast({ message: 'Session booked successfully!', type: 'success' })
     } catch (err) {
       addToast({ message: 'Failed to book session', type: 'error' })
       if (import.meta.env.DEV) {
-        console.error('[MentorshipPage] Booking error:', err);
+        console.error('[MentorshipPage] Booking error:', err)
       }
     } finally {
       setIsBooking(null)
@@ -76,7 +84,9 @@ export default function MentorshipPage() {
   }
 
   const getAvailabilityColor = (isAvailable: boolean) => {
-    return isAvailable ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+    return isAvailable
+      ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
   }
 
   return (
@@ -90,9 +100,7 @@ export default function MentorshipPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Find a Mentor
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Find a Mentor</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Connect with industry experts for personalized guidance
           </p>
@@ -105,7 +113,7 @@ export default function MentorshipPage() {
               <Input
                 placeholder="Search mentors by name or expertise..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
                 fullWidth
               />
@@ -129,7 +137,7 @@ export default function MentorshipPage() {
               <input
                 type="checkbox"
                 checked={availabilityFilter === 'available'}
-                onChange={(e) => setAvailabilityFilter(e.target.checked ? 'available' : 'all')}
+                onChange={e => setAvailabilityFilter(e.target.checked ? 'available' : 'all')}
                 className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Available now</span>
@@ -155,7 +163,9 @@ export default function MentorshipPage() {
                       {mentor.expertise[0] || 'Mentor'}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 text-xs font-medium rounded ${getAvailabilityColor(mentor.is_available)}`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded ${getAvailabilityColor(mentor.is_available)}`}
+                      >
                         {mentor.is_available ? 'Available' : 'Unavailable'}
                       </span>
                     </div>
@@ -229,9 +239,7 @@ export default function MentorshipPage() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No mentors found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your search or filters
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filters</p>
           </div>
         )}
 

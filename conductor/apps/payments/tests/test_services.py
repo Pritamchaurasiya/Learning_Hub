@@ -47,9 +47,9 @@ class TestRazorpayService:
             mock_settings.RAZORPAY_KEY_ID = 'test_key_id'
             mock_settings.RAZORPAY_KEY_SECRET = 'test_key_secret'
             
-            with patch('apps.payments.services.razorpay.Client') as mock_client_class:
+            with patch('apps.payments.services.razorpay') as mock_razorpay:
                 mock_client = MagicMock()
-                mock_client_class.return_value = mock_client
+                mock_razorpay.Client.return_value = mock_client
                 
                 from apps.payments.services import RazorpayService
                 service = RazorpayService()

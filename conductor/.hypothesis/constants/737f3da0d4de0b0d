@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\quiz\models.py
+# hypothesis_version: 6.152.1
+
+[255, '-created_at', '-started_at', 'Abandoned', 'Completed', 'In Progress', 'Multiple Choice', 'Short Answer', 'True/False', 'abandoned', 'answered_at', 'answers', 'attempt_number', 'attempts', 'completed', 'created_at', 'in_progress', 'marks', 'mcq', 'options', 'order', 'questions', 'quiz', 'quiz_answers', 'quiz_attempts', 'quiz_options', 'quiz_questions', 'quizzes', 'short_answer', 'total', 'true_false', 'user']

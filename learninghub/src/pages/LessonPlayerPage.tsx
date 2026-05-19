@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Play,
@@ -18,39 +18,67 @@ import {
   RotateCcw,
   Loader2,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Bookmark,
 } from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { lessonService, type Lesson } from '../services/lessonService'
 import { useStore } from '../stores/useStore'
+import { useVideoPlayer } from '../hooks/useVideoPlayer'
 
-export default function LessonPlayerPage() {
-  const { courseId, lessonId } = useParams<{ courseId: string, lessonId: string }>()
+function LessonPlayerPage() {
+  const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
   const navigate = useNavigate()
   const { addToast } = useStore()
 
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
+  // UI states
   const [showTranscript, setShowTranscript] = useState(false)
   const [showResources, setShowResources] = useState(true)
+  const [showBookmarks] = useState(false)
   const [notes, setNotes] = useState('')
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isControlsVisible, setIsControlsVisible] = useState(true)
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const progressSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // API states
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const progressUpdateRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Video player hook with progress tracking
+  const {
+    videoRef,
+    state: videoState,
+    controls: videoControls,
+    bookmarks,
+    addBookmark,
+    removeBookmark,
+    goToBookmark,
+    formatTime,
+  } = useVideoPlayer(
+    useCallback(
+      (currentTime: number, duration: number) => {
+        // Progress callback - called every 5 seconds
+        if (courseId && lessonId) {
+          const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
+          const completed = progressPercent >= 90
+
+          void lessonService.updateProgress(courseId, lessonId, {
+            progress_percent: progressPercent,
+            watch_time_seconds: Math.floor(currentTime),
+            completed,
+          })
+
+          if (completed && lesson && !lesson.progress?.completed) {
+            addToast({ message: 'Lesson completed!', type: 'success' })
+          }
+        }
+      },
+      [courseId, lessonId, lesson, addToast]
+    )
+  )
 
   // Fetch lesson data
   useEffect(() => {
@@ -61,7 +89,7 @@ export default function LessonPlayerPage() {
     }
 
     const controller = new AbortController()
-    
+
     const fetchData = async () => {
       try {
         setIsLoading(true)
@@ -69,97 +97,39 @@ export default function LessonPlayerPage() {
 
         const [lessonRes, lessonsRes] = await Promise.all([
           lessonService.getLesson(courseId, lessonId, { signal: controller.signal }),
-          lessonService.getLessons(courseId, { signal: controller.signal })
+          lessonService.getLessons(courseId, { signal: controller.signal }),
         ])
 
         if (controller.signal.aborted) return
 
         setLesson(lessonRes.data)
         setLessons(lessonsRes.data)
-        setNotes(lessonRes.data.progress?.notes || '')
-      } catch (err) {
+        setNotes(lessonRes.data.progress?.notes ?? '')
+      } catch (_err) {
         if (controller.signal.aborted) return
-        setError(err instanceof Error ? err.message : 'Failed to load lesson')
+        setError(_err instanceof Error ? _err.message : 'Failed to load lesson')
         if (import.meta.env.DEV) {
-          console.error('[LessonPlayerPage] Failed to fetch lesson:', err);
+          console.error('[LessonPlayerPage] Failed to fetch lesson:', _err)
         }
       } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false)
-        }
+        setIsLoading(false)
       }
     }
 
-    fetchData()
+    void fetchData()
     return () => controller.abort()
   }, [courseId, lessonId])
 
-  // Update progress periodically
-  const updateProgress = useCallback(async () => {
-    if (!courseId || !lessonId || !videoRef.current) return
-
-    const video = videoRef.current
-    const progressPercent = duration > 0 ? (video.currentTime / duration) * 100 : 0
-    const completed = progressPercent >= 90
-
+  // Mark lesson as complete
+  const markAsComplete = useCallback(async () => {
+    if (!courseId || !lessonId) return
     try {
-      await lessonService.updateProgress(courseId, lessonId, {
-        progress_percent: progressPercent,
-        watch_time_seconds: Math.floor(video.currentTime),
-        completed
-      })
-
-      if (completed && lesson && !lesson.progress?.completed) {
-        addToast({ message: 'Lesson completed!', type: 'success' })
-      }
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[LessonPlayerPage] Failed to update progress:', err);
-      }
+      await lessonService.markComplete(courseId, lessonId)
+      addToast({ message: 'Lesson marked as complete!', type: 'success' })
+    } catch {
+      addToast({ message: 'Failed to mark lesson as complete', type: 'error' })
     }
-  }, [courseId, lessonId, duration, lesson, addToast])
-
-  // Auto-save progress every 10 seconds while playing
-  useEffect(() => {
-    if (isPlaying) {
-      progressUpdateRef.current = setInterval(updateProgress, 10000)
-    } else {
-      if (progressUpdateRef.current) {
-        clearInterval(progressUpdateRef.current)
-        progressUpdateRef.current = null
-        // Save final progress when pausing
-        updateProgress()
-      }
-    }
-
-    return () => {
-      if (progressUpdateRef.current) {
-        clearInterval(progressUpdateRef.current)
-        progressUpdateRef.current = null
-      }
-    }
-  }, [isPlaying, updateProgress])
-
-  // Cleanup all timeouts and intervals on unmount
-  useEffect(() => {
-    return () => {
-      // Clear all timers
-      if (progressUpdateRef.current) {
-        clearInterval(progressUpdateRef.current)
-        progressUpdateRef.current = null
-      }
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current)
-        controlsTimeoutRef.current = null
-      }
-      if (progressSaveTimeoutRef.current) {
-        clearTimeout(progressSaveTimeoutRef.current)
-        progressSaveTimeoutRef.current = null
-      }
-      // Final progress save
-      updateProgress()
-    }
-  }, [])
+  }, [courseId, lessonId, addToast])
 
   // Save notes
   const saveNotes = useCallback(async () => {
@@ -171,188 +141,54 @@ export default function LessonPlayerPage() {
     } catch (err) {
       addToast({ message: 'Failed to save notes', type: 'error' })
       if (import.meta.env.DEV) {
-        console.error('[LessonPlayerPage] Failed to save notes:', err);
+        console.error('[LessonPlayerPage] Failed to save notes:', err)
       }
     }
   }, [courseId, lessonId, notes, addToast])
 
-  const formatTime = (seconds: number) => {
-    if (!seconds || isNaN(seconds)) return '0:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+  // Video state and controls from hook for backward compatibility in UI
+  const { isPlaying, currentTime, duration, volume, isMuted, playbackRate } = videoState
+  const { togglePlay, skip } = videoControls
 
-  const togglePlay = useCallback(() => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => setIsPlaying(true)).catch(() => {
-            // Silent fail - video play error is not critical
-          });
-        } else {
-          setIsPlaying(true);
-        }
-      } else {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      }
-    }
-  }, []);
-
-  const skip = useCallback((seconds: number) => {
-    if (videoRef.current && duration > 0) {
-      videoRef.current.currentTime = Math.min(Math.max(0, videoRef.current.currentTime + seconds), duration)
-    }
-  }, [duration]);
-
-  const toggleMute = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-    }
-  }, []);
-
-  const toggleFullscreen = useCallback(() => {
-    if (videoRef.current) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => { /* Silent fail */ });
-      } else {
-        videoRef.current.parentElement?.requestFullscreen().catch(() => { /* Silent fail */ });
-      }
-    }
-  }, []);
-
-  // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['TEXTAREA', 'INPUT'].includes((e.target as HTMLElement).tagName)) return;
-
-      switch (e.key.toLowerCase()) {
-        case ' ':
-        case 'k':
-          e.preventDefault();
-          togglePlay();
-          break;
-        case 'j':
-          skip(-10);
-          break;
-        case 'l':
-          skip(10);
-          break;
-        case 'm':
-          toggleMute();
-          break;
-        case 'f':
-          toggleFullscreen();
-          break;
-        case 'arrowleft':
-          skip(-5);
-          break;
-        case 'arrowright':
-          skip(5);
-          break;
-        case 'arrowup':
-          e.preventDefault();
-          setVolume(prev => {
-            const newVol = Math.min(1, prev + 0.1);
-            if (videoRef.current) {
-               videoRef.current.volume = newVol;
-               videoRef.current.muted = newVol === 0;
-               setIsMuted(newVol === 0);
-            }
-            return newVol;
-          });
-          break;
-        case 'arrowdown':
-          e.preventDefault();
-          setVolume(prev => {
-            const newVol = Math.max(0, prev - 0.1);
-            if (videoRef.current) {
-               videoRef.current.volume = newVol;
-               videoRef.current.muted = newVol === 0;
-               setIsMuted(newVol === 0);
-            }
-            return newVol;
-          });
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePlay, skip, toggleMute, toggleFullscreen]);
+  // Keyboard shortcuts are handled by useVideoPlayer hook
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNotes(e.target.value);
-  };
+    setNotes(e.target.value)
+  }
 
   // Debounced save notes
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (notes !== (lesson?.progress?.notes || '')) {
-        saveNotes();
+      if (notes !== (lesson?.progress?.notes ?? '')) {
+        void saveNotes()
       }
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, [notes, lesson, saveNotes]);
+    }, 2000)
+    return () => clearTimeout(timeout)
+  }, [notes, lesson, saveNotes])
 
-  const videoProgress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const videoProgress = duration > 0 ? (currentTime / duration) * 100 : 0
 
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime)
-    }
-  }
-
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration)
-    }
-  }
-
+  // Video event handlers are managed by useVideoPlayer hook
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = (parseFloat(e.target.value) / 100) * duration
-    if (videoRef.current) {
-      videoRef.current.currentTime = time
-      setCurrentTime(time)
-    }
+    videoControls.seek(time)
   }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const vol = parseFloat(e.target.value)
-    setVolume(vol)
-    if (videoRef.current) {
-      videoRef.current.volume = vol
-      videoRef.current.muted = vol === 0
-      setIsMuted(vol === 0)
-    }
+    videoControls.setVolume(vol)
   }
 
   const handleSpeedChange = (speed: number) => {
-    setPlaybackSpeed(speed)
-    if (videoRef.current) {
-      videoRef.current.playbackRate = speed
-    }
+    videoControls.setPlaybackRate(speed)
   }
 
   const handleMouseMove = () => {
-    setIsControlsVisible(true);
-    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    setIsControlsVisible(true)
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
     controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying) setIsControlsVisible(false);
-    }, 3000);
-  };
-
-  const markAsComplete = async () => {
-    if (!courseId || !lessonId) return;
-    try {
-      await lessonService.completeLesson(courseId, lessonId);
-      addToast({ message: 'Lesson completed!', type: 'success' });
-    } catch (err) {
-      addToast({ message: 'Failed to mark complete', type: 'error' });
-    }
+      if (isPlaying) setIsControlsVisible(false)
+    }, 3000)
   }
 
   const goToLesson = (id: string) => {
@@ -366,7 +202,7 @@ export default function LessonPlayerPage() {
         <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
         <p className="text-gray-600 dark:text-gray-400">Loading lesson...</p>
       </div>
-    );
+    )
   }
 
   // Error state
@@ -386,7 +222,7 @@ export default function LessonPlayerPage() {
           <Button onClick={() => navigate(`/course/${courseId}`)}>Back to Course</Button>
         </div>
       </div>
-    );
+    )
   }
 
   // Not found state
@@ -396,13 +232,13 @@ export default function LessonPlayerPage() {
         <h2 className="text-xl font-bold mb-4">Lesson not found</h2>
         <Button onClick={() => navigate(`/course/${courseId}`)}>Back to Course</Button>
       </div>
-    );
+    )
   }
 
   const currentLessonIndex = lessons.findIndex(l => l.id === lessonId)
   const nextLesson = lessons[currentLessonIndex + 1]
   const prevLesson = lessons[currentLessonIndex - 1]
-  const isCompleted = lesson.progress?.completed || false;
+  const isCompleted = lesson.progress?.completed ?? false
 
   return (
     <>
@@ -453,23 +289,24 @@ export default function LessonPlayerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Video Player */}
           <div className="lg:col-span-3 space-y-4">
-            <Card className="overflow-hidden border-0 shadow-2xl bg-black relative group" onMouseMove={handleMouseMove}>
+            <Card
+              className="overflow-hidden border-0 shadow-2xl bg-black relative group"
+              onMouseMove={handleMouseMove}
+            >
               {/* Video Container */}
               <div className="relative aspect-video flex items-center justify-center">
                 <video
                   ref={videoRef}
                   src={lesson.video_url}
                   className="w-full h-full max-h-[70vh]"
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onClick={togglePlay}
-                  onDoubleClick={toggleFullscreen}
+                  onClick={videoControls.togglePlay}
+                  onDoubleClick={videoControls.toggleFullscreen}
                 />
 
                 {/* Big Play Overlay */}
                 {!isPlaying && (
-                  <button 
-                    onClick={togglePlay}
+                  <button
+                    onClick={videoControls.togglePlay}
                     className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all z-10"
                   >
                     <div className="w-20 h-20 rounded-full bg-primary-600/90 text-white flex items-center justify-center shadow-2xl scale-100 hover:scale-110 transition-transform">
@@ -479,7 +316,7 @@ export default function LessonPlayerPage() {
                 )}
 
                 {/* Video Controls Overlay */}
-                <div 
+                <div
                   className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 transition-opacity duration-300 z-20 ${isControlsVisible ? 'opacity-100' : 'opacity-0'}`}
                 >
                   {/* Progress Bar */}
@@ -493,7 +330,7 @@ export default function LessonPlayerPage() {
                       className="absolute inset-0 w-full h-full opacity-0 z-30 cursor-pointer"
                     />
                     <div className="absolute inset-0 bg-gray-600/50 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-primary-500 relative transition-all duration-100"
                         style={{ width: `${videoProgress}%` }}
                       >
@@ -505,15 +342,30 @@ export default function LessonPlayerPage() {
                   {/* Controls */}
                   <div className="flex items-center justify-between text-white">
                     <div className="flex items-center gap-1 sm:gap-4">
-                      <button onClick={togglePlay} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                        {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                      <button
+                        onClick={togglePlay}
+                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                      >
+                        {isPlaying ? (
+                          <Pause className="w-5 h-5 fill-current" />
+                        ) : (
+                          <Play className="w-5 h-5 fill-current" />
+                        )}
                       </button>
-                      
+
                       <div className="flex items-center gap-0.5 sm:gap-1">
-                        <button onClick={() => skip(-10)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" title="Back 10s">
+                        <button
+                          onClick={() => skip(-10)}
+                          className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                          title="Back 10s"
+                        >
                           <SkipBack className="w-5 h-5" />
                         </button>
-                        <button onClick={() => skip(10)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" title="Forward 10s">
+                        <button
+                          onClick={() => skip(10)}
+                          className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                          title="Forward 10s"
+                        >
                           <SkipForward className="w-5 h-5" />
                         </button>
                       </div>
@@ -524,17 +376,26 @@ export default function LessonPlayerPage() {
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4">
+                      {/* Add Bookmark */}
+                      <button
+                        onClick={() => addBookmark(`Bookmark at ${formatTime(currentTime)}`)}
+                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="Add Bookmark (Ctrl+B)"
+                      >
+                        <Bookmark className="w-5 h-5" />
+                      </button>
+
                       {/* Playback Speed */}
                       <div className="relative group/speed">
                         <button className="text-xs font-bold px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition-colors uppercase tracking-wider">
-                          {playbackSpeed}x
+                          {playbackRate}x
                         </button>
                         <div className="absolute bottom-full right-0 mb-2 p-1 bg-gray-900 rounded-lg shadow-xl opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all">
                           {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
                             <button
                               key={speed}
                               onClick={() => handleSpeedChange(speed)}
-                              className={`block w-full text-left px-3 py-1.5 text-xs rounded-md hover:bg-white/10 ${playbackSpeed === speed ? 'text-primary-400 font-bold' : 'text-white'}`}
+                              className={`block w-full text-left px-3 py-1.5 text-xs rounded-md hover:bg-white/10 ${playbackRate === speed ? 'text-primary-400 font-bold' : 'text-white'}`}
                             >
                               {speed}x
                             </button>
@@ -544,8 +405,15 @@ export default function LessonPlayerPage() {
 
                       {/* Volume */}
                       <div className="flex items-center gap-2 group/volume">
-                        <button onClick={toggleMute} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                          {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                        <button
+                          onClick={videoControls.toggleMute}
+                          className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        >
+                          {isMuted || volume === 0 ? (
+                            <VolumeX className="w-5 h-5" />
+                          ) : (
+                            <Volume2 className="w-5 h-5" />
+                          )}
                         </button>
                         <div className="w-0 overflow-hidden group-hover/volume:w-20 transition-all duration-300 flex items-center">
                           <input
@@ -560,7 +428,11 @@ export default function LessonPlayerPage() {
                         </div>
                       </div>
 
-                      <button onClick={toggleFullscreen} className="p-2 hover:bg-white/20 rounded-lg transition-colors" title="Toggle Fullscreen">
+                      <button
+                        onClick={videoControls.toggleFullscreen}
+                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="Toggle Fullscreen"
+                      >
                         <Maximize className="w-5 h-5" />
                       </button>
                     </div>
@@ -577,7 +449,14 @@ export default function LessonPlayerPage() {
                     <FileText className="w-5 h-5 text-primary-500" />
                     Notes
                   </h3>
-                  <Button variant="ghost" size="xs" onClick={() => { setNotes(''); localStorage.removeItem(`notes-${courseId}-${lessonId}`); }}>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => {
+                      setNotes('')
+                      localStorage.removeItem(`notes-${courseId}-${lessonId}`)
+                    }}
+                  >
                     <RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset
                   </Button>
                 </div>
@@ -591,7 +470,7 @@ export default function LessonPlayerPage() {
               </Card>
 
               <div className="space-y-4">
-                 <Card className="p-4">
+                <Card className="p-4">
                   <button
                     className="w-full flex items-center justify-between group"
                     onClick={() => setShowTranscript(!showTranscript)}
@@ -600,11 +479,13 @@ export default function LessonPlayerPage() {
                       <BookOpen className="w-5 h-5 text-purple-500" />
                       Transcript
                     </span>
-                    <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showTranscript ? 'rotate-90' : ''}`} />
+                    <ChevronRight
+                      className={`w-5 h-5 text-gray-400 transition-transform ${showTranscript ? 'rotate-90' : ''}`}
+                    />
                   </button>
                   {showTranscript && (
                     <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto pr-2 scrollbar-thin">
-                      {lesson.transcript || "No transcript available for this lesson."}
+                      {lesson.transcript ?? 'No transcript available for this lesson.'}
                     </div>
                   )}
                 </Card>
@@ -619,7 +500,9 @@ export default function LessonPlayerPage() {
                         <Clock className="w-5 h-5 text-emerald-500" />
                         Resources
                       </span>
-                      <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showResources ? 'rotate-90' : ''}`} />
+                      <ChevronRight
+                        className={`w-5 h-5 text-gray-400 transition-transform ${showResources ? 'rotate-90' : ''}`}
+                      />
                     </button>
                     {showResources && (
                       <div className="mt-4 space-y-2">
@@ -632,7 +515,7 @@ export default function LessonPlayerPage() {
                             className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 hover:text-primary-600 dark:hover:text-primary-400 transition-all group/res"
                           >
                             <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm group-hover/res:scale-110 transition-transform">
-                               <FileText className="w-4 h-4" />
+                              <FileText className="w-4 h-4" />
                             </div>
                             <span className="text-sm font-medium">{resource.title}</span>
                           </a>
@@ -650,42 +533,98 @@ export default function LessonPlayerPage() {
             <Card className="p-0 overflow-hidden flex flex-col h-full max-h-[calc(100vh-10rem)] sticky top-20">
               <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                 <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-primary-500" />
-                  Lessons
+                  {showBookmarks ? (
+                    <>
+                      <Bookmark className="w-5 h-5 text-primary-500" />
+                      Bookmarks
+                    </>
+                  ) : (
+                    <>
+                      <GraduationCap className="w-5 h-5 text-primary-500" />
+                      Lessons
+                    </>
+                  )}
                 </h3>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {lessons.map((l, index) => (
-                  <button
-                    key={l.id}
-                    onClick={() => goToLesson(l.id)}
-                    className={`w-full text-left p-3 rounded-xl transition-all group ${
-                      l.id === lessonId
-                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5 ${
-                        l.id === lessonId 
-                          ? 'bg-white text-primary-600' 
-                          : l.completed 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                      }`}>
-                        {l.completed ? <CheckCircle className="w-3.5 h-3.5" /> : index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold truncate ${l.id === lessonId ? 'text-white' : ''}`}>
-                          {l.title}
-                        </p>
-                        <p className={`text-[11px] mt-0.5 ${l.id === lessonId ? 'text-white/70' : 'text-gray-500'}`}>
-                          {formatTime(l.duration)}
-                        </p>
-                      </div>
+                {showBookmarks ? (
+                  bookmarks.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      <Bookmark className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No bookmarks yet</p>
+                      <p className="text-xs mt-1">Press Ctrl+B to add a bookmark</p>
                     </div>
-                  </button>
-                ))}
+                  ) : (
+                    bookmarks.map((bookmark: { id: string; time: number; label: string }) => (
+                      <button
+                        key={bookmark.id}
+                        onClick={() => goToBookmark(bookmark.time)}
+                        className="w-full text-left p-3 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-xs font-bold">
+                            <Bookmark className="w-3 h-3" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {bookmark.label}
+                            </p>
+                            <p className="text-[11px] text-primary-600 dark:text-primary-400">
+                              {formatTime(bookmark.time)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              removeBookmark(bookmark.id)
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
+                          >
+                            <AlertCircle className="w-4 h-4 text-red-500" />
+                          </button>
+                        </div>
+                      </button>
+                    ))
+                  )
+                ) : (
+                  lessons.map((l, index) => (
+                    <button
+                      key={l.id}
+                      onClick={() => goToLesson(l.id)}
+                      className={`w-full text-left p-3 rounded-xl transition-all group ${
+                        l.id === lessonId
+                          ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5 ${
+                            l.id === lessonId
+                              ? 'bg-white text-primary-600'
+                              : l.completed
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                          }`}
+                        >
+                          {l.completed ? <CheckCircle className="w-3.5 h-3.5" /> : index + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-sm font-semibold truncate ${l.id === lessonId ? 'text-white' : ''}`}
+                          >
+                            {l.title}
+                          </p>
+                          <p
+                            className={`text-[11px] mt-0.5 ${l.id === lessonId ? 'text-white/70' : 'text-gray-500'}`}
+                          >
+                            {formatTime(l.duration)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
 
               {/* Navigation buttons */}
@@ -716,7 +655,7 @@ export default function LessonPlayerPage() {
   )
 }
 
-function GraduationCap(props: any) {
+function GraduationCap(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -731,7 +670,9 @@ function GraduationCap(props: any) {
       strokeLinejoin="round"
     >
       <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v5" />
+      <path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5" />
     </svg>
   )
 }
+
+export default memo(LessonPlayerPage)

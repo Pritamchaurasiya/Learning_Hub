@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Check, Trash2, Clock, BookOpen, Trophy, MessageSquare, CheckCheck, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Bell,
+  Check,
+  Trash2,
+  Clock,
+  BookOpen,
+  Trophy,
+  MessageSquare,
+  CheckCheck,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -12,7 +23,7 @@ const notificationIcons = {
   social: MessageSquare,
   reminder: Clock,
   system: Bell,
-  payment: Bell
+  payment: Bell,
 }
 
 const notificationColors = {
@@ -21,7 +32,7 @@ const notificationColors = {
   social: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
   reminder: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
   system: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
-  payment: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+  payment: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
 }
 
 export default function NotificationsPage() {
@@ -40,7 +51,7 @@ export default function NotificationsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notifications')
       if (import.meta.env.DEV) {
-        console.error('[NotificationsPage] Failed to fetch notifications:', err);
+        console.error('[NotificationsPage] Failed to fetch notifications:', err)
       }
     } finally {
       setIsLoading(false)
@@ -49,15 +60,15 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchNotifications().then(() => { 
-      if (controller.signal.aborted) return 
+    void fetchNotifications().then(() => {
+      if (controller.signal.aborted) return
     })
     return () => controller.abort()
   }, [fetchNotifications])
 
   // Subscribe to real-time notifications
   useEffect(() => {
-    const unsubscribe = notificationsService.subscribeToNotifications((newNotification) => {
+    const unsubscribe = notificationsService.subscribeToNotifications(newNotification => {
       setNotifications(prev => [newNotification, ...prev])
     })
     return unsubscribe
@@ -75,12 +86,10 @@ export default function NotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       await notificationsService.markAsRead(id)
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-      )
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[NotificationsPage] Failed to mark as read:', err);
+        console.error('[NotificationsPage] Failed to mark as read:', err)
       }
     }
   }
@@ -88,12 +97,10 @@ export default function NotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await notificationsService.markAllAsRead()
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, isRead: true }))
-      )
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[NotificationsPage] Failed to mark all as read:', err);
+        console.error('[NotificationsPage] Failed to mark all as read:', err)
       }
     }
   }
@@ -104,7 +111,7 @@ export default function NotificationsPage() {
       setNotifications(prev => prev.filter(n => n.id !== id))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[NotificationsPage] Failed to delete notification:', err);
+        console.error('[NotificationsPage] Failed to delete notification:', err)
       }
     }
   }
@@ -115,7 +122,7 @@ export default function NotificationsPage() {
       setNotifications([])
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[NotificationsPage] Failed to clear all notifications:', err);
+        console.error('[NotificationsPage] Failed to clear all notifications:', err)
       }
     }
   }
@@ -164,11 +171,11 @@ export default function NotificationsPage() {
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Notifications
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {isLoading ? 'Loading...' : `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
+                {isLoading
+                  ? 'Loading...'
+                  : `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
               </p>
             </div>
           </div>
@@ -205,9 +212,9 @@ export default function NotificationsPage() {
               <div className="flex-1">
                 <p className="text-red-700 dark:text-red-400">{error}</p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 leftIcon={<RefreshCw className="w-4 h-4" />}
                 onClick={fetchNotifications}
               >
@@ -257,6 +264,7 @@ export default function NotificationsPage() {
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key
               <Card key={i} className="p-4">
                 <div className="flex gap-4">
                   <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse flex-shrink-0" />
@@ -275,7 +283,8 @@ export default function NotificationsPage() {
             <div className="space-y-3">
               {filteredNotifications.map(notification => {
                 const Icon = notificationIcons[notification.type] || Bell
-                const colorClass = notificationColors[notification.type] || notificationColors.system
+                const colorClass =
+                  notificationColors[notification.type] || notificationColors.system
 
                 return (
                   <Card
@@ -285,7 +294,9 @@ export default function NotificationsPage() {
                   >
                     <div className="flex gap-4">
                       {/* Icon */}
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}
+                      >
                         <Icon className="w-6 h-6" />
                       </div>
 
@@ -293,7 +304,9 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            <h3 className={`font-semibold ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                            <h3
+                              className={`font-semibold ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}
+                            >
                               {notification.title}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -306,9 +319,9 @@ export default function NotificationsPage() {
                                 variant="ghost"
                                 size="sm"
                                 leftIcon={<Check className="w-4 h-4" />}
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation()
-                                  markAsRead(notification.id)
+                                  void markAsRead(notification.id)
                                 }}
                                 aria-label="Mark as read"
                               />
@@ -317,9 +330,9 @@ export default function NotificationsPage() {
                               variant="ghost"
                               size="sm"
                               leftIcon={<Trash2 className="w-4 h-4" />}
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation()
-                                deleteNotification(notification.id)
+                                void deleteNotification(notification.id)
                               }}
                               aria-label="Delete notification"
                             />
@@ -331,7 +344,7 @@ export default function NotificationsPage() {
                             <Clock className="w-4 h-4" />
                             {formatTime(notification.createdAt)}
                           </div>
-                          {(notification.metadata?.link || notification.metadata?.courseId) && (
+                          {(notification.metadata?.link ?? notification.metadata?.courseId) && (
                             <Button
                               variant="link"
                               size="sm"

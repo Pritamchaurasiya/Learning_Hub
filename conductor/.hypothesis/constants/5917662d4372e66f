@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\quiz\serializers.py
+# hypothesis_version: 6.152.1
+
+['answers', 'attempt_number', 'completed_at', 'course.title', 'course_title', 'created_at', 'description', 'id', 'is_correct', 'is_passed', 'is_published', 'marks', 'marks_obtained', 'max_attempts', 'max_score', 'options', 'order', 'passing_score', 'percentage_score', 'question', 'question.text', 'question_text', 'question_type', 'questions', 'quiz', 'quiz.course.title', 'quiz.title', 'quiz_title', 'score', 'selected_option', 'started_at', 'status', 'text', 'text_answer', 'time_limit_minutes', 'time_taken_seconds', 'title', 'total_marks', 'total_questions', 'updated_at']

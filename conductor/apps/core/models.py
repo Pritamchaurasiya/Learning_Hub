@@ -168,3 +168,9 @@ class AuditLog(BaseModel):
             query = query.filter(severity__in=severity_filter)
         
         return query.order_by('-created_at')[:100]
+
+# Import EnterpriseAuditLog so Django registers it for migrations
+try:
+    from apps.core.audit_service import EnterpriseAuditLog
+except ImportError:
+    pass

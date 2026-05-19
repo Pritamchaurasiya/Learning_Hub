@@ -1,19 +1,239 @@
-﻿# Build artifacts
+# ============================================================
+# Learning_Hub - Comprehensive .gitignore
+# Covers: Node.js, Python/Django, Flutter/Dart, IDEs, Secrets
+# ============================================================
+
+# ==================== DEPENDENCIES ====================
+node_modules/
+.pnp/
+.pnp.js
+bower_components/
+jspm_packages/
+
+# ==================== BUILD OUTPUT ====================
+dist/
 build/
-.dart_tool/
-windows/flutter/ephemeral/
-*.pdb
-*.dll
-*.exe
-*.obj
+*.egg-info/
+*.egg
+*.whl
+*.tar.gz
+*.tgz
+
+# ==================== PYTHON ====================
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
 venv/
-.env
-.vscode/
-.idea/
+.venv/
+venv_new/
+env/
+.env/
+*.virtualenv
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.coverage
+.coverage.*
+.tox/
+.nox/
+.cache/
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+celerybeat-schedule
+celerybeat.pid
+
+# ==================== DJANGO ====================
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+media/
+staticfiles/
+static/collected/
 *.log
 
-*report_visible.txt
+# ==================== NODE.JS ====================
+*.tsbuildinfo
+.eslintcache
+.node_repl_history
+*.pid
+*.seed
+*.pid.lock
+.npm
+.yarn-integrity
+.cache/
+
+# ==================== FLUTTER / DART ====================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.packages
+.pub-cache/
+.pub/
+/build/
+*.class
+*.jar
+*.apk
+*.aab
+GeneratedPluginRegistrant.*
+
+# ==================== SECRETS & ENVIRONMENT ====================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.development
+*.env.production
+*.env.development
+secrets/
+*.pem
+*.key
+*.cert
+*.crt
+*-deployment.env
+
+# ==================== IDE / EDITOR ====================
+.vscode/
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+__cmake_systeminformation/
+
+# ==================== OS FILES ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==================== TEST ARTIFACTS ====================
+playwright-report/
+test-results/
+coverage/
+.nyc_output/
+junit.xml
+test-report.xml
+
+# ==================== LOGS & DEBUG OUTPUT ====================
 *.log
-.mypy_cache/
-.pytest_cache/
+*.log.*
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+debug.log
+
+# ==================== BINARY FILES ====================
+*.exe
+*.dll
+*.pdb
+*.obj
+*.o
+*.a
+*.lib
+*.so
+*.dylib
+*.tgz
+*.tar.gz
+*.zip
+*.rar
+*.7z
+pdfium-win-x64.tgz
+nuget.exe
+
+# ==================== BUILD LOGS / ANALYSIS OUTPUT ====================
+# These are temporary output files, NOT source code
+*_output.txt
+*_error.txt
+*_results.txt
+*_errors.txt
+*_report.txt
+analyze*.txt
+analysis*.txt
+build_*.txt
+build_*.log
+test_*.txt
+test_*.log
+*_debug.txt
+*_debug.log
+deploy_*.log
+flutter_*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# ==================== GENERATED REPORTS ====================
+lint_results.json
+build-frontend.log
+build-output.txt
+frontend_build.log
+ts_errors.log
+bandit_results.json
+
+# ==================== MISC GENERATED FILES ====================
+.playwright-mcp/
+.kilo/
+.qodo/
+.Jules/
+.agent/
+*.backup
+job_output.txt
+project_structure.txt
+analyze_output.txt
+conftest_new.py
+
+# ==================== SPECIFIC LARGE/GENERATED FILES ====================
+conductor/django.log
+conductor/django_error.log
+conductor/pytest_debug.log
+conductor/pytest_output.txt
+conductor/pytest_errors.txt
+conductor/error_v2.log
+conductor/db.sqlite3
+conductor/htmlcov/
+conductor/.coverage
+conductor/__pycache__/
+conductor/.hypothesis/
+conductor/.pytest_cache/
+conductor/.mypy_cache/
+
+# ==================== CONDUCTOR LOG/ARTIFACT DUMP ====================
+conductor/*_output.txt
+conductor/*_error.txt
+conductor/*_results.txt
+conductor/*_errors.txt
+conductor/*.log
+conductor/*_report*.json
+conductor/PHASE*.json
+conductor/*CERTIFICATION*.json
+conductor/*CERTIFICATION*.md
+conductor/LOAD_TEST_*.json
+conductor/DEPLOYMENT_EXECUTION_*.json
+conductor/FINAL_COMPREHENSIVE_REPORT_*.json
+conductor/FINAL_PRODUCTION_READINESS_*.json
+conductor/PLATINUM_*.json
+conductor/GOLD_*.json
+conductor/master_control_report_*.json
+conductor/final_integration_test_*.json
+conductor/website_enhancement_report_*.json
+conductor/website_enhancement_final_*.json
+conductor/advanced_system_analysis_report_*.json
+conductor/setup_state.json

@@ -59,7 +59,7 @@ class TestSystemEdgeCases:
         from django.utils import timezone
         
         user = create_user(username="streaker")
-        streak = Streak.objects.create(user=user)
+        streak, _ = Streak.objects.get_or_create(user=user)
         
         # Update streak multiple times on the same day
         streak.update_streak()

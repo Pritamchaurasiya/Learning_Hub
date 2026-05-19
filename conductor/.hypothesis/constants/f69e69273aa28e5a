@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\dsa\tasks.py
+# hypothesis_version: 6.152.1
+
+['AC', 'PROCESSING', 'max_retries', 'message', 'status', 'submission_id', 'submission_update', 'type']

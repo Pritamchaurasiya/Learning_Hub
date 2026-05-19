@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ShoppingCart, Trash2, Plus, Minus, CreditCard, Check, BookOpen, Clock, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ShoppingCart, Trash2, CreditCard, Check, BookOpen, Clock, Star } from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -7,6 +8,7 @@ import { cartService, type CartItem } from '../services/cartService'
 import { useStore } from '../stores/useStore'
 
 export default function CartPage() {
+  const navigate = useNavigate()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [promoCode, setPromoCode] = useState('')
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null)
@@ -21,7 +23,7 @@ export default function CartPage() {
     } catch (err) {
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
         if (import.meta.env.DEV) {
-          console.error('[CartPage] Failed to fetch cart:', err);
+          console.error('[CartPage] Failed to fetch cart:', err)
         }
       }
     }
@@ -29,7 +31,7 @@ export default function CartPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchCart(controller.signal)
+    void fetchCart(controller.signal)
     return () => controller.abort()
   }, [fetchCart])
 
@@ -45,22 +47,7 @@ export default function CartPage() {
     } catch (err) {
       addToast({ message: 'Failed to remove item', type: 'error' })
       if (import.meta.env.DEV) {
-        console.error('[CartPage] Failed to remove item:', err);
-      }
-    }
-  }
-
-  const updateQuantity = async (id: string, quantity: number) => {
-    if (quantity < 1) return
-    try {
-      await cartService.updateCartItem(id, quantity)
-      setCartItems(prev =>
-        prev.map(item => item.id === id ? { ...item, quantity } : item)
-      )
-    } catch (err) {
-      addToast({ message: 'Failed to update quantity', type: 'error' })
-      if (import.meta.env.DEV) {
-        console.error('[CartPage] Failed to update quantity:', err);
+        console.error('[CartPage] Failed to remove item:', err)
       }
     }
   }
@@ -70,6 +57,7 @@ export default function CartPage() {
       await cartService.applyCoupon(promoCode)
       setAppliedPromo(promoCode.toUpperCase())
       addToast({ message: 'Coupon applied successfully!', type: 'success' })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       addToast({ message: 'Invalid coupon code', type: 'error' })
     }
@@ -85,7 +73,7 @@ export default function CartPage() {
     } catch (err) {
       addToast({ message: 'Checkout failed', type: 'error' })
       if (import.meta.env.DEV) {
-        console.error('[CartPage] Checkout failed:', err);
+        console.error('[CartPage] Checkout failed:', err)
       }
     }
   }
@@ -101,9 +89,7 @@ export default function CartPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Shopping Cart
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Shopping Cart</h1>
           <p className="text-gray-600 dark:text-gray-400">
             {cartItems.length} course{cartItems.length !== 1 ? 's' : ''} in your cart
           </p>
@@ -115,10 +101,8 @@ export default function CartPage() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               Your cart is empty
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Add courses to get started
-            </p>
-            <Button>Browse Courses</Button>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Add courses to get started</p>
+            <Button onClick={() => navigate('/courses')}>Browse Courses</Button>
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -152,21 +136,8 @@ export default function CartPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium text-gray-900 dark:text-white">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                          {/* Digital goods: quantity is always 1, no +/- controls */}
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Qty: 1</span>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
@@ -196,9 +167,7 @@ export default function CartPage() {
             {/* Order Summary */}
             <div className="space-y-4">
               <Card className="p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-                  Order Summary
-                </h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
@@ -211,16 +180,12 @@ export default function CartPage() {
                       <span className="text-gray-600 dark:text-gray-400">
                         Discount ({appliedPromo})
                       </span>
-                      <span className="font-medium text-green-600">
-                        -${discount.toFixed(2)}
-                      </span>
+                      <span className="font-medium text-green-600">-${discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      $0.00
-                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">$0.00</span>
                   </div>
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                     <div className="flex justify-between">
@@ -242,14 +207,10 @@ export default function CartPage() {
                       type="text"
                       placeholder="Enter code"
                       value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
+                      onChange={e => setPromoCode(e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
-                    <Button
-                      variant="outline"
-                      onClick={applyPromo}
-                      disabled={!promoCode}
-                    >
+                    <Button variant="outline" onClick={applyPromo} disabled={!promoCode}>
                       Apply
                     </Button>
                   </div>

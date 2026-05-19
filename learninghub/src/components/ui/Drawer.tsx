@@ -19,13 +19,13 @@ export function Drawer({
   title,
   position = 'right',
   size = 'md',
-  className
+  className,
 }: DrawerProps) {
   const sizeClasses = {
     sm: 'max-w-xs',
     md: 'max-w-md',
     lg: 'max-w-lg',
-    xl: 'max-w-xl'
+    xl: 'max-w-xl',
   }
 
   useEffect(() => {
@@ -69,6 +69,7 @@ export function Drawer({
           position === 'right'
             ? 'right-0 border-l border-gray-200 dark:border-gray-700'
             : 'left-0 border-r border-gray-200 dark:border-gray-700',
+          // eslint-disable-next-line security/detect-object-injection
           sizeClasses[size],
           className
         )}

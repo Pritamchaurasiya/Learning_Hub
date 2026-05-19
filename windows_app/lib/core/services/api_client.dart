@@ -172,16 +172,15 @@ class ApiClient {
 
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8000/api/v1',
+    defaultValue: 'https://api.learninghub.app/api/v1',
   );
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const Duration _timeout = Duration(seconds: 30);
   static const int _maxRetries = 3;
 
-  // Enable mock mode by default in debug builds for development without backend
-  final bool _enableMockMode = kDebugMode &&
-      const bool.fromEnvironment('ENABLE_MOCK_MODE', defaultValue: false);
+  // Mock mode should NEVER be enabled in production
+  final bool _enableMockMode = false;
 
   /// Generate cryptographically secure mock token for testing
   /// FIXED: Now uses proper cryptographic randomness
@@ -202,35 +201,17 @@ class ApiClient {
     return 'mock_${timestamp}_${additionalEntropy}_${randomString.substring(0, 32)}';
   }
 
-  /// Hash password using SHA-256 with salt for secure storage
-  String _hashPassword(String password) {
-    // Generate random salt
-    final salt = List<int>.generate(16, (i) => Random.secure().nextInt(256));
-
-    // Create salted password and hash with SHA-256
-    final saltedPassword = utf8.encode(password + base64UrlEncode(salt));
-    final hash = sha256.convert(saltedPassword);
-
-    // Return salt + hash as base64
-    final combined = [...salt, ...hash.bytes];
-    return base64UrlEncode(combined);
+  /// Passwords should be sent as-is to the backend for proper bcrypt hashing.
+  /// Client-side hashing provides no security benefit and can weaken security.
+  String _preparePassword(String password) {
+    return password;
   }
 
-  /// Verify password against stored hash
+  /// Password verification is handled server-side only.
   bool _verifyPassword(String password, String storedHash) {
-    try {
-      final combined = base64Url.decode(storedHash);
-      final salt = combined.sublist(0, 16);
-      final expectedHash = combined.sublist(16);
-
-      // Create salted password and hash with SHA-256
-      final saltedPassword = utf8.encode(password + base64UrlEncode(salt));
-      final hash = sha256.convert(saltedPassword);
-
-      return constantTimeEquals(expectedHash, hash.bytes);
-    } catch (e) {
-      return false;
-    }
+    // This should never be called client-side.
+    // Backend handles all password verification with bcrypt.
+    throw UnsupportedError('Client-side password verification is not supported');
   }
 
   /// Constant-time comparison to prevent timing attacks

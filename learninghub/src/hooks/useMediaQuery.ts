@@ -8,7 +8,7 @@ const breakpointValues: Record<Breakpoint, number> = {
   lg: 1024,
   xl: 1280,
   '2xl': 1440,
-  '3xl': 1920
+  '3xl': 1920,
 }
 
 export function useMediaQuery(query: string): boolean {
@@ -28,6 +28,7 @@ export function useMediaQuery(query: string): boolean {
 }
 
 export function useBreakpoint(breakpoint: Breakpoint): boolean {
+  // eslint-disable-next-line security/detect-object-injection
   return useMediaQuery(`(min-width: ${breakpointValues[breakpoint]}px)`)
 }
 
@@ -38,7 +39,7 @@ export function useBreakpoints() {
     lg: false,
     xl: false,
     '2xl': false,
-    '3xl': false
+    '3xl': false,
   })
 
   useEffect(() => {

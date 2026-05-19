@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "LearningHub",
+    "tagline": "Maîtrisez de Nouvelles Compétences"
+  },
+  "nav": {
+    "home": "Accueil",
+    "courses": "Cours",
+    "search": "Rechercher",
+    "bookmarks": "Favoris",
+    "achievements": "Réalisations",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Se Connecter",
+    "register": "Créer un Compte",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Déjà un compte?",
+    "welcomeBack": "Bon Retour",
+    "joinUs": "Rejoignez LearningHub"
+  },
+  "course": {
+    "enroll": "S'inscrire",
+    "continue": "Continuer l'Apprentissage",
+    "completed": "Terminé",
+    "inProgress": "En Cours",
+    "notStarted": "Non Commencé",
+    "duration": "Durée",
+    "lessons": "Leçons",
+    "difficulty": "Difficulté",
+    "rating": "Évaluation",
+    "reviews": "Avis",
+    "instructor": "Instructeur",
+    "certificate": "Certificat",
+    "share": "Partager le Cours"
+  },
+  "search": {
+    "placeholder": "Rechercher des cours...",
+    "filters": "Filtres",
+    "clearFilters": "Effacer les Filtres",
+    "noResults": "Aucun cours trouvé",
+    "tryDifferent": "Essayez d'autres termes",
+    "recentSearches": "Recherches Récentes",
+    "popular": "Populaires",
+    "newest": "Plus Récents",
+    "difficulty": "Difficulté",
+    "phase": "Phase"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "submit": "Soumettre",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "finish": "Terminer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "clearAll": "Tout effacer",
+    "noNotifications": "Aucune notification",
+    "newCourse": "Nouveau cours disponible",
+    "achievement": "Réalisation débloquée",
+    "reminder": "Rappel d'apprentissage"
+  },
+  "offline": {
+    "title": "Vous êtes hors ligne",
+    "message": "Aucune connexion Internet",
+    "retry": "Réessayer la Connexion",
+    "cached": "Disponible hors ligne"
+  }
+}

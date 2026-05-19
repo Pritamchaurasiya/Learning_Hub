@@ -16,47 +16,54 @@ class Logger {
   private logs: LogEntry[] = []
   private maxLogs = 100
 
-  private createEntry(level: LogLevel, message: string, data?: unknown, context?: string): LogEntry {
+  private createEntry(
+    level: LogLevel,
+    message: string,
+    data?: unknown,
+    context?: string
+  ): LogEntry {
     return {
       level,
       message,
       data,
       timestamp: new Date().toISOString(),
-      context
+      context,
     }
   }
 
   debug(message: string, data?: unknown, context?: string) {
     if (isDevelopment) {
       const entry = this.createEntry('debug', message, data, context)
-      console.debug(`[DEBUG] ${message}`, data || '')
+      // eslint-disable-next-line no-console
+      console.debug(`[DEBUG] ${message}`, data ?? '')
       this.addLog(entry)
     }
   }
 
   info(message: string, data?: unknown, context?: string) {
-    if (isDevelopment || isProduction) {
-      const entry = this.createEntry('info', message, data, context)
-      console.info(`[INFO] ${message}`, data || '')
-      this.addLog(entry)
+    const entry = this.createEntry('info', message, data, context)
+    this.addLog(entry)
+    if (isDevelopment) {
+      // eslint-disable-next-line no-console
+      console.info(`[INFO] ${message}`, data ?? '')
     }
   }
 
   warn(message: string, data?: unknown, context?: string) {
-    if (isDevelopment || isProduction) {
-      const entry = this.createEntry('warn', message, data, context)
-      console.warn(`[WARN] ${message}`, data || '')
-      this.addLog(entry)
+    const entry = this.createEntry('warn', message, data, context)
+    this.addLog(entry)
+    if (isDevelopment) {
+      console.warn(`[WARN] ${message}`, data ?? '')
     }
   }
 
   error(message: string, error?: unknown, context?: string) {
-    if (isDevelopment || isProduction) {
-      const entry = this.createEntry('error', message, error, context)
-      console.error(`[ERROR] ${message}`, error || '')
-      this.addLog(entry)
-      this.reportError(entry)
+    const entry = this.createEntry('error', message, error, context)
+    this.addLog(entry)
+    if (isDevelopment) {
+      console.error(`[ERROR] ${message}`, error ?? '')
     }
+    this.reportError(entry)
   }
 
   private addLog(entry: LogEntry) {

@@ -18,7 +18,11 @@ from ..views import (
 app_name = "auth"
 
 # ViewSet action for /auth/me/
-me_view = UserProfileViewSet.as_view({"get": "profile"})
+me_view = UserProfileViewSet.as_view({
+    "get": "profile",
+    "put": "update_profile",
+    "patch": "update_profile"
+})
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),

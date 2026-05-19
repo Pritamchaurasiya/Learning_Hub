@@ -9,29 +9,21 @@ import {
   Search,
   Loader2,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
-import { userService } from '../services/userService'
+import { userService, type BookmarkedCourse as BaseBookmarkedCourse } from '../services/userService'
 
-export interface BookmarkedCourse {
-  id: string
-  title: string
-  description: string
-  duration: string
-  level: string
-  progress_percent: number
-  thumbnail?: string
-  instructor?: string
-  bookmark_id: string
-  bookmarked_at: string
-  notes?: string
+interface BookmarkedCourse extends BaseBookmarkedCourse {
+  progress_percent?: number
+  duration?: string
+  level?: string
 }
 
 export default function BookmarksPage() {
   const navigate = useNavigate()
   const { addToast } = useStore()
-  
+
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,13 +34,14 @@ export default function BookmarksPage() {
       setError(null)
       const res = await userService.getBookmarks({ signal })
       if (!signal?.aborted) {
-        setBookmarks(res.data || [])
+        const data = (res.data ?? []) as unknown as BookmarkedCourse[]
+        setBookmarks(data)
       }
     } catch (err) {
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load bookmarks')
         if (import.meta.env.DEV) {
-          console.error('[BookmarksPage] Failed to fetch bookmarks:', err);
+          console.error('[BookmarksPage] Failed to fetch bookmarks:', err)
         }
       }
     } finally {
@@ -60,7 +53,7 @@ export default function BookmarksPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchBookmarks(controller.signal)
+    void fetchBookmarks(controller.signal)
     return () => controller.abort()
   }, [fetchBookmarks])
 
@@ -68,10 +61,10 @@ export default function BookmarksPage() {
     try {
       await userService.removeBookmark(courseId)
       addToast({ message: 'Bookmark removed successfully', type: 'success' })
-      fetchBookmarks()
+      void fetchBookmarks()
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[BookmarksPage] Failed to remove bookmark:', err);
+        console.error('[BookmarksPage] Failed to remove bookmark:', err)
       }
       addToast({ message: 'Failed to remove bookmark', type: 'error' })
     }
@@ -124,24 +117,37 @@ export default function BookmarksPage() {
             return (
               <div key={course.id} className="card p-5 group">
                 <div className="flex items-start justify-between mb-3">
-                  <div
+                  <button
+                    type="button"
                     className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-transform duration-300 group-hover:scale-110 bg-primary-50 dark:bg-primary-900/20"
                     onClick={() => navigate(`/course/${course.id}`)}
+                    aria-label={`Open course: ${course.title}`}
                   >
                     <BookOpen className="w-5 h-5 text-primary-600" />
-                  </div>
+                  </button>
                   <div className="flex items-center gap-1">
                     {isCompleted && (
-                      <span className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center" title="Completed">
-                        <svg className="w-3.5 h-3.5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <span
+                        className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                        title="Completed"
+                      >
+                        <svg
+                          className="w-3.5 h-3.5 text-green-500"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       </span>
                     )}
                     <button
-                      onClick={(e) => {
+                      onClick={async e => {
                         e.stopPropagation()
-                        handleRemoveBookmark(course.id)
+                        await handleRemoveBookmark(course.id)
                       }}
                       className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-gray-400 hover:text-red-500 transition-all duration-200"
                       title="Remove bookmark"
@@ -150,14 +156,14 @@ export default function BookmarksPage() {
                     </button>
                   </div>
                 </div>
-                <div 
+                <div
                   className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-xl"
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/course/${course.id}`);
+                      e.preventDefault()
+                      navigate(`/course/${course.id}`)
                     }
                   }}
                   onClick={() => navigate(`/course/${course.id}`)}
@@ -190,7 +196,7 @@ export default function BookmarksPage() {
           </div>
           <h3 className="text-xl font-semibold mb-2">Your bookmark shelf is empty</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto leading-relaxed">
-            Save courses you're interested in and they'll appear here for quick access.
+            Save courses you&#39;re interested in and they&#39;ll appear here for quick access.
           </p>
           <button
             onClick={() => navigate('/search')}

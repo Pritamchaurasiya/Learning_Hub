@@ -1,16 +1,10 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useDeferredValue } from 'react'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useSearchParams } from 'react-router-dom'
-import {
-  Search,
-  X,
-  History,
-  Trash2,
-  SlidersHorizontal
-} from 'lucide-react'
-import Fuse from 'fuse.js'
+import { Search, X, History, Trash2, SlidersHorizontal, LayoutGrid, List } from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
+import { reportError } from '../components/ErrorBoundary'
 import { useStore } from '../stores/useStore'
-import { allCourses, phases } from '../data/courses'
 import type { Course } from '../types'
 import { useDebounce } from '../hooks/useDebounce'
 import { courseService } from '../services/courseService'
@@ -24,87 +18,96 @@ const durationOptions = ['all', 'short', 'medium', 'long'] as const
 type SortOption = 'relevance' | 'time-asc' | 'time-desc' | 'name'
 
 const SearchPage = React.memo(function SearchPage() {
+  useDocumentTitle('Search Courses')
   const [searchParams, setSearchParams] = useSearchParams()
   const { progress, recentSearches, addRecentSearch } = useStore()
 
-  const [apiCourses, setApiCourses] = useState<any[]>([])
+  const [apiCourses, setApiCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const initialQuery = searchParams.get('q') || ''
+  const initialQuery = searchParams.get('q') ?? ''
   const [query, setQuery] = useState(initialQuery)
   const debouncedQuery = useDebounce(query, 300)
+  // useDeferredValue is used below for filtered results to keep the UI responsive during filtering
 
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
-  const [phaseFilter, setPhaseFilter] = useState<string>('all')
-  const [durationFilter, setDurationFilter] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('relevance')
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(
+    searchParams.get('difficulty') ?? 'all'
+  )
+  const [phaseFilter, setPhaseFilter] = useState<string>(searchParams.get('phase') ?? 'all')
+  const [durationFilter, setDurationFilter] = useState<string>(
+    searchParams.get('duration') ?? 'all'
+  )
+  const [sortBy, setSortBy] = useState<SortOption>(
+    (searchParams.get('sort') as SortOption) || 'relevance'
+  )
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Fetch courses from API
+  // Fetch courses from API with backend search
   useEffect(() => {
+    const controller = new AbortController()
     const fetchCourses = async () => {
+      if (controller.signal.aborted) return
       setIsLoading(true)
       try {
-        const response = await courseService.getCourses({ 
-          search: debouncedQuery,
-          difficulty: difficultyFilter !== 'all' ? difficultyFilter : '',
-          phase: phaseFilter !== 'all' ? phaseFilter : '',
-          duration: durationFilter !== 'all' ? durationFilter : ''
-        })
-        // Backend data structure might differ, map if needed
-        const data = response.data || response as any
-        setApiCourses(Array.isArray(data) ? data : [])
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('Failed to fetch courses:', error);
+        // Prepare query params for backend search
+        const params: Record<string, string> = {}
+
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+        if (debouncedQuery && debouncedQuery.trim()) {
+          params.q = debouncedQuery.trim()
         }
-        setApiCourses([]) // Force fallback
+
+        if (difficultyFilter !== 'all') {
+          params.difficulty = difficultyFilter
+        }
+
+        if (phaseFilter !== 'all') {
+          params.phase = phaseFilter
+        }
+
+        if (durationFilter !== 'all') {
+          params.duration = durationFilter
+        }
+
+        // Add sort parameter if specified
+        if (sortBy !== 'relevance') {
+          params.sort = sortBy
+        }
+
+        // Use courseService which now includes caching
+        const response = await courseService.getCourses(params)
+
+        if (controller.signal.aborted) return
+
+        // Backend returns paginated data with proper structure
+        const data = response.data || []
+        setApiCourses(Array.isArray(data) ? (data as unknown as Course[]) : [])
+      } catch (error) {
+        if (controller.signal.aborted) return
+
+        // Log error for monitoring
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch courses:', error)
+        }
+
+        // Don't clear courses on error - keep existing results
+        // This prevents UX disruption on temporary failures
+        reportError(error instanceof Error ? error : new Error(String(error)), undefined, {
+          context: 'search_fetch',
+        })
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
-    fetchCourses()
-  }, [debouncedQuery, difficultyFilter, phaseFilter, durationFilter])
 
-  const fuse = useMemo(() => {
-    return new Fuse(allCourses, {
-      keys: ['title', 'description', 'tags'],
-      threshold: 0.4,
-      includeScore: true,
-    })
-  }, [])
+    void fetchCourses()
+    return () => controller.abort()
+  }, [debouncedQuery, difficultyFilter, phaseFilter, durationFilter, sortBy])
 
   const filteredCourses = useMemo(() => {
     // If API returned results, use them
-    if (apiCourses.length > 0) return apiCourses
-    
-    // Fallback to local filtering if API returned nothing (e.g. dev mode or empty)
-    let results: Course[]
-
-    if (debouncedQuery.trim()) {
-      results = fuse.search(debouncedQuery).map(r => r.item)
-    } else {
-      results = [...allCourses]
-    }
-
-    if (difficultyFilter !== 'all') {
-      results = results.filter(c => (c.difficulty) === difficultyFilter)
-    }
-
-    if (phaseFilter !== 'all') {
-      results = results.filter(c => c.phase === phaseFilter)
-    }
-
-    if (durationFilter !== 'all') {
-      results = results.filter(c => {
-        const duration = typeof c.estimatedTime === 'number' ? c.estimatedTime : 0
-        if (durationFilter === 'short') return duration < 5
-        if (durationFilter === 'medium') return duration >= 5 && duration <= 20
-        if (durationFilter === 'long') return duration > 20
-        return true
-      })
-    }
+    const results = [...apiCourses]
 
     // Sort
     if (sortBy === 'time-asc') {
@@ -113,28 +116,51 @@ const SearchPage = React.memo(function SearchPage() {
         const tb = typeof b.estimatedTime === 'number' ? b.estimatedTime : 0
         return ta - tb
       })
+    } else if (sortBy === 'time-desc') {
+      results.sort((a, b) => {
+        const ta = typeof a.estimatedTime === 'number' ? a.estimatedTime : 0
+        const tb = typeof b.estimatedTime === 'number' ? b.estimatedTime : 0
+        return tb - ta
+      })
+    } else if (sortBy === 'name') {
       results.sort((a, b) => a.title.localeCompare(b.title))
     }
 
     return results
-  }, [debouncedQuery, difficultyFilter, phaseFilter, durationFilter, sortBy, fuse, apiCourses])
+  }, [sortBy, apiCourses])
 
-  const activeFiltersCount = 
-    (difficultyFilter !== 'all' ? 1 : 0) + 
-    (phaseFilter !== 'all' ? 1 : 0) + 
+  const deferredFilteredCourses = useDeferredValue(filteredCourses)
+
+  const activeFiltersCount =
+    (difficultyFilter !== 'all' ? 1 : 0) +
+    (phaseFilter !== 'all' ? 1 : 0) +
     (durationFilter !== 'all' ? 1 : 0)
 
-  // Sync debounced query to URL params & recent searches
+  // Sync debounced query and filters to URL params & recent searches
   useEffect(() => {
+    const params: Record<string, string> = {}
+
     if (debouncedQuery.trim()) {
-      setSearchParams({ q: debouncedQuery }, { replace: true })
+      params.q = debouncedQuery
       if (debouncedQuery.length > 2) {
         addRecentSearch(debouncedQuery)
       }
-    } else {
-      setSearchParams({}, { replace: true })
     }
-  }, [debouncedQuery, setSearchParams, addRecentSearch])
+    if (difficultyFilter !== 'all') params.difficulty = difficultyFilter
+    if (phaseFilter !== 'all') params.phase = phaseFilter
+    if (durationFilter !== 'all') params.duration = durationFilter
+    if (sortBy !== 'relevance') params.sort = sortBy
+
+    setSearchParams(params, { replace: true })
+  }, [
+    debouncedQuery,
+    difficultyFilter,
+    phaseFilter,
+    durationFilter,
+    sortBy,
+    setSearchParams,
+    addRecentSearch,
+  ])
 
   const handleSearch = useCallback((searchQuery: string) => {
     setQuery(searchQuery)
@@ -143,13 +169,22 @@ const SearchPage = React.memo(function SearchPage() {
   const clearFilters = useCallback(() => {
     setDifficultyFilter('all')
     setPhaseFilter('all')
+    setDurationFilter('all')
     setSortBy('relevance')
     setQuery('')
   }, [])
 
-  const getPhaseColor = useCallback((course: Course) => {
-    const phase = phases.find(p => p.courses.some(c => c.id === course.id))
-    return phase?.color || '#3b82f6'
+  const getPhaseColor = useCallback((course: { phase?: string }) => {
+    switch (course.phase?.toLowerCase()) {
+      case 'beginner':
+        return '#22c55e'
+      case 'intermediate':
+        return '#3b82f6'
+      case 'advanced':
+        return '#8b5cf6'
+      default:
+        return '#3b82f6'
+    }
   }, [])
 
   return (
@@ -158,7 +193,7 @@ const SearchPage = React.memo(function SearchPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1">Search Courses</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Explore our catalog of {allCourses.length} professional courses
+          Explore our catalog of professional courses
         </p>
       </div>
 
@@ -169,7 +204,7 @@ const SearchPage = React.memo(function SearchPage() {
           <input
             type="text"
             value={query}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             placeholder="Search by title, description, or tags..."
             className="input-field pl-10 pr-10 text-sm"
             autoFocus
@@ -243,14 +278,43 @@ const SearchPage = React.memo(function SearchPage() {
                 ))}
               </div>
             </div>
+            <div className="flex-1">
+              <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2.5">
+                Duration
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {durationOptions.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => setDurationFilter(opt)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 min-h-[36px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+                      durationFilter === opt
+                        ? 'bg-primary-600 text-white shadow-sm shadow-primary-500/20'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                    aria-pressed={durationFilter === opt}
+                  >
+                    {opt === 'all'
+                      ? 'All'
+                      : opt === 'short'
+                        ? '< 5h'
+                        : opt === 'medium'
+                          ? '5-20h'
+                          : '> 20h'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sort:</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Sort:
+              </label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                onChange={e => setSortBy(e.target.value as SortOption)}
                 className="text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
               >
                 <option value="relevance">Relevance</option>
@@ -279,6 +343,7 @@ const SearchPage = React.memo(function SearchPage() {
           <div className="flex flex-wrap gap-2">
             {recentSearches.slice(0, 5).map((search, i) => (
               <button
+                // eslint-disable-next-line react/no-array-index-key
                 key={`${search}-${i}`}
                 onClick={() => handleSearch(search)}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
@@ -292,20 +357,74 @@ const SearchPage = React.memo(function SearchPage() {
 
       {/* Results Section */}
       <div className="space-y-4">
-        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium" aria-live="polite" aria-atomic="true">
-          {isLoading ? 'Searching...' : `${filteredCourses.length} course${filteredCourses.length !== 1 ? 's' : ''} found`}
-          {!isLoading && debouncedQuery.trim() && <span> for "<span className="text-gray-600 dark:text-gray-300">{debouncedQuery}</span>"</span>}
-        </p>
+        {/* Results Header with View Toggle */}
+        <div className="flex items-center justify-between">
+          <p
+            className="text-xs text-gray-400 dark:text-gray-500 font-medium"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {isLoading
+              ? 'Searching...'
+              : `${deferredFilteredCourses.length} course${deferredFilteredCourses.length !== 1 ? 's' : ''} found`}
+            {!isLoading && debouncedQuery.trim() && (
+              <span>
+                {' '}
+                for &quot;<span className="text-gray-600 dark:text-gray-300">{debouncedQuery}</span>
+                &quot;
+              </span>
+            )}
+          </p>
+
+          {/* Grid/List View Toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+              title="Grid view"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+              title="List view"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                : 'space-y-4'
+            }
+          >
             {[...Array(6)].map((_, i) => (
-              <CourseCardSkeleton key={i} />
+              // eslint-disable-next-line react/no-array-index-key
+              <CourseCardSkeleton key={i} viewMode={viewMode} />
             ))}
           </div>
-        ) : filteredCourses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCourses.map((course, idx) => (
+        ) : deferredFilteredCourses.length > 0 ? (
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                : 'space-y-4'
+            }
+          >
+            {deferredFilteredCourses.map((course: Course, idx: number) => (
               <CourseCard
                 key={course.id}
                 course={course}
@@ -313,6 +432,7 @@ const SearchPage = React.memo(function SearchPage() {
                 index={idx}
                 isCompleted={progress.completedCourses.includes(course.id)}
                 isBookmarked={progress.bookmarks.includes(course.id)}
+                viewMode={viewMode}
               />
             ))}
           </div>

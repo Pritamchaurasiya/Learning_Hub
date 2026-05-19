@@ -1,7 +1,7 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '../../utils/cn';
-import { Loader2 } from 'lucide-react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '../../utils/cn'
+import { Loader2 } from 'lucide-react'
 
 const buttonVariants = cva(
   // Base styles
@@ -40,14 +40,13 @@ const buttonVariants = cva(
       fullWidth: false,
     },
   }
-);
+)
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  isLoading?: boolean;
-  leftIcon?: ReactNode;
-  rightIcon?: ReactNode;
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  isLoading?: boolean
+  leftIcon?: ReactNode
+  rightIcon?: ReactNode
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -75,13 +74,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'hover:scale-[1.02] active:scale-[0.96]',
           'disabled:hover:scale-100 disabled:active:scale-100'
         )}
-        disabled={disabled || isLoading}
+        disabled={disabled ?? isLoading}
         aria-busy={isLoading}
         {...props}
       >
-        {isLoading && (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        )}
+        {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
         {!isLoading && leftIcon && (
           <span className="transition-transform duration-200 group-hover:-translate-x-0.5">
             {leftIcon}
@@ -94,10 +91,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </span>
         )}
       </button>
-    );
+    )
   }
-);
+)
 
-Button.displayName = 'Button';
+Button.displayName = 'Button'
 
-export { Button, buttonVariants };
+export { Button, buttonVariants }

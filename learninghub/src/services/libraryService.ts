@@ -49,7 +49,7 @@ export const libraryService = {
   // Get all courses with optional filters
   async getCourses(filters?: CourseFilters): Promise<CoursesResponse> {
     const params = new URLSearchParams()
-    
+
     if (filters?.category && filters.category !== 'All') {
       params.append('category', filters.category.toLowerCase().replace(' ', '-'))
     }
@@ -65,10 +65,10 @@ export const libraryService = {
     if (filters?.ordering) {
       params.append('ordering', filters.ordering)
     }
-    
+
     const queryString = params.toString()
     const endpoint = `/courses/${queryString ? `?${queryString}` : ''}`
-    
+
     return fetchApi(endpoint)
   },
 
@@ -88,12 +88,17 @@ export const libraryService = {
   },
 
   // Get course categories
-  async getCategories(): Promise<{ status: string; data: Array<{ id: string; name: string; slug: string; course_count: number }> }> {
+  async getCategories(): Promise<{
+    status: string
+    data: Array<{ id: string; name: string; slug: string; course_count: number }>
+  }> {
     return fetchApi('/courses/categories/')
   },
 
   // Enroll in a course
-  async enrollInCourse(courseSlug: string): Promise<{ status: string; message: string; data: unknown }> {
+  async enrollInCourse(
+    courseSlug: string
+  ): Promise<{ status: string; message: string; data: unknown }> {
     return fetchApi(`/courses/${courseSlug}/enroll/`, {
       method: 'POST',
     })

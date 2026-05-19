@@ -58,8 +58,9 @@ export function escapeHtml(text: string): string {
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
-    "'": '&#039;'
+    "'": '&#039;',
   }
+  // eslint-disable-next-line security/detect-object-injection
   return text.replace(/[&<>"']/g, char => map[char])
 }
 
@@ -69,13 +70,14 @@ export function unescapeHtml(html: string): string {
     '&lt;': '<',
     '&gt;': '>',
     '&quot;': '"',
-    '&#039;': "'"
+    '&#039;': "'",
   }
+  // eslint-disable-next-line security/detect-object-injection
   return html.replace(/&(amp|lt|gt|quot|#039);/g, entity => map[entity])
 }
 
 export function pluralize(count: number, singular: string, plural?: string): string {
-  return count === 1 ? singular : (plural || singular + 's')
+  return count === 1 ? singular : (plural ?? `${singular}s`)
 }
 
 export function formatList(items: string[], conjunction = 'and'): string {

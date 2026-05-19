@@ -122,14 +122,14 @@ class BookmarkAPITests(APITestCase):
         data = {'course_id': str(self.course.id)}
         response = self.client.post('/api/v1/users/profile/bookmarks/', data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        self.assertEqual(response.data.get('status'), 'error')
     
     def test_add_bookmark_invalid_course(self):
         """Test adding bookmark for non-existent course."""
         data = {'course_id': '00000000-0000-0000-0000-000000000000'}
         response = self.client.post('/api/v1/users/profile/bookmarks/', data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        self.assertEqual(response.data.get('status'), 'error')
     
     def test_add_bookmark_with_notes(self):
         """Test adding a bookmark with notes."""
@@ -160,7 +160,7 @@ class BookmarkAPITests(APITestCase):
         """Test removing bookmark that doesn't exist."""
         response = self.client.delete(f'/api/v1/users/profile/bookmarks/{self.course.id}/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn('error', response.data)
+        self.assertEqual(response.data.get('status'), 'error')
     
     def test_remove_bookmark_other_user(self):
         """Test cannot remove another user's bookmark."""

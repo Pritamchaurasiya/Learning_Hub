@@ -70,7 +70,10 @@ export interface BookSessionRequest {
 }
 
 export const mentorService = {
-  getMentors: async (filters?: { expertise?: string; available?: boolean }): Promise<MentorsResponse> => {
+  getMentors: async (filters?: {
+    expertise?: string
+    available?: boolean
+  }): Promise<MentorsResponse> => {
     const params = new URLSearchParams()
     if (filters?.expertise) params.append('expertise', filters.expertise)
     if (filters?.available !== undefined) params.append('available', String(filters.available))
@@ -97,18 +100,19 @@ export const mentorService = {
   cancelSession: async (id: string, reason?: string): Promise<SingleSessionResponse> => {
     return fetchApi(`/tutors/bookings/${id}/cancel/`, {
       method: 'POST',
-      body: JSON.stringify({ reason: reason || 'User requested cancellation' })
+      body: JSON.stringify({ reason: reason ?? 'User requested cancellation' }),
     })
   },
 
-  getAvailability: async (_mentorId: string): Promise<{ status: string; data: { day: string; slots: string[] }[] }> => {
-    // Fallback since backend lacks availability API endpoint
-    return Promise.resolve({
-      status: 'success',
-      data: [
-        { day: 'Monday', slots: ['09:00', '10:00'] },
-        { day: 'Wednesday', slots: ['14:00', '15:00'] }
-      ]
-    })
+  getAvailability: async (
+    mentorId: string
+  ): Promise<{ status: string; data: { day: string; slots: string[] }[] }> => {
+    // Try to fetch from backend availability endpoint
+    try {
+      return await fetchApi(`/tutors/list/${mentorId}/availability/`)
+    } catch {
+      // Backend availability not implemented - return empty availability
+      return { status: 'success', data: [] }
+    }
   },
 }

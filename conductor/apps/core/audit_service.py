@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 class AuditAction(Enum):
     """Types of auditable actions."""
-    # Authentication
+    # Authentication & Profile
     LOGIN = "login"
     LOGOUT = "logout"
     LOGIN_FAILED = "login_failed"
@@ -41,6 +41,7 @@ class AuditAction(Enum):
     PASSWORD_RESET = "password_reset"
     MFA_ENABLED = "mfa_enabled"
     MFA_DISABLED = "mfa_disabled"
+    PROFILE_CREATED = "profile_created"
     
     # Data operations
     CREATE = "create"
@@ -61,6 +62,7 @@ class AuditAction(Enum):
     PAYMENT_INITIATED = "payment_initiated"
     PAYMENT_SUCCESS = "payment_success"
     PAYMENT_FAILED = "payment_failed"
+    PAYMENT_PROCESSED = "payment_processed"
     REFUND_REQUESTED = "refund_requested"
     REFUND_PROCESSED = "refund_processed"
     

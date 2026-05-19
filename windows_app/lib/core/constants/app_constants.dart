@@ -200,14 +200,26 @@ class AppConfig {
   static const String appVersion = '1.0.0';
 
   /// Support email
-  static const String supportEmail = 'support@learninghub.app';
+  static const String supportEmail = String.fromEnvironment(
+    'SUPPORT_EMAIL',
+    defaultValue: 'support@learninghub.app',
+  );
 
   /// Privacy policy URL
-  static const String privacyPolicyUrl = 'https://learninghub.app/privacy';
+  static const String privacyPolicyUrl = String.fromEnvironment(
+    'PRIVACY_POLICY_URL',
+    defaultValue: 'https://learninghub.app/privacy',
+  );
 
   /// Terms of service URL
-  static const String termsOfServiceUrl = 'https://learninghub.app/terms';
+  static const String termsOfServiceUrl = String.fromEnvironment(
+    'TERMS_OF_SERVICE_URL',
+    defaultValue: 'https://learninghub.app/terms',
+  );
 
   /// Certificate verification base URL
-  static const String certificateVerifyUrl = 'https://learninghub.app/verify';
+  static const String certificateVerifyUrl = String.fromEnvironment(
+    'CERTIFICATE_VERIFY_URL',
+    defaultValue: 'https://learninghub.app/verify',
+  );
 }

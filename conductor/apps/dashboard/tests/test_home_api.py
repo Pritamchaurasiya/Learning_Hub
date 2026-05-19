@@ -113,13 +113,12 @@ class HomeDashboardAPITests(APITestCase):
         # Create enrollments
         Enrollment.objects.create(
             user=self.user,
-            course=self.course1,
-            status='active'
+            course=self.course1
         )
         Enrollment.objects.create(
             user=self.user,
             course=self.course2,
-            status='completed'
+            completed_at=timezone.now()
         )
         
         response = self.client.get('/api/v1/dashboard/home/')
@@ -148,10 +147,7 @@ class HomeDashboardAPITests(APITestCase):
         enrollment = Enrollment.objects.create(
             user=self.user,
             course=self.course1,
-            status='active',
-            progress_percent=50,
-            completed_lessons=5,
-            total_lessons=10
+            progress_percentage=50
         )
         enrollment.last_accessed_at = timezone.now()
         enrollment.save()
@@ -169,8 +165,7 @@ class HomeDashboardAPITests(APITestCase):
         # Create enrollment with recent activity (within last week)
         enrollment = Enrollment.objects.create(
             user=self.user,
-            course=self.course1,
-            status='active'
+            course=self.course1
         )
         enrollment.last_accessed_at = timezone.now() - timedelta(days=2)
         enrollment.save()

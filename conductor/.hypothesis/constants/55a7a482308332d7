@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\quiz\urls.py
+# hypothesis_version: 6.152.1
+
+['attempts', 'get', 'quiz', 'quiz-attempt', 'quiz-stats', 'results/stats/', 'stats']

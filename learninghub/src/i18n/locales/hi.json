@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "LearningHub",
+    "tagline": "नए कौशल सीखें"
+  },
+  "nav": {
+    "home": "होम",
+    "courses": "पाठ्यक्रम",
+    "search": "खोजें",
+    "bookmarks": "बुकमार्क्स",
+    "achievements": "उपलब्धियां",
+    "profile": "प्रोफाइल",
+    "settings": "सेटिंग्स",
+    "logout": "लॉगआउट"
+  },
+  "auth": {
+    "login": "साइन इन",
+    "register": "अकाउंट बनाएं",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "noAccount": "अकाउंट नहीं है?",
+    "hasAccount": "पहले से अकाउंट है?",
+    "welcomeBack": "वापसी पर स्वागत",
+    "joinUs": "LearningHub से जुड़ें"
+  },
+  "course": {
+    "enroll": "नामांकन करें",
+    "continue": "सीखना जारी रखें",
+    "completed": "पूरा हुआ",
+    "inProgress": "प्रगति में",
+    "notStarted": "शुरू नहीं हुआ",
+    "duration": "अवधि",
+    "lessons": "पाठ",
+    "difficulty": "कठिनाई",
+    "rating": "रेटिंग",
+    "reviews": "समीक्षाएं",
+    "instructor": "प्रशिक्षक",
+    "certificate": "प्रमाण पत्र",
+    "share": "पाठ्यक्रम साझा करें"
+  },
+  "search": {
+    "placeholder": "पाठ्यक्रम खोजें...",
+    "filters": "फिल्टर",
+    "clearFilters": "फिल्टर हटाएं",
+    "noResults": "कोई पाठ्यक्रम नहीं मिला",
+    "tryDifferent": "अलग खोज शब्द आजमाएं",
+    "recentSearches": "हाल की खोजें",
+    "popular": "लोकप्रिय",
+    "newest": "नवीनतम",
+    "difficulty": "कठिनाई",
+    "phase": "चरण"
+  },
+  "common": {
+    "save": "सेव करें",
+    "cancel": "कैंसिल",
+    "delete": "हटाएं",
+    "edit": "एडिट",
+    "create": "बनाएं",
+    "submit": "सबमिट",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफल",
+    "retry": "पुनः प्रयास",
+    "close": "बंद करें",
+    "back": "वापस",
+    "next": "अगला",
+    "finish": "समाप्त",
+    "yes": "हां",
+    "no": "नहीं"
+  },
+  "notifications": {
+    "title": "सूचनाएं",
+    "markAllRead": "सभी पढ़े हुए मार्क करें",
+    "clearAll": "सभी हटाएं",
+    "noNotifications": "कोई सूचना नहीं",
+    "newCourse": "नया पाठ्यक्रम उपलब्ध",
+    "achievement": "उपलब्धि अनलॉक हुई",
+    "reminder": "सीखने की याद दिलानेवाला"
+  },
+  "offline": {
+    "title": "आप ऑफलाइन हैं",
+    "message": "कोई इंटरनेट कनेक्शन नहीं",
+    "retry": "कनेक्शन पुनः प्रयास",
+    "cached": "ऑफलाइन उपलब्ध"
+  }
+}

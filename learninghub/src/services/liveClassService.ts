@@ -3,34 +3,19 @@ import { fetchApi } from '../utils/api'
 export interface LiveSession {
   id: string
   title: string
-  description: string
-  instructor: {
-    id: string
-    username: string
-    display_name: string
-    avatar?: string
-  }
-  course?: {
-    id: string
-    title: string
-  }
-  scheduled_at: string
-  duration_minutes: number
-  status: 'scheduled' | 'live' | 'ended' | 'cancelled'
-  max_participants: number
-  current_participants: number
-  meeting_url?: string
-  recording_url?: string
-  is_joined: boolean
-  has_recordings: boolean
-  created_at: string
-  updated_at: string
+  instructorName: string
+  scheduledAt: string
+  durationMinutes: number
+  status: 'upcoming' | 'live' | 'completed'
+  maxParticipants: number
+  currentParticipants: number
+  createdAt?: string
 }
 
 export interface LiveSessionsResponse {
   status: string
   data: LiveSession[]
-  count: number
+  count?: number
 }
 
 export interface SingleLiveSessionResponse {
@@ -38,55 +23,78 @@ export interface SingleLiveSessionResponse {
   data: LiveSession
 }
 
-export interface SessionNotes {
-  id: string
-  session_id: string
-  content: string
-  created_at: string
-  updated_at: string
+// Map backend LiveSession shape to frontend shape
+function mapSession(raw: any): LiveSession {
+  return {
+    id: raw.id,
+    title: raw.title ?? '',
+    instructorName: raw.instructorName ?? raw.instructor_name ?? '',
+    scheduledAt: raw.scheduledAt ?? raw.scheduled_at ?? new Date().toISOString(),
+    durationMinutes: raw.durationMinutes ?? raw.duration_minutes ?? 60,
+    status: raw.status ?? 'upcoming',
+    maxParticipants: raw.maxParticipants ?? raw.max_participants ?? 100,
+    currentParticipants: raw.currentParticipants ?? raw.current_participants ?? 0,
+    createdAt: raw.createdAt ?? raw.created_at,
+  }
 }
 
 export const liveClassService = {
+  // GET /live-sessions — returns all sessions, filter client-side by status
+  getAllSessions: async (): Promise<LiveSessionsResponse> => {
+    const res = await fetchApi('/live-sessions')
+    const items: any[] = res.data?.results ?? res.data ?? res.results ?? []
+    return {
+      status: res.status ?? 'success',
+      data: items.map(mapSession),
+      count: items.length,
+    }
+  },
+
   getUpcomingSessions: async (): Promise<LiveSessionsResponse> => {
-    return fetchApi('/live-sessions/sessions/upcoming/')
+    const all = await liveClassService.getAllSessions()
+    return { ...all, data: all.data.filter(s => s.status === 'upcoming') }
   },
 
   getLiveSessions: async (): Promise<LiveSessionsResponse> => {
-    return fetchApi('/live-sessions/sessions/live/')
+    const all = await liveClassService.getAllSessions()
+    return { ...all, data: all.data.filter(s => s.status === 'live') }
   },
 
   getMySessions: async (): Promise<LiveSessionsResponse> => {
-    return fetchApi('/live-sessions/sessions/my-sessions/')
+    // Backend doesn't track per-user sessions yet — return all as fallback
+    return liveClassService.getAllSessions()
   },
 
   getSession: async (id: string): Promise<SingleLiveSessionResponse> => {
-    return fetchApi(`/live-sessions/sessions/${id}/`)
+    const res = await fetchApi(`/live-sessions/${id}`)
+    return {
+      status: res.status ?? 'success',
+      data: mapSession(res.data ?? res),
+    }
   },
 
   joinSession: async (id: string): Promise<SingleLiveSessionResponse> => {
-    return fetchApi(`/live-sessions/sessions/${id}/join/`, {
+    const res = await fetchApi(`/live-sessions/${id}/join`, { method: 'POST' })
+    return {
+      status: res.status ?? 'success',
+      data: mapSession(res.data ?? res),
+    }
+  },
+
+  createSession: async (data: {
+    title: string
+    instructorName: string
+    scheduledAt: string
+    durationMinutes: number
+    maxParticipants?: number
+  }): Promise<SingleLiveSessionResponse> => {
+    const res = await fetchApi('/live-sessions', {
       method: 'POST',
+      body: JSON.stringify(data),
     })
-  },
-
-  leaveSession: async (id: string): Promise<{ status: string }> => {
-    return fetchApi(`/live-sessions/sessions/${id}/leave/`, {
-      method: 'POST',
-    })
-  },
-
-  getSessionNotes: async (sessionId: string): Promise<{ status: string; data: SessionNotes }> => {
-    return fetchApi(`/live-sessions/sessions/${sessionId}/notes/`)
-  },
-
-  saveSessionNotes: async (sessionId: string, content: string): Promise<{ status: string; data: SessionNotes }> => {
-    return fetchApi(`/live-sessions/sessions/${sessionId}/notes/`, {
-      method: 'POST',
-      body: JSON.stringify({ content }),
-    })
-  },
-
-  getRecordings: async (): Promise<{ status: string; data: { id: string; session: LiveSession; recording_url: string; duration_seconds: number; created_at: string }[] }> => {
-    return fetchApi('/live-sessions/recordings/')
+    return {
+      status: res.status ?? 'success',
+      data: mapSession(res.data ?? res),
+    }
   },
 }

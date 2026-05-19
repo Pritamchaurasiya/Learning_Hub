@@ -32,16 +32,41 @@ export interface ContestLeaderboardEntry {
   finish_time: string | null
 }
 
+export interface ContestResult {
+  contestId: string
+  rank: number
+  score: number
+  time: number
+  solved: number
+}
+
 export const contestService = {
   getContests: () =>
-    fetchApi(`/dsa/contests/`) as Promise<{
+    fetchApi(`/contests/`) as Promise<{
       status: string
       data: Contest[]
     }>,
 
   getLeaderboard: (id: string) =>
-    fetchApi(`/dsa/contests/${id}/leaderboard/`) as Promise<{
+    fetchApi(`/contests/${id}/leaderboard/`) as Promise<{
       status: string
       data: ContestLeaderboardEntry[]
     }>,
+
+  getContestResults: (id: string) =>
+    fetchApi(`/contests/${id}/results/`) as Promise<{
+      status: string
+      data: ContestResult[]
+    }>,
+
+  participate: (id: string) =>
+    fetchApi(`/contests/${id}/participate/`, {
+      method: 'POST',
+    }) as Promise<{ status: string; data: { registered: boolean } }>,
+
+  submitSolution: (id: string, problemId: string, solution: string) =>
+    fetchApi(`/contests/${id}/submit/`, {
+      method: 'POST',
+      body: JSON.stringify({ problem_id: problemId, solution }),
+    }) as Promise<{ status: string; data: { accepted: boolean; score: number } }>,
 }

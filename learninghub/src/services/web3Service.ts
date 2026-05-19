@@ -22,21 +22,19 @@ export interface NFTCertificate {
 }
 
 export const web3Service = {
-  getProfile: (): Promise<Web3Profile> => 
-    fetchApi('/web3/profile'),
-    
+  getProfile: (): Promise<Web3Profile> => fetchApi('/web3/profile'),
+
   updateWallet: (address: string): Promise<Web3Profile> =>
     fetchApi('/web3/profile', {
       method: 'POST',
-      body: JSON.stringify({ wallet_address: address })
+      body: JSON.stringify({ wallet_address: address }),
     }),
-    
-  getNFTCertificates: (): Promise<NFTCertificate[]> =>
-    fetchApi('/web3/nfts'),
-    
+
+  getNFTCertificates: (): Promise<NFTCertificate[]> => fetchApi('/web3/nfts'),
+
   mintNFT: (courseId: string): Promise<NFTCertificate> =>
     fetchApi('/web3/nfts/mint', {
       method: 'POST',
-      body: JSON.stringify({ course_id: courseId })
+      body: JSON.stringify({ course_id: courseId }),
     }),
 }

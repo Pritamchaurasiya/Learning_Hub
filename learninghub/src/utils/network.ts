@@ -36,7 +36,7 @@ export function isOnline(): boolean {
 }
 
 export async function waitForOnline(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (navigator.onLine) {
       resolve()
       return
@@ -57,10 +57,7 @@ interface RetryOptions {
   backoff?: boolean
 }
 
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { maxRetries = 3, delay = 1000, backoff = true } = options
   let lastError: Error | null = null
 
@@ -81,10 +78,14 @@ export async function withRetry<T>(
   throw lastError
 }
 
+interface NetworkInformation {
+  effectiveType?: string
+}
+
 export function getConnectionSpeed(): string {
   if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-    const connection = (navigator as any).connection
-    return connection?.effectiveType || 'unknown'
+    const connection = (navigator as { connection?: NetworkInformation }).connection
+    return connection?.effectiveType ?? 'unknown'
   }
   return 'unknown'
 }

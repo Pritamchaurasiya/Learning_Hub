@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "LearningHub",
+    "tagline": "Master New Skills"
+  },
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "search": "Search",
+    "bookmarks": "Bookmarks",
+    "achievements": "Achievements",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "welcomeBack": "Welcome Back",
+    "joinUs": "Join LearningHub"
+  },
+  "course": {
+    "enroll": "Enroll Now",
+    "continue": "Continue Learning",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "notStarted": "Not Started",
+    "duration": "Duration",
+    "lessons": "Lessons",
+    "difficulty": "Difficulty",
+    "rating": "Rating",
+    "reviews": "Reviews",
+    "instructor": "Instructor",
+    "certificate": "Certificate",
+    "share": "Share Course"
+  },
+  "search": {
+    "placeholder": "Search courses...",
+    "filters": "Filters",
+    "clearFilters": "Clear Filters",
+    "noResults": "No courses found",
+    "tryDifferent": "Try different search terms",
+    "recentSearches": "Recent Searches",
+    "popular": "Popular",
+    "newest": "Newest",
+    "difficulty": "Difficulty",
+    "phase": "Phase"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "noNotifications": "No notifications yet",
+    "newCourse": "New course available",
+    "achievement": "Achievement unlocked",
+    "reminder": "Learning reminder"
+  },
+  "offline": {
+    "title": "You are offline",
+    "message": "No internet connection detected",
+    "retry": "Retry Connection",
+    "cached": "Available offline"
+  }
+}

@@ -1,9 +1,9 @@
-import { Env } from '../types';
-import { RATE_LIMITS, RateLimitType } from '../utils/security';
+import { Env } from '../types'
+import { RATE_LIMITS, RateLimitType } from '../utils/security'
 
 interface RateLimitEntry {
-  count: number;
-  resetTime: number;
+  count: number
+  resetTime: number
 }
 
 /**
@@ -15,38 +15,38 @@ export async function rateLimit(
   env: Env,
   type: RateLimitType = 'api'
 ): Promise<{ allowed: boolean; headers: Record<string, string> }> {
-  const config = RATE_LIMITS[type];
-  const clientId = getClientIdentifier(request);
-  const key = `rate_limit:${type}:${clientId}`;
-  
-  const now = Math.floor(Date.now() / 1000);
-  const windowStart = now - config.window;
-  
+  const config = RATE_LIMITS[type]
+  const clientId = getClientIdentifier(request)
+  const key = `rate_limit:${type}:${clientId}`
+
+  const now = Math.floor(Date.now() / 1000)
+  const windowStart = now - config.window
+
   try {
     // Get current count from KV
-    const stored = await env.LEARNINGHUB_KV?.get(key);
-    let entry: RateLimitEntry = stored 
-      ? JSON.parse(stored) 
-      : { count: 0, resetTime: now + config.window };
-    
+    const stored = await env.LEARNINGHUB_KV?.get(key)
+    let entry: RateLimitEntry = stored
+      ? JSON.parse(stored)
+      : { count: 0, resetTime: now + config.window }
+
     // Reset if window has passed
     if (entry.resetTime < now) {
-      entry = { count: 0, resetTime: now + config.window };
+      entry = { count: 0, resetTime: now + config.window }
     }
-    
-    const allowed = entry.count < config.requests;
-    
+
+    const allowed = entry.count < config.requests
+
     if (allowed) {
-      entry.count++;
+      entry.count++
     }
-    
+
     // Store updated count with TTL
-    const ttl = entry.resetTime - now;
-    await env.LEARNINGHUB_KV?.put(key, JSON.stringify(entry), { expirationTtl: ttl });
-    
-    const remaining = Math.max(0, config.requests - entry.count);
-    const resetTime = entry.resetTime;
-    
+    const ttl = entry.resetTime - now
+    await env.LEARNINGHUB_KV?.put(key, JSON.stringify(entry), { expirationTtl: ttl })
+
+    const remaining = Math.max(0, config.requests - entry.count)
+    const resetTime = entry.resetTime
+
     return {
       allowed,
       headers: {
@@ -55,11 +55,11 @@ export async function rateLimit(
         'X-RateLimit-Reset': resetTime.toString(),
         ...(allowed ? {} : { 'Retry-After': (resetTime - now).toString() }),
       },
-    };
+    }
   } catch (error) {
     // Fail open if KV is unavailable, but log the error
-    console.error('Rate limiting error:', error);
-    return { allowed: true, headers: {} };
+    console.error('Rate limiting error:', error)
+    return { allowed: true, headers: {} }
   }
 }
 
@@ -69,16 +69,16 @@ export async function rateLimit(
  */
 function getClientIdentifier(request: Request): string {
   // Cloudflare provides the real client IP
-  const cfIp = request.headers.get('CF-Connecting-IP');
-  if (cfIp) return cfIp;
-  
+  const cfIp = request.headers.get('CF-Connecting-IP')
+  if (cfIp) return cfIp
+
   // Fallback to other headers (for non-CF environments)
-  const forwarded = request.headers.get('X-Forwarded-For');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  
+  const forwarded = request.headers.get('X-Forwarded-For')
+  if (forwarded) return forwarded.split(',')[0].trim()
+
   // Last resort: use a hash of user agent (not ideal but functional)
-  const ua = request.headers.get('User-Agent') || 'unknown';
-  return `ua:${ua.slice(0, 32)}`;
+  const ua = request.headers.get('User-Agent') || 'unknown'
+  return `ua:${ua.slice(0, 32)}`
 }
 
 /**
@@ -89,8 +89,8 @@ export async function applyRateLimit(
   env: Env,
   type: RateLimitType = 'api'
 ): Promise<Response | null> {
-  const result = await rateLimit(request, env, type);
-  
+  const result = await rateLimit(request, env, type)
+
   if (!result.allowed) {
     return new Response(
       JSON.stringify({
@@ -105,8 +105,8 @@ export async function applyRateLimit(
           ...result.headers,
         },
       }
-    );
+    )
   }
-  
-  return null;
+
+  return null
 }

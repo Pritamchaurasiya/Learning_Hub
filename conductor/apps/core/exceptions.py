@@ -14,6 +14,13 @@ class PaymentRequiredException(APIException):
     default_code = "payment_required"
 
 
+class AppError(APIException):
+    """400 Bad Request - general application errors."""
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "An application error occurred."
+    default_code = "app_error"
+
+
 def custom_exception_handler(exc, context):
     """
     Standardize all exception responses to:

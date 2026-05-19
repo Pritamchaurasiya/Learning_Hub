@@ -11,14 +11,11 @@ interface AsyncCallbacks<T> {
   onError?: (error: Error) => void
 }
 
-export function useAsync<T>(
-  asyncFunction: () => Promise<T>,
-  callbacks: AsyncCallbacks<T> = {}
-) {
+export function useAsync<T>(asyncFunction: () => Promise<T>, callbacks: AsyncCallbacks<T> = {}) {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
     isLoading: false,
-    error: null
+    error: null,
   })
 
   const execute = useCallback(async () => {

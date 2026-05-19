@@ -35,26 +35,39 @@ class TestGamificationService:
         """Test that anti-cheat prevents rapid XP farming for the same action."""
         reason = "lesson_complete"
         
-        # Mock cache to return True, meaning the anti-cheat flag is already set
-        mock_cache_get.return_value = True
+        # Ensure UserXP exists (created by signal) but has 0 XP
+        xp_obj, _ = UserXP.objects.get_or_create(user=test_user)
+        xp_obj.total_xp = 0
+        xp_obj.save()
+        
+        # Mock cache.get to return True only for the anti-cheat key
+        def mocked_get(key, default=None):
+            if "anti_cheat_xp" in key:
+                return True
+            return default
+            
+        mock_cache_get.side_effect = mocked_get
         
         result = GamificationService.award_xp(test_user, 50, reason=reason)
         
         assert result['blocked'] is True
         assert result['awarded'] == 0
         
-        # Ensure nothing was written to DB
-        assert UserXP.objects.filter(user=test_user).exists() is False
+        # Ensure XP remained 0
+        xp_obj.refresh_from_db()
+        assert xp_obj.total_xp == 0
 
     def test_update_streak_active(self, test_user):
         """Test streak incrementation on consecutive days."""
         # Initial streak setup (pretend yesterday was active)
         yesterday = timezone.now() - timedelta(days=1)
-        streak = Streak.objects.create(
+        streak, _ = Streak.objects.update_or_create(
             user=test_user,
-            current_streak=5,
-            longest_streak=5,
-            last_activity_date=yesterday.date()
+            defaults={
+                'current_streak': 5,
+                'longest_streak': 5,
+                'last_activity_date': yesterday.date()
+            }
         )
         
         # Update streak for today
@@ -68,11 +81,13 @@ class TestGamificationService:
     def test_update_streak_broken(self, test_user):
         """Test streak resets if more than 24 hours pass."""
         two_days_ago = timezone.now() - timedelta(days=2)
-        streak = Streak.objects.create(
+        streak, _ = Streak.objects.update_or_create(
             user=test_user,
-            current_streak=5,
-            longest_streak=5,
-            last_activity_date=two_days_ago.date()
+            defaults={
+                'current_streak': 5,
+                'longest_streak': 5,
+                'last_activity_date': two_days_ago.date()
+            }
         )
         
         GamificationService.check_streaks(test_user)

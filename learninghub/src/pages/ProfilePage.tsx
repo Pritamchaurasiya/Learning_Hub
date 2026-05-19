@@ -1,11 +1,33 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Mail, Calendar, Trophy, Flame, Target, Edit2, Camera, Save, X, Award, BookOpen, Clock, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Mail,
+  Calendar,
+  Trophy,
+  Flame,
+  Target,
+  Edit2,
+  Camera,
+  Save,
+  X,
+  Award,
+  BookOpen,
+  Clock,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { StatCard } from '../components/ui/StatCard'
-import { userService, type UserProfile, type UserStats, type Achievement, type UpdateProfileData } from '../services/userService'
+import {
+  userService,
+  type UserProfile,
+  type UserStats,
+  type Achievement,
+  type UpdateProfileData,
+} from '../services/userService'
 
 export default function ProfilePage() {
   const { addToast, progress } = useStore()
@@ -30,6 +52,7 @@ export default function ProfilePage() {
         setProfile({ ...profile, avatar: res.data.avatar_url })
       }
       addToast({ message: 'Avatar updated!', type: 'success' })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       addToast({ message: 'Failed to upload avatar', type: 'error' })
     } finally {
@@ -44,7 +67,7 @@ export default function ProfilePage() {
       const [profileRes, statsRes, achievementsRes] = await Promise.all([
         userService.getProfile(),
         userService.getStats(),
-        userService.getAchievements()
+        userService.getAchievements(),
       ])
       setProfile(profileRes.data)
       setStats(statsRes.data)
@@ -53,7 +76,7 @@ export default function ProfilePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
       if (import.meta.env.DEV) {
-        console.error('[ProfilePage] Failed to fetch profile:', err);
+        console.error('[ProfilePage] Failed to fetch profile:', err)
       }
     } finally {
       setIsLoading(false)
@@ -62,8 +85,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchProfileData().then(() => { 
-      if (controller.signal.aborted) return 
+    void fetchProfileData().then(() => {
+      if (controller.signal.aborted) return
     })
     return () => controller.abort()
   }, [fetchProfileData])
@@ -73,15 +96,16 @@ export default function ProfilePage() {
     try {
       setIsSaving(true)
       const updateData: UpdateProfileData = {
-        display_name: editForm.display_name || undefined,
-        bio: editForm.bio || undefined,
-        location: editForm.location || undefined,
-        website: editForm.website || undefined,
+        display_name: editForm.display_name ?? undefined,
+        bio: editForm.bio ?? undefined,
+        location: editForm.location ?? undefined,
+        website: editForm.website ?? undefined,
       }
       const res = await userService.updateProfile(updateData)
       setProfile(res.data)
       setIsEditing(false)
       addToast({ message: 'Profile updated successfully!', type: 'success' })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       addToast({ message: 'Failed to update profile', type: 'error' })
     } finally {
@@ -90,7 +114,7 @@ export default function ProfilePage() {
   }
 
   const handleCancel = () => {
-    setEditForm(profile || {})
+    setEditForm(profile ?? {})
     setIsEditing(false)
   }
 
@@ -98,15 +122,45 @@ export default function ProfilePage() {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
-        <p className="mt-4 text-gray-500">Loading profile...</p>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-9 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        </div>
+        <Card className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            </div>
+            <div className="flex-1 space-y-4">
+              <div className="h-7 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="flex flex-wrap gap-4">
+                <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="p-5 rounded-2xl border border-gray-100 dark:border-gray-800 space-y-3"
+            >
+              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
+              <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -115,7 +169,9 @@ export default function ProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">{error || 'Profile not found'}</p>
+        <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+          {error ?? 'Profile not found'}
+        </p>
         <button
           onClick={fetchProfileData}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -132,7 +188,12 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl md:text-3xl font-bold">Profile</h1>
         {!isEditing && (
-          <Button variant="outline" size="sm" leftIcon={<Edit2 className="w-4 h-4" />} onClick={() => setIsEditing(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Edit2 className="w-4 h-4" />}
+            onClick={() => setIsEditing(true)}
+          >
             Edit Profile
           </Button>
         )}
@@ -143,9 +204,9 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center">
             <div className="relative">
               {profile.avatar ? (
-                <img 
-                  src={profile.avatar} 
-                  alt={profile.username} 
+                <img
+                  src={profile.avatar}
+                  alt={profile.username}
                   className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-primary-500/20"
                 />
               ) : (
@@ -154,7 +215,10 @@ export default function ProfilePage() {
                 </div>
               )}
               {isEditing && (
-                <label className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors cursor-pointer" aria-label="Change avatar">
+                <label
+                  className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors cursor-pointer"
+                  aria-label="Change avatar"
+                >
                   <input
                     type="file"
                     className="hidden"
@@ -162,7 +226,11 @@ export default function ProfilePage() {
                     onChange={handleAvatarChange}
                     disabled={isUploading}
                   />
-                  {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
                 </label>
               )}
             </div>
@@ -172,35 +240,51 @@ export default function ProfilePage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium mb-1">Username</label>
+                  <label htmlFor="username" className="block text-sm font-medium mb-1">
+                    Username
+                  </label>
                   <Input
                     id="username"
                     value={editForm.username}
-                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                    onChange={e => setEditForm({ ...editForm, username: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
+                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                    Email
+                  </label>
                   <Input
                     id="email"
                     type="email"
                     value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    onChange={e => setEditForm({ ...editForm, email: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label htmlFor="bio" className="block text-sm font-medium mb-1">Bio</label>
+                  <label htmlFor="bio" className="block text-sm font-medium mb-1">
+                    Bio
+                  </label>
                   <Input
                     id="bio"
-                    value={editForm.bio || ''}
-                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    value={editForm.bio ?? ''}
+                    onChange={e => setEditForm({ ...editForm, bio: e.target.value })}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button leftIcon={<Save className="w-4 h-4" />} onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
-                  <Button variant="outline" leftIcon={<X className="w-4 h-4" />} onClick={handleCancel}>Cancel</Button>
+                  <Button
+                    leftIcon={<Save className="w-4 h-4" />}
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    leftIcon={<X className="w-4 h-4" />}
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -268,12 +352,16 @@ export default function ProfilePage() {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>XP to Next Level</span>
-            <span>{stats.xp_points} / {stats.next_level_xp} XP</span>
+            <span>
+              {stats.xp_points} / {stats.next_level_xp} XP
+            </span>
           </div>
           <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-primary-500 to-purple-500 rounded-full transition-all duration-500"
-              style={{ width: `${stats.next_level_xp > 0 ? (stats.xp_points / stats.next_level_xp) * 100 : 0}%` }}
+              style={{
+                width: `${stats.next_level_xp > 0 ? (stats.xp_points / stats.next_level_xp) * 100 : 0}%`,
+              }}
               role="progressbar"
               aria-valuenow={stats.xp_points}
               aria-valuemin={0}
@@ -289,7 +377,7 @@ export default function ProfilePage() {
           Achievements ({achievements.length})
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {achievements.map((achievement) => (
+          {achievements.map(achievement => (
             <div
               key={achievement.id}
               className="p-4 rounded-xl border-2 transition-all bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
@@ -297,11 +385,11 @@ export default function ProfilePage() {
               <div className="text-3xl mb-2">{achievement.icon}</div>
               <h3 className="font-semibold text-sm">{achievement.name}</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400">{achievement.description}</p>
-               {achievement.unlocked_at && (
-                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                   Unlocked {formatDate(achievement.unlocked_at)}
-                 </p>
-               )}
+              {achievement.unlocked_at && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Unlocked {formatDate(achievement.unlocked_at)}
+                </p>
+              )}
             </div>
           ))}
         </div>

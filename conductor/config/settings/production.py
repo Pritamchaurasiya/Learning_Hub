@@ -6,7 +6,12 @@ from .base import *
 
 # SECURITY SETTINGS
 DEBUG = False
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'your-domain.com']
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get(
+        'ALLOWED_HOSTS',
+        'localhost,127.0.0.1'
+    ).split(',') if h.strip()
+]
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -33,6 +38,19 @@ CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# CORS — explicit whitelist, override dev's CORS_ALLOW_ALL_ORIGINS
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.environ.get(
+        'CORS_ALLOWED_ORIGINS',
+        'https://learninghub.app,https://www.learninghub.app'
+    ).split(',') if o.strip()
+]
+
+# Axes — strict brute-force limits in production
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 5
 
 # Database - Configure for production
 DATABASES = {
@@ -65,7 +83,7 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@yourdomain.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@learninghub.app')
 
 # Logging - Production level
 LOGGING = {

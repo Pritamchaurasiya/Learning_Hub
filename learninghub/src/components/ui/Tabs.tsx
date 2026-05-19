@@ -73,9 +73,7 @@ export function Tab({ value, children, className }: TabProps) {
       )}
     >
       {children}
-      {isActive && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500" />
-      )}
+      {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500" />}
     </button>
   )
 }

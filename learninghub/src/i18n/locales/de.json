@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "LearningHub",
+    "tagline": "Neue Fähigkeiten Erlernen"
+  },
+  "nav": {
+    "home": "Startseite",
+    "courses": "Kurse",
+    "search": "Suchen",
+    "bookmarks": "Lesezeichen",
+    "achievements": "Erfolge",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Konto Erstellen",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort Bestätigen",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "welcomeBack": "Willkommen Zurück",
+    "joinUs": "LearningHub Beitreten"
+  },
+  "course": {
+    "enroll": "Einschreiben",
+    "continue": "Lernen Fortsetzen",
+    "completed": "Abgeschlossen",
+    "inProgress": "In Bearbeitung",
+    "notStarted": "Nicht Gestartet",
+    "duration": "Dauer",
+    "lessons": "Lektionen",
+    "difficulty": "Schwierigkeit",
+    "rating": "Bewertung",
+    "reviews": "Rezensionen",
+    "instructor": "Dozent",
+    "certificate": "Zertifikat",
+    "share": "Kurs Teilen"
+  },
+  "search": {
+    "placeholder": "Kurse suchen...",
+    "filters": "Filter",
+    "clearFilters": "Filter Löschen",
+    "noResults": "Keine Kurse gefunden",
+    "tryDifferent": "Andere Suchbegriffe",
+    "recentSearches": "Letzte Suchanfragen",
+    "popular": "Beliebt",
+    "newest": "Neueste",
+    "difficulty": "Schwierigkeit",
+    "phase": "Phase"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "submit": "Absenden",
+    "loading": "Wird Geladen...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "retry": "Wiederholen",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Beenden",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "clearAll": "Alle löschen",
+    "noNotifications": "Keine Benachrichtigungen",
+    "newCourse": "Neuer Kurs verfügbar",
+    "achievement": "Erfolg freigeschaltet",
+    "reminder": "Lern-Erinnerung"
+  },
+  "offline": {
+    "title": "Sie sind offline",
+    "message": "Keine Internetverbindung",
+    "retry": "Verbindung Wiederholen",
+    "cached": "Offline verfügbar"
+  }
+}
