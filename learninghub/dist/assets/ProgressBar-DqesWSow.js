@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-C8Bik5CX.js";import{c as s}from"./index-Dup6uzOa.js";function t({progress:a,className:l}){return r.jsx("div",{className:s("w-full bg-gray-200 rounded-full overflow-hidden",l),children:r.jsx("div",{className:"bg-primary-600 h-full rounded-full transition-all duration-300",style:{width:`${Math.max(0,Math.min(100,a))}%`}})})}export{t as P};
