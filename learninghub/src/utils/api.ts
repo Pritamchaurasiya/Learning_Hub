@@ -119,7 +119,7 @@ const refreshAccessToken = async (): Promise<string> => {
       method: 'POST',
       credentials: 'include',
       headers,
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refresh_token: refreshToken, token: refreshToken }),
     })
 
     if (!response.ok) {
@@ -182,7 +182,10 @@ export const fetchApi = async (
 
   // ── Headers ───────────────────────────────────────────────────────
   const headers = new Headers(options.headers ?? {})
-  headers.set('Content-Type', 'application/json')
+  // Only set Content-Type for non-FormData bodies (FormData needs auto-set multipart boundary)
+  if (!(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json')
+  }
 
   // CSRF for mutating ops
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {

@@ -37,18 +37,10 @@ export async function handleCourses(request: Request, env: Env): Promise<Respons
   const url = new URL(request.url)
   const path = url.pathname
   const method = request.method
-  const courseIdMatch = path.match(/^\/courses\/([^\/]+)$/)
 
-  // CORS preflight
+  // CORS preflight — delegated to main index.ts handler
   if (method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
+    return new Response(null, { status: 204 })
   }
 
   // List all courses
@@ -56,26 +48,25 @@ export async function handleCourses(request: Request, env: Env): Promise<Respons
     return handleListCourses(request, env)
   }
 
-  // Get course details
-  if (courseIdMatch && method === 'GET') {
-    const courseId = courseIdMatch[1]
-    return handleGetCourse(request, env, courseId)
-  }
-
-  // Enroll in course
+  // Static sub-routes MUST come before parameterized /:id routes
   if (path === '/courses/enroll' && method === 'POST') {
     return handleEnroll(request, env)
   }
 
-  // Get user's enrolled courses
   if (path === '/courses/my-courses' && method === 'GET') {
     return handleMyCourses(request, env)
   }
 
-  // Update progress
-  if (courseIdMatch && path.endsWith('/progress') && method === 'POST') {
-    const courseId = courseIdMatch[1]
-    return handleUpdateProgress(request, env, courseId)
+  // Update progress — needs its own regex since path has sub-path after ID
+  const progressMatch = path.match(/^\/courses\/([^\/]+)\/progress$/)
+  if (progressMatch && method === 'POST') {
+    return handleUpdateProgress(request, env, progressMatch[1])
+  }
+
+  // Get course details — parameterized route checked LAST
+  const courseIdMatch = path.match(/^\/courses\/([^\/]+)$/)
+  if (courseIdMatch && method === 'GET') {
+    return handleGetCourse(request, env, courseIdMatch[1])
   }
 
   return createErrorResponse('Not found', 404)

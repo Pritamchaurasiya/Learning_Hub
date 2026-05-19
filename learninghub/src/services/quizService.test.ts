@@ -156,9 +156,9 @@ describe('quizService', () => {
         data: [mockResult], // Array because getResults mapped res.data?.[0]
       })
 
-      const result = await quizService.getResults('quiz-123', 'attempt-123')
+      const result = await quizService.getResults('quiz-123')
 
-      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/results')
+      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/result')
       expect(result.data).toEqual(mockResult)
     })
   })

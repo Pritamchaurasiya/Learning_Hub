@@ -5,12 +5,14 @@ import { AppState, AuthSlice } from '../types'
 
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   auth: {
-    // JWTs are securely stored in httpOnly cookies
-    isAuthenticated: false,
+    // Auth state: tokens are stored in localStorage and sent as Bearer headers
+    isAuthenticated: !!localStorage.getItem('token'),
     user: null,
   },
-  setAuth: (_token, _refreshToken, user) => {
-    // Backend handles httpOnly cookie creation; no local token storage needed
+  setAuth: (token, refreshToken, user) => {
+    // Store tokens in localStorage for Bearer auth
+    if (token) localStorage.setItem('token', token)
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
 
     // Store user data in memory only + sync progress from user profile
     set(state => ({
@@ -34,8 +36,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     }))
   },
   logout: () => {
-    // Backend handles cookie clearing via /auth/logout (if implemented)
-    // Or it relies on the httpOnly cookie expiring or being ignored.
+    // Clear tokens from localStorage
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
 
     // Clear auth state from memory
     set({ auth: { isAuthenticated: false, user: null } })

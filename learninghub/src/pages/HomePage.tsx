@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, Brain, Trophy, TrendingUp, Award, Target, Zap } from 'lucide-react'
 import { SEO } from '../components/SEO'
@@ -99,7 +99,7 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
     } finally {
       setLoading(false)
     }
-  }, [isDashboard, auth.isAuthenticated, progress])
+  }, [isDashboard, auth.isAuthenticated, progress.xp, progress.streak, progress.level])
 
   useEffect(() => {
     void loadDashboard()

@@ -12,7 +12,12 @@ import { Env } from '../types'
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
   username: z.string().min(3).max(100),
 })
 
@@ -226,7 +231,8 @@ async function handleGetMe(request: Request, env: Env): Promise<Response> {
 async function handleRefresh(request: Request, env: Env): Promise<Response> {
   try {
     const body = await request.json()
-    const { token } = body
+    // Accept both field names for frontend compatibility
+    const token = body.token ?? body.refresh_token
 
     if (!token) {
       return createErrorResponse('Token required', 400)
@@ -238,9 +244,26 @@ async function handleRefresh(request: Request, env: Env): Promise<Response> {
       return createErrorResponse('Invalid token', 401)
     }
 
-    // Generate new token
+    // Verify user still exists and is active before re-issuing
+    const client = new Client(env.DATABASE_URL)
+    await client.connect()
+
+    const userCheck = await client.query(
+      'SELECT id, email, role FROM users WHERE id = $1',
+      [payload.userId]
+    )
+
+    if (userCheck.rows.length === 0) {
+      await client.end()
+      return createErrorResponse('User no longer exists', 401)
+    }
+
+    const user = userCheck.rows[0]
+    await client.end()
+
+    // Generate new token with fresh user data
     const newToken = await generateJWT(
-      { userId: payload.userId, email: payload.email, role: payload.role },
+      { userId: user.id, email: user.email, role: user.role },
       env
     )
 

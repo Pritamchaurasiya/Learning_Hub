@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS courses (
     phase VARCHAR(50),
     content JSONB, -- course content structure
     prerequisites UUID[], -- array of course IDs
+    instructor_name VARCHAR(255),
+    price DECIMAL(10,2) DEFAULT 0,
+    rating DECIMAL(3,2) DEFAULT 0,
+    review_count INTEGER DEFAULT 0,
+    thumbnail VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -92,6 +97,8 @@ CREATE TABLE IF NOT EXISTS test_results (
     answers JSONB, -- user's answers
     time_taken INTEGER, -- in seconds
     passed BOOLEAN DEFAULT FALSE,
+    xp_earned INTEGER DEFAULT 0,
+    attempts INTEGER DEFAULT 1,
     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -133,6 +140,7 @@ CREATE TABLE IF NOT EXISTS achievements (
     description TEXT,
     icon VARCHAR(50),
     points INTEGER DEFAULT 0,
+    metadata JSONB,
     unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

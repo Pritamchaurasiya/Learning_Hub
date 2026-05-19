@@ -26,56 +26,45 @@ export async function handleTests(request: Request, env: Env): Promise<Response>
   const url = new URL(request.url)
   const path = url.pathname
   const method = request.method
-  const testIdMatch = path.match(/^\/tests\/([^\/]+)$/)
-  const submitMatch = path.match(/^\/tests\/([^\/]+)\/submit$/)
-  const resultsMatch = path.match(/^\/tests\/([^\/]+)\/results$/)
-  const attemptsMatch = path.match(/^\/tests\/([^\/]+)\/attempts$/)
-  const myResultsMatch = path === '/tests/my-results'
 
-  // CORS preflight
+  // CORS preflight — delegated to main index.ts handler
   if (method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
+    return new Response(null, { status: 204 })
   }
+
+  // ── Static routes FIRST (before parameterized /:id) ──────────────
 
   // List tests
   if (path === '/tests' && method === 'GET') {
     return handleListTests(request, env)
   }
 
-  // Get test with questions
-  if (testIdMatch && method === 'GET' && !path.includes('/submit') && !path.includes('/results')) {
-    const testId = testIdMatch[1]
-    return handleGetTest(request, env, testId)
-  }
-
-  // Submit test
-  if (submitMatch && method === 'POST') {
-    const testId = submitMatch[1]
-    return handleSubmitTest(request, env, testId)
-  }
-
-  // Get test results
-  if (resultsMatch && method === 'GET') {
-    const testId = resultsMatch[1]
-    return handleGetResults(request, env, testId)
-  }
-
-  // Get attempts for a test
-  if (attemptsMatch && method === 'GET') {
-    const testId = attemptsMatch[1]
-    return handleGetAttempts(request, env, testId)
-  }
-
   // Get my results across all tests
-  if (myResultsMatch && method === 'GET') {
+  if (path === '/tests/my-results' && method === 'GET') {
     return handleGetMyResults(request, env)
+  }
+
+  // ── Parameterized routes AFTER static ones ────────────────────────
+
+  const submitMatch = path.match(/^\/tests\/([^\/]+)\/submit$/)
+  if (submitMatch && method === 'POST') {
+    return handleSubmitTest(request, env, submitMatch[1])
+  }
+
+  const resultsMatch = path.match(/^\/tests\/([^\/]+)\/results$/)
+  if (resultsMatch && method === 'GET') {
+    return handleGetResults(request, env, resultsMatch[1])
+  }
+
+  const attemptsMatch = path.match(/^\/tests\/([^\/]+)\/attempts$/)
+  if (attemptsMatch && method === 'GET') {
+    return handleGetAttempts(request, env, attemptsMatch[1])
+  }
+
+  // Get test with questions — generic /:id route LAST
+  const testIdMatch = path.match(/^\/tests\/([^\/]+)$/)
+  if (testIdMatch && method === 'GET') {
+    return handleGetTest(request, env, testIdMatch[1])
   }
 
   return createErrorResponse('Not found', 404)
