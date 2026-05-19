@@ -1,37 +1,86 @@
-import { marked } from 'marked';
-import hljs from 'highlight.js';
-import DOMPurify from 'dompurify';
+import { marked } from 'marked'
+import hljs from 'highlight.js/lib/core'
+import DOMPurify from 'dompurify'
 
-const renderer = new marked.Renderer();
+// Register only common languages to reduce bundle size (~100KB vs ~800KB)
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import python from 'highlight.js/lib/languages/python'
+import java from 'highlight.js/lib/languages/java'
+import cpp from 'highlight.js/lib/languages/cpp'
+import csharp from 'highlight.js/lib/languages/csharp'
+import go from 'highlight.js/lib/languages/go'
+import rust from 'highlight.js/lib/languages/rust'
+import sql from 'highlight.js/lib/languages/sql'
+import bash from 'highlight.js/lib/languages/bash'
+import html from 'highlight.js/lib/languages/xml'
+import css from 'highlight.js/lib/languages/css'
+import json from 'highlight.js/lib/languages/json'
+import yaml from 'highlight.js/lib/languages/yaml'
+import markdown from 'highlight.js/lib/languages/markdown'
+import plaintext from 'highlight.js/lib/languages/plaintext'
+
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('js', javascript)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('ts', typescript)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('py', python)
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('cpp', cpp)
+hljs.registerLanguage('c++', cpp)
+hljs.registerLanguage('csharp', csharp)
+hljs.registerLanguage('cs', csharp)
+hljs.registerLanguage('go', go)
+hljs.registerLanguage('rust', rust)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('shell', bash)
+hljs.registerLanguage('html', html)
+hljs.registerLanguage('xml', html)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('yaml', yaml)
+hljs.registerLanguage('yml', yaml)
+hljs.registerLanguage('markdown', markdown)
+hljs.registerLanguage('md', markdown)
+hljs.registerLanguage('plaintext', plaintext)
+
+interface CodeToken {
+  text: string
+  lang?: string
+}
+
+const renderer = new marked.Renderer()
 
 // Custom code block renderer with highlight.js and copy button
 // Uses data attributes + CSS class for delegated event handling (see main.tsx)
-renderer.code = function (codeOrToken: any, lang?: string) {
+renderer.code = function (codeOrToken: string | CodeToken, lang?: string) {
   // Handle both marked API signatures
-  let code: string;
-  let language: string;
+  let code: string
+  let language: string
 
   if (typeof codeOrToken === 'object' && codeOrToken !== null) {
-    code = codeOrToken.text || '';
-    language = codeOrToken.lang || 'plaintext';
+    code = codeOrToken.text ?? ''
+    language = codeOrToken.lang ?? 'plaintext'
   } else {
-    code = String(codeOrToken || '');
-    language = lang || 'plaintext';
+    code = String(codeOrToken ?? '')
+    language = lang ?? 'plaintext'
   }
 
-  let highlighted: string;
+  let highlighted: string
 
   try {
     if (language && hljs.getLanguage(language)) {
-      highlighted = hljs.highlight(code, { language }).value;
+      highlighted = hljs.highlight(code, { language }).value
     } else {
-      highlighted = hljs.highlightAuto(code).value;
+      highlighted = hljs.highlightAuto(code).value
     }
   } catch {
-    highlighted = code;
+    highlighted = code
   }
 
-  const escapedCode = encodeURIComponent(code);
+  const escapedCode = encodeURIComponent(code)
 
   // CRITICAL: Use data-code attribute + .copy-code-button class
   // The delegated event listener in main.tsx handles the click
@@ -54,18 +103,26 @@ renderer.code = function (codeOrToken: any, lang?: string) {
       </div>
       <pre class="!mt-0 !mb-0 overflow-hidden rounded-xl border border-gray-700/50 bg-[#0d1117] shadow-2xl"><code class="hljs language-${language} block p-6 overflow-x-auto font-mono text-sm leading-relaxed">${highlighted}</code></pre>
     </div>
-  `;
-};
+  `
+}
 
-marked.setOptions({ renderer });
+marked.setOptions({ renderer })
 
 // Configure DOMPurify to allow data attributes and classes needed for copy buttons
 const purifyConfig = {
-  ADD_ATTR: ['data-code', 'class', 'title', 'type'],
+  ADD_ATTR: ['data-code', 'class', 'title', 'type', 'target', 'rel'],
   ADD_TAGS: ['button'],
-};
+}
+
+// Ensure all links open securely in a new tab
+DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+  if ('target' in node) {
+    node.setAttribute('target', '_blank')
+    node.setAttribute('rel', 'noopener noreferrer')
+  }
+})
 
 export const renderMarkdown = (content: string): string => {
-  const rawHtml = marked.parse(content) as string;
-  return DOMPurify.sanitize(rawHtml, purifyConfig as Parameters<typeof DOMPurify.sanitize>[1]);
-};
+  const rawHtml = marked.parse(content) as string
+  return DOMPurify.sanitize(rawHtml, purifyConfig as Parameters<typeof DOMPurify.sanitize>[1])
+}

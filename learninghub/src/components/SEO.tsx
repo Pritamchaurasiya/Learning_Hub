@@ -1,30 +1,32 @@
 import { ReactNode } from 'react'
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async'
 
 interface SEOProps {
-  title?: string;
-  description?: string;
-  keywords?: string;
-  image?: string;
-  url?: string;
-  type?: 'website' | 'article' | 'course';
-  author?: string;
-  publishedTime?: string;
-  modifiedTime?: string;
-  noindex?: boolean;
-  canonical?: string;
-  children?: ReactNode;
+  title?: string
+  description?: string
+  keywords?: string
+  image?: string
+  url?: string
+  type?: 'website' | 'article' | 'course'
+  author?: string
+  publishedTime?: string
+  modifiedTime?: string
+  noindex?: boolean
+  canonical?: string
+  children?: ReactNode
 }
 
 const defaultSEO = {
   title: 'LearningHub - Master Programming & DSA',
-  description: 'Learn programming, data structures, algorithms, and more with interactive courses, quizzes, and practice problems. AI-powered personalized learning experience.',
-  keywords: 'programming, DSA, data structures, algorithms, coding, learn to code, online courses, Python, JavaScript, Java',
+  description:
+    'Learn programming, data structures, algorithms, and more with interactive courses, quizzes, and practice problems. AI-powered personalized learning experience.',
+  keywords:
+    'programming, DSA, data structures, algorithms, coding, learn to code, online courses, Python, JavaScript, Java',
   image: 'https://learninghub.com/og-image.jpg',
   url: 'https://learninghub.com',
   type: 'website' as const,
   author: 'LearningHub Team',
-};
+}
 
 export function SEO({
   title = defaultSEO.title,
@@ -40,7 +42,7 @@ export function SEO({
   canonical,
   children,
 }: SEOProps) {
-  const fullTitle = title === defaultSEO.title ? title : `${title} | LearningHub`;
+  const fullTitle = title === defaultSEO.title ? title : `${title} | LearningHub`
 
   return (
     <Helmet>
@@ -118,7 +120,7 @@ export function SEO({
       </script>
       {children}
     </Helmet>
-  );
+  )
 }
 
 // Course-specific SEO component
@@ -133,15 +135,15 @@ export function CourseSEO({
   rating,
   reviewCount,
 }: {
-  title: string;
-  description: string;
-  image: string;
-  url: string;
-  author: string;
-  difficulty: string;
-  duration: string;
-  rating?: number;
-  reviewCount?: number;
+  title: string
+  description: string
+  image: string
+  url: string
+  author: string
+  difficulty: string
+  duration: string
+  rating?: number
+  reviewCount?: number
 }) {
   return (
     <>
@@ -160,7 +162,7 @@ export function CourseSEO({
             '@context': 'https://schema.org',
             '@type': 'Course',
             name: title,
-            description: description,
+            description,
             provider: {
               '@type': 'Organization',
               name: 'LearningHub',
@@ -172,16 +174,17 @@ export function CourseSEO({
             },
             educationalLevel: difficulty,
             timeRequired: duration,
-            ...(rating && reviewCount && {
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: rating.toString(),
-                reviewCount: reviewCount.toString(),
-              },
-            }),
+            ...(rating &&
+              reviewCount && {
+                aggregateRating: {
+                  '@type': 'AggregateRating',
+                  ratingValue: rating.toString(),
+                  reviewCount: reviewCount.toString(),
+                },
+              }),
           })}
         </script>
       </Helmet>
     </>
-  );
+  )
 }

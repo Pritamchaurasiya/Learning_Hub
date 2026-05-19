@@ -11,6 +11,7 @@
 ## Files Fixed
 
 ### 1. HomePage.tsx
+
 - Removed unused imports: `ArrowRight`, `ChevronRight`
 - Removed unused type imports: `FeaturedCourse`, `CourseCategory`, `UserProgress`
 - Fixed `Achievement` type usage: `ach.unlocked` → `ach.unlocked` (store type)
@@ -18,20 +19,24 @@
 - Removed unused mapping variable `i` in `.map()`
 
 ### 2. CoursePage.tsx
+
 - Removed unused imports: `ChevronRight`, `Sparkles`, `MoreVertical`
 
 ### 3. LearningPathPage.tsx
+
 - Removed unused imports: `Loader2`, `AlertCircle`, `RefreshCw`
 - Removed local `LearningPath` interface (was conflicting with imported type)
 - Fixed `enrollPath` → `handleEnroll` (function name mismatch)
 
 ### 4. LiveClassPage.tsx
+
 - Removed unused imports: `AlertCircle`, `RefreshCw`, `X`, `MoreVertical`
 - Removed unused state: `error`, `isLoading`
 - Added missing `AnimatedPage` import
 - Fixed `category` → `task_type` (type property)
 
 ### 5. StudyPlannerPage.tsx
+
 - Removed unused imports: `Loader2`, `AlertCircle`, `RefreshCw`
 - Removed unused state: `schedule`, `isLoading`, `error`
 - Fixed `task.completed` → `task.status === 'completed'`
@@ -41,14 +46,17 @@
 - Added dummy `goals`, `totalStudyTime`, `weeklyGoal` variables
 
 ### 6. ProfilePage.tsx
+
 - Kept necessary imports: `Loader2`, `AlertCircle`, `RefreshCw` (used in JSX)
 - Fixed `bio: editForm.bio || undefined` type issue
 
 ### 7. QuizPage.tsx
+
 - Removed unused imports: `Clock`, `ArrowRight`, `AlertCircle`
 - Removed unused state: `showExplanation`, `setShowExplanation`
 
 ### 8. Sidebar.tsx
+
 - Removed unused `React` import
 - Fixed Framer Motion `sidebarVariants` type error
 - Simplified transition properties

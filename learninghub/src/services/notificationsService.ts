@@ -68,33 +68,30 @@ export const notificationsService = {
     // Check if EventSource is supported
     if (typeof EventSource === 'undefined') {
       if (import.meta.env.DEV) {
-        console.warn('[Notifications] SSE not supported in this browser');
+        console.warn('[Notifications] SSE not supported in this browser')
       }
       return () => {}
     }
 
-    const token = localStorage.getItem('token')
-    if (!token) {
-      return () => {}
-    }
+    const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
+    const eventSource = new EventSource(`${API_URL}/notifications/stream`, {
+      withCredentials: true,
+    })
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-    const eventSource = new EventSource(`${API_URL}/notifications/stream?token=${token}`)
-
-    eventSource.onmessage = (event) => {
+    eventSource.onmessage = event => {
       try {
         const notification = JSON.parse(event.data)
         callback(notification)
       } catch (err) {
         if (import.meta.env.DEV) {
-          console.error('[Notifications] Failed to parse SSE message:', err);
+          console.error('[Notifications] Failed to parse SSE message:', err)
         }
       }
     }
 
-    eventSource.onerror = (err) => {
+    eventSource.onerror = err => {
       if (import.meta.env.DEV) {
-        console.error('[Notifications] SSE error:', err);
+        console.error('[Notifications] SSE error:', err)
       }
     }
 

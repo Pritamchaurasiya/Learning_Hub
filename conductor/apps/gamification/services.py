@@ -94,12 +94,11 @@ class GamificationService:
         action_hash = hashlib.md5(reason.encode('utf-8')).hexdigest()
         anti_cheat_key = f"anti_cheat_xp_{user.id}_{action_hash}"
         
-        if cache.get(anti_cheat_key):
+        # Lock this specific action for 15 seconds to prevent spamming
+        # Use atomic cache.add to prevent race conditions where concurrent requests both pass get()
+        if not cache.add(anti_cheat_key, True, timeout=15):
             logger.warning("ANTI_CHEAT_BLOCKED: user=%s, reason=%s (Rate Limited)", user.id, reason)
             return {'xp': None, 'awarded': 0, 'multiplier': 1.0, 'leveled_up': False, 'blocked': True}
-            
-        # Lock this specific action for 15 seconds to prevent spamming
-        cache.set(anti_cheat_key, True, timeout=15)
 
         from apps.gamification.leaderboard_service import LeaderboardService
         from apps.gamification.tasks import check_achievements_task
@@ -435,12 +434,16 @@ class GamificationService:
         """Update guild contribution when user earns XP."""
         try:
             membership = GuildMembership.objects.select_related('guild').get(user=user)
-            membership.contribution_xp = F('contribution_xp') + xp_amount
-            membership.save()
             
-            # Update guild total XP
-            membership.guild.total_xp = F('total_xp') + xp_amount
-            membership.guild.save()
+            # Use update() to ensure thread-safety and avoid F-expression gotchas with .save()
+            GuildMembership.objects.filter(id=membership.id).update(
+                contribution_xp=F('contribution_xp') + xp_amount
+            )
+            
+            # Update guild total XP atomically
+            Guild.objects.filter(id=membership.guild_id).update(
+                total_xp=F('total_xp') + xp_amount
+            )
         except GuildMembership.DoesNotExist:
             pass  # User not in a guild
     

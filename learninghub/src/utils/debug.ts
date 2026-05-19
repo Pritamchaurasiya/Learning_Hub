@@ -9,7 +9,7 @@ interface DebugConfig {
 const config: DebugConfig = {
   enabled: isDevelopment,
   showTimestamp: true,
-  maxDepth: 5
+  maxDepth: 5,
 }
 
 export function createDebugLogger(context: string) {
@@ -31,6 +31,7 @@ export function createDebugLogger(context: string) {
 
   return {
     log: (message: string, data?: unknown) => {
+      // eslint-disable-next-line no-console
       console.log(formatMessage(message), data)
     },
     error: (message: string, error: unknown) => {
@@ -40,18 +41,23 @@ export function createDebugLogger(context: string) {
       console.warn(formatMessage(message), data)
     },
     info: (message: string, data?: unknown) => {
+      // eslint-disable-next-line no-console
       console.info(formatMessage(message), data)
     },
     group: (label: string) => {
+      // eslint-disable-next-line no-console
       console.group(formatMessage(label))
     },
     groupEnd: () => {
+      // eslint-disable-next-line no-console
       console.groupEnd()
     },
     time: (label: string) => {
+      // eslint-disable-next-line no-console
       console.time(formatMessage(label))
     },
     timeEnd: (label: string) => {
+      // eslint-disable-next-line no-console
       console.timeEnd(formatMessage(label))
     },
   }

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\users\urls\users.py
+# hypothesis_version: 6.152.1
+
+['add_bookmark', 'avatar', 'avatar/', 'bookmark-detail', 'bookmarks', 'delete', 'get', 'post', 'profile', 'profile/', 'profile/bookmarks/', 'put', 'remove_bookmark', 'update_profile', 'users']

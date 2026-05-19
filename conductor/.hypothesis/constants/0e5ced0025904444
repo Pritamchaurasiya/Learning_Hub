@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\quiz\views.py
+# hypothesis_version: 6.152.1
+
+[100, 200, 201, 'Answer submitted', 'Get attempt details', 'Get quiz details', 'Get quiz results', 'Quiz Attempts', 'Quiz Results', 'Quiz attempt started', 'Quizzes', 'abandoned', 'answers', 'attempt_id', 'average_score', 'avg', 'completed', 'correct_answers', 'correct_count', 'course', 'course_id', 'data', 'error', 'get', 'id', 'in_progress', 'incorrect_answers', 'is_passed', 'marks_obtained', 'max_score', 'mcq', 'message', 'option_id', 'pass_rate', 'passed_quizzes', 'percentage_score', 'pk', 'post', 'question_id', 'questions', 'questions__marks', 'quiz', 'quiz__course', 'quiz__passing_score', 'quiz_id', 'quiz_title', 'retrieve', 'score', 'status', 'success', 'text_answer', 'time_taken_seconds', 'total', 'total_attempts', 'total_count', 'total_questions', 'true_false']

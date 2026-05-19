@@ -1,30 +1,30 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Code2, CheckCircle, Flame, Trophy, Zap } from 'lucide-react';
-import { Card } from './Card';
-import type { Problem } from '../../types/dsa';
-import { cn } from '../../utils/cn';
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Code2, CheckCircle, Flame, Trophy, Zap } from 'lucide-react'
+import { Card } from './Card'
+import type { Problem } from '../../types/dsa'
+import { cn } from '../../utils/cn'
 
 const DIFFICULTY_COLORS = {
   EASY: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
   MEDIUM: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20',
   HARD: 'text-rose-500 bg-rose-50 dark:bg-rose-900/20',
-};
+}
 
 const DIFFICULTY_LABELS = {
   EASY: 'Beginner',
   MEDIUM: 'Intermediate',
   HARD: 'Expert',
-};
+}
 
 interface ProblemCardProps {
-  problem: Problem;
-  index: number;
+  problem: Problem
+  index: number
 }
 
 export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <motion.div
@@ -39,10 +39,14 @@ export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => 
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                problem.user_status === 'SOLVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-              )}>
+              <div
+                className={cn(
+                  'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                  problem.user_status === 'SOLVED'
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                )}
+              >
                 {problem.user_status === 'SOLVED' ? (
                   <CheckCircle className="w-5 h-5" />
                 ) : problem.user_status === 'ATTEMPTED' ? (
@@ -56,12 +60,14 @@ export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => 
                   {problem.title}
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
-                   <span className={cn(
-                     "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md",
-                     DIFFICULTY_COLORS[problem.difficulty]
-                   )}>
-                      {DIFFICULTY_LABELS[problem.difficulty]}
-                   </span>
+                  <span
+                    className={cn(
+                      'text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md',
+                      DIFFICULTY_COLORS[problem.difficulty]
+                    )}
+                  >
+                    {DIFFICULTY_LABELS[problem.difficulty]}
+                  </span>
                 </div>
               </div>
             </div>
@@ -73,7 +79,7 @@ export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => 
 
           <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800/50">
             <div className="flex flex-wrap gap-1.5">
-              {problem.tags.slice(0, 2).map((tag) => (
+              {problem.tags.slice(0, 2).map(tag => (
                 <span
                   key={tag.id}
                   className="px-2 py-1 text-[10px] font-bold uppercase tracking-tighter rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-400"
@@ -99,7 +105,7 @@ export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => 
         </div>
       </Card>
     </motion.div>
-  );
-});
+  )
+})
 
-ProblemCard.displayName = 'ProblemCard';
+ProblemCard.displayName = 'ProblemCard'

@@ -14,22 +14,19 @@ name = "learninghub-api-prod"
 vars = { ENVIRONMENT = "production" }
 
 # Secrets (set via wrangler secret put)
-# DATABASE_URL - Neon PostgreSQL connection string
-# JWT_SECRET - Secret key for JWT signing
-# HUGGINGFACE_API_KEY - Hugging Face API token
+# DATABASE_URL - Neon PostgreSQL connection string (required)
+# JWT_SECRET - Secret key for JWT signing (required)
+# OPENAI_API_KEY - OpenAI API for AI tutor (optional)
 
-# KV Namespaces for caching and rate limiting
-[[kv_namespaces]]
-binding = "LEARNINGHUB_KV"
-id = "your-kv-namespace-id"
-preview_id = "your-preview-kv-namespace-id"
+# KV Namespaces for caching and rate limiting (optional - uncomment when ready)
+# [[kv_namespaces]]
+# binding = "LEARNINGHUB_KV"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
 
 # Rate limiting
 [limits]
 cpu_ms = 30000  # Increased to 30s for complex operations
 
-# D1 Database binding
-[[d1_databases]]
-binding = "DB"
-database_name = "learninghub"
-database_id = "your-d1-database-id"
+# Note: Using Neon PostgreSQL via DATABASE_URL env var
+# Not using D1 - all database operations go through @neondatabase/serverless

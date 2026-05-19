@@ -47,7 +47,7 @@ describe('AuthController', () => {
                 id: 'user-123',
                 email: userData.email,
                 username: userData.username,
-                role: 'student',
+                role: 'STUDENT',
             });
             mockReq.body = userData;
             prismaClient_1.prisma.user.findUnique.mockResolvedValue(null);
@@ -57,9 +57,9 @@ describe('AuthController', () => {
             expect(statusMock).toHaveBeenCalledWith(201);
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
-                message: 'User created successfully',
+                message: 'Registration successful',
                 data: {
-                    token: 'mock-token',
+                    access_token: 'mock-token',
                     refresh_token: 'mock-refresh-token',
                     user: {
                         id: createdUser.id,
@@ -102,7 +102,7 @@ describe('AuthController', () => {
                 email: 'test@example.com',
                 password: 'password123',
             };
-            mockReq.ip = '127.0.0.1';
+            Object.defineProperty(mockReq, 'ip', { value: '127.0.0.1' });
             prismaClient_1.prisma.user.findUnique.mockRejectedValue(new Error('Database error'));
             await (0, authController_1.register)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);
@@ -132,7 +132,7 @@ describe('AuthController', () => {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    token: 'mock-token',
+                    access_token: 'mock-token',
                     refresh_token: 'mock-refresh-token',
                     user: {
                         id: existingUser.id,
@@ -184,7 +184,7 @@ describe('AuthController', () => {
                 email: 'test@example.com',
                 password: 'password123',
             };
-            mockReq.ip = '127.0.0.1';
+            Object.defineProperty(mockReq, 'ip', { value: '127.0.0.1' });
             prismaClient_1.prisma.user.findUnique.mockRejectedValue(new Error('Database error'));
             await (0, authController_1.login)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);
@@ -274,12 +274,16 @@ describe('AuthController', () => {
         it('should return user profile successfully', async () => {
             const user = (0, user_factory_1.createUser)({
                 id: 'user-123',
-                progress: [],
-                bookmarks: [],
-                achievements: [],
             });
-            mockReq.user = { userId: user.id };
+            const mockProgress = [];
+            const mockBookmarks = [];
+            const mockAchievements = [];
+            mockReq.user = { userId: user.id, email: user.email, role: user.role };
             prismaClient_1.prisma.user.findUnique.mockResolvedValue(user);
+            prismaClient_1.prisma.userProgress.findMany.mockResolvedValue(mockProgress);
+            prismaClient_1.prisma.bookmark.findMany.mockResolvedValue(mockBookmarks);
+            prismaClient_1.prisma.userAchievement.findMany.mockResolvedValue(mockAchievements);
+            prismaClient_1.prisma.user.update.mockResolvedValue(user);
             await (0, authController_1.me)(mockReq, mockRes);
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
@@ -294,13 +298,14 @@ describe('AuthController', () => {
                         streak: user.streak,
                         lastActive: user.lastActive,
                     },
-                    progress: user.progress,
-                    bookmarks: user.bookmarks,
-                    achievements: user.achievements,
+                    progress: mockProgress,
+                    bookmarks: mockBookmarks,
+                    achievements: mockAchievements,
                 },
             });
         });
         it('should return 404 when user not found', async () => {
+            ;
             mockReq.user = { userId: 'non-existent-id' };
             prismaClient_1.prisma.user.findUnique.mockResolvedValue(null);
             await (0, authController_1.me)(mockReq, mockRes);
@@ -311,6 +316,7 @@ describe('AuthController', () => {
             });
         });
         it('should return 500 on database error', async () => {
+            ;
             mockReq.user = { userId: 'user-123' };
             prismaClient_1.prisma.user.findUnique.mockRejectedValue(new Error('Database error'));
             await (0, authController_1.me)(mockReq, mockRes);

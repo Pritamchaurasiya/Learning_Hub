@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -31,7 +28,7 @@ export default {
           dark: '#0f172a',
           glass: 'rgba(255, 255, 255, 0.7)',
           glassDark: 'rgba(15, 23, 42, 0.7)',
-        }
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
@@ -44,10 +41,10 @@ export default {
         'slide-up': 'slideUp 0.4s ease-out',
         'bounce-soft': 'bounceSoft 2s infinite',
         'pulse-subtle': 'pulseSubtle 2s infinite',
-        'gradient': 'gradient 8s ease infinite',
-        'shimmer': 'shimmer 2.5s infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'pulseGlow 2s ease-in-out infinite',
+        gradient: 'gradient 8s ease infinite',
+        shimmer: 'shimmer 2.5s infinite',
+        float: 'float 6s ease-in-out infinite',
+        glow: 'pulseGlow 2s ease-in-out infinite',
         'scale-in': 'scaleIn 0.3s ease-out',
       },
       keyframes: {
@@ -78,11 +75,11 @@ export default {
         gradient: {
           '0%, 100%': {
             'background-size': '200% 200%',
-            'background-position': 'left center'
+            'background-position': 'left center',
           },
           '50%': {
             'background-size': '200% 200%',
-            'background-position': 'right center'
+            'background-position': 'right center',
           },
         },
         shimmer: {
@@ -107,7 +104,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require('@tailwindcss/typography')],
 }

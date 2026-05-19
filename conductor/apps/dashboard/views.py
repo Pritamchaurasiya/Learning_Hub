@@ -244,19 +244,28 @@ def get_home_dashboard(request):
         featured_courses = Course.objects.filter(is_featured=True, is_published=True)[:6]
         categories = Category.objects.filter(is_active=True)[:8]
         enrolled_courses = Enrollment.objects.filter(user=user).count()
-        completed_courses = Enrollment.objects.filter(user=user, status='completed').count()
+        completed_courses = Enrollment.objects.filter(user=user, completed_at__isnull=False).count()
         bookmark_count = Bookmark.objects.filter(user=user).count()
         
         # Get recent progress (last 5 enrollments with activity)
-        recent_enrollments = Enrollment.objects.filter(user=user).order_by('-last_accessed_at')[:5]
+        recent_enrollments = Enrollment.objects.filter(user=user).order_by('-last_accessed_at').select_related('course')[:5]
         progress_data = []
         for enrollment in recent_enrollments:
+            # We don't have completed_lessons/total_lessons on Enrollment anymore
+            # total_lessons comes from course.lessons_count
+            total = enrollment.course.lessons_count
+            # completed_lessons would need a query to LessonCompletion, but for the dashboard
+            # we can approximate or just use 0 if not easily available.
+            # To be accurate:
+            from apps.courses.models import LessonCompletion
+            completed = LessonCompletion.objects.filter(user=user, lesson__module__course=enrollment.course).count()
+            
             progress_data.append({
                 'course_id': str(enrollment.course.id),
                 'course_title': enrollment.course.title,
-                'progress_percent': enrollment.progress_percent,
-                'completed_lessons': enrollment.completed_lessons,
-                'total_lessons': enrollment.total_lessons,
+                'progress_percent': enrollment.progress_percentage,
+                'completed_lessons': completed,
+                'total_lessons': total,
             })
         
         # Calculate streak (simplified)

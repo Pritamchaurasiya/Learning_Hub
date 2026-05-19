@@ -6,9 +6,12 @@ describe('Logger Utils', () => {
     let consoleWarnSpy;
     let consoleLogSpy;
     beforeEach(() => {
-        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        // Clear all mocks before each test
+        jest.clearAllMocks();
+        // Spy on console methods to verify they are called correctly
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { });
+        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { });
     });
     afterEach(() => {
         consoleErrorSpy.mockRestore();

@@ -20,8 +20,8 @@ describe('Pagination Utils', () => {
                 skip: 100, // (3-1) * 50
             });
         });
-        it('should handle page as number', () => {
-            const query = { page: 2, limit: 10 };
+        it('should handle page as number string', () => {
+            const query = { page: '2', limit: '10' };
             const result = (0, pagination_1.getPaginationParams)(query);
             expect(result).toEqual({
                 page: 2,

@@ -123,7 +123,9 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsInstructor()]
-        return [AllowAny()]
+        elif self.action in ['list', 'retrieve', 'reviews', 'featured', 'trending']:
+            return [AllowAny()]
+        return super().get_permissions()
 
     def get_queryset(self):
         query = self.request.query_params.get('search', None)
@@ -140,6 +142,15 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .select_related("instructor", "category")
         
         queryset = super().get_queryset().select_related('instructor', 'category')
+        
+        # Filter unpublished courses
+        if not self.request.user.is_staff:
+            if self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'instructor':
+                from django.db import models
+                queryset = queryset.filter(models.Q(is_published=True) | models.Q(instructor=self.request.user))
+            else:
+                queryset = queryset.filter(is_published=True)
+                
         # Only prefetch modules/lessons for detail view; skip reviews on list
         if self.action == 'retrieve':
             return queryset.prefetch_related(

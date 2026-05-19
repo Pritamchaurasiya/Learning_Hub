@@ -30,7 +30,7 @@ function openDatabase(): Promise<IDBDatabase> {
       resolve(db)
     }
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = event => {
       const database = (event.target as IDBOpenDBRequest).result
       if (!database.objectStoreNames.contains('data')) {
         database.createObjectStore('data', { keyPath: 'key' })
@@ -48,7 +48,7 @@ export async function setItem<T>(key: string, value: T): Promise<void> {
     const item: StorageItem = {
       key,
       value,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     store.put(item)

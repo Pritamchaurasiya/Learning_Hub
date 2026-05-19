@@ -312,17 +312,63 @@ def revenue_analytics(request):
 @permission_classes([IsAdminUser])
 def engagement_analytics(request):
     """
-    Platform engagement metrics.
+    Platform engagement metrics — all values computed from real data.
     """
     end_date = timezone.now()
     start_date = end_date - timedelta(days=30)
     
+    # Real session tracking from UserSession model
+    from apps.users.models import UserSession
+    sessions = UserSession.objects.filter(
+        created_at__range=[start_date, end_date],
+        is_active=False  # Completed sessions
+    )
+    
+    session_durations = sessions.values_list('duration_seconds', flat=True)
+    avg_session_duration = (
+        sum(session_durations) / len(session_durations) / 60
+        if session_durations else 0
+    )
+    
+    total_sessions = sessions.count()
+    single_page_sessions = sessions.filter(pages_viewed=1).count()
+    bounce_rate = round((single_page_sessions / total_sessions * 100) if total_sessions > 0 else 0, 2)
+    avg_pages = round(
+        sessions.aggregate(avg=Avg('pages_viewed'))['avg'] or 0, 2
+    )
+    
+    # Real activity-based peak hours
+    from apps.core.models import ActivityLog
+    peak_hours_data = (
+        ActivityLog.objects.filter(
+            created_at__range=[start_date, end_date]
+        )
+        .extra({'hour': "EXTRACT(HOUR FROM created_at)"})
+        .values('hour')
+        .annotate(activity_count=Count('id'))
+        .order_by('hour')
+    )
+    
+    peak_hours = [
+        {'hour': int(p['hour']), 'activity': p['activity_count']}
+        for p in peak_hours_data
+    ]
+    
+    # Real discussion/comment counts
+    from apps.discussions.models import Thread, Comment
+    discussions_count = Thread.objects.filter(
+        created_at__range=[start_date, end_date]
+    ).count()
+    comments_count = Comment.objects.filter(
+        created_at__range=[start_date, end_date]
+    ).count()
+    
     analytics = {
         'time_range': '30d',
         'metrics': {
-            'avg_session_duration': calculate_avg_session_duration(start_date, end_date),
-            'pages_per_session': 4.5,  # Placeholder - would need tracking
-            'bounce_rate': 35.2,  # Placeholder
+            'avg_session_duration': round(avg_session_duration, 2),
+            'pages_per_session': avg_pages,
+            'bounce_rate': bounce_rate,
         },
         'course_engagement': {
             'lessons_started': Enrollment.objects.filter(
@@ -339,24 +385,26 @@ def engagement_analytics(request):
             'reviews_submitted': Review.objects.filter(
                 created_at__range=[start_date, end_date]
             ).count(),
-            'discussions_created': 0,  # Placeholder
-            'comments_posted': 0,  # Placeholder
+            'discussions_created': discussions_count,
+            'comments_posted': comments_count,
         },
-        'peak_hours': [
-            {'hour': 9, 'activity': 85},
-            {'hour': 12, 'activity': 92},
-            {'hour': 18, 'activity': 100},
-            {'hour': 20, 'activity': 88},
-        ],
+        'peak_hours': peak_hours,
     }
     
     return Response(analytics)
 
 
 def calculate_avg_session_duration(start_date, end_date):
-    """Calculate average session duration."""
-    # Placeholder - would need actual session tracking
-    return 25.5  # minutes
+    """Calculate average session duration from real data."""
+    from apps.users.models import UserSession
+    sessions = UserSession.objects.filter(
+        created_at__range=[start_date, end_date],
+        is_active=False
+    )
+    durations = sessions.values_list('duration_seconds', flat=True)
+    if not durations:
+        return 0
+    return round(sum(durations) / len(durations) / 60, 2)
 
 
 @api_view(['POST'])

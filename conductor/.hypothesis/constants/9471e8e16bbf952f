@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\gamification\urls.py
+# hypothesis_version: 6.152.1
+
+['achievements/', 'achievements/unlock/', 'gamification', 'gamification-add-xp', 'gamification-checkin', 'gamification-stats', 'gamification-streak', 'gamification-unlock', 'gamification-xp', 'leaderboard/', 'stats/', 'streak/', 'streak/checkin/', 'xp/', 'xp/add/']

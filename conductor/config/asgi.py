@@ -4,6 +4,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from apps.core.routing import websocket_urlpatterns as core_ws_urlpatterns
 from apps.metaverse.routing import websocket_urlpatterns as metaverse_ws_urlpatterns
+from apps.dashboard.routing import websocket_urlpatterns as dashboard_ws_urlpatterns
 
 from apps.core.middleware import JWTAuthMiddleware
 
@@ -13,7 +14,7 @@ application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": JWTAuthMiddleware(
         URLRouter(
-            core_ws_urlpatterns + metaverse_ws_urlpatterns
+            core_ws_urlpatterns + metaverse_ws_urlpatterns + dashboard_ws_urlpatterns
         )
     ),
 })

@@ -1,6 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sun, Moon, Monitor, Bell, BellOff, Shield, Eye, Trash2, Download, LogOut, Check, HelpCircle, Info } from 'lucide-react'
+import {
+  Sun,
+  Moon,
+  Monitor,
+  Bell,
+  BellOff,
+  Shield,
+  Eye,
+  Trash2,
+  Download,
+  LogOut,
+  Check,
+  HelpCircle,
+  Info,
+} from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -22,21 +36,31 @@ interface SettingsState {
 
 export default function SettingsPage() {
   const navigate = useNavigate()
-  const { theme, setTheme, logout, addToast } = useStore()
-  
+  const { theme, setTheme, logout, addToast, settings: globalSettings, updateSettings } = useStore()
+
+  const isLowPerformance = globalSettings?.lowPerformanceMode || false
+
+  const handleLowPerformanceToggle = () => {
+    updateSettings({ lowPerformanceMode: !isLowPerformance })
+    addToast({
+      message: !isLowPerformance ? 'Low performance mode enabled' : 'Low performance mode disabled',
+      type: 'info',
+    })
+  }
+
   const [settings, setSettings] = useState<SettingsState>({
     theme: theme.mode,
     notifications: {
       dailyReminder: true,
       progressUpdates: true,
       achievements: true,
-      weeklyDigest: false
+      weeklyDigest: false,
     },
     privacy: {
       showProfile: true,
       showProgress: true,
-      showStreak: true
-    }
+      showStreak: true,
+    },
   })
 
   const [hasChanges, setHasChanges] = useState(false)
@@ -50,7 +74,8 @@ export default function SettingsPage() {
   const handleNotificationChange = (key: keyof SettingsState['notifications']) => {
     setSettings({
       ...settings,
-      notifications: { ...settings.notifications, [key]: !settings.notifications[key] }
+      // eslint-disable-next-line security/detect-object-injection
+      notifications: { ...settings.notifications, [key]: !settings.notifications[key] },
     })
     setHasChanges(true)
   }
@@ -58,7 +83,8 @@ export default function SettingsPage() {
   const handlePrivacyChange = (key: keyof SettingsState['privacy']) => {
     setSettings({
       ...settings,
-      privacy: { ...settings.privacy, [key]: !settings.privacy[key] }
+      // eslint-disable-next-line security/detect-object-injection
+      privacy: { ...settings.privacy, [key]: !settings.privacy[key] },
     })
     setHasChanges(true)
   }
@@ -73,7 +99,7 @@ export default function SettingsPage() {
       theme: settings.theme,
       notifications: settings.notifications,
       privacy: settings.privacy,
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -86,6 +112,7 @@ export default function SettingsPage() {
   }
 
   const handleClearData = () => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
       localStorage.clear()
       addToast({ message: 'Local data cleared', type: 'info' })
@@ -154,6 +181,35 @@ export default function SettingsPage() {
               <span className="text-sm font-medium">System</span>
             </button>
           </div>
+
+          <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-4">
+            <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+              <div className="flex items-center gap-3">
+                <Monitor className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="font-medium">Low Performance Mode</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Disables background animations and heavy graphics to save battery
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleLowPerformanceToggle}
+                className={`w-12 h-6 rounded-full transition-colors ${
+                  isLowPerformance ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+                role="switch"
+                aria-checked={isLowPerformance}
+                aria-label="Toggle low performance mode"
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                    isLowPerformance ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </label>
+          </div>
         </div>
       </Card>
 
@@ -168,21 +224,27 @@ export default function SettingsPage() {
               <Bell className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Daily Reminder</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Get reminded to maintain your streak</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Get reminded to maintain your streak
+                </p>
               </div>
             </div>
             <button
               onClick={() => handleNotificationChange('dailyReminder')}
               className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.dailyReminder ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                settings.notifications.dailyReminder
+                  ? 'bg-primary-500'
+                  : 'bg-gray-300 dark:bg-gray-600'
               }`}
               role="switch"
               aria-checked={settings.notifications.dailyReminder}
               aria-label="Toggle daily reminder notifications"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.notifications.dailyReminder ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.notifications.dailyReminder ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
 
@@ -191,21 +253,27 @@ export default function SettingsPage() {
               <Info className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Progress Updates</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Notifications when you make progress</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Notifications when you make progress
+                </p>
               </div>
             </div>
             <button
               onClick={() => handleNotificationChange('progressUpdates')}
               className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.progressUpdates ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                settings.notifications.progressUpdates
+                  ? 'bg-primary-500'
+                  : 'bg-gray-300 dark:bg-gray-600'
               }`}
               role="switch"
               aria-checked={settings.notifications.progressUpdates}
               aria-label="Toggle progress update notifications"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.notifications.progressUpdates ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.notifications.progressUpdates ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
 
@@ -214,21 +282,27 @@ export default function SettingsPage() {
               <HelpCircle className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Achievements</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Get notified when you unlock achievements</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Get notified when you unlock achievements
+                </p>
               </div>
             </div>
             <button
               onClick={() => handleNotificationChange('achievements')}
               className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.achievements ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                settings.notifications.achievements
+                  ? 'bg-primary-500'
+                  : 'bg-gray-300 dark:bg-gray-600'
               }`}
               role="switch"
               aria-checked={settings.notifications.achievements}
               aria-label="Toggle achievement notifications"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.notifications.achievements ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.notifications.achievements ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
 
@@ -237,21 +311,27 @@ export default function SettingsPage() {
               <BellOff className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Weekly Digest</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Receive a weekly summary email</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Receive a weekly summary email
+                </p>
               </div>
             </div>
             <button
               onClick={() => handleNotificationChange('weeklyDigest')}
               className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.weeklyDigest ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                settings.notifications.weeklyDigest
+                  ? 'bg-primary-500'
+                  : 'bg-gray-300 dark:bg-gray-600'
               }`}
               role="switch"
               aria-checked={settings.notifications.weeklyDigest}
               aria-label="Toggle weekly digest email"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.notifications.weeklyDigest ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.notifications.weeklyDigest ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
         </div>
@@ -270,7 +350,9 @@ export default function SettingsPage() {
               <Eye className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Show Profile</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Allow others to view your profile</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Allow others to view your profile
+                </p>
               </div>
             </div>
             <button
@@ -282,9 +364,11 @@ export default function SettingsPage() {
               aria-checked={settings.privacy.showProfile}
               aria-label="Toggle profile visibility"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.privacy.showProfile ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.privacy.showProfile ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
 
@@ -293,7 +377,9 @@ export default function SettingsPage() {
               <Eye className="w-5 h-5 text-gray-500" />
               <div>
                 <p className="font-medium">Show Progress</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Display your learning progress</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Display your learning progress
+                </p>
               </div>
             </div>
             <button
@@ -305,9 +391,11 @@ export default function SettingsPage() {
               aria-checked={settings.privacy.showProgress}
               aria-label="Toggle progress visibility"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.privacy.showProgress ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.privacy.showProgress ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
 
@@ -328,9 +416,11 @@ export default function SettingsPage() {
               aria-checked={settings.privacy.showStreak}
               aria-label="Toggle streak visibility"
             >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                settings.privacy.showStreak ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
+                  settings.privacy.showStreak ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </label>
         </div>
@@ -342,10 +432,21 @@ export default function SettingsPage() {
           Data & Privacy
         </h2>
         <div className="space-y-3">
-          <Button variant="outline" fullWidth leftIcon={<Download className="w-4 h-4" />} onClick={handleExportData}>
+          <Button
+            variant="outline"
+            fullWidth
+            leftIcon={<Download className="w-4 h-4" />}
+            onClick={handleExportData}
+          >
             Export Settings
           </Button>
-          <Button variant="outline" fullWidth leftIcon={<Trash2 className="w-4 h-4" />} onClick={handleClearData} className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">
+          <Button
+            variant="outline"
+            fullWidth
+            leftIcon={<Trash2 className="w-4 h-4" />}
+            onClick={handleClearData}
+            className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
             Clear Local Data
           </Button>
         </div>
@@ -357,7 +458,12 @@ export default function SettingsPage() {
           Account
         </h2>
         <div className="space-y-3">
-          <Button variant="danger" fullWidth leftIcon={<LogOut className="w-4 h-4" />} onClick={handleLogout}>
+          <Button
+            variant="danger"
+            fullWidth
+            leftIcon={<LogOut className="w-4 h-4" />}
+            onClick={handleLogout}
+          >
             Log Out
           </Button>
         </div>

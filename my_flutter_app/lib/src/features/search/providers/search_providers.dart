@@ -61,13 +61,6 @@ final advancedSearchProvider = FutureProvider.autoDispose
 
 /// Parameters for advanced search
 class AdvancedSearchParams {
-  final String? query;
-  final String? category;
-  final String? level;
-  final double? priceMin;
-  final double? priceMax;
-  final double? rating;
-  final String sortBy;
 
   const AdvancedSearchParams({
     this.query,
@@ -78,6 +71,13 @@ class AdvancedSearchParams {
     this.rating,
     this.sortBy = 'relevance',
   });
+  final String? query;
+  final String? category;
+  final String? level;
+  final double? priceMin;
+  final double? priceMax;
+  final double? rating;
+  final String sortBy;
 
   AdvancedSearchParams copyWith({
     String? query,

@@ -12,7 +12,11 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
   const pages = getPageNumbers(currentPage, totalPages)
 
   return (
-    <nav className={cn('flex items-center gap-1', className)} role="navigation" aria-label="Pagination">
+    <nav
+      className={cn('flex items-center gap-1', className)}
+      role="navigation"
+      aria-label="Pagination"
+    >
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -25,6 +29,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
       {pages.map((page, index) => {
         if (page === '...') {
           return (
+            // eslint-disable-next-line react/no-array-index-key
             <span key={`ellipsis-${index}`} className="px-2">
               ...
             </span>

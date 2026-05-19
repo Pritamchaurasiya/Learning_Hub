@@ -9,7 +9,7 @@ export default function ProgressRing({
   progress,
   size = 36,
   strokeWidth = 3,
-  className = ''
+  className = '',
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius

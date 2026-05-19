@@ -12,8 +12,14 @@ class TestAdminIntegrity:
     """
     
     @pytest.fixture(autouse=True)
-    def setup(self, admin_client):
-        self.client = admin_client
+    def setup(self, client, django_user_model):
+        self.client = client
+        self.admin_user = django_user_model.objects.create_superuser(
+            username='admin_test_user',
+            email='admin@example.com',
+            password='password123'
+        )
+        self.client.force_login(self.admin_user)
 
     def test_all_admin_endpoints(self):
         """Iterate over all registered models and hit their changelist view."""
@@ -31,8 +37,9 @@ class TestAdminIntegrity:
                 response = self.client.get(url)
                 
                 if response.status_code != 200:
+                    url_redirect = getattr(response, 'url', 'No Redirect URL')
                     failed_endpoints.append(
-                        f"{app_label}.{model_name} returned {response.status_code}"
+                        f"{app_label}.{model_name} returned {response.status_code} (Redirect: {url_redirect})"
                     )
             except Exception as e:
                 # Catch NoReverseMatch or other rendering exceptions

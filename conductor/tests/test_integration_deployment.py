@@ -46,4 +46,4 @@ class TestAPIEndpoints:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         # Should return paginated results
-        assert 'results' in data or isinstance(data, list)
+        assert 'data' in data or 'results' in data or isinstance(data, list)

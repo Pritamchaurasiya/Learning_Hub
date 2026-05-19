@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { MessageSquare, ThumbsUp, Bookmark, Search, Plus, Clock, User, Hash } from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
@@ -7,9 +8,17 @@ import { Input } from '../components/ui/Input'
 import { discussionService, type Discussion } from '../services/discussionService'
 import { useStore } from '../stores/useStore'
 
-const categories = ['All', 'Web Development', 'Data Science', 'Computer Science', 'Mobile Development', 'Cloud Computing']
+const categories = [
+  'All',
+  'Web Development',
+  'Data Science',
+  'Computer Science',
+  'Mobile Development',
+  'Cloud Computing',
+]
 
 export default function DiscussionsPage() {
+  useDocumentTitle('Discussions')
   const [discussions, setDiscussions] = useState<Discussion[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -18,75 +27,89 @@ export default function DiscussionsPage() {
   const [error, setError] = useState<string | null>(null)
   const { addToast } = useStore()
 
-  const fetchDiscussions = useCallback(async (signal?: AbortSignal) => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const fetchDiscussions = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setIsLoading(true)
+        setError(null)
 
-      // Map sort to ordering param
-      let ordering = '-created_at'
-      if (sortBy === 'popular') ordering = '-like_count'
-      if (sortBy === 'most-replies') ordering = '-reply_count'
+        // Map sort to ordering param
+        let ordering = '-created_at'
+        if (sortBy === 'popular') ordering = '-like_count'
+        if (sortBy === 'most-replies') ordering = '-reply_count'
 
-      const res = await discussionService.getDiscussions({
-        search: searchQuery || undefined,
-        ordering,
-        signal
-      })
-      if (!signal?.aborted) {
-        setDiscussions(res.data)
-      }
-    } catch (err) {
-      if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        setError(err instanceof Error ? err.message : 'Failed to load discussions')
-        if (import.meta.env.DEV) {
-          console.error('[DiscussionsPage] Failed to fetch discussions:', err);
+        const res = await discussionService.getDiscussions({
+          search: searchQuery || undefined,
+          ordering,
+          signal,
+        })
+        if (!signal?.aborted) {
+          setDiscussions(res.data)
+        }
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          setError(err instanceof Error ? err.message : 'Failed to load discussions')
+          if (import.meta.env.DEV) {
+            console.error('[DiscussionsPage] Failed to fetch discussions:', err)
+          }
+        }
+      } finally {
+        if (!signal?.aborted) {
+          setIsLoading(false)
         }
       }
-    } finally {
-      if (!signal?.aborted) {
-        setIsLoading(false)
-      }
-    }
-  }, [searchQuery, sortBy])
+    },
+    [searchQuery, sortBy]
+  )
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchDiscussions(controller.signal)
+    void fetchDiscussions(controller.signal)
     return () => controller.abort()
   }, [fetchDiscussions])
 
-  const filteredDiscussions = selectedCategory === 'All'
-    ? discussions
-    : discussions.filter(d => d.course?.title?.toLowerCase().includes(selectedCategory.toLowerCase()))
+  const filteredDiscussions =
+    selectedCategory === 'All'
+      ? discussions
+      : discussions.filter(
+          d =>
+            (d.course?.title?.toLowerCase().includes(selectedCategory.toLowerCase()) ?? false) ||
+            (d.tags?.some(tag => tag.toLowerCase().includes(selectedCategory.toLowerCase())) ??
+              false)
+        )
 
   const toggleBookmark = async (id: string) => {
     try {
       // For now, just update local state as bookmark API is not in the service
       setDiscussions(prev =>
-        prev.map(d => d.id === id ? { ...d, is_bookmarked: !d.is_bookmarked } : d)
+        prev.map(d => (d.id === id ? { ...d, is_bookmarked: !d.is_bookmarked } : d))
       )
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[DiscussionsPage] Failed to toggle bookmark:', err);
+        console.error('[DiscussionsPage] Failed to toggle bookmark:', err)
       }
     }
   }
 
   // Vote on discussion
-  const handleVote = useCallback(async (id: string, value: 1 | -1 | 0) => {
-    try {
-      const res = await discussionService.voteDiscussion(id, value)
-      setDiscussions(prev =>
-        prev.map(d => d.id === id ? { ...d, like_count: res.like_count, user_vote: res.user_vote } : d)
-      )
-    } catch (err) {
-      addToast({ message: 'Failed to vote on discussion', type: 'error' })
-      if (import.meta.env.DEV) {
-        console.error('[DiscussionsPage] Failed to vote:', err);
+  const handleVote = useCallback(
+    async (id: string, value: 1 | -1 | 0) => {
+      try {
+        const res = await discussionService.voteDiscussion(id, value)
+        setDiscussions(prev =>
+          prev.map(d =>
+            d.id === id ? { ...d, like_count: res.like_count, user_vote: res.user_vote } : d
+          )
+        )
+      } catch (err) {
+        addToast({ message: 'Failed to vote on discussion', type: 'error' })
+        if (import.meta.env.DEV) {
+          console.error('[DiscussionsPage] Failed to vote:', err)
+        }
       }
-    }
-  }, [addToast])
+    },
+    [addToast]
+  )
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -115,16 +138,10 @@ export default function DiscussionsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Discussions
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Connect with the community
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Discussions</h1>
+            <p className="text-gray-600 dark:text-gray-400">Connect with the community</p>
           </div>
-          <Button leftIcon={<Plus className="w-4 h-4" />}>
-            New Discussion
-          </Button>
+          <Button leftIcon={<Plus className="w-4 h-4" />}>New Discussion</Button>
         </div>
 
         {/* Search and Filters */}
@@ -134,7 +151,7 @@ export default function DiscussionsPage() {
               <Input
                 placeholder="Search discussions..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
                 fullWidth
               />
@@ -156,7 +173,8 @@ export default function DiscussionsPage() {
             </div>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={e => setSortBy(e.target.value as any)}
               className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 focus:ring-2 focus:ring-primary-500"
             >
               <option value="recent">Most Recent</option>
@@ -168,9 +186,28 @@ export default function DiscussionsPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">Loading discussions...</p>
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="p-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse flex-shrink-0 hidden sm:block" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
 
@@ -184,14 +221,10 @@ export default function DiscussionsPage() {
         {/* Discussions List */}
         <div className="space-y-4">
           {filteredDiscussions.map(discussion => (
-            <Card
-              key={discussion.id}
-              hover
-              className="p-6 cursor-pointer"
-            >
+            <Card key={discussion.id} hover className="p-6 cursor-pointer">
               <div className="flex gap-4">
                 {/* Author Avatar */}
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold flex-shrink-0 hidden sm:block">
                   {(discussion.author.display_name || discussion.author.username || '?').charAt(0)}
                 </div>
 
@@ -216,10 +249,14 @@ export default function DiscussionsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      leftIcon={<Bookmark className={`w-4 h-4 ${discussion.is_bookmarked ? 'fill-current text-primary-600' : ''}`} />}
+                      leftIcon={
+                        <Bookmark
+                          className={`w-4 h-4 ${discussion.is_bookmarked ? 'fill-current text-primary-600' : ''}`}
+                        />
+                      }
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation()
-                        toggleBookmark(discussion.id)
+                        void toggleBookmark(discussion.id)
                       }}
                     />
                   </div>
@@ -238,7 +275,7 @@ export default function DiscussionsPage() {
                   </div>
 
                   {/* Meta */}
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
                       <span>{discussion.author.display_name || discussion.author.username}</span>
@@ -254,7 +291,7 @@ export default function DiscussionsPage() {
                     <button
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation()
-                        handleVote(discussion.id, discussion.user_vote === 1 ? 0 : 1)
+                        void handleVote(discussion.id, discussion.user_vote === 1 ? 0 : 1)
                       }}
                       className={`flex items-center gap-1 hover:text-primary-600 transition-colors ${discussion.user_vote === 1 ? 'text-primary-600' : ''}`}
                     >
@@ -278,9 +315,7 @@ export default function DiscussionsPage() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No discussions found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your search or filters
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filters</p>
           </div>
         )}
       </div>

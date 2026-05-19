@@ -14,13 +14,16 @@ export default function NotFoundPage() {
         <span className="text-[120px] md:text-[160px] font-bold text-gradient select-none leading-none">
           404
         </span>
-        <div className="absolute inset-0 blur-3xl opacity-15 bg-gradient-to-br from-primary-500 via-purple-500 to-rose-500 rounded-full" aria-hidden="true" />
+        <div
+          className="absolute inset-0 blur-3xl opacity-15 bg-gradient-to-br from-primary-500 via-purple-500 to-rose-500 rounded-full"
+          aria-hidden="true"
+        />
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold mb-3">Page Not Found</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-md leading-relaxed">
-        The page you're looking for doesn't exist or has been moved.
-        Let's get you back on track.
+        The page you&apos;re looking for doesn&apos;t exist or has been moved. Let&apos;s get you
+        back on track.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-xs sm:max-w-md">

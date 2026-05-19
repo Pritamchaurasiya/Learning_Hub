@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\migrations\0002_enterpriseauditlog.py
+# hypothesis_version: 6.152.1
+
+[100, 150, 254, 255, 500, '-created_at', '0001_initial', 'EnterpriseAuditLog', 'action', 'core', 'created_at', 'db_table', 'error_message', 'execution_time_ms', 'id', 'indexes', 'info', 'ip_address', 'is_active', 'metadata', 'new_values', 'old_values', 'ordering', 'request_method', 'request_params', 'request_path', 'resource_id', 'resource_name', 'resource_type', 'response_status', 'severity', 'stack_trace', 'updated_at', 'user_agent', 'user_email', 'user_id', 'username']

@@ -1,21 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCourses = exports.createCourse = void 0;
+const client_1 = require("@prisma/client");
 const createCourse = (overrides = {}) => ({
     id: 'course-' + Math.random().toString(36).substring(7),
     title: 'Test Course',
     description: 'A test course description',
     shortDescription: null,
-    phase: 'Foundation',
+    phase: 'FOUNDATION',
     duration: 3600,
-    difficulty: 'Beginner',
+    difficulty: 'BEGINNER',
     category: 'Web Development',
     content: '# Course Content',
     thumbnail: null,
     trailerVideo: null,
-    instructorName: null,
-    instructorBio: null,
-    price: 0,
+    instructorId: null,
+    price: new client_1.Prisma.Decimal(0),
     originalPrice: null,
     rating: 4.5,
     reviewCount: 0,
@@ -25,6 +25,13 @@ const createCourse = (overrides = {}) => ({
     lastUpdated: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    deletedAt: null,
+    isPublished: true,
+    publishedAt: new Date(),
+    tags: [],
+    currency: 'USD',
+    prerequisites: [],
+    learningOutcomes: [],
     ...overrides,
 });
 exports.createCourse = createCourse;

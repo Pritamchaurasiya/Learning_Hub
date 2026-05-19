@@ -155,9 +155,10 @@ class TestUserLogin:
 class TestUserProfile:
     """Tests for user profile endpoints."""
 
-    def test_get_profile_authenticated(self, authenticated_client, user):
+    def test_get_profile_authenticated(self, api_client, user):
         """Test getting profile when authenticated."""
-        response = authenticated_client.get("/api/v1/users/profile/")
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/users/profile/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["data"]["email"] == user.email

@@ -1,22 +1,22 @@
-import { Fragment, type ReactNode, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { cn } from '../../utils/cn';
-import { Button } from './Button';
+import { Fragment, type ReactNode, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X } from 'lucide-react'
+import { cn } from '../../utils/cn'
+import { Button } from './Button'
 
 export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  description?: string;
-  children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
-  showCloseButton?: boolean;
-  closeOnOverlayClick?: boolean;
-  closeOnEscape?: boolean;
-  footer?: ReactNode;
-  className?: string;
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  description?: string
+  children: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  showCloseButton?: boolean
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
+  footer?: ReactNode
+  className?: string
 }
 
 export function Modal({
@@ -36,56 +36,56 @@ export function Modal({
   const handleEscape = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Escape' && closeOnEscape) {
-        onClose();
+        onClose()
       }
     },
     [closeOnEscape, onClose]
-  );
+  )
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, handleEscape]);
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
+    }
+  }, [isOpen, handleEscape])
 
   // Focus trap
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return
 
-    const modal = document.querySelector('[role="dialog"]');
-    if (!modal) return;
+    const modal = document.querySelector('[role="dialog"]')
+    if (!modal) return
 
     const focusableElements = modal.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
+    )
 
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const firstElement = focusableElements[0] as HTMLElement
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
 
-    firstElement?.focus();
+    firstElement?.focus()
 
     const handleTabKey = (e: Event) => {
-      const keyboardEvent = e as KeyboardEvent;
-      if (keyboardEvent.key !== 'Tab') return;
+      const keyboardEvent = e as KeyboardEvent
+      if (keyboardEvent.key !== 'Tab') return
 
       if (keyboardEvent.shiftKey && document.activeElement === firstElement) {
-        keyboardEvent.preventDefault();
-        lastElement?.focus();
+        keyboardEvent.preventDefault()
+        lastElement?.focus()
       } else if (!keyboardEvent.shiftKey && document.activeElement === lastElement) {
-        keyboardEvent.preventDefault();
-        firstElement?.focus();
+        keyboardEvent.preventDefault()
+        firstElement?.focus()
       }
-    };
+    }
 
-    modal.addEventListener('keydown', handleTabKey as EventListener);
-    return () => modal.removeEventListener('keydown', handleTabKey as EventListener);
-  }, [isOpen]);
+    modal.addEventListener('keydown', handleTabKey as EventListener)
+    return () => modal.removeEventListener('keydown', handleTabKey as EventListener)
+  }, [isOpen])
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -93,7 +93,7 @@ export function Modal({
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     full: 'max-w-full mx-4',
-  };
+  }
 
   return createPortal(
     <AnimatePresence>
@@ -124,13 +124,14 @@ export function Modal({
               className={cn(
                 'relative w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl',
                 'overflow-hidden',
+                // eslint-disable-next-line security/detect-object-injection
                 sizeClasses[size],
                 className
               )}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               {/* Header */}
-              {(title || showCloseButton) && (
+              {(title ?? showCloseButton) && (
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                   <div className="flex-1">
                     {title && (
@@ -179,5 +180,5 @@ export function Modal({
       )}
     </AnimatePresence>,
     document.body
-  );
+  )
 }

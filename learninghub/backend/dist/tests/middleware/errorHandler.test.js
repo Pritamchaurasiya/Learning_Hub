@@ -27,62 +27,49 @@ describe('ErrorHandler Middleware', () => {
     });
     describe('errorHandler', () => {
         it('should handle operational errors with custom status code', () => {
-            const error = new Error('Validation failed');
-            error.statusCode = 400;
-            error.isOperational = true;
+            const error = new errorHandler_1.AppError('Validation failed', 400, true);
             mockReq.originalUrl = '/api/test';
             mockReq.method = 'POST';
-            mockReq.ip = '127.0.0.1';
+            Object.defineProperty(mockReq, 'ip', { value: '127.0.0.1', writable: true });
             (0, errorHandler_1.errorHandler)(error, mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(400);
             expect(jsonMock).toHaveBeenCalledWith({
-                error: {
-                    message: 'Validation failed',
-                },
+                status: 'error',
+                message: 'Validation failed',
             });
         });
         it('should handle 404 not found errors', () => {
-            const error = new Error('Resource not found');
-            error.statusCode = 404;
-            error.isOperational = true;
+            const error = new errorHandler_1.AppError('Resource not found', 404, true);
             mockReq.originalUrl = '/api/users/123';
             mockReq.method = 'GET';
             (0, errorHandler_1.errorHandler)(error, mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(404);
             expect(jsonMock).toHaveBeenCalledWith({
-                error: {
-                    message: 'Resource not found',
-                },
+                status: 'error',
+                message: 'Resource not found',
             });
         });
         it('should handle 500 server errors with generic message', () => {
-            const error = new Error('Database connection failed');
-            error.statusCode = 500;
-            error.isOperational = false;
+            const error = new errorHandler_1.AppError('Database connection failed', 500, false);
             mockReq.originalUrl = '/api/users';
             mockReq.method = 'POST';
             (0, errorHandler_1.errorHandler)(error, mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(500);
             expect(jsonMock).toHaveBeenCalledWith({
-                error: {
-                    message: 'Internal Server Error',
-                },
+                status: 'error',
+                message: 'Internal Server Error',
             });
         });
         it('should include stack trace in development mode', () => {
             process.env.NODE_ENV = 'development';
-            const error = new Error('Test error');
-            error.statusCode = 500;
-            error.stack = 'Error: Test error\n    at Test.file:1:1';
+            const error = new errorHandler_1.AppError('Test error', 500, false);
             mockReq.originalUrl = '/api/test';
             mockReq.method = 'GET';
             (0, errorHandler_1.errorHandler)(error, mockReq, mockRes, mockNext);
-            expect(jsonMock).toHaveBeenCalledWith({
-                error: {
-                    message: 'Internal Server Error',
-                    stack: error.stack,
-                },
-            });
+            const callArg = jsonMock.mock.calls[0]?.[0];
+            expect(callArg.status).toBe('error');
+            expect(callArg.message).toBe('Internal Server Error');
+            expect(callArg.stack).toBeDefined();
         });
         it('should default to 500 status code when not specified', () => {
             const error = new Error('Unknown error');
@@ -93,20 +80,27 @@ describe('ErrorHandler Middleware', () => {
         });
     });
     describe('notFoundHandler', () => {
-        it('should create 404 error for unknown routes', () => {
+        it('should return 404 directly for unknown routes', () => {
             mockReq.originalUrl = '/api/unknown-route';
-            (0, errorHandler_1.notFoundHandler)(mockReq, mockRes, mockNext);
-            expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
-            const passedError = mockNext.mock.calls[0][0];
-            expect(passedError.statusCode).toBe(404);
-            expect(passedError.isOperational).toBe(true);
-            expect(passedError.message).toBe('Route not found: /api/unknown-route');
+            mockReq.method = 'GET';
+            (0, errorHandler_1.notFoundHandler)(mockReq, mockRes);
+            // notFoundHandler now returns 404 directly instead of calling next()
+            expect(statusMock).toHaveBeenCalledWith(404);
+            expect(jsonMock).toHaveBeenCalledWith({
+                status: 'error',
+                message: 'Route not found: GET /api/unknown-route',
+            });
+            expect(mockNext).not.toHaveBeenCalled();
         });
         it('should handle nested routes correctly', () => {
             mockReq.originalUrl = '/api/v1/users/999/details';
-            (0, errorHandler_1.notFoundHandler)(mockReq, mockRes, mockNext);
-            const passedError = mockNext.mock.calls[0][0];
-            expect(passedError.message).toBe('Route not found: /api/v1/users/999/details');
+            mockReq.method = 'GET';
+            (0, errorHandler_1.notFoundHandler)(mockReq, mockRes);
+            expect(statusMock).toHaveBeenCalledWith(404);
+            expect(jsonMock).toHaveBeenCalledWith({
+                status: 'error',
+                message: 'Route not found: GET /api/v1/users/999/details',
+            });
         });
     });
 });

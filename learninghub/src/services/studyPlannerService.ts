@@ -84,7 +84,11 @@ export interface CreateScheduleRequest {
 }
 
 export const studyPlannerService = {
-  getTasks: async (filters?: { date?: string; status?: string; course_id?: string }): Promise<StudyTasksResponse> => {
+  getTasks: async (filters?: {
+    date?: string
+    status?: string
+    course_id?: string
+  }): Promise<StudyTasksResponse> => {
     const params = new URLSearchParams()
     if (filters?.date) params.append('date', filters.date)
     if (filters?.status) params.append('status', filters.status)
@@ -108,7 +112,10 @@ export const studyPlannerService = {
     })
   },
 
-  updateTask: async (id: string, data: Partial<CreateTaskRequest>): Promise<SingleStudyTaskResponse> => {
+  updateTask: async (
+    id: string,
+    data: Partial<CreateTaskRequest>
+  ): Promise<SingleStudyTaskResponse> => {
     return fetchApi(`/study-groups/tasks/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -139,7 +146,10 @@ export const studyPlannerService = {
     })
   },
 
-  updateSchedule: async (id: string, data: Partial<CreateScheduleRequest>): Promise<StudyScheduleResponse> => {
+  updateSchedule: async (
+    id: string,
+    data: Partial<CreateScheduleRequest>
+  ): Promise<StudyScheduleResponse> => {
     return fetchApi(`/study-groups/schedules/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(data),

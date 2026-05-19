@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "LearningHub",
+    "tagline": "掌握新技能"
+  },
+  "nav": {
+    "home": "首页",
+    "courses": "课程",
+    "search": "搜索",
+    "bookmarks": "收藏",
+    "achievements": "成就",
+    "profile": "个人资料",
+    "settings": "设置",
+    "logout": "退出"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "创建账户",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "forgotPassword": "忘记密码?",
+    "noAccount": "没有账户?",
+    "hasAccount": "已有账户?",
+    "welcomeBack": "欢迎回来",
+    "joinUs": "加入 LearningHub"
+  },
+  "course": {
+    "enroll": "立即报名",
+    "continue": "继续学习",
+    "completed": "已完成",
+    "inProgress": "进行中",
+    "notStarted": "未开始",
+    "duration": "时长",
+    "lessons": "课时",
+    "difficulty": "难度",
+    "rating": "评分",
+    "reviews": "评价",
+    "instructor": "讲师",
+    "certificate": "证书",
+    "share": "分享课程"
+  },
+  "search": {
+    "placeholder": "搜索课程...",
+    "filters": "筛选",
+    "clearFilters": "清除筛选",
+    "noResults": "未找到课程",
+    "tryDifferent": "尝试其他关键词",
+    "recentSearches": "最近搜索",
+    "popular": "热门",
+    "newest": "最新",
+    "difficulty": "难度",
+    "phase": "阶段"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "submit": "提交",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "retry": "重试",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "finish": "完成",
+    "yes": "是",
+    "no": "否"
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部标记为已读",
+    "clearAll": "全部清除",
+    "noNotifications": "暂无通知",
+    "newCourse": "新课程上线",
+    "achievement": "成就解锁",
+    "reminder": "学习提醒"
+  },
+  "offline": {
+    "title": "您处于离线状态",
+    "message": "未检测到网络连接",
+    "retry": "重试连接",
+    "cached": "离线可用"
+  }
+}

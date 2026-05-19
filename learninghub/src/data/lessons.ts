@@ -1,4 +1,4 @@
-import type { Lesson } from '../types';
+import type { Lesson } from '../types'
 
 export const courseLessons: Record<string, Lesson[]> = {
   '00_Introduction': [
@@ -9,11 +9,12 @@ export const courseLessons: Record<string, Lesson[]> = {
       videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
       duration: 300,
       completed: false,
-      transcript: 'Welcome everyone! In this course, we will embark on a journey to master software engineering...',
+      transcript:
+        'Welcome everyone! In this course, we will embark on a journey to master software engineering...',
       resources: [
         { id: 'r1', title: 'Course Syllabus', type: 'pdf', url: '#' },
-        { id: 'r2', title: 'Join Community', type: 'link', url: '#' }
-      ]
+        { id: 'r2', title: 'Join Community', type: 'link', url: '#' },
+      ],
     },
     {
       id: 'intro-2',
@@ -22,8 +23,9 @@ export const courseLessons: Record<string, Lesson[]> = {
       videoUrl: 'https://www.w3schools.com/html/movie.mp4',
       duration: 600,
       completed: false,
-      transcript: 'Before we start coding, we need to set up our tools. We will use VS Code, Git, and Node.js...',
-    }
+      transcript:
+        'Before we start coding, we need to set up our tools. We will use VS Code, Git, and Node.js...',
+    },
   ],
   'research-methodology': [
     {
@@ -33,7 +35,7 @@ export const courseLessons: Record<string, Lesson[]> = {
       videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
       duration: 450,
       completed: false,
-    }
+    },
   ],
   'ml-fundamentals': [
     {
@@ -43,15 +45,16 @@ export const courseLessons: Record<string, Lesson[]> = {
       videoUrl: 'https://www.w3schools.com/html/movie.mp4',
       duration: 900,
       completed: false,
-    }
-  ]
-};
+    },
+  ],
+}
 
 export function getLessonsByCourseId(courseId: string): Lesson[] {
-  return courseLessons[courseId] || [];
+  // eslint-disable-next-line security/detect-object-injection
+  return courseLessons[courseId] || []
 }
 
 export function getLessonById(courseId: string, lessonId: string): Lesson | null {
-  const lessons = getLessonsByCourseId(courseId);
-  return lessons.find(l => l.id === lessonId) || null;
+  const lessons = getLessonsByCourseId(courseId)
+  return lessons.find(l => l.id === lessonId) ?? null
 }

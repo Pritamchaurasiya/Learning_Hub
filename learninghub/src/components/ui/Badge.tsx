@@ -8,7 +8,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   success: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   danger: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
 }
 
 interface BadgeProps {
@@ -24,6 +24,7 @@ export function Badge({ children, variant = 'default', size = 'sm', className }:
       className={cn(
         'inline-flex items-center font-medium rounded-full',
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm',
+        // eslint-disable-next-line security/detect-object-injection
         variantClasses[variant],
         className
       )}
@@ -43,9 +44,10 @@ export function StatusBadge({ status, showLabel = false }: StatusBadgeProps) {
     online: { color: 'bg-green-500', label: 'Online' },
     offline: { color: 'bg-gray-400', label: 'Offline' },
     away: { color: 'bg-amber-500', label: 'Away' },
-    busy: { color: 'bg-red-500', label: 'Busy' }
+    busy: { color: 'bg-red-500', label: 'Busy' },
   }
 
+  // eslint-disable-next-line security/detect-object-injection
   const { color, label } = statusConfig[status]
 
   return (

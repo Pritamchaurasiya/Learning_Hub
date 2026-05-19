@@ -16,19 +16,19 @@ interface TableProps<T> {
   onRowClick?: (item: T) => void
 }
 
-export function Table<T extends Record<string, unknown>>({ 
-  data, 
-  columns, 
-  keyField, 
+export function Table<T extends Record<string, unknown>>({
+  data,
+  columns,
+  keyField,
   className,
-  onRowClick 
+  onRowClick,
 }: TableProps<T>) {
   return (
     <div className={cn('overflow-x-auto', className)}>
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-200 dark:border-gray-700">
-            {columns.map((column) => (
+            {columns.map(column => (
               <th
                 key={column.key}
                 className={cn(
@@ -42,8 +42,9 @@ export function Table<T extends Record<string, unknown>>({
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
+          {data.map(item => (
             <tr
+              // eslint-disable-next-line security/detect-object-injection
               key={String(item[keyField])}
               onClick={() => onRowClick?.(item)}
               className={cn(
@@ -51,11 +52,9 @@ export function Table<T extends Record<string, unknown>>({
                 onRowClick && 'cursor-pointer'
               )}
             >
-              {columns.map((column) => (
+              {columns.map(column => (
                 <td key={column.key} className={cn('px-4 py-3', column.className)}>
-                  {column.render
-                    ? column.render(item)
-                    : String(item[column.key] ?? '')}
+                  {column.render ? column.render(item) : String(item[column.key] ?? '')}
                 </td>
               ))}
             </tr>

@@ -50,7 +50,7 @@ export function Dropdown({ options, children, className, align = 'left' }: Dropd
           )}
           role="menu"
         >
-          {options.map((option) => (
+          {options.map(option => (
             <button
               key={option.value}
               onClick={() => {

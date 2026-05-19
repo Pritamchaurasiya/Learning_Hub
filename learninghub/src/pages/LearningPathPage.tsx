@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Route, MapPin, Clock, BookOpen, CheckCircle, Lock, Play, ChevronRight, Target, Award } from 'lucide-react'
+import {
+  Route,
+  MapPin,
+  Clock,
+  BookOpen,
+  CheckCircle,
+  Lock,
+  Play,
+  ChevronRight,
+  Target,
+  Award,
+} from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -20,15 +31,15 @@ export default function LearningPathPage() {
       setPaths(res.data)
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[LearningPathPage] Failed to fetch paths:', err);
+        console.error('[LearningPathPage] Failed to fetch paths:', err)
       }
     }
   }, [])
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchPaths().then(() => { 
-      if (controller.signal.aborted) return 
+    void fetchPaths().then(() => {
+      if (controller.signal.aborted) return
     })
     return () => controller.abort()
   }, [fetchPaths])
@@ -37,11 +48,11 @@ export default function LearningPathPage() {
     try {
       await learningPathService.enrollInPath(pathId)
       addToast({ message: 'Successfully enrolled in learning path!', type: 'success' })
-      fetchPaths()
+      void fetchPaths()
     } catch (err) {
       addToast({ message: 'Failed to enroll', type: 'error' })
       if (import.meta.env.DEV) {
-        console.error('[LearningPathPage] Failed to enroll:', err);
+        console.error('[LearningPathPage] Failed to enroll:', err)
       }
     }
   }
@@ -54,10 +65,14 @@ export default function LearningPathPage() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'Beginner': return 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-      case 'Intermediate': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
-      case 'Advanced': return 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+      case 'Beginner':
+        return 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+      case 'Intermediate':
+        return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
+      case 'Advanced':
+        return 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+      default:
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
     }
   }
 
@@ -72,9 +87,7 @@ export default function LearningPathPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Learning Paths
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Learning Paths</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Structured roadmaps to achieve your career goals
           </p>
@@ -102,7 +115,7 @@ export default function LearningPathPage() {
               <input
                 type="checkbox"
                 checked={showEnrolled}
-                onChange={(e) => setShowEnrolled(e.target.checked)}
+                onChange={e => setShowEnrolled(e.target.checked)}
                 className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Show enrolled only</span>
@@ -113,11 +126,7 @@ export default function LearningPathPage() {
         {/* Learning Paths Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredPaths.map(path => (
-            <Card
-              key={path.id}
-              hover
-              className="overflow-hidden"
-            >
+            <Card key={path.id} hover className="overflow-hidden">
               {/* Header */}
               <div className="aspect-video bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center relative">
                 <Route className="w-16 h-16 text-white/80" />
@@ -133,7 +142,9 @@ export default function LearningPathPage() {
               <div className="p-6 space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${getLevelColor(path.level)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded ${getLevelColor(path.level)}`}
+                    >
                       {path.level}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -152,7 +163,7 @@ export default function LearningPathPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                     <Target className="w-4 h-4" />
-                    Skills you'll learn
+                    Skills you&apos;ll learn
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {path.skills.map(skill => (
@@ -227,9 +238,7 @@ export default function LearningPathPage() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No learning paths found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your filters
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your filters</p>
           </div>
         )}
 
@@ -246,7 +255,9 @@ export default function LearningPathPage() {
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Structured Roadmap</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Clear path from beginner to expert</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Clear path from beginner to expert
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -255,7 +266,9 @@ export default function LearningPathPage() {
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Career Focused</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Skills aligned with job requirements</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Skills aligned with job requirements
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -264,7 +277,9 @@ export default function LearningPathPage() {
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Self-Paced</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Learn at your own schedule</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Learn at your own schedule
+                </p>
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Home, Search, Code2, Brain, Bookmark } from 'lucide-react';
-import { cn } from '../utils/cn';
+import { NavLink } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Home, Search, Code2, Brain, Bookmark } from 'lucide-react'
+import { cn } from '../utils/cn'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -9,7 +9,7 @@ const navItems = [
   { to: '/problems', icon: Code2, label: 'Practice' },
   { to: '/quiz', icon: Brain, label: 'Quiz' },
   { to: '/bookmarks', icon: Bookmark, label: 'Saved' },
-];
+]
 
 export default function MobileNav() {
   return (
@@ -39,12 +39,25 @@ export default function MobileNav() {
                   whileTap={{ scale: 0.8 }}
                   className={cn(
                     'p-1.5 rounded-xl transition-colors duration-300',
-                    isActive ? 'bg-primary-50 dark:bg-primary-900/20' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800/50'
+                    isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/20'
+                      : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800/50'
                   )}
                 >
-                  <Icon className={cn('w-5 h-5 transition-transform duration-300', isActive && 'scale-110')} aria-hidden="true" />
+                  <Icon
+                    className={cn(
+                      'w-5 h-5 transition-transform duration-300',
+                      isActive && 'scale-110'
+                    )}
+                    aria-hidden="true"
+                  />
                 </motion.div>
-                <span className={cn('text-[10px] font-bold tracking-tight transition-all duration-300', isActive ? 'opacity-100 translate-y-0' : 'opacity-80 group-hover:opacity-100')}>
+                <span
+                  className={cn(
+                    'text-[10px] font-bold tracking-tight transition-all duration-300',
+                    isActive ? 'opacity-100 translate-y-0' : 'opacity-80 group-hover:opacity-100'
+                  )}
+                >
                   {label}
                 </span>
                 {isActive && (
@@ -60,5 +73,5 @@ export default function MobileNav() {
         ))}
       </div>
     </nav>
-  );
+  )
 }

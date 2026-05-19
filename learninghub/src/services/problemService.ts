@@ -27,7 +27,13 @@ export interface ProblemSubmission {
   problem_id: string
   language: string
   code: string
-  status: 'pending' | 'accepted' | 'wrong_answer' | 'time_limit_exceeded' | 'runtime_error' | 'compilation_error'
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'wrong_answer'
+    | 'time_limit_exceeded'
+    | 'runtime_error'
+    | 'compilation_error'
   runtime: number | null
   memory: number | null
   submitted_at: string
@@ -35,7 +41,9 @@ export interface ProblemSubmission {
 
 export const problemService = {
   getProblems: (params?: { difficulty?: string; category?: string; page?: number }) =>
-    fetchApi(`/problems/?${new URLSearchParams(params as Record<string, string>).toString()}`) as Promise<{
+    fetchApi(
+      `/problems/?${new URLSearchParams(params as Record<string, string>).toString()}`
+    ) as Promise<{
       status: string
       data: Problem[]
       meta: { total: number; page: number; pages: number }
@@ -47,15 +55,21 @@ export const problemService = {
   submitSolution: (problemId: string, language: string, code: string) =>
     fetchApi(`/problems/${problemId}/submit/`, {
       method: 'POST',
-      body: JSON.stringify({ language, code })
+      body: JSON.stringify({ language, code }),
     }) as Promise<{ status: string; data: ProblemSubmission }>,
 
   getSubmissions: (problemId: string) =>
-    fetchApi(`/problems/${problemId}/submissions/`) as Promise<{ status: string; data: ProblemSubmission[] }>,
+    fetchApi(`/problems/${problemId}/submissions/`) as Promise<{
+      status: string
+      data: ProblemSubmission[]
+    }>,
 
   getSubmission: (problemId: string, submissionId: string) =>
-    fetchApi(`/problems/${problemId}/submissions/${submissionId}/`) as Promise<{ status: string; data: ProblemSubmission }>,
+    fetchApi(`/problems/${problemId}/submissions/${submissionId}/`) as Promise<{
+      status: string
+      data: ProblemSubmission
+    }>,
 
   getCategories: () =>
-    fetchApi('/problems/categories/') as Promise<{ status: string; data: string[] }>
+    fetchApi('/problems/categories/') as Promise<{ status: string; data: string[] }>,
 }

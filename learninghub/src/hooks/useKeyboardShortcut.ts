@@ -18,9 +18,10 @@ export function useKeyboardShortcut(
 
   const callback = useCallback(
     (event: KeyboardEvent) => {
-      const matchesKey = event.key.toLowerCase() === key.toLowerCase() ||
+      const matchesKey =
+        event.key.toLowerCase() === key.toLowerCase() ||
         event.code.toLowerCase() === key.toLowerCase()
-      const matchesCtrl = ctrl ? (event.ctrlKey || event.metaKey) : true
+      const matchesCtrl = ctrl ? event.ctrlKey || event.metaKey : true
       const matchesShift = shift ? event.shiftKey : !event.shiftKey
       const matchesAlt = alt ? event.altKey : !event.altKey
       const matchesMeta = meta ? event.metaKey : true

@@ -1,0 +1,4 @@
+# file: C:\Users\shiva\Desktop\windows_app\conductor\apps\core\exceptions.py
+# hypothesis_version: 6.152.1
+
+[401, 403, 404, 'API_ERROR', 'An error occurred', 'FORBIDDEN', 'NOT_FOUND', 'UNAUTHORIZED', 'VALIDATION_ERROR', 'Validation failed', 'app_error', 'code', 'detail', 'details', 'error', 'message', 'payment_required', 'status']

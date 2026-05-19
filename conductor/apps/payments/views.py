@@ -384,9 +384,14 @@ class SubscriptionView(generics.GenericAPIView):
             from .services import RazorpayService
             service = RazorpayService()
             
-            # Hardcoded Prices for MVP
+            # Database-driven pricing from Subscription model
             plan = request.data.get('plan_type', 'pro')
-            amount = 999.00 if plan == 'pro' else 4999.00
+            plan_prices = {
+                'pro': Decimal('999'),
+                'enterprise': Decimal('4999'),
+                'basic': Decimal('499'),
+            }
+            amount = plan_prices.get(plan, plan_prices['pro'])
             
             try:
                 # We reuse create_order logic but we don't have a 'course_id'.
@@ -457,8 +462,18 @@ class RefundView(generics.GenericAPIView):
                 )
 
         with transaction.atomic():
-            payment.status = "refunded"
-            payment.save(update_fields=["status"])
+            # Process refund through actual gateway
+            from .advanced_payment import AdvancedPaymentService
+            refund_result = AdvancedPaymentService.process_refund(
+                payment_id=str(payment.id),
+                reason="User requested refund"
+            )
+            
+            if not refund_result.get('success'):
+                return Response(
+                    {"status": "error", "message": refund_result.get('error', 'Refund failed')},
+                    status=502
+                )
 
             # Remove enrollment if exists
             if payment.course:

@@ -39,12 +39,16 @@ export interface DownloadProgress {
 
 export const downloadService = {
   // Get all downloads for current user
-  async getDownloads(options?: { signal?: AbortSignal }): Promise<{ status: string; data: Download[] }> {
+  async getDownloads(options?: {
+    signal?: AbortSignal
+  }): Promise<{ status: string; data: Download[] }> {
     return fetchApi('/downloads/items/', { signal: options?.signal })
   },
 
   // Get download statistics
-  async getStats(options?: { signal?: AbortSignal }): Promise<{ status: string; data: DownloadStats }> {
+  async getStats(options?: {
+    signal?: AbortSignal
+  }): Promise<{ status: string; data: DownloadStats }> {
     return fetchApi('/downloads/items/stats/', { signal: options?.signal })
   },
 
@@ -56,7 +60,7 @@ export const downloadService = {
   }): Promise<{ status: string; data: Download }> {
     return fetchApi('/downloads/items/', {
       method: 'POST',
-      body: JSON.stringify(item)
+      body: JSON.stringify(item),
     })
   },
 
@@ -66,35 +70,37 @@ export const downloadService = {
   },
 
   // Generate secure download link
-  async getSecureLink(downloadId: string): Promise<{ status: string; secure_url: string; expires_in_seconds: number }> {
+  async getSecureLink(
+    downloadId: string
+  ): Promise<{ status: string; secure_url: string; expires_in_seconds: number }> {
     return fetchApi(`/downloads/items/${downloadId}/secure_link/`)
   },
 
   // Mark download as expired
   async markExpired(downloadId: string): Promise<{ status: string; message: string }> {
     return fetchApi(`/downloads/items/${downloadId}/mark_expired/`, {
-      method: 'POST'
+      method: 'POST',
     })
   },
 
   // Delete a download
   async deleteDownload(downloadId: string): Promise<void> {
     return fetchApi(`/downloads/items/${downloadId}/`, {
-      method: 'DELETE'
+      method: 'DELETE',
     })
   },
 
   // Pause download (if supported by backend)
   async pauseDownload(downloadId: string): Promise<{ status: string; message: string }> {
     return fetchApi(`/downloads/items/${downloadId}/pause/`, {
-      method: 'POST'
+      method: 'POST',
     })
   },
 
   // Resume download
   async resumeDownload(downloadId: string): Promise<{ status: string; message: string }> {
     return fetchApi(`/downloads/items/${downloadId}/resume/`, {
-      method: 'POST'
+      method: 'POST',
     })
-  }
+  },
 }

@@ -74,6 +74,7 @@ wrangler deploy --env production
 ### 3.1 Update Environment
 
 Edit `.env.production`:
+
 ```
 VITE_API_URL=https://your-worker-url.workers.dev
 ```
@@ -95,35 +96,37 @@ wrangler pages deploy dist --project-name=learninghub-frontend
 The frontend now uses `api-new.ts` which provides:
 
 ```typescript
-import { api } from './utils/api-new';
+import { api } from './utils/api-new'
 
 // Auth
-await api.auth.login(email, password);
-await api.auth.register(email, password, username);
+await api.auth.login(email, password)
+await api.auth.register(email, password, username)
 
 // Courses
-await api.courses.list({ difficulty: 'beginner' });
-await api.courses.enroll(courseId);
-await api.courses.updateProgress(courseId, 50);
+await api.courses.list({ difficulty: 'beginner' })
+await api.courses.enroll(courseId)
+await api.courses.updateProgress(courseId, 50)
 
 // Tests
-await api.tests.get(testId);
-await api.tests.submit(testId, { question1: 'answer1' });
+await api.tests.get(testId)
+await api.tests.submit(testId, { question1: 'answer1' })
 
 // AI
-await api.ai.analyzeQuiz({ score: 80, totalPossible: 100 });
-await api.ai.recommend({ interests: ['javascript', 'react'] });
+await api.ai.analyzeQuiz({ score: 80, totalPossible: 100 })
+await api.ai.recommend({ interests: ['javascript', 'react'] })
 ```
 
 ## API Endpoints
 
 ### Authentication
+
 - `POST /auth/register` - Register new user
 - `POST /auth/login` - Login user
 - `GET /auth/me` - Get current user
 - `POST /auth/refresh` - Refresh JWT token
 
 ### Courses
+
 - `GET /courses` - List courses (with filters)
 - `GET /courses/:id` - Get course details
 - `POST /courses/enroll` - Enroll in course
@@ -131,24 +134,26 @@ await api.ai.recommend({ interests: ['javascript', 'react'] });
 - `POST /courses/:id/progress` - Update progress
 
 ### Tests/Quiz
+
 - `GET /tests` - List tests
 - `GET /tests/:id` - Get test with questions
 - `POST /tests/:id/submit` - Submit answers
 - `GET /tests/:id/results` - Get results
 
 ### AI
+
 - `POST /ai/analyze` - Analyze quiz performance
 - `POST /ai/recommend` - Get course recommendations
 - `POST /ai/summarize` - Summarize content
 
 ## Free Tier Limits
 
-| Service | Free Tier |
-|---------|-----------|
+| Service            | Free Tier            |
+| ------------------ | -------------------- |
 | Cloudflare Workers | 100,000 requests/day |
-| Cloudflare Pages | Unlimited bandwidth |
-| Neon PostgreSQL | 500 MB storage |
-| Hugging Face API | 30 requests/hour |
+| Cloudflare Pages   | Unlimited bandwidth  |
+| Neon PostgreSQL    | 500 MB storage       |
+| Hugging Face API   | 30 requests/hour     |
 
 ## Local Development
 
@@ -195,19 +200,23 @@ curl -X POST https://your-worker.workers.dev/auth/register \
 ## Troubleshooting
 
 ### Database Connection Issues
+
 - Check DATABASE_URL format
 - Ensure IP allowlist includes Cloudflare IPs
 - Check Neon project is active
 
 ### CORS Errors
+
 - Backend includes CORS headers
 - Check API_URL matches exactly (including https://)
 
 ### AI Not Working
+
 - Check HUGGINGFACE_API_KEY is set
 - Hugging Face may rate limit (fallback responses included)
 
 ### 401 Unauthorized
+
 - Token expired - will auto-redirect to login
 - Check JWT_SECRET matches between auth and verification
 

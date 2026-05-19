@@ -14,14 +14,17 @@ const validate = (schema) => async (req, res, next) => {
     catch (error) {
         if (error instanceof zod_1.ZodError) {
             return res.status(400).json({
-                error: 'Validation failed',
-                details: error.issues.map((e) => ({
+                status: 'error',
+                message: 'Validation failed',
+                details: error.issues.map(e => ({
                     path: e.path.join('.'),
                     message: e.message,
                 })),
             });
         }
-        return res.status(500).json({ error: 'Internal server error during validation' });
+        return res
+            .status(500)
+            .json({ status: 'error', message: 'Internal server error during validation' });
     }
 };
 exports.validate = validate;

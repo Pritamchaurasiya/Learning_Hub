@@ -1,20 +1,19 @@
-import { Course } from '@prisma/client';
+import { Course, Prisma } from '@prisma/client'
 
 export const createCourse = (overrides: Partial<Course> = {}): Course => ({
   id: 'course-' + Math.random().toString(36).substring(7),
   title: 'Test Course',
   description: 'A test course description',
   shortDescription: null,
-  phase: 'Foundation',
+  phase: 'FOUNDATION',
   duration: 3600,
-  difficulty: 'Beginner',
+  difficulty: 'BEGINNER',
   category: 'Web Development',
   content: '# Course Content',
   thumbnail: null,
   trailerVideo: null,
-  instructorName: null,
-  instructorBio: null,
-  price: 0,
+  instructorId: null,
+  price: new Prisma.Decimal(0) as any,
   originalPrice: null,
   rating: 4.5,
   reviewCount: 0,
@@ -24,8 +23,15 @@ export const createCourse = (overrides: Partial<Course> = {}): Course => ({
   lastUpdated: null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  deletedAt: null,
+  isPublished: true,
+  publishedAt: new Date(),
+  tags: [],
+  currency: 'USD',
+  prerequisites: [],
+  learningOutcomes: [],
   ...overrides,
-});
+})
 
 export const createCourses = (count: number): Course[] => {
   return Array.from({ length: count }, (_, i) =>
@@ -33,5 +39,5 @@ export const createCourses = (count: number): Course[] => {
       id: `course-${i + 1}`,
       title: `Test Course ${i + 1}`,
     })
-  );
-};
+  )
+}

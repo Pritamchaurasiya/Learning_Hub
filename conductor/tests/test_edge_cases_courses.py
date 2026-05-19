@@ -121,7 +121,8 @@ class TestCourseReviewEdgeCases:
             
             response = api_client.post(
                 f"/api/v1/courses/{course.slug}/review/",
-                data
+                data,
+                format='json'
             )
             assert response.status_code in [
                 status.HTTP_400_BAD_REQUEST,

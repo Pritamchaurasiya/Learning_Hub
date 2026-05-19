@@ -12,20 +12,25 @@ var LogLevel;
     LogLevel[LogLevel["INFO"] = 2] = "INFO";
     LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
 })(LogLevel || (exports.LogLevel = LogLevel = {}));
-const currentLogLevel = process.env.LOG_LEVEL
-    ? parseInt(process.env.LOG_LEVEL)
-    : (process.env.NODE_ENV === 'production' ? LogLevel.WARN : LogLevel.DEBUG);
+function getCurrentLogLevel() {
+    return process.env.LOG_LEVEL
+        ? parseInt(process.env.LOG_LEVEL)
+        : process.env.NODE_ENV === 'production'
+            ? LogLevel.WARN
+            : LogLevel.DEBUG;
+}
 function createLogEntry(level, message, context, error) {
     return {
         timestamp: new Date().toISOString(),
+        // eslint-disable-next-line security/detect-object-injection
         level: LogLevel[level],
         message,
         context,
-        error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined
+        error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined,
     };
 }
 function shouldLog(level) {
-    return level <= currentLogLevel;
+    return level <= getCurrentLogLevel();
 }
 exports.logger = {
     error: (message, error, context) => {
@@ -43,12 +48,14 @@ exports.logger = {
     info: (message, context) => {
         if (shouldLog(LogLevel.INFO)) {
             const entry = createLogEntry(LogLevel.INFO, message, context);
+            // eslint-disable-next-line no-console
             console.log(JSON.stringify(entry));
         }
     },
     debug: (message, context) => {
         if (shouldLog(LogLevel.DEBUG)) {
             const entry = createLogEntry(LogLevel.DEBUG, message, context);
+            // eslint-disable-next-line no-console
             console.log(JSON.stringify(entry));
         }
     },
@@ -59,9 +66,10 @@ exports.logger = {
             type: 'AUDIT',
             action,
             userId,
-            details
+            details,
         };
+        // eslint-disable-next-line no-console
         console.log(JSON.stringify(entry));
-    }
+    },
 };
 exports.default = exports.logger;

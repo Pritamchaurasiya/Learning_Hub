@@ -28,13 +28,19 @@ describe('AdminController', () => {
     describe('getDashboardStats', () => {
         it('should return dashboard stats successfully', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
-            prismaClient_1.prisma.user.count.mockResolvedValueOnce(100); // total users
-            prismaClient_1.prisma.user.count.mockResolvedValueOnce(50); // active users
-            prismaClient_1.prisma.user.count.mockResolvedValueOnce(5); // new users today
-            prismaClient_1.prisma.course.count.mockResolvedValueOnce(20); // total courses
-            prismaClient_1.prisma.userProgress.count.mockResolvedValueOnce(10); // recent completions
-            prismaClient_1.prisma.userProgress.count.mockResolvedValueOnce(500); // total enrollments
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
+            prismaClient_1.prisma.user.count.mockResolvedValueOnce(100) // total users
+            ;
+            prismaClient_1.prisma.user.count.mockResolvedValueOnce(50) // active users
+            ;
+            prismaClient_1.prisma.user.count.mockResolvedValueOnce(5) // new users today
+            ;
+            prismaClient_1.prisma.course.count.mockResolvedValueOnce(20) // total courses
+            ;
+            prismaClient_1.prisma.userProgress.count.mockResolvedValueOnce(10) // recent completions
+            ;
+            prismaClient_1.prisma.userProgress.count.mockResolvedValueOnce(500) // total enrollments
+            ;
             prismaClient_1.prisma.testResult.count.mockResolvedValueOnce(25); // test submissions
             await (0, adminController_1.getDashboardStats)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
@@ -48,13 +54,14 @@ describe('AdminController', () => {
                     recent_completions: 10,
                     total_enrollments: 500,
                     test_submissions_24h: 25,
-                    total_revenue: 12500,
-                    revenue_today: 450,
+                    total_revenue: null,
+                    revenue_today: null,
+                    revenue_tracking_enabled: false,
                 },
             });
         });
         it('should return 500 on database error', async () => {
-            mockReq.user = { userId: 'admin-123' };
+            mockReq.user = { userId: 'admin-123', email: 'admin@test.com', role: 'ADMIN' };
             prismaClient_1.prisma.user.count.mockRejectedValue(new Error('Database error'));
             await (0, adminController_1.getDashboardStats)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);
@@ -71,7 +78,7 @@ describe('AdminController', () => {
                 (0, user_factory_1.createUser)({ id: 'user-1', email: 'user1@test.com' }),
                 (0, user_factory_1.createUser)({ id: 'user-2', email: 'user2@test.com' }),
             ];
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.query = { page: '1', limit: '20' };
             prismaClient_1.prisma.user.findMany.mockResolvedValue(users);
             prismaClient_1.prisma.user.count.mockResolvedValue(2);
@@ -93,7 +100,7 @@ describe('AdminController', () => {
         it('should filter users by search query', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
             const users = [(0, user_factory_1.createUser)({ id: 'user-1', email: 'search@test.com' })];
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.query = { search: 'search' };
             prismaClient_1.prisma.user.findMany.mockResolvedValue(users);
             prismaClient_1.prisma.user.count.mockResolvedValue(1);
@@ -108,25 +115,25 @@ describe('AdminController', () => {
     describe('updateUserRole', () => {
         it('should update user role successfully', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            const user = (0, user_factory_1.createUser)({ id: 'user-456', role: 'student' });
-            mockReq.user = { userId: admin.id };
+            const user = (0, user_factory_1.createUser)({ id: 'user-456', role: 'STUDENT' });
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: user.id };
-            mockReq.body = { role: 'instructor' };
+            mockReq.body = { role: 'INSTRUCTOR' };
             prismaClient_1.prisma.user.update.mockResolvedValue({
                 ...user,
-                role: 'instructor',
+                role: 'INSTRUCTOR',
             });
             await (0, adminController_1.updateUserRole)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
                 message: 'User role updated successfully',
-                data: expect.objectContaining({ role: 'instructor' }),
+                data: expect.objectContaining({ role: 'INSTRUCTOR' }),
             });
         });
         it('should return 400 for invalid role', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: 'user-456' };
             mockReq.body = { role: 'invalid_role' };
             await (0, adminController_1.updateUserRole)(mockReq, mockRes);
@@ -138,9 +145,9 @@ describe('AdminController', () => {
         });
         it('should return 500 on database error', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: 'user-456' };
-            mockReq.body = { role: 'instructor' };
+            mockReq.body = { role: 'INSTRUCTOR' };
             prismaClient_1.prisma.user.update.mockRejectedValue(new Error('Database error'));
             await (0, adminController_1.updateUserRole)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);
@@ -153,10 +160,14 @@ describe('AdminController', () => {
     describe('deleteUser', () => {
         it('should delete user successfully', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            const user = (0, user_factory_1.createUser)({ id: 'user-456' });
-            mockReq.user = { userId: admin.id };
+            const user = (0, user_factory_1.createUser)({ id: 'user-456', role: 'STUDENT' });
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: user.id };
-            prismaClient_1.prisma.user.delete.mockResolvedValue(user);
+            prismaClient_1.prisma.user.findUnique.mockResolvedValue({
+                role: user.role,
+                username: user.username,
+            });
+            prismaClient_1.prisma.$transaction.mockResolvedValue([]);
             await (0, adminController_1.deleteUser)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
             expect(jsonMock).toHaveBeenCalledWith({
@@ -166,7 +177,7 @@ describe('AdminController', () => {
         });
         it('should prevent self-deletion', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: admin.id }; // Trying to delete self
             await (0, adminController_1.deleteUser)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(400);
@@ -175,11 +186,27 @@ describe('AdminController', () => {
                 message: 'Cannot delete your own account',
             });
         });
+        it('should return 404 when target user not found', async () => {
+            const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
+            mockReq.params = { id: 'user-456' };
+            prismaClient_1.prisma.user.findUnique.mockResolvedValue(null);
+            await (0, adminController_1.deleteUser)(mockReq, mockRes);
+            expect(statusMock).toHaveBeenCalledWith(404);
+            expect(jsonMock).toHaveBeenCalledWith({
+                status: 'error',
+                message: 'User not found',
+            });
+        });
         it('should return 500 on database error', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             mockReq.params = { id: 'user-456' };
-            prismaClient_1.prisma.user.delete.mockRejectedValue(new Error('Database error'));
+            prismaClient_1.prisma.user.findUnique.mockResolvedValue({
+                role: 'STUDENT',
+                username: 'testuser',
+            });
+            prismaClient_1.prisma.$transaction.mockRejectedValue(new Error('Database error'));
             await (0, adminController_1.deleteUser)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);
             expect(jsonMock).toHaveBeenCalledWith({
@@ -191,7 +218,7 @@ describe('AdminController', () => {
     describe('getSystemStatus', () => {
         it('should return system status when database is connected', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             prismaClient_1.prisma.$queryRaw.mockResolvedValue([{ 1: 1 }]);
             await (0, adminController_1.getSystemStatus)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
@@ -206,7 +233,7 @@ describe('AdminController', () => {
         });
         it('should return 500 when database is disconnected', async () => {
             const admin = (0, user_factory_1.createAdmin)({ id: 'admin-123' });
-            mockReq.user = { userId: admin.id };
+            mockReq.user = { userId: admin.id, email: admin.email, role: admin.role };
             prismaClient_1.prisma.$queryRaw.mockRejectedValue(new Error('Connection failed'));
             await (0, adminController_1.getSystemStatus)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(500);

@@ -33,14 +33,14 @@ describe('CoursesController', () => {
             expect(statusMock).toHaveBeenCalledWith(200);
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
-                data: {
-                    courses: expect.any(Array),
-                    pagination: {
-                        page: 1,
-                        limit: 20,
-                        total: 3,
-                        totalPages: 1,
-                    },
+                data: expect.any(Array),
+                meta: {
+                    total: 3,
+                    page: 1,
+                    limit: 20,
+                    pages: 1,
+                    hasNext: false,
+                    hasPrev: false,
                 },
             });
         });
@@ -57,28 +57,38 @@ describe('CoursesController', () => {
             }));
         });
         it('should filter courses by difficulty', async () => {
-            const courses = [(0, course_factory_1.createCourse)({ difficulty: 'Advanced' })];
-            mockReq.query = { difficulty: 'Advanced' };
+            const courses = [(0, course_factory_1.createCourse)({ difficulty: 'ADVANCED' })];
+            mockReq.query = { difficulty: 'ADVANCED' };
             prismaClient_1.prisma.course.findMany.mockResolvedValue(courses);
             prismaClient_1.prisma.course.count.mockResolvedValue(1);
             await (0, coursesController_1.listCourses)(mockReq, mockRes);
             expect(prismaClient_1.prisma.course.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 where: expect.objectContaining({
-                    difficulty: 'Advanced',
+                    difficulty: 'ADVANCED',
                 }),
             }));
         });
     });
     describe('getCourseDetails', () => {
-        it('should return course details', async () => {
+        it('should return course details with sections and lessons', async () => {
             const course = (0, course_factory_1.createCourse)({ id: 'course-123' });
             mockReq.params = { id: course.id };
             prismaClient_1.prisma.course.findUnique.mockResolvedValue(course);
             await (0, coursesController_1.getCourseDetails)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
+            // Response should be transformed to CourseDetails shape
+            const expectedData = expect.objectContaining({
+                id: course.id,
+                title: course.title,
+                description: course.description,
+                sections: expect.any(Array),
+                instructor: expect.objectContaining({
+                    display_name: expect.any(String),
+                }),
+            });
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
-                data: { course },
+                data: expectedData,
             });
         });
         it('should return 404 for non-existent course', async () => {
@@ -95,12 +105,16 @@ describe('CoursesController', () => {
     describe('getCourseReviews', () => {
         it('should return empty reviews array', async () => {
             mockReq.params = { id: 'course-123' };
+            prismaClient_1.prisma.course.findUnique.mockResolvedValue({
+                reviewCount: 0,
+                rating: 0,
+            });
             await (0, coursesController_1.getCourseReviews)(mockReq, mockRes);
             expect(statusMock).toHaveBeenCalledWith(200);
             expect(jsonMock).toHaveBeenCalledWith({
                 status: 'success',
                 data: [],
-                meta: { total: 0, page: 1, pages: 0 },
+                meta: { total: 0, average_rating: 0, page: 1, pages: 0 },
             });
         });
     });

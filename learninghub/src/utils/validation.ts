@@ -10,27 +10,27 @@ export interface ValidationResult {
 
 export const validators = {
   required: (message = 'This field is required'): ValidationRule => ({
-    validate: (value) => value !== null && value !== undefined && value !== '',
-    message
+    validate: value => value !== null && value !== undefined && value !== '',
+    message,
   }),
 
   minLength: (min: number, message?: string): ValidationRule => ({
-    validate: (value) => typeof value === 'string' && value.length >= min,
-    message: message || `Must be at least ${min} characters`
+    validate: value => typeof value === 'string' && value.length >= min,
+    message: message ?? `Must be at least ${min} characters`,
   }),
 
   maxLength: (max: number, message?: string): ValidationRule => ({
-    validate: (value) => typeof value === 'string' && value.length <= max,
-    message: message || `Must be at most ${max} characters`
+    validate: value => typeof value === 'string' && value.length <= max,
+    message: message ?? `Must be at most ${max} characters`,
   }),
 
   email: (message = 'Invalid email address'): ValidationRule => ({
-    validate: (value) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-    message
+    validate: value => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    message,
   }),
 
   url: (message = 'Invalid URL'): ValidationRule => ({
-    validate: (value) => {
+    validate: value => {
       try {
         new URL(value as string)
         return true
@@ -38,28 +38,28 @@ export const validators = {
         return false
       }
     },
-    message
+    message,
   }),
 
   min: (min: number, message?: string): ValidationRule => ({
-    validate: (value) => typeof value === 'number' && value >= min,
-    message: message || `Must be at least ${min}`
+    validate: value => typeof value === 'number' && value >= min,
+    message: message ?? `Must be at least ${min}`,
   }),
 
   max: (max: number, message?: string): ValidationRule => ({
-    validate: (value) => typeof value === 'number' && value <= max,
-    message: message || `Must be at most ${max}`
+    validate: value => typeof value === 'number' && value <= max,
+    message: message ?? `Must be at most ${max}`,
   }),
 
   pattern: (regex: RegExp, message: string): ValidationRule => ({
-    validate: (value) => regex.test(value as string),
-    message
+    validate: value => regex.test(value as string),
+    message,
   }),
 
   oneOf: (options: unknown[], message?: string): ValidationRule => ({
-    validate: (value) => options.includes(value),
-    message: message || `Must be one of: ${options.join(', ')}`
-  })
+    validate: value => options.includes(value),
+    message: message ?? `Must be one of: ${options.join(', ')}`,
+  }),
 }
 
 export function validate(value: unknown, rules: ValidationRule[]): ValidationResult {
@@ -73,7 +73,7 @@ export function validate(value: unknown, rules: ValidationRule[]): ValidationRes
 
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   }
 }
 
@@ -84,15 +84,17 @@ export function validateForm(
   const errors: Record<string, string> = {}
 
   for (const [field, rules] of Object.entries(schema)) {
+    // eslint-disable-next-line security/detect-object-injection
     const result = validate(data[field], rules)
     if (!result.isValid) {
+      // eslint-disable-next-line security/detect-object-injection
       errors[field] = Object.values(result.errors)[0]
     }
   }
 
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   }
 }
 

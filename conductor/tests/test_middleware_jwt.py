@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 class TestJWTAuthMiddleware:
     """

@@ -1,62 +1,80 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Trophy, Medal, TrendingUp, Award, Crown, Star, Flame, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useQuery } from '../hooks/useQuery'
+import { useWebSocket } from '../hooks/useWebSocket'
+import { useStore } from '../stores/useStore'
+import {
+  Trophy,
+  Medal,
+  TrendingUp,
+  Award,
+  Crown,
+  Star,
+  Flame,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { leaderboardService, type LeaderboardEntry } from '../services/leaderboardService'
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  useDocumentTitle('Leaderboard')
   const [timeRange, setTimeRange] = useState<'weekly' | 'all'>('all')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { auth } = useStore()
 
-  const fetchLeaderboard = useCallback(async (showLoading = true, signal?: AbortSignal) => {
-    try {
-      if (showLoading) setIsLoading(true)
-      setError(null)
-      const res = await leaderboardService.getLeaderboard(timeRange, 50, signal)
-      if (!signal?.aborted) {
-        setLeaderboard(res.data)
-      }
-    } catch (err) {
-      if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        if (showLoading) setError(err instanceof Error ? err.message : 'Failed to load leaderboard')
-        console.error('[LeaderboardPage] Failed to fetch leaderboard:', err)
-      }
-    } finally {
-      if (!signal?.aborted && showLoading) {
-        setIsLoading(false)
-      }
-    }
-  }, [timeRange])
+  // Use the new SWR-like useQuery hook for caching and deduplication
+  const {
+    data: leaderboardData,
+    isLoading,
+    isValidating,
+    error,
+    mutate,
+  } = useQuery<LeaderboardEntry[]>(
+    `leaderboard_${timeRange}`,
+    async () => {
+      const res = await leaderboardService.getLeaderboard(timeRange, 50)
+      return res.data
+    },
+    { initialData: [] }
+  )
+
+  const leaderboard = leaderboardData ?? []
+
+  // Connect WebSockets for Real-Time global updates
+  const { connect, disconnect, on } = useWebSocket()
 
   useEffect(() => {
-    const controller = new AbortController()
-    fetchLeaderboard(true, controller.signal)
-    
-    // Live Polling every 30 seconds with proper cleanup
-    const intervalId = setInterval(() => {
-      if (!controller.signal.aborted) {
-        fetchLeaderboard(false, controller.signal)
+    if (auth.isAuthenticated) {
+      connect('')
+      // Listen for global ranking_update emitted by gamificationController
+      const cleanup = on('ranking_update', () => {
+        // Soft refresh without triggering a hard loading spinner
+        void mutate()
+      })
+
+      return () => {
+        cleanup()
+        disconnect()
       }
-    }, 30000)
-    
-    return () => {
-      controller.abort()
-      clearInterval(intervalId)
     }
-  }, [fetchLeaderboard])
+  }, [auth.isAuthenticated, connect, disconnect, on, mutate])
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-6 h-6 text-yellow-500" />
     if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />
     if (rank === 3) return <Medal className="w-6 h-6 text-amber-600" />
-    return <span className="w-6 h-6 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400">{rank}</span>
+    return (
+      <span className="w-6 h-6 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400">
+        {rank}
+      </span>
+    )
   }
 
   const getRankColor = (rank: number) => {
-    if (rank === 1) return 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
+    if (rank === 1)
+      return 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
     if (rank === 2) return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
     if (rank === 3) return 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800'
     return ''
@@ -76,12 +94,8 @@ export default function LeaderboardPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Leaderboard
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Compete with learners worldwide
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Leaderboard</h1>
+            <p className="text-gray-600 dark:text-gray-400">Compete with learners worldwide</p>
           </div>
           <div className="flex gap-2">
             {(['weekly', 'all'] as const).map(range => (
@@ -107,8 +121,9 @@ export default function LeaderboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<RefreshCw className="w-4 h-4" />}
-                onClick={() => fetchLeaderboard(true)}
+                leftIcon={<RefreshCw className={`w-4 h-4 ${isValidating ? 'animate-spin' : ''}`} />}
+                onClick={() => mutate()}
+                disabled={isValidating}
               >
                 Retry
               </Button>
@@ -118,74 +133,104 @@ export default function LeaderboardPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+          <div className="space-y-6">
+            {/* Podium Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                  </div>
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                  <div className="h-5 w-24 mx-auto mb-2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-4 w-16 mx-auto mb-2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-4 w-20 mx-auto bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </Card>
+              ))}
+            </div>
+            {/* List Skeleton */}
+            <Card className="divide-y divide-gray-100 dark:divide-gray-800">
+              {[...Array(7)].map((_, i) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={i} className="flex items-center gap-4 p-4">
+                  <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </div>
+                  <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </div>
+              ))}
+            </Card>
           </div>
         )}
 
         {/* Top 3 Podium */}
         {!isLoading && leaderboard.length >= 3 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* 2nd Place */}
-          <Card className={`p-6 text-center ${getRankColor(2)} border-2`}>
-            <div className="flex justify-center mb-4">
-              {getRankIcon(2)}
-            </div>
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white text-2xl font-bold">
-              {leaderboard[1]?.display_name?.charAt(0) || leaderboard[1]?.username?.charAt(0) || '?'}
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-              {leaderboard[1]?.display_name || leaderboard[1]?.username}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Level {leaderboard[1]?.level}
-            </p>
-            <div className="flex items-center justify-center gap-1 text-yellow-500">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="font-bold">{leaderboard[1]?.xp?.toLocaleString()} XP</span>
-            </div>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* 2nd Place */}
+            <Card className={`p-6 text-center ${getRankColor(2)} border-2`}>
+              <div className="flex justify-center mb-4">{getRankIcon(2)}</div>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white text-2xl font-bold">
+                {leaderboard[1]?.display_name?.charAt(0) ||
+                  leaderboard[1]?.username?.charAt(0) ||
+                  '?'}
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                {leaderboard[1]?.display_name || leaderboard[1]?.username}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Level {leaderboard[1]?.level}
+              </p>
+              <div className="flex items-center justify-center gap-1 text-yellow-500">
+                <Star className="w-4 h-4 fill-current" />
+                <span className="font-bold">{leaderboard[1]?.xp?.toLocaleString()} XP</span>
+              </div>
+            </Card>
 
-          {/* 1st Place */}
-          <Card className={`p-6 text-center ${getRankColor(1)} border-2 border-yellow-400 dark:border-yellow-600`}>
-            <div className="flex justify-center mb-4">
-              {getRankIcon(1)}
-            </div>
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-              {leaderboard[0]?.display_name?.charAt(0) || leaderboard[0]?.username?.charAt(0) || '?'}
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-lg">
-              {leaderboard[0]?.display_name || leaderboard[0]?.username}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Level {leaderboard[0]?.level}
-            </p>
-            <div className="flex items-center justify-center gap-1 text-yellow-500">
-              <Star className="w-5 h-5 fill-current" />
-              <span className="font-bold text-lg">{leaderboard[0]?.xp?.toLocaleString()} XP</span>
-            </div>
-          </Card>
+            {/* 1st Place */}
+            <Card
+              className={`p-6 text-center ${getRankColor(1)} border-2 border-yellow-400 dark:border-yellow-600`}
+            >
+              <div className="flex justify-center mb-4">{getRankIcon(1)}</div>
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                {leaderboard[0]?.display_name?.charAt(0) ||
+                  leaderboard[0]?.username?.charAt(0) ||
+                  '?'}
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-lg">
+                {leaderboard[0]?.display_name || leaderboard[0]?.username}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Level {leaderboard[0]?.level}
+              </p>
+              <div className="flex items-center justify-center gap-1 text-yellow-500">
+                <Star className="w-5 h-5 fill-current" />
+                <span className="font-bold text-lg">{leaderboard[0]?.xp?.toLocaleString()} XP</span>
+              </div>
+            </Card>
 
-          {/* 3rd Place */}
-          <Card className={`p-6 text-center ${getRankColor(3)} border-2`}>
-            <div className="flex justify-center mb-4">
-              {getRankIcon(3)}
-            </div>
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-white text-2xl font-bold">
-              {leaderboard[2]?.display_name?.charAt(0) || leaderboard[2]?.username?.charAt(0) || '?'}
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-              {leaderboard[2]?.display_name || leaderboard[2]?.username}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Level {leaderboard[2]?.level}
-            </p>
-            <div className="flex items-center justify-center gap-1 text-yellow-500">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="font-bold">{leaderboard[2]?.xp?.toLocaleString()} XP</span>
-            </div>
-          </Card>
-        </div>
+            {/* 3rd Place */}
+            <Card className={`p-6 text-center ${getRankColor(3)} border-2`}>
+              <div className="flex justify-center mb-4">{getRankIcon(3)}</div>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-white text-2xl font-bold">
+                {leaderboard[2]?.display_name?.charAt(0) ||
+                  leaderboard[2]?.username?.charAt(0) ||
+                  '?'}
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                {leaderboard[2]?.display_name || leaderboard[2]?.username}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Level {leaderboard[2]?.level}
+              </p>
+              <div className="flex items-center justify-center gap-1 text-yellow-500">
+                <Star className="w-4 h-4 fill-current" />
+                <span className="font-bold">{leaderboard[2]?.xp?.toLocaleString()} XP</span>
+              </div>
+            </Card>
+          </div>
         )}
 
         {/* Current User Stats */}
@@ -217,45 +262,47 @@ export default function LeaderboardPage() {
 
         {/* Leaderboard List */}
         {!isLoading && leaderboard.length > 3 && (
-        <Card className="p-4">
-          <div className="space-y-2">
-            {leaderboard.slice(3).map((entry) => (
-              <div
-                key={entry.rank}
-                className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
-                  entry.is_current_user
-                    ? 'bg-primary-50 dark:bg-primary-900/10 border-2 border-primary-500'
-                    : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className="w-10 h-10 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400">
-                  {entry.rank}
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold">
-                  {(entry.display_name || entry.username).charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <h4 className={`font-medium ${entry.is_current_user ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'}`}>
-                    {entry.display_name || entry.username}
-                  </h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Level {entry.level} • {entry.courses_completed} courses
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="font-medium">{entry.xp.toLocaleString()}</span>
+          <Card className="p-4">
+            <div className="space-y-2">
+              {leaderboard.slice(3).map(entry => (
+                <div
+                  key={entry.rank}
+                  className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
+                    entry.is_current_user
+                      ? 'bg-primary-50 dark:bg-primary-900/10 border-2 border-primary-500'
+                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="w-10 h-10 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400">
+                    {entry.rank}
                   </div>
-                  <div className="flex items-center gap-1 text-orange-500">
-                    <Flame className="w-4 h-4" />
-                    <span className="text-sm">{entry.streak}</span>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold">
+                    {(entry.display_name || entry.username).charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <h4
+                      className={`font-medium ${entry.is_current_user ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'}`}
+                    >
+                      {entry.display_name || entry.username}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Level {entry.level} • {entry.courses_completed} courses
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 text-yellow-500">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="font-medium">{entry.xp.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-orange-500">
+                      <Flame className="w-4 h-4" />
+                      <span className="text-sm">{entry.streak}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
         )}
 
         {/* Empty State */}

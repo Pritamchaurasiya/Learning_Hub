@@ -69,18 +69,13 @@ export interface HealthReport {
 }
 
 export const monitoringService = {
-  getMetrics: (): Promise<SystemMetrics> => 
-    fetchApi('/monitoring/api/metrics/'),
-    
-  getDatabaseStatus: (): Promise<DatabaseStatus> => 
-    fetchApi('/monitoring/api/database/'),
-    
-  getCacheStatus: (): Promise<CacheStatus> => 
-    fetchApi('/monitoring/api/cache/'),
-    
-  getProcesses: (): Promise<{ processes: ProcessInfo[] }> => 
-    fetchApi('/monitoring/api/processes/'),
-    
-  getDeepHealth: (): Promise<HealthReport> => 
-    fetchApi('/health/deep/'),
+  getMetrics: (): Promise<SystemMetrics> => fetchApi('/monitoring/metrics'),
+
+  getDatabaseStatus: (): Promise<DatabaseStatus> => fetchApi('/monitoring/database'),
+
+  getCacheStatus: (): Promise<CacheStatus> => fetchApi('/monitoring/cache'),
+
+  getProcesses: (): Promise<{ processes: ProcessInfo[] }> => fetchApi('/monitoring/processes'),
+
+  getDeepHealth: (): Promise<HealthReport> => fetchApi('/monitoring/health'),
 }

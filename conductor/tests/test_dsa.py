@@ -93,7 +93,7 @@ class TestSubmissionModel:
 
     def test_submission_str(self, submission):
         """Test string representation."""
-        assert "testuser" in str(submission)
+        assert "fixtureuser" in str(submission)
         assert "Two Sum" in str(submission)
 
     def test_status_choices(self):
@@ -168,41 +168,42 @@ class TestProblemDetailAPI:
 class TestSubmissionAPI:
     """Tests for submission endpoints."""
 
-    def test_create_submission_authenticated(self, authenticated_client, problem):
+    def test_create_submission_authenticated(self, api_client, user, problem):
         """Authenticated users can create submissions."""
+        api_client.force_authenticate(user=user)
         data = {
             "problem": problem.id,
-            "code": "def solution():\\n    pass",
+            "code": "def solution():\n    pass",
             "language": "python",
         }
-        response = authenticated_client.post("/api/v1/dsa/submissions/", data)
-        
+        response = api_client.post("/api/v1/dsa/submissions/", data, format='json')
+
         assert response.status_code == status.HTTP_201_CREATED
 
     def test_create_submission_unauthenticated(self, api_client, problem):
         """Anonymous users cannot create submissions."""
         data = {
             "problem": problem.id,
-            "code": "def solution():\\n    pass",
+            "code": "def solution():\n    pass",
             "language": "python",
         }
-        response = api_client.post("/api/v1/dsa/submissions/", data)
-        
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        response = api_client.post("/api/v1/dsa/submissions/", data, format='json')
 
-    def test_list_own_submissions(self, authenticated_client, submission):
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    def test_list_own_submissions(self, api_client, user, submission):
         """Users see only their own submissions."""
-        response = authenticated_client.get("/api/v1/dsa/submissions/")
-        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dsa/submissions/")
+
         assert response.status_code == status.HTTP_200_OK
 
-    def test_submission_includes_status(self, authenticated_client, submission):
+    def test_submission_includes_status(self, api_client, user, submission):
         """Test submission response includes status."""
-        response = authenticated_client.get(f"/api/v1/dsa/submissions/{submission.id}/")
-        
+        api_client.force_authenticate(user=user)
+        response = api_client.get(f"/api/v1/dsa/submissions/{submission.id}/")
+
         assert response.status_code == status.HTTP_200_OK
         assert "status" in response.data
-
 
 @pytest.mark.django_db
 class TestTagAPI:

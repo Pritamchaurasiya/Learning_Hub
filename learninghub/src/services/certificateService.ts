@@ -42,13 +42,13 @@ export const certificateService = {
   // Download certificate PDF
   async downloadCertificate(code: string): Promise<Blob> {
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/courses/certificates/${code}/download`,
+      `${import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'}/courses/certificates/${code}/download`,
       {
         method: 'GET',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
-        }
+          Accept: 'application/pdf',
+        },
       }
     )
     if (!response.ok) {
@@ -58,12 +58,14 @@ export const certificateService = {
   },
 
   // Verify certificate (public endpoint - no auth required)
-  async verifyCertificate(code: string): Promise<{ status: string; data: CertificateVerification }> {
+  async verifyCertificate(
+    code: string
+  ): Promise<{ status: string; data: CertificateVerification }> {
     return fetchApi(`/courses/public-certificates/${code}/verify`)
   },
 
   // Share certificate (generate public verification URL)
   getShareUrl(code: string): string {
     return `${window.location.origin}/verify-certificate/${code}`
-  }
+  },
 }

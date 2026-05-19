@@ -19,7 +19,7 @@ describe('RoleMiddleware', () => {
     });
     describe('requireRole', () => {
         it('should call next() when user has required role', () => {
-            mockReq.user = { userId: 'user-123', role: 'admin' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' };
             const middleware = (0, roleMiddleware_1.requireRole)(['admin', 'instructor']);
             middleware(mockReq, mockRes, mockNext);
             expect(mockNext).toHaveBeenCalled();
@@ -37,7 +37,7 @@ describe('RoleMiddleware', () => {
             expect(mockNext).not.toHaveBeenCalled();
         });
         it('should return 403 when user lacks required role', () => {
-            mockReq.user = { userId: 'user-123', role: 'student' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' };
             const middleware = (0, roleMiddleware_1.requireRole)(['admin']);
             middleware(mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(403);
@@ -48,7 +48,7 @@ describe('RoleMiddleware', () => {
             expect(mockNext).not.toHaveBeenCalled();
         });
         it('should accept multiple roles', () => {
-            mockReq.user = { userId: 'user-123', role: 'instructor' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' };
             const middleware = (0, roleMiddleware_1.requireRole)(['admin', 'instructor']);
             middleware(mockReq, mockRes, mockNext);
             expect(mockNext).toHaveBeenCalled();
@@ -56,7 +56,7 @@ describe('RoleMiddleware', () => {
     });
     describe('requireAdmin', () => {
         it('should call next() for admin user', () => {
-            mockReq.user = { userId: 'user-123', role: 'admin' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' };
             (0, roleMiddleware_1.requireAdmin)(mockReq, mockRes, mockNext);
             expect(mockNext).toHaveBeenCalled();
         });
@@ -70,7 +70,7 @@ describe('RoleMiddleware', () => {
             });
         });
         it('should return 403 for non-admin users', () => {
-            mockReq.user = { userId: 'user-123', role: 'student' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' };
             (0, roleMiddleware_1.requireAdmin)(mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(403);
             expect(jsonMock).toHaveBeenCalledWith({
@@ -79,7 +79,7 @@ describe('RoleMiddleware', () => {
             });
         });
         it('should return 403 for instructor users', () => {
-            mockReq.user = { userId: 'user-123', role: 'instructor' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' };
             (0, roleMiddleware_1.requireAdmin)(mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(403);
             expect(jsonMock).toHaveBeenCalledWith({
@@ -90,12 +90,12 @@ describe('RoleMiddleware', () => {
     });
     describe('requireInstructorOrAdmin', () => {
         it('should call next() for admin user', () => {
-            mockReq.user = { userId: 'user-123', role: 'admin' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' };
             (0, roleMiddleware_1.requireInstructorOrAdmin)(mockReq, mockRes, mockNext);
             expect(mockNext).toHaveBeenCalled();
         });
         it('should call next() for instructor user', () => {
-            mockReq.user = { userId: 'user-123', role: 'instructor' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' };
             (0, roleMiddleware_1.requireInstructorOrAdmin)(mockReq, mockRes, mockNext);
             expect(mockNext).toHaveBeenCalled();
         });
@@ -109,7 +109,7 @@ describe('RoleMiddleware', () => {
             });
         });
         it('should return 403 for student users', () => {
-            mockReq.user = { userId: 'user-123', role: 'student' };
+            mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' };
             (0, roleMiddleware_1.requireInstructorOrAdmin)(mockReq, mockRes, mockNext);
             expect(statusMock).toHaveBeenCalledWith(403);
             expect(jsonMock).toHaveBeenCalledWith({

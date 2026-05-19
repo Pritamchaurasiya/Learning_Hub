@@ -1,143 +1,216 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import 'dotenv/config';  // Load environment variables from .env
-import routes from './routes';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import logger from './utils/logger';
+import express, { Request, Response, NextFunction } from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import hpp from 'hpp'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import 'dotenv/config'
+import routes from './routes'
+import { errorHandler, notFoundHandler } from './middleware/errorHandler'
+import { requestId, requestLogger } from './middleware/authMiddleware'
+import {
+  corsOptions,
+  helmetConfig,
+  generalRateLimit,
+  authRateLimit,
+  adminRateLimit,
+} from './config'
+import logger from './utils/logger'
+import { prisma } from './config'
+import { config } from './utils/env'
 
-const app = express();
-const httpServer = createServer(app);
+const app = express()
+const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // Adjust for production
-    methods: ["GET", "POST"]
-  }
-});
+    origin: corsOptions.origin,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+})
 
 // Attach io to request for use in controllers
-app.use((req: any, res, next) => {
-  req.io = io;
-  next();
-});
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.io = io
+  next()
+})
 
-// Security and Performance Middlewares
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
-app.use(compression());
+// Request ID for tracing
+app.use(requestId)
+app.use(requestLogger)
+
+// Security Middlewares
+app.use(helmet(helmetConfig))
+app.use(compression())
+app.use(hpp()) // Prevent HTTP Parameter Pollution
 
 // CORS configuration
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
-app.use(cors({
-  origin: corsOrigin,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(express.json({ limit: '10mb' }));
+app.use(cors(corsOptions))
 
-// Rate Limiting Configuration from Environment
-const RATE_LIMIT_GENERAL_WINDOW_MS = parseInt(process.env.RATE_LIMIT_GENERAL_WINDOW_MS || '900000');
-const RATE_LIMIT_GENERAL_MAX = parseInt(process.env.RATE_LIMIT_GENERAL_MAX || '100');
-const RATE_LIMIT_AUTH_WINDOW_MS = parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS || '900000');
-const RATE_LIMIT_AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX || '5');
-const RATE_LIMIT_ADMIN_WINDOW_MS = parseInt(process.env.RATE_LIMIT_ADMIN_WINDOW_MS || '900000');
-const RATE_LIMIT_ADMIN_MAX = parseInt(process.env.RATE_LIMIT_ADMIN_MAX || '30');
+// Body parsing
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 // Rate Limiting - General API
-const generalLimiter = rateLimit({
-  windowMs: RATE_LIMIT_GENERAL_WINDOW_MS,
-  max: RATE_LIMIT_GENERAL_MAX,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: 'error', message: 'Too many requests, please try again later.' },
-  keyGenerator: (req) => req.ip || 'unknown'
-});
-app.use(generalLimiter);
+app.use(generalRateLimit)
 
-// Stricter rate limiting for auth endpoints
-const authLimiter = rateLimit({
-  windowMs: RATE_LIMIT_AUTH_WINDOW_MS,
-  max: RATE_LIMIT_AUTH_MAX,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: 'error', message: 'Too many authentication attempts. Please try again after 15 minutes.' },
-  skipSuccessfulRequests: true // Don't count successful logins
-});
-
-// Ultra-strict rate limiting for admin endpoints
-const adminLimiter = rateLimit({
-  windowMs: RATE_LIMIT_ADMIN_WINDOW_MS,
-  max: RATE_LIMIT_ADMIN_MAX,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: 'error', message: 'Too many admin requests. Please try again later.' },
-  keyGenerator: (req) => req.ip || 'unknown', // Track by IP
-  handler: (req, res) => {
-    logger.warn('Admin rate limit exceeded', {
-      ip: req.ip,
-      path: req.path,
-      userId: (req as any).user?.userId
-    });
-    res.status(429).json({
-      status: 'error',
-      message: 'Too many admin requests. Please try again later.'
-    });
-  }
-});
+// Auth endpoints get stricter rate limiting
+const authRateLimiter = authRateLimit
+const adminRateLimiter = adminRateLimit
 
 // API Routes - Versioned
-// Apply admin rate limiting to admin routes
-app.use('/api/v1/admin', adminLimiter);
-app.use('/api/v1', routes);
+// Apply specific rate limiting
+app.use('/api/v1/auth', authRateLimiter) // Stricter rate limiting for auth
+app.use('/api/v1/admin', adminRateLimiter) // Ultra-strict for admin
+app.use('/api/v1', routes)
 
-// Also mount at root for backward compatibility (deprecated, will be removed)
-app.use('/', routes);
+// SECURITY: Root mount removed — all API access must go through /api/v1/
+// This ensures auth and admin rate limiters cannot be bypassed.
 
 // API Health Check at versioned endpoint
-app.get('/api/v1/health', (req, res) => {
-  res.json({ status: 'ok', version: 'v1', timestamp: new Date().toISOString() });
-});
+app.get('/api/v1/health', async (req, res) => {
+  try {
+    // Check database connectivity
+    await prisma.$queryRaw`SELECT 1`
+
+    res.json({
+      status: 'ok',
+      version: 'v1',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'connected',
+      },
+    })
+  } catch (error) {
+    logger.error('Health check failed', error instanceof Error ? error : new Error(String(error)))
+    res.status(503).json({
+      status: 'error',
+      version: 'v1',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'disconnected',
+      },
+    })
+  }
+})
 
 // WebSocket logic
-io.on('connection', (socket) => {
-  logger.info('User connected', { socketId: socket.id });
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token || socket.handshake.query.token
+  if (!token) {
+    return next(new Error('Authentication required'))
+  }
 
-  socket.on('join-room', (roomId) => {
-    socket.join(roomId);
-    logger.info('User joined room', { socketId: socket.id, roomId });
-  });
+  try {
+    const { verifyAccessToken } = require('./utils/auth')
+    const decoded = verifyAccessToken(token as string)
+    socket.data.userId = decoded.userId
+    socket.data.userRole = decoded.role
+    next()
+  } catch {
+    return next(new Error('Invalid token'))
+  }
+})
+
+io.on('connection', socket => {
+  logger.info('User connected', { socketId: socket.id, userId: socket.data.userId })
+
+  socket.on('join-room', async (roomId: string) => {
+    // Verify user has access to this room (e.g., enrolled in course)
+    try {
+      const session = await prisma.liveSession.findUnique({
+        where: { id: roomId },
+        select: { id: true, status: true },
+      })
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' })
+        return
+      }
+      void socket.join(roomId)
+      logger.info('User joined room', { socketId: socket.id, roomId, userId: socket.data.userId })
+      socket.to(roomId).emit('user-joined', { socketId: socket.id, userId: socket.data.userId })
+    } catch {
+      socket.emit('error', { message: 'Failed to join room' })
+    }
+  })
+
+  socket.on('leave-room', (roomId: string) => {
+    void socket.leave(roomId)
+    socket.to(roomId).emit('user-left', { socketId: socket.id, userId: socket.data.userId })
+  })
+
+  // Real-time Chat Messaging with rate limiting
+  const messageCooldown = new Map<string, number>()
+  socket.on('send-message', (data: { roomId: string; message: string }) => {
+    const now = Date.now()
+    const lastMessage = messageCooldown.get(socket.id) || 0
+    if (now - lastMessage < 500) {
+      // 500ms cooldown
+      socket.emit('error', { message: 'Message rate limit exceeded' })
+      return
+    }
+    messageCooldown.set(socket.id, now)
+
+    if (!data.message || data.message.length > 2000) {
+      socket.emit('error', { message: 'Message too long' })
+      return
+    }
+
+    io.to(data.roomId).emit('new-message', {
+      message: data.message,
+      sender: socket.data.userId,
+      timestamp: new Date().toISOString(),
+    })
+  })
+
+  // Real-time Hand Raise Event
+  socket.on('raise-hand', (data: { roomId: string }) => {
+    io.to(data.roomId).emit('hand-raised', { user: socket.data.userId })
+  })
 
   socket.on('disconnect', () => {
-    logger.info('User disconnected', { socketId: socket.id });
-  });
-});
+    logger.info('User disconnected', { socketId: socket.id, userId: socket.data.userId })
+  })
+})
 
 // Global Error Handlers
-app.use(notFoundHandler);
-app.use(errorHandler);
+app.use(notFoundHandler)
+app.use(errorHandler)
 
-const PORT = process.env.PORT || 5000;
+const PORT = config.port
 
+// Start server
 httpServer.listen(PORT, () => {
-  logger.info(`Server running on http://localhost:${PORT}`);
-});
+  logger.info(`Server running on http://localhost:${PORT}`)
+  logger.info(`Environment: ${config.nodeEnv}`)
+})
 
-export { io };
+// Graceful shutdown — ensures DB connections are properly closed
+const gracefulShutdown = (signal: string) => {
+  logger.info(`${signal} received, shutting down gracefully`)
+  void io.close()
+  httpServer.close(async () => {
+    await prisma.$disconnect()
+    logger.info('Server closed')
+    process.exit(0)
+  })
+  // Force kill after 10s if graceful shutdown hangs
+  setTimeout(() => {
+    logger.error('Forced shutdown after timeout')
+    process.exit(1)
+  }, 10000)
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+
+// Catch unhandled promise rejections to prevent silent crashes
+process.on('unhandledRejection', (reason: unknown) => {
+  logger.error('Unhandled Rejection', reason instanceof Error ? reason : new Error(String(reason)))
+})
+
+export { io }
+export default app

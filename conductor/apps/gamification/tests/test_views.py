@@ -16,8 +16,8 @@ class TestGamificationViews:
     def test_get_user_stats_authorized(self, authenticated_client, test_user):
         """Ensure authenticated users can fetch their gamification stats."""
         # Setup basic stats
-        UserXP.objects.create(user=test_user, total_xp=150, level=2)
-        Streak.objects.create(user=test_user, current_streak=3, longest_streak=5)
+        UserXP.objects.update_or_create(user=test_user, defaults={'total_xp': 150, 'level': 2})
+        Streak.objects.update_or_create(user=test_user, defaults={'current_streak': 3, 'longest_streak': 5})
         
         url = reverse('gamification:user-stats')
         response = authenticated_client.get(url)
@@ -25,14 +25,14 @@ class TestGamificationViews:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data['status'] == 'success'
-        assert data['data']['total_xp'] == 150
-        assert data['data']['level'] == 2
-        assert data['data']['current_streak'] == 3
+        assert data['data']['xp']['total'] == 150
+        assert data['data']['xp']['level'] == 2
+        assert data['data']['streak']['current'] == 3
 
-    @patch('apps.gamification.services.cache.get')
-    def test_get_global_leaderboard(self, mock_cache_get, authenticated_client):
-        """Ensure leaderboard endpoint returns top users, ideally from cache."""
-        mock_cache_get.return_value = [
+    @patch('apps.gamification.views.GamificationService.get_leaderboard')
+    def test_get_global_leaderboard(self, mock_get_leaderboard, authenticated_client):
+        """Ensure leaderboard endpoint returns top users."""
+        mock_get_leaderboard.return_value = [
             {"username": "player1", "total_xp": 5000, "level": 50, "rank": 1},
             {"username": "player2", "total_xp": 4000, "level": 40, "rank": 2},
         ]

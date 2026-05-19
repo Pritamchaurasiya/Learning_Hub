@@ -97,7 +97,11 @@ class Subscription(BaseModel):
     gateway_subscription_id = models.CharField(max_length=100, blank=True, null=True)
 
     def is_valid(self):
-        return self.is_active and self.end_date > timezone.now()
+        if not self.is_active:
+            return False
+        if self.end_date is None:
+            return True  # No expiry set means always valid
+        return self.end_date > timezone.now()
 
     def __str__(self):
         return f"{self.user.email} - {self.plan_type}"

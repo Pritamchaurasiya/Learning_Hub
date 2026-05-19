@@ -1,0 +1,14 @@
+dist/
+node_modules/
+coverage/
+*.config.js
+*.config.ts
+vite.config.ts
+playwright.config.ts
+tailwind.config.js
+postcss.config.js
+public/
+.vscode/
+.idea/
+*.min.js
+*.min.css

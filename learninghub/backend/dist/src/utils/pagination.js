@@ -5,8 +5,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPaginatedResponse = exports.getPaginationParams = void 0;
 const getPaginationParams = (query) => {
-    const page = Math.max(1, parseInt(query.page) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 20));
+    const parsedPage = parseInt(query.page);
+    const page = Math.max(1, isNaN(parsedPage) ? 1 : parsedPage);
+    const parsedLimit = parseInt(query.limit);
+    const limit = Math.min(100, Math.max(1, isNaN(parsedLimit) ? 20 : parsedLimit));
     const skip = (page - 1) * limit;
     return { page, limit, skip };
 };
@@ -22,8 +24,8 @@ const createPaginatedResponse = (data, total, page, limit) => {
             limit,
             pages,
             hasNext: page < pages,
-            hasPrev: page > 1
-        }
+            hasPrev: page > 1,
+        },
     };
 };
 exports.createPaginatedResponse = createPaginatedResponse;

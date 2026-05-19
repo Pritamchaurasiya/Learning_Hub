@@ -1,13 +1,13 @@
-import { forwardRef, type InputHTMLAttributes } from 'react';
-import { cn } from '../../utils/cn';
+import { forwardRef, type InputHTMLAttributes } from 'react'
+import { cn } from '../../utils/cn'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  fullWidth?: boolean;
+  label?: string
+  error?: string
+  helperText?: string
+  leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
+  fullWidth?: boolean
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
 
     return (
       <div className={cn('space-y-1.5', fullWidth && 'w-full')}>
@@ -43,9 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              {leftIcon}
-            </div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{leftIcon}</div>
           )}
           <input
             ref={ref}
@@ -55,11 +53,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             required={required}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={
-              error
-                ? `${inputId}-error`
-                : helperText
-                  ? `${inputId}-helper`
-                  : undefined
+              error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
             }
             className={cn(
               // Base styles
@@ -87,27 +81,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p
-            id={`${inputId}-error`}
-            className="text-sm text-red-500"
-            role="alert"
-          >
+          <p id={`${inputId}-error`} className="text-sm text-red-500" role="alert">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p
-            id={`${inputId}-helper`}
-            className="text-sm text-gray-500 dark:text-gray-400"
-          >
+          <p id={`${inputId}-helper`} className="text-sm text-gray-500 dark:text-gray-400">
             {helperText}
           </p>
         )}
       </div>
-    );
+    )
   }
-);
+)
 
-Input.displayName = 'Input';
+Input.displayName = 'Input'
 
-export { Input };
+export { Input }

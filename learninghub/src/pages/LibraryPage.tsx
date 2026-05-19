@@ -1,16 +1,35 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNavigate } from 'react-router-dom'
-import { Search, BookOpen, Clock, Star, Users, TrendingUp, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Search,
+  BookOpen,
+  Clock,
+  Star,
+  Users,
+  TrendingUp,
+  ChevronRight,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
 import { libraryService, type Course } from '../services/libraryService'
 
-const categories = ['All', 'Web Development', 'Data Science', 'Computer Science', 'Cloud Computing', 'Mobile Development']
+const categories = [
+  'All',
+  'Web Development',
+  'Data Science',
+  'Computer Science',
+  'Cloud Computing',
+  'Mobile Development',
+]
 const levels = ['All', 'Beginner', 'Intermediate', 'Advanced']
 
 export default function LibraryPage() {
+  useDocumentTitle('Course Library')
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -20,40 +39,52 @@ export default function LibraryPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchCourses = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      let response;
-      if (sortBy === 'trending') {
-        response = await libraryService.getTrendingCourses()
-      } else {
-        const ordering = sortBy === 'rating' ? '-average_rating' : 
-                        sortBy === 'students' ? '-enrollment_count' : 'duration'
-        
-        response = await libraryService.getCourses({
-          category: selectedCategory === 'All' ? undefined : selectedCategory,
-          difficulty: selectedLevel === 'All' ? undefined : selectedLevel,
-          search: searchQuery || undefined,
-          ordering
-        })
+  const fetchCourses = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        let response
+        if (sortBy === 'trending') {
+          response = await libraryService.getTrendingCourses()
+        } else {
+          const ordering =
+            sortBy === 'rating'
+              ? '-average_rating'
+              : sortBy === 'students'
+                ? '-enrollment_count'
+                : 'duration'
+
+          response = await libraryService.getCourses({
+            category: selectedCategory === 'All' ? undefined : selectedCategory,
+            difficulty: selectedLevel === 'All' ? undefined : selectedLevel,
+            search: searchQuery || undefined,
+            ordering,
+          })
+        }
+
+        if (!signal?.aborted) {
+          setCourses(response.data)
+        }
+      } catch (err) {
+        if (signal?.aborted) return
+        setError(err instanceof Error ? err.message : 'Failed to load courses')
+        if (import.meta.env.DEV) {
+          console.error('[LibraryPage] Failed to fetch courses:', err)
+        }
+      } finally {
+        if (!signal?.aborted) {
+          setIsLoading(false)
+        }
       }
-      
-      setCourses(response.data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load courses')
-      console.error('[LibraryPage] Failed to fetch courses:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedCategory, selectedLevel, searchQuery, sortBy])
+    },
+    [selectedCategory, selectedLevel, searchQuery, sortBy]
+  )
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchCourses().then(() => { 
-      if (controller.signal.aborted) return 
-    })
+    void fetchCourses(controller.signal)
     return () => controller.abort()
   }, [fetchCourses])
 
@@ -64,7 +95,7 @@ export default function LibraryPage() {
         description="Browse our comprehensive library of courses"
         keywords="courses, library, learning, education"
       />
-      
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -73,20 +104,22 @@ export default function LibraryPage() {
               Course Library
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {isLoading ? 'Loading courses...' : `Explore ${courses.length}+ courses across various categories`}
+              {isLoading
+                ? 'Loading courses...'
+                : `Explore ${courses.length}+ courses across various categories`}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              variant={sortBy === 'trending' ? 'primary' : 'outline'} 
+            <Button
+              variant={sortBy === 'trending' ? 'primary' : 'outline'}
               leftIcon={<TrendingUp className="w-4 h-4" />}
               onClick={() => setSortBy('trending')}
               disabled={isLoading}
             >
               Trending
             </Button>
-            <Button 
-              variant={sortBy === 'rating' ? 'primary' : 'outline'} 
+            <Button
+              variant={sortBy === 'rating' ? 'primary' : 'outline'}
               leftIcon={<Star className="w-4 h-4" />}
               onClick={() => setSortBy('rating')}
               disabled={isLoading}
@@ -104,11 +137,11 @@ export default function LibraryPage() {
               <div className="flex-1">
                 <p className="text-red-700 dark:text-red-400">{error}</p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 leftIcon={<RefreshCw className="w-4 h-4" />}
-                onClick={fetchCourses}
+                onClick={() => fetchCourses()}
               >
                 Retry
               </Button>
@@ -124,7 +157,7 @@ export default function LibraryPage() {
               <Input
                 placeholder="Search courses..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
                 fullWidth
               />
@@ -167,7 +200,8 @@ export default function LibraryPage() {
             {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={e => setSortBy(e.target.value as any)}
               className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 focus:ring-2 focus:ring-primary-500"
             >
               <option value="rating">Sort by Rating</option>
@@ -182,6 +216,7 @@ export default function LibraryPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key
               <Card key={i} className="overflow-hidden">
                 <div className="aspect-video bg-gray-200 dark:bg-gray-700 animate-pulse" />
                 <div className="p-4 space-y-3">
@@ -209,11 +244,11 @@ export default function LibraryPage() {
                   key={course.id}
                   hover
                   className="overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  onClick={() => navigate(`/course/${course.slug}`)}
-                  onKeyDown={(e) => {
+                  onClick={() => navigate(`/course/${course.id}`)}
+                  onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      navigate(`/course/${course.slug}`)
+                      navigate(`/course/${course.id}`)
                     }
                   }}
                   tabIndex={0}
@@ -223,8 +258,8 @@ export default function LibraryPage() {
                   {/* Course Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
                     {course.thumbnail ? (
-                      <img 
-                        src={course.thumbnail} 
+                      <img
+                        src={course.thumbnail}
                         alt={course.title}
                         className="w-full h-full object-cover"
                       />
@@ -254,13 +289,15 @@ export default function LibraryPage() {
                     </h3>
 
                     <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {course.short_description || course.description}
+                      {course.short_description ?? course.description}
                     </p>
 
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">{course.average_rating?.toFixed(1) || '0.0'}</span>
+                        <span className="font-medium">
+                          {course.average_rating?.toFixed(1) || '0.0'}
+                        </span>
                         <span className="text-xs text-gray-400">({course.review_count || 0})</span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -275,7 +312,9 @@ export default function LibraryPage() {
 
                     <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {course.instructor?.display_name || course.instructor?.username || 'Unknown'}
+                        {course.instructor?.display_name ||
+                          course.instructor?.username ||
+                          'Unknown'}
                       </span>
                       <div className="flex items-center gap-2">
                         {!course.is_free && (

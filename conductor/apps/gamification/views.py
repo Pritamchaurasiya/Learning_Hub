@@ -58,7 +58,7 @@ def get_user_xp(request):
     except Exception as e:
         logger.exception("Error fetching user XP")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -95,7 +95,7 @@ def add_xp(request):
     except Exception as e:
         logger.exception("Error awarding XP")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -130,7 +130,7 @@ def get_achievements(request):
     except Exception as e:
         logger.exception("Error fetching achievements")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -174,7 +174,7 @@ def unlock_achievement(request):
     except Exception as e:
         logger.exception("Error unlocking achievement")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -199,16 +199,42 @@ class LeaderboardView(APIView):
 
         try:
             leaderboard = GamificationService.get_leaderboard(limit=limit, period=period)
-            return Response({
-                'status': 'success',
-                'data': leaderboard,
-            })
         except Exception as e:
-            logger.exception("Error fetching leaderboard")
-            return Response(
-                {'status': 'error', 'message': str(e)},
-                status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.warning("Redis leaderboard failed, falling back to DB: %s", e)
+            leaderboard = []
+
+        # Fallback to DB if Redis returned nothing or failed
+        if not leaderboard:
+            try:
+                from .models import UserXP
+                order_field = '-weekly_xp' if period == 'weekly' else '-total_xp'
+                qs = UserXP.objects.select_related('user', 'user__streak_profile').order_by(order_field)[:limit]
+                leaderboard = []
+                for idx, xp_entry in enumerate(qs, start=1):
+                    streak_count = 0
+                    try:
+                        streak_count = xp_entry.user.streak_profile.current_streak
+                    except Exception:
+                        pass
+                    leaderboard.append({
+                        "rank": idx,
+                        "id": str(xp_entry.user.id),
+                        "username": xp_entry.user.username,
+                        "xp": xp_entry.weekly_xp if period == 'weekly' else xp_entry.total_xp,
+                        "level": xp_entry.level,
+                        "streak": streak_count,
+                    })
+            except Exception as e:
+                logger.exception("DB leaderboard fallback also failed")
+                return Response(
+                    {'status': 'error', 'message': 'Internal server error'},
+                    status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        return Response({
+            'status': 'success',
+            'data': leaderboard,
+        })
 
 
 # =============================================================================
@@ -233,7 +259,7 @@ def get_streak(request):
     except Exception as e:
         logger.exception("Error fetching streak")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -257,7 +283,7 @@ def checkin_streak(request):
     except Exception as e:
         logger.exception("Error checking in streak")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -307,6 +333,6 @@ def get_gamification_stats(request):
     except Exception as e:
         logger.exception("Error fetching gamification stats")
         return Response(
-            {'status': 'error', 'message': str(e)},
+            {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

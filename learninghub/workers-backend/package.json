@@ -10,7 +10,12 @@
     "lint": "eslint src/",
     "format": "prettier --write src/"
   },
-  "keywords": ["cloudflare", "workers", "api", "learning"],
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "api",
+    "learning"
+  ],
   "author": "LearningHub Team",
   "license": "MIT",
   "devDependencies": {

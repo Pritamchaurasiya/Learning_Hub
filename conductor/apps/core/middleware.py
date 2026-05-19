@@ -127,14 +127,11 @@ def get_user_from_token(token_key):
         from django.contrib.auth import get_user_model
         User = get_user_model()
         # Validate the token
-        UntypedToken(token_key)
-        # Decode manually to get user_id (UntypedToken ensures it's valid)
-        import jwt
-        from django.conf import settings
-        decoded_data = jwt.decode(token_key, settings.SECRET_KEY, algorithms=["HS256"])
-        user = User.objects.get(id=decoded_data["user_id"])
+        validated_token = UntypedToken(token_key)
+        user = User.objects.get(id=validated_token.get("user_id"))
         return user
     except (InvalidToken, TokenError, Exception) as e:
+        print(f"JWT Error: {e}")
         logger.warning("websocket_auth_failed: %s", str(e))
         return AnonymousUser()
 

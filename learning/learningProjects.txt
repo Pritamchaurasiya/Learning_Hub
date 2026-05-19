@@ -1,53 +1,44 @@
-# OpenCode CLI & Terminal Agentic AI Masterclass
+# Learning Projects Roadmap: From Beginner to MIT-Level Engineer
 
-Welcome to the deep-dive learning guide for OpenCode AI. This tool represents the next generation of open-source coding agents.
-
----
-
-## 1. What is OpenCode?
-OpenCode is an open-source, terminal-based AI coding agent. It is designed to:
-- **Operate Locally**: It runs in your terminal, having direct access to your local files and shell.
-- **TUI (Terminal User Interface)**: It provides a rich interactive environment within the terminal (built with libraries like Charm Bracelet's Bubble Tea).
-- **Multi-Model Support**: You can connect it to Gemini, Claude, or OpenAI.
-
-### Why use OpenCode?
-While tools like Claude Code are official and powerful, OpenCode offers an open-source alternative that is highly customizable and supports a wider range of models out of the box.
+## Welcome to LearningHub Engineering Path
+This guide will take you through the architecture, logic, and systems thinking required to build and maintain an enterprise-grade platform like LearningHub.
 
 ---
 
-## 2. Key Commands & Workflow
-- `opencode`: Launch the main interface.
-- `/connect`: Connect your AI provider (Gemini, Anthropic, etc.).
-- `/init`: Initialize a project to help the AI understand your specific architecture.
-- `/run <prompt>`: Execute a task without entering the full TUI.
+### Phase 1: The Foundation - Understanding REST & Web Architecture
+#### 1.1 What is REST?
+REST (Representational State Transfer) is an architectural style for providing standards between computer systems on the web, making it easier for systems to communicate with each other.
+
+- **Why it's needed:** Without a standard, every API would have its own custom rules for how data is requested and sent, leading to massive integration headaches.
+- **How it works:** It uses standard HTTP methods (GET, POST, PUT, DELETE) to perform CRUD (Create, Read, Update, Delete) operations on resources identified by URLs.
+
+#### 1.2 HTTP Methods & Common Pitfalls
+- **GET:** Retrieve data. Should never change server state.
+- **POST:** Create data.
+- **PATCH/PUT:** Update data.
+- **DELETE:** Remove data.
+
+**The 405 Method Not Allowed Error:**
+- **What is it?** This happens when the client sends an HTTP request using a method that the server doesn't support for that specific URL.
+- **Why it happens in LearningHub:** If a view is set as `ReadOnlyModelViewSet`, it only supports GET. If a test tries to POST to it, you get a 405.
+- **How to fix:** Ensure the Viewset supports the required actions (e.g., using `ModelViewSet` instead of `ReadOnlyModelViewSet`) or adjust the request method.
 
 ---
 
-## 3. Advanced Concepts
-
-### Level 1: TUI Fundamentals
-- **True Color & Unicode**: OpenCode relies on modern terminal features. If symbols look broken, ensure you're using a font like "Nerd Fonts".
-- **Shell Integration**: How the AI translates your request into a series of `cd`, `ls`, and `git` commands.
-
-### Level 2: Project Indexing
-- **agents.md**: When you run `/init`, OpenCode creates this file. It's like a "manual" for the AI to understand your project's soul (tech stack, folder structure, main goals).
-
-### Level 3: Security & Trust
-- **Sandboxing**: Unlike cloud-based AIs, OpenCode runs on *your* machine.
-- **Safety Prompts**: Always verify what code the agent wants to write or delete.
+### Phase 2: Backend Logic & Data Integrity
+#### 2.1 Database Constraints
+- **Unique Constraints:** Ensures no two rows have the same value in a specific column (e.g., one streak per user).
+- **IntegrityError:** This is thrown when a database operation violates these rules. 
+- **Real-world example:** In our gamification system, we use a unique constraint on `user_id` in the `Streak` table to prevent duplicate streak entries which would break the logic.
 
 ---
 
-## 4. Troubleshooting
-1. **"Command not found"**: Ensure `C:\Users\shiva\AppData\Roaming\npm` is in your system PATH.
-2. **Key Errors**: If the AI stops responding, check your API usage limits or refresh the key with `/connect`.
+### Mini Exercise for You:
+1. **Identify:** Find a View in the `conductor` project that uses `ReadOnlyModelViewSet`.
+2. **Experiment:** Try to send a POST request to it using a tool like Postman or `curl`.
+3. **Observe:** Verify that you receive a 405 status code.
+4. **Reflect:** Why is it better to use `ReadOnlyModelViewSet` for public data? (Hint: Security & Intent).
 
 ---
 
-## 5. Summary Checklist
-- [ ] Install via NPM.
-- [ ] Link your Gemini or OpenAI API key.
-- [ ] Navigate to your project and run `opencode`.
-- [ ] Run `/init` to index your code.
-
-*Happy coding with OpenCode!*
+*This file will be continuously updated as we progress through the project.*

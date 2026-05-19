@@ -11,6 +11,7 @@ Enterprise-grade payment system with:
 """
 
 import logging
+import os
 import hashlib
 import hmac
 from decimal import Decimal
@@ -366,11 +367,8 @@ class AdvancedPaymentService:
         """Verify Razorpay payment signature (HMAC-SHA256)."""
         key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
         
-        # Security: Always require secret in production
+        # Security: Always require secret - no bypass allowed
         if not key_secret:
-            if settings.DEBUG and os.getenv('SKIP_PAYMENT_VERIFICATION', '').lower() == 'true':
-                logger.warning("Payment verification bypassed in DEBUG mode (SKIP_PAYMENT_VERIFICATION=true)")
-                return True
             logger.error("Security Risk: RAZORPAY_KEY_SECRET is not configured.")
             return False
 
@@ -392,23 +390,46 @@ class AdvancedPaymentService:
         payment_id: str,
         signature: str
     ) -> bool:
-        """Verify Stripe webhook signature."""
+        """Verify Stripe webhook signature using HMAC-SHA256."""
         webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
         
         # Security: Always require secret in production
         if not webhook_secret:
-            if settings.DEBUG and os.getenv('SKIP_PAYMENT_VERIFICATION', '').lower() == 'true':
-                logger.warning("Stripe verification bypassed in DEBUG mode (SKIP_PAYMENT_VERIFICATION=true)")
-                return True
             logger.error("Security Risk: STRIPE_WEBHOOK_SECRET is not configured.")
             return False
 
-        # Note: Actual Stripe verification involves the raw body and timestamp header.
-        # Since we receive payload elsewhere, we assume 'signature' passed here is valid 
-        # or we implement manual HMAC if payload is available.
-        # For now, we enforce Key existence at least.
-        
-        return True
+        # Stripe signatures are in format: t=timestamp,v1=signature,v0=signature
+        try:
+            parts = signature.split(',')
+            timestamp = None
+            sig_v1 = None
+            for part in parts:
+                if part.startswith('t='):
+                    timestamp = part[2:]
+                elif part.startswith('v1='):
+                    sig_v1 = part[3:]
+            
+            if not timestamp or not sig_v1:
+                logger.error("Invalid Stripe signature format")
+                return False
+            
+            # Verify timestamp is within 5 minutes (prevent replay attacks)
+            if abs(int(timezone.now().timestamp()) - int(timestamp)) > 300:
+                logger.error("Stripe webhook timestamp expired (replay attack prevention)")
+                return False
+            
+            # Verify HMAC signature
+            payload = f"{timestamp}|{payment_id}"
+            expected = hmac.new(
+                webhook_secret.encode('utf-8'),
+                payload.encode('utf-8'),
+                hashlib.sha256
+            ).hexdigest()
+            
+            return hmac.compare_digest(expected, sig_v1)
+        except Exception as e:
+            logger.error(f"Stripe Signature Verification Error: {e}")
+            return False
     
     # ==========================================================================
     # REFUND PROCESSING
@@ -424,24 +445,19 @@ class AdvancedPaymentService:
         """
         Process a refund request.
         """
-        from apps.payments.models import Payment, Refund
+        from apps.payments.models import Payment
         
-        payment = Payment.objects.get(id=payment_id)
+        try:
+            payment = Payment.objects.get(id=payment_id)
+        except Payment.DoesNotExist:
+            return {'success': False, 'error': 'Payment not found'}
         
         if payment.status != PaymentStatus.COMPLETED.value:
             return {'success': False, 'error': 'Payment not eligible for refund'}
         
         refund_amount = amount or payment.amount
         
-        # Create refund record
-        refund = Refund.objects.create(
-            payment=payment,
-            amount=refund_amount,
-            reason=reason,
-            status='pending'
-        )
-        
-        # Process with gateway
+        # Process with gateway first before updating DB
         if payment.gateway == PaymentGateway.RAZORPAY.value:
             success = cls._razorpay_refund(payment, refund_amount)
         elif payment.gateway == PaymentGateway.STRIPE.value:
@@ -450,38 +466,60 @@ class AdvancedPaymentService:
             success = True  # Free transaction
         
         if success:
-            refund.status = 'completed'
-            refund.processed_at = timezone.now()
-            refund.save()
+            # Update payment status
+            payment.status = PaymentStatus.REFUNDED.value
+            payment.save(update_fields=['status'])
             
             # Full refund - revoke access
-            if refund_amount == payment.amount:
-                payment.status = PaymentStatus.REFUNDED.value
-                payment.save()
-                
+            if refund_amount >= payment.amount:
                 if payment.course_id:
                     cls._revoke_course_access(payment.user, str(payment.course_id))
             
+            # Log refund event
+            cls._log_payment_event(payment, "refunded", None)
+            
             return {
                 'success': True,
-                'refund_id': str(refund.id),
+                'refund_id': str(payment.id),
                 'amount': float(refund_amount)
             }
         
-        refund.status = 'failed'
-        refund.save()
-        
-        return {'success': False, 'error': 'Refund processing failed'}
+        return {'success': False, 'error': 'Refund processing failed at gateway'}
     
     @classmethod
     def _razorpay_refund(cls, payment, amount: Decimal) -> bool:
-        """Process Razorpay refund."""
-        return True  # Mock
+        """Process Razorpay refund via API."""
+        try:
+            import razorpay
+            client = razorpay.Client(auth=(
+                getattr(settings, 'RAZORPAY_KEY_ID', ''),
+                getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+            ))
+            refund_amount_paise = int(amount * 100)
+            client.payment.refund(payment.gateway_payment_id, {
+                'amount': refund_amount_paise,
+                'notes': {'reason': 'refund'}
+            })
+            return True
+        except Exception as e:
+            logger.error(f"Razorpay refund failed: {e}")
+            return False
     
     @classmethod
     def _stripe_refund(cls, payment, amount: Decimal) -> bool:
-        """Process Stripe refund."""
-        return True  # Mock
+        """Process Stripe refund via API."""
+        try:
+            import stripe
+            stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
+            amount_cents = int(amount * 100)
+            stripe.Refund.create(
+                payment_intent=payment.gateway_payment_id,
+                amount=amount_cents
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Stripe refund failed: {e}")
+            return False
     
     # ==========================================================================
     # SUBSCRIPTION MANAGEMENT
@@ -640,17 +678,17 @@ class AdvancedPaymentService:
         
         Enrollment.objects.filter(user=user, course_id=course_id).delete()
     
-        AuditService.log(
-            action=action_map.get(event, AuditAction.PAYMENT_INITIATED),
-            user=payment.user,
-            resource_type='payment',
-            resource_id=str(payment.id),
-            metadata={
-                'amount': str(payment.amount),
-                'gateway': payment.gateway,
-                'event': event
-            }
-        )
+    @classmethod
+    def _log_payment_event(cls, payment, event: str, result) -> None:
+        """Log payment event for audit trail."""
+        try:
+            logger.info(
+                f"Payment event: {event} | payment_id={payment.id} | "
+                f"amount={payment.amount} | gateway={payment.gateway} | "
+                f"user={payment.user_id}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to log payment event: {e}")
     
     # ==========================================================================
     # AI INTELLIGENCE & INVOICING

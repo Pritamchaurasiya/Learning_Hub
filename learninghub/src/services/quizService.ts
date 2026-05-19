@@ -1,4 +1,4 @@
-import { fetchApi } from '../utils/api';
+import { fetchApi } from '../utils/api'
 
 export interface Quiz {
   id: string
@@ -25,7 +25,7 @@ export interface QuizQuestion {
 
 export interface QuizAttempt {
   id: string
-  quiz_id: string
+  test_id: string
   started_at: string
   completed_at: string | null
   score: number
@@ -48,29 +48,135 @@ export interface QuizResult {
   percentage: number
 }
 
+// Raw API response types for mapping
+interface RawOption {
+  id: string
+  text: string
+  is_correct?: boolean
+}
+
+interface RawQuestion {
+  id: string
+  text: string
+  question_type: 'multiple_choice' | 'true_false' | 'short_answer'
+  options?: RawOption[]
+  explanation?: string
+  marks: number
+}
+
 export const quizService = {
   getCourseQuizzes: (courseId: string) =>
-    fetchApi(`/tests?courseId=${courseId}`) as Promise<{ status: string; data: Quiz[] }>,
+    fetchApi(`/tests?courseId=${courseId}`).then(res => {
+      const data = res.data ?? res
+      return Promise.resolve({
+        status: res.status ?? 'success',
+        data: Array.isArray(data) ? data : (data.data ?? []),
+      })
+    }) as Promise<{ status: string; data: Quiz[] }>,
 
   getQuiz: (quizId: string) =>
-    fetchApi(`/tests/${quizId}`) as Promise<{ status: string; data: { quiz: Quiz; questions: QuizQuestion[] } }>,
+    fetchApi(`/tests/${quizId}`).then(res => ({
+      status: res.status ?? 'success',
+      data: {
+        quiz: res.data ?? res,
+        questions: (res.data?.questions ?? res.questions ?? []).map((q: RawQuestion) => ({
+          id: q.id,
+          question: q.text,
+          type: q.question_type,
+          options: q.options?.map((o: RawOption) => o.text) ?? [],
+          correct_answer: q.options?.find((o: RawOption) => o.is_correct)?.text ?? '',
+          explanation: q.explanation ?? '',
+          points: q.marks,
+        })),
+      },
+    })) as Promise<{
+      status: string
+      data: { quiz: Quiz; questions: QuizQuestion[] }
+    }>,
 
   startAttempt: (quizId: string) =>
     fetchApi(`/tests/${quizId}/start`, {
-      method: 'POST'
-    }) as Promise<{ status: string; data: { attempt_id: string; questions: QuizQuestion[] } }>,
-
-  submitQuiz: (quizId: string, _attemptId: string, answers: Record<string, string>) =>
-    fetchApi(`/tests/${quizId}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ answers })
-    }) as Promise<{ status: string; data: QuizResult }>,
+    }).then(res => ({ // Fixed: removed unnecessary body
+      status: res.status ?? 'success',
+      data: {
+        attempt_id: res.data?.attempt_id ?? res.data?.id,
+        questions: (res.data?.questions ?? []).map((q: RawQuestion) => ({
+          id: q.id,
+          question: q.text,
+          type: q.question_type,
+          options: q.options?.map((o: RawOption) => o.text) ?? [],
+          correct_answer: q.options?.find((o: RawOption) => o.is_correct)?.text ?? '',
+          explanation: q.explanation ?? '',
+          points: q.marks,
+        })),
+      },
+    })) as Promise<{ status: string; data: { attempt_id: string; questions: QuizQuestion[] } }>,
 
-  getResults: (_quizId: string, _attemptId: string) =>
-    // Not directly supported; could fetch from test results list filtered by attempt. Omit for now.
-    Promise.resolve({ status: 'success', data: {} } as any),
+  async submitQuiz(
+    quizId: string,
+    attemptId: string,
+    answers: Record<string, string>,
+    timeTaken: number
+  ) {
+    const res = await fetchApi(`/tests/${quizId}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        attempt_id: attemptId,
+        answers,
+        timeTaken,
+      }),
+    })
+    const data = res.data ?? res
+    return {
+      status: res.status ?? 'success',
+      data: {
+        attempt_id: data.attempt_id ?? data.id ?? attemptId,
+        score: data.score ?? 0,
+        passed: data.passed ?? false,
+        total_questions: data.total_questions ?? 0,
+        correct_answers: data.correct_answers ?? 0,
+        time_taken: data.time_taken ?? timeTaken,
+        percentage: data.percentage ?? 0,
+      },
+    }
+  },
 
-  getAttempts: (_quizId: string) =>
-    // Not implemented
-    Promise.resolve({ status: 'success', data: [] } as any)
-};
+  getResults(quizId: string) { // Fixed: corrected endpoint and parameter
+    return fetchApi(`/tests/${quizId}/result`).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data ?? {} as QuizResult,
+    })) as Promise<{ status: string; data: QuizResult }>
+  },
+
+  getAttempts: (quizId?: string, signal?: AbortSignal) => { // Fixed: parameter name
+    const url = quizId ? `/tests/${quizId}/attempts` : '/tests/attempts'
+    const options = signal !== undefined ? { signal } : undefined
+    return (options ? fetchApi(url, options) : fetchApi(url)).then(res => {
+      const raw = res.data ?? res
+      const data = raw?.data ?? raw?.results ?? (Array.isArray(raw) ? raw : [])
+      return {
+        status: res.status ?? 'success',
+        data: Array.isArray(data) ? data : [],
+      }
+    }) as Promise<{ status: string; data: QuizAttempt[] }>
+  },
+
+  getMyResults: () => // Fixed: corrected endpoint
+    fetchApi(`/tests/my-results`).then(res => ({
+      status: res.status ?? 'success',
+      data: {
+        results: res.data?.data ?? [],
+        totalXp: 0,
+      },
+    })) as Promise<{
+      status: string
+      data: { results: QuizResult[]; totalXp: number }
+    }>,
+
+  listQuizzes: () =>
+    fetchApi(`/tests`).then(res => ({ // Fixed: removed trailing slash
+      status: res.status ?? 'success',
+      data: res.data?.data ?? res.results ?? [],
+    })) as Promise<{ status: string; data: Quiz[] }>,
+}

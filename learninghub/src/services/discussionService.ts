@@ -65,7 +65,11 @@ export const discussionService = {
     ordering?: string
     page?: number
     signal?: AbortSignal
-  }): Promise<{ status: string; data: Discussion[]; meta?: { count: number; next?: string; previous?: string } }> {
+  }): Promise<{
+    status: string
+    data: Discussion[]
+    meta?: { count: number; next?: string; previous?: string }
+  }> {
     const queryParams = new URLSearchParams()
     if (params?.course) queryParams.append('course', params.course)
     if (params?.search) queryParams.append('search', params.search)
@@ -77,12 +81,18 @@ export const discussionService = {
   },
 
   // Get trending discussions
-  async getTrending(limit: number = 10, signal?: AbortSignal): Promise<{ status: string; data: Discussion[] }> {
+  async getTrending(
+    limit: number = 10,
+    signal?: AbortSignal
+  ): Promise<{ status: string; data: Discussion[] }> {
     return fetchApi(`/discussions/trending/?limit=${limit}`, { signal })
   },
 
   // Search discussions
-  async searchDiscussions(query: string, limit: number = 20): Promise<{ status: string; data: Discussion[]; meta: { query: string; count: number } }> {
+  async searchDiscussions(
+    query: string,
+    limit: number = 20
+  ): Promise<{ status: string; data: Discussion[]; meta: { query: string; count: number } }> {
     return fetchApi(`/discussions/threads/search/?q=${encodeURIComponent(query)}&limit=${limit}`)
   },
 
@@ -92,32 +102,37 @@ export const discussionService = {
   },
 
   // Create new discussion
-  async createDiscussion(input: CreateDiscussionInput): Promise<{ status: string; data: Discussion }> {
+  async createDiscussion(
+    input: CreateDiscussionInput
+  ): Promise<{ status: string; data: Discussion }> {
     return fetchApi('/discussions/threads', {
       method: 'POST',
-      body: JSON.stringify(input)
+      body: JSON.stringify(input),
     })
   },
 
   // Vote on discussion (1 for upvote, -1 for downvote, 0 to remove)
-  async voteDiscussion(id: string, value: 1 | -1 | 0): Promise<{ status: string; like_count: number; user_vote: number }> {
+  async voteDiscussion(
+    id: string,
+    value: 1 | -1 | 0
+  ): Promise<{ status: string; like_count: number; user_vote: number }> {
     return fetchApi(`/discussions/threads/${id}/vote`, {
       method: 'POST',
-      body: JSON.stringify({ value })
+      body: JSON.stringify({ value }),
     })
   },
 
   // Pin/unpin discussion
   async pinDiscussion(id: string): Promise<{ status: string; is_pinned: boolean }> {
     return fetchApi(`/discussions/threads/${id}/pin`, {
-      method: 'POST'
+      method: 'POST',
     })
   },
 
   // Mark as resolved
   async resolveDiscussion(id: string): Promise<{ status: string; is_resolved: boolean }> {
     return fetchApi(`/discussions/threads/${id}/resolve`, {
-      method: 'POST'
+      method: 'POST',
     })
   },
 
@@ -127,30 +142,42 @@ export const discussionService = {
   },
 
   // Create reply
-  async createReply(threadId: string, input: CreateReplyInput): Promise<{ status: string; data: DiscussionReply }> {
+  async createReply(
+    threadId: string,
+    input: CreateReplyInput
+  ): Promise<{ status: string; data: DiscussionReply }> {
     return fetchApi(`/discussions/threads/${threadId}/replies`, {
       method: 'POST',
-      body: JSON.stringify(input)
+      body: JSON.stringify(input),
     })
   },
 
   // Vote on reply
-  async voteReply(threadId: string, replyId: string, value: 1 | -1 | 0): Promise<{ status: string; like_count: number; user_vote: number }> {
+  async voteReply(
+    threadId: string,
+    replyId: string,
+    value: 1 | -1 | 0
+  ): Promise<{ status: string; like_count: number; user_vote: number }> {
     return fetchApi(`/discussions/threads/${threadId}/replies/${replyId}/vote`, {
       method: 'POST',
-      body: JSON.stringify({ value })
+      body: JSON.stringify({ value }),
     })
   },
 
   // Accept reply as answer
-  async acceptReply(threadId: string, replyId: string): Promise<{ status: string; is_accepted_answer: boolean }> {
+  async acceptReply(
+    threadId: string,
+    replyId: string
+  ): Promise<{ status: string; is_accepted_answer: boolean }> {
     return fetchApi(`/discussions/threads/${threadId}/replies/${replyId}/accept`, {
-      method: 'POST'
+      method: 'POST',
     })
   },
 
   // Get AI summary of discussion
-  async getSummary(threadId: string): Promise<{ status: string; data: { summary: string; key_points: string[] } }> {
+  async getSummary(
+    threadId: string
+  ): Promise<{ status: string; data: { summary: string; key_points: string[] } }> {
     return fetchApi(`/discussions/threads/${threadId}/summarize`)
-  }
+  },
 }

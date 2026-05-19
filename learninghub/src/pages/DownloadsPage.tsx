@@ -1,9 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Trash2, Play, Pause, HardDrive, CheckCircle, X, Download as DownloadIcon, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Trash2,
+  Play,
+  Pause,
+  HardDrive,
+  CheckCircle,
+  X,
+  Download as DownloadIcon,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
-import { downloadService, type Download as DownloadType, type DownloadStats } from '../services/downloadService'
+import {
+  downloadService,
+  type Download as DownloadType,
+  type DownloadStats,
+} from '../services/downloadService'
 
 const storageTotal = 32 // GB (could be fetched from user settings)
 
@@ -11,7 +25,8 @@ function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 MB'
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
+  // eslint-disable-next-line security/detect-object-injection
+  return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${sizes[i]}`
 }
 
 export default function DownloadsPage() {
@@ -28,7 +43,7 @@ export default function DownloadsPage() {
 
       const [downloadsRes, statsRes] = await Promise.all([
         downloadService.getDownloads({ signal }),
-        downloadService.getStats({ signal })
+        downloadService.getStats({ signal }),
       ])
 
       if (!signal?.aborted) {
@@ -39,7 +54,7 @@ export default function DownloadsPage() {
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load downloads')
         if (import.meta.env.DEV) {
-          console.error('[DownloadsPage] Failed to fetch downloads:', err);
+          console.error('[DownloadsPage] Error fetching downloads:', err)
         }
       }
     } finally {
@@ -51,13 +66,14 @@ export default function DownloadsPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchDownloads(controller.signal)
+    void fetchDownloads(controller.signal)
     return () => controller.abort()
   }, [fetchDownloads])
 
   const filteredDownloads = downloads.filter(download => {
     if (filter === 'all') return true
-    if (filter === 'downloading') return download.status === 'downloading' || download.status === 'paused'
+    if (filter === 'downloading')
+      return download.status === 'downloading' || download.status === 'paused'
     if (filter === 'completed') return download.status === 'completed'
     return true
   })
@@ -65,12 +81,10 @@ export default function DownloadsPage() {
   const pauseDownload = async (id: string) => {
     try {
       await downloadService.pauseDownload(id)
-      setDownloads(prev =>
-        prev.map(d => d.id === id ? { ...d, status: 'paused' } : d)
-      )
+      setDownloads(prev => prev.map(d => (d.id === id ? { ...d, status: 'paused' } : d)))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to pause download:', err);
+        console.error('[DownloadsPage] Failed to pause download:', err)
       }
     }
   }
@@ -78,12 +92,10 @@ export default function DownloadsPage() {
   const resumeDownload = async (id: string) => {
     try {
       await downloadService.resumeDownload(id)
-      setDownloads(prev =>
-        prev.map(d => d.id === id ? { ...d, status: 'downloading' } : d)
-      )
+      setDownloads(prev => prev.map(d => (d.id === id ? { ...d, status: 'downloading' } : d)))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to resume download:', err);
+        console.error('[DownloadsPage] Failed to resume download:', err)
       }
     }
   }
@@ -94,7 +106,7 @@ export default function DownloadsPage() {
       setDownloads(prev => prev.filter(d => d.id !== id))
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to cancel download:', err);
+        console.error('[DownloadsPage] Failed to cancel download:', err)
       }
     }
   }
@@ -108,31 +120,33 @@ export default function DownloadsPage() {
       setStats(statsRes.data)
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to delete download:', err);
+        console.error('[DownloadsPage] Failed to delete download:', err)
       }
     }
   }
 
   const retryDownload = (id: string) => {
     setDownloads(prev =>
-      prev.map(d => d.id === id ? { ...d, status: 'downloading' as const, progress_percent: 0 } : d)
+      prev.map(d =>
+        d.id === id ? { ...d, status: 'downloading' as const, progress_percent: 0 } : d
+      )
     )
   }
-const storageUsedMB = stats?.total_size_mb || 0
-const storageUsedGB = storageUsedMB / 1024
-const storagePercentage = (storageUsedGB / storageTotal) * 100
+  const storageUsedMB = stats?.total_size_mb ?? 0
+  const storageUsedGB = storageUsedMB / 1024
+  const storagePercentage = (storageUsedGB / storageTotal) * 100
 
-const typeIcons: Record<'video' | 'course' | 'document', React.ElementType> = {
-  video: Play,
-  course: DownloadIcon,
-  document: HardDrive
-}
+  const typeIcons: Record<'video' | 'course' | 'document', React.ElementType> = {
+    video: Play,
+    course: DownloadIcon,
+    document: HardDrive,
+  }
 
-const typeColors: Record<'video' | 'course' | 'document', string> = {
-  video: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-  course: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-  document: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-}
+  const typeColors: Record<'video' | 'course' | 'document', string> = {
+    video: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+    course: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+    document: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+  }
 
   return (
     <>
@@ -146,12 +160,8 @@ const typeColors: Record<'video' | 'course' | 'document', string> = {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Downloads
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Manage your offline content
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Downloads</h1>
+            <p className="text-gray-600 dark:text-gray-400">Manage your offline content</p>
           </div>
         </div>
 
@@ -181,9 +191,7 @@ const typeColors: Record<'video' | 'course' | 'document', string> = {
             <div className="flex items-center gap-3">
               <HardDrive className="w-6 h-6 text-primary-600" />
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Storage Used
-                </h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Storage Used</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {storageUsedGB.toFixed(2)} GB of {storageTotal} GB
                 </p>
@@ -225,7 +233,8 @@ const typeColors: Record<'video' | 'course' | 'document', string> = {
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
-              Downloading ({downloads.filter(d => d.status === 'downloading' || d.status === 'paused').length})
+              Downloading (
+              {downloads.filter(d => d.status === 'downloading' || d.status === 'paused').length})
             </button>
             <button
               onClick={() => setFilter('completed')}
@@ -250,7 +259,9 @@ const typeColors: Record<'video' | 'course' | 'document', string> = {
               <Card key={download.id} className="p-4">
                 <div className="flex gap-4">
                   {/* Icon */}
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}
+                  >
                     <Icon className="w-6 h-6" />
                   </div>
 
@@ -326,12 +337,21 @@ const typeColors: Record<'video' | 'course' | 'document', string> = {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-500 dark:text-gray-400">
-                            {formatBytes(Math.round(download.file_size * (download.progress_percent / 100)))} / {formatBytes(download.file_size)}
+                            {formatBytes(
+                              Math.round(download.file_size * (download.progress_percent / 100))
+                            )}{' '}
+                            / {formatBytes(download.file_size)}
                           </span>
-                          <span className={`font-medium ${
-                            download.status === 'failed' ? 'text-red-500' : 'text-gray-900 dark:text-white'
-                          }`}>
-                            {download.status === 'failed' ? 'Failed' : `${download.progress_percent}%`}
+                          <span
+                            className={`font-medium ${
+                              download.status === 'failed'
+                                ? 'text-red-500'
+                                : 'text-gray-900 dark:text-white'
+                            }`}
+                          >
+                            {download.status === 'failed'
+                              ? 'Failed'
+                              : `${download.progress_percent}%`}
                           </span>
                         </div>
                       </div>

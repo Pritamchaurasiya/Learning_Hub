@@ -37,9 +37,14 @@ class WebSocketService {
   void _attemptConnection() {
     if (_token == null) return;
 
-    final wsUrl = kDebugMode
-        ? 'ws://127.0.0.1:8000/ws/notifications/?token=$_token'
-        : 'wss://${Uri.base.host}/ws/notifications/?token=$_token';
+    // Use environment-configured base URL with WSS for security
+    const baseUrl = String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://api.learninghub.app',
+    );
+    final uri = Uri.parse(baseUrl);
+    final wsScheme = uri.scheme == 'https' ? 'wss' : 'ws';
+    final wsUrl = '$wsScheme://${uri.host}:${uri.port}/ws/notifications/?token=$_token';
 
     try {
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));

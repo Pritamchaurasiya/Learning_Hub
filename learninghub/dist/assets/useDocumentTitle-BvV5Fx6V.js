@@ -1,0 +1,1 @@
+import{r as n}from"./vendor-C8Bik5CX.js";function o(e){n.useEffect(()=>{const t=document.title;return document.title=e?`${e} | LearningHub`:"LearningHub - Complete Software Engineering Learning Platform",()=>{document.title=t}},[e])}export{o as u};
