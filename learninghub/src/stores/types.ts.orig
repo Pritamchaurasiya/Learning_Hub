@@ -23,10 +23,7 @@ export interface QuizInfo {
   time_limit: number
   passing_score: number
   total_questions: number
-  difficulty?: 'easy' | 'medium' | 'hard'
-  course_id?: string
-  course_title?: string
-  max_attempts?: number
+  difficulty: 'easy' | 'medium' | 'hard'
 }
 
 export interface QuizAttempt {

@@ -1,0 +1,43 @@
+--- authController.ts
++++ authController.ts
+@@ -455,20 +455,23 @@
+       return
+     }
+
+-    await prisma.user.update({
+-      where: { id: userId },
+-      data: {
+-        deletedAt: new Date(),
+-        email: `deleted_${userId}@deleted.local`,
+-        username: null,
+-      },
+-    })
+-
+-    await prisma.refreshToken.deleteMany({
+-      where: { userId },
+-    })
+-
+-    await prisma.userSession.updateMany({
+-      where: { userId },
+-      data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
+-    })
++    await prisma.$transaction([
++      prisma.user.update({
++        where: { id: userId },
++        data: {
++          deletedAt: new Date(),
++          email: `deleted_${userId}@deleted.local`,
++          username: null,
++          avatar: null,
++          bio: null,
++          location: null,
++          website: null,
++          dateOfBirth: null,
++        },
++      }),
++      prisma.refreshToken.deleteMany({
++        where: { userId },
++      }),
++      prisma.userSession.updateMany({
++        where: { userId },
++        data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
