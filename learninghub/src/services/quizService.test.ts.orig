@@ -152,7 +152,7 @@ describe('quizService', () => {
 
       vi.mocked(fetchApi).mockResolvedValue({
         status: 'success',
-        data: mockResult,
+        data: [mockResult], // Array because getResults mapped res.data?.[0]
       })
 
       const result = await quizService.getResults('quiz-123')

@@ -23,7 +23,7 @@ import {
   Search,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
-import { quizService, type Quiz, type QuizResult } from '../services/quizService'
+import { quizService, type Quiz, type QuizQuestion, type QuizResult } from '../services/quizService'
 
 function QuizPage() {
   useDocumentTitle('Quiz')
@@ -31,6 +31,8 @@ function QuizPage() {
   const { quizId } = useParams<{ quizId: string }>()
 
   // Local state for quiz data
+  const [quizInfo, setQuizInfo] = useState<Quiz | null>(null)
+  const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +51,6 @@ function QuizPage() {
     navigateToQuestion,
     updateQuizTimer,
     clearQuiz,
-    setQuizQuestions,
   } = useStore(state => ({
     flaggedQuestions: state.quiz.flaggedQuestions,
     flagQuestion: state.flagQuestion,
@@ -59,10 +60,9 @@ function QuizPage() {
     navigateToQuestion: state.navigateToQuestion,
     updateQuizTimer: state.updateQuizTimer,
     clearQuiz: state.clearQuiz,
-    setQuizQuestions: state.setQuizQuestions,
   }))
 
-  const { answers, timeRemaining, currentQuestionIndex, questions, quizInfo } = quiz
+  const { answers, timeRemaining, currentQuestionIndex } = quiz
 
   const [availableQuizzes, setAvailableQuizzes] = useState<Quiz[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -78,7 +78,8 @@ function QuizPage() {
         const sessionData = res.data
         // Also fetch quiz info
         const infoRes = await quizService.getQuiz(quizId)
-        setQuizQuestions(sessionData.questions, infoRes.data.quiz)
+        setQuizInfo(infoRes.data.quiz)
+        setQuestions(sessionData.questions)
         setAttemptId(sessionData.attempt_id)
         if (quiz.timeRemaining === 0 && quiz.currentAttempt?.quizId !== quizId) {
           updateQuizTimer(infoRes.data.quiz.time_limit * 60)
