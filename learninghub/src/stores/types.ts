@@ -8,9 +8,11 @@ export type { User, UserProgress, Theme, Achievement, Toast, LoadingState, Notif
 export interface QuizQuestion {
   id: string
   text: string
-  options: string[]
-  correctOption: number
+  question_type: string
+  options: { id: string; text: string; order: number }[]
+  correct_answer?: string
   explanation: string
+  marks: number
 }
 
 export interface QuizInfo {

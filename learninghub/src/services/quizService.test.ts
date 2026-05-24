@@ -57,8 +57,8 @@ describe('quizService', () => {
         time_limit: 30,
         passing_score: 70,
         questions: [
-          { id: 'q1', text: 'Question 1', question_type: 'mcq', marks: 1 },
-          { id: 'q2', text: 'Question 2', question_type: 'mcq', marks: 1 },
+          { id: 'q1', text: 'Question 1', question_type: 'mcq', options: [], correct_answer: 'a', explanation: '', marks: 1 },
+          { id: 'q2', text: 'Question 2', question_type: 'mcq', options: [], correct_answer: 'a', explanation: '', marks: 1 },
         ],
       }
 
@@ -72,7 +72,7 @@ describe('quizService', () => {
       expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123')
       expect(result.data.quiz.id).toEqual('1')
       expect(result.data.questions[0].id).toBe('q1')
-      expect(result.data.questions[0].question).toBe('Question 1')
+      expect(result.data.questions[0].text).toBe('Question 1')
     })
   })
 
@@ -83,7 +83,7 @@ describe('quizService', () => {
         status: 'success',
         data: {
           attempt_id: 'attempt-123',
-          questions: [{ id: 'q1', text: 'Q1', question_type: 'mcq', marks: 1 }],
+          questions: [{ id: 'q1', text: 'Q1', question_type: 'mcq', options: [], correct_answer: 'a', explanation: '', marks: 1 }],
         },
       })
 
@@ -156,7 +156,7 @@ describe('quizService', () => {
         data: [mockResult], // Array because getResults mapped res.data?.[0]
       })
 
-      const result = await quizService.getResults('quiz-123', 'attempt-123')
+      const result = await quizService.getResults('quiz-123')
 
       expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/results')
       expect(result.data).toEqual(mockResult)
