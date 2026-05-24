@@ -15,12 +15,12 @@ export interface Quiz {
 
 export interface QuizQuestion {
   id: string
-  question: string
-  type: 'multiple_choice' | 'true_false' | 'short_answer'
-  options: string[]
-  correct_answer: string
+  text: string
+  question_type: string
+  options: { id: string; text: string; order: number }[]
+  correct_answer?: string
   explanation: string
-  points: number
+  marks: number
 }
 
 export interface QuizAttempt {

@@ -23,7 +23,7 @@ import {
   Search,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
-import { quizService, type Quiz, type QuizQuestion, type QuizResult } from '../services/quizService'
+import { quizService, type Quiz, type QuizResult } from '../services/quizService'
 
 function QuizPage() {
   useDocumentTitle('Quiz')
@@ -31,10 +31,7 @@ function QuizPage() {
   const { quizId } = useParams<{ quizId: string }>()
 
   // Local state for quiz data
-  const [quizInfo, setQuizInfo] = useState<Quiz | null>(null)
-  const [questions, setQuestions] = useState<QuizQuestion[]>([])
-  const [attemptId, setAttemptId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+        const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<QuizResult | null>(null)
@@ -51,6 +48,8 @@ function QuizPage() {
     navigateToQuestion,
     updateQuizTimer,
     clearQuiz,
+    setQuizQuestions,
+    startQuizAttempt,
   } = useStore(state => ({
     flaggedQuestions: state.quiz.flaggedQuestions,
     flagQuestion: state.flagQuestion,
@@ -60,6 +59,8 @@ function QuizPage() {
     navigateToQuestion: state.navigateToQuestion,
     updateQuizTimer: state.updateQuizTimer,
     clearQuiz: state.clearQuiz,
+    setQuizQuestions: state.setQuizQuestions,
+    startQuizAttempt: state.startQuizAttempt,
   }))
 
   const { answers, timeRemaining, currentQuestionIndex } = quiz
@@ -78,11 +79,32 @@ function QuizPage() {
         const sessionData = res.data
         // Also fetch quiz info
         const infoRes = await quizService.getQuiz(quizId)
-        setQuizInfo(infoRes.data.quiz)
-        setQuestions(sessionData.questions)
-        setAttemptId(sessionData.attempt_id)
+
+                // Map legacy fields if necessary
+        const mappedQuestions = sessionData.questions.map((q: any) => ({
+          id: q.id,
+          text: q.text || q.text || '',
+          question_type: q.text_type || q.question_type || 'multiple_choice',
+          options: (q.options || []).map((o: any, i: number) =>
+            typeof o === 'string' ? { id: `${i}`, text: o, order: i } : o
+          ),
+          correct_answer: q.correct_answer || (q.options && q.options.find((o: any) => o.order === q.marks)?.text),
+          explanation: q.explanation || '',
+          marks: q.marks || q.marks || 1
+        }))
+        setQuizQuestions(mappedQuestions, infoRes.data.quiz as unknown as import('../stores/types').QuizInfo)
+
         if (quiz.timeRemaining === 0 && quiz.currentAttempt?.quizId !== quizId) {
-          updateQuizTimer(infoRes.data.quiz.time_limit * 60)
+          startQuizAttempt(quizId, infoRes.data.quiz.title, sessionData.questions.length, infoRes.data.quiz.time_limit)
+          useStore.setState(s => ({
+            quiz: {
+              ...s.quiz,
+              currentAttempt: s.quiz.currentAttempt ? {
+                ...s.quiz.currentAttempt,
+                attemptId: sessionData.attempt_id
+              } : null
+            }
+          }))
         }
       } else {
         // No quizId: Load available quizzes for selection
@@ -111,7 +133,7 @@ function QuizPage() {
 
   const handleConfirmSubmit = useCallback(async () => {
     setShowConfirmDialog(false)
-    if (!quizInfo || !attemptId || !quizId) return
+    if (!quiz.quizInfo || !quiz.currentAttempt?.attemptId || !quizId) return
 
     if (hasSubmittedRef.current) return
     hasSubmittedRef.current = true
@@ -119,10 +141,10 @@ function QuizPage() {
     setIsSubmitting(true)
 
     try {
-      const timeTaken = (quizInfo.time_limit ?? 0) * 60 - timeRemaining
+      const timeTaken = (quiz.quizInfo?.time_limit ?? 0) * 60 - timeRemaining
       const response = await quizService.submitQuiz(
         quizId,
-        attemptId,
+        quiz.currentAttempt?.attemptId as string,
         answers as Record<string, string>,
         timeTaken
       )
@@ -137,26 +159,26 @@ function QuizPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [quizId, attemptId, questions, answers, timeRemaining, quizInfo])
+  }, [quizId, quiz.currentAttempt?.attemptId as string, quiz.questions, answers, timeRemaining, quiz.quizInfo])
 
   // Timer effect: decrement every second
   useEffect(() => {
-    if (!quizInfo || result || timeRemaining <= 0) return
+    if (!quiz.quizInfo || result || timeRemaining <= 0) return
 
     const timer = setInterval(() => {
       updateQuizTimer(timeRemaining - 1)
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [quizInfo, result, timeRemaining, updateQuizTimer])
+  }, [quiz.quizInfo, result, timeRemaining, updateQuizTimer])
 
   // Auto-submit when timer hits zero
   useEffect(() => {
-    if (timeRemaining === 0 && quizInfo && attemptId && !result && !isSubmitting && !hasSubmittedRef.current) {
+    if (timeRemaining === 0 && quiz.quizInfo && quiz.currentAttempt?.attemptId && !result && !isSubmitting && !hasSubmittedRef.current) {
       hasSubmittedRef.current = true
       void handleConfirmSubmit()
     }
-  }, [timeRemaining, quizInfo, attemptId, result, isSubmitting, handleConfirmSubmit])
+  }, [timeRemaining, quiz.quizInfo, quiz.currentAttempt?.attemptId as string, result, isSubmitting, handleConfirmSubmit])
 
   const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -180,9 +202,9 @@ function QuizPage() {
   }, [loadQuiz, navigateToQuestion, clearQuiz])
 
   const quizProgress = useMemo(() => {
-    if (questions.length === 0) return 0
-    return ((currentQuestionIndex + 1) / questions.length) * 100
-  }, [questions.length, currentQuestionIndex])
+    if (quiz.questions.length === 0) return 0
+    return ((currentQuestionIndex + 1) / quiz.questions.length) * 100
+  }, [quiz.questions.length, currentQuestionIndex])
 
   if (isLoading) {
     return (
@@ -324,7 +346,7 @@ function QuizPage() {
     )
   }
 
-  if (!quizInfo || questions.length === 0) return null
+  if (!quiz.quizInfo || quiz.questions.length === 0) return null
 
   if (result) {
     return (
@@ -432,7 +454,7 @@ function QuizPage() {
             <Info className="w-5 h-5 text-primary-500" />
             Detailed Breakdown
           </h2>
-          {questions.map((q, index) => {
+          {quiz.questions.map((q, index) => {
             const userAnswer = answers[q.id]
             const isCorrect = userAnswer === q.correct_answer
             return (
@@ -461,7 +483,7 @@ function QuizPage() {
                           Question {index + 1}
                         </p>
                         <p className="font-bold text-lg leading-snug tracking-tight">
-                          {q.question}
+                          {q.text}
                         </p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -501,10 +523,10 @@ function QuizPage() {
   }
 
   // eslint-disable-next-line security/detect-object-injection
-  const currentQuestion = questions[currentQuestionIndex]
-  const isLastQuestion = currentQuestionIndex === questions.length - 1
+  const currentQuestion = quiz.questions[currentQuestionIndex]
+  const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1
   const displayOptions =
-    currentQuestion.options || (currentQuestion.type === 'true_false' ? ['True', 'False'] : [])
+    currentQuestion.options || (currentQuestion.question_type === 'true_false' ? ['True', 'False'] : [])
 
   return (
     <AnimatedPage className="max-w-4xl mx-auto px-4 pb-12">
@@ -518,11 +540,11 @@ function QuizPage() {
               <Brain className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-none">
-              {quizInfo.title}
+              {quiz.quizInfo?.title}
             </h1>
           </div>
           <p className="text-gray-500 dark:text-gray-400 font-medium text-sm sm:pl-15">
-            {quizInfo.description}
+            {quiz.quizInfo.description}
           </p>
         </div>
 
@@ -545,7 +567,7 @@ function QuizPage() {
             </span>
             <span className="text-lg font-black text-primary-600">
               {currentQuestionIndex + 1}{' '}
-              <span className="text-gray-300 font-medium text-sm">of {questions.length}</span>
+              <span className="text-gray-300 font-medium text-sm">of {quiz.questions.length}</span>
             </span>
           </div>
           <span className="text-xs font-black text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
@@ -584,11 +606,11 @@ function QuizPage() {
                 Question Navigator
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-500">
-                {Object.keys(answers).length} of {questions.length} answered
+                {Object.keys(answers).length} of {quiz.questions.length} answered
               </span>
             </div>
             <div className="grid grid-cols-10 gap-2">
-              {questions.map((q, idx) => {
+              {quiz.questions.map((q, idx) => {
                 const isAnswered = answers[q.id] !== undefined
                 const isFlagged = flaggedQuestions.includes(q.id)
                 const isCurrent = idx === currentQuestionIndex
@@ -622,7 +644,7 @@ function QuizPage() {
           <div className="mb-10 space-y-4">
             <div className="flex items-center justify-between">
               <span className="inline-block px-4 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
-                Difficulty Award: {currentQuestion.points} XP
+                Difficulty Award: {currentQuestion.marks} XP
               </span>
               <button
                 onClick={() => {
@@ -648,19 +670,19 @@ function QuizPage() {
               </button>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
-              {currentQuestion.question}
+              {currentQuestion.text}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-4" role="radiogroup">
             {displayOptions.map((option, idx) => {
-              const isSelected = answers[currentQuestion.id] === option
+              const isSelected = answers[currentQuestion.id] === option.text
               return (
                 <motion.button
-                  key={option}
+                  key={option.id}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  onClick={() => handleAnswer(currentQuestion.id, option)}
+                  onClick={() => handleAnswer(currentQuestion.id, option.text)}
                   className={`group w-full text-left p-6 rounded-[2rem] border-2 transition-all duration-300 flex items-center justify-between ${
                     isSelected
                       ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-lg shadow-primary-500/5'
@@ -680,7 +702,7 @@ function QuizPage() {
                     <span
                       className={`font-bold text-lg tracking-tight ${isSelected ? 'text-primary-700 dark:text-primary-400' : 'text-gray-600 dark:text-gray-300'}`}
                     >
-                      {option}
+                      {option.text}
                     </span>
                   </div>
                   {isSelected && (
@@ -740,7 +762,7 @@ function QuizPage() {
               </div>
               <h3 className="text-xl font-black mb-2">Submit Quiz?</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                You have answered {Object.keys(answers).length} of {questions.length} questions.
+                You have answered {Object.keys(answers).length} of {quiz.questions.length} questions.
               </p>
               {flaggedQuestions.length > 0 && (
                 <p className="text-amber-600 text-sm mt-2 font-medium">

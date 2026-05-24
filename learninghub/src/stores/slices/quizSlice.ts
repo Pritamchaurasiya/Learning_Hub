@@ -92,7 +92,7 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
       state.quiz.questions.forEach(q => {
         // Compare user answer against the correct_answer field directly
         // Backend stores correct_answer as a string value, not an index
-        const correctAnswer = (q as any).correct_answer ?? q.options?.[q.correctOption ?? 0]
+        const correctAnswer = (q as any).correct_answer ?? q.correct_answer
         if (state.quiz.answers[q.id] === correctAnswer) correctCount++
       })
       const score = Math.round((correctCount / state.quiz.questions.length) * 100)

@@ -150,7 +150,7 @@ export const testsAService = {
   startTest: (testId: string) =>
     fetchApi(`/tests/${testId}/start`, {
       method: 'POST',
-      body: JSON.stringify({})),
+      body: JSON.stringify({}),
     }).then(res => ({
       status: res.status ?? 'success',
       data: res.data,
