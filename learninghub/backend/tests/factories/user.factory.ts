@@ -1,7 +1,7 @@
 import { User } from '@prisma/client'
 
 export const createUser = (overrides: Partial<User> = {}): User => ({
-  id: 'user-' + Math.random().toString(36).substring(7),
+  id: `user-${Math.random().toString(36).substring(7)}`,
   email: 'test@example.com',
   username: 'testuser',
   password: 'hashedpassword123',

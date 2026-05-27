@@ -152,7 +152,14 @@ function QuizPage() {
 
   // Auto-submit when timer hits zero
   useEffect(() => {
-    if (timeRemaining === 0 && quizInfo && attemptId && !result && !isSubmitting && !hasSubmittedRef.current) {
+    if (
+      timeRemaining === 0 &&
+      quizInfo &&
+      attemptId &&
+      !result &&
+      !isSubmitting &&
+      !hasSubmittedRef.current
+    ) {
       hasSubmittedRef.current = true
       void handleConfirmSubmit()
     }
@@ -345,7 +352,7 @@ function QuizPage() {
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-4xl font-black tabular-nums tracking-tighter">
-                  {(result.percentage ?? result.score)}%
+                  {result.percentage ?? result.score}%
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
                   Mastery
