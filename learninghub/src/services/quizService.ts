@@ -97,7 +97,8 @@ export const quizService = {
   startAttempt: (quizId: string) =>
     fetchApi(`/tests/${quizId}/start`, {
       method: 'POST',
-    }).then(res => ({ // Fixed: removed unnecessary body
+    }).then(res => ({
+      // Fixed: removed unnecessary body
       status: res.status ?? 'success',
       data: {
         attempt_id: res.data?.attempt_id ?? res.data?.id,
@@ -142,14 +143,16 @@ export const quizService = {
     }
   },
 
-  getResults(quizId: string) { // Fixed: corrected endpoint and parameter
+  getResults(quizId: string) {
+    // Fixed: corrected endpoint and parameter
     return fetchApi(`/tests/${quizId}/result`).then(res => ({
       status: res.status ?? 'success',
-      data: res.data ?? {} as QuizResult,
+      data: res.data ?? ({} as QuizResult),
     })) as Promise<{ status: string; data: QuizResult }>
   },
 
-  getAttempts: (quizId?: string, signal?: AbortSignal) => { // Fixed: parameter name
+  getAttempts: (quizId?: string, signal?: AbortSignal) => {
+    // Fixed: parameter name
     const url = quizId ? `/tests/${quizId}/attempts` : '/tests/attempts'
     const options = signal !== undefined ? { signal } : undefined
     return (options ? fetchApi(url, options) : fetchApi(url)).then(res => {
@@ -162,7 +165,8 @@ export const quizService = {
     }) as Promise<{ status: string; data: QuizAttempt[] }>
   },
 
-  getMyResults: () => // Fixed: corrected endpoint
+  getMyResults: () =>
+    // Fixed: corrected endpoint
     fetchApi(`/tests/my-results`).then(res => ({
       status: res.status ?? 'success',
       data: {
@@ -175,7 +179,8 @@ export const quizService = {
     }>,
 
   listQuizzes: () =>
-    fetchApi(`/tests`).then(res => ({ // Fixed: removed trailing slash
+    fetchApi(`/tests`).then(res => ({
+      // Fixed: removed trailing slash
       status: res.status ?? 'success',
       data: res.data?.data ?? res.results ?? [],
     })) as Promise<{ status: string; data: Quiz[] }>,

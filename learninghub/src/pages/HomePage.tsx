@@ -148,7 +148,7 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
             Welcome back, {auth.user?.username ?? 'Learner'}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Here's your learning progress at a glance.
+            Here&apos;s your learning progress at a glance.
           </p>
         </div>
 

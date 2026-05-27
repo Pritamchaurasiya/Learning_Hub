@@ -8,7 +8,7 @@ import { queryOptimizationService } from '../services/QueryOptimizationService'
 import { emailService } from '../services/EmailService'
 
 // Extend Express Request for multer file uploads (reserved for future use)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 type _MulterFile = {
   fieldname: string
   originalname: string

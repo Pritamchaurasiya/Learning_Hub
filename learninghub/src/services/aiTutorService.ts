@@ -156,7 +156,7 @@ export const aiTutorService = {
       } else {
         throw new Error('Invalid response from AI backend')
       }
-    } catch (err) {
+    } catch {
       // Graceful degradation — inform the user rather than silently failing
       const isOffline = !navigator.onLine
       responseContent = isOffline
