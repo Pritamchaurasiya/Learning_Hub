@@ -237,3 +237,4 @@ conductor/website_enhancement_report_*.json
 conductor/website_enhancement_final_*.json
 conductor/advanced_system_analysis_report_*.json
 conductor/setup_state.json
+learninghub/backend/coverage/

@@ -15,8 +15,15 @@ jest.mock('../../src/utils/auth', () => ({
 jest.mock('../../src/utils/logger', () => ({
   error: jest.fn(),
   info: jest.fn(),
+  warn: jest.fn(),
   debug: jest.fn(),
   audit: jest.fn(),
+}))
+
+jest.mock('../../src/services/QueryOptimizationService', () => ({
+  queryOptimizationService: {
+    getUserPerformanceSummary: jest.fn().mockResolvedValue({ test_stats: {}, recent_tests: [] }),
+  },
 }))
 
 describe('AuthController', () => {
@@ -229,9 +236,18 @@ describe('AuthController', () => {
     it('should refresh token successfully', async () => {
       const refreshToken = 'valid-refresh-token'
       const user = createUser({ id: 'user-123' })
+      const storedToken = {
+        id: 'token-123',
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 1000000),
+        usedAt: null,
+        revokedAt: null,
+      }
 
       mockReq.body = { refresh_token: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: user.id })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
       await refresh(mockReq, mockRes)
@@ -248,9 +264,18 @@ describe('AuthController', () => {
     it('should accept refresh key for backward compatibility', async () => {
       const refreshToken = 'valid-refresh-token'
       const user = createUser({ id: 'user-123' })
+      const storedToken = {
+        id: 'token-123',
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 1000000),
+        usedAt: null,
+        revokedAt: null,
+      }
 
       mockReq.body = { refresh: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: user.id })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
       await refresh(mockReq, mockRes)
@@ -291,9 +316,18 @@ describe('AuthController', () => {
 
     it('should return 401 when user no longer exists', async () => {
       const refreshToken = 'valid-refresh-token'
+      const storedToken = {
+        id: 'token-123',
+        token: refreshToken,
+        userId: 'non-existent-id',
+        expiresAt: new Date(Date.now() + 1000000),
+        usedAt: null,
+        revokedAt: null,
+      }
 
       mockReq.body = { refresh_token: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: 'non-existent-id' })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       await refresh(mockReq, mockRes)
@@ -352,7 +386,8 @@ describe('AuthController', () => {
             streak: user.streak,
             lastActive: user.lastActive,
           },
-          progress: mockProgress,
+          performance: {},
+          recent_tests: [],
           bookmarks: mockBookmarks,
           achievements: mockAchievements,
         },

@@ -87,41 +87,9 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
     const state = get()
     if (!state.quiz.currentAttempt) throw new Error('No active quiz attempt')
     set(s => ({ quiz: { ...s.quiz, isSubmitting: true } }))
-    try {
-      let correctCount = 0
-      state.quiz.questions.forEach(q => {
-        // Compare user answer against the correct_answer field directly
-        // Backend stores correct_answer as a string value, not an index
-        const correctAnswer = (q as any).correct_answer ?? q.options?.[q.correctOption ?? 0]
-        if (state.quiz.answers[q.id] === correctAnswer) correctCount++
-      })
-      const score = Math.round((correctCount / state.quiz.questions.length) * 100)
-      set(s => ({
-        quiz: {
-          ...s.quiz,
-          currentAttempt: s.quiz.currentAttempt
-            ? {
-                ...s.quiz.currentAttempt,
-                status: 'completed' as const,
-                completedAt: new Date().toISOString(),
-                score,
-                correctAnswers: correctCount,
-              }
-            : null,
-          isSubmitting: false,
-        },
-      }))
-      trackEvent('quiz_completed', {
-        quiz_id: state.quiz.currentAttempt.quizId,
-        score,
-        correct_answers: correctCount,
-        total_questions: state.quiz.questions.length,
-      })
-      return { success: true, score }
-    } catch (error) {
-      set(s => ({ quiz: { ...s.quiz, isSubmitting: false } }))
-      throw error
-    }
+    // Note: The actual submission to the backend and score calculation is handled directly
+    // by QuizPage.tsx. We only need to resolve this for state management consistency.
+    return Promise.resolve({ success: true, score: 0 })
   },
   resetQuizState: () => set({ quiz: defaultQuizState }),
   clearQuiz: () => set({ quiz: defaultQuizState }),
