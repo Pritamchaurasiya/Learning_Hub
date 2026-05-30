@@ -13,10 +13,21 @@ jest.mock('../../src/utils/auth', () => ({
   verifyRefreshToken: jest.fn(),
 }))
 jest.mock('../../src/utils/logger', () => ({
-  error: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-  audit: jest.fn(),
+  __esModule: true,
+  default: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  },
+  logger: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  }
 }))
 
 describe('AuthController', () => {
@@ -229,9 +240,11 @@ describe('AuthController', () => {
     it('should refresh token successfully', async () => {
       const refreshToken = 'valid-refresh-token'
       const user = createUser({ id: 'user-123' })
+      const storedToken = { id: 'token-123', expiresAt: new Date(Date.now() + 10000) }
 
       mockReq.body = { refresh_token: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: user.id })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
       await refresh(mockReq, mockRes)
@@ -248,9 +261,11 @@ describe('AuthController', () => {
     it('should accept refresh key for backward compatibility', async () => {
       const refreshToken = 'valid-refresh-token'
       const user = createUser({ id: 'user-123' })
+      const storedToken = { id: 'token-123', expiresAt: new Date(Date.now() + 10000) }
 
       mockReq.body = { refresh: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: user.id })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
       await refresh(mockReq, mockRes)
@@ -291,9 +306,11 @@ describe('AuthController', () => {
 
     it('should return 401 when user no longer exists', async () => {
       const refreshToken = 'valid-refresh-token'
+      const storedToken = { id: 'token-123', expiresAt: new Date(Date.now() + 10000) }
 
       mockReq.body = { refresh_token: refreshToken }
       verifyRefreshToken.mockReturnValue({ userId: 'non-existent-id' })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(storedToken)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       await refresh(mockReq, mockRes)
@@ -326,13 +343,14 @@ describe('AuthController', () => {
       const user = createUser({
         id: 'user-123',
       })
-      const mockProgress: unknown[] = []
+      const mockPerformance = { test_stats: {}, recent_tests: [] }
       const mockBookmarks: unknown[] = []
       const mockAchievements: unknown[] = []
+      const { queryOptimizationService } = require('../../src/services/QueryOptimizationService')
 
       ;(mockReq as any).user = { userId: user.id, email: user.email, role: user.role }
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
-      ;(prisma.userProgress.findMany as jest.Mock).mockResolvedValue(mockProgress)
+      ;(queryOptimizationService.getUserPerformanceSummary as jest.Mock) = jest.fn().mockResolvedValue(mockPerformance)
       ;(prisma.bookmark.findMany as jest.Mock).mockResolvedValue(mockBookmarks)
       ;(prisma.userAchievement.findMany as jest.Mock).mockResolvedValue(mockAchievements)
       ;(prisma.user.update as jest.Mock).mockResolvedValue(user)
@@ -352,7 +370,8 @@ describe('AuthController', () => {
             streak: user.streak,
             lastActive: user.lastActive,
           },
-          progress: mockProgress,
+          performance: mockPerformance.test_stats,
+          recent_tests: mockPerformance.recent_tests,
           bookmarks: mockBookmarks,
           achievements: mockAchievements,
         },
