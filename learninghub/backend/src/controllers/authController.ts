@@ -455,23 +455,23 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
       return
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        deletedAt: new Date(),
-        email: `deleted_${userId}@deleted.local`,
-        username: null,
-      },
-    })
-
-    await prisma.refreshToken.deleteMany({
-      where: { userId },
-    })
-
-    await prisma.userSession.updateMany({
-      where: { userId },
-      data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
-    })
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          deletedAt: new Date(),
+          email: `deleted_${userId}@deleted.local`,
+          username: null,
+        },
+      }),
+      prisma.refreshToken.deleteMany({
+        where: { userId },
+      }),
+      prisma.userSession.updateMany({
+        where: { userId },
+        data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
+      }),
+    ])
 
     logger.audit('ACCOUNT_DELETION', userId, { reason: 'user_requested' })
 
