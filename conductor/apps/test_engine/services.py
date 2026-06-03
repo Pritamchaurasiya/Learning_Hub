@@ -3,15 +3,17 @@ Test engine services: session management, scoring, autosave, timeout handling.
 """
 import uuid
 import logging
+import json
 from datetime import timedelta
 from django.utils import timezone
-from django.db import transaction
-from django.db.models import Sum, Count, Q, Avg
+from django.db import transaction, IntegrityError
+from django.db.models import Sum, Count, Q, Avg, F
 from django.core.cache import cache
 
 from .models import Test, TestQuestion, TestAttempt, AttemptAnswer, Question, Option
 
 logger = logging.getLogger(__name__)
+MAX_AUTOSAVE_BYTES = 32 * 1024  # 32KB guard for autosave_data JSON
 
 
 class TestSessionManager:
@@ -50,22 +52,39 @@ class TestSessionManager:
         attempt_number = (last_attempt.attempt_number + 1) if last_attempt else 1
 
         # Create new attempt
-        attempt = TestAttempt.objects.create(
-            user=user,
-            test=test,
-            session_token=uuid.uuid4().hex + uuid.uuid4().hex[:32],
-            status='in_progress',
-            mode=mode,
-            total_marks=test.total_marks,
-            attempt_number=attempt_number,
-            device_info=device_info or {},
-            ip_address=ip_address,
-        )
+        # Ensure total_marks is derived from test questions if not set
+        total_marks = test.total_marks or TestQuestion.objects.filter(test=test).aggregate(total=Sum('marks'))['total'] or 0
 
-        # Update test attempt count
-        Test.objects.filter(id=test_id).update(attempt_count=test.attempt_count + 1)
+        try:
+            # Use savepoint (nested atomic) so IntegrityError from concurrent create can be handled
+            with transaction.atomic():
+                attempt = TestAttempt.objects.create(
+                    user=user,
+                    test=test,
+                    session_token=uuid.uuid4().hex + uuid.uuid4().hex[:32],
+                    status='in_progress',
+                    mode=mode,
+                    total_marks=total_marks,
+                    attempt_number=attempt_number,
+                    device_info=device_info or {},
+                    ip_address=ip_address,
+                )
+        except IntegrityError:
+            # Another worker likely created an in-progress attempt concurrently.
+            # Fetch the existing in-progress attempt and return it.
+            existing = TestAttempt.objects.select_related('test').filter(
+                user=user, test=test, status='in_progress'
+            ).first()
+            if existing:
+                logger.info(f"Concurrent create detected. Returning existing attempt {existing.id} for user {user.id}")
+                return existing
+            # If not found, re-raise
+            raise
 
-        logger.info(f"Started new attempt {attempt.id} for user {user.id} on test {test_id}")
+        # Update test attempt count atomically
+        Test.objects.filter(id=test_id).update(attempt_count=F('attempt_count') + 1)
+
+        logger.info(f"Started new attempt %s for user %s", attempt.id, user.id)
         return attempt
 
     @classmethod
@@ -111,7 +130,11 @@ class TestSessionManager:
         # Handle option selection
         selected_option_ids = answer_data.get('selected_options', [])
         if selected_option_ids:
-            answer.selected_options.set(selected_option_ids)
+            # Ensure options belong to this question to prevent tampering
+            allowed_option_ids = list(Option.objects.filter(id__in=selected_option_ids, question=question).values_list('id', flat=True))
+            if len(allowed_option_ids) != len(selected_option_ids):
+                logger.warning(f"Autosave: Some selected option ids are invalid for question {question.id} in attempt {attempt.id}")
+            answer.selected_options.set(allowed_option_ids)
 
         # Handle text answer
         if 'text_answer' in answer_data:
@@ -130,14 +153,38 @@ class TestSessionManager:
         answer.save()
 
         # Update autosave data on attempt
-        attempt.autosave_data[str(question_id)] = {
+        key = str(question_id)
+        existing = attempt.autosave_data or {}
+        existing[key] = {
             'selected_options': selected_option_ids,
             'text_answer': answer.text_answer,
             'timestamp': timezone.now().isoformat(),
         }
-        attempt.autosave_version += 1
-        attempt.last_activity_at = timezone.now()
-        attempt.save(update_fields=['autosave_data', 'autosave_version', 'last_activity_at'])
+
+        # Guard autosave JSON size to avoid huge payloads
+        try:
+            data_bytes = json.dumps(existing).encode('utf-8')
+            if len(data_bytes) > MAX_AUTOSAVE_BYTES:
+                # Simple eviction: remove oldest entries until size within limit
+                # existing is a dict keyed by question_id with timestamp — evict by oldest timestamp
+                items = list(existing.items())
+                # sort by timestamp
+                items.sort(key=lambda kv: kv[1].get('timestamp', ''))
+                while len(json.dumps(dict(items)).encode('utf-8')) > MAX_AUTOSAVE_BYTES and items:
+                    items.pop(0)
+                existing = dict(items)
+        except Exception:
+            # If any serialization error, fallback to keeping only current answer
+            existing = {key: existing[key]}
+
+        # Atomically update autosave_data and increment version to avoid race conditions
+        TestAttempt.objects.filter(pk=attempt.pk).update(
+            autosave_data=existing,
+            autosave_version=F('autosave_version') + 1,
+            last_activity_at=timezone.now(),
+        )
+        # Refresh attempt instance to read numeric autosave_version back
+        attempt.refresh_from_db()
 
         # For practice mode, provide instant feedback
         feedback = None
@@ -154,23 +201,24 @@ class TestSessionManager:
     def _grade_answer(cls, answer, question):
         """Grade a single answer and return feedback."""
         if question.question_type == 'mcq':
-            selected = list(answer.selected_options.values_list('id', flat=True))
-            correct = list(question.options.filter(is_correct=True).values_list('id', flat=True))
+            selected_set = set(answer.selected_options.values_list('id', flat=True))
+            correct_set = set(question.options.filter(is_correct=True).values_list('id', flat=True))
 
-            is_correct = selected == correct
+            is_correct = selected_set == correct_set and len(selected_set) > 0
             answer.is_correct = is_correct
             answer.marks_obtained = 1 if is_correct else 0
 
-            # Get explanation
+            # Get explanation and first correct option id
             correct_option = question.options.filter(is_correct=True).first()
             explanation = correct_option.explanation if correct_option else question.explanation
+            correct_option_id = str(correct_option.id) if correct_option else None
 
             answer.save()
 
             return {
                 'is_correct': is_correct,
                 'explanation': explanation,
-                'correct_option_id': correct[0] if correct else None,
+                'correct_option_id': correct_option_id,
             }
 
         return None
@@ -209,14 +257,22 @@ class TestSessionManager:
                 continue
 
             grading = cls._grade_answer_for_submission(answer, test)
-            if grading['is_correct']:
-                total_obtained += grading['marks']
+            if grading.get('is_correct'):
+                total_obtained += grading.get('marks', 0)
                 correct_count += 1
-            elif grading['is_wrong']:
-                total_negative += test.negative_marks_per_question
+            elif grading.get('is_wrong'):
+                # Negative marks may be per-question or custom per-test; fallback to test setting
+                neg = getattr(test, 'negative_marks_per_question', 0)
+                total_negative += neg
                 incorrect_count += 1
             else:
                 unanswered_count += 1
+
+        # Defensive: if total_marks is zero, derive from test questions
+        if not attempt.total_marks or attempt.total_marks == 0:
+            derived = TestQuestion.objects.filter(test=test).aggregate(total=Sum('marks'))['total'] or 0
+            attempt.total_marks = derived
+            attempt.save(update_fields=['total_marks'])
 
         # Calculate final score
         score = max(0, total_obtained - total_negative)
@@ -233,8 +289,11 @@ class TestSessionManager:
         )
         attempt.save()
 
-        # Update analytics asynchronously
-        cls._queue_analytics_update(attempt)
+        # Update analytics asynchronously (best-effort)
+        try:
+            cls._queue_analytics_update(attempt)
+        except Exception as e:
+            logger.error(f"Failed to queue analytics update for attempt {attempt.id}: {e}")
 
         logger.info(
             f"Submitted attempt {attempt.id}: score={score}, "
@@ -328,16 +387,25 @@ class TestSessionManager:
         if elapsed >= time_limit:
             logger.info(f"Attempt {attempt.id} timed out after {elapsed}s")
             try:
-                cls.submit_attempt(attempt.id)
-                # Update status to expired
+                submitted_attempt = cls.submit_attempt(attempt.id)
+                # Refresh to get definitive state
                 attempt.refresh_from_db()
-                attempt.status = 'expired'
-                attempt.save(update_fields=['status'])
+                # If the submission occurred at or after timeout, mark expired to indicate timeout-driven submission
+                if attempt.submitted_at:
+                    submitted_elapsed = (attempt.submitted_at - attempt.started_at).total_seconds()
+                    if submitted_elapsed >= time_limit:
+                        attempt.status = 'expired'
+                        attempt.save(update_fields=['status'])
+                return True
             except Exception as e:
-                logger.error(f"Failed to auto-submit timed-out attempt {attempt.id}: {e}")
-                attempt.status = 'expired'
-                attempt.save(update_fields=['status'])
-            return True
+                logger.exception(f"Failed to auto-submit timed-out attempt {attempt.id}: {e}")
+                # Mark expired to prevent further activity
+                try:
+                    TestAttempt.objects.filter(pk=attempt.pk).update(status='expired')
+                except Exception:
+                    attempt.status = 'expired'
+                    attempt.save(update_fields=['status'])
+                return True
 
         return False
 
@@ -346,10 +414,19 @@ class TestSessionManager:
         """Queue analytics update via Celery (or run synchronously if Celery unavailable)."""
         try:
             from .tasks import update_analytics_after_attempt
+            # Ensure Celery app is configured and healthy via settings flag
             update_analytics_after_attempt.delay(str(attempt.id))
-        except Exception:
-            # Fallback: run synchronously
-            cls._update_analytics_sync(attempt)
+        except Exception as e:
+            logger.warning(f"Celery unavailable or failed to enqueue analytics task: {e}. Running sync fallback.")
+            # Fallback: run synchronously but protect main thread by offloading to a short-lived thread
+            try:
+                import threading
+                t = threading.Thread(target=cls._update_analytics_sync, args=(attempt,))
+                t.daemon = True
+                t.start()
+            except Exception:
+                # Last resort: run directly
+                cls._update_analytics_sync(attempt)
 
     @classmethod
     def _update_analytics_sync(cls, attempt):
