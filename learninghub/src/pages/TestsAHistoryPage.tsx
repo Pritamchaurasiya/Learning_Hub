@@ -16,6 +16,15 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from 'recharts'
 import { testsAService, TestAttempt } from '../services/testsAService'
 import { badgeService, Badge } from '../services/badgeService'
 import { BadgeDisplay, BadgeProgress } from '../components/BadgeDisplay'
@@ -105,6 +114,26 @@ const TestsAHistoryPage = () => {
         return history
     }
   }, [history, filter])
+
+  // Chart data
+  const chartData = useMemo(() => {
+    // Sort history chronologically for the chart
+    const sorted = [...filteredHistory].sort((a, b) => {
+      const dateA = new Date(a.submitted_at ?? a.started_at).getTime()
+      const dateB = new Date(b.submitted_at ?? b.started_at).getTime()
+      return dateA - dateB
+    })
+
+    return sorted.map((attempt, index) => ({
+      name: `Test ${index + 1}`,
+      score: attempt.score,
+      date: new Date(attempt.submitted_at ?? attempt.started_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      }),
+      passed: attempt.passed,
+    }))
+  }, [filteredHistory])
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -262,16 +291,16 @@ const TestsAHistoryPage = () => {
         )}
 
         {/* Filters */}
-        <div className="flex items-center gap-2 mb-6">
-          <Filter className="w-5 h-5 text-gray-400" />
-          <div className="flex gap-2">
+        <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+          <div className="flex gap-2 flex-wrap">
             {(['ALL', 'PASSED', 'FAILED'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === f
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
@@ -283,15 +312,72 @@ const TestsAHistoryPage = () => {
           </div>
         </div>
 
+        {/* Trend Chart */}
+        {chartData.length > 1 && (
+          <Card className="p-6 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+              Score Trend
+            </h2>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#6B7280', fontSize: 12 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    domain={[0, 100]}
+                  />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: number) => [`${value}%`, 'Score']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="score" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        )}
+
         {/* History List */}
         <div className="space-y-4">
           {filteredHistory.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No test attempts yet</h3>
-              <p className="text-gray-500 mb-4">Start taking tests to see your history here</p>
-              <Button onClick={() => navigate('/tests-a')}>Browse Tests</Button>
-            </Card>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="p-16 text-center border-dashed border-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Brain className="w-12 h-12 text-blue-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No test attempts found
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto mb-8">
+                  {filter === 'ALL'
+                    ? "You haven't taken any tests yet. Start practicing to see your progress and earn badges!"
+                    : `No ${filter.toLowerCase()} tests found. Keep practicing!`}
+                </p>
+                <Button
+                  onClick={() => navigate('/tests-a')}
+                  variant="primary"
+                  className="px-8 shadow-lg shadow-blue-500/20"
+                >
+                  Browse Practice Tests
+                </Button>
+              </Card>
+            </motion.div>
           ) : (
             filteredHistory.map((attempt, index) => (
               <motion.div
