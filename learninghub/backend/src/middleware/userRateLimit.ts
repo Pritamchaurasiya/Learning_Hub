@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { prisma } from '../config/database'
+import { sendError } from '../utils/responseHelper'
 import logger from '../utils/logger'
 
 interface UserRateLimitConfig {
@@ -49,13 +49,13 @@ export function createUserRateLimit(config: UserRateLimitConfig) {
     record.requestCount++
 
     if (record.requestCount > maxRequests) {
-      res.status(429).json({
-        status: 'error',
-        message:
-          message ||
+      sendError(
+        res,
+        message ||
           `Too many requests. Try again in ${Math.ceil((record.windowEnd.getTime() - now.getTime()) / 1000)} seconds`,
-        retryAfter: Math.ceil((record.windowEnd.getTime() - now.getTime()) / 1000),
-      })
+        429,
+        'RATE_LIMIT_EXCEEDED'
+      )
       return
     }
 
@@ -67,7 +67,7 @@ export function createUserRateLimit(config: UserRateLimitConfig) {
   }
 }
 
-export async function getUserRateLimitStatus(userId: string): Promise<{
+export async function getUserRateLimitStatus(userId: string, maxRequests: number = 100): Promise<{
   endpoints: Array<{ endpoint: string; remaining: number; limit: number; resetAt: Date }>
 }> {
   const now = new Date()
@@ -77,8 +77,8 @@ export async function getUserRateLimitStatus(userId: string): Promise<{
     if (record.userId === userId && now <= record.windowEnd) {
       endpoints.push({
         endpoint: record.endpoint,
-        remaining: Math.max(0, 100 - record.requestCount),
-        limit: 100,
+        remaining: Math.max(0, maxRequests - record.requestCount),
+        limit: maxRequests,
         resetAt: record.windowEnd,
       })
     }
@@ -96,6 +96,7 @@ export function cleanupExpiredRateLimits(): void {
   }
 }
 
-setInterval(cleanupExpiredRateLimits, 5 * 60 * 1000)
+const cleanupInterval = setInterval(cleanupExpiredRateLimits, 5 * 60 * 1000)
+cleanupInterval.unref?.()
 
 export default createUserRateLimit

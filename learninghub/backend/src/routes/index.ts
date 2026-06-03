@@ -1,10 +1,10 @@
-﻿import { Router } from 'express'
-import express from 'express'
+import { Router } from 'express'
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { cacheMiddleware } from '../middleware/cacheMiddleware'
 import { validate } from '../middleware/validationMiddleware'
 import { requireAdmin, requireInstructorOrAdmin } from '../middleware/roleMiddleware'
 import { checkUsageLimit } from '../middleware/subscriptionMiddleware'
+import { createRateLimiter } from '../middleware/rateLimiter'
 import {
   registerSchema,
   loginSchema,
@@ -19,6 +19,8 @@ import {
   bookmarkSchema,
   adminLoginSchema,
   adminRegisterSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../validations/schemas'
 
 // Controllers
@@ -35,6 +37,7 @@ import {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  logout,
 } from '../controllers/authController'
 import {
   listCourses,
@@ -75,7 +78,12 @@ import {
   getAttemptHistory,
   getTimeRemaining,
 } from '../controllers/testEngineController'
-import { getPerformanceTrend, getWeakAreas } from '../controllers/analyticsController'
+import {
+  getPerformanceTrend,
+  getWeakAreas,
+  getLearnerDashboardStats,
+  getLearningActivity,
+} from '../controllers/analyticsController'
 import {
   bookmarkQuestion,
   getBookmarkedQuestions,
@@ -93,6 +101,7 @@ import {
   listProblems,
   getProblemDetails,
   submitProblemSolution,
+  getProblemSubmissions,
 } from '../controllers/problemsController'
 import { globalSearch, suggestions, trending } from '../controllers/searchController'
 import {
@@ -101,6 +110,7 @@ import {
   generatePracticeTest,
   generateWeakAreaTest,
   getWeakTopics,
+  generateCourse,
 } from '../controllers/aiController'
 import {
   getDashboardStats,
@@ -113,6 +123,8 @@ import {
   updateCourse,
   deleteCourse,
   getAnalytics,
+  getUserAnalytics,
+  getCourseAnalytics,
   getAuditLogs,
   getSecurityEvents,
 } from '../controllers/adminController'
@@ -132,7 +144,7 @@ import {
   getContestResults,
   updateContestStatus,
 } from '../controllers/contestsController'
-import { createOrder, applyCoupon, handleWebhook } from '../controllers/paymentsController'
+import { createOrder, applyCoupon } from '../controllers/paymentsController'
 import {
   getNotifications,
   getUnreadCount,
@@ -159,8 +171,15 @@ import {
 const router = Router()
 
 // ==================== AUTH ROUTES ====================
+const passwordResetRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  keyPrefix: 'password-reset',
+  message: 'Too many password reset attempts. Please try again later.',
+})
 router.post('/auth/register', validate(registerSchema), register)
 router.post('/auth/login', validate(loginSchema), login)
+router.post('/auth/logout', authenticate, logout)
 router.post('/auth/refresh', validate(refreshSchema), refresh)
 router.get('/auth/me', authenticate, me)
 router.put('/auth/profile', authenticate, updateProfile)
@@ -169,8 +188,8 @@ router.post('/auth/avatar', authenticate, uploadAvatar)
 router.delete('/auth/delete-account', authenticate, deleteAccount)
 router.post('/auth/send-verification', authenticate, sendVerificationEmail)
 router.get('/auth/verify-email/:token', verifyEmail)
-router.post('/auth/forgot-password', forgotPassword)
-router.post('/auth/reset-password', resetPassword)
+router.post('/auth/forgot-password', passwordResetRateLimit, validate(forgotPasswordSchema), forgotPassword)
+router.post('/auth/reset-password', passwordResetRateLimit, validate(resetPasswordSchema), resetPassword)
 
 // ==================== ADMIN AUTH ====================
 router.post('/admin/auth/login', validate(adminLoginSchema), adminLogin)
@@ -264,9 +283,16 @@ router.get('/gamification/dsa-stats', authenticate, getDsaStats)
 // ==================== PROBLEMS (DSA) ROUTES ====================
 router.get('/problems', cacheMiddleware(300), listProblems)
 router.get('/problems/:slug', cacheMiddleware(300), getProblemDetails)
+router.get('/problems/:id/submissions', authenticate, getProblemSubmissions)
 router.post(
   '/problems/:id/submit',
   authenticate,
+  createRateLimiter({
+    windowMs: 10 * 1000, // 10 seconds
+    max: 2, // Maximum 2 requests per 10 seconds per IP/User
+    keyPrefix: 'sandbox',
+    message: 'Too many code execution requests. Please wait a few seconds before trying again.',
+  }),
   validate(submitProblemSchema),
   submitProblemSolution
 )
@@ -326,7 +352,8 @@ router.get('/contests/:id/results', authenticate, getContestResults)
 router.patch('/contests/:id/status', authenticate, requireAdmin, updateContestStatus)
 
 // ==================== PAYMENT ROUTES ====================
-router.post('/payments/webhook', express.raw({ type: 'application/json' }), handleWebhook)
+// NOTE: Webhook route is mounted at server level BEFORE express.json() middleware
+// for Stripe signature verification. See server.ts.
 router.post('/payments/orders', authenticate, createOrder)
 router.post('/payments/coupons', authenticate, applyCoupon)
 
@@ -337,6 +364,9 @@ router.put('/admin/users/:id/role', authenticate, requireAdmin, updateUserRole)
 router.delete('/admin/users/:id', authenticate, requireAdmin, deleteUser)
 router.get('/admin/system-status', authenticate, requireAdmin, getSystemStatus)
 router.get('/admin/analytics', authenticate, requireAdmin, getAnalytics)
+router.get('/admin/analytics/users', authenticate, requireAdmin, getUserAnalytics)
+router.get('/admin/analytics/courses', authenticate, requireAdmin, getCourseAnalytics)
+router.post('/admin/ai/generate-course', authenticate, requireAdmin, generateCourse)
 router.get('/admin/audit-logs', authenticate, requireAdmin, getAuditLogs)
 router.get('/admin/security', authenticate, requireAdmin, getSecurityEvents)
 
@@ -362,8 +392,21 @@ router.post('/notifications/mark-all-read', authenticate, markAllAsRead)
 router.delete('/notifications/:id', authenticate, deleteNotification)
 
 // ==================== USER ANALYTICS ROUTES ====================
+router.get('/analytics/dashboard', authenticate, getLearnerDashboardStats)
+router.get('/analytics/learning-activity', authenticate, getLearningActivity)
 router.get('/analytics/performance-trend', authenticate, getPerformanceTrend)
 router.get('/analytics/weak-areas', authenticate, getWeakAreas)
+
+// ==================== CERTIFICATE ROUTES (stub) ====================
+router.get('/courses/certificates', authenticate, (req, res) => {
+  res.json({ status: 'success', data: [] })
+})
+router.get('/courses/certificates/:code', authenticate, (req, res) => {
+  res.status(404).json({ status: 'error', message: 'Certificate not found' })
+})
+router.get('/courses/public-certificates/:code/verify', (req, res) => {
+  res.status(404).json({ status: 'error', message: 'Certificate not found' })
+})
 
 // ==================== HEALTH CHECK ====================
 router.get('/health', (req, res) => {

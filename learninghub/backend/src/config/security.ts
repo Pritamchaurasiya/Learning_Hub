@@ -20,7 +20,7 @@ export const generalRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_GENERAL_WINDOW_MS ?? '900000', 10), // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_GENERAL_MAX ?? '100', 10),
   message: {
-    success: false,
+    status: 'error',
     message: 'Too many requests from this IP, please try again later.',
     code: 'RATE_LIMIT_EXCEEDED',
   },
@@ -28,7 +28,7 @@ export const generalRateLimit = rateLimit({
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
     res.status(429).json({
-      success: false,
+      status: 'error',
       message: 'Too many requests from this IP, please try again later.',
       code: 'RATE_LIMIT_EXCEEDED',
       retryAfter: Math.ceil((req.rateLimit?.resetTime?.getTime() ?? Date.now()) / 1000),
@@ -40,23 +40,17 @@ export const authRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS ?? '900000', 10), // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_AUTH_MAX ?? '5', 10),
   message: {
-    success: false,
+    status: 'error',
     message: 'Too many authentication attempts, please try again later.',
     code: 'AUTH_RATE_LIMIT_EXCEEDED',
   },
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    // Use ipKeyGenerator helper for IPv6 compatibility
-    const ip = req.ip ?? 'unknown'
-    // For simplicity in this context, we'll use the standard approach
-    // In a production environment with express-rate-limit, you'd use their built-in helpers
-    return ip
-  },
+  validate: { xForwardedForHeader: false },
   handler: (req: Request, res: Response) => {
     res.status(429).json({
-      success: false,
+      status: 'error',
       message: 'Too many authentication attempts, please try again later.',
       code: 'AUTH_RATE_LIMIT_EXCEEDED',
       retryAfter: 15 * 60, // 15 minutes in seconds
@@ -68,24 +62,27 @@ export const adminRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_ADMIN_WINDOW_MS ?? '900000', 10), // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_ADMIN_MAX ?? '30', 10),
   message: {
-    success: false,
+    status: 'error',
     message: 'Too many admin requests, please try again later.',
     code: 'ADMIN_RATE_LIMIT_EXCEEDED',
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    // Use ipKeyGenerator helper for IPv6 compatibility
-    const ip = req.ip ?? 'unknown'
-    // For simplicity in this context, we'll use the standard approach
-    // In a production environment with express-rate-limit, you'd use their built-in helpers
-    return ip
-  },
+  validate: { xForwardedForHeader: false },
 })
 
 // CORS configuration — supports comma-separated origins for multi-domain production
 const parseOrigins = (envValue: string | undefined): string | string[] => {
-  const raw = envValue ?? 'http://localhost:5173'
+  const isDev = process.env.NODE_ENV !== 'production'
+  const defaultOrigins = isDev
+    ? 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
+    : undefined
+  const raw = envValue ?? defaultOrigins
+  if (!raw) {
+    throw new Error(
+      'CORS_ORIGIN must be explicitly set in production. Set it to your frontend domain(s), comma-separated for multiple.'
+    )
+  }
   const origins = raw
     .split(',')
     .map(o => o.trim())
@@ -142,6 +139,18 @@ export const helmetConfig = {
   noSniff: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' as const },
   xssFilter: true,
+  permissionsPolicy: {
+    features: {
+      camera: ["'self'"],
+      microphone: ["'self'"],
+      geolocation: ["'none'"],
+      payment: ["'none'"],
+      usb: ["'none'"],
+      accelerometer: ["'none'"],
+      gyroscope: ["'none'"],
+      magnetometer: ["'none'"],
+    },
+  },
 }
 
 // JWT configuration — FAILS if secrets are not set (no insecure defaults)
@@ -252,16 +261,17 @@ export const validatePasswordStrength = (
 // Sanitize input to prevent injection attacks
 export const sanitizeInput = (input: string): string => {
   return input
+    .replace(/[\x00-\x1f\x7f]/g, '') // Remove null bytes and control characters
     .replace(/[<>]/g, '') // Remove angle brackets
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
-    .replace(/&(#\d+|#x[0-9a-f]+|[a-z]+);/gi, '') // Remove HTML entities
+    .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
+    .replace(/&#\d+;/g, '') // Remove decimal HTML entities
     .trim()
-    .slice(0, 1000) // Limit input length
+    .slice(0, 100_000) // Match max allowed by Zod (problem code can be 100KB)
 }
 
 // Generate secure random token
 export const generateSecureToken = (length: number = 32): string => {
-  const crypto = require('crypto')
-  return crypto.randomBytes(length).toString('hex')
+  return require('crypto').randomBytes(length).toString('hex')
 }
