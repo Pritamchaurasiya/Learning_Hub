@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+﻿import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -50,7 +50,7 @@ interface ResultsViewProps {
   onBack: () => void
 }
 
-const TestCard = ({ test, onStart }: TestCardProps) => {
+const TestCard = memo(({ test, onStart }: TestCardProps) => {
   const difficultyColors: Record<string, string> = {
     easy: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
     medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -111,9 +111,9 @@ const TestCard = ({ test, onStart }: TestCardProps) => {
       </Card>
     </motion.div>
   )
-}
+})
 
-const QuestionCard = ({
+const QuestionCard = memo(({
   question,
   currentIndex,
   totalQuestions,
@@ -181,9 +181,9 @@ const QuestionCard = ({
       </div>
     </div>
   )
-}
+})
 
-const ResultsView = ({ result, onRetry, onBack }: ResultsViewProps) => {
+const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
   const percentage = result.percentage ?? 0
   const isPassed = result.passed ?? false
   const correctCount = result.correct_count ?? 0
@@ -278,7 +278,7 @@ const ResultsView = ({ result, onRetry, onBack }: ResultsViewProps) => {
       </Card>
     </motion.div>
   )
-}
+})
 
 const TestsAPage = () => {
   const { testId } = useParams<{ testId: string }>()
@@ -349,7 +349,7 @@ const TestsAPage = () => {
               totalQuestions: data.questions?.length ?? 0,
               timeLimit: data.time_limit ?? test.time_limit_minutes,
             },
-            data.attempt_id
+            data.attempt_id ?? ''
           )
           navigate(`/tests-a/${test.id}`)
         }
@@ -378,36 +378,41 @@ const TestsAPage = () => {
     }
   }, [submitTest, isSubmitting])
 
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
-    if (testsA.isActive && testsA.timeRemaining > 0 && !testsA.isSubmitting) {
-      interval = setInterval(() => {
-        useStore.setState(state => {
-          const newTime = state.testsA.timeRemaining - 1
-          if (newTime <= 0) {
-            clearInterval(interval!)
-            return { testsA: { ...state.testsA, timeRemaining: 0 } }
-          }
-          return { testsA: { ...state.testsA, timeRemaining: newTime } }
-        })
-      }, 1000)
+  const timerCallback = useCallback(() => {
+    useStore.setState(state => {
+      if (state.testsA.timeRemaining > 0) {
+        return { testsA: { ...state.testsA, timeRemaining: state.testsA.timeRemaining - 1 } }
+      }
+      return state
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!testsA.isActive || testsA.timeRemaining <= 0 || testsA.isSubmitting) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = undefined
+      }
+      return
     }
 
-    if (
-      testsA.isActive &&
-      testsA.timeRemaining === 0 &&
-      !testsA.isSubmitting &&
-      !submitAttempted.current
-    ) {
+    timerRef.current = setInterval(timerCallback, 1000)
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = undefined
+      }
+    }
+  }, [testsA.isActive, testsA.timeRemaining, testsA.isSubmitting, timerCallback])
+
+  useEffect(() => {
+    if (testsA.timeRemaining === 0 && testsA.isActive && !testsA.isSubmitting && !submitAttempted.current) {
       submitAttempted.current = true
       void handleSubmit()
     }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [testsA.isActive, testsA.timeRemaining, testsA.isSubmitting, handleSubmit])
+  }, [testsA.timeRemaining, testsA.isActive, testsA.isSubmitting])
 
   const filteredTests = useMemo(
     () =>
@@ -559,7 +564,7 @@ const TestsAPage = () => {
               className="flex items-center gap-2"
             >
               <ChevronLeft className="w-4 h-4" />
-              Previous
+              Previous Question
             </Button>
             <Button
               onClick={() => navigateToQuestion(testsA.currentQuestionIndex + 1)}
@@ -567,7 +572,7 @@ const TestsAPage = () => {
               variant="outline"
               className="flex items-center gap-2"
             >
-              Next
+              Next Question
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -631,6 +636,7 @@ const TestsAPage = () => {
               value={filter.mode}
               onChange={e => setFilter({ ...filter, mode: e.target.value })}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              aria-label="Filter by mode"
             >
               <option value="">All Modes</option>
               <option value="practice">Practice</option>
@@ -642,6 +648,7 @@ const TestsAPage = () => {
               value={filter.difficulty}
               onChange={e => setFilter({ ...filter, difficulty: e.target.value })}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              aria-label="Filter by difficulty"
             >
               <option value="">All Difficulties</option>
               <option value="easy">Easy</option>
