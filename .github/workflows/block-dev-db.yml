@@ -1,0 +1,23 @@
+name: Block committed dev.db
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check-no-dev-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail if dev.db present
+        run: |
+          if git ls-files --error-unmatch learninghub/backend/prisma/dev.db > /dev/null 2>&1; then
+            echo "Committed dev.db found. Remove it from git history and do not commit binary DB files."
+            git ls-files --error-unmatch learninghub/backend/prisma/dev.db
+            exit 1
+          else
+            echo "No committed dev.db"
+          fi
