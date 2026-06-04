@@ -2,13 +2,40 @@ import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { prisma } from '../prismaClient'
-import { generateToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth'
+import { generateToken, generateRefreshToken, verifyRefreshToken, hashToken } from '../utils/auth'
 import logger from '../utils/logger'
 import { queryOptimizationService } from '../services/QueryOptimizationService'
+import { cacheService } from '../services/CacheService'
 import { emailService } from '../services/EmailService'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendNotFound,
+  sendConflict,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
+import { bcryptConfig } from '../config'
+
+const REFRESH_TOKEN_DAYS = 7
+
+const refreshTokenExpiresAt = (): Date =>
+  new Date(Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000)
+
+const storeRefreshToken = (userId: string, token: string) => {
+  const tokenHash = hashToken(token)
+  return prisma.refreshToken.create({
+    data: {
+      userId,
+      token: tokenHash,
+      expiresAt: refreshTokenExpiresAt(),
+    },
+  })
+}
 
 // Extend Express Request for multer file uploads (reserved for future use)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 type _MulterFile = {
   fieldname: string
   originalname: string
@@ -31,17 +58,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
     if (!normalizedEmail || !password) {
-      res.status(400).json({ status: 'error', message: 'Email and password are required' })
+      sendValidationError(res, 'Email and password are required')
       return
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (existingUser) {
-      res.status(409).json({ status: 'error', message: 'Email already exists' })
+      sendConflict(res, 'Email already exists')
       return
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12)
+    const hashedPassword = await bcrypt.hash(password, bcryptConfig.rounds)
 
     const user = await prisma.user.create({
       data: {
@@ -54,11 +81,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const token = generateToken(user.id, user.email, user.role)
     const refreshToken = generateRefreshToken(user.id, user.email, user.role)
+    await storeRefreshToken(user.id, refreshToken)
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Registration successful',
-      data: {
+    sendCreated(
+      res,
+      {
         access_token: token,
         refresh_token: refreshToken,
         user: {
@@ -71,13 +98,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
           streak: user.streak,
         },
       },
-    })
+      'Registration successful'
+    )
   } catch (error) {
     logger.error('Register error', error instanceof Error ? error : new Error(String(error)), {
       email: req.body.email,
       ip: req.ip,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -88,7 +116,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (!user) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' })
+      sendUnauthorized(res, 'Invalid email or password')
+      return
+    }
+
+    // SECURITY: Check account lockout before attempting password verification
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
+      sendUnauthorized(
+        res,
+        `Account temporarily locked. Try again in ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}.`
+      )
       return
     }
 
@@ -96,21 +134,48 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const isValidPassword = await bcrypt.compare(password, user.password)
     // SECURITY: Never log password validity — only log email (no auth result leakage)
     logger.info('Login attempt', { email: normalizedEmail })
+
     if (!isValidPassword) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' })
+      // SECURITY: Increment failed login counter and lock after threshold
+      const MAX_FAILED_ATTEMPTS = 5
+      const LOCKOUT_MINUTES = 15
+      const newFailedCount = (user.failedLogins ?? 0) + 1
+      const lockUpdate: { failedLogins: number; lockedUntil?: Date } = {
+        failedLogins: newFailedCount,
+      }
+      if (newFailedCount >= MAX_FAILED_ATTEMPTS) {
+        lockUpdate.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000)
+        logger.warn('Account locked due to repeated failed login attempts', {
+          email: normalizedEmail,
+          failedAttempts: newFailedCount,
+          lockedUntilMinutes: LOCKOUT_MINUTES,
+        })
+      }
+      await prisma.user.update({ where: { id: user.id }, data: lockUpdate })
+
+      sendUnauthorized(res, 'Invalid email or password')
       return
     }
 
-    // Update lastActive to power admin dashboard '24h active users' metric
-    await prisma.user.update({ where: { id: user.id }, data: { lastActive: new Date() } })
+    // Successful login: reset failed attempts, track login metrics
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastActive: new Date(),
+        lastLoginAt: new Date(),
+        loginCount: { increment: 1 },
+        failedLogins: 0,
+        lockedUntil: null,
+      },
+    })
 
     const token = generateToken(user.id, user.email, user.role)
     const refreshToken = generateRefreshToken(user.id, user.email, user.role)
+    await storeRefreshToken(user.id, refreshToken)
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Login successful',
-      data: {
+    sendSuccess(
+      res,
+      {
         access_token: token,
         refresh_token: refreshToken,
         user: {
@@ -124,13 +189,45 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           lastActive: user.lastActive,
         },
       },
-    })
+      'Login successful'
+    )
   } catch (error) {
     logger.error('Login error', error instanceof Error ? error : new Error(String(error)), {
       email: req.body.email,
       ip: req.ip,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
+  }
+}
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const refreshToken = req.body.refresh_token ?? req.body.refresh
+    if (refreshToken) {
+      // Revoke the specific refresh token
+      const tokenHash = hashToken(refreshToken)
+      await prisma.refreshToken.updateMany({
+        where: { token: tokenHash },
+        data: { revokedAt: new Date() },
+      })
+    }
+
+    // Optionally update user session if using session tracking
+    const userId = req.user?.userId
+    if (userId) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { lastActive: new Date() },
+      })
+    }
+
+    sendSuccess(res, null, 'Logged out successfully')
+  } catch (error) {
+    logger.error('Logout error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?.userId,
+      ip: req.ip,
+    })
+    sendInternalError(res)
   }
 }
 
@@ -138,18 +235,19 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
     const refreshToken = req.body.refresh_token ?? req.body.refresh
     if (!refreshToken) {
-      res.status(400).json({ status: 'error', message: 'Refresh token is required' })
+      sendValidationError(res, 'Refresh token is required')
       return
     }
 
     const decoded = verifyRefreshToken(refreshToken)
     if (!decoded?.userId) {
-      res.status(401).json({ status: 'error', message: 'Invalid refresh token' })
+      sendUnauthorized(res, 'Invalid refresh token')
       return
     }
 
+    const tokenHash = hashToken(refreshToken)
     const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+      where: { token: tokenHash },
     })
 
     if (
@@ -164,13 +262,13 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
           data: { revokedAt: new Date() },
         })
       }
-      res.status(401).json({ status: 'error', message: 'Invalid or expired refresh token' })
+      sendUnauthorized(res, 'Invalid or expired refresh token')
       return
     }
 
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } })
     if (!user || user.deletedAt) {
-      res.status(401).json({ status: 'error', message: 'User no longer exists' })
+      sendUnauthorized(res, 'User no longer exists')
       return
     }
 
@@ -182,24 +280,22 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     const access_token = generateToken(user.id, user.email, user.role)
     const new_refresh_token = generateRefreshToken(user.id, user.email, user.role)
 
+    const newTokenHash = hashToken(new_refresh_token)
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
-        token: new_refresh_token,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        token: newTokenHash,
+        expiresAt: refreshTokenExpiresAt(),
       },
     })
 
-    res.json({
-      status: 'success',
-      data: {
-        access_token,
-        refresh_token: new_refresh_token,
-      },
+    sendSuccess(res, {
+      access_token,
+      refresh_token: new_refresh_token,
     })
   } catch (error) {
     logger.error('Token refresh error', error instanceof Error ? error : new Error(String(error)))
-    res.status(401).json({ status: 'error', message: 'Invalid or expired refresh token' })
+    sendUnauthorized(res, 'Invalid or expired refresh token')
   }
 }
 
@@ -207,46 +303,83 @@ export const me = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
-    const [user, performance, bookmarks, achievements] = await Promise.all([
+    const [user, bookmarks, achievements, progress] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
-      queryOptimizationService.getUserPerformanceSummary(userId),
       prisma.bookmark.findMany({ where: { userId }, take: 10, orderBy: { createdAt: 'desc' } }),
       prisma.userAchievement.findMany({
         where: { userId },
         take: 20,
         orderBy: { unlockedAt: 'desc' },
       }),
+      prisma.userProgress.findMany({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          course: {
+            select: { id: true, title: true, thumbnail: true },
+          },
+        },
+      }),
     ])
 
     if (!user) {
-      res.status(404).json({ status: 'error', message: 'User not found' })
+      sendNotFound(res, 'User not found')
       return
+    }
+
+    const cacheKey = cacheService.generateKey('user_perf', userId)
+    let performance = await cacheService.get<any>(cacheKey)
+
+    if (!performance) {
+      performance = {
+        test_stats: {
+          total_tests: 0,
+          average_score: 0,
+          best_score: 0,
+          worst_score: 0,
+        },
+        recent_tests: [] as Array<{
+          title: string
+          mode: string
+          score: number
+          passed: boolean
+          completed_at: Date | null
+        }>,
+      }
+
+      try {
+        performance = await queryOptimizationService.getUserPerformanceSummary(userId)
+        await cacheService.set(cacheKey, performance, 120) // Cache for 2 minutes
+      } catch (error) {
+        logger.warn('Get user profile performance summary unavailable', {
+          userId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
     }
 
     await prisma.user.update({ where: { id: userId }, data: { lastActive: new Date() } })
 
-    res.json({
-      status: 'success',
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          xp: user.xp,
-          level: user.level,
-          streak: user.streak,
-          lastActive: user.lastActive,
-        },
-        performance: performance.test_stats,
-        recent_tests: performance.recent_tests,
-        bookmarks,
-        achievements,
+    sendSuccess(res, {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        xp: user.xp,
+        level: user.level,
+        streak: user.streak,
+        lastActive: user.lastActive,
+        progress,
       },
+      performance: performance.test_stats,
+      recent_tests: performance.recent_tests,
+      bookmarks,
+      achievements,
     })
   } catch (error) {
     logger.error(
@@ -254,7 +387,7 @@ export const me = async (req: Request, res: Response): Promise<void> => {
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -262,7 +395,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
     const { username, email, bio, location, website } = req.body
@@ -274,7 +407,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
         where: { email: normalizedEmail, NOT: { id: userId } },
       })
       if (existingUser) {
-        res.status(409).json({ status: 'error', message: 'Email is already in use' })
+        sendConflict(res, 'Email is already in use')
         return
       }
     }
@@ -308,11 +441,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       },
     })
 
-    res.json({
-      status: 'success',
-      message: 'Profile updated successfully',
-      data: { user: updatedUser },
-    })
+    sendSuccess(res, { user: updatedUser }, 'Profile updated successfully')
   } catch (error) {
     logger.error(
       'Update profile error',
@@ -322,7 +451,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
         email: req.body.email,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -330,15 +459,13 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
     const { currentPassword, newPassword } = req.body
 
     if (!currentPassword || !newPassword) {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Current password and new password are required' })
+      sendValidationError(res, 'Current password and new password are required')
       return
     }
 
@@ -350,36 +477,32 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
       !/[0-9]/.test(newPassword) ||
       !/[^A-Za-z0-9]/.test(newPassword)
     ) {
-      res.status(400).json({
-        status: 'error',
-        message:
-          'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
-      })
+      sendValidationError(
+        res,
+        'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+      )
       return
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
-      res.status(404).json({ status: 'error', message: 'User not found' })
+      sendNotFound(res, 'User not found')
       return
     }
 
     const isValidPassword = await bcrypt.compare(currentPassword, user.password)
     if (!isValidPassword) {
-      res.status(401).json({ status: 'error', message: 'Current password is incorrect' })
+      sendUnauthorized(res, 'Current password is incorrect')
       return
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
     })
 
-    res.json({
-      status: 'success',
-      message: 'Password changed successfully',
-    })
+    sendSuccess(res, null, 'Password changed successfully')
   } catch (error) {
     logger.error(
       'Change password error',
@@ -388,7 +511,7 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
         userId: req.user?.userId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -396,7 +519,7 @@ export const uploadAvatar = async (req: RequestWithFile, res: Response): Promise
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
@@ -411,12 +534,12 @@ export const uploadAvatar = async (req: RequestWithFile, res: Response): Promise
       const isDataUrl = avatar.startsWith('data:image/')
       const isHttpsUrl = avatar.startsWith('https://')
       if ((!isDataUrl && !isHttpsUrl) || avatar.length > 2_000_000) {
-        res.status(400).json({ status: 'error', message: 'Invalid avatar format' })
+        sendValidationError(res, 'Invalid avatar format')
         return
       }
       avatarPath = avatar
     } else {
-      res.status(400).json({ status: 'error', message: 'No avatar provided' })
+      sendValidationError(res, 'No avatar provided')
       return
     }
 
@@ -431,16 +554,12 @@ export const uploadAvatar = async (req: RequestWithFile, res: Response): Promise
       },
     })
 
-    res.json({
-      status: 'success',
-      message: 'Avatar uploaded successfully',
-      data: { user: updatedUser },
-    })
+    sendSuccess(res, { user: updatedUser }, 'Avatar uploaded successfully')
   } catch (error) {
     logger.error('Upload avatar error', error instanceof Error ? error : new Error(String(error)), {
       userId: req.user?.userId,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -451,7 +570,7 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
@@ -475,17 +594,14 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
 
     logger.audit('ACCOUNT_DELETION', userId, { reason: 'user_requested' })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Account deleted successfully',
-    })
+    sendSuccess(res, null, 'Account deleted successfully')
   } catch (error) {
     logger.error(
       'Delete account error',
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -493,18 +609,18 @@ export const sendVerificationEmail = async (req: Request, res: Response): Promis
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
-      res.status(404).json({ status: 'error', message: 'User not found' })
+      sendNotFound(res, 'User not found')
       return
     }
 
     if (user.emailVerified) {
-      res.status(400).json({ status: 'error', message: 'Email already verified' })
+      sendValidationError(res, 'Email already verified')
       return
     }
 
@@ -523,17 +639,14 @@ export const sendVerificationEmail = async (req: Request, res: Response): Promis
 
     await emailService.sendVerificationEmail(user.email, token, user.username || undefined)
 
-    res.json({
-      status: 'success',
-      message: 'Verification email sent',
-    })
+    sendSuccess(res, null, 'Verification email sent')
   } catch (error) {
     logger.error(
       'Send verification email error',
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -546,7 +659,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
     })
 
     if (!verificationToken || verificationToken.expiresAt < new Date()) {
-      res.status(400).json({ status: 'error', message: 'Invalid or expired verification token' })
+      sendValidationError(res, 'Invalid or expired verification token')
       return
     }
 
@@ -563,15 +676,12 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
       }),
     ])
 
-    res.json({
-      status: 'success',
-      message: 'Email verified successfully',
-    })
+    sendSuccess(res, null, 'Email verified successfully')
   } catch (error) {
     logger.error('Verify email error', error instanceof Error ? error : new Error(String(error)), {
       token: req.params.token,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -581,16 +691,17 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
     if (!normalizedEmail) {
-      res.status(400).json({ status: 'error', message: 'Email is required' })
+      sendValidationError(res, 'Email is required')
       return
     }
 
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (!user) {
-      res.json({
-        status: 'success',
-        message: 'If an account exists with that email, a password reset link has been sent',
-      })
+      sendSuccess(
+        res,
+        null,
+        'If an account exists with that email, a password reset link has been sent'
+      )
       return
     }
 
@@ -607,17 +718,18 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 
     await emailService.sendPasswordResetEmail(user.email, token, user.username || undefined)
 
-    res.json({
-      status: 'success',
-      message: 'If an account exists with that email, a password reset link has been sent',
-    })
+    sendSuccess(
+      res,
+      null,
+      'If an account exists with that email, a password reset link has been sent'
+    )
   } catch (error) {
     logger.error(
       'Forgot password error',
       error instanceof Error ? error : new Error(String(error)),
       { email: req.body.email }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -626,7 +738,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     const { token, newPassword } = req.body
 
     if (!token || !newPassword) {
-      res.status(400).json({ status: 'error', message: 'Token and new password are required' })
+      sendValidationError(res, 'Token and new password are required')
       return
     }
 
@@ -637,11 +749,10 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
       !/[0-9]/.test(newPassword) ||
       !/[^A-Za-z0-9]/.test(newPassword)
     ) {
-      res.status(400).json({
-        status: 'error',
-        message:
-          'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
-      })
+      sendValidationError(
+        res,
+        'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+      )
       return
     }
 
@@ -651,36 +762,37 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     })
 
     if (!resetToken || resetToken.expiresAt < new Date() || resetToken.usedAt) {
-      res.status(400).json({ status: 'error', message: 'Invalid or expired reset token' })
+      sendValidationError(res, 'Invalid or expired reset token')
       return
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
 
     await prisma.$transaction([
       prisma.user.update({
         where: { id: resetToken.userId },
-        data: { password: hashedPassword },
+        data: {
+          password: hashedPassword,
+          failedLogins: 0,
+          lockedUntil: null,
+        },
       }),
-      prisma.passwordResetToken.update({
-        where: { id: resetToken.id },
-        data: { usedAt: new Date() },
+      // Invalidate ALL pending reset tokens for this user (prevent token reuse)
+      prisma.passwordResetToken.deleteMany({
+        where: { userId: resetToken.userId },
       }),
       prisma.refreshToken.deleteMany({
         where: { userId: resetToken.userId },
       }),
     ])
 
-    res.json({
-      status: 'success',
-      message: 'Password reset successfully',
-    })
+    sendSuccess(res, null, 'Password reset successfully')
   } catch (error) {
     logger.error(
       'Reset password error',
       error instanceof Error ? error : new Error(String(error)),
       { token: req.body.token }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

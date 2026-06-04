@@ -194,8 +194,9 @@ export class AuthService {
       const decoded = jwt.verify(refreshToken, jwtConfig.refreshSecret) as TokenPayload
 
       // Check if token exists in database and is not revoked
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
       const storedToken = await this.prisma.refreshToken.findUnique({
-        where: { token: refreshToken },
+        where: { token: tokenHash },
       })
 
       if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
@@ -230,8 +231,9 @@ export class AuthService {
   async logout(userId: string, refreshToken?: string, ipAddress?: string): Promise<void> {
     // Revoke refresh token if provided
     if (refreshToken) {
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
       await this.prisma.refreshToken.updateMany({
-        where: { token: refreshToken, userId },
+        where: { token: tokenHash, userId },
         data: { revokedAt: new Date() },
       })
     }
@@ -375,19 +377,31 @@ export class AuthService {
       expiresIn: jwtConfig.accessExpiresIn as any,
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
+      algorithm: jwtConfig.algorithm as jwt.Algorithm,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
-    // Generate refresh token
-    const refreshToken = crypto.randomBytes(40).toString('hex')
-    const refreshExpiresAt = new Date()
-    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + 7) // 7 days
+    // Generate JWT refresh token
+    const refreshToken = jwt.sign(
+      { ...payload, tokenId: crypto.randomUUID() },
+      jwtConfig.refreshSecret,
+      {
+        expiresIn: jwtConfig.refreshExpiresIn as any,
+        algorithm: jwtConfig.algorithm as jwt.Algorithm,
+        issuer: jwtConfig.issuer,
+        audience: jwtConfig.audience,
+      } as jwt.SignOptions
+    )
 
-    // Store refresh token
+    // Store refresh token in DB for revocation tracking
+    const refreshExpiresAt = new Date()
+    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + 7)
+
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
     await this.prisma.refreshToken.create({
       data: {
         userId: user.id,
-        token: refreshToken,
+        token: refreshTokenHash,
         expiresAt: refreshExpiresAt,
       },
     })
@@ -399,14 +413,15 @@ export class AuthService {
       take: 10,
       select: { id: true },
     })
-
-    await this.prisma.refreshToken.deleteMany({
-      where: {
-        userId: user.id,
-        id: { notIn: tokensToKeep.map(t => t.id) },
-        revokedAt: null,
-      },
-    })
+    if (tokensToKeep.length > 0) {
+      await this.prisma.refreshToken.deleteMany({
+        where: {
+          userId: user.id,
+          id: { notIn: tokensToKeep.map(t => t.id) },
+          revokedAt: null,
+        },
+      })
+    }
 
     return {
       accessToken,
