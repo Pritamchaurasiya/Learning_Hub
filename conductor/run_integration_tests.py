@@ -48,10 +48,7 @@ def run_tests():
         
         try:
             result = test_runner.run_tests([test_module])
-            if result.failures:
-                failures += len(result.failures)
-            if result.errors:
-                errors += len(result.errors)
+            failures += result
         except Exception as e:
             print(f"Error running {test_module}: {e}")
             errors += 1
