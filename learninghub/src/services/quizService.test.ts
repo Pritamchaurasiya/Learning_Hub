@@ -89,10 +89,7 @@ describe('quizService', () => {
 
       const result = await quizService.startAttempt('quiz-123')
 
-      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/start', {
-        method: 'POST',
-        body: JSON.stringify({ quiz_id: 'quiz-123' }),
-      })
+      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/start', { method: 'POST' })
       expect(result.data.attempt_id).toBe('attempt-123')
     })
   })
@@ -156,10 +153,10 @@ describe('quizService', () => {
         data: [mockResult], // Array because getResults mapped res.data?.[0]
       })
 
-      const result = await quizService.getResults('quiz-123', 'attempt-123')
+      const result = await quizService.getResults('quiz-123')
 
-      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/results')
-      expect(result.data).toEqual(mockResult)
+      expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/result')
+      expect(result.data).toEqual([mockResult])
     })
   })
 
