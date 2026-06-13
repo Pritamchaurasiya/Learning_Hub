@@ -1,16 +1,19 @@
 import { Request, Response, NextFunction } from 'express'
-import { authenticate, optionalAuth, authorize } from '../../src/middleware/authMiddleware'
 
-// Mock the entire AuthService and prisma
-jest.mock('../../src/services', () => ({
-  AuthService: jest.fn().mockImplementation(() => ({
-    verifyAccessToken: jest.fn(),
-    getUserById: jest.fn(),
-  })),
+// ── Mock the actual dependencies that authMiddleware.ts imports ──
+
+const mockVerifyAccessToken = jest.fn()
+jest.mock('../../src/utils/auth', () => ({
+  verifyAccessToken: (...args: any[]) => mockVerifyAccessToken(...args),
 }))
 
+const mockFindUnique = jest.fn()
 jest.mock('../../src/config', () => ({
-  prisma: {},
+  prisma: {
+    user: {
+      findUnique: (...args: any[]) => mockFindUnique(...args),
+    },
+  },
   jwtConfig: {
     accessSecret: 'test-secret',
     refreshSecret: 'test-refresh-secret',
@@ -27,19 +30,27 @@ jest.mock('../../src/config', () => ({
   validatePasswordStrength: () => ({ valid: true, errors: [] }),
 }))
 
-jest.mock('../../src/prismaClient', () => ({
-  prisma: {},
+const mockCacheGet = jest.fn()
+const mockCacheSet = jest.fn()
+jest.mock('../../src/services/CacheService', () => ({
+  cacheService: {
+    get: (...args: any[]) => mockCacheGet(...args),
+    set: (...args: any[]) => mockCacheSet(...args),
+  },
+}))
+jest.mock('../../src/utils/logger', () => ({
+  __esModule: true,
+  default: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  },
 }))
 
-import { AuthService } from '../../src/services'
-
-const mockVerifyAccessToken = jest.fn()
-const mockGetUserById = jest.fn()
-
-;(AuthService as jest.Mock).mockImplementation(() => ({
-  verifyAccessToken: mockVerifyAccessToken,
-  getUserById: mockGetUserById,
-}))
+// Import AFTER mocks are set up
+import { authenticate, optionalAuth, authorize } from '../../src/middleware/authMiddleware'
 
 function makeReqResNext(headers: Record<string, string> = {}) {
   const req = {
@@ -59,6 +70,9 @@ function makeReqResNext(headers: Record<string, string> = {}) {
 describe('authenticate middleware', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockCacheGet.mockResolvedValue(null)
+    mockCacheSet.mockResolvedValue(undefined)
+    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
   })
 
   it('returns 401 when Authorization header is missing', async () => {
@@ -103,7 +117,7 @@ describe('authenticate middleware', () => {
 
   it('returns 401 when user not found in DB', async () => {
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockGetUserById.mockResolvedValue(null)
+    mockFindUnique.mockResolvedValue(null)
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -112,7 +126,7 @@ describe('authenticate middleware', () => {
 
   it('returns 401 when account is soft-deleted', async () => {
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockGetUserById.mockResolvedValue({ id: 'u1', deletedAt: new Date(), lockedUntil: null })
+    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: new Date(), lockedUntil: null })
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -122,7 +136,7 @@ describe('authenticate middleware', () => {
   it('returns 401 when account is locked', async () => {
     const future = new Date(Date.now() + 60000)
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockGetUserById.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: future })
+    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: future })
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -132,7 +146,7 @@ describe('authenticate middleware', () => {
   it('calls next() and attaches user when token is valid', async () => {
     const decoded = { userId: 'u1', email: 'a@b.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
-    mockGetUserById.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
+    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
     const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -141,7 +155,12 @@ describe('authenticate middleware', () => {
 })
 
 describe('optionalAuth middleware', () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCacheGet.mockResolvedValue(null)
+    mockCacheSet.mockResolvedValue(undefined)
+    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: null })
+  })
 
   it('calls next() without setting user when no token', async () => {
     const { req, res, next } = makeReqResNext()
@@ -157,6 +176,26 @@ describe('optionalAuth middleware', () => {
     await optionalAuth(req, res, next)
     expect(next).toHaveBeenCalled()
     expect(req.user).toEqual(expect.objectContaining({ userId: 'u2' }))
+  })
+
+  it('calls next() without user when token belongs to deactivated account', async () => {
+    const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
+    mockVerifyAccessToken.mockReturnValue(decoded)
+    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: new Date(), lockedUntil: null })
+    const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
+    await optionalAuth(req, res, next)
+    expect(next).toHaveBeenCalled()
+    expect(req.user).toBeUndefined()
+  })
+
+  it('calls next() without user when token belongs to locked account', async () => {
+    const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
+    mockVerifyAccessToken.mockReturnValue(decoded)
+    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: new Date(Date.now() + 60000) })
+    const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
+    await optionalAuth(req, res, next)
+    expect(next).toHaveBeenCalled()
+    expect(req.user).toBeUndefined()
   })
 
   it('calls next() without user when token is invalid (does not throw)', async () => {

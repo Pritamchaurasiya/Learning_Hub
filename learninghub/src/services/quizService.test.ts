@@ -91,7 +91,6 @@ describe('quizService', () => {
 
       expect(fetchApi).toHaveBeenCalledWith('/tests/quiz-123/start', {
         method: 'POST',
-        body: JSON.stringify({ quiz_id: 'quiz-123' }),
       })
       expect(result.data.attempt_id).toBe('attempt-123')
     })
@@ -153,7 +152,7 @@ describe('quizService', () => {
 
       vi.mocked(fetchApi).mockResolvedValue({
         status: 'success',
-        data: [mockResult], // Array because getResults mapped res.data?.[0]
+        data: mockResult,
       })
 
       const result = await quizService.getResults('quiz-123')

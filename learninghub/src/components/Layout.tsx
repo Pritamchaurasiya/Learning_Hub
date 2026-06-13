@@ -1,22 +1,26 @@
-import { ReactNode } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header'
 import Breadcrumb from './Breadcrumb'
 import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
-import { ToastContainer } from './ui/Toast'
 import ScrollToTop from './ui/ScrollToTop'
+import { LoadingScreen } from './ui/LoadingScreen'
 import { useStore } from '../stores/useStore'
+import { ErrorBoundary } from './ErrorBoundary'
+import { Suspense, ReactNode } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface LayoutProps {
-  children: ReactNode
+  children?: ReactNode
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { settings } = useStore()
-  const isLowPerformance = settings?.lowPerformanceMode || false
+  const lowPerformanceMode = useStore(s => s.settings?.lowPerformanceMode)
+  const isLowPerformance = lowPerformanceMode ?? false
+  const location = useLocation()
 
   return (
-    <div className="flex h-svh overflow-hidden bg-mesh relative selection:bg-primary-500/30 selection:text-primary-900 dark:selection:text-primary-100">
+    <div className="flex h-[100dvh] overflow-hidden bg-mesh relative selection:bg-primary-500/30 selection:text-primary-900 dark:selection:text-primary-100">
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
@@ -46,16 +50,37 @@ export default function Layout({ children }: LayoutProps) {
 
         <main
           id="main-content"
-          className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-24 lg:pb-8 custom-scrollbar relative"
+          className="flex-1 overflow-y-auto px-3 sm:px-5 md:px-7 lg:px-9 py-4 sm:py-5 md:py-7 lg:py-9 pb-[88px] lg:pb-9 custom-scrollbar relative"
           role="main"
           tabIndex={-1}
         >
-          <div className="max-w-7xl mx-auto w-full">{children}</div>
+          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full">
+            {children ?? (
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingScreen />}>
+                  {!isLowPerformance ? (
+                    <AnimatePresence mode="popLayout">
+                      <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                      >
+                        <Outlet />
+                      </motion.div>
+                    </AnimatePresence>
+                  ) : (
+                    <Outlet />
+                  )}
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </div>
         </main>
       </div>
 
       <MobileNav />
-      <ToastContainer />
       <ScrollToTop />
     </div>
   )

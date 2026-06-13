@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useId, type ReactNode } from 'react'
 import { cn } from '../../utils/cn'
 
 interface TabsContextValue {
   activeTab: string
   setActiveTab: (tab: string) => void
+  baseId: string
 }
 
 const TabsContext = createContext<TabsContextValue | null>(null)
@@ -17,6 +18,7 @@ interface TabsProps {
 
 export function Tabs({ defaultTab, children, className, onChange }: TabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab)
+  const baseId = useId()
 
   const handleSetActiveTab = (tab: string) => {
     setActiveTab(tab)
@@ -24,7 +26,7 @@ export function Tabs({ defaultTab, children, className, onChange }: TabsProps) {
   }
 
   return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab: handleSetActiveTab }}>
+    <TabsContext.Provider value={{ activeTab, setActiveTab: handleSetActiveTab, baseId }}>
       <div className={cn('space-y-4', className)}>{children}</div>
     </TabsContext.Provider>
   )
@@ -56,14 +58,25 @@ export function Tab({ value, children, className }: TabProps) {
   const context = useContext(TabsContext)
   if (!context) throw new Error('Tab must be used within Tabs')
 
-  const { activeTab, setActiveTab } = context
+  const { activeTab, setActiveTab, baseId } = context
   const isActive = activeTab === value
+  const tabId = `${baseId}-tab-${value}`
+  const panelId = `${baseId}-panel-${value}`
 
   return (
     <button
       role="tab"
+      id={tabId}
       aria-selected={isActive}
+      aria-controls={panelId}
+      tabIndex={isActive ? 0 : -1}
       onClick={() => setActiveTab(value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          setActiveTab(value)
+        }
+      }}
       className={cn(
         'px-4 py-2 font-medium transition-colors relative',
         isActive
@@ -88,12 +101,20 @@ export function TabPanel({ value, children, className }: TabPanelProps) {
   const context = useContext(TabsContext)
   if (!context) throw new Error('TabPanel must be used within Tabs')
 
-  const { activeTab } = context
+  const { activeTab, baseId } = context
 
   if (activeTab !== value) return null
 
+  const panelId = `${baseId}-panel-${value}`
+  const tabId = `${baseId}-tab-${value}`
+
   return (
-    <div role="tabpanel" className={className}>
+    <div
+      role="tabpanel"
+      id={panelId}
+      aria-labelledby={tabId}
+      className={className}
+    >
       {children}
     </div>
   )

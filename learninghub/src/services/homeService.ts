@@ -95,10 +95,10 @@ function mapToFeaturedCourse(course: RawCourse): FeaturedCourse {
     id: course.id,
     title: course.title,
     description: course.description ?? '',
-    thumbnail: course.thumbnail || null,
+    thumbnail: course.thumbnail ?? null,
     instructor: {
-      id: course.instructorId || 'system',
-      display_name: course.instructorName || 'Instructor',
+      id: course.instructorId ?? 'system',
+      display_name: course.instructorName ?? 'Instructor',
       avatar: null,
     },
     price: course.price ?? 0,
@@ -120,8 +120,18 @@ export const homeService = {
 
       const user = (meRes.data?.user ?? meRes.user ?? {}) as RawUser
       const progressList = (meRes.data?.progress ?? []) as RawProgress[]
-      // Handle paginated response: { status, data: Course[], meta: {...} }
-      const courses = (coursesRes.data ?? coursesRes ?? []) as RawCourse[]
+      // Handle paginated response: { status, data: { courses: [...], pagination: {...} } }
+      // or { status, data: [...] } or direct array
+      const coursesData = coursesRes.data
+      const courses = (
+        Array.isArray(coursesData)
+          ? coursesData
+          : Array.isArray(coursesData?.courses)
+            ? coursesData.courses
+            : Array.isArray(coursesRes)
+              ? coursesRes
+              : []
+      ) as RawCourse[]
 
       // Compute stats
       const enrolled_courses = progressList.length
@@ -129,7 +139,7 @@ export const homeService = {
         p => p.status === 'completed' || p.completed
       ).length
       const hours_spent = progressList.reduce((acc, p) => {
-        return acc + (p.progress || 0) * 0.05 // Estimate: 5 hours per 100% progress
+        return acc + (p.progress ?? 0) * 0.05 // Estimate: 5 hours per 100% progress
       }, 0)
       const current_streak = user.streak ?? 0
       const xp_points = user.xp ?? 0

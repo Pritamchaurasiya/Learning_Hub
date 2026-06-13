@@ -79,21 +79,17 @@ export const courseService = {
   }> => {
     const cacheKey = CacheKeys.courseList(params ?? {})
 
-    // Try cache first (5 minutes TTL for search results)
     const cached = CacheService.get<{
       status: string
       data: CourseDetails[]
       pagination?: { page: number; limit: number; total: number; totalPages: number }
     }>(cacheKey)
 
-    if (cached) {
-      return cached
-    }
+    if (cached) return cached
 
     const query = params ? `?${new URLSearchParams(params).toString()}` : ''
     const res = await fetchApi(`/courses${query}`)
 
-    // Handle paginated response (backend returns { status, data: { courses, pagination } } or { status, data: [] })
     const responseData = res.data ?? res
     const result = {
       status: res.status ?? 'success',
@@ -101,8 +97,7 @@ export const courseService = {
       pagination: responseData?.pagination,
     }
 
-    // Cache for 5 minutes (shorter for search results, longer for filtered lists)
-    const ttl = params?.search ? 5 * 60 * 1000 : 10 * 60 * 1000
+    const ttl = params?.q ? 5 * 60 * 1000 : 10 * 60 * 1000
     CacheService.set(cacheKey, result, ttl)
 
     return result
@@ -112,29 +107,32 @@ export const courseService = {
     withCache(
       () => fetchApi(`/courses/${id}`) as Promise<{ status: string; data: CourseDetails }>,
       CacheKeys.course(id),
-      10 * 60 * 1000 // 10 minutes for course details
+      10 * 60 * 1000
     ),
 
   getCourseLessons: (id: string) =>
     withCache(
       () =>
-        fetchApi(`/courses/${id}/lessons`) as Promise<{ status: string; data: CourseSection[] }>,
+        fetchApi(`/courses/${id}`).then(res => {
+          const course = res?.course ?? res?.data ?? res
+          return { status: 'success', data: course?.sections ?? [] }
+        }) as Promise<{ status: string; data: CourseSection[] }>,
       `lessons_${id}`,
-      15 * 60 * 1000 // 15 minutes for lesson data
+      15 * 60 * 1000
     ),
 
   getCourseReviews: (id: string, params?: { page?: number; limit?: number }) =>
     withCache(
-      () =>
-        fetchApi(
-          `/courses/${id}/reviews?${new URLSearchParams(params as Record<string, string>).toString()}`
-        ) as Promise<{
+      () => {
+        const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''
+        return fetchApi(`/courses/${id}/reviews${query}`) as Promise<{
           status: string
           data: CourseReview[]
           meta: { total: number; page: number; pages: number }
-        }>,
+        }>
+      },
       `reviews_${id}_${params?.page ?? 1}`,
-      5 * 60 * 1000 // 5 minutes for reviews
+      5 * 60 * 1000
     ),
 
   enroll: (id: string) =>
@@ -154,12 +152,11 @@ export const courseService = {
       data: { progress_percent: number; completed_lessons: number; total_lessons: number }
     }>,
 
-  updateProgress: (id: string, _lessonId: string, completed: boolean) => {
-    // Invalidate cache on progress update
-    CacheService.delete(`lessons_${id}`)
-    return fetchApi('/courses/progress', {
+  updateProgress: (courseId: string, progressPercent: number) => {
+    CacheService.delete(`course_${courseId}`)
+    return fetchApi(`/courses/${courseId}/progress`, {
       method: 'POST',
-      body: JSON.stringify({ courseId: id, progress: completed ? 100 : 0 }),
-    }) as Promise<{ status: string; data: { progress_percent: number } }>
+      body: JSON.stringify({ progress: progressPercent }),
+    }) as Promise<{ status: string; data: { enrollment: { progress: number } } }>
   },
 }

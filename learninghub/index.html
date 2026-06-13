@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta
       name="description"
-      content="Master software engineering from fundamentals to cutting-edge technologies. LearningHub offers 70+ courses covering Beginner, Intermediate, Advanced, and Singularity phases."
+      content="Master software engineering from fundamentals to cutting-edge technologies. LearningHub offers 70+ courses covering Foundation, Beginner, Intermediate, Advanced, and Expert phases."
     />
     <meta
       name="keywords"
@@ -33,7 +33,7 @@
     <meta property="og:title" content="LearningHub - Complete Software Engineering Path" />
     <meta
       property="og:description"
-      content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 4 phases."
+      content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 5 phases."
     />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:site_name" content="LearningHub" />
@@ -44,23 +44,38 @@
     <meta property="twitter:title" content="LearningHub - Complete Software Engineering Path" />
     <meta
       property="twitter:description"
-      content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 4 phases."
+      content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 5 phases."
     />
     <meta property="twitter:image" content="/og-image.png" />
 
     <meta name="theme-color" content="#3b82f6" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Content Security Policy -->
+    <!-- CSP: permissive for development (localhost cross-origin).
+         Production should use stricter Helmet CSP headers instead. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:5000 http://localhost:8000 https://api.learninghub.example.com ws: wss:"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' http://localhost:* ws://localhost:* https: ws: wss:; frame-src 'none'; object-src 'none'"
     />
 
     <title>LearningHub - Complete Software Engineering Learning Platform</title>
+    <script>
+      // Prevents theme flash: apply dark class before React hydrates
+      (function() {
+        try {
+          var stored = JSON.parse(localStorage.getItem('learninghub-storage') || '{}');
+          var theme = stored && stored.theme && stored.theme.mode;
+          if (theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

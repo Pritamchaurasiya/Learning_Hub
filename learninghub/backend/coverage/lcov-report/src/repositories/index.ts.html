@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">61.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/18</span>
+                <span class='fraction'>11/18</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>2/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">56.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>9/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -102,25 +102,18 @@
 <a name='L37'></a><a href='#L37'>37</a>
 <a name='L38'></a><a href='#L38'>38</a>
 <a name='L39'></a><a href='#L39'>39</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -131,27 +124,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">54x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { PrismaClient } from '@prisma/client'
-<span class="cstat-no" title="statement not covered" >import { U</span>serRepository } from './UserRepository'
-<span class="cstat-no" title="statement not covered" >import { C</span>ourseRepository } from './CourseRepository'
-<span class="cstat-no" title="statement not covered" >import { B</span>aseRepository, QueryParams, PaginatedResult } from './BaseRepository'
+import { UserRepository } from './UserRepository'
+import { CourseRepository } from './CourseRepository'
+import { BaseRepository, QueryParams, PaginatedResult } from './BaseRepository'
 &nbsp;
 // Export all repositories
-<span class="cstat-no" title="statement not covered" >export * from './BaseRepository'</span>
-<span class="cstat-no" title="statement not covered" >export * from './UserRepository'</span>
-<span class="cstat-no" title="statement not covered" >export * from './CourseRepository'</span>
+export * from './BaseRepository'
+export * from './UserRepository'
+export * from './CourseRepository'
 &nbsp;
 // Repository factory for dependency injection
-<span class="cstat-no" title="statement not covered" >export class R</span>epositoryFactory {
-  private static instances: Map&lt;string, unknown&gt; = <span class="cstat-no" title="statement not covered" >new Map()</span>
+export class RepositoryFactory {
+  private static instances: Map&lt;string, unknown&gt; = new Map()
 &nbsp;
 <span class="fstat-no" title="function not covered" >  static </span>getUserRepository(prisma: PrismaClient): UserRepository {
 <span class="cstat-no" title="statement not covered" >    if (!this.instances.has('userRepository')) {</span>
@@ -176,7 +176,7 @@
 export type { QueryParams, PaginatedResult }
 &nbsp;
 // Default exports for convenience
-export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >UserRepository,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >CourseRepository,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >BaseRepository </span>}</span></span></span>
+export { UserRepository, CourseRepository, <span class="fstat-no" title="function not covered" >BaseRepository </span>}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -184,7 +184,7 @@ export { <span class="cstat-no" title="statement not covered" ><span class="fsta
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-16T14:10:44.574Z
+                at 2026-06-12T12:22:30.727Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

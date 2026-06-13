@@ -12,6 +12,9 @@
 
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
+import { parseJsonArray, parseJsonObject } from '../utils/json'
+import { topicPerformanceService } from './TopicPerformanceService'
+import { growthEngineService } from './GrowthEngineService'
 
 export interface PracticeAnswerRequest {
   userId: string
@@ -52,58 +55,135 @@ export class TestEngineService {
     const correctOption = question.options.find(o => o.isCorrect)
     const isCorrect = req.selectedOptionId === correctOption?.id
 
-    // Record the practice attempt
-    await prisma.testResult.upsert({
-      where: {
-        userId_testId_attemptNumber: {
-          userId: req.userId,
-          testId: req.testId,
-          attemptNumber: 1,
-        },
-      },
-      create: {
-        userId: req.userId,
-        testId: req.testId,
-        score: isCorrect ? question.points : 0,
-        totalPoints: question.points,
-        percentage: isCorrect ? 100 : 0,
-        passed: isCorrect,
-        timeTaken: 0,
-        answers: { [req.questionId]: req.selectedOptionId } as any,
-        questionResults: [
-          {
+    const maxRetries = 3
+    let currentTry = 0
+
+    while (currentTry < maxRetries) {
+      try {
+        return await prisma.$transaction(async tx => {
+          // Find or create a practice test result for this user/test
+          let practiceResult = await tx.testResult.findFirst({
+            where: { userId: req.userId, testId: req.testId, status: 'IN_PROGRESS' },
+            orderBy: { attemptNumber: 'desc' },
+          })
+
+          if (!practiceResult) {
+            // Get next attempt number
+            const maxAttempt = await tx.testResult.findFirst({
+              where: { userId: req.userId, testId: req.testId },
+              orderBy: { attemptNumber: 'desc' },
+              select: { attemptNumber: true },
+            })
+            const nextAttemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
+
+            practiceResult = await tx.testResult.create({
+              data: {
+                userId: req.userId,
+                testId: req.testId,
+                score: 0,
+                totalPoints: 0,
+                percentage: 0,
+                passed: false,
+                timeTaken: 0,
+                answers: {},
+                questionResults: [],
+                status: 'IN_PROGRESS',
+                attemptNumber: nextAttemptNumber,
+              },
+            })
+          }
+
+          // Merge answers
+          const existingAnswers = parseJsonObject(practiceResult.answers) as Record<string, string>
+          const updatedAnswers = { ...existingAnswers, [req.questionId]: req.selectedOptionId }
+
+          // Merge question results
+          const existingResults = parseJsonArray<any>(practiceResult.questionResults)
+          const existingResultIndex = existingResults.findIndex(
+            (r: any) => r.question_id === req.questionId
+          )
+          const newResult = {
             question_id: req.questionId,
             is_correct: isCorrect,
             marks_obtained: isCorrect ? question.points : 0,
-          },
-        ] as any,
-        status: 'IN_PROGRESS',
-        attemptNumber: 1,
-      },
-      update: {
-        answers: {
-          ...(await this.getExistingAnswers(req.userId, req.testId)),
-          [req.questionId]: req.selectedOptionId,
-        } as any,
-      },
-    })
+          }
 
-    // Update topic performance
-    await this.updateTopicPerformance(req.userId, question)
+          if (existingResultIndex >= 0) {
+            existingResults[existingResultIndex] = newResult
+          } else {
+            existingResults.push(newResult)
+          }
 
-    return {
-      questionId: req.questionId,
-      isCorrect,
-      explanation: question.explanation ?? '',
-      correctOptionId: correctOption?.id ?? '',
-      points: isCorrect ? question.points : 0,
+          // Calculate current score across ALL answered questions
+          let currentScore = 0
+          for (const r of existingResults) {
+            if (r.is_correct) currentScore += r.marks_obtained
+          }
+          // Total points = sum of points for all questions the user has attempted
+          const attemptedQuestionIds = existingResults.map((r: any) => r.question_id).filter(Boolean)
+          let totalPoints = question.points // at minimum the current question
+          if (attemptedQuestionIds.length > 0) {
+            const attemptedQuestions = await tx.question.findMany({
+              where: { id: { in: attemptedQuestionIds } },
+              select: { points: true },
+            })
+            totalPoints = (attemptedQuestions ?? []).reduce((s, q) => s + q.points, 0)
+          }
+          const percentage = totalPoints > 0 ? (currentScore / totalPoints) * 100 : 0
+
+          await tx.testResult.update({
+            where: { id: practiceResult.id },
+            data: {
+              score: currentScore,
+              totalPoints,
+              percentage,
+              passed: percentage >= 60,
+              answers: updatedAnswers as any,
+              questionResults: existingResults as any,
+            },
+          })
+
+          // Update topic performance (Core Analytics Engine)
+          const topicName = question.tags?.[0] ?? 'General'
+          await topicPerformanceService.updateForSingleAnswer(req.userId, topicName, isCorrect, {
+            subjectName: (question.test as any).subjectId,
+            tx,
+          })
+
+          // Growth Engine: Practice XP securely executed IN transaction
+          await growthEngineService.awardXP(req.userId, 'practice_session', tx)
+
+          return {
+            questionId: req.questionId,
+            isCorrect,
+            explanation: question.explanation ?? '',
+            correctOptionId: correctOption?.id ?? '',
+            points: isCorrect ? question.points : 0,
+          }
+        })
+      } catch (error: any) {
+        // P2002: Unique constraint failed
+        if (error?.code === 'P2002') {
+          currentTry++
+          if (currentTry >= maxRetries) {
+            logger.error('[TestEngineService] Max retries reached for Practice Answer concurrency', error)
+            throw new Error('Concurrent submission error. Please try again.')
+          }
+          // Exponential backoff
+          await new Promise(res => setTimeout(res, 50 * Math.pow(2, currentTry)))
+          continue
+        }
+        throw error
+      }
     }
+    
+    throw new Error('Unexpected error in practice answer flow')
   }
 
   /**
    * Get questions for a test with randomized order.
    */
-  async getTestQuestions(testId: string, userId: string): Promise<any[]> {
+  async getTestQuestions(testId: string, _userId: string): Promise<any[]> {
     const test = await prisma.test.findUnique({
       where: { id: testId, isPublished: true },
       include: {
@@ -197,8 +277,8 @@ export class TestEngineService {
         completed_at: r.completedAt,
       }))
 
-    // Topic performance from question results
-    const topicStats = await this.getTopicStatsFromResults(results)
+    // Use the shared topic map from topicPerformanceService for accurate global topic data
+    const topicMastery = await topicPerformanceService.getTopicMasteryMap(userId)
 
     return {
       total_tests: totalTests,
@@ -207,7 +287,12 @@ export class TestEngineService {
       average_score: avgScore,
       by_difficulty: byDifficulty,
       trend,
-      topic_performance: topicStats,
+      topic_performance: topicMastery.topics.map(t => ({
+        topic: t.topicName,
+        accuracy: t.accuracy,
+        total_attempts: t.totalAttempts,
+        strength_level: t.strengthLevel
+      })),
     }
   }
 
@@ -368,7 +453,13 @@ export class TestEngineService {
     }
 
     const timeLimitSeconds = attempt.test.timeLimit * 60
-    const elapsedSeconds = Math.floor((Date.now() - attempt.startedAt.getTime()) / 1000)
+    const startedAtMs =
+      attempt.startedAt instanceof Date
+        ? attempt.startedAt.getTime()
+        : Date.parse(String(attempt.startedAt))
+    const elapsedSeconds = Number.isFinite(startedAtMs)
+      ? Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000))
+      : 0
     const remainingSeconds = Math.max(0, timeLimitSeconds - elapsedSeconds)
 
     return {
@@ -404,24 +495,38 @@ export class TestEngineService {
 
     for (const attempt of expiredAttempts) {
       const timeLimitSeconds = attempt.test.timeLimit * 60
-      const elapsedSeconds = Math.floor((Date.now() - attempt.startedAt.getTime()) / 1000)
+      const startedAtMs =
+        attempt.startedAt instanceof Date
+          ? attempt.startedAt.getTime()
+          : Date.parse(String(attempt.startedAt))
+      const elapsedSeconds = Number.isFinite(startedAtMs)
+        ? Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000))
+        : 0
 
       if (elapsedSeconds > timeLimitSeconds) {
-        const answers = (attempt.answers as Record<string, string>) ?? {}
+        const answers = parseJsonObject(attempt.answers) as Record<string, string>
 
         let score = 0
         const questionResults = attempt.test.questions.map(q => {
           const correctOption = q.options.find(o => o.isCorrect)
           const userAnswer = answers[q.id]
-          const isCorrect = userAnswer === correctOption?.id
-          if (isCorrect) score += q.points
+          const hasAnswer = userAnswer !== undefined && userAnswer !== null && String(userAnswer).trim().length > 0
+          const isCorrect = hasAnswer && userAnswer === correctOption?.id
+
+          if (isCorrect) {
+            score += q.points
+          } else if (hasAnswer && attempt.test.negativeMarks > 0) {
+            score -= attempt.test.negativeMarks
+          }
 
           return {
             question_id: q.id,
             is_correct: isCorrect,
-            marks_obtained: isCorrect ? q.points : 0,
+            marks_obtained: isCorrect ? q.points : (hasAnswer ? -attempt.test.negativeMarks : 0),
           }
         })
+
+        score = Math.max(0, score)
 
         const totalPossibleScore = attempt.test.questions.reduce((acc, q) => acc + q.points, 0)
         const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
@@ -457,55 +562,13 @@ export class TestEngineService {
     userId: string,
     testId: string
   ): Promise<Record<string, string>> {
+    // Find the most recent in-progress attempt (not hardcoded to attempt 1)
     const result = await prisma.testResult.findFirst({
-      where: { userId, testId, attemptNumber: 1 },
+      where: { userId, testId, status: 'IN_PROGRESS' },
+      orderBy: { attemptNumber: 'desc' },
       select: { answers: true },
     })
-    return (result?.answers as Record<string, string>) ?? {}
-  }
-
-  private async updateTopicPerformance(userId: string, question: any): Promise<void> {
-    for (const tag of question.tags ?? []) {
-      await prisma.topicPerformance.upsert({
-        where: { userId_topicName: { userId, topicName: tag } },
-        create: {
-          userId,
-          topicName: tag,
-          totalAttempts: 1,
-          correctAnswers: 0,
-          accuracy: 0,
-        },
-        update: {
-          totalAttempts: { increment: 1 },
-          updatedAt: new Date(),
-          lastAttemptAt: new Date(),
-        },
-      })
-    }
-  }
-
-  private async getTopicStatsFromResults(results: any[]): Promise<any[]> {
-    const topicMap: Record<string, { correct: number; total: number }> = {}
-
-    for (const result of results) {
-      const questionResults = (result.questionResults as any[]) ?? []
-      for (const qr of questionResults) {
-        const tags = qr.tags ?? []
-        for (const tag of tags) {
-          if (!topicMap[tag]) topicMap[tag] = { correct: 0, total: 0 }
-          topicMap[tag].total++
-          if (qr.is_correct) topicMap[tag].correct++
-        }
-      }
-    }
-
-    return Object.entries(topicMap)
-      .map(([topic, stats]) => ({
-        topic,
-        accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
-        total_attempts: stats.total,
-      }))
-      .sort((a, b) => a.accuracy - b.accuracy)
+    return parseJsonObject(result?.answers) as Record<string, string>
   }
 
   private shuffleArray<T>(array: T[]): T[] {

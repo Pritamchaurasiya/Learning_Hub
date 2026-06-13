@@ -43,16 +43,16 @@ describe('Utils', () => {
       expect(truncateText('Hello', 10)).toBe('Hello')
     })
 
-    it('truncates text and adds ellipsis', () => {
-      expect(truncateText('Hello World', 5)).toBe('Hello...')
+    it('truncates text to exact max length including suffix', () => {
+      expect(truncateText('Hello World', 8)).toBe('Hello...')
     })
 
     it('handles empty string', () => {
       expect(truncateText('', 10)).toBe('')
     })
 
-    it('uses custom suffix', () => {
-      expect(truncateText('Hello World', 5, '»')).toBe('Hello»')
+    it('uses custom suffix with correct length', () => {
+      expect(truncateText('Hello World', 6, '»')).toBe('Hello»')
     })
   })
 

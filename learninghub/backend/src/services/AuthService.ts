@@ -205,8 +205,8 @@ export class AuthService {
 
       // Get user
       const user = await this.userRepository.findById(decoded.userId)
-      if (!user) {
-        throw new Error('User not found')
+      if (!user || user.deletedAt) {
+        throw new Error('User not found or deleted')
       }
 
       // Mark old token as used
@@ -371,26 +371,22 @@ export class AuthService {
       role: user.role,
     }
 
-    // Generate access token
     const accessToken = jwt.sign(payload, jwtConfig.accessSecret, {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expiresIn: jwtConfig.accessExpiresIn as any,
+      expiresIn: jwtConfig.accessExpiresIn as jwt.SignOptions['expiresIn'],
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
       algorithm: jwtConfig.algorithm as jwt.Algorithm,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
+    })
 
-    // Generate JWT refresh token
     const refreshToken = jwt.sign(
       { ...payload, tokenId: crypto.randomUUID() },
       jwtConfig.refreshSecret,
       {
-        expiresIn: jwtConfig.refreshExpiresIn as any,
+        expiresIn: jwtConfig.refreshExpiresIn as jwt.SignOptions['expiresIn'],
         algorithm: jwtConfig.algorithm as jwt.Algorithm,
         issuer: jwtConfig.issuer,
         audience: jwtConfig.audience,
-      } as jwt.SignOptions
+      }
     )
 
     // Store refresh token in DB for revocation tracking
@@ -468,12 +464,11 @@ export class AuthService {
 
     if (sessions.length > maxSessions) {
       const sessionsToRevoke = sessions.slice(maxSessions)
-      for (const session of sessionsToRevoke) {
-        await this.prisma.userSession.update({
-          where: { id: session.id },
-          data: { isRevoked: true, revokedAt: new Date() },
-        })
-      }
+      const idsToRevoke = sessionsToRevoke.map(s => s.id)
+      await this.prisma.userSession.updateMany({
+        where: { id: { in: idsToRevoke } },
+        data: { isRevoked: true, revokedAt: new Date() },
+      })
     }
   }
 

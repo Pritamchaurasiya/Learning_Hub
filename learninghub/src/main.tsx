@@ -8,10 +8,27 @@ import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useStore } from './stores/useStore'
 import './index.css'
+import * as Sentry from '@sentry/react'
+
+if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.VITE_SENTRY_ENVIRONMENT,
+    integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+    tracesSampleRate: 0.1,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  })
+}
 
 // Rehydrate Zustand persisted state from localStorage before React renders.
 // This is required because the store uses skipHydration: true for SSR compat.
-useStore.persist.rehydrate()
+// Await is critical — without it, setHydrated() fires before rehydration completes,
+// causing a flash where isHydrated=true but state hasn't loaded yet.
+;(async () => {
+  await useStore.persist.rehydrate()
+  useStore.getState().setHydrated()
+})()
 
 // Create React Query client with optimized defaults
 const queryClient = new QueryClient({
@@ -19,7 +36,6 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000,
-      dedupingInterval: 1000, // 10 minutes
       retry: 3,
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
@@ -83,26 +99,6 @@ window.addEventListener('error', event => {
   if (event.error instanceof Error) {
     reportErrorToMonitoring(event.error, { type: 'error' })
   }
-})
-
-// ============================================
-// AUTH: Session expiry listener
-// ============================================
-window.addEventListener('auth:unauthorized', () => {
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log('[Auth] Session expired or invalid')
-  }
-  // Force page reload to clear state
-  window.location.href = '/auth'
-})
-
-window.addEventListener('auth:session-expired', () => {
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log('[Auth] Session expired')
-  }
-  window.location.href = '/auth'
 })
 
 // ============================================

@@ -38,12 +38,17 @@ export interface Course {
   title: string
   description: string
   category: string
-  level: 'beginner' | 'intermediate' | 'advanced'
-  status: 'draft' | 'published' | 'archived'
-  instructor: string
-  enrolledCount: number
+  level?: string
+  difficulty?: string
+  phase?: string
+  status?: string
+  published?: boolean
+  instructor?: string
+  instructor_name?: string
+  enrolledCount?: number
+  enrollment_count?: number
   thumbnail?: string
-  duration?: number
+  duration?: number | string
   price?: number
   created_at?: string
   updated_at?: string
@@ -66,6 +71,77 @@ export interface TestResult {
   completedAt: string
   passed: boolean
 }
+
+interface RawAdminUser {
+  id: string
+  email?: string
+  username?: string
+  role?: string
+  xp?: number
+  level?: number
+  streak?: number
+  created_at?: string
+  createdAt?: string
+  is_active?: boolean
+  deletedAt?: string | null
+}
+
+interface RawAdminCourse {
+  id: string
+  title?: string
+  description?: string
+  category?: string
+  level?: string
+  difficulty?: string
+  status?: string
+  deletedAt?: string | null
+  isPublished?: boolean
+  is_published?: boolean
+  instructor?: { username?: string; email?: string } | string
+  enrolledCount?: number
+  studentCount?: number
+  student_count?: number
+  thumbnail?: string
+  duration?: number
+  price?: number
+  created_at?: string
+  createdAt?: string
+  updated_at?: string
+  updatedAt?: string
+}
+
+const normalizeAdminUser = (raw: RawAdminUser): User => ({
+  id: raw.id,
+  email: raw.email ?? '',
+  username: raw.username ?? raw.email ?? 'Learner',
+  role: raw.role ?? 'STUDENT',
+  xp: raw.xp ?? 0,
+  level: raw.level ?? 1,
+  streak: raw.streak ?? 0,
+  created_at: raw.created_at ?? raw.createdAt ?? new Date(0).toISOString(),
+  is_active: raw.is_active ?? !raw.deletedAt,
+})
+
+const normalizeAdminCourse = (raw: RawAdminCourse): Course => ({
+  id: raw.id,
+  title: raw.title ?? '',
+  description: raw.description ?? '',
+  category: raw.category ?? 'General',
+  level: String(raw.level ?? raw.difficulty ?? 'beginner').toLowerCase(),
+  status:
+    raw.status ??
+    (raw.deletedAt ? 'archived' : raw.isPublished || raw.is_published ? 'published' : 'draft'),
+  instructor:
+    typeof raw.instructor === 'string'
+      ? raw.instructor
+      : (raw.instructor?.username ?? raw.instructor?.email ?? ''),
+  enrolledCount: raw.enrolledCount ?? raw.studentCount ?? raw.student_count ?? 0,
+  thumbnail: raw.thumbnail,
+  duration: raw.duration,
+  price: raw.price,
+  created_at: raw.created_at ?? raw.createdAt,
+  updated_at: raw.updated_at ?? raw.updatedAt,
+})
 
 export const adminService = {
   // Authentication
@@ -90,7 +166,13 @@ export const adminService = {
 
   // Users
   getUsers: (page = 1, limit = 20) =>
-    fetchApi(`/admin/users?page=${page}&limit=${limit}`) as Promise<{
+    fetchApi(`/admin/users?page=${page}&limit=${limit}`).then(res => ({
+      ...res,
+      data: {
+        ...res.data,
+        users: Array.isArray(res.data?.users) ? res.data.users.map(normalizeAdminUser) : [],
+      },
+    })) as Promise<{
       status: string
       data: {
         users: User[]
@@ -149,7 +231,10 @@ export const adminService = {
   getCourses: (params?: { status?: string; category?: string }) =>
     fetchApi(
       `/admin/courses${params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''}`
-    ) as Promise<{
+    ).then(res => ({
+      ...res,
+      data: Array.isArray(res.data) ? res.data.map(normalizeAdminCourse) : [],
+    })) as Promise<{
       status: string
       data: Course[]
       pagination?: { page: number; limit: number; total: number; totalPages: number }
@@ -163,7 +248,7 @@ export const adminService = {
 
   updateCourse: (id: string, data: Partial<Course>) =>
     fetchApi(`/admin/courses/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(data),
     }) as Promise<{ status: string; data: Course }>,
 
@@ -171,4 +256,11 @@ export const adminService = {
     fetchApi(`/admin/courses/${id}`, {
       method: 'DELETE',
     }) as Promise<{ status: string }>,
+
+  // AI Workshop
+  generateCourse: (prompt: string, difficulty: string = 'BEGINNER', modulesCount: number = 3) =>
+    fetchApi('/admin/ai/generate-course', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, difficulty, modulesCount }),
+    }) as Promise<{ status: string; data: { courseId: string; message: string } }>,
 }

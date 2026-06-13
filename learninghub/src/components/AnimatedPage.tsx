@@ -34,7 +34,6 @@ export default function AnimatedPage({ children, className = '' }: AnimatedPageP
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
       }}
-      role="main"
       aria-live="polite"
     >
       {children}

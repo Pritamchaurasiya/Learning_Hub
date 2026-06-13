@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Send,
   Bot,
@@ -18,8 +19,10 @@ import { SEO } from '../components/SEO'
 import AnimatedPage from '../components/AnimatedPage'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { Skeleton } from '../components/ui/Skeleton'
 import { aiTutorService, type AIChatMessage, type AIChatSession } from '../services/aiTutorService'
 import { useStore } from '../stores/useStore'
+import DOMPurify from 'dompurify'
 import { renderMarkdown } from '../utils/markdown'
 import { useBreakpoint } from '../hooks/useMediaQuery'
 
@@ -49,17 +52,236 @@ const quickActions = [
 
 export default function AITutorPage() {
   const navigate = useNavigate()
-  const [messages, setMessages] = useState<AIChatMessage[]>([])
-  const [sessions, setSessions] = useState<AIChatSession[]>([])
+  const queryClient = useQueryClient()
+  const addToast = useStore(state => state.addToast)
+  const isDesktop = useBreakpoint('lg')
+
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [showHistory, setShowHistory] = useState(false)
+  const [isStreaming, setIsStreaming] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { addToast } = useStore()
-  const isDesktop = useBreakpoint('lg')
+
+  // Fetch Chat History (Sessions List)
+  const { data: sessions = [], isLoading: isSessionsLoading } = useQuery({
+    queryKey: ['aiTutor', 'sessions'],
+    queryFn: async () => {
+      const res = await aiTutorService.getChatHistory()
+      return res.data || []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Set default session if none selected
+  useEffect(() => {
+    if (!currentSessionId && sessions.length > 0 && !isSessionsLoading) {
+      setCurrentSessionId(sessions[0].id)
+    }
+  }, [sessions, currentSessionId, isSessionsLoading])
+
+  // Fetch Current Session Messages
+  const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
+    queryKey: ['aiTutor', 'session', currentSessionId],
+    queryFn: async () => {
+      if (!currentSessionId) return []
+      const res = await aiTutorService.getChatSession(currentSessionId)
+      const msgs = res.data.messages || []
+
+      if (msgs.length === 0) {
+        return [
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content: 'Continuing our session. How can I help you further?',
+            createdAt: new Date().toISOString(),
+          },
+        ]
+      }
+      return msgs
+    },
+    enabled: !!currentSessionId,
+    staleTime: Infinity, // messages shouldn't get stale in the background
+  })
+
+  // Create New Session Mutation
+  const createSessionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await aiTutorService.createChatSession(`Chat ${new Date().toLocaleDateString()}`)
+      return res.data
+    },
+    onSuccess: newSession => {
+      setCurrentSessionId(newSession.id)
+      queryClient.setQueryData(
+        ['aiTutor', 'session', newSession.id],
+        [
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content:
+              "Hello! I'm your AI Tutor. I can help you with coding concepts, explain topics, answer questions, and guide your learning journey. What would you like to learn today?",
+            createdAt: new Date().toISOString(),
+          },
+        ]
+      )
+      void queryClient.invalidateQueries({ queryKey: ['aiTutor', 'sessions'] })
+    },
+    onError: () => {
+      addToast({ message: 'Failed to create new chat session', type: 'error' })
+    },
+  })
+
+  // Delete Session Mutation
+  const deleteSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      return aiTutorService.deleteChatSession(sessionId)
+    },
+    onMutate: async sessionId => {
+      await queryClient.cancelQueries({ queryKey: ['aiTutor', 'sessions'] })
+      const previousSessions = queryClient.getQueryData<AIChatSession[]>(['aiTutor', 'sessions'])
+      queryClient.setQueryData(['aiTutor', 'sessions'], (old: AIChatSession[] | undefined) =>
+        old ? old.filter(s => s.id !== sessionId) : []
+      )
+      return { previousSessions }
+    },
+    onSuccess: (_, deletedSessionId) => {
+      if (currentSessionId === deletedSessionId) {
+        const remaining = queryClient.getQueryData<AIChatSession[]>(['aiTutor', 'sessions']) ?? []
+        if (remaining.length > 0) {
+          setCurrentSessionId(remaining[0].id)
+        } else {
+          setCurrentSessionId(null)
+          createSessionMutation.mutate()
+        }
+      }
+      addToast({ message: 'Chat deleted', type: 'success' })
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousSessions) {
+        queryClient.setQueryData(['aiTutor', 'sessions'], context.previousSessions)
+      }
+      addToast({ message: 'Failed to delete chat', type: 'error' })
+    },
+  })
+
+  // Send Message using Fetch API for Streaming support
+  const handleSendMessage = async () => {
+    if (!input.trim() || isStreaming || !currentSessionId) return
+
+    const userMessageContent = input.trim()
+    setInput('')
+
+    // Optimistically add the user message
+    const userMessage: AIChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: userMessageContent,
+      createdAt: new Date().toISOString(),
+    }
+
+    // Add a placeholder assistant message that will be updated
+    const assistantMessageId = `msg-${Date.now() + 1}`
+    const initialAssistantMessage: AIChatMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+    }
+
+    queryClient.setQueryData(
+      ['aiTutor', 'session', currentSessionId],
+      (old: AIChatMessage[] = []) => [...old, userMessage, initialAssistantMessage]
+    )
+
+    scrollToBottom()
+    setIsStreaming(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/tutor/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: userMessageContent,
+          session_id: currentSessionId,
+        }),
+      })
+
+      if (!response.body) throw new Error('No readable stream')
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let fullResponse = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.replace('data: ', '').trim()
+            if (dataStr === '[DONE]') break
+
+            try {
+              const data = JSON.parse(dataStr)
+              if (data.text) {
+                fullResponse += data.text
+                // Update the UI with streamed text
+                queryClient.setQueryData(
+                  ['aiTutor', 'session', currentSessionId],
+                  (old: AIChatMessage[] = []) => {
+                    const newMessages = [...old]
+                    const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
+                    if (targetIdx !== -1) {
+                      newMessages[targetIdx] = {
+                        ...newMessages[targetIdx],
+                        content: fullResponse,
+                      }
+                    }
+                    return newMessages
+                  }
+                )
+                // Auto-scroll as text comes in
+                messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+              }
+            } catch (e) {
+              // Ignore partial JSON chunks
+            }
+          }
+        }
+      }
+
+      // We could optionally persist this message to the backend session state here
+    } catch (error) {
+      addToast({ message: 'Failed to stream response from AI Tutor.', type: 'error' })
+      // Remove placeholder message on error
+      queryClient.setQueryData(
+        ['aiTutor', 'session', currentSessionId],
+        (old: AIChatMessage[] = []) => old.filter(m => m.id !== assistantMessageId)
+      )
+    } finally {
+      setIsStreaming(false)
+      scrollToBottom()
+    }
+  }
+
+  useEffect(() => {
+    // If no sessions exist after loading, create one automatically
+    if (
+      !isSessionsLoading &&
+      sessions.length === 0 &&
+      !createSessionMutation.isPending &&
+      !currentSessionId
+    ) {
+      createSessionMutation.mutate()
+    }
+  }, [sessions.length, isSessionsLoading, createSessionMutation, currentSessionId])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -67,136 +289,28 @@ export default function AITutorPage() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, scrollToBottom])
+  }, [messages.length, scrollToBottom])
 
-  const loadHistory = useCallback(async () => {
-    try {
-      const res = await aiTutorService.getChatHistory()
-      setSessions(res.data)
-      return res.data
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[AITutorPage] Failed to fetch history:', err)
-      }
-      return []
+  const handleStartNewChat = useCallback(() => {
+    if (!createSessionMutation.isPending) {
+      createSessionMutation.mutate()
+      if (!isDesktop) setShowHistory(false)
     }
-  }, [])
+  }, [createSessionMutation, isDesktop])
 
-  const startNewChat = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const res = await aiTutorService.createChatSession(`Chat ${new Date().toLocaleDateString()}`)
-      setCurrentSessionId(res.data.id)
-      setMessages([
-        {
-          id: 'welcome',
-          role: 'assistant',
-          content:
-            "Hello! I'm your AI Tutor. I can help you with coding concepts, explain topics, answer questions, and guide your learning journey. What would you like to learn today?",
-          timestamp: new Date().toISOString(),
-        },
-      ])
-      await loadHistory()
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      addToast({ message: 'Failed to create new chat session', type: 'error' })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [addToast, loadHistory])
-
-  const selectSession = useCallback(
-    async (sessionId: string) => {
-      try {
-        setIsLoading(true)
-        const res = await aiTutorService.getChatSession(sessionId)
-        setCurrentSessionId(res.data.id)
-        setMessages(
-          res.data.messages.length > 0
-            ? res.data.messages
-            : [
-                {
-                  id: 'welcome',
-                  role: 'assistant',
-                  content: 'Continuing our session. How can I help you further?',
-                  timestamp: new Date().toISOString(),
-                },
-              ]
-        )
-        if (!isDesktop) setShowHistory(false)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        addToast({ message: 'Failed to load chat session', type: 'error' })
-      } finally {
-        setIsLoading(false)
-      }
+  const handleSelectSession = useCallback(
+    (sessionId: string) => {
+      setCurrentSessionId(sessionId)
+      if (!isDesktop) setShowHistory(false)
     },
-    [addToast, isDesktop]
+    [isDesktop]
   )
 
-  useEffect(() => {
-    const controller = new AbortController()
-    const init = async () => {
-      if (controller.signal.aborted) return
-      setIsInitialLoading(true)
-      const history = await loadHistory()
-      if (controller.signal.aborted) return
-      if (history.length > 0) {
-        await selectSession(history[0].id)
-      } else {
-        await startNewChat()
-      }
-      if (!controller.signal.aborted) setIsInitialLoading(false)
-    }
-    void init()
-    return () => controller.abort()
-  }, [loadHistory, selectSession, startNewChat])
+  // Replaced with handleSendMessage method above.
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading || !currentSessionId) return
-
-    const userMessage: AIChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      timestamp: new Date().toISOString(),
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setInput('')
-    setIsLoading(true)
-
-    try {
-      const res = await aiTutorService.sendMessage({
-        message: input,
-        session_id: currentSessionId,
-      })
-      setMessages(prev => [...prev, res.data.message])
-    } catch (err) {
-      addToast({ message: 'Failed to get AI response', type: 'error' })
-      if (import.meta.env.DEV) {
-        console.error('[AITutorPage] Failed to send message:', err)
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
+  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    try {
-      await aiTutorService.deleteChatSession(sessionId)
-      setSessions(prev => prev.filter(s => s.id !== sessionId))
-      if (currentSessionId === sessionId) {
-        const remaining = sessions.filter(s => s.id !== sessionId)
-        if (remaining.length > 0) void selectSession(remaining[0].id)
-        else void startNewChat()
-      }
-      addToast({ message: 'Chat deleted', type: 'success' })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      addToast({ message: 'Failed to delete chat', type: 'error' })
-    }
+    deleteSessionMutation.mutate(sessionId)
   }
 
   const formatTime = (timestamp: string) => {
@@ -206,21 +320,21 @@ export default function AITutorPage() {
     })
   }
 
-  if (isInitialLoading) {
+  if (isSessionsLoading && !currentSessionId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-6">
         <div className="relative">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-            className="w-20 h-20 border-4 border-primary-500/20 border-t-primary-500 rounded-full"
+            className="w-24 h-24 border-4 border-primary-500/20 border-t-primary-500 rounded-full"
           />
-          <Bot className="w-8 h-8 text-primary-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <Bot className="w-10 h-10 text-primary-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
         <div className="text-center">
-          <p className="font-bold text-xl tracking-tight">Syncing with AI Tutor</p>
-          <p className="text-sm text-gray-500 animate-pulse">
-            Initializing neural learning environment...
+          <p className="font-black text-xl tracking-tight uppercase">Syncing with AI Core</p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse mt-1">
+            Initializing neural environment...
           </p>
         </div>
       </div>
@@ -228,8 +342,8 @@ export default function AITutorPage() {
   }
 
   return (
-    <AnimatedPage className="h-[calc(100vh-10rem)] flex flex-col gap-6">
-      <SEO title="AI Engineering Tutor - LearningHub" />
+    <AnimatedPage className="h-[calc(100vh-8rem)] flex flex-col gap-6 pt-2 pb-6">
+      <SEO title="AI Tutor - LearningHub" />
 
       {/* Main Layout Grid */}
       <div className="flex-1 flex gap-6 overflow-hidden relative">
@@ -241,7 +355,7 @@ export default function AITutorPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowHistory(false)}
-              className="absolute inset-0 z-30 bg-gray-900/40 backdrop-blur-sm lg:hidden rounded-[2.5rem]"
+              className="absolute inset-0 z-30 bg-gray-900/60 backdrop-blur-sm lg:hidden rounded-[2.5rem]"
             />
           )}
         </AnimatePresence>
@@ -252,50 +366,59 @@ export default function AITutorPage() {
               initial={{ x: -300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
-              className={`absolute lg:relative z-40 w-72 h-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col overflow-hidden shadow-2xl lg:shadow-none`}
+              className="absolute lg:relative z-40 w-80 h-full bg-white dark:bg-gray-900 border-none rounded-[2.5rem] flex flex-col overflow-hidden shadow-2xl"
             >
-              <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                  <History className="w-4 h-4" /> Session History
+              <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-gray-500 flex items-center gap-3">
+                  <div className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
+                    <History className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                  </div>
+                  Session History
                 </h3>
                 <button
-                  onClick={startNewChat}
-                  className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-xl hover:scale-105 active:scale-95 transition-all"
+                  onClick={handleStartNewChat}
+                  disabled={createSessionMutation.isPending}
+                  className="p-3 bg-primary-100 dark:bg-primary-900/40 text-primary-600 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-sm disabled:opacity-50"
                   aria-label="Start new chat session"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
                 {sessions.map(session => (
                   <button
                     key={session.id}
-                    onClick={() => selectSession(session.id)}
-                    className={`w-full text-left p-4 rounded-2xl group transition-all relative ${
+                    onClick={() => handleSelectSession(session.id)}
+                    className={`w-full text-left p-4 rounded-[1.25rem] group transition-all duration-300 relative ${
                       currentSessionId === session.id
-                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                        ? 'bg-primary-600 text-white shadow-xl shadow-primary-500/20'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <MessageSquare
-                        className={`w-4 h-4 shrink-0 ${currentSessionId === session.id ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-5 h-5 shrink-0 ${currentSessionId === session.id ? 'text-primary-100' : 'text-gray-400 group-hover:text-primary-500 transition-colors'}`}
                       />
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold truncate">{session.title}</p>
+                      <div className="min-w-0 pr-8">
                         <p
-                          className={`text-[10px] uppercase font-black tracking-tighter opacity-60`}
+                          className={`text-sm font-black truncate ${currentSessionId === session.id ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}
                         >
-                          {new Date(session.updated_at).toLocaleDateString()}
+                          {session.title}
+                        </p>
+                        <p
+                          className={`text-[9px] uppercase font-bold tracking-widest mt-1 ${currentSessionId === session.id ? 'text-primary-200' : 'text-gray-400'}`}
+                        >
+                          {new Date(session.updatedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={e => handleDeleteSession(session.id, e)}
+                      disabled={deleteSessionMutation.isPending}
                       aria-label="Delete chat session"
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all ${currentSessionId === session.id ? 'text-white/80' : 'text-gray-400'}`}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all ${currentSessionId === session.id ? 'text-white/80' : 'text-gray-400 bg-gray-100 dark:bg-gray-700'}`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </button>
                 ))}
@@ -306,34 +429,39 @@ export default function AITutorPage() {
 
         {/* Chat Interface */}
         <div className="flex-1 flex flex-col min-w-0">
-          <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-2xl rounded-[2.5rem] bg-white dark:bg-gray-900/50 backdrop-blur-xl">
+          <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-2xl rounded-[2.5rem] bg-white dark:bg-gray-900 relative">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl z-20">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
                   aria-label="Toggle chat history"
-                  className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl"
+                  className="lg:hidden p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-[1rem] transition-colors"
                 >
                   <History className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-[1rem] bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
                   <Bot className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="font-black text-sm uppercase tracking-wider leading-none">
-                    Neural Tutor v4.5
+                  <h2 className="font-black text-sm uppercase tracking-tight leading-none text-gray-900 dark:text-white">
+                    Neural Tutor
                   </h2>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                      Engine Online
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                      Engine Online v4.5
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/learning-path')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/learning-path')}
+                  className="rounded-xl font-black uppercase tracking-widest text-[10px] border-2"
+                >
                   <BookOpen className="w-4 h-4 mr-2" />{' '}
                   <span className="hidden sm:inline">Reference</span>
                 </Button>
@@ -341,89 +469,96 @@ export default function AITutorPage() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin">
-              {messages.map(message => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-4 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center shadow-md ${
-                      message.role === 'user'
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-                        : 'bg-gradient-to-br from-primary-500 to-indigo-600 text-white'
-                    }`}
-                  >
-                    {message.role === 'user' ? (
-                      <User className="w-5 h-5" />
-                    ) : (
-                      <Bot className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div
-                    className={`max-w-[85%] lg:max-w-[75%] space-y-2 ${message.role === 'user' ? 'items-end' : 'items-start'}`}
-                  >
-                    <div
-                      className={`p-5 rounded-[2rem] text-sm leading-relaxed ${
-                        message.role === 'user'
-                          ? 'bg-primary-600 text-white rounded-tr-none shadow-xl shadow-primary-500/10'
-                          : 'bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 rounded-tl-none border border-gray-100 dark:border-gray-700/30'
-                      }`}
-                    >
-                      {message.role === 'assistant' ? (
-                        <div
-                          className="prose-custom prose-sm max-w-none"
-                          // eslint-disable-next-line react/no-danger
-                          dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
-                        />
-                      ) : (
-                        <p>{message.content}</p>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">
-                      {message.role === 'assistant' ? 'Tutor' : 'Student'} •{' '}
-                      {formatTime(message.timestamp)}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-              {isLoading && (
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-10 scrollbar-thin z-10 relative">
+              <div className="absolute inset-0 bg-[url('/img/grid.svg')] bg-center opacity-5 dark:opacity-10 pointer-events-none mix-blend-overlay" />
+
+              {isMessagesLoading ? (
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-md">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-800/80 rounded-[2rem] rounded-tl-none p-6 flex gap-2">
-                    <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce delay-150" />
-                    <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce delay-300" />
-                  </div>
+                  <Skeleton className="w-12 h-12 rounded-[1.25rem] shrink-0" />
+                  <Skeleton className="h-24 w-64 rounded-[2rem] rounded-tl-none" />
                 </div>
+              ) : (
+                <>
+                  {messages.map(message => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex gap-5 relative z-10 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+                    >
+                      <div
+                        className={`w-12 h-12 rounded-[1.25rem] shrink-0 flex items-center justify-center shadow-lg ${
+                          message.role === 'user'
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                            : 'bg-gradient-to-br from-primary-500 to-indigo-600 text-white shadow-primary-500/20'
+                        }`}
+                      >
+                        {message.role === 'user' ? (
+                          <User className="w-6 h-6" />
+                        ) : (
+                          <Bot className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div
+                        className={`max-w-[85%] lg:max-w-[75%] space-y-2 ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+                      >
+                        <div
+                          className={`p-6 rounded-[2.5rem] text-sm leading-relaxed ${
+                            message.role === 'user'
+                              ? 'bg-primary-600 text-white rounded-tr-none shadow-xl shadow-primary-500/20'
+                              : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none border-2 border-gray-100 dark:border-gray-700 shadow-md'
+                          }`}
+                        >
+                          {message.role === 'assistant' ? (
+                            <div
+                              className="prose-custom prose-sm max-w-none prose-headings:font-black prose-a:text-primary-500"
+                              // eslint-disable-next-line react/no-danger
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(message.content)) }}
+                            />
+                          ) : (
+                            <p className="font-medium text-lg">{message.content}</p>
+                          )}
+                        </div>
+                        <p
+                          className={`text-[9px] font-black uppercase tracking-widest px-4 ${message.role === 'user' ? 'text-right text-gray-400' : 'text-gray-400'}`}
+                        >
+                          {message.role === 'assistant' ? 'AI Core' : 'User'} •{' '}
+                          {formatTime(message.createdAt)}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                  {isStreaming && (
+                    <div className="absolute bottom-6 right-8 p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-lg border border-gray-100 dark:border-gray-700 z-20 flex gap-2">
+                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce shadow-sm" />
+                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce delay-150 shadow-sm" />
+                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce delay-300 shadow-sm" />
+                    </div>
+                  )}
+                </>
               )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Empty State / Quick Actions */}
-            {messages.length <= 1 && !isLoading && (
-              <div className="px-6 pb-6">
+            {messages.length <= 1 && !isStreaming && !isMessagesLoading && (
+              <div className="px-6 md:px-8 pb-6 relative z-20">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {quickActions.map((action, i) => (
                     <button
-                      // eslint-disable-next-line react/no-array-index-key
                       key={i}
                       onClick={() => setInput(action.prompt)}
-                      className="p-5 rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 hover:border-primary-500/50 hover:bg-white dark:hover:bg-gray-800 text-left transition-all group"
+                      className="p-6 rounded-[1.5rem] bg-gray-50/50 dark:bg-gray-800/30 border-2 border-gray-100 dark:border-gray-800 hover:border-primary-500/30 hover:bg-white dark:hover:bg-gray-800 text-left transition-all group shadow-sm hover:shadow-md"
                     >
                       <div
-                        className={`w-10 h-10 rounded-xl ${action.bg} flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:rotate-3`}
+                        className={`w-12 h-12 rounded-2xl ${action.bg} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm`}
                       >
-                        <action.icon className={`w-5 h-5 ${action.color}`} />
+                        <action.icon className={`w-6 h-6 ${action.color}`} />
                       </div>
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
                         {action.label}
                       </p>
-                      <p className="text-[11px] text-gray-500 line-clamp-1 italic">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 line-clamp-2 italic font-medium leading-relaxed">
                         &quot;{action.prompt}&quot;
                       </p>
                     </button>
@@ -433,7 +568,7 @@ export default function AITutorPage() {
             )}
 
             {/* Input Area */}
-            <div className="p-6 pt-2">
+            <div className="p-6 md:p-8 pt-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md relative z-20">
               <div className="relative group">
                 <textarea
                   rows={1}
@@ -446,33 +581,32 @@ export default function AITutorPage() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
-                      void sendMessage()
+                      handleSendMessage()
                       const target = e.target as HTMLTextAreaElement
                       target.style.height = 'auto'
                     }
                   }}
                   placeholder="Ask your tutor anything engineering..."
-                  className="w-full pl-6 pr-16 py-5 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary-500/50 focus:bg-white dark:focus:bg-gray-900 rounded-[2rem] text-sm resize-none outline-none shadow-inner transition-all scrollbar-none"
-                  disabled={isLoading}
+                  className="w-full pl-8 pr-20 py-6 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary-500/30 focus:bg-white dark:focus:bg-gray-900 rounded-[2.5rem] text-base resize-none outline-none shadow-inner transition-all scrollbar-none font-medium placeholder:text-gray-400"
+                  disabled={isStreaming || isMessagesLoading}
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   <button
-                    onClick={sendMessage}
-                    disabled={!input.trim() || isLoading}
+                    onClick={handleSendMessage}
+                    disabled={!input.trim() || isStreaming || isMessagesLoading}
                     aria-label="Send message"
-                    className="w-12 h-12 bg-primary-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all"
+                    className="w-14 h-14 bg-primary-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-primary-500/30 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all duration-300"
                   >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                    {isStreaming ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
-                      <Send className="w-5 h-5" />
+                      <Send className="w-6 h-6 ml-1" />
                     )}
                   </button>
                 </div>
               </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter text-center mt-4 opacity-50">
-                System Advisory: AI responses may be speculative. Cross-reference with
-                documentation.
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center mt-5 opacity-60">
+                System Advisory: Neural net responses are predictive. Verify critical algorithms.
               </p>
             </div>
           </Card>

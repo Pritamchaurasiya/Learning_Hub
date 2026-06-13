@@ -1,58 +1,13 @@
 import { Request, Response } from 'express'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { aiTestService } from '../services/AITestService'
-
-// ─── Gemini client (lazy-init, singleton) ────────────────────────────────────
-let _genAI: GoogleGenerativeAI | null = null
-
-function getGenAI(): GoogleGenerativeAI | null {
-  if (_genAI) return _genAI
-  const key = process.env.GEMINI_API_KEY
-  if (!key || key === 'mock-key' || key.trim() === '') {
-    logger.warn('[AIController] GEMINI_API_KEY not set — AI features will be unavailable')
-    return null
-  }
-  _genAI = new GoogleGenerativeAI(key)
-  return _genAI
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function buildLearningContext(userId: string): Promise<string> {
-  try {
-    const [user, completedCourses, recentTests] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: { username: true, xp: true, level: true, streak: true },
-      }),
-      prisma.userProgress.count({ where: { userId, status: 'COMPLETED' } }),
-      prisma.testResult.findMany({
-        where: { userId, status: 'COMPLETED' },
-        orderBy: { completedAt: 'desc' },
-        take: 5,
-        select: { percentage: true, passed: true, test: { select: { title: true } } },
-      }),
-    ])
-
-    const avgScore =
-      recentTests.length > 0
-        ? Math.round(recentTests.reduce((s, r) => s + r.percentage, 0) / recentTests.length)
-        : null
-
-    return [
-      `Student: ${user?.username ?? 'Learner'}`,
-      `Level: ${user?.level ?? 1} | XP: ${user?.xp ?? 0} | Streak: ${user?.streak ?? 0} days`,
-      `Completed courses: ${completedCourses}`,
-      avgScore !== null ? `Recent test average: ${avgScore}%` : '',
-    ]
-      .filter(Boolean)
-      .join('\n')
-  } catch {
-    return ''
-  }
-}
+import { aiLearningService } from '../services/ai/AILearningService'
+import {
+  sendSuccess,
+  sendUnauthorized,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 // ─── Controllers ─────────────────────────────────────────────────────────────
 
@@ -63,102 +18,18 @@ export const analyzeLearningPath = async (req: Request, res: Response): Promise<
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
-    const [completedCourses, inProgressCourses, testResults, weakTopics] = await Promise.all([
-      prisma.userProgress.findMany({
-        where: { userId, status: 'COMPLETED' },
-        include: { course: { select: { title: true, category: true, difficulty: true } } },
-        take: 10,
-      }),
-      prisma.userProgress.findMany({
-        where: { userId, status: 'IN_PROGRESS' },
-        include: { course: { select: { title: true, category: true } } },
-        take: 5,
-      }),
-      prisma.testResult.findMany({
-        where: { userId, status: 'COMPLETED' },
-        orderBy: { completedAt: 'desc' },
-        take: 10,
-        select: {
-          percentage: true,
-          passed: true,
-          test: { select: { title: true, difficulty: true } },
-        },
-      }),
-      prisma.testResult.findMany({
-        where: { userId, status: 'COMPLETED', percentage: { lt: 50 } },
-        orderBy: { completedAt: 'desc' },
-        take: 5,
-        select: { test: { select: { title: true } }, percentage: true },
-      }),
-    ])
-
-    const genAI = getGenAI()
-
-    if (!genAI) {
-      const avgScore =
-        testResults.length > 0
-          ? Math.round(testResults.reduce((s, r) => s + r.percentage, 0) / testResults.length)
-          : 0
-      const passRate =
-        testResults.length > 0
-          ? Math.round((testResults.filter(r => r.passed).length / testResults.length) * 100)
-          : 0
-
-      res.json({
-        status: 'success',
-        data: {
-          strengths: completedCourses.map(c => c.course.title).slice(0, 3),
-          weaknesses: weakTopics.map(t => t.test.title).slice(0, 3),
-          recommendation:
-            inProgressCourses.length > 0
-              ? `Continue with "${inProgressCourses[0].course.title}" to maintain momentum.`
-              : 'Enrol in a new course to keep progressing.',
-          stats: {
-            avg_score: avgScore,
-            pass_rate: passRate,
-            completed_courses: completedCourses.length,
-          },
-          ai_powered: false,
-        },
-      })
-      return
-    }
-
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const prompt = `
-You are a personalised learning coach for an edtech platform.
-
-Student data:
-- Completed courses: ${completedCourses.map(c => `${c.course.title} (${c.course.difficulty})`).join(', ') || 'None yet'}
-- In-progress courses: ${inProgressCourses.map(c => c.course.title).join(', ') || 'None'}
-- Recent test scores: ${testResults.map(r => `${r.test.title}: ${Math.round(r.percentage)}%`).join(', ') || 'No tests taken'}
-- Struggling areas (< 50%): ${weakTopics.map(t => `${t.test.title} (${Math.round(t.percentage)}%)`).join(', ') || 'None identified'}
-
-Respond with ONLY valid JSON (no markdown):
-{
-  "strengths": ["strength1", "strength2", "strength3"],
-  "weaknesses": ["weakness1", "weakness2"],
-  "recommendation": "One actionable sentence",
-  "next_steps": ["step1", "step2", "step3"]
-}
-`
-
-    const result = await model.generateContent(prompt)
-    const text = result.response.text().trim()
-    const jsonText = text.startsWith('```') ? text.split('```')[1].replace(/^json\n?/, '') : text
-    const analysis = JSON.parse(jsonText)
-
-    res.json({ status: 'success', data: { ...analysis, ai_powered: true } })
+    const analysis = await aiLearningService.analyzeLearningPath(userId)
+    sendSuccess(res, analysis)
   } catch (error) {
     logger.error(
       '[AIController] analyzeLearningPath error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -169,109 +40,100 @@ export const getTutorResponse = async (req: Request, res: Response): Promise<voi
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const { message, context } = req.body
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      res.status(400).json({ status: 'error', message: 'Message is required' })
+      sendValidationError(res, 'Message is required')
       return
     }
 
     const sanitizedMessage = message.trim().substring(0, 2000)
-    const genAI = getGenAI()
+    const result = await aiLearningService.getTutorResponse(
+      userId,
+      sanitizedMessage,
+      context?.course_id,
+      req.body.session_id
+    )
 
-    if (!genAI) {
-      res.json({
-        status: 'success',
-        data: {
-          response:
-            'The AI tutor is currently unavailable (API key not configured). Please check the course materials or contact support.',
-          model: 'unavailable',
-          ai_powered: false,
-        },
-      })
-      return
-    }
-
-    const userContext = await buildLearningContext(userId)
-
-    let courseContext = ''
-    if (context?.course_id) {
-      try {
-        const course = await prisma.course.findUnique({
-          where: { id: context.course_id },
-          select: { title: true, description: true, category: true },
-        })
-        if (course) {
-          courseContext = `\nCurrent course: ${course.title} (${course.category})\n${course.description?.substring(0, 300)}`
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-
-    const systemPrompt = `You are an expert AI Tutor for LearningHub, an edtech platform.
-
-Your traits:
-- Encouraging, precise, and deeply knowledgeable
-- Explain complex topics simply without dumbing them down
-- Use analogies and concrete examples
-- Always respond in the same language as the student's question
-- Keep responses focused and under 400 words unless a detailed explanation is explicitly needed
-- Format code with proper markdown code blocks
-
-Student context:
-${userContext}${courseContext}
-
-If you don't know something, say so honestly rather than guessing.`
-
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      systemInstruction: systemPrompt,
-    })
-
-    const result = await model.generateContent(sanitizedMessage)
-    const tutorMessage = result.response.text()
-
-    if (!tutorMessage) {
-      res.status(500).json({ status: 'error', message: 'AI returned an empty response' })
-      return
-    }
-
-    res.json({
-      status: 'success',
-      data: {
-        response: tutorMessage,
-        usage: {
-          prompt_tokens: result.response.usageMetadata?.promptTokenCount ?? 0,
-          completion_tokens: result.response.usageMetadata?.candidatesTokenCount ?? 0,
-          total_tokens: result.response.usageMetadata?.totalTokenCount ?? 0,
-        },
-        model: 'gemini-2.0-flash',
-        ai_powered: true,
-      },
-    })
+    sendSuccess(res, result)
   } catch (error) {
     logger.error(
       '[AIController] getTutorResponse error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
+  }
+}
+
+/**
+ * POST /api/v1/ai/tutor/stream
+ */
+export const getTutorResponseStream = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const { message, context } = req.body
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      sendValidationError(res, 'Message is required')
+      return
+    }
+
+    const sanitizedMessage = message.trim().substring(0, 2000)
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    })
+
+    const stream = aiLearningService.getTutorResponseStream(
+      userId,
+      sanitizedMessage,
+      context?.course_id,
+      req.body.session_id
+    )
+
+    for await (const chunk of stream) {
+      // Send SSE data payload
+      res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`)
+      // Try to flush immediately if possible
+      if (res.flushHeaders) res.flushHeaders()
+    }
+
+    // End the SSE connection
+    res.write('data: [DONE]\n\n')
+    res.end()
+  } catch (error) {
+    logger.error(
+      '[AIController] getTutorResponseStream error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    if (!res.headersSent) {
+      sendInternalError(res, 'Internal server error')
+    } else {
+      res.write(`data: ${JSON.stringify({ error: 'Internal server error' })}\n\n`)
+      res.end()
+    }
   }
 }
 
 /**
  * POST /api/v1/ai/generate-test
- * Generates a practice test and persists it to the database.
  */
 export const generatePracticeTest = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
@@ -285,42 +147,44 @@ export const generatePracticeTest = async (req: Request, res: Response): Promise
     } = req.body
 
     if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
-      res.status(400).json({ status: 'error', message: 'Topic is required' })
+      sendValidationError(res, 'Topic is required')
       return
     }
 
+    const rawMode = (mode ?? 'PRACTICE').toUpperCase()
+    const validModes = ['PRACTICE', 'MOCK', 'TIMED_CHALLENGE', 'ADAPTIVE'] as const
+    const resolvedMode = (validModes as readonly string[]).includes(rawMode)
+      ? (rawMode as (typeof validModes)[number])
+      : 'PRACTICE'
+
     const result = await aiTestService.generateTest({
       userId,
-      topic: topic.trim(),
-      difficulty: difficulty.toUpperCase() as any,
+      topic: topic.trim().substring(0, 500),
+      difficulty: difficulty.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
       count: Math.min(Math.max(parseInt(String(count), 10) || 10, 5), 50),
-      mode: (mode ?? 'PRACTICE').toUpperCase() as any,
+      mode: resolvedMode,
       examContext: exam_context,
       timeLimit: time_limit,
     })
 
-    res.json({ status: 'success', data: result })
+    sendSuccess(res, result)
   } catch (error) {
     logger.error(
       '[AIController] generatePracticeTest error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Internal server error',
-    })
+    sendInternalError(res, error instanceof Error ? error.message : 'Internal server error')
   }
 }
 
 /**
  * POST /api/v1/ai/generate-weak-area-test
- * Generates a test targeting the user's weakest topics.
  */
 export const generateWeakAreaTest = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
@@ -331,36 +195,214 @@ export const generateWeakAreaTest = async (req: Request, res: Response): Promise
       Math.min(Math.max(parseInt(String(count), 10) || 10, 5), 50)
     )
 
-    res.json({ status: 'success', data: result })
+    sendSuccess(res, result)
   } catch (error) {
     logger.error(
       '[AIController] generateWeakAreaTest error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
 /**
  * GET /api/v1/ai/weak-topics
- * Returns the user's weak topics based on test performance.
  */
 export const getWeakTopics = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const weakTopics = await aiTestService.getWeakTopics(userId)
 
-    res.json({ status: 'success', data: { weak_topics: weakTopics } })
+    sendSuccess(res, { weak_topics: weakTopics })
   } catch (error) {
     logger.error(
       '[AIController] getWeakTopics error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
+  }
+}
+
+/**
+ * POST /api/v1/ai/code-review
+ */
+export const reviewCodeSubmission = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const { code, language, problemDescription } = req.body
+
+    if (!code || !language || !problemDescription) {
+      sendValidationError(res, 'Code, language, and problemDescription are required')
+      return
+    }
+
+    const sanitizedCode = code.trim().substring(0, 50000) // generous but bounded limit for code
+    const sanitizedLanguage = language.trim().substring(0, 100)
+    const sanitizedProblemDescription = problemDescription.trim().substring(0, 5000)
+
+    const reviewResult = await aiLearningService.reviewCode(
+      userId,
+      sanitizedCode,
+      sanitizedLanguage,
+      sanitizedProblemDescription
+    )
+
+    sendSuccess(res, reviewResult)
+  } catch (error) {
+    logger.error(
+      '[AIController] reviewCodeSubmission error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Internal server error')
+  }
+}
+
+/**
+ * POST /api/v1/admin/ai/generate-course
+ */
+export const generateCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const { prompt, difficulty = 'BEGINNER', modulesCount = 3 } = req.body
+
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      sendValidationError(res, 'Prompt/Topic is required')
+      return
+    }
+
+    const sanitizedPrompt = prompt.trim().substring(0, 1000)
+
+    const newCourse = await aiLearningService.generateCourse(
+      userId,
+      sanitizedPrompt,
+      difficulty,
+      modulesCount
+    )
+    sendSuccess(res, { courseId: newCourse.id, message: 'Course autonomously generated!' })
+  } catch (error) {
+    logger.error(
+      '[AIController] generateCourse error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Course generation failed')
+  }
+}
+
+/**
+ * GET /api/v1/ai/tutor/sessions
+ */
+export const getChatSessions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const sessions = await aiLearningService.getChatSessions(userId)
+    sendSuccess(res, sessions)
+  } catch (error) {
+    logger.error(
+      '[AIController] getChatSessions error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Internal server error')
+  }
+}
+
+/**
+ * GET /api/v1/ai/tutor/sessions/:id
+ */
+export const getChatSessionById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const sessionId = req.params.id as string
+    if (!sessionId) {
+      sendValidationError(res, 'Session ID is required')
+      return
+    }
+
+    const session = await aiLearningService.getChatSessionById(userId, sessionId)
+    sendSuccess(res, session)
+  } catch (error) {
+    logger.error(
+      '[AIController] getChatSessionById error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, error instanceof Error ? error.message : 'Internal server error')
+  }
+}
+
+/**
+ * POST /api/v1/ai/tutor/sessions
+ */
+export const createChatSession = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const { title } = req.body
+    const session = await aiLearningService.createChatSession(
+      userId,
+      title ?? `Chat ${new Date().toLocaleDateString()}`
+    )
+    sendSuccess(res, session)
+  } catch (error) {
+    logger.error(
+      '[AIController] createChatSession error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Internal server error')
+  }
+}
+
+/**
+ * DELETE /api/v1/ai/tutor/sessions/:id
+ */
+export const deleteChatSession = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res, 'Authentication required')
+      return
+    }
+
+    const sessionId = req.params.id as string
+    if (!sessionId) {
+      sendValidationError(res, 'Session ID is required')
+      return
+    }
+
+    await aiLearningService.deleteChatSession(userId, sessionId)
+    sendSuccess(res, { success: true })
+  } catch (error) {
+    logger.error(
+      '[AIController] deleteChatSession error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, error instanceof Error ? error.message : 'Internal server error')
   }
 }

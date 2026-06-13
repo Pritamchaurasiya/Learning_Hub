@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import { AppState, QuizSlice } from '../types'
+import { quizService } from '../../services/quizService'
 
 const defaultQuizState = {
   currentAttempt: null,
@@ -85,17 +86,30 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
   },
   submitQuiz: async () => {
     const state = get()
-    if (!state.quiz.currentAttempt) throw new Error('No active quiz attempt')
+    const { quiz } = state
+    if (!quiz.currentAttempt) throw new Error('No active quiz attempt')
+
     set(s => ({ quiz: { ...s.quiz, isSubmitting: true } }))
+
     try {
-      let correctCount = 0
-      state.quiz.questions.forEach(q => {
-        // Compare user answer against the correct_answer field directly
-        // Backend stores correct_answer as a string value, not an index
-        const correctAnswer = (q as any).correct_answer ?? q.options?.[q.correctOption ?? 0]
-        if (state.quiz.answers[q.id] === correctAnswer) correctCount++
-      })
-      const score = Math.round((correctCount / state.quiz.questions.length) * 100)
+      const quizId = quiz.quizInfo?.id ?? quiz.currentAttempt.quizId
+      const attemptId = quiz.currentAttempt.attemptId
+      const timeTaken = quiz.quizInfo ? quiz.quizInfo.time_limit * 60 - quiz.timeRemaining : 0
+
+      const response = await quizService.submitQuiz(
+        quizId,
+        attemptId,
+        Object.fromEntries(Object.entries(quiz.answers).map(([k, v]) => [k, String(v)])),
+        timeTaken
+      )
+
+      const resultData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as { data: Record<string, unknown> }).data
+          : (response as Record<string, unknown>)
+      const correctCount = Number(resultData?.correct_answers ?? 0)
+      const score = Number(resultData?.percentage ?? 0)
+
       set(s => ({
         quiz: {
           ...s.quiz,
@@ -111,12 +125,14 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
           isSubmitting: false,
         },
       }))
+
       trackEvent('quiz_completed', {
-        quiz_id: state.quiz.currentAttempt.quizId,
+        quiz_id: quizId,
         score,
         correct_answers: correctCount,
-        total_questions: state.quiz.questions.length,
+        total_questions: quiz.questions.length,
       })
+
       return { success: true, score }
     } catch (error) {
       set(s => ({ quiz: { ...s.quiz, isSubmitting: false } }))

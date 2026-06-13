@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Brain, Trophy, TrendingUp, Award, Target, Zap } from 'lucide-react'
+import { BookOpen, Brain, Trophy, TrendingUp, Award, Target, Zap, Sparkles } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
 import { HeroSection } from '../components/landing/HeroSection'
 import { ExamCoverage } from '../components/landing/ExamCoverage'
@@ -15,6 +16,7 @@ import { fetchApi } from '../utils/api'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Skeleton } from '../components/ui/Skeleton'
+import AnimatedPage from '../components/AnimatedPage'
 
 interface HomePageProps {
   isDashboard?: boolean
@@ -39,52 +41,81 @@ interface DashboardStats {
 
 export default function HomePage({ isDashboard = false }: HomePageProps) {
   const navigate = useNavigate()
-  const { auth, progress } = useStore()
+  const auth = useStore(state => state.auth)
+  const progress = useStore(state => state.progress)
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(isDashboard)
 
-  const loadDashboard = useCallback(async () => {
+  const { data: recommendations } = useQuery({
+    queryKey: ['dashboard-recommendations'],
+    queryFn: async () => {
+      const res = await fetchApi('/recommendations?limit=3')
+      return res.data
+    },
+    enabled: isDashboard && auth.isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const loadDashboard = useCallback(async (signal?: AbortSignal) => {
     if (!isDashboard || !auth.isAuthenticated) return
     try {
       setLoading(true)
       const [profileRes, testsRes] = await Promise.all([
-        fetchApi('/auth/me'),
-        fetchApi('/tests/attempts'),
+        fetchApi('/auth/me', { signal }),
+        fetchApi('/tests/attempts', { signal }),
       ])
 
-      const profile = profileRes.data?.user ?? profileRes.data ?? profileRes
-      const testsData = testsRes.data?.data ?? testsRes.data ?? testsRes
-      const testResults = testsData?.results ?? []
+      const profile =
+        (profileRes?.data?.user as Record<string, unknown> | undefined) ??
+        (profileRes?.user as Record<string, unknown> | undefined) ??
+        profileRes
+      const testsData =
+        (testsRes?.data?.data as Record<string, unknown> | undefined) ?? testsRes?.data ?? testsRes
+      const testResults = (Array.isArray(testsData?.results) ? testsData.results : []) as Array<
+        Record<string, unknown>
+      >
 
-      const completedTests = testResults.filter((t: any) => t.status === 'COMPLETED')
-      const passedTests = completedTests.filter((t: any) => t.passed)
-
-      const userProgress = profile.progress ?? []
-      const enrolledCourses = userProgress.filter(
-        (p: any) => p.status === 'IN_PROGRESS' || p.status === 'NOT_STARTED'
+      const completedTests = testResults.filter(
+        (t: Record<string, unknown>) => t.status === 'COMPLETED'
       )
-      const completedCourses = userProgress.filter((p: any) => p.status === 'COMPLETED')
+      const passedTests = completedTests.filter((t: Record<string, unknown>) => t.passed)
+
+      const userProgress = (Array.isArray(profile?.progress) ? profile.progress : []) as Array<
+        Record<string, unknown>
+      >
+      const enrolledCoursesProgress = userProgress.filter(
+        (p: Record<string, unknown>) => p.status === 'IN_PROGRESS' || p.status === 'NOT_STARTED'
+      )
+      const completedCoursesProgress = userProgress.filter(
+        (p: Record<string, unknown>) => p.status === 'COMPLETED'
+      )
+
+      if (signal?.aborted) return
 
       setDashboardData({
-        enrolledCourses: enrolledCourses.length,
-        completedCourses: completedCourses.length,
+        enrolledCourses: enrolledCoursesProgress.length,
+        completedCourses: completedCoursesProgress.length,
         testsAttempted: completedTests.length,
         testsPassed: passedTests.length,
-        totalXp: profile.xp ?? 0,
-        currentStreak: profile.streak ?? 0,
-        level: profile.level ?? 1,
+        totalXp: (profile?.xp as number) ?? 0,
+        currentStreak: (profile?.streak as number) ?? 0,
+        level: (profile?.level as number) ?? 1,
         recentActivity: [],
-        enrolledCoursesList: enrolledCourses.slice(0, 5).map((p: any) => ({
-          id: p.courseId,
-          title: p.course?.title ?? 'Course',
-          progress: p.progress ?? 0,
-          thumbnail: p.course?.thumbnail ?? null,
-        })),
+        enrolledCoursesList: enrolledCoursesProgress
+          .slice(0, 5)
+          .map((p: Record<string, unknown>) => ({
+            id: p.courseId as string,
+            title: ((p.course as Record<string, unknown>)?.title as string) ?? 'Course',
+            progress: (p.progress as number) ?? 0,
+            thumbnail: ((p.course as Record<string, unknown>)?.thumbnail as string) ?? null,
+          })),
       })
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       if (import.meta.env.DEV) {
         console.error('Dashboard load error:', err)
       }
+      if (signal?.aborted) return
       setDashboardData({
         enrolledCourses: 0,
         completedCourses: 0,
@@ -97,12 +128,14 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
         enrolledCoursesList: [],
       })
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) setLoading(false)
     }
   }, [isDashboard, auth.isAuthenticated, progress.xp, progress.streak, progress.level])
 
   useEffect(() => {
-    void loadDashboard()
+    const abortController = new AbortController()
+    loadDashboard(abortController.signal).catch(() => {})
+    return () => abortController.abort()
   }, [loadDashboard])
 
   const handleStartFree = () => {
@@ -140,7 +173,7 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
     const xpProgress = (((stats?.totalXp ?? 0) % xpForNextLevel) / xpForNextLevel) * 100
 
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <SEO title="Dashboard - LearningHub" />
 
         <div>
@@ -148,7 +181,7 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
             Welcome back, {auth.user?.username ?? 'Learner'}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Here's your learning progress at a glance.
+            Here&apos;s your learning progress at a glance.
           </p>
         </div>
 
@@ -269,6 +302,42 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
 
           <div className="space-y-6">
             <Card className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Target className="w-5 h-5 text-primary-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Exam Readiness
+                </h2>
+              </div>
+              {stats && stats.testsAttempted > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <span className="text-3xl font-black text-gray-900 dark:text-white">
+                      {Math.round((stats.testsPassed / stats.testsAttempted) * 100)}%
+                    </span>
+                    <span className="text-sm text-gray-500 mb-1">Pass Rate</span>
+                  </div>
+                  <ProgressBar
+                    progress={(stats.testsPassed / stats.testsAttempted) * 100}
+                    className="h-2"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Based on {stats.testsAttempted} recent test attempts
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500 mb-4">Take tests to calculate readiness</p>
+                  <button
+                    onClick={() => navigate('/tests-a')}
+                    className="text-primary-600 dark:text-primary-400 font-medium text-sm hover:underline"
+                  >
+                    Start a Test
+                  </button>
+                </div>
+              )}
+            </Card>
+
+            <Card className="p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Quick Actions
               </h2>
@@ -304,7 +373,49 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
               </div>
             </Card>
 
-            <Card className="p-6 bg-gradient-to-br from-primary-600 to-purple-600 text-white">
+            <Card className="p-6 bg-gradient-to-br from-gray-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Sparkles className="w-24 h-24" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                    <Sparkles className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <h2 className="text-lg font-black uppercase tracking-tight">
+                    AI Recommendations
+                  </h2>
+                </div>
+
+                {recommendations && recommendations.length > 0 ? (
+                  <div className="space-y-4">
+                    {recommendations.map((rec: any, idx: number) => (
+                      <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                            {rec.topicName}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/20">
+                            {rec.priority} Priority
+                          </span>
+                        </div>
+                        <p className="text-xs font-medium text-gray-300 leading-relaxed">
+                          {rec.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white/5 rounded-xl p-6 text-center border border-white/10">
+                    <p className="text-sm text-indigo-200">
+                      Keep learning! Your AI-curated recommendations will appear here as you progress.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-primary-600 to-purple-600 text-white shadow-xl">
               <Award className="w-8 h-8 mb-3" />
               <h3 className="font-semibold mb-1">Keep Learning!</h3>
               <p className="text-sm text-white/80">
@@ -313,7 +424,7 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
             </Card>
           </div>
         </div>
-      </div>
+      </AnimatedPage>
     )
   }
 

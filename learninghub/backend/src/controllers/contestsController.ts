@@ -1,7 +1,17 @@
-﻿import { Request, Response } from 'express'
-import { prisma } from '../config/database'
+import { Request, Response } from 'express'
+import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { z } from 'zod'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendNotFound,
+  sendConflict,
+  sendForbidden,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 const createContestSchema = z.object({
   title: z.string().min(3).max(100),
@@ -43,7 +53,7 @@ export const listContests = async (req: Request, res: Response): Promise<void> =
     const limit = parseInt((req.query.limit as string) || '10', 10)
     const skip = (page - 1) * limit
 
-    const where: any = { isPublished: true }
+    const where: Record<string, unknown> = { isPublished: true }
 
     if (status) {
       const now = new Date()
@@ -93,9 +103,7 @@ export const listContests = async (req: Request, res: Response): Promise<void> =
       prisma.contest.count({ where }),
     ])
 
-    res.json({
-      status: 'success',
-      data: contests,
+    sendSuccess(res, contests, undefined, 200, {
       pagination: {
         page,
         limit,
@@ -108,7 +116,7 @@ export const listContests = async (req: Request, res: Response): Promise<void> =
       '[ContestsController] listContests error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -147,7 +155,7 @@ export const getContest = async (req: Request, res: Response): Promise<void> => 
     })
 
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
@@ -175,30 +183,27 @@ export const getContest = async (req: Request, res: Response): Promise<void> => 
     const now = new Date()
     const showAnswers = contest.status === 'COMPLETED' || contest.endTime <= now
 
-    const problems = contest.problems.map((p: any) => ({
+    const problems = contest.problems.map(p => ({
       ...p.question,
       options: showAnswers
         ? p.question.options
-        : p.question.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+        : p.question.options.map(o => ({ id: o.id, text: o.text, order: o.order })),
       explanation: showAnswers ? p.question.explanation : undefined,
     }))
 
-    res.json({
-      status: 'success',
-      data: {
-        ...contest,
-        problems,
-        isRegistered,
-        participantScore,
-        participantRank,
-      },
+    sendSuccess(res, {
+      ...contest,
+      problems,
+      isRegistered,
+      participantScore,
+      participantRank,
     })
   } catch (error) {
     logger.error(
       '[ContestsController] getContest error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -206,11 +211,7 @@ export const createContest = async (req: Request, res: Response): Promise<void> 
   try {
     const validation = createContestSchema.safeParse(req.body)
     if (!validation.success) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Invalid contest data',
-        errors: validation.error.issues,
-      })
+      sendValidationError(res, 'Invalid contest data')
       return
     }
 
@@ -231,7 +232,7 @@ export const createContest = async (req: Request, res: Response): Promise<void> 
 
     const existing = await prisma.contest.findUnique({ where: { slug } })
     if (existing) {
-      res.status(409).json({ status: 'error', message: 'Contest slug already exists' })
+      sendConflict(res, 'Contest slug already exists')
       return
     }
 
@@ -250,7 +251,7 @@ export const createContest = async (req: Request, res: Response): Promise<void> 
         prize,
         rules,
         isPublished,
-        createdBy: (req as any).user?.id,
+        createdBy: req.user?.userId,
         problems: {
           create: problemIds.map((questionId, index) => ({
             questionId,
@@ -260,13 +261,13 @@ export const createContest = async (req: Request, res: Response): Promise<void> 
       },
     })
 
-    res.status(201).json({ status: 'success', data: contest })
+    sendCreated(res, contest)
   } catch (error) {
     logger.error(
       '[ContestsController] createContest error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -274,13 +275,13 @@ export const joinContest = async (req: Request, res: Response): Promise<void> =>
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const validation = joinContestSchema.safeParse(req.body)
     if (!validation.success) {
-      res.status(400).json({ status: 'error', message: 'Invalid contest ID' })
+      sendValidationError(res, 'Invalid contest ID')
       return
     }
 
@@ -288,25 +289,23 @@ export const joinContest = async (req: Request, res: Response): Promise<void> =>
 
     const contest = await prisma.contest.findUnique({ where: { id: contestId } })
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
     if (contest.status === 'COMPLETED' || contest.status === 'CANCELLED') {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Cannot join a completed or cancelled contest' })
+      sendValidationError(res, 'Cannot join a completed or cancelled contest')
       return
     }
 
     const now = new Date()
     if (now < contest.startTime) {
-      res.status(400).json({ status: 'error', message: 'Contest has not started yet' })
+      sendValidationError(res, 'Contest has not started yet')
       return
     }
 
     if (now > contest.endTime) {
-      res.status(400).json({ status: 'error', message: 'Contest has ended' })
+      sendValidationError(res, 'Contest has ended')
       return
     }
 
@@ -317,7 +316,7 @@ export const joinContest = async (req: Request, res: Response): Promise<void> =>
     })
 
     if (existing) {
-      res.status(409).json({ status: 'error', message: 'Already registered for this contest' })
+      sendConflict(res, 'Already registered for this contest')
       return
     }
 
@@ -336,13 +335,13 @@ export const joinContest = async (req: Request, res: Response): Promise<void> =>
       return newParticipant
     })
 
-    res.status(201).json({ status: 'success', data: participant })
+    sendCreated(res, participant)
   } catch (error) {
     logger.error(
       '[ContestsController] joinContest error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -350,17 +349,13 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const validation = submitContestSolutionSchema.safeParse(req.body)
     if (!validation.success) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Invalid submission data',
-        errors: validation.error.issues,
-      })
+      sendValidationError(res, 'Invalid submission data')
       return
     }
 
@@ -368,13 +363,13 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
 
     const contest = await prisma.contest.findUnique({ where: { id: contestId } })
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
     const now = new Date()
     if (now < contest.startTime || now > contest.endTime) {
-      res.status(400).json({ status: 'error', message: 'Contest is not active' })
+      sendValidationError(res, 'Contest is not active')
       return
     }
 
@@ -385,7 +380,7 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
     })
 
     if (!participant) {
-      res.status(403).json({ status: 'error', message: 'Not registered for this contest' })
+      sendForbidden(res, 'Not registered for this contest')
       return
     }
 
@@ -399,7 +394,7 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
     })
 
     if (existingSubmission) {
-      res.status(409).json({ status: 'error', message: 'Question already solved' })
+      sendConflict(res, 'Question already solved')
       return
     }
 
@@ -409,7 +404,7 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
     })
 
     if (!question) {
-      res.status(404).json({ status: 'error', message: 'Question not found' })
+      sendNotFound(res, 'Question not found')
       return
     }
 
@@ -447,27 +442,24 @@ export const submitContestSolution = async (req: Request, res: Response): Promis
       await prisma.contestParticipant.update({
         where: { id: participant.id },
         data: {
-          score: totalScore._sum.points || 0,
+          score: totalScore._sum.points ?? 0,
           problemsSolved,
           lastSubmitAt: now,
         },
       })
     }
 
-    res.json({
-      status: 'success',
-      data: {
-        submission,
-        isCorrect,
-        points,
-      },
+    sendSuccess(res, {
+      submission,
+      isCorrect,
+      points,
     })
   } catch (error) {
     logger.error(
       '[ContestsController] submitContestSolution error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -480,7 +472,7 @@ export const getContestLeaderboard = async (req: Request, res: Response): Promis
 
     const contest = await prisma.contest.findUnique({ where: { id } })
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
@@ -521,9 +513,7 @@ export const getContestLeaderboard = async (req: Request, res: Response): Promis
       )
     }
 
-    res.json({
-      status: 'success',
-      data: ranked,
+    sendSuccess(res, ranked, undefined, 200, {
       pagination: {
         page,
         limit,
@@ -536,7 +526,7 @@ export const getContestLeaderboard = async (req: Request, res: Response): Promis
       '[ContestsController] getContestLeaderboard error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -547,17 +537,17 @@ export const getContestResults = async (req: Request, res: Response): Promise<vo
 
     const contest = await prisma.contest.findUnique({ where: { id } })
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
     if (contest.status !== 'COMPLETED' && contest.endTime > new Date()) {
-      res.status(403).json({ status: 'error', message: 'Results not available until contest ends' })
+      sendForbidden(res, 'Results not available until contest ends')
       return
     }
 
-    let participant: any = null
-    let submissions: any[] = []
+    let participant: Awaited<ReturnType<typeof prisma.contestParticipant.findUnique>> = null
+    let submissions: Awaited<ReturnType<typeof prisma.contestSubmission.findMany>> = []
 
     if (userId) {
       participant = await prisma.contestParticipant.findUnique({
@@ -602,38 +592,35 @@ export const getContestResults = async (req: Request, res: Response): Promise<vo
       },
     })
 
-    res.json({
-      status: 'success',
-      data: {
-        contest: {
-          id: contest.id,
-          title: contest.title,
-          status: contest.status,
-          endTime: contest.endTime,
-        },
-        participant: participant
-          ? {
-              score: participant.score,
-              rank: participant.rank,
-              problemsSolved: participant.problemsSolved,
-              totalTime: participant.totalTime,
-            }
-          : null,
-        submissions,
-        topParticipants: topParticipants.map((p: any, i: number) => ({
-          rank: i + 1,
-          user: p.user,
-          score: p.score,
-          problemsSolved: p.problemsSolved,
-        })),
+    sendSuccess(res, {
+      contest: {
+        id: contest.id,
+        title: contest.title,
+        status: contest.status,
+        endTime: contest.endTime,
       },
+      participant: participant
+        ? {
+            score: participant.score,
+            rank: participant.rank,
+            problemsSolved: participant.problemsSolved,
+            totalTime: participant.totalTime,
+          }
+        : null,
+      submissions,
+      topParticipants: topParticipants.map((p, i: number) => ({
+        rank: i + 1,
+        user: p.user,
+        score: p.score,
+        problemsSolved: p.problemsSolved,
+      })),
     })
   } catch (error) {
     logger.error(
       '[ContestsController] getContestResults error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }
 
@@ -643,14 +630,14 @@ export const updateContestStatus = async (req: Request, res: Response): Promise<
     const status = req.body.status as string
 
     if (!['UPCOMING', 'ACTIVE', 'COMPLETED', 'CANCELLED'].includes(status)) {
-      res.status(400).json({ status: 'error', message: 'Invalid status' })
+      sendValidationError(res, 'Invalid status')
       return
     }
 
     // Validate state transitions
     const contest = await prisma.contest.findUnique({ where: { id }, select: { status: true } })
     if (!contest) {
-      res.status(404).json({ status: 'error', message: 'Contest not found' })
+      sendNotFound(res, 'Contest not found')
       return
     }
 
@@ -664,24 +651,24 @@ export const updateContestStatus = async (req: Request, res: Response): Promise<
 
     const allowed = validTransitions[contest.status] ?? []
     if (!allowed.includes(status)) {
-      res.status(400).json({
-        status: 'error',
-        message: `Cannot transition from ${contest.status} to ${status}. Allowed: ${allowed.join(', ') || 'none (terminal state)'}`,
-      })
+      sendValidationError(
+        res,
+        `Cannot transition from ${contest.status} to ${status}. Allowed: ${allowed.join(', ') || 'none (terminal state)'}`
+      )
       return
     }
 
     const updated = await prisma.contest.update({
       where: { id },
-      data: { status: status as any },
+      data: { status: status as 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' },
     })
 
-    res.json({ status: 'success', data: updated })
+    sendSuccess(res, updated)
   } catch (error) {
     logger.error(
       '[ContestsController] updateContestStatus error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res, 'Internal server error')
   }
 }

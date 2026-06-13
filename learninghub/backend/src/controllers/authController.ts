@@ -62,6 +62,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
+    // Validate password strength (defense in depth — Zod schema also validates at route level)
+    const passwordErrors: string[] = []
+    if (password.length < 8) passwordErrors.push('Password must be at least 8 characters')
+    if (!/[A-Z]/.test(password)) passwordErrors.push('Password must contain an uppercase letter')
+    if (!/[a-z]/.test(password)) passwordErrors.push('Password must contain a lowercase letter')
+    if (!/[0-9]/.test(password)) passwordErrors.push('Password must contain a number')
+    if (!/[^A-Za-z0-9]/.test(password)) passwordErrors.push('Password must contain a special character')
+    if (password.length > 128) passwordErrors.push('Password must not exceed 128 characters')
+    if (passwordErrors.length > 0) {
+      sendValidationError(res, passwordErrors.join('; '))
+      return
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (existingUser) {
       sendConflict(res, 'Email already exists')
@@ -137,7 +150,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     if (!isValidPassword) {
       // SECURITY: Increment failed login counter and lock after threshold
-      const MAX_FAILED_ATTEMPTS = 5
+      const MAX_FAILED_ATTEMPTS = process.env.NODE_ENV === 'production' ? 5 : 100
       const LOCKOUT_MINUTES = 15
       const newFailedCount = (user.failedLogins ?? 0) + 1
       const lockUpdate: { failedLogins: number; lockedUntil?: Date } = {
@@ -145,7 +158,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       }
       if (newFailedCount >= MAX_FAILED_ATTEMPTS) {
         lockUpdate.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000)
-        logger.warn('Account locked due to repeated failed login attempts', {
+        logger.warn('Account locked due to multiple failed logins', {
           email: normalizedEmail,
           failedAttempts: newFailedCount,
           lockedUntilMinutes: LOCKOUT_MINUTES,
@@ -332,6 +345,7 @@ export const me = async (req: Request, res: Response): Promise<void> => {
     }
 
     const cacheKey = cacheService.generateKey('user_perf', userId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let performance = await cacheService.get<any>(cacheKey)
 
     if (!performance) {
@@ -362,7 +376,13 @@ export const me = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    await prisma.user.update({ where: { id: userId }, data: { lastActive: new Date() } })
+    const lastActiveKey = cacheService.generateKey('last_active', userId)
+    const lastActiveUpdate = await cacheService.get<number>(lastActiveKey)
+    const now = Date.now()
+    if (!lastActiveUpdate || now - lastActiveUpdate > 300_000) {
+      void prisma.user.update({ where: { id: userId }, data: { lastActive: new Date() } }).catch(() => {})
+      void cacheService.set(lastActiveKey, now, 300)
+    }
 
     sendSuccess(res, {
       user: {
@@ -497,10 +517,16 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
-    await prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    })
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      }),
+      prisma.refreshToken.updateMany({
+        where: { userId },
+        data: { revokedAt: new Date() },
+      }),
+    ])
 
     sendSuccess(res, null, 'Password changed successfully')
   } catch (error) {
@@ -624,7 +650,8 @@ export const sendVerificationEmail = async (req: Request, res: Response): Promis
       return
     }
 
-    const token = crypto.randomBytes(32).toString('hex')
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const token = hashToken(rawToken)
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
     await prisma.verificationToken.upsert({
@@ -637,7 +664,7 @@ export const sendVerificationEmail = async (req: Request, res: Response): Promis
       },
     })
 
-    await emailService.sendVerificationEmail(user.email, token, user.username || undefined)
+    await emailService.sendVerificationEmail(user.email, rawToken, user.username ?? undefined)
 
     sendSuccess(res, null, 'Verification email sent')
   } catch (error) {
@@ -652,10 +679,11 @@ export const sendVerificationEmail = async (req: Request, res: Response): Promis
 
 export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = req.params.token as string
+    const rawToken = req.params.token as string
+    const hashedToken = hashToken(rawToken)
 
     const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
     })
 
     if (!verificationToken || verificationToken.expiresAt < new Date()) {
@@ -672,7 +700,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
         },
       }),
       prisma.verificationToken.delete({
-        where: { token },
+        where: { token: hashedToken },
       }),
     ])
 
@@ -705,7 +733,8 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
       return
     }
 
-    const token = crypto.randomBytes(32).toString('hex')
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const token = hashToken(rawToken)
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
     await prisma.passwordResetToken.create({
@@ -716,7 +745,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
       },
     })
 
-    await emailService.sendPasswordResetEmail(user.email, token, user.username || undefined)
+    await emailService.sendPasswordResetEmail(user.email, rawToken, user.username ?? undefined)
 
     sendSuccess(
       res,
@@ -756,8 +785,10 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
       return
     }
 
+    // Hash the token before lookup (security fix - tokens stored hashed in DB)
+    const hashedToken = hashToken(token)
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
       include: { user: true },
     })
 
@@ -794,5 +825,58 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
       { token: req.body.token }
     )
     sendInternalError(res)
+  }
+}
+
+export const exportUserData = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) return sendUnauthorized(res, 'User not authenticated')
+
+    const userData = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        progress: { include: { course: true } },
+        achievements: true,
+        certificates: true,
+      },
+    })
+
+    if (!userData) return sendNotFound(res, 'User not found')
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      user: {
+        id: userData.id,
+        email: userData.email,
+        username: userData.username,
+        role: userData.role,
+        createdAt: userData.createdAt,
+      },
+      progress: userData.progress,
+      achievements: userData.achievements,
+      certificates: userData.certificates,
+      enrollments: userData.progress.map(e => ({
+        courseId: e.courseId,
+        courseTitle: e.course.title,
+        enrolledAt: e.createdAt,
+        progress: e.progress,
+      })),
+    }
+
+    res.setHeader('Content-disposition', 'attachment; filename=my-learninghub-data.json')
+    res.setHeader('Content-type', 'application/json')
+    res.write(JSON.stringify(exportData, null, 2), function () {
+      res.end()
+    })
+  } catch (error) {
+    logger.error(
+      'Error exporting user data',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?.userId,
+      }
+    )
+    sendInternalError(res, 'Failed to export user data')
   }
 }

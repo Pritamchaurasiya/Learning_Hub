@@ -2,7 +2,11 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { jwtConfig } from '../config'
 
-export const hashToken = (token: string): string => crypto.createHash('sha256').update(token).digest('hex')
+export const hashToken = (token: string): string =>
+  crypto.createHash('sha256').update(token).digest('hex')
+
+export const isAlreadyHashed = (token: string): boolean =>
+  token.length === 64 && /^[0-9a-f]+$/i.test(token)
 
 export interface DecodedToken {
   userId: string
@@ -10,22 +14,29 @@ export interface DecodedToken {
   role: string
 }
 
-export const generateToken = (userId: string, email: string, role: string): string => {
-  return jwt.sign({ userId, email, role }, jwtConfig.accessSecret, {
-    expiresIn: jwtConfig.accessExpiresIn,
+const signToken = (
+  payload: Record<string, unknown>,
+  secret: string,
+  expiresIn: string
+): string => {
+  return jwt.sign(payload, secret, {
+    expiresIn: expiresIn as jwt.SignOptions['expiresIn'],
     algorithm: jwtConfig.algorithm as jwt.Algorithm,
     issuer: jwtConfig.issuer,
     audience: jwtConfig.audience,
-  } as jwt.SignOptions)
+  })
+}
+
+export const generateToken = (userId: string, email: string, role: string): string => {
+  return signToken({ userId, email, role }, jwtConfig.accessSecret, jwtConfig.accessExpiresIn)
 }
 
 export const generateRefreshToken = (userId: string, email: string, role: string): string => {
-  return jwt.sign({ userId, email, role, tokenId: crypto.randomUUID() }, jwtConfig.refreshSecret, {
-    expiresIn: jwtConfig.refreshExpiresIn,
-    algorithm: jwtConfig.algorithm as jwt.Algorithm,
-    issuer: jwtConfig.issuer,
-    audience: jwtConfig.audience,
-  } as jwt.SignOptions)
+  return signToken(
+    { userId, email, role, tokenId: crypto.randomUUID() },
+    jwtConfig.refreshSecret,
+    jwtConfig.refreshExpiresIn
+  )
 }
 
 export const verifyRefreshToken = (token: string): DecodedToken => {

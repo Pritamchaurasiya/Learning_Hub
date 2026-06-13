@@ -1,75 +1,47 @@
 import { fetchApi } from '../utils/api'
-
-export interface Problem {
-  id: string
-  title: string
-  slug: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  category: string
-  description: string
-  examples: {
-    input: string
-    output: string
-    explanation?: string
-  }[]
-  constraints: string[]
-  starter_code: {
-    language: string
-    code: string
-  }[]
-  acceptance_rate: number
-  submission_count: number
-  solved_count: number
-}
-
-export interface ProblemSubmission {
-  id: string
-  problem_id: string
-  language: string
-  code: string
-  status:
-    | 'pending'
-    | 'accepted'
-    | 'wrong_answer'
-    | 'time_limit_exceeded'
-    | 'runtime_error'
-    | 'compilation_error'
-  runtime: number | null
-  memory: number | null
-  submitted_at: string
-}
+import type { Problem, Submission, DSAStats } from '../types/dsa'
 
 export const problemService = {
-  getProblems: (params?: { difficulty?: string; category?: string; page?: number }) =>
-    fetchApi(
-      `/problems/?${new URLSearchParams(params as Record<string, string>).toString()}`
-    ) as Promise<{
+  getProblems: async (params?: {
+    difficulty?: string
+    search?: string
+    status?: string
+    page?: number
+  }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.difficulty && params.difficulty !== 'ALL')
+      searchParams.append('difficulty', params.difficulty)
+    if (params?.search) searchParams.append('search', params.search)
+    if (params?.status && params.status !== 'ALL') searchParams.append('status', params.status)
+    if (params?.page) searchParams.append('page', params.page.toString())
+
+    const res = await fetchApi(`/problems?${searchParams.toString()}`)
+    return res as {
       status: string
-      data: Problem[]
-      meta: { total: number; page: number; pages: number }
-    }>,
+      data: { results: Problem[]; total: number; page: number; pages: number } | Problem[]
+    }
+  },
 
-  getProblem: (slug: string) =>
-    fetchApi(`/problems/${slug}/`) as Promise<{ status: string; data: Problem }>,
+  getProblem: async (slug: string) => {
+    const res = await fetchApi(`/problems/${slug}`)
+    return res as { status: string; data: Problem }
+  },
 
-  submitSolution: (problemId: string, language: string, code: string) =>
-    fetchApi(`/problems/${problemId}/submit/`, {
+  submitSolution: async (problemId: string, language: string, code: string) => {
+    const res = await fetchApi(`/problems/${problemId}/submit`, {
       method: 'POST',
       body: JSON.stringify({ language, code }),
-    }) as Promise<{ status: string; data: ProblemSubmission }>,
+    })
+    return res as { status: string; data: Submission }
+  },
 
-  getSubmissions: (problemId: string) =>
-    fetchApi(`/problems/${problemId}/submissions/`) as Promise<{
-      status: string
-      data: ProblemSubmission[]
-    }>,
+  getSubmissions: async (problemId: string) => {
+    const res = await fetchApi(`/problems/${problemId}/submissions`)
+    return res as { status: string; data: Submission[] }
+  },
 
-  getSubmission: (problemId: string, submissionId: string) =>
-    fetchApi(`/problems/${problemId}/submissions/${submissionId}/`) as Promise<{
-      status: string
-      data: ProblemSubmission
-    }>,
-
-  getCategories: () =>
-    fetchApi('/problems/categories/') as Promise<{ status: string; data: string[] }>,
+  getDsaStats: async () => {
+    const res = await fetchApi('/gamification/dsa-stats')
+    return res as { status: string; data: DSAStats }
+  },
 }

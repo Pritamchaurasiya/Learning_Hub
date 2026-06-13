@@ -11,13 +11,17 @@ import { prisma } from '../../src/prismaClient'
 import { createUser, createAdmin } from '../factories/user.factory'
 import { createCourses } from '../factories/course.factory'
 
-// Mock logger
-jest.mock('../../src/utils/logger', () => ({
-  error: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-  audit: jest.fn(),
-}))
+// Mock logger - jest.mock is hoisted, so the factory creates mocks inline
+jest.mock('../../src/utils/logger', () => {
+  const log = {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  }
+  return { __esModule: true, logger: log, default: log }
+})
 
 describe('AdminController', () => {
   let mockReq: DeepMockProxy<Request>
@@ -32,8 +36,6 @@ describe('AdminController', () => {
     mockRes = mockDeep<Response>()
     mockRes.status = statusMock as any
     mockRes.json = jsonMock as any
-
-    jest.clearAllMocks()
   })
 
   describe('getDashboardStats', () => {
@@ -78,6 +80,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Internal server error',
+        code: 'INTERNAL_ERROR',
       })
     })
   })
@@ -169,6 +172,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Invalid role',
+        code: 'VALIDATION_ERROR',
       })
     })
 
@@ -186,6 +190,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Internal server error',
+        code: 'INTERNAL_ERROR',
       })
     })
   })
@@ -210,6 +215,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'success',
         message: 'User deleted successfully',
+        data: null,
       })
     })
 
@@ -225,6 +231,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Cannot delete your own account',
+        code: 'VALIDATION_ERROR',
       })
     })
 
@@ -241,6 +248,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'User not found',
+        code: 'NOT_FOUND',
       })
     })
 
@@ -262,6 +270,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Internal server error',
+        code: 'INTERNAL_ERROR',
       })
     })
   })
@@ -298,7 +307,7 @@ describe('AdminController', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'System check failed',
-        data: { database: 'disconnected' },
+        code: 'INTERNAL_ERROR',
       })
     })
   })

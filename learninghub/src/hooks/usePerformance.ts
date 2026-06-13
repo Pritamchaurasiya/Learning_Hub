@@ -111,8 +111,8 @@ export function usePerformanceMonitor(onVitalsCollected?: (vitals: Partial<WebVi
   }, [onVitalsCollected])
 }
 
-// Intersection Observer hook for lazy loading
-export function useIntersectionObserver(
+// Intersection Observer hook for lazy loading (performance-optimized variant)
+export function usePerformanceIntersectionObserver(
   callback: (isIntersecting: boolean) => void,
   options?: IntersectionObserverInit
 ) {
@@ -142,8 +142,8 @@ export function useIntersectionObserver(
   return elementRef
 }
 
-// Debounce function for performance
-export function useDebounce<T extends (...args: unknown[]) => unknown>(
+// Debounce function for performance (callback variant)
+export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): (...args: Parameters<T>) => void {

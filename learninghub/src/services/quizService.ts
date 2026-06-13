@@ -48,7 +48,6 @@ export interface QuizResult {
   percentage: number
 }
 
-// Raw API response types for mapping
 interface RawOption {
   id: string
   text: string
@@ -79,12 +78,12 @@ export const quizService = {
       status: res.status ?? 'success',
       data: {
         quiz: res.data ?? res,
-        questions: (res.data?.questions ?? res.questions ?? []).map((q: RawQuestion) => ({
+        questions: ((res.data?.questions ?? res.questions ?? []) as RawQuestion[]).map(q => ({
           id: q.id,
           question: q.text,
           type: q.question_type,
-          options: q.options?.map((o: RawOption) => o.text) ?? [],
-          correct_answer: q.options?.find((o: RawOption) => o.is_correct)?.text ?? '',
+          options: q.options?.map(o => o.text) ?? [],
+          correct_answer: q.options?.find(o => o.is_correct)?.text ?? '',
           explanation: q.explanation ?? '',
           points: q.marks,
         })),
@@ -97,7 +96,7 @@ export const quizService = {
   startAttempt: (quizId: string) =>
     fetchApi(`/tests/${quizId}/start`, {
       method: 'POST',
-    }).then(res => ({ // Fixed: removed unnecessary body
+    }).then(res => ({
       status: res.status ?? 'success',
       data: {
         attempt_id: res.data?.attempt_id ?? res.data?.id,
@@ -105,8 +104,8 @@ export const quizService = {
           id: q.id,
           question: q.text,
           type: q.question_type,
-          options: q.options?.map((o: RawOption) => o.text) ?? [],
-          correct_answer: q.options?.find((o: RawOption) => o.is_correct)?.text ?? '',
+          options: q.options?.map(o => o.text) ?? [],
+          correct_answer: q.options?.find(o => o.is_correct)?.text ?? '',
           explanation: q.explanation ?? '',
           points: q.marks,
         })),
@@ -134,22 +133,22 @@ export const quizService = {
         attempt_id: data.attempt_id ?? data.id ?? attemptId,
         score: data.score ?? 0,
         passed: data.passed ?? false,
-        total_questions: data.total_questions ?? 0,
-        correct_answers: data.correct_answers ?? 0,
+        total_questions: data.total_questions ?? data.total_marks ?? 0,
+        correct_answers: data.correct_count ?? 0,
         time_taken: data.time_taken ?? timeTaken,
         percentage: data.percentage ?? 0,
       },
     }
   },
 
-  getResults(quizId: string) { // Fixed: corrected endpoint and parameter
+  getResults(quizId: string) {
     return fetchApi(`/tests/${quizId}/result`).then(res => ({
       status: res.status ?? 'success',
-      data: res.data ?? {} as QuizResult,
+      data: res.data ?? ({} as QuizResult),
     })) as Promise<{ status: string; data: QuizResult }>
   },
 
-  getAttempts: (quizId?: string, signal?: AbortSignal) => { // Fixed: parameter name
+  getAttempts: (quizId?: string, signal?: AbortSignal) => {
     const url = quizId ? `/tests/${quizId}/attempts` : '/tests/attempts'
     const options = signal !== undefined ? { signal } : undefined
     return (options ? fetchApi(url, options) : fetchApi(url)).then(res => {
@@ -162,7 +161,7 @@ export const quizService = {
     }) as Promise<{ status: string; data: QuizAttempt[] }>
   },
 
-  getMyResults: () => // Fixed: corrected endpoint
+  getMyResults: () =>
     fetchApi(`/tests/my-results`).then(res => ({
       status: res.status ?? 'success',
       data: {
@@ -175,7 +174,7 @@ export const quizService = {
     }>,
 
   listQuizzes: () =>
-    fetchApi(`/tests`).then(res => ({ // Fixed: removed trailing slash
+    fetchApi(`/tests`).then(res => ({
       status: res.status ?? 'success',
       data: res.data?.data ?? res.results ?? [],
     })) as Promise<{ status: string; data: Quiz[] }>,

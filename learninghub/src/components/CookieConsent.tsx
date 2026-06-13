@@ -33,6 +33,8 @@ export function CookieConsent() {
   }
 
   const handleClose = () => {
+    localStorage.setItem('cookieConsent', 'dismissed')
+    localStorage.setItem('cookieConsentDate', new Date().toISOString())
     setIsVisible(false)
   }
 

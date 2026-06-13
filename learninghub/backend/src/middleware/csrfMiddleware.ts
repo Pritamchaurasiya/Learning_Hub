@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import crypto from 'crypto'
 import { sendError } from '../utils/responseHelper'
+import { cacheService } from '../services/CacheService'
 
 const CSRF_TOKEN_LENGTH = 32
 const CSRF_HEADER = 'x-csrf-token'
+const CSRF_TOKEN_TTL = 24 * 60 * 60 // 24 hours in seconds
 
-// In-memory store for CSRF tokens (use Redis in production for multi-instance)
+// In-memory fallback store (used when Redis unavailable)
 const csrfTokenStore = new Map<string, { token: string; expiresAt: number }>()
 
 function generateCsrfToken(): string {
@@ -20,19 +22,57 @@ function getCsrfToken(req: Request): string | undefined {
   return req.body?.[CSRF_HEADER] as string | undefined
 }
 
-export function csrfProtection(req: Request, res: Response, next: NextFunction): void {
+async function storeCsrfToken(sessionId: string, token: string): Promise<void> {
+  const key = `csrf:${sessionId}`
+  if (cacheService.isAvailable()) {
+    await cacheService.set(key, token, CSRF_TOKEN_TTL)
+  } else {
+    csrfTokenStore.set(sessionId, {
+      token,
+      expiresAt: Date.now() + CSRF_TOKEN_TTL * 1000,
+    })
+  }
+}
+
+async function getStoredCsrfToken(sessionId: string): Promise<string | null> {
+  const key = `csrf:${sessionId}`
+
+  if (cacheService.isAvailable()) {
+    return await cacheService.get<string>(key)
+  }
+
+  const stored = csrfTokenStore.get(sessionId)
+  if (!stored || stored.expiresAt < Date.now()) {
+    csrfTokenStore.delete(sessionId)
+    return null
+  }
+
+  return stored.token
+}
+
+export async function csrfProtection(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const safeMethods = ['GET', 'HEAD', 'OPTIONS']
   if (safeMethods.includes(req.method)) {
     next()
     return
   }
 
-  if (req.path.includes('/webhook')) {
+  if (req.originalUrl.includes('/webhook')) {
     next()
     return
   }
 
-  if (req.path.match(/^\/api\/v1\/auth\/(login|register|forgot-password|reset-password|verify-email)/)) {
+  if (
+    req.originalUrl.match(
+      /^\/api\/v1\/auth\/(login|register|forgot-password|reset-password|verify-email|refresh|logout)/
+    )
+  ) {
+    // CSRF exemption: These endpoints use body-based refresh tokens
+    // If switching to cookie-based auth, this exemption should be removed
     next()
     return
   }
@@ -49,13 +89,13 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
     return
   }
 
-  const stored = csrfTokenStore.get(sessionId)
-  if (!stored || stored.expiresAt < Date.now()) {
+  const storedToken = await getStoredCsrfToken(sessionId)
+  if (!storedToken) {
     sendError(res, 'Invalid or expired CSRF token', 403, 'CSRF_INVALID_TOKEN')
     return
   }
 
-  const storedBuffer = Buffer.from(stored.token)
+  const storedBuffer = Buffer.from(storedToken)
   const clientBuffer = Buffer.from(clientToken)
   if (
     storedBuffer.length !== clientBuffer.length ||
@@ -68,33 +108,37 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
   next()
 }
 
-export function generateCsrfTokenForSession(sessionId: string): string {
+export async function generateCsrfTokenForSession(sessionId: string): Promise<string> {
   const token = generateCsrfToken()
-  csrfTokenStore.set(sessionId, {
-    token,
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-  })
+  await storeCsrfToken(sessionId, token)
   return token
 }
 
-export function getCsrfTokenForSession(sessionId: string): string | undefined {
-  const stored = csrfTokenStore.get(sessionId)
-  if (!stored || stored.expiresAt < Date.now()) {
-    return undefined
-  }
-  return stored.token
+export async function getCsrfTokenForSession(sessionId: string): Promise<string | undefined> {
+  const token = await getStoredCsrfToken(sessionId)
+  return token ?? undefined
 }
 
-setInterval(() => {
-  const now = Date.now()
-  for (const [sessionId, data] of csrfTokenStore.entries()) {
-    if (data.expiresAt < now) {
-      csrfTokenStore.delete(sessionId)
+// Cleanup in-memory tokens every 30 minutes (only runs if Redis unavailable)
+const csrfCleanupInterval = setInterval(
+  () => {
+    const now = Date.now()
+    for (const [sessionId, data] of csrfTokenStore.entries()) {
+      if (data.expiresAt < now) {
+        csrfTokenStore.delete(sessionId)
+      }
     }
-  }
-}, 30 * 60 * 1000).unref?.()
+  },
+  30 * 60 * 1000
+)
+csrfCleanupInterval.unref()
 
-export function csrfTokenHandler(req: Request, res: Response): void {
+export function stopCsrfCleanup(): void {
+  clearInterval(csrfCleanupInterval)
+  csrfTokenStore.clear()
+}
+
+export async function csrfTokenHandler(req: Request, res: Response): Promise<void> {
   const sessionId = req.headers['x-session-id'] as string
   if (!sessionId) {
     res.status(400).json({
@@ -105,7 +149,7 @@ export function csrfTokenHandler(req: Request, res: Response): void {
     return
   }
 
-  const token = generateCsrfTokenForSession(sessionId)
+  const token = await generateCsrfTokenForSession(sessionId)
   res.json({
     status: 'success',
     csrfToken: token,

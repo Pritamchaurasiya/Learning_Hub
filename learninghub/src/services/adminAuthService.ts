@@ -1,4 +1,5 @@
 import { fetchApi } from '../utils/api'
+import { SecureStorage } from '../utils/security'
 
 export type AdminRole = 'admin' | 'superadmin' | 'moderator'
 export type AdminPermission =
@@ -46,31 +47,17 @@ export interface AdminLoginResponse {
   }
 }
 
-// Permission matrix for roles
 const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
   superadmin: [
-    'users.read',
-    'users.write',
-    'users.delete',
-    'courses.read',
-    'courses.write',
-    'courses.delete',
-    'analytics.read',
-    'settings.read',
-    'settings.write',
-    'system.read',
-    'system.write',
-    'audit.read',
+    'users.read', 'users.write', 'users.delete',
+    'courses.read', 'courses.write', 'courses.delete',
+    'analytics.read', 'settings.read', 'settings.write',
+    'system.read', 'system.write', 'audit.read',
   ],
   admin: [
-    'users.read',
-    'users.write',
-    'courses.read',
-    'courses.write',
-    'courses.delete',
-    'analytics.read',
-    'settings.read',
-    'audit.read',
+    'users.read', 'users.write',
+    'courses.read', 'courses.write', 'courses.delete',
+    'analytics.read', 'settings.read', 'audit.read',
   ],
   moderator: ['users.read', 'courses.read', 'courses.write', 'analytics.read'],
 }
@@ -78,10 +65,20 @@ const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
 const ADMIN_TOKEN_KEY = 'adminToken'
 const ADMIN_USER_KEY = 'adminUser'
 
+let memoryToken: string | null = null
+let memoryUser: AdminUser | null = null
+
+async function loadFromStorage(): Promise<void> {
+  if (!memoryToken) memoryToken = await SecureStorage.getItem(ADMIN_TOKEN_KEY)
+  if (!memoryUser) {
+    const raw = await SecureStorage.getItem(ADMIN_USER_KEY)
+    if (raw) {
+      try { memoryUser = JSON.parse(raw) as AdminUser } catch { memoryUser = null }
+    }
+  }
+}
+
 export const adminAuthService = {
-  /**
-   * Login as admin with email/password
-   */
   async login(credentials: AdminLoginRequest): Promise<AdminLoginResponse> {
     const response = (await fetchApi('/admin/auth/login', {
       method: 'POST',
@@ -91,103 +88,91 @@ export const adminAuthService = {
     if (response.status === 'success') {
       const userData = response.data.user
       const role = userData.role?.toLowerCase() as AdminRole
-      const validRole = ['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin'
+      const validRole = (['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin') as AdminRole
 
-      const token = (response.data as unknown as Record<string, string>).access_token
-        ?? response.data.token
+      const token = (response.data as unknown as Record<string, string>).access_token ?? response.data.token
 
-      localStorage.setItem(ADMIN_TOKEN_KEY, token)
-      localStorage.setItem(
-        ADMIN_USER_KEY,
-        JSON.stringify({
-          ...userData,
-          role: validRole,
-          permissions: ROLE_PERMISSIONS[validRole] || [],
-          isActive: true,
-          twoFactorEnabled: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        })
-      )
+      const user: AdminUser = {
+        ...userData,
+        role: validRole,
+        permissions: ROLE_PERMISSIONS[validRole] || [],
+        isActive: true,
+        twoFactorEnabled: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      memoryToken = token
+      memoryUser = user
+
+      await Promise.all([
+        SecureStorage.setItem(ADMIN_TOKEN_KEY, token),
+        SecureStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user)),
+      ])
     }
 
     return response
   },
 
-  /**
-   * Logout admin and clear session
-   */
   async logout(): Promise<void> {
-    // For JWT, we just clear local storage (token will expire)
     this.clearSession()
   },
 
-  /**
-   * Get current admin from storage
-   */
   getAdminUser(): AdminUser | null {
+    return memoryUser
+  },
+
+  getToken(): string | null {
+    return memoryToken
+  },
+
+  isAuthenticated(): boolean {
+    const token = this.getToken()
+    if (!token) return false
     try {
-      const user = localStorage.getItem(ADMIN_USER_KEY)
-      return user ? JSON.parse(user) : null
+      const [, payload] = token.split('.')
+      if (!payload) return false
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+      const pad = base64.length % 4
+      const padded = pad ? base64 + '='.repeat(4 - pad) : base64
+      const decoded = JSON.parse(atob(padded))
+      return typeof decoded.exp === 'number' ? decoded.exp * 1000 > Date.now() : false
     } catch {
-      return null
+      return false
     }
   },
 
-  /**
-   * Get admin token
-   */
-  getToken(): string | null {
-    return localStorage.getItem(ADMIN_TOKEN_KEY)
+  async clearSession(): Promise<void> {
+    memoryToken = null
+    memoryUser = null
+    await Promise.all([
+      SecureStorage.removeItem(ADMIN_TOKEN_KEY),
+      SecureStorage.removeItem(ADMIN_USER_KEY),
+    ])
   },
 
-  /**
-   * Check if admin is authenticated
-   */
-  isAuthenticated(): boolean {
-    return !!this.getToken()
+  async initFromStorage(): Promise<void> {
+    await loadFromStorage()
   },
 
-  /**
-   * Clear all admin session data
-   */
-  clearSession(): void {
-    localStorage.removeItem(ADMIN_TOKEN_KEY)
-    localStorage.removeItem(ADMIN_USER_KEY)
-  },
-
-  /**
-   * Check if admin has specific permission
-   */
   hasPermission(permission: AdminPermission): boolean {
     const user = this.getAdminUser()
     if (!user) return false
     return user.permissions?.includes(permission) || false
   },
 
-  /**
-   * Check if admin has any of the specified permissions
-   */
   hasAnyPermission(permissions: AdminPermission[]): boolean {
     return permissions.some(p => this.hasPermission(p))
   },
 
-  /**
-   * Check if admin has all of the specified permissions
-   */
   hasAllPermissions(permissions: AdminPermission[]): boolean {
     return permissions.every(p => this.hasPermission(p))
   },
 
-  /**
-   * Check if admin has required role
-   */
   hasRole(role: AdminRole | AdminRole[]): boolean {
     const user = this.getAdminUser()
     if (!user) return false
-    if (Array.isArray(role)) {
-      return role.includes(user.role as AdminRole)
-    }
+    if (Array.isArray(role)) return role.includes(user.role as AdminRole)
     return user.role === role
   },
 }

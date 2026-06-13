@@ -1,80 +1,94 @@
 import { Request, Response } from 'express'
 import { ExamContentService } from '../services/ExamContentService'
 import logger from '../utils/logger'
+import {
+  sendSuccess,
+  sendCreated,
+  sendNotFound,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 const examContentService = new ExamContentService()
 
 export const examContentController = {
-  // PYQ Routes
-  getPYQs: async (req: Request, res: Response) => {
+  getPYQs: async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await examContentService.getPYQs(req.query)
-      res.json({ status: 'success', ...result })
+      sendSuccess(res, result.data, undefined, 200, result.meta)
     } catch (error) {
       logger.error(
         '[ExamContent] getPYQs failed',
         error instanceof Error ? error : new Error(String(error))
       )
-      res.status(500).json({ status: 'error', message: 'Failed to fetch PYQs' })
+      sendInternalError(res)
     }
   },
 
-  getPYQById: async (req: Request, res: Response) => {
+  getPYQById: async (req: Request, res: Response): Promise<void> => {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+      if (!id || typeof id !== 'string') {
+        sendValidationError(res, 'Valid PYQ ID is required')
+        return
+      }
       const pyq = await examContentService.getPYQById(id)
       if (!pyq) {
-        return res.status(404).json({ status: 'error', message: 'PYQ not found' })
+        sendNotFound(res, 'PYQ not found')
+        return
       }
-      res.json({ status: 'success', data: pyq })
+      sendSuccess(res, pyq)
     } catch (error) {
       logger.error(
         '[ExamContent] getPYQById failed',
         error instanceof Error ? error : new Error(String(error)),
         { pyqId: req.params.id }
       )
-      res.status(500).json({ status: 'error', message: 'Failed to fetch PYQ' })
+      sendInternalError(res)
     }
   },
 
-  createPYQ: async (req: Request, res: Response) => {
+  createPYQ: async (req: Request, res: Response): Promise<void> => {
     try {
+      const { year, exam, subject, questions } = req.body
+      if (!year || !exam || !subject || !Array.isArray(questions) || questions.length === 0) {
+        sendValidationError(res, 'year, exam, subject, and questions array are required')
+        return
+      }
       const pyq = await examContentService.createPYQ(req.body)
-      res.status(201).json({ status: 'success', data: pyq })
+      sendCreated(res, pyq)
     } catch (error) {
       logger.error(
         '[ExamContent] createPYQ failed',
         error instanceof Error ? error : new Error(String(error))
       )
-      res.status(500).json({ status: 'error', message: 'Failed to create PYQ' })
+      sendInternalError(res)
     }
   },
 
-  // Formula Routes
-  getFormulas: async (req: Request, res: Response) => {
+  getFormulas: async (req: Request, res: Response): Promise<void> => {
     try {
       const formulas = await examContentService.getFormulas(req.query)
-      res.json({ status: 'success', data: formulas })
+      sendSuccess(res, formulas)
     } catch (error) {
       logger.error(
         '[ExamContent] getFormulas failed',
         error instanceof Error ? error : new Error(String(error))
       )
-      res.status(500).json({ status: 'error', message: 'Failed to fetch formulas' })
+      sendInternalError(res)
     }
   },
 
-  // Revision Notes Routes
-  getRevisionNotes: async (req: Request, res: Response) => {
+  getRevisionNotes: async (req: Request, res: Response): Promise<void> => {
     try {
       const notes = await examContentService.getRevisionNotes(req.query)
-      res.json({ status: 'success', data: notes })
+      sendSuccess(res, notes)
     } catch (error) {
       logger.error(
         '[ExamContent] getRevisionNotes failed',
         error instanceof Error ? error : new Error(String(error))
       )
-      res.status(500).json({ status: 'error', message: 'Failed to fetch notes' })
+      sendInternalError(res)
     }
   },
 }

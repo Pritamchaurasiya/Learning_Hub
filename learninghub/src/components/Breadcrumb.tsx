@@ -29,6 +29,15 @@ const routeLabels: Record<string, string> = {
   '/monitoring': 'System Health',
   '/downloads': 'Downloads',
   '/certificates': 'Certificates',
+  '/discussions': 'Discussions',
+  '/mentorship': 'Mentorship',
+  '/ai-tutor': 'AI Tutor',
+  '/cart': 'Cart',
+  '/learning-path': 'Learning Path',
+  '/live-class': 'Live Class',
+  '/study-planner': 'Study Planner',
+  '/offline': 'Offline',
+  '/lesson-player': 'Lesson Player',
 }
 
 const topLevelRoutes = [
@@ -51,6 +60,14 @@ const topLevelRoutes = [
   '/notifications',
   '/downloads',
   '/certificates',
+  '/discussions',
+  '/mentorship',
+  '/ai-tutor',
+  '/cart',
+  '/learning-path',
+  '/live-class',
+  '/study-planner',
+  '/offline',
 ]
 
 function parseBreadcrumbs(pathname: string): BreadcrumbItem[] {

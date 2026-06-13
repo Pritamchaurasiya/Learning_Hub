@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import {
   Sun,
   Moon,
@@ -14,10 +15,12 @@ import {
   Check,
   HelpCircle,
   Info,
+  Settings as SettingsIcon,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import AnimatedPage from '../components/AnimatedPage'
 
 interface SettingsState {
   theme: 'light' | 'dark' | 'system'
@@ -36,14 +39,21 @@ interface SettingsState {
 
 export default function SettingsPage() {
   const navigate = useNavigate()
-  const { theme, setTheme, logout, addToast, settings: globalSettings, updateSettings } = useStore()
+  const theme = useStore(state => state.theme)
+  const setTheme = useStore(state => state.setTheme)
+  const logout = useStore(state => state.logout)
+  const addToast = useStore(state => state.addToast)
+  const globalSettings = useStore(state => state.settings)
+  const updateSettings = useStore(state => state.updateSettings)
 
-  const isLowPerformance = globalSettings?.lowPerformanceMode || false
+  const isLowPerformance = globalSettings?.lowPerformanceMode ?? false
 
   const handleLowPerformanceToggle = () => {
     updateSettings({ lowPerformanceMode: !isLowPerformance })
     addToast({
-      message: !isLowPerformance ? 'Low performance mode enabled' : 'Low performance mode disabled',
+      message: !isLowPerformance
+        ? 'Low performance mode engaged.'
+        : 'Low performance mode disabled.',
       type: 'info',
     })
   }
@@ -74,7 +84,6 @@ export default function SettingsPage() {
   const handleNotificationChange = (key: keyof SettingsState['notifications']) => {
     setSettings({
       ...settings,
-      // eslint-disable-next-line security/detect-object-injection
       notifications: { ...settings.notifications, [key]: !settings.notifications[key] },
     })
     setHasChanges(true)
@@ -83,399 +92,301 @@ export default function SettingsPage() {
   const handlePrivacyChange = (key: keyof SettingsState['privacy']) => {
     setSettings({
       ...settings,
-      // eslint-disable-next-line security/detect-object-injection
       privacy: { ...settings.privacy, [key]: !settings.privacy[key] },
     })
     setHasChanges(true)
   }
 
   const handleSave = () => {
-    addToast({ message: 'Settings saved successfully', type: 'success' })
+    updateSettings({
+      notifications:
+        settings.notifications.dailyReminder ||
+        settings.notifications.progressUpdates ||
+        settings.notifications.achievements,
+      dailyReminder: settings.notifications.dailyReminder,
+      progressUpdates: settings.notifications.progressUpdates,
+      achievements: settings.notifications.achievements,
+      weeklyDigest: settings.notifications.weeklyDigest,
+      lowPerformanceMode: isLowPerformance,
+      compactMode: false,
+      soundEffects: true,
+      autoplay: false,
+      showProfile: settings.privacy.showProfile,
+      showProgress: settings.privacy.showProgress,
+      showStreak: settings.privacy.showStreak,
+    })
+    addToast({ message: 'Configuration synchronized successfully.', type: 'success' })
     setHasChanges(false)
   }
 
-  const handleExportData = () => {
-    const data = {
-      theme: settings.theme,
-      notifications: settings.notifications,
-      privacy: settings.privacy,
-      exportedAt: new Date().toISOString(),
+  const handleExportData = async () => {
+    try {
+      addToast({ message: 'Requesting secure data export from server...', type: 'info' })
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/v1/auth/export-data', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) throw new Error('Failed to export data')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'learninghub-gdpr-export.json'
+      a.click()
+      URL.revokeObjectURL(url)
+      addToast({ message: 'GDPR Data export complete.', type: 'success' })
+    } catch {
+      addToast({ message: 'Error exporting data.', type: 'error' })
     }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'learninghub-settings.json'
-    a.click()
-    URL.revokeObjectURL(url)
-    addToast({ message: 'Settings exported', type: 'success' })
   }
 
   const handleClearData = () => {
-    // eslint-disable-next-line no-alert
-    if (window.confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
-      localStorage.clear()
-      addToast({ message: 'Local data cleared', type: 'info' })
+    if (
+      // eslint-disable-next-line no-alert
+      window.confirm(
+        'WARNING: Are you sure you want to purge all local configuration? This action is irreversible.'
+      )
+    ) {
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('learninghub'))
+        .forEach(key => localStorage.removeItem(key))
+      addToast({ message: 'Local cache purged.', type: 'info' })
       window.location.reload()
     }
   }
 
   const handleLogout = () => {
-    logout()
+    void logout()
     navigate('/auth')
   }
 
+  const Switch = ({ checked, onChange, label, description, icon: Icon }: any) => (
+    <label className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-800 group">
+      <div className="flex items-center gap-4">
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}
+        >
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <p className="font-black text-gray-900 dark:text-white uppercase tracking-tight">
+            {label}
+          </p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">
+            {description}
+          </p>
+        </div>
+      </div>
+      <button
+        onClick={e => {
+          e.preventDefault()
+          onChange()
+        }}
+        className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${
+          checked ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-700'
+        }`}
+        role="switch"
+        aria-checked={checked}
+      >
+        <div
+          className={`w-6 h-6 bg-white rounded-full shadow-md absolute top-1 transition-all ${
+            checked ? 'left-7' : 'left-1'
+          }`}
+        />
+      </button>
+    </label>
+  )
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
+    <AnimatedPage className="max-w-4xl mx-auto space-y-10 pb-12 pt-4">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-[1.25rem] bg-gray-900 dark:bg-white flex items-center justify-center shadow-xl">
+            <SettingsIcon className="w-8 h-8 text-white dark:text-gray-900" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+              Configuration
+            </h1>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+              System Parameters & Preferences
+            </p>
+          </div>
+        </div>
         {hasChanges && (
-          <Button onClick={handleSave} leftIcon={<Check className="w-4 h-4" />}>
-            Save Changes
+          <Button
+            onClick={handleSave}
+            className="rounded-xl font-black uppercase tracking-widest text-[10px] px-8 py-4 shadow-lg shadow-primary-500/20"
+          >
+            <Check className="w-4 h-4 mr-2" /> Sync Changes
           </Button>
         )}
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Sun className="w-5 h-5" />
-          Appearance
-        </h2>
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Choose your preferred theme</p>
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => handleThemeChange('light')}
-              className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                settings.theme === 'light'
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-              }`}
-              aria-pressed={settings.theme === 'light'}
-            >
-              <Sun className="w-6 h-6" />
-              <span className="text-sm font-medium">Light</span>
-            </button>
-            <button
-              onClick={() => handleThemeChange('dark')}
-              className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                settings.theme === 'dark'
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-              }`}
-              aria-pressed={settings.theme === 'dark'}
-            >
-              <Moon className="w-6 h-6" />
-              <span className="text-sm font-medium">Dark</span>
-            </button>
-            <button
-              onClick={() => handleThemeChange('system')}
-              className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                settings.theme === 'system'
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-              }`}
-              aria-pressed={settings.theme === 'system'}
-            >
-              <Monitor className="w-6 h-6" />
-              <span className="text-sm font-medium">System</span>
-            </button>
-          </div>
-
-          <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-4">
-            <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-              <div className="flex items-center gap-3">
-                <Monitor className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="font-medium">Low Performance Mode</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Disables background animations and heavy graphics to save battery
-                  </p>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          {/* Appearance */}
+          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tight text-gray-900 dark:text-white">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                <Sun className="w-5 h-5 text-amber-500" />
               </div>
-              <button
-                onClick={handleLowPerformanceToggle}
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  isLowPerformance ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
-                }`}
-                role="switch"
-                aria-checked={isLowPerformance}
-                aria-label="Toggle low performance mode"
-              >
-                <div
-                  className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                    isLowPerformance ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
+              Display Interface
+            </h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'light', icon: Sun, label: 'Light' },
+                  { id: 'dark', icon: Moon, label: 'Dark' },
+                  { id: 'system', icon: Monitor, label: 'System' },
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => handleThemeChange(t.id as any)}
+                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                      settings.theme === t.id
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 shadow-md shadow-primary-500/10'
+                        : 'border-gray-100 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <t.icon className="w-6 h-6" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      {t.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-2">
+                <Switch
+                  checked={isLowPerformance}
+                  onChange={handleLowPerformanceToggle}
+                  label="Efficiency Mode"
+                  description="Disable animations to conserve resources"
+                  icon={Monitor}
                 />
-              </button>
-            </label>
-          </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Privacy */}
+          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tight text-gray-900 dark:text-white">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-emerald-500" />
+              </div>
+              Security & Privacy
+            </h2>
+            <div className="space-y-2">
+              <Switch
+                checked={settings.privacy.showProfile}
+                onChange={() => handlePrivacyChange('showProfile')}
+                label="Public Profile"
+                description="Allow network access to profile"
+                icon={Eye}
+              />
+              <Switch
+                checked={settings.privacy.showProgress}
+                onChange={() => handlePrivacyChange('showProgress')}
+                label="Telemetry Sync"
+                description="Broadcast progress metrics"
+                icon={Eye}
+              />
+              <Switch
+                checked={settings.privacy.showStreak}
+                onChange={() => handlePrivacyChange('showStreak')}
+                label="Streak Visibility"
+                description="Display consecutive logins"
+                icon={Eye}
+              />
+            </div>
+          </Card>
         </div>
-      </Card>
 
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Bell className="w-5 h-5" />
-          Notifications
-        </h2>
-        <div className="space-y-4">
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <Bell className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Daily Reminder</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Get reminded to maintain your streak
-                </p>
+        <div className="space-y-8">
+          {/* Notifications */}
+          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tight text-gray-900 dark:text-white">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-indigo-500" />
+              </div>
+              Alerts & Signals
+            </h2>
+            <div className="space-y-2">
+              <Switch
+                checked={settings.notifications.dailyReminder}
+                onChange={() => handleNotificationChange('dailyReminder')}
+                label="Daily Ping"
+                description="Routine network engagement signal"
+                icon={Bell}
+              />
+              <Switch
+                checked={settings.notifications.progressUpdates}
+                onChange={() => handleNotificationChange('progressUpdates')}
+                label="Milestone Alerts"
+                description="Notifications for module completion"
+                icon={Info}
+              />
+              <Switch
+                checked={settings.notifications.achievements}
+                onChange={() => handleNotificationChange('achievements')}
+                label="Trophy Signals"
+                description="Alerts for acquired credentials"
+                icon={HelpCircle}
+              />
+              <Switch
+                checked={settings.notifications.weeklyDigest}
+                onChange={() => handleNotificationChange('weeklyDigest')}
+                label="Batch Summary"
+                description="Weekly telemetry compilation"
+                icon={BellOff}
+              />
+            </div>
+          </Card>
+
+          {/* System Control */}
+          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tight text-gray-900 dark:text-white">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <SettingsIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              System Control
+            </h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-2 font-black uppercase tracking-widest text-[10px] py-4"
+                  onClick={handleExportData}
+                >
+                  <Download className="w-4 h-4 mr-2" /> Export
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-2 font-black uppercase tracking-widest text-[10px] py-4 text-rose-600 border-rose-200 hover:bg-rose-50 dark:border-rose-900/30 dark:hover:bg-rose-900/20"
+                  onClick={handleClearData}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Purge
+                </Button>
+              </div>
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                <Button
+                  variant="danger"
+                  fullWidth
+                  className="rounded-xl font-black uppercase tracking-widest text-[10px] py-4 shadow-lg shadow-rose-500/20"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4 mr-2" /> Disconnect Session
+                </Button>
               </div>
             </div>
-            <button
-              onClick={() => handleNotificationChange('dailyReminder')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.dailyReminder
-                  ? 'bg-primary-500'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.notifications.dailyReminder}
-              aria-label="Toggle daily reminder notifications"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.notifications.dailyReminder ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <Info className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Progress Updates</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Notifications when you make progress
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleNotificationChange('progressUpdates')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.progressUpdates
-                  ? 'bg-primary-500'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.notifications.progressUpdates}
-              aria-label="Toggle progress update notifications"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.notifications.progressUpdates ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <HelpCircle className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Achievements</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Get notified when you unlock achievements
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleNotificationChange('achievements')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.achievements
-                  ? 'bg-primary-500'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.notifications.achievements}
-              aria-label="Toggle achievement notifications"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.notifications.achievements ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <BellOff className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Weekly Digest</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Receive a weekly summary email
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleNotificationChange('weeklyDigest')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.notifications.weeklyDigest
-                  ? 'bg-primary-500'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.notifications.weeklyDigest}
-              aria-label="Toggle weekly digest email"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.notifications.weeklyDigest ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
+          </Card>
         </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5" />
-          Privacy
-        </h2>
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Control what others can see</p>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <Eye className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Show Profile</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Allow others to view your profile
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handlePrivacyChange('showProfile')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.privacy.showProfile ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.privacy.showProfile}
-              aria-label="Toggle profile visibility"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.privacy.showProfile ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <Eye className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Show Progress</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Display your learning progress
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handlePrivacyChange('showProgress')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.privacy.showProgress ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.privacy.showProgress}
-              aria-label="Toggle progress visibility"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.privacy.showProgress ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-            <div className="flex items-center gap-3">
-              <Eye className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="font-medium">Show Streak</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Make your streak visible</p>
-              </div>
-            </div>
-            <button
-              onClick={() => handlePrivacyChange('showStreak')}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                settings.privacy.showStreak ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-              role="switch"
-              aria-checked={settings.privacy.showStreak}
-              aria-label="Toggle streak visibility"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-                  settings.privacy.showStreak ? 'translate-x-6' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </label>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5" />
-          Data & Privacy
-        </h2>
-        <div className="space-y-3">
-          <Button
-            variant="outline"
-            fullWidth
-            leftIcon={<Download className="w-4 h-4" />}
-            onClick={handleExportData}
-          >
-            Export Settings
-          </Button>
-          <Button
-            variant="outline"
-            fullWidth
-            leftIcon={<Trash2 className="w-4 h-4" />}
-            onClick={handleClearData}
-            className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
-          >
-            Clear Local Data
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <LogOut className="w-5 h-5" />
-          Account
-        </h2>
-        <div className="space-y-3">
-          <Button
-            variant="danger"
-            fullWidth
-            leftIcon={<LogOut className="w-4 h-4" />}
-            onClick={handleLogout}
-          >
-            Log Out
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">About</h2>
-        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-          <p>LearningHub v1.0.0</p>
-          <p>A full-stack learning platform for mastering DSA and web development.</p>
-        </div>
-      </Card>
-    </div>
+      </div>
+    </AnimatedPage>
   )
 }

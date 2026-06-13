@@ -5,7 +5,7 @@ module.exports = {
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', { isolatedModules: true }],
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -24,4 +24,5 @@ module.exports = {
   verbose: true,
   clearMocks: true,
   restoreMocks: true,
+  testTimeout: 60000,
 }

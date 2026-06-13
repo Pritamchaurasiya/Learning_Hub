@@ -6,7 +6,6 @@
  */
 
 import { prisma } from '../prismaClient'
-import logger from '../utils/logger'
 
 export interface CreateSubscriptionInput {
   userId: string

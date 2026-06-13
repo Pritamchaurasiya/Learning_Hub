@@ -18,11 +18,12 @@ vars = { ENVIRONMENT = "production" }
 # JWT_SECRET - Secret key for JWT signing (required)
 # OPENAI_API_KEY - OpenAI API for AI tutor (optional)
 
-# KV Namespaces for caching and rate limiting (optional - uncomment when ready)
-# [[kv_namespaces]]
-# binding = "LEARNINGHUB_KV"
-# id = "your-kv-namespace-id"
-# preview_id = "your-preview-kv-namespace-id"
+# KV Namespaces for caching and rate limiting
+# Replace with your actual KV namespace IDs when deploying
+[[kv_namespaces]]
+binding = "LEARNINGHUB_KV"
+id = "learninghub-kv"
+preview_id = "learninghub-kv-preview"
 
 # Rate limiting
 [limits]

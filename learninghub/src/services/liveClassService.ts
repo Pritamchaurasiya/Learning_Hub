@@ -23,8 +23,26 @@ export interface SingleLiveSessionResponse {
   data: LiveSession
 }
 
+interface RawLiveSession {
+  id: string
+  title?: string
+  instructorName?: string
+  instructor_name?: string
+  scheduledAt?: string
+  scheduled_at?: string
+  durationMinutes?: number
+  duration_minutes?: number
+  status?: 'upcoming' | 'live' | 'completed'
+  maxParticipants?: number
+  max_participants?: number
+  currentParticipants?: number
+  current_participants?: number
+  createdAt?: string
+  created_at?: string
+}
+
 // Map backend LiveSession shape to frontend shape
-function mapSession(raw: any): LiveSession {
+function mapSession(raw: RawLiveSession): LiveSession {
   return {
     id: raw.id,
     title: raw.title ?? '',
@@ -42,7 +60,7 @@ export const liveClassService = {
   // GET /live-sessions — returns all sessions, filter client-side by status
   getAllSessions: async (): Promise<LiveSessionsResponse> => {
     const res = await fetchApi('/live-sessions')
-    const items: any[] = res.data?.results ?? res.data ?? res.results ?? []
+    const items: RawLiveSession[] = res.data?.results ?? res.data ?? res.results ?? []
     return {
       status: res.status ?? 'success',
       data: items.map(mapSession),

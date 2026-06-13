@@ -18,7 +18,10 @@ const sanitizeObject = (obj: unknown): unknown => {
   return obj
 }
 
-const replaceObjectContents = (target: Record<string, unknown>, source: Record<string, unknown>) => {
+const replaceObjectContents = (
+  target: Record<string, unknown>,
+  source: Record<string, unknown>
+) => {
   for (const key of Object.keys(target)) {
     delete target[key]
   }

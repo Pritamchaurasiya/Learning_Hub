@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import { sendError } from '../utils/responseHelper'
-import logger from '../utils/logger'
 
 interface UserRateLimitConfig {
   windowMs: number
@@ -22,7 +21,7 @@ export function createUserRateLimit(config: UserRateLimitConfig) {
   const { windowMs, maxRequests, message } = config
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
       next()
       return
@@ -51,7 +50,7 @@ export function createUserRateLimit(config: UserRateLimitConfig) {
     if (record.requestCount > maxRequests) {
       sendError(
         res,
-        message ||
+        message ??
           `Too many requests. Try again in ${Math.ceil((record.windowEnd.getTime() - now.getTime()) / 1000)} seconds`,
         429,
         'RATE_LIMIT_EXCEEDED'
@@ -67,13 +66,16 @@ export function createUserRateLimit(config: UserRateLimitConfig) {
   }
 }
 
-export async function getUserRateLimitStatus(userId: string, maxRequests: number = 100): Promise<{
+export async function getUserRateLimitStatus(
+  userId: string,
+  maxRequests: number = 100
+): Promise<{
   endpoints: Array<{ endpoint: string; remaining: number; limit: number; resetAt: Date }>
 }> {
   const now = new Date()
   const endpoints: Array<{ endpoint: string; remaining: number; limit: number; resetAt: Date }> = []
 
-  for (const [key, record] of userRateLimitStore.entries()) {
+  for (const [, record] of userRateLimitStore.entries()) {
     if (record.userId === userId && now <= record.windowEnd) {
       endpoints.push({
         endpoint: record.endpoint,

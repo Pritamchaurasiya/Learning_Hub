@@ -36,11 +36,11 @@ export default function AdminABTestingPage() {
     try {
       const response = await fetchApi(`/admin/ab-testing/results/${selectedExperiment}`)
       if (response.data?.success) {
-        setResults(response.data.data || [])
+        setResults(response.data.data ?? [])
       } else if (Array.isArray(response.data)) {
         setResults(response.data)
       } else if (response.success) {
-        setResults(response.data || [])
+        setResults(response.data ?? [])
       } else if (Array.isArray(response)) {
         setResults(response)
       }
@@ -52,7 +52,7 @@ export default function AdminABTestingPage() {
   }
 
   useEffect(() => {
-    fetchResults()
+    void fetchResults()
   }, [selectedExperiment])
 
   const chartData = results.map(r => ({
@@ -154,22 +154,24 @@ export default function AdminABTestingPage() {
                   </tr>
                 ) : (
                   results.map((r, i) => {
-                    const users = parseInt(r.users, 10) || 0;
-                    const events = parseInt(r.events, 10) || 0;
-                    const rate = users > 0 ? ((events / users) * 100).toFixed(1) : '0.0';
-                    
+                    const users = parseInt(r.users, 10) || 0
+                    const events = parseInt(r.events, 10) || 0
+                    const rate = users > 0 ? ((events / users) * 100).toFixed(1) : '0.0'
+
                     return (
                       <tr key={i} className="text-gray-800 dark:text-gray-200">
                         <td className="py-4 font-medium capitalize">{r.variant}</td>
                         <td className="py-4 text-right">{users}</td>
                         <td className="py-4 text-right text-indigo-500 font-medium">{events}</td>
                         <td className="py-4 text-right">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${parseFloat(rate) > 50 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${parseFloat(rate) > 50 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}
+                          >
                             {rate}%
                           </span>
                         </td>
                       </tr>
-                    );
+                    )
                   })
                 )}
               </tbody>

@@ -31,30 +31,45 @@ export interface CertificateVerification {
 export const certificateService = {
   // Get all certificates for current user
   async getCertificates(): Promise<{ status: string; data: Certificate[] }> {
-    return fetchApi('/courses/certificates')
+    const res = await fetchApi('/certificates/my-certificates')
+    const mapped = (res.data?.certificates ?? []).map((c: any) => ({
+      id: c.id,
+      certificate_code: c.certificateUrl, // using URL as code for download/share
+      title: c.course.title,
+      course: {
+        id: c.courseId,
+        title: c.course.title,
+      },
+      issued_at: c.issuedAt,
+      signature: 'auto-generated',
+      download_url: c.certificateUrl,
+      is_revoked: false,
+    }))
+    return { status: 'success', data: mapped }
   },
 
-  // Get certificate detail
+  // Generate certificate
+  async generateCertificate(courseId: string): Promise<{ certificateUrl: string }> {
+    const res = await fetchApi('/certificates/generate', {
+      method: 'POST',
+      body: JSON.stringify({ courseId }),
+    })
+    return res.data
+  },
+
+  // Get certificate detail (Mock for now or use my-certificates filtering)
   async getCertificate(code: string): Promise<{ status: string; data: Certificate }> {
     return fetchApi(`/courses/certificates/${code}`)
   },
 
   // Download certificate PDF
   async downloadCertificate(code: string): Promise<Blob> {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'}/courses/certificates/${code}/download`,
-      {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          Accept: 'application/pdf',
-        },
-      }
-    )
-    if (!response.ok) {
-      throw new Error('Failed to download certificate')
-    }
-    return response.blob()
+    const url = code.startsWith('/') ? code : `/${code}`
+    return fetchApi(url, {
+      method: 'GET',
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' },
+    }) as Promise<Blob>
   },
 
   // Verify certificate (public endpoint - no auth required)

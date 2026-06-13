@@ -1,12 +1,60 @@
-import { useStore } from '../stores/useStore'
+import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
-import { Award, Lock, CheckCircle, Share2, Sparkles } from 'lucide-react'
+import { Skeleton } from '../components/ui/Skeleton'
+import { useStore } from '../stores/useStore'
+import { fetchApi } from '../utils/api'
+import { Award, Lock, CheckCircle, Share2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react'
+
+interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  xp_reward: number
+  category: string
+  unlocked?: boolean
+  earned_at?: string
+}
 
 export default function AchievementsPage() {
-  const { achievements, progress, addToast } = useStore()
+  const progress = useStore(state => state.progress)
+  const addToast = useStore(state => state.addToast)
 
-  const unlockedCount = achievements.filter(a => a.unlocked).length
-  const totalCount = achievements.length
+  const {
+    data: achievements = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['achievements'],
+    queryFn: async () => {
+      const res = await fetchApi('/gamification/achievements')
+      return ((res.data ?? []) as Achievement[]).map(a => ({
+        ...a,
+        unlocked: !!a.earned_at,
+        unlockedAt: a.earned_at,
+      }))
+    },
+    staleTime: 60 * 1000,
+  })
+
+  const { data: myAchievements = [] } = useQuery({
+    queryKey: ['my-achievements'],
+    queryFn: async () => {
+      const res = await fetchApi('/gamification/achievements')
+      const items = (res.data ?? []) as Achievement[]
+      return items.map(a => ({ ...a, unlocked: true, unlockedAt: a.earned_at }))
+    },
+    staleTime: 60 * 1000,
+  })
+
+  const mergedAchievements = achievements.map(a => {
+    const mine = myAchievements.find(ma => ma.id === a.id)
+    return mine ?? { ...a, unlocked: false }
+  })
+
+  const unlockedCount = mergedAchievements.filter(a => a.unlocked).length
+  const totalCount = mergedAchievements.length
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0
 
   const handleShare = (achievementName: string) => {
@@ -28,13 +76,94 @@ export default function AchievementsPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <AnimatedPage className="space-y-6">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Skeleton className="w-8 h-8 rounded-xl" />
+            <Skeleton className="h-8 w-40" />
+          </div>
+          <Skeleton className="h-4 w-56 mt-2" />
+        </div>
+        <div className="card-static p-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
+            <div className="flex-1">
+              <Skeleton className="h-3 w-full mb-2" />
+              <Skeleton className="h-2.5 w-full rounded-full" />
+            </div>
+            <div className="flex gap-8">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="text-center">
+                  <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                  <Skeleton className="h-3 w-10 mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="card-static p-5">
+              <div className="flex items-start gap-4">
+                <Skeleton className="w-14 h-14 rounded-xl shrink-0" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-2/3 mb-2" />
+                  <Skeleton className="h-4 w-full mb-1" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </AnimatedPage>
+    )
+  }
+
+  if (error) {
+    return (
+      <AnimatedPage>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
+          <h2 className="text-xl font-bold mb-2">Failed to load achievements</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+            {(error as Error)?.message || 'An unexpected error occurred'}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        </div>
+      </AnimatedPage>
+    )
+  }
+
+  if (totalCount === 0) {
+    return (
+      <AnimatedPage className="space-y-6">
+        <div className="text-center py-20 card-static border-dashed border-2 border-gray-200 dark:border-gray-700">
+          <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Award className="w-10 h-10 text-gray-200 dark:text-gray-700" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">No achievements yet</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto leading-relaxed">
+            Start learning and completing courses to unlock achievements. They will appear here as
+            you progress.
+          </p>
+        </div>
+      </AnimatedPage>
+    )
+  }
+
   return (
     <AnimatedPage className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-            <Award className="w-4.5 h-4.5 text-purple-500" />
+            <Award className="w-4 h-4 text-purple-500" />
           </div>
           Achievements
         </h1>
@@ -43,7 +172,6 @@ export default function AchievementsPage() {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="card-static p-6">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
           <div className="flex-1">
@@ -92,9 +220,8 @@ export default function AchievementsPage() {
         </div>
       </div>
 
-      {/* Achievements Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {achievements.map(achievement => (
+        {mergedAchievements.map(achievement => (
           <div
             key={achievement.id}
             className={`card-static p-5 transition-all duration-300 ${

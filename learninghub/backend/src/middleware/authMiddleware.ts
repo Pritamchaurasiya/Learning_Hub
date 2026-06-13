@@ -1,15 +1,38 @@
 import { Request, Response, NextFunction } from 'express'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import jwt from 'jsonwebtoken'
-import { AuthService } from '../services'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { jwtConfig } from '../config'
+import { verifyAccessToken } from '../utils/auth'
 import { prisma } from '../config'
+import { sendError } from '../utils/responseHelper'
+import { cacheService } from '../services/CacheService'
 import logger from '../utils/logger'
 
-/**
- * JWT Authentication Middleware
- */
+type UserAccountStatus = {
+  id: string
+  deletedAt: Date | null
+  lockedUntil: Date | null
+}
+
+const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountStatus | null> => {
+  const cacheKey = `auth:user:${userId}`
+  let user = await cacheService.get<UserAccountStatus>(cacheKey)
+
+  if (!user) {
+    user = (await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, deletedAt: true, lockedUntil: true },
+    })) as UserAccountStatus | null
+
+    if (user) {
+      await cacheService.set(cacheKey, user, 60) // 1 minute TTL
+    }
+  }
+
+  return user
+}
+
+const isAccountActive = (user: UserAccountStatus): boolean => {
+  return !user.deletedAt && !(user.lockedUntil && user.lockedUntil > new Date())
+}
+
 export const authenticate = async (
   req: Request,
   res: Response,
@@ -19,50 +42,33 @@ export const authenticate = async (
     const authHeader = req.headers.authorization
 
     if (!authHeader?.startsWith('Bearer ')) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-        code: 'NO_TOKEN',
-      })
+      sendError(res, 'Authentication required', 401, 'NO_TOKEN')
       return
     }
 
     const token = authHeader.substring(7)
-    const authService = new AuthService(prisma)
 
     try {
-      const decoded = authService.verifyAccessToken(token)
+      const decoded = verifyAccessToken(token)
 
-      // Check if user still exists and is active
-      const user = await authService.getUserById(decoded.userId)
+      // Cache user lookup to avoid DB hit on every request
+      const user = await getCachedUserAccountStatus(decoded.userId)
+
       if (!user) {
-        res.status(401).json({
-          success: false,
-          message: 'User not found',
-          code: 'USER_NOT_FOUND',
-        })
+        sendError(res, 'User not found', 401, 'USER_NOT_FOUND')
         return
       }
 
-      if (user.deletedAt) {
-        res.status(401).json({
-          success: false,
-          message: 'Account has been deactivated',
-          code: 'ACCOUNT_DEACTIVATED',
-        })
+      if (!isAccountActive(user)) {
+        if (user.deletedAt) {
+          sendError(res, 'Account has been deactivated', 401, 'ACCOUNT_DEACTIVATED')
+          return
+        }
+
+        sendError(res, 'Account is temporarily locked', 401, 'ACCOUNT_LOCKED')
         return
       }
 
-      if (user.lockedUntil && user.lockedUntil > new Date()) {
-        res.status(401).json({
-          success: false,
-          message: 'Account is temporarily locked',
-          code: 'ACCOUNT_LOCKED',
-        })
-        return
-      }
-
-      // Attach user to request
       req.user = {
         userId: decoded.userId,
         email: decoded.email,
@@ -71,38 +77,25 @@ export const authenticate = async (
 
       next()
     } catch (error) {
-      if (error instanceof Error && error.message === 'Token expired') {
-        res.status(401).json({
-          success: false,
-          message: 'Token expired',
-          code: 'TOKEN_EXPIRED',
-        })
+      // jwt.verify throws TokenExpiredError (name='TokenExpiredError') when token is expired
+      if (
+        error instanceof Error &&
+        (error.name === 'TokenExpiredError' || error.message === 'Token expired')
+      ) {
+        sendError(res, 'Token expired', 401, 'TOKEN_EXPIRED')
         return
       }
-
-      res.status(401).json({
-        success: false,
-        message: 'Invalid token',
-        code: 'INVALID_TOKEN',
-      })
+      sendError(res, 'Invalid token', 401, 'INVALID_TOKEN')
     }
   } catch (error) {
     logger.error(
       'Authentication middleware error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({
-      success: false,
-      message: 'Authentication error',
-      code: 'AUTH_ERROR',
-    })
+    sendError(res, 'Authentication error', 500, 'AUTH_ERROR')
   }
 }
 
-/**
- * Optional Authentication Middleware
- * Doesn't fail if no token provided, but attaches user if valid token exists
- */
 export const optionalAuth = async (
   req: Request,
   res: Response,
@@ -117,14 +110,17 @@ export const optionalAuth = async (
     }
 
     const token = authHeader.substring(7)
-    const authService = new AuthService(prisma)
 
     try {
-      const decoded = authService.verifyAccessToken(token)
-      req.user = {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: decoded.role,
+      const decoded = verifyAccessToken(token)
+      const user = await getCachedUserAccountStatus(decoded.userId)
+
+      if (user && isAccountActive(user)) {
+        req.user = {
+          userId: decoded.userId,
+          email: decoded.email,
+          role: decoded.role,
+        }
       }
     } catch {
       // Invalid token is OK for optional auth
@@ -140,27 +136,15 @@ export const optionalAuth = async (
   }
 }
 
-/**
- * Role-based Authorization Middleware
- */
 export const authorize = (...allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-        code: 'NO_TOKEN',
-      })
+      sendError(res, 'Authentication required', 401, 'NO_TOKEN')
       return
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
-      res.status(403).json({
-        success: false,
-        message: 'Insufficient permissions',
-        code: 'FORBIDDEN',
-        requiredRoles: allowedRoles,
-      })
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      sendError(res, 'Insufficient permissions', 403, 'FORBIDDEN')
       return
     }
 
@@ -168,25 +152,10 @@ export const authorize = (...allowedRoles: string[]) => {
   }
 }
 
-/**
- * Admin Authorization Middleware
- */
 export const authorizeAdmin = authorize('ADMIN', 'SUPERADMIN')
-
-/**
- * Instructor or Admin Authorization Middleware
- */
 export const authorizeInstructor = authorize('INSTRUCTOR', 'ADMIN', 'SUPERADMIN')
-
-/**
- * Super Admin Authorization Middleware
- */
 export const authorizeSuperAdmin = authorize('SUPERADMIN')
 
-/**
- * Request ID Middleware
- * Generates unique request ID for tracing
- */
 export const requestId = (req: Request, res: Response, next: NextFunction): void => {
   const requestId =
     (req.headers['x-request-id'] as string) ||
@@ -198,9 +167,6 @@ export const requestId = (req: Request, res: Response, next: NextFunction): void
   next()
 }
 
-/**
- * Request Logging Middleware
- */
 export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now()
 
@@ -218,7 +184,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
     }
 
     if (res.statusCode >= 500) {
-      logger.error('Request completed with error', undefined, logData)
+      logger.error('Request completed with error', new Error(`HTTP ${res.statusCode}`), logData)
     } else if (res.statusCode >= 400) {
       logger.warn('Request completed with client error', logData)
     } else {

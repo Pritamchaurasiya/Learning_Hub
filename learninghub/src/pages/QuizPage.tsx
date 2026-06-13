@@ -33,7 +33,7 @@ function QuizPage() {
   useDocumentTitle('Quiz Session')
   const navigate = useNavigate()
   const { quizId } = useParams<{ quizId: string }>()
-  const { addToast } = useStore()
+  const addToast = useStore(state => state.addToast)
 
   // Local state for active quiz session
   const [quizInfo, setQuizInfo] = useState<Quiz | null>(null)
@@ -147,8 +147,9 @@ function QuizPage() {
     })
   }, [])
 
+  const isTimeUp = timeRemaining <= 0
   useEffect(() => {
-    if (!quizInfo || result || timeRemaining <= 0) {
+    if (!quizInfo || result || isTimeUp) {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = undefined
@@ -163,7 +164,7 @@ function QuizPage() {
         timerRef.current = undefined
       }
     }
-  }, [quizInfo, result, timeRemaining <= 0, timerCallback])
+  }, [quizInfo, result, isTimeUp, timerCallback])
 
   useEffect(() => {
     if (
@@ -308,6 +309,7 @@ function QuizPage() {
                 whileHover={{ y: -8 }}
               >
                 <Card
+                  data-testid="quiz-card"
                   className="p-8 h-full border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] relative overflow-hidden flex flex-col bg-white dark:bg-gray-900 group cursor-pointer"
                   onClick={() => navigate(`/quiz/${q.id}`)}
                 >

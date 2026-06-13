@@ -65,7 +65,7 @@ describe('userService', () => {
     it('should upload user avatar', async () => {
       const mockFile = new File(['avatar'], 'avatar.jpg', { type: 'image/jpeg' })
       const mockResponse = {
-        avatar_url: 'https://example.com/avatar.jpg',
+        url: 'https://example.com/avatar.jpg',
       }
 
       // Mock global fetch for avatar upload (uses direct fetch, not fetchApi)

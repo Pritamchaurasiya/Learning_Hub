@@ -64,10 +64,17 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get)
 
   settings: {
     notifications: true,
+    dailyReminder: true,
+    progressUpdates: true,
+    achievements: true,
+    weeklyDigest: false,
     soundEffects: true,
     autoplay: false,
     compactMode: false,
     lowPerformanceMode: false,
+    showProfile: true,
+    showProgress: true,
+    showStreak: true,
   },
   updateSettings: newSettings => {
     set(state => ({ settings: { ...state.settings, ...newSettings } }))

@@ -34,11 +34,14 @@ export function useAdminAuth(): UseAdminAuthReturn {
 
   // Initialize from storage on mount
   useEffect(() => {
-    const storedAdmin = adminAuthService.getAdminUser()
-    if (storedAdmin && adminAuthService.isAuthenticated()) {
-      setAdmin(storedAdmin)
-      setIsAuthenticated(true)
-    }
+    ;(async () => {
+      await adminAuthService.initFromStorage()
+      const storedAdmin = adminAuthService.getAdminUser()
+      if (storedAdmin && adminAuthService.isAuthenticated()) {
+        setAdmin(storedAdmin)
+        setIsAuthenticated(true)
+      }
+    })()
   }, [])
 
   /**

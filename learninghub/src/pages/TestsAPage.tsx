@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -18,8 +18,11 @@ import {
   Search,
   BarChart3,
   Star,
+  Sparkles,
+  BrainCircuit,
 } from 'lucide-react'
 import { testsAService, TestA, TestQuestion, TestResult } from '../services/testsAService'
+import { aiTutorService } from '../services/aiTutorService'
 import { useStore } from '../stores/useStore'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
@@ -27,6 +30,8 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import { ProgressBar } from '../components/ui/ProgressBar'
+import { Modal } from '../components/ui/Modal'
+import { Input } from '../components/ui/Input'
 
 interface TestCardProps {
   test: TestA
@@ -40,6 +45,8 @@ interface QuestionCardProps {
   selectedAnswer: string | null
   isFlagged: boolean
   onAnswer: (optionId: string) => void
+  onConfidenceChange: (confidence: 'LOW' | 'MEDIUM' | 'HIGH') => void
+  confidence: 'LOW' | 'MEDIUM' | 'HIGH' | undefined
   onFlag: () => void
   onUnflag: () => void
 }
@@ -113,75 +120,135 @@ const TestCard = memo(({ test, onStart }: TestCardProps) => {
   )
 })
 
-const QuestionCard = memo(({
-  question,
-  currentIndex,
-  totalQuestions,
-  selectedAnswer,
-  isFlagged,
-  onAnswer,
-  onFlag,
-  onUnflag,
-}: QuestionCardProps) => {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Question {currentIndex + 1} of {totalQuestions}
-          </span>
-          <button
-            onClick={isFlagged ? onUnflag : onFlag}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
-              isFlagged
-                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200'
-            }`}
-          >
-            <Flag className="w-4 h-4" />
-            {isFlagged ? 'Flagged' : 'Flag'}
-          </button>
-        </div>
-        <div className="text-sm text-gray-500">
-          {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">{question.text}</h3>
-
-        <div className="space-y-3">
-          {question.options.map(option => (
-            <motion.button
-              key={option.id}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => onAnswer(option.id)}
-              className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                selectedAnswer === option.id
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+const QuestionCard = memo(
+  ({
+    question,
+    currentIndex,
+    totalQuestions,
+    selectedAnswer,
+    confidence,
+    isFlagged,
+    onAnswer,
+    onConfidenceChange,
+    onFlag,
+    onUnflag,
+  }: QuestionCardProps) => {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Question {currentIndex + 1} of {totalQuestions}
+            </span>
+            <button
+              onClick={isFlagged ? onUnflag : onFlag}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                isFlagged
+                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200'
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              <Flag className="w-4 h-4" />
+              {isFlagged ? 'Flagged' : 'Flag'}
+            </button>
+          </div>
+          <div className="text-sm text-gray-500">
+            {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
+            {question.text}
+          </h3>
+
+          <div className="space-y-3">
+            {question.question_type === 'subjective' || question.type === 'subjective' ? (
+              <textarea
+                value={selectedAnswer || ''}
+                onChange={(e) => onAnswer(e.target.value)}
+                placeholder="Type your detailed answer here..."
+                className="w-full min-h-[200px] p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-y"
+              />
+            ) : (
+              question.options.map(option => (
+                <motion.button
+                  key={option.id}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => onAnswer(option.id)}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
                     selectedAnswer === option.id
-                      ? 'border-blue-500 bg-blue-500'
-                      : 'border-gray-300 dark:border-gray-600'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  {selectedAnswer === option.id && <CheckCircle className="w-4 h-4 text-white" />}
-                </div>
-                <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
-              </div>
-            </motion.button>
-          ))}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        selectedAnswer === option.id
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      {selectedAnswer === option.id && <CheckCircle className="w-4 h-4 text-white" />}
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
+                  </div>
+                </motion.button>
+              ))
+            )}
+          </div>
+
+          {/* Confidence Meter */}
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              How confident are you in this answer?
+            </h4>
+            <div className="flex gap-3">
+              {[
+                {
+                  level: 'LOW',
+                  label: 'Low',
+                  color:
+                    'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50',
+                  activeColor:
+                    'bg-red-500 text-white dark:bg-red-600 dark:text-white ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900',
+                },
+                {
+                  level: 'MEDIUM',
+                  label: 'Medium',
+                  color:
+                    'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50',
+                  activeColor:
+                    'bg-yellow-500 text-white dark:bg-yellow-600 dark:text-white ring-2 ring-yellow-500 ring-offset-2 dark:ring-offset-gray-900',
+                },
+                {
+                  level: 'HIGH',
+                  label: 'High',
+                  color:
+                    'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50',
+                  activeColor:
+                    'bg-green-500 text-white dark:bg-green-600 dark:text-white ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900',
+                },
+              ].map(({ level, label, color, activeColor }) => (
+                <button
+                  key={level}
+                  onClick={() => onConfidenceChange(level as any)}
+                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                    confidence === level ? activeColor : color
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
   const percentage = result.percentage ?? 0
@@ -190,12 +257,38 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
   const incorrectCount = result.incorrect_count ?? 0
   const timeTaken = result.time_taken ?? 0
 
+  // Calculate topic-wise breakdown
+  const topicBreakdown = useMemo(() => {
+    if (!result.question_results) return []
+
+    const topics = new Map<string, { total: number; correct: number }>()
+
+    result.question_results.forEach(q => {
+      const topic = q.topic ?? 'General'
+      const current = topics.get(topic) ?? { total: 0, correct: 0 }
+      topics.set(topic, {
+        total: current.total + 1,
+        correct: current.correct + (q.is_correct ? 1 : 0),
+      })
+    })
+
+    return Array.from(topics.entries())
+      .map(([topic, data]) => ({
+        topic,
+        total: data.total,
+        correct: data.correct,
+        percentage: Math.round((data.correct / data.total) * 100),
+      }))
+      .sort((a, b) => b.percentage - a.percentage) // Sort by performance
+  }, [result.question_results])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-2xl mx-auto"
+      className="max-w-4xl mx-auto space-y-8"
     >
+      {/* Top Results Card */}
       <Card className="text-center p-8">
         <div className="relative w-40 h-40 mx-auto mb-6">
           <svg className="w-full h-full transform -rotate-90">
@@ -276,6 +369,132 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
           </Button>
         </div>
       </Card>
+
+      {/* Topic-wise Breakdown */}
+      {topicBreakdown.length > 0 && (
+        <Card className="p-8">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Topic Performance
+          </h3>
+          <div className="space-y-4">
+            {topicBreakdown.map(topic => (
+              <div key={topic.topic} className="flex items-center gap-4">
+                <div className="w-1/3 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                  {topic.topic}
+                </div>
+                <div className="w-2/3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>
+                      {topic.correct} / {topic.total} correct
+                    </span>
+                    <span>{topic.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${
+                        topic.percentage >= 80
+                          ? 'bg-green-500'
+                          : topic.percentage >= 50
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                      }`}
+                      style={{ width: `${topic.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Review Section */}
+      {result.question_results && result.question_results.length > 0 && (
+        <Card className="p-8">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Detailed Review</h3>
+          <div className="space-y-8">
+            {result.question_results.map((q, idx) => (
+              <div
+                key={q.question_id || idx}
+                className="border-b border-gray-100 dark:border-gray-800 pb-8 last:border-0"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {idx + 1}
+                    </span>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white flex-1">
+                      {q.question_text}
+                    </h4>
+                  </div>
+                  <Badge
+                    className={
+                      q.is_correct
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                    }
+                  >
+                    {q.is_correct ? 'Correct' : 'Incorrect'}
+                  </Badge>
+                </div>
+
+                <div className="pl-11 space-y-4">
+                  {/* Options */}
+                  <div className="space-y-2">
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-start gap-3">
+                      <div className="mt-0.5">
+                        <span className="text-sm font-medium text-gray-500">Your Answer:</span>
+                      </div>
+                      <div className="text-gray-700 dark:text-gray-300">
+                        {q.selected_options?.[0]?.text || 'No answer'}
+                      </div>
+                    </div>
+
+                    {!q.is_correct && (
+                      <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
+                        <div className="mt-0.5">
+                          <span className="text-sm font-medium text-green-600 dark:text-green-500">
+                            Correct Answer:
+                          </span>
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          {q.correct_options?.[0]?.text || 'Not available'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confidence */}
+                  {q.confidence && (
+                    <div className="flex items-center gap-2 text-sm mt-4">
+                      <span className="text-gray-500">Confidence level:</span>
+                      <Badge
+                        className={
+                          q.confidence === 'HIGH'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : q.confidence === 'MEDIUM'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        }
+                      >
+                        {q.confidence}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Explanation */}
+                  {q.explanation && (
+                    <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-sm">
+                      <span className="font-semibold block mb-1">Explanation:</span>
+                      {q.explanation}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </motion.div>
   )
 })
@@ -283,17 +502,15 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
 const TestsAPage = () => {
   const { testId } = useParams<{ testId: string }>()
   const navigate = useNavigate()
-  const {
-    testsA,
-    startTestAttempt,
-    answerQuestion,
-    flagQuestion,
-    unflagQuestion,
-    navigateToQuestion,
-    setTestQuestions,
-    submitTest,
-    resetTestState,
-  } = useStore()
+  const testsA = useStore(state => state.testsA)
+  const startTestAttempt = useStore(state => state.startTestAttempt)
+  const answerQuestion = useStore(state => state.answerQuestion)
+  const flagQuestion = useStore(state => state.flagQuestion)
+  const unflagQuestion = useStore(state => state.unflagQuestion)
+  const navigateToQuestion = useStore(state => state.navigateToQuestion)
+  const setTestQuestions = useStore(state => state.setTestQuestions)
+  const submitTest = useStore(state => state.submitTest)
+  const resetTestState = useStore(state => state.resetTestState)
 
   const [tests, setTests] = useState<TestA[]>([])
   const [loading, setLoading] = useState(true)
@@ -301,12 +518,24 @@ const TestsAPage = () => {
   const [filter, setFilter] = useState({ mode: '', difficulty: '' })
   const [searchQuery, setSearchQuery] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasAccess, setHasAccess] = useState(true)
+  
+  // AI Test Generation State
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiTestMode, setAiTestMode] = useState<'adaptive' | 'weak_area'>('adaptive')
+  const [aiTestTopic, setAiTestTopic] = useState('')
+  const [aiTestDifficulty, setAiTestDifficulty] = useState<'easy'|'medium'|'hard'>('medium')
+  const [aiTestCount, setAiTestCount] = useState<number>(10)
+
   const submitAttempted = useRef(false)
+  const addToast = useStore(state => state.addToast)
 
   useEffect(() => {
-    const loadTests = async () => {
+    const loadAccessAndTests = async () => {
       try {
         setLoading(true)
+        setHasAccess(true)
         const response = await testsAService.getTests(filter)
         if (response.status === 'success') {
           setTests(response.data)
@@ -319,12 +548,20 @@ const TestsAPage = () => {
     }
 
     if (!testId && !testsA.isActive) {
-      void loadTests()
+      void loadAccessAndTests()
+    } else {
+      setHasAccess(true)
     }
   }, [filter, testId, testsA.isActive])
 
   const handleStartTest = useCallback(
     async (test: TestA) => {
+      if (!hasAccess) {
+        addToast({ message: 'This is a premium feature. Please upgrade your subscription to unlock Tests A+.', type: 'error' })
+        navigate('/pricing')
+        return
+      }
+
       try {
         setError(null)
         startTestAttempt(test.id, test.title, test.question_count, test.time_limit_minutes)
@@ -360,6 +597,68 @@ const TestsAPage = () => {
     },
     [startTestAttempt, setTestQuestions, navigate, resetTestState]
   )
+
+  const handleGenerateAITest = useCallback(async () => {
+    if (!hasAccess) {
+      addToast({ message: 'AI Test Generation is a premium feature.', type: 'error' })
+      return
+    }
+    
+    try {
+      setIsGenerating(true)
+      setError(null)
+      let response;
+      if (aiTestMode === 'weak_area') {
+        response = await aiTutorService.generateWeakAreaTest(aiTestCount)
+      } else {
+        if (!aiTestTopic.trim()) {
+          addToast({ message: 'Please enter a topic for Adaptive Generation.', type: 'error' })
+          setIsGenerating(false)
+          return
+        }
+        response = await aiTutorService.generatePracticeQuestions(aiTestTopic, aiTestDifficulty, aiTestCount)
+      }
+
+      if (response.status === 'success' && response.data.questions) {
+        const data = response.data
+        const generatedTestId = `ai-test-${Date.now()}`
+        const testTitle = aiTestMode === 'weak_area' ? 'Targeted Weak Area Mock' : `Adaptive: ${aiTestTopic}`
+        
+        startTestAttempt(generatedTestId, testTitle, data.question_count, data.question_count * 2)
+
+        setTestQuestions(
+          data.questions.map((q: any, i: number) => ({
+            id: `q-${Date.now()}-${i}`,
+            text: q.text ?? '',
+            question_type: 'mcq',
+            difficulty: q.difficulty === 'hard' ? 0.8 : q.difficulty === 'medium' ? 0.5 : 0.2,
+            bloom_level: q.bloom_level ?? 'apply',
+            options: q.options ?? [],
+            order: i,
+            marks: 1,
+            correct_option_id: q.correct_option_id,
+            explanation: q.explanation,
+          })),
+          {
+            testId: generatedTestId,
+            testTitle: testTitle,
+            totalQuestions: data.question_count,
+            timeLimit: data.question_count * 2,
+          },
+          `attempt-${Date.now()}`
+        )
+        setIsAIModalOpen(false)
+        navigate(`/tests-a/${generatedTestId}`)
+      } else {
+        throw new Error((response.data as any).error || 'Failed to generate test.')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'AI Test Generation failed')
+      addToast({ message: 'Failed to generate AI Test', type: 'error' })
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [hasAccess, aiTestMode, aiTestCount, aiTestTopic, aiTestDifficulty, startTestAttempt, setTestQuestions, navigate, addToast])
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || submitAttempted.current) return
@@ -408,11 +707,16 @@ const TestsAPage = () => {
   }, [testsA.isActive, testsA.timeRemaining, testsA.isSubmitting, timerCallback])
 
   useEffect(() => {
-    if (testsA.timeRemaining === 0 && testsA.isActive && !testsA.isSubmitting && !submitAttempted.current) {
+    if (
+      testsA.timeRemaining === 0 &&
+      testsA.isActive &&
+      !testsA.isSubmitting &&
+      !submitAttempted.current
+    ) {
       submitAttempted.current = true
       void handleSubmit()
     }
-  }, [testsA.timeRemaining, testsA.isActive, testsA.isSubmitting])
+  }, [testsA.timeRemaining, testsA.isActive, testsA.isSubmitting, handleSubmit])
 
   const filteredTests = useMemo(
     () =>
@@ -441,7 +745,7 @@ const TestsAPage = () => {
     )
   }
 
-  if (error && !testsA.isActive) {
+  if (error && !testsA.isActive && tests.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -548,8 +852,12 @@ const TestsAPage = () => {
                 currentIndex={testsA.currentQuestionIndex}
                 totalQuestions={testsA.questions.length}
                 selectedAnswer={selectedAnswer}
+                confidence={testsA.confidences[currentQuestion.id]}
                 isFlagged={isFlagged}
                 onAnswer={optionId => answerQuestion(currentQuestion.id, optionId)}
+                onConfidenceChange={level =>
+                  useStore.getState().setConfidence(currentQuestion.id, level)
+                }
                 onFlag={() => flagQuestion(currentQuestion.id)}
                 onUnflag={() => unflagQuestion(currentQuestion.id)}
               />
@@ -612,12 +920,54 @@ const TestsAPage = () => {
       <SEO title="Tests A+" description="Take practice tests and improve your skills" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tests A+</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Practice with our comprehensive test collection and track your progress
-          </p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tests A+</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Practice with our comprehensive test collection and track your progress
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsAIModalOpen(true)}
+            variant="primary"
+            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25"
+          >
+            <Sparkles className="w-5 h-5" />
+            AI Custom Mock
+          </Button>
         </div>
+
+        {hasAccess === false && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 bg-gradient-to-r from-primary-500/10 to-purple-500/10 border border-primary-200 dark:border-primary-900/50 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6"
+          >
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <Star className="w-5 h-5 text-primary-500 fill-current" /> Unlock Tests A+ Elite
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                You need a premium subscription to start taking mock tests and access deep analytics.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/pricing')}
+              className="shrink-0 shadow-lg shadow-primary-500/20"
+            >
+              View Plans
+            </Button>
+          </motion.div>
+        )}
+
+        {error && (
+          <div
+            role="status"
+            className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+          >
+            {error}
+          </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
@@ -674,6 +1024,123 @@ const TestsAPage = () => {
           </Card>
         )}
       </div>
+
+      <Modal
+        isOpen={isAIModalOpen}
+        onClose={() => !isGenerating && setIsAIModalOpen(false)}
+        title="AI Dynamic Test Generation"
+      >
+        <div className="space-y-6 py-4">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1.5 rounded-2xl">
+            <button
+              onClick={() => setAiTestMode('adaptive')}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                aiTestMode === 'adaptive'
+                  ? 'bg-white dark:bg-gray-700 text-purple-600 shadow-md'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Adaptive Subject
+            </button>
+            <button
+              onClick={() => setAiTestMode('weak_area')}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                aiTestMode === 'weak_area'
+                  ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-md'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <BrainCircuit className="w-4 h-4" /> Target Weak Areas
+            </button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {aiTestMode === 'adaptive' ? (
+              <motion.div
+                key="adaptive"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Subject / Topic
+                  </label>
+                  <Input
+                    placeholder="e.g. Advanced TypeScript Generics"
+                    value={aiTestTopic}
+                    onChange={(e) => setAiTestTopic(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Base Difficulty
+                  </label>
+                  <select
+                    value={aiTestDifficulty}
+                    onChange={(e) => setAiTestDifficulty(e.target.value as any)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="weak_area"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                  <p className="text-sm text-indigo-800 dark:text-indigo-300">
+                    The AI Engine will analyze your historical Topic Performance and generate a specialized test heavily weighted towards the areas where you are <strong>Developing</strong> or <strong>Weak</strong>.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Number of Questions
+            </label>
+            <input
+              type="range"
+              min="5"
+              max="20"
+              step="5"
+              value={aiTestCount}
+              onChange={(e) => setAiTestCount(parseInt(e.target.value))}
+              className="w-full accent-purple-600"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>5</span>
+              <span>{aiTestCount} Questions</span>
+              <span>20</span>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleGenerateAITest}
+            disabled={isGenerating || (!aiTestTopic.trim() && aiTestMode === 'adaptive')}
+            className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 border-none text-white shadow-lg"
+          >
+            {isGenerating ? (
+              <span className="animate-pulse flex items-center gap-2">
+                <BrainCircuit className="w-5 h-5 animate-spin" /> Neural Syncing...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5" /> Generate Deep Learning Mock
+              </span>
+            )}
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

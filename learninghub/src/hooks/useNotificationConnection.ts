@@ -1,62 +1,89 @@
-/**
- * useNotificationConnection Hook
- * Connects to WebSocket notification service when user is authenticated
- * Integrates with the Zustand store for global notification state
- */
-
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useStore } from '../stores/useStore'
-import { notificationService } from '../services/notificationService'
+import { type Notification } from '../services/notificationService'
+import { useWebSocket } from './useWebSocket'
 
+interface SocketNotification {
+  id?: string
+  title: string
+  message: string
+  type: Notification['type']
+  read?: boolean
+  isRead?: boolean
+  createdAt?: string
+}
+
+function normalizeNotification(data: SocketNotification): Omit<Notification, 'id' | 'createdAt'> {
+  return {
+    title: data.title,
+    message: data.message,
+    type: data.type,
+    isRead: data.isRead ?? data.read ?? false,
+  }
+}
+
+/**
+ * Manages real-time notification WebSocket connection.
+ *
+ * Key design decisions:
+ * - fetchNotifications is called ONCE on mount (guarded by fetchedRef)
+ * - WebSocket connect is called ONCE per auth session (guarded by connectedRef)
+ * - addNotification is accessed via getState() to avoid dependency-triggered re-renders
+ * - This prevents the infinite re-render loop that was causing dashboard freezes
+ */
 export function useNotificationConnection() {
-  const { auth, addNotification, markNotificationAsRead, unreadCount } = useStore()
+  const auth = useStore(s => s.auth)
+  const unreadCount = useStore(s => s.unreadCount)
+  const ws = useWebSocket()
+  const connectedRef = useRef(false)
+  const fetchedRef = useRef(false)
 
   useEffect(() => {
-    if (!auth.isAuthenticated) {
-      notificationService.disconnect()
-      return
-    }
-
-    // Get token from localStorage
     const token = localStorage.getItem('token')
-    if (!token) {
-      notificationService.disconnect()
+
+    if (!auth.isAuthenticated || !token) {
+      ws.disconnect()
+      connectedRef.current = false
+      fetchedRef.current = false
       return
     }
 
-    // Connect to WebSocket with auth token
-    notificationService.connect(token)
+    if (!connectedRef.current) {
+      ws.connect(token)
+      connectedRef.current = true
+    }
 
-    // Listen for new notifications
-    const unsubscribe = notificationService.onNotification(notification => {
-      // Transform backend notification format to frontend format
-      // Backend uses 'read', frontend uses 'isRead'
-      addNotification({
-        title: notification.title,
-        message: notification.message,
-        type: notification.type,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        isRead: (notification as any).read ?? false,
-      })
+    if (!fetchedRef.current) {
+      fetchedRef.current = true
+      void useStore.getState().fetchNotifications()
+    }
+
+    const unsubscribe = ws.on('notification', (data: SocketNotification) => {
+      useStore.getState().addNotification(normalizeNotification(data))
     })
 
-    // Initial fetch of notifications
-    const { fetchNotifications } = useStore.getState()
-    void fetchNotifications()
+    const handleTokenRefreshed = () => {
+      const newToken = localStorage.getItem('token')
+      if (newToken && auth.isAuthenticated) {
+        ws.disconnect()
+        connectedRef.current = false
+        ws.connect(newToken)
+        connectedRef.current = true
+      }
+    }
+
+    window.addEventListener('auth:token-refreshed', handleTokenRefreshed)
 
     return () => {
       unsubscribe()
+      window.removeEventListener('auth:token-refreshed', handleTokenRefreshed)
     }
-  }, [auth.isAuthenticated, addNotification])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.isAuthenticated])
 
-  // Mark notification as read via WebSocket
-  const markAsRead = (id: string) => {
-    notificationService.sendAck(id)
-    markNotificationAsRead(id)
+  const markAsRead = async (id: string) => {
+    useStore.getState().markNotificationAsRead(id)
   }
 
-  return {
-    unreadCount,
-    markAsRead,
-  }
+  return { unreadCount, markAsRead }
 }

@@ -71,8 +71,17 @@ Object.defineProperty(window, 'localStorage', {
 vi.mock('import.meta.env', () => ({
   DEV: true,
   PROD: false,
-  VITE_API_URL: 'http://localhost:8000/api/v1',
+  VITE_API_URL: 'http://localhost:5000/api/v1',
   VITE_APP_URL: 'http://localhost:5173',
+}))
+
+// Mock virtual:pwa-register/react
+vi.mock('virtual:pwa-register/react', () => ({
+  useRegisterSW: () => ({
+    offlineReady: [false, vi.fn()],
+    needRefresh: [false, vi.fn()],
+    updateServiceWorker: vi.fn(),
+  }),
 }))
 
 // Suppress console errors in tests unless explicitly testing errors

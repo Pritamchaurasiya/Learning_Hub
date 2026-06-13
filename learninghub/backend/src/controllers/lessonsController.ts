@@ -1,6 +1,13 @@
 import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
+import {
+  sendSuccess,
+  sendUnauthorized,
+  sendNotFound,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 const parseResources = (resources: string | null): unknown[] => {
   if (!resources) {
@@ -18,7 +25,7 @@ const toMinutes = (durationSeconds: number): number => Math.max(1, Math.round(du
 
 export const getCourseLessons = async (req: Request, res: Response): Promise<void> => {
   try {
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
     const userId = req.user?.userId
 
     const course = await prisma.course.findUnique({
@@ -27,7 +34,7 @@ export const getCourseLessons = async (req: Request, res: Response): Promise<voi
     })
 
     if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
+      sendNotFound(res, 'Course not found')
       return
     }
 
@@ -78,7 +85,7 @@ export const getCourseLessons = async (req: Request, res: Response): Promise<voi
       })),
     }))
 
-    res.json({ status: 'success', data: sections })
+    sendSuccess(res, sections)
   } catch (error) {
     logger.error(
       'GetCourseLessons error',
@@ -87,13 +94,13 @@ export const getCourseLessons = async (req: Request, res: Response): Promise<voi
         courseId: req.params.id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getLesson = async (req: Request, res: Response): Promise<void> => {
   try {
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
     const lessonId = req.params.lessonId as string
     const userId = req.user?.userId
 
@@ -116,7 +123,7 @@ export const getLesson = async (req: Request, res: Response): Promise<void> => {
     })
 
     if (lesson?.module.courseId !== courseId) {
-      res.status(404).json({ status: 'error', message: 'Lesson not found in this course' })
+      sendNotFound(res, 'Lesson not found in this course')
       return
     }
 
@@ -128,27 +135,24 @@ export const getLesson = async (req: Request, res: Response): Promise<void> => {
       isCompleted = !!completion
     }
 
-    res.json({
-      status: 'success',
-      data: {
-        id: lesson.id,
-        title: lesson.title,
-        description: lesson.description ?? '',
-        video_url: lesson.videoUrl,
-        duration: toMinutes(lesson.duration),
-        order: lesson.order,
-        is_free: lesson.isFree,
-        transcript: lesson.transcript ?? (lesson.module.course.content || ''),
-        resources: parseResources(lesson.resources),
-        completed: isCompleted,
-      },
+    sendSuccess(res, {
+      id: lesson.id,
+      title: lesson.title,
+      description: lesson.description ?? '',
+      video_url: lesson.videoUrl,
+      duration: toMinutes(lesson.duration),
+      order: lesson.order,
+      is_free: lesson.isFree,
+      transcript: lesson.transcript ?? (lesson.module.course.content || ''),
+      resources: parseResources(lesson.resources),
+      completed: isCompleted,
     })
   } catch (error) {
     logger.error('GetLesson error', error instanceof Error ? error : new Error(String(error)), {
       courseId: req.params.id,
       lessonId: req.params.lessonId,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -156,10 +160,10 @@ export const getCourseProgress = async (req: Request, res: Response): Promise<vo
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
 
     // Run all 3 queries concurrently instead of sequentially
     const [progress, completedLessons, totalLessons] = await Promise.all([
@@ -175,34 +179,28 @@ export const getCourseProgress = async (req: Request, res: Response): Promise<vo
     ])
 
     if (!progress) {
-      res.json({
-        status: 'success',
-        data: {
-          course_id: courseId,
-          enrollment_id: '',
-          completed_lessons: completedLessons,
-          total_lessons: totalLessons,
-          progress_percent: 0,
-          is_completed: false,
-          completed_at: null,
-          last_accessed_at: new Date().toISOString(),
-        },
+      sendSuccess(res, {
+        course_id: courseId,
+        enrollment_id: '',
+        completed_lessons: completedLessons,
+        total_lessons: totalLessons,
+        progress_percent: 0,
+        is_completed: false,
+        completed_at: null,
+        last_accessed_at: new Date().toISOString(),
       })
       return
     }
 
-    res.json({
-      status: 'success',
-      data: {
-        course_id: courseId,
-        enrollment_id: progress.id,
-        completed_lessons: completedLessons,
-        total_lessons: totalLessons,
-        progress_percent: progress.progress,
-        is_completed: progress.status === 'COMPLETED',
-        completed_at: progress.status === 'COMPLETED' ? progress.updatedAt.toISOString() : null,
-        last_accessed_at: progress.updatedAt.toISOString(),
-      },
+    sendSuccess(res, {
+      course_id: courseId,
+      enrollment_id: progress.id,
+      completed_lessons: completedLessons,
+      total_lessons: totalLessons,
+      progress_percent: progress.progress,
+      is_completed: progress.status === 'COMPLETED',
+      completed_at: progress.status === 'COMPLETED' ? progress.updatedAt.toISOString() : null,
+      last_accessed_at: progress.updatedAt.toISOString(),
     })
   } catch (error) {
     logger.error(
@@ -213,16 +211,16 @@ export const getCourseProgress = async (req: Request, res: Response): Promise<vo
         courseId: req.params.id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const updateLessonProgress = async (req: Request, res: Response): Promise<void> => {
-  const { id: courseId } = req.params
+  const courseId = (req.params.courseId ?? req.params.id) as string
   const { progress_percent, completed } = req.body
   const userId = req.user?.userId
   if (!userId) {
-    res.status(401).json({ status: 'error', message: 'Authentication required' })
+    sendUnauthorized(res)
     return
   }
 
@@ -233,13 +231,13 @@ export const updateLessonProgress = async (req: Request, res: Response): Promise
       include: { module: { select: { courseId: true } } },
     })
     if (lesson?.module.courseId !== courseId) {
-      res.status(404).json({ status: 'error', message: 'Lesson not found in this course' })
+      sendNotFound(res, 'Lesson not found in this course')
       return
     }
 
     const normalizedProgress = Math.max(0, Math.min(100, Number(progress_percent)))
     if (Number.isNaN(normalizedProgress)) {
-      res.status(400).json({ status: 'error', message: 'Invalid progress percent' })
+      sendValidationError(res, 'Invalid progress percent')
       return
     }
 
@@ -257,13 +255,10 @@ export const updateLessonProgress = async (req: Request, res: Response): Promise
         status: completed || normalizedProgress === 100 ? 'COMPLETED' : 'IN_PROGRESS',
       },
     })
-    res.json({
-      status: 'success',
-      data: {
-        lesson_id: req.params.lessonId,
-        progress_percent: normalizedProgress,
-        completed: Boolean(completed ?? normalizedProgress === 100),
-      },
+    sendSuccess(res, {
+      lesson_id: req.params.lessonId,
+      progress_percent: normalizedProgress,
+      completed: Boolean(completed ?? normalizedProgress === 100),
     })
   } catch (error) {
     logger.error(
@@ -274,16 +269,16 @@ export const updateLessonProgress = async (req: Request, res: Response): Promise
         lessonId: req.params.lessonId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const completeLesson = async (req: Request, res: Response): Promise<void> => {
-  const { id: courseId } = req.params
+  const courseId = (req.params.courseId ?? req.params.id) as string
   const lessonId = req.params.lessonId as string
   const userId = req.user?.userId
   if (!userId) {
-    res.status(401).json({ status: 'error', message: 'Authentication required' })
+    sendUnauthorized(res)
     return
   }
 
@@ -293,7 +288,7 @@ export const completeLesson = async (req: Request, res: Response): Promise<void>
       select: { id: true, module: { select: { courseId: true } } },
     })
     if (lesson?.module.courseId !== courseId) {
-      res.status(404).json({ status: 'error', message: 'Lesson not found in this course' })
+      sendNotFound(res, 'Lesson not found in this course')
       return
     }
 
@@ -358,10 +353,9 @@ export const completeLesson = async (req: Request, res: Response): Promise<void>
       }
     }
 
-    res.json({
-      status: 'success',
-      message: alreadyCompleted ? 'Lesson was already completed' : 'Lesson completed',
-      data: {
+    sendSuccess(
+      res,
+      {
         course_id: courseId,
         lesson_id: lessonId,
         completed_lessons: completedLessons,
@@ -370,7 +364,8 @@ export const completeLesson = async (req: Request, res: Response): Promise<void>
         is_course_completed: progress.status === 'COMPLETED',
         xp_awarded: awardedXP,
       },
-    })
+      alreadyCompleted ? 'Lesson was already completed' : 'Lesson completed'
+    )
   } catch (error) {
     logger.error(
       'CompleteLesson error',
@@ -380,7 +375,7 @@ export const completeLesson = async (req: Request, res: Response): Promise<void>
         lessonId: req.params.lessonId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -388,22 +383,20 @@ export const getLessonNotes = async (req: Request, res: Response): Promise<void>
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
+    const lessonId = req.params.lessonId as string | undefined
 
     const note = await prisma.note.findFirst({
-      where: { userId, courseId },
+      where: { userId, courseId, lessonId: lessonId ?? null },
       select: { content: true, updatedAt: true },
     })
 
-    res.json({
-      status: 'success',
-      data: {
-        notes: note?.content ?? '',
-        updated_at: note?.updatedAt ?? null,
-      },
+    sendSuccess(res, {
+      notes: note?.content ?? '',
+      updated_at: note?.updatedAt ?? null,
     })
   } catch (error) {
     logger.error(
@@ -414,7 +407,7 @@ export const getLessonNotes = async (req: Request, res: Response): Promise<void>
         courseId: req.params?.id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -422,24 +415,43 @@ export const saveLessonNotes = async (req: Request, res: Response): Promise<void
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
+    const lessonId = (req.params.lessonId as string | undefined) ?? null
     const notes = typeof req.body.notes === 'string' ? req.body.notes : ''
 
-    await prisma.note.upsert({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId,
+    if (lessonId !== null) {
+      await prisma.note.upsert({
+        where: {
+          userId_courseId_lessonId: {
+            userId,
+            courseId,
+            lessonId,
+          },
         },
-      },
-      update: { content: notes, updatedAt: new Date() },
-      create: { userId, courseId, content: notes },
-    })
+        update: { content: notes, updatedAt: new Date() },
+        create: { userId, courseId, lessonId, content: notes },
+      })
+    } else {
+      const existing = await prisma.note.findFirst({
+        where: { userId, courseId, lessonId: null },
+        select: { id: true },
+      })
+      if (existing) {
+        await prisma.note.update({
+          where: { id: existing.id },
+          data: { content: notes, updatedAt: new Date() },
+        })
+      } else {
+        await prisma.note.create({
+          data: { userId, courseId, lessonId: null, content: notes },
+        })
+      }
+    }
 
-    res.json({ status: 'success', message: 'Notes saved' })
+    sendSuccess(res, null, 'Notes saved')
   } catch (error) {
     logger.error(
       'SaveLessonNotes error',
@@ -449,13 +461,13 @@ export const saveLessonNotes = async (req: Request, res: Response): Promise<void
         courseId: req.params?.id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getNextLesson = async (req: Request, res: Response): Promise<void> => {
   try {
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
     const currentLessonId = req.params.lessonId as string
     const userId = req.user?.userId
 
@@ -466,11 +478,11 @@ export const getNextLesson = async (req: Request, res: Response): Promise<void> 
     })
 
     if (!currentLesson) {
-      res.status(404).json({ status: 'error', message: 'Current lesson not found' })
+      sendNotFound(res, 'Current lesson not found')
       return
     }
     if (currentLesson.module.courseId !== courseId) {
-      res.status(404).json({ status: 'error', message: 'Lesson not found in this course' })
+      sendNotFound(res, 'Lesson not found in this course')
       return
     }
 
@@ -522,11 +534,7 @@ export const getNextLesson = async (req: Request, res: Response): Promise<void> 
       })
 
       if (!nextModule || nextModule.lessons.length === 0) {
-        res.json({
-          status: 'success',
-          message: 'This is the last lesson',
-          data: null,
-        })
+        sendSuccess(res, null, 'This is the last lesson')
         return
       }
 
@@ -538,20 +546,17 @@ export const getNextLesson = async (req: Request, res: Response): Promise<void> 
         })
         isCompleted = !!completion
       }
-      res.json({
-        status: 'success',
-        data: {
-          id: firstNextLesson.id,
-          title: firstNextLesson.title,
-          description: firstNextLesson.description ?? '',
-          video_url: firstNextLesson.videoUrl,
-          duration: toMinutes(firstNextLesson.duration),
-          order: firstNextLesson.order,
-          is_free: firstNextLesson.isFree,
-          transcript: firstNextLesson.transcript ?? '',
-          resources: parseResources(firstNextLesson.resources),
-          completed: isCompleted,
-        },
+      sendSuccess(res, {
+        id: firstNextLesson.id,
+        title: firstNextLesson.title,
+        description: firstNextLesson.description ?? '',
+        video_url: firstNextLesson.videoUrl,
+        duration: toMinutes(firstNextLesson.duration),
+        order: firstNextLesson.order,
+        is_free: firstNextLesson.isFree,
+        transcript: firstNextLesson.transcript ?? '',
+        resources: parseResources(firstNextLesson.resources),
+        completed: isCompleted,
       })
       return
     }
@@ -563,33 +568,30 @@ export const getNextLesson = async (req: Request, res: Response): Promise<void> 
       })
       isCompleted = !!completion
     }
-    res.json({
-      status: 'success',
-      data: {
-        id: nextLesson.id,
-        title: nextLesson.title,
-        description: nextLesson.description ?? '',
-        video_url: nextLesson.videoUrl,
-        duration: toMinutes(nextLesson.duration),
-        order: nextLesson.order,
-        is_free: nextLesson.isFree,
-        transcript: nextLesson.transcript ?? '',
-        resources: parseResources(nextLesson.resources),
-        completed: isCompleted,
-      },
+    sendSuccess(res, {
+      id: nextLesson.id,
+      title: nextLesson.title,
+      description: nextLesson.description ?? '',
+      video_url: nextLesson.videoUrl,
+      duration: toMinutes(nextLesson.duration),
+      order: nextLesson.order,
+      is_free: nextLesson.isFree,
+      transcript: nextLesson.transcript ?? '',
+      resources: parseResources(nextLesson.resources),
+      completed: isCompleted,
     })
   } catch (error) {
     logger.error('GetNextLesson error', error instanceof Error ? error : new Error(String(error)), {
       courseId: req.params.id,
       lessonId: req.params.lessonId,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getPreviousLesson = async (req: Request, res: Response): Promise<void> => {
   try {
-    const courseId = req.params.id as string
+    const courseId = (req.params.courseId ?? req.params.id) as string
     const currentLessonId = req.params.lessonId as string
     const userId = req.user?.userId
 
@@ -599,11 +601,11 @@ export const getPreviousLesson = async (req: Request, res: Response): Promise<vo
     })
 
     if (!currentLesson) {
-      res.status(404).json({ status: 'error', message: 'Current lesson not found' })
+      sendNotFound(res, 'Current lesson not found')
       return
     }
     if (currentLesson.module.courseId !== courseId) {
-      res.status(404).json({ status: 'error', message: 'Lesson not found in this course' })
+      sendNotFound(res, 'Lesson not found in this course')
       return
     }
 
@@ -655,11 +657,7 @@ export const getPreviousLesson = async (req: Request, res: Response): Promise<vo
       })
 
       if (!prevModule || prevModule.lessons.length === 0) {
-        res.json({
-          status: 'success',
-          message: 'This is the first lesson',
-          data: null,
-        })
+        sendSuccess(res, null, 'This is the first lesson')
         return
       }
 
@@ -671,20 +669,17 @@ export const getPreviousLesson = async (req: Request, res: Response): Promise<vo
         })
         isCompleted = !!completion
       }
-      res.json({
-        status: 'success',
-        data: {
-          id: lastPrevLesson.id,
-          title: lastPrevLesson.title,
-          description: lastPrevLesson.description ?? '',
-          video_url: lastPrevLesson.videoUrl,
-          duration: toMinutes(lastPrevLesson.duration),
-          order: lastPrevLesson.order,
-          is_free: lastPrevLesson.isFree,
-          transcript: lastPrevLesson.transcript ?? '',
-          resources: parseResources(lastPrevLesson.resources),
-          completed: isCompleted,
-        },
+      sendSuccess(res, {
+        id: lastPrevLesson.id,
+        title: lastPrevLesson.title,
+        description: lastPrevLesson.description ?? '',
+        video_url: lastPrevLesson.videoUrl,
+        duration: toMinutes(lastPrevLesson.duration),
+        order: lastPrevLesson.order,
+        is_free: lastPrevLesson.isFree,
+        transcript: lastPrevLesson.transcript ?? '',
+        resources: parseResources(lastPrevLesson.resources),
+        completed: isCompleted,
       })
       return
     }
@@ -696,20 +691,17 @@ export const getPreviousLesson = async (req: Request, res: Response): Promise<vo
       })
       isCompleted = !!completion
     }
-    res.json({
-      status: 'success',
-      data: {
-        id: prevLesson.id,
-        title: prevLesson.title,
-        description: prevLesson.description ?? '',
-        video_url: prevLesson.videoUrl,
-        duration: toMinutes(prevLesson.duration),
-        order: prevLesson.order,
-        is_free: prevLesson.isFree,
-        transcript: prevLesson.transcript ?? '',
-        resources: parseResources(prevLesson.resources),
-        completed: isCompleted,
-      },
+    sendSuccess(res, {
+      id: prevLesson.id,
+      title: prevLesson.title,
+      description: prevLesson.description ?? '',
+      video_url: prevLesson.videoUrl,
+      duration: toMinutes(prevLesson.duration),
+      order: prevLesson.order,
+      is_free: prevLesson.isFree,
+      transcript: prevLesson.transcript ?? '',
+      resources: parseResources(prevLesson.resources),
+      completed: isCompleted,
     })
   } catch (error) {
     logger.error(
@@ -720,6 +712,6 @@ export const getPreviousLesson = async (req: Request, res: Response): Promise<vo
         lessonId: req.params.lessonId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

@@ -3,6 +3,15 @@ import { prisma } from '../prismaClient'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import logger from '../utils/logger'
 import { Prisma } from '@prisma/client'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendNotFound,
+  sendValidationError,
+  sendForbidden,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 export const listLiveSessions = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -23,13 +32,14 @@ export const listLiveSessions = async (req: Request, res: Response): Promise<voi
       }),
     ])
 
-    res.json(createPaginatedResponse(sessions, total, page, limit))
+    const paginated = createPaginatedResponse(sessions, total, page, limit)
+    sendSuccess(res, paginated.data, undefined, 200, paginated.meta)
   } catch (error) {
     logger.error(
       '[LiveClassController] listLiveSessions error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -38,9 +48,7 @@ export const createLiveSession = async (req: Request, res: Response): Promise<vo
     // Role guard: only admin or instructor can create sessions
     const userRole = req.user?.role
     if (!userRole || !['ADMIN', 'SUPERADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      res
-        .status(403)
-        .json({ status: 'error', message: 'Only admins and instructors can create live sessions' })
+      sendForbidden(res, 'Only admins and instructors can create live sessions')
       return
     }
 
@@ -59,7 +67,7 @@ export const createLiveSession = async (req: Request, res: Response): Promise<vo
       },
     })
 
-    res.status(201).json({ status: 'success', data: session })
+    sendCreated(res, session)
   } catch (error) {
     logger.error(
       '[LiveClassController] createLiveSession error',
@@ -68,7 +76,7 @@ export const createLiveSession = async (req: Request, res: Response): Promise<vo
         userId: req.user?.userId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -78,24 +86,24 @@ export const joinLiveSession = async (req: Request, res: Response): Promise<void
     const userId = req.user?.userId
 
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     // Fetch session first to validate existence and check capacity
     const session = await prisma.liveSession.findUnique({ where: { id } })
     if (!session) {
-      res.status(404).json({ status: 'error', message: 'Session not found' })
+      sendNotFound(res, 'Session not found')
       return
     }
 
     if (session.status === 'completed') {
-      res.status(400).json({ status: 'error', message: 'Session has already ended' })
+      sendValidationError(res, 'Session has already ended')
       return
     }
 
     if (session.currentParticipants >= session.maxParticipants) {
-      res.status(400).json({ status: 'error', message: 'Session is full' })
+      sendValidationError(res, 'Session is full')
       return
     }
 
@@ -109,12 +117,12 @@ export const joinLiveSession = async (req: Request, res: Response): Promise<void
 
     if (result === 0) {
       // Race condition: another user filled the last spot
-      res.status(400).json({ status: 'error', message: 'Session is full' })
+      sendValidationError(res, 'Session is full')
       return
     }
 
     const updated = await prisma.liveSession.findUnique({ where: { id } })
-    res.json({ status: 'success', data: updated })
+    sendSuccess(res, updated)
   } catch (error) {
     logger.error(
       '[LiveClassController] joinLiveSession error',
@@ -124,6 +132,6 @@ export const joinLiveSession = async (req: Request, res: Response): Promise<void
         userId: req.user?.userId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

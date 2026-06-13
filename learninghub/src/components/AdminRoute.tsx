@@ -30,11 +30,11 @@ export function AdminRoute({
   fallback,
 }: AdminRouteProps) {
   const location = useLocation()
-  const { auth } = useStore()
+  const auth = useStore(state => state.auth)
   const { hasAnyPermission, hasAllPermissions, hasRole } = useAdminAuth()
 
   if (!auth.isAuthenticated) {
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />
+    return <Navigate to="/auth" state={{ from: location }} replace />
   }
 
   if (!auth.user) {
@@ -48,8 +48,8 @@ export function AdminRoute({
     )
   }
 
-  const userRole = auth.user.role?.toLowerCase()
-  const isAdminRole = userRole === 'admin' || userRole === 'superadmin' || userRole === 'moderator'
+  const userRole = (auth.user.role ?? '').toLowerCase()
+  const isAdminRole = ['admin', 'superadmin', 'moderator', 'instructor'].includes(userRole)
   if (!isAdminRole) {
     return (
       fallback ?? (

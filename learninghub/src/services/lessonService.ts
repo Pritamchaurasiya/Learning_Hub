@@ -138,7 +138,7 @@ export const lessonService = {
     }
   ): Promise<{ status: string; data: LessonProgressResponse }> {
     return fetchApi(`/courses/${courseSlug}/lessons/${lessonId}/progress`, {
-      method: 'POST',
+      method: 'PUT',
       body: JSON.stringify(progress),
     }) as Promise<{ status: string; data: LessonProgressResponse }>
   },
@@ -203,7 +203,7 @@ export const lessonService = {
     notes: string
   ): Promise<{ status: string; message: string }> {
     return fetchApi(`/courses/${courseSlug}/lessons/${lessonId}/notes`, {
-      method: 'POST',
+      method: 'PUT',
       body: JSON.stringify({ notes }),
     }) as Promise<{ status: string; message: string }>
   },

@@ -1,12 +1,38 @@
-﻿import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
-import { Lock, Mail, Sparkles, Eye, EyeOff } from 'lucide-react'
+import {
+  Lock,
+  Mail,
+  Sparkles,
+  Eye,
+  EyeOff,
+  Shield,
+  User,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
-import { Input } from '../components/ui/Input'
+import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
+
+interface FieldErrors {
+  email?: string
+  password?: string
+  confirmPassword?: string
+}
+
+const calculatePasswordStrength = (pass: string) => {
+  let score = 0
+  if (!pass) return score
+  if (pass.length > 8) score += 1
+  if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1
+  if (/[0-9]/.test(pass)) score += 1
+  if (/[^A-Za-z0-9]/.test(pass)) score += 1
+  return score
+}
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -15,8 +41,9 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-
-  const { setAuth, addToast } = useStore()
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const setAuth = useStore(state => state.setAuth)
+  const addToast = useStore(state => state.addToast)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -27,31 +54,58 @@ export default function AuthPage() {
   }
   const from = (location.state as LocationState | null)?.from?.pathname ?? '/dashboard'
 
+  useEffect(() => {
+    setFieldErrors({})
+  }, [isLogin])
+
+  // Read ?mode=signup from URL (used by HomePage's handleStartFree)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const mode = params.get('mode')
+    if (mode === 'signup') {
+      setIsLogin(false)
+    } else if (mode === 'login') {
+      setIsLogin(true)
+    }
+  }, [location.search])
+
+  const validate = (): boolean => {
+    const errors: FieldErrors = {}
+
+    if (!email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.email = 'Invalid email format'
+    }
+
+    if (!password) {
+      errors.password = 'Password is required'
+    } else if (!isLogin) {
+      if (password.length < 8) {
+        errors.password = 'Must be at least 8 characters'
+      } else if (!/[A-Z]/.test(password)) {
+        errors.password = 'Must contain an uppercase letter'
+      } else if (!/[a-z]/.test(password)) {
+        errors.password = 'Must contain a lowercase letter'
+      } else if (!/[0-9]/.test(password)) {
+        errors.password = 'Must contain a number'
+      } else if (!/[^A-Za-z0-9]/.test(password)) {
+        errors.password = 'Must contain a special character'
+      }
+    }
+
+    if (!isLogin && password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email.trim() || !password.trim()) {
-      addToast({ message: 'Please fill in all fields', type: 'error' })
-      return
-    }
-
-    if (!isLogin) {
-      if (password.length < 8) {
-        addToast({ message: 'Password must be at least 8 characters', type: 'error' })
-        return
-      }
-      if (password !== confirmPassword) {
-        addToast({ message: 'Passwords do not match', type: 'error' })
-        return
-      }
-      if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-        addToast({
-          message: 'Password must contain uppercase, lowercase, and a number',
-          type: 'error',
-        })
-        return
-      }
-    }
+    if (!validate()) return
 
     setLoading(true)
     try {
@@ -94,8 +148,40 @@ export default function AuthPage() {
     }
   }
 
+  const quickFillAdmin = () => {
+    setEmail('admin@learninghub.com')
+    setPassword('Admin@123!')
+  }
+
+  const quickFillStudent = () => {
+    setEmail('student@learninghub.com')
+    setPassword('Student@123!')
+  }
+
+  const fieldClass = (field: keyof FieldErrors) =>
+    `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
+      fieldErrors[field]
+        ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+    }`
+
+  const passwordFieldClass = (field: keyof FieldErrors) =>
+    `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-10 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
+      fieldErrors[field]
+        ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+    }`
+
   return (
     <AnimatedPage>
+      <SEO
+        title={isLogin ? 'Sign In - LearningHub' : 'Create Account - LearningHub'}
+        description={
+          isLogin
+            ? 'Sign in to access your LearningHub dashboard'
+            : 'Join LearningHub to master your skills'
+        }
+      />
       <div className="min-h-[80vh] flex items-center justify-center px-4 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -151,60 +237,199 @@ export default function AuthPage() {
             </p>
           </motion.div>
 
-          <form onSubmit={handleAuth} className="relative z-10 space-y-5">
-            <Input
-              label="Email Address"
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              leftIcon={<Mail className="h-4 w-4" />}
-              fullWidth
-              autoComplete="email"
-            />
-
-            <div className="relative">
-              <Input
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder={isLogin ? 'Enter your password' : 'Min 8 characters'}
-                leftIcon={<Lock className="h-4 w-4" />}
-                fullWidth
-                autoComplete={isLogin ? 'current-password' : 'new-password'}
-                helperText={!isLogin ? 'Must contain uppercase, lowercase, and number' : undefined}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                tabIndex={-1}
+          <form onSubmit={handleAuth} className="relative z-10 space-y-5" noValidate>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="auth-email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+                Email Address <span className="ml-1 text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  id="auth-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => {
+                    setEmail(e.target.value)
+                    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }))
+                  }}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className={fieldClass('email')}
+                />
+                {fieldErrors.email && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  </div>
+                )}
+              </div>
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.email}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="auth-password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Password <span className="ml-1 text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  id="auth-password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={e => {
+                    setPassword(e.target.value)
+                    if (fieldErrors.password)
+                      setFieldErrors(prev => ({ ...prev, password: undefined }))
+                  }}
+                  placeholder={isLogin ? 'Enter your password' : 'Min 8 characters'}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  className={passwordFieldClass('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {fieldErrors.password && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {fieldErrors.password}
+                </p>
+              )}
+              {!isLogin && (
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex gap-1 h-1">
+                    {[1, 2, 3, 4].map(level => {
+                      const strength = calculatePasswordStrength(password)
+                      const isActive = strength >= level
+                      let bgColor = 'bg-gray-200 dark:bg-gray-700'
+                      if (isActive) {
+                        if (strength === 1) bgColor = 'bg-red-500'
+                        else if (strength === 2) bgColor = 'bg-yellow-500'
+                        else if (strength === 3) bgColor = 'bg-blue-500'
+                        else bgColor = 'bg-green-500'
+                      }
+                      return (
+                        <div
+                          key={level}
+                          className={`flex-1 rounded-full transition-colors duration-300 ${bgColor}`}
+                        />
+                      )
+                    })}
+                  </div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                    {calculatePasswordStrength(password) === 0 &&
+                      'Must contain uppercase, lowercase, number, and special character'}
+                    {calculatePasswordStrength(password) === 1 && 'Weak password'}
+                    {calculatePasswordStrength(password) === 2 && 'Fair password'}
+                    {calculatePasswordStrength(password) === 3 && 'Good password'}
+                    {calculatePasswordStrength(password) === 4 && 'Strong password'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
-              <Input
-                label="Confirm Password"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter your password"
-                leftIcon={<Lock className="h-4 w-4" />}
-                fullWidth
-                autoComplete="new-password"
-              />
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="auth-confirm-password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Confirm Password <span className="ml-1 text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    id="auth-confirm-password"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={e => {
+                      setConfirmPassword(e.target.value)
+                      if (fieldErrors.confirmPassword)
+                        setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }))
+                    }}
+                    placeholder="Re-enter your password"
+                    autoComplete="new-password"
+                    className={`flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                      fieldErrors.confirmPassword
+                        ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+                    }`}
+                  />
+                </div>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
+              </div>
             )}
 
             <Button type="submit" isLoading={loading} fullWidth size="lg" className="mt-6">
               {isLogin ? 'Sign In' : 'Create Account'}
             </Button>
           </form>
+
+          {isLogin && import.meta.env.DEV && (
+            <motion.div
+              className="mt-6 relative z-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
+                    Quick Login
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <motion.button
+                  onClick={quickFillAdmin}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 text-sm font-medium hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                >
+                  <Shield className="h-4 w-4" />
+                  <User className="h-4 w-4" />
+                  Admin Login
+                </motion.button>
+                <motion.button
+                  onClick={quickFillStudent}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                >
+                  <User className="h-4 w-4" />
+                  Student Login
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
 
           <motion.div
             className="mt-8 text-center relative z-10"
@@ -224,6 +449,39 @@ export default function AuthPage() {
               </motion.button>
             </p>
           </motion.div>
+
+          {!isLogin && (
+            <motion.div
+              className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center relative z-10"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.3 }}
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <div className="flex -space-x-2">
+                  <img
+                    src="https://i.pravatar.cc/100?img=1"
+                    alt="User"
+                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                  />
+                  <img
+                    src="https://i.pravatar.cc/100?img=2"
+                    alt="User"
+                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                  />
+                  <img
+                    src="https://i.pravatar.cc/100?img=3"
+                    alt="User"
+                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                  />
+                </div>
+                <div className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <span>Join 10,000+ developers</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </AnimatedPage>

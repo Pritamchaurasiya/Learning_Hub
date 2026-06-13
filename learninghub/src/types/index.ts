@@ -2,11 +2,11 @@ export interface Course {
   id: string
   title: string
   description: string
-  phase: 'beginner' | 'intermediate' | 'advanced' | 'singularity'
+  phase: 'beginner' | 'intermediate' | 'advanced' | 'expert'
   difficulty: 'easy' | 'medium' | 'hard' | 'expert'
   content: string
   tags: string[]
-  estimatedTime: number // in minutes
+  estimatedTime: number
   prerequisites: string[]
   order: number
 }
@@ -63,7 +63,7 @@ export interface Toast {
 
 export interface Notification {
   id: string
-  type: 'course_update' | 'achievement' | 'social' | 'system' | 'payment'
+  type: 'course_update' | 'achievement' | 'reminder' | 'social' | 'system' | 'payment'
   title: string
   message: string
   isRead: boolean

@@ -4,13 +4,21 @@ import { sendError } from '../utils/responseHelper'
 import logger from '../utils/logger'
 import { sessionConfig } from '../config/security'
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string
+    email: string
+    role: string
+  }
+}
+
 export async function sessionTimeoutMiddleware(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     const sessionId = req.headers['x-session-id'] as string | undefined
 
     if (!userId || !sessionId) {
@@ -29,6 +37,7 @@ export async function sessionTimeoutMiddleware(
         id: true,
         lastUsedAt: true,
         expiresAt: true,
+        createdAt: true,
       },
     })
 
@@ -53,7 +62,7 @@ export async function sessionTimeoutMiddleware(
     }
 
     const absoluteMinutes = sessionConfig.absoluteTimeoutMinutes
-    const sessionAgeMinutes = (now.getTime() - session.lastUsedAt.getTime()) / (1000 * 60)
+    const sessionAgeMinutes = (now.getTime() - session.createdAt.getTime()) / (1000 * 60)
     if (sessionAgeMinutes > absoluteMinutes) {
       await prisma.userSession.update({
         where: { id: session.id },
@@ -68,7 +77,13 @@ export async function sessionTimeoutMiddleware(
       data: { lastUsedAt: now },
     })
   } catch (error) {
-    logger.error('Session timeout middleware error', error instanceof Error ? error : new Error(String(error)))
+    logger.error(
+      'Session timeout middleware error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    res.locals.sessionValid = false
+    sendError(res, 'Session validation failed', 500, 'SESSION_VALIDATION_ERROR')
+    return
   }
 
   next()

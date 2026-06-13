@@ -9,7 +9,7 @@ export interface AIChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
-  timestamp: string
+  createdAt: string
   metadata?: {
     sources?: string[]
     confidence?: number
@@ -22,8 +22,8 @@ export interface AIChatSession {
   id: string
   title: string
   messages: AIChatMessage[]
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AIRecommendation {
@@ -91,44 +91,61 @@ export interface GenerateTestResponse {
   }
 }
 
-// ─── In-memory session store (client-side only, no persistence needed) ────────
-const sessionStore = new Map<string, AIChatSession>()
+export interface AICodeReviewResult {
+  timeComplexity: string
+  spaceComplexity: string
+  vulnerabilities: string[]
+  optimizationHints: string[]
+  overallFeedback: string
+}
 
-function createSession(title?: string): AIChatSession {
-  const id = `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  const session: AIChatSession = {
-    id,
-    title: title ?? `Chat ${new Date().toLocaleDateString()}`,
-    messages: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-  sessionStore.set(id, session)
-  return session
+export interface CodeReviewResponse {
+  status: string
+  data: AICodeReviewResult
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 export const aiTutorService = {
   getChatHistory: async (): Promise<ChatHistoryResponse> => {
-    const sessions = Array.from(sessionStore.values()).sort(
-      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-    )
-    return { status: 'success', data: sessions, count: sessions.length }
+    try {
+      const res = await fetchApi('/ai/tutor/sessions')
+      return res as ChatHistoryResponse
+    } catch {
+      return { status: 'error', data: [], count: 0 }
+    }
   },
 
   getChatSession: async (sessionId: string): Promise<ChatSessionResponse> => {
-    const session = sessionStore.get(sessionId)
-    if (session) {
-      return { status: 'success', data: session }
+    try {
+      const res = await fetchApi(`/ai/tutor/sessions/${sessionId}`)
+      return res as ChatSessionResponse
+    } catch {
+      return {
+        status: 'error',
+        data: { id: sessionId, title: 'Chat', messages: [], createdAt: '', updatedAt: '' },
+      }
     }
-    // Session not found — create a fresh one
-    const fresh = createSession()
-    return { status: 'success', data: fresh }
   },
 
   createChatSession: async (title?: string): Promise<ChatSessionResponse> => {
-    const session = createSession(title)
-    return { status: 'success', data: session }
+    try {
+      const res = await fetchApi('/ai/tutor/sessions', {
+        method: 'POST',
+        body: JSON.stringify({ title }),
+      })
+      return res as ChatSessionResponse
+    } catch {
+      return {
+        status: 'error',
+        data: {
+          id: `local-${Date.now()}`,
+          title: title ?? 'Chat',
+          messages: [],
+          createdAt: '',
+          updatedAt: '',
+        },
+      }
+    }
   },
 
   sendMessage: async (data: ChatRequest): Promise<SendMessageResponse> => {
@@ -156,7 +173,7 @@ export const aiTutorService = {
       } else {
         throw new Error('Invalid response from AI backend')
       }
-    } catch (err) {
+    } catch {
       // Graceful degradation — inform the user rather than silently failing
       const isOffline = !navigator.onLine
       responseContent = isOffline
@@ -173,23 +190,21 @@ export const aiTutorService = {
       id: `msg-${Date.now()}`,
       role: 'assistant',
       content: responseContent,
-      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       metadata,
     }
-
-    // Update session store
-    const sessionId = data.session_id ?? 'default'
-    const session = sessionStore.get(sessionId) ?? createSession()
-    session.messages.push(aiMessage)
-    session.updated_at = new Date().toISOString()
-    // Always store under the requested sessionId to maintain key consistency
-    sessionStore.set(sessionId, session)
 
     return {
       status: 'success',
       data: {
         message: aiMessage,
-        session,
+        session: {
+          id: data.session_id ?? 'default',
+          title: 'Chat',
+          messages: [],
+          createdAt: '',
+          updatedAt: '',
+        },
       },
     }
   },
@@ -270,8 +285,56 @@ export const aiTutorService = {
     }
   },
 
+  generateWeakAreaTest: async (
+    count: number = 10
+  ): Promise<GenerateTestResponse> => {
+    try {
+      const res = await fetchApi('/ai/generate-weak-area-test', {
+        method: 'POST',
+        body: JSON.stringify({ count }),
+      })
+      return res as GenerateTestResponse
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('[AITutor] generateWeakAreaTest failed:', error)
+      }
+      return {
+        status: 'error',
+        data: { topic: 'Weak Areas', difficulty: 'mixed', question_count: 0, questions: [], error: 'Failed to generate questions' },
+      } as unknown as GenerateTestResponse
+    }
+  },
+
+  reviewCode: async (code: string, language: string, problemDescription: string): Promise<CodeReviewResponse> => {
+    try {
+      const res = await fetchApi('/ai/code-review', {
+        method: 'POST',
+        body: JSON.stringify({ code, language, problemDescription }),
+      })
+      return res as CodeReviewResponse
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('[AITutor] reviewCode failed:', error)
+      }
+      return {
+        status: 'error',
+        data: {
+          timeComplexity: 'Unknown',
+          spaceComplexity: 'Unknown',
+          vulnerabilities: [],
+          optimizationHints: [],
+          overallFeedback: 'Failed to review code.',
+        },
+      }
+    }
+  },
+
   deleteChatSession: async (sessionId: string): Promise<{ status: string }> => {
-    sessionStore.delete(sessionId)
-    return { status: 'success' }
+    try {
+      await fetchApi(`/ai/tutor/sessions/${sessionId}`, { method: 'DELETE' })
+      return { status: 'success' }
+    } catch {
+      return { status: 'error' }
+    }
   },
 }

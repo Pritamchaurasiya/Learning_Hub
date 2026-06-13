@@ -18,7 +18,6 @@ export class AnalyticsService {
    */
   async getPlatformAnalytics(days: number = 30) {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-    const now = new Date()
 
     const [
       totalUsers,
@@ -55,6 +54,8 @@ export class AnalyticsService {
         total_test_attempts: totalTestAttempts,
         active_subscriptions: subscriptions,
         revenue: totalRevenue,
+        estimated_mrr: totalRevenue?.estimated_mrr ?? 0,
+        estimated_revenue: totalRevenue?.estimated_revenue ?? 0,
       },
       growth: await this.getUserGrowthTrend(days),
       engagement: await this.getEngagementMetrics(startDate),
@@ -62,22 +63,36 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get revenue metrics.
-   */
   private async getRevenueMetrics() {
-    const result = await prisma.activityLog.aggregate({
-      where: {
-        activityType: 'COURSE_ENROLL',
-        metadata: { path: ['gateway'], equals: 'stripe' },
-      },
-      _count: { id: true },
+    const [activeSubscriptions, totalSubscriptions] = await Promise.all([
+      prisma.subscription.count({ where: { status: { in: ['ACTIVE', 'TRIAL'] } } }),
+      prisma.subscription.count(),
+    ])
+
+    const subscriptionsWithTiers = await prisma.subscription.findMany({
+      where: { status: { in: ['ACTIVE', 'TRIAL'] } },
+      include: { tier: { select: { price: true, interval: true, currency: true } } },
     })
 
+    let estimatedMrr = 0
+    let estimatedRevenue = 0
+    for (const sub of subscriptionsWithTiers) {
+      const price = Number(sub.tier.price)
+      if (sub.tier.interval === 'YEARLY') {
+        estimatedMrr += price / 12
+        estimatedRevenue += price
+      } else {
+        estimatedMrr += price
+        estimatedRevenue += price
+      }
+    }
+
     return {
-      total_transactions: result._count.id,
-      // In production, integrate with Stripe for actual revenue
-      estimated_revenue: null,
+      active_subscriptions: activeSubscriptions,
+      total_subscriptions: totalSubscriptions,
+      estimated_mrr: Math.round(estimatedMrr * 100) / 100,
+      estimated_revenue: Math.round(estimatedRevenue * 100) / 100,
+      currency: 'USD',
     }
   }
 

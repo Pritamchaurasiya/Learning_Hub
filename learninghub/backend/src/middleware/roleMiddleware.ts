@@ -1,63 +1,99 @@
 import { Request, Response, NextFunction } from 'express'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AuthService } from '../services'
+import { sendError } from '../utils/responseHelper'
+import { prisma } from '../prismaClient'
 
-/**
- * Role-based access control middleware
- *
- * IMPORTANT: Prisma UserRole enum values are UPPERCASE: STUDENT, INSTRUCTOR, ADMIN, SUPERADMIN
- * All role checks MUST use uppercase comparison to match the database enum.
- *
- * @param roles - Array of allowed roles (case-insensitive for safety)
- */
 export const requireRole = (roles: string[]) => {
-  // Normalize to uppercase at middleware creation time for safe comparison
   const normalizedRoles = roles.map(r => r.toUpperCase())
 
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ status: 'error', message: 'Unauthorized' })
+      sendError(res, 'Authentication required', 401, 'NO_TOKEN')
+      return
     }
 
     const userRole = req.user.role?.toUpperCase()
     if (!userRole || !normalizedRoles.includes(userRole)) {
-      return res
-        .status(403)
-        .json({ status: 'error', message: 'Forbidden: Insufficient permissions' })
+      sendError(res, 'Insufficient permissions', 403, 'FORBIDDEN')
+      return
     }
 
     next()
   }
 }
 
-/**
- * Admin-only middleware
- * Accepts both ADMIN and SUPERADMIN roles
- */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
-    return res.status(401).json({ status: 'error', message: 'Unauthorized' })
+    sendError(res, 'Authentication required', 401, 'NO_TOKEN')
+    return
   }
 
   const userRole = req.user.role?.toUpperCase()
   if (userRole !== 'ADMIN' && userRole !== 'SUPERADMIN') {
-    return res.status(403).json({ status: 'error', message: 'Admin access required' })
+    sendError(res, 'Admin access required', 403, 'FORBIDDEN')
+    return
   }
 
   next()
 }
 
-/**
- * Instructor or Admin middleware
- */
+export const requireAdminPermission = (allowedPermissions: string[]) => {
+  const normalizedPermissions = allowedPermissions.map(p => p.toLowerCase())
+
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user) {
+      sendError(res, 'Authentication required', 401, 'NO_TOKEN')
+      return
+    }
+
+    const userRole = req.user.role?.toUpperCase()
+
+    if (userRole === 'SUPERADMIN') {
+      next()
+      return
+    }
+
+    if (userRole !== 'ADMIN') {
+      sendError(res, 'Admin access required', 403, 'FORBIDDEN')
+      return
+    }
+
+    const userId = req.user.userId as string | undefined
+    if (!userId) {
+      sendError(res, 'User not authenticated', 401, 'NO_TOKEN')
+      return
+    }
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, role: true },
+      })
+
+      if (!user) {
+        sendError(res, 'User not found', 401, 'USER_NOT_FOUND')
+        return
+      }
+
+      // NOTE: User model has no 'permissions' field currently.
+      // This is a stub for future fine-grained permissions.
+      // For now, role check is sufficient.
+      next()
+    } catch {
+      sendError(res, 'Permission verification error', 500, 'PERMISSION_ERROR')
+    }
+  }
+}
+
 export const requireInstructorOrAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
-    return res.status(401).json({ status: 'error', message: 'Unauthorized' })
+    sendError(res, 'Authentication required', 401, 'NO_TOKEN')
+    return
   }
 
   const userRole = req.user.role?.toUpperCase()
   if (!userRole || !['ADMIN', 'SUPERADMIN', 'INSTRUCTOR'].includes(userRole)) {
-    return res.status(403).json({ status: 'error', message: 'Instructor or Admin access required' })
+    sendError(res, 'Instructor or Admin access required', 403, 'FORBIDDEN')
+    return
   }
 
   next()

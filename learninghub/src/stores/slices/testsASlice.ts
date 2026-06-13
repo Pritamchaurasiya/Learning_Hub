@@ -1,53 +1,14 @@
-﻿import { StateCreator } from 'zustand'
-import { testsAService, TestQuestion, TestResult } from '../../services/testsAService'
-
-export interface TestInfo {
-  testId: string
-  testTitle: string
-  totalQuestions: number
-  timeLimit: number
-}
-
-export interface TestsAState {
-  isActive: boolean
-  currentQuestionIndex: number
-  questions: TestQuestion[]
-  answers: Record<string, string>
-  flaggedQuestions: string[]
-  timeRemaining: number
-  testInfo: TestInfo | null
-  attemptId: string | null
-  isLoading: boolean
-  error: string | null
-  results: TestResult | null
-  isSubmitting: boolean
-}
-
-export interface TestsASlice {
-  testsA: TestsAState
-  startTestAttempt: (
-    testId: string,
-    testTitle: string,
-    totalQuestions: number,
-    timeLimit: number
-  ) => void
-  answerQuestion: (questionId: string, optionId: string) => void
-  flagQuestion: (questionId: string) => void
-  unflagQuestion: (questionId: string) => void
-  navigateToQuestion: (index: number) => void
-  updateTestTimer: (timeRemaining: number) => void
-  setTestQuestions: (questions: TestQuestion[], testInfo: TestInfo, attemptId: string) => void
-  submitTest: () => Promise<{ success: boolean; score: number }>
-  resetTestState: () => void
-  abandonTest: () => void
-  setTestResults: (results: TestResult) => void
-}
+import { StateCreator } from 'zustand'
+import { testsAService } from '../../services/testsAService'
+import type { TestResult } from '../../services/testsAService'
+import type { AppState, TestsAState, TestsASlice } from '../types'
 
 const initialTestsAState: TestsAState = {
   isActive: false,
   currentQuestionIndex: 0,
   questions: [],
   answers: {},
+  confidences: {},
   flaggedQuestions: [],
   timeRemaining: 0,
   testInfo: null,
@@ -56,9 +17,10 @@ const initialTestsAState: TestsAState = {
   error: null,
   results: null,
   isSubmitting: false,
+  lastAutosavedAt: null,
 }
 
-export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
+export const createTestsASlice: StateCreator<AppState, [], [], TestsASlice> = (set, get) => ({
   testsA: initialTestsAState,
 
   startTestAttempt: (testId, testTitle, totalQuestions, timeLimit) => {
@@ -75,10 +37,29 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
   },
 
   answerQuestion: (questionId, optionId) => {
+    set(state => {
+      const updatedAnswers = { ...state.testsA.answers, [questionId]: optionId }
+      // Backup answers to localStorage for crash recovery
+      try {
+        const backupKey = `lh_test_answers_${state.testsA.attemptId}`
+        localStorage.setItem(backupKey, JSON.stringify(updatedAnswers))
+      } catch {
+        // Storage full or unavailable — non-critical
+      }
+      return {
+        testsA: {
+          ...state.testsA,
+          answers: updatedAnswers,
+        },
+      }
+    })
+  },
+
+  setConfidence: (questionId, confidence) => {
     set(state => ({
       testsA: {
         ...state.testsA,
-        answers: { ...state.testsA.answers, [questionId]: optionId },
+        confidences: { ...state.testsA.confidences, [questionId]: confidence },
       },
     }))
   },
@@ -125,22 +106,39 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
     }))
   },
 
-  setTestQuestions: (questions, testInfo, attemptId) => {
+  setTestQuestions: (questions, testInfo, attemptId, initialAnswers = {}, timeRemaining) => {
+    // Merge any localStorage-backed answers with server-provided answers
+    let mergedAnswers = { ...initialAnswers }
+    try {
+      const backupKey = `lh_test_answers_${attemptId}`
+      const backup = localStorage.getItem(backupKey)
+      if (backup) {
+        const parsed = JSON.parse(backup) as Record<string, string>
+        // Backup wins for keys not already in server answers (server is fresher)
+        mergedAnswers = { ...parsed, ...initialAnswers }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+
     set(state => ({
       testsA: {
         ...state.testsA,
         questions,
+        answers: mergedAnswers,
+        confidences: {},
         testInfo,
         attemptId,
+        timeRemaining: timeRemaining ?? state.testsA.timeRemaining,
         isLoading: false,
         error: null,
       },
     }))
   },
 
-  submitTest: async () => {
+  submitTest: async (): Promise<{ success: boolean; score: number }> => {
     const { testsA } = get()
-    const { testInfo, answers, attemptId, timeRemaining } = testsA
+    const { testInfo, answers, confidences, attemptId, timeRemaining } = testsA
 
     if (!testInfo || !attemptId) {
       return { success: false, score: 0 }
@@ -159,12 +157,18 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
         testInfo.testId,
         answers,
         timeTaken,
-        attemptId
+        attemptId,
+        confidences
       )
 
-      const resultData = response.data ?? response
-
+      const resultData = response.data
       if (response.status === 'success' || resultData.score !== undefined) {
+        // Clean up localStorage backup on successful submission
+        try {
+          localStorage.removeItem(`lh_test_answers_${attemptId}`)
+        } catch {
+          // non-critical
+        }
         set(state => ({
           testsA: {
             ...state.testsA,
@@ -174,7 +178,7 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
             isSubmitting: false,
           },
         }))
-        return { success: true, score: resultData.score ?? 0 }
+        return { success: true, score: Number(resultData.score ?? 0) }
       }
 
       set(state => ({
@@ -182,7 +186,7 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
           ...state.testsA,
           isLoading: false,
           isSubmitting: false,
-          error: (resultData as any).message || 'Submission failed',
+          error: 'Submission failed',
         },
       }))
       return { success: false, score: 0 }
@@ -201,10 +205,27 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
   },
 
   resetTestState: () => {
+    // Clean up any localStorage backup
+    const state = get()
+    if (state.testsA.attemptId) {
+      try {
+        localStorage.removeItem(`lh_test_answers_${state.testsA.attemptId}`)
+      } catch {
+        // non-critical
+      }
+    }
     set({ testsA: initialTestsAState })
   },
 
   abandonTest: () => {
+    const state = get()
+    if (state.testsA.attemptId) {
+      try {
+        localStorage.removeItem(`lh_test_answers_${state.testsA.attemptId}`)
+      } catch {
+        // non-critical
+      }
+    }
     set({
       testsA: {
         ...initialTestsAState,
@@ -213,7 +234,7 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
     })
   },
 
-  setTestResults: results => {
+  setTestResults: (results: TestResult) => {
     set(state => ({
       testsA: {
         ...state.testsA,
@@ -221,6 +242,14 @@ export const createTestsASlice: StateCreator<TestsASlice> = (set, get) => ({
         isActive: false,
         isLoading: false,
         isSubmitting: false,
+      },
+    }))
+  },
+  setLastAutosavedAt: timestamp => {
+    set(state => ({
+      testsA: {
+        ...state.testsA,
+        lastAutosavedAt: timestamp,
       },
     }))
   },

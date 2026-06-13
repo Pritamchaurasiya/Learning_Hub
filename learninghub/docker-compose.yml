@@ -17,12 +17,24 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
       - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
+      - REDIS_ENABLED=true
+      - REDIS_URL=redis://redis:6379
       - PORT=8000
       - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
@@ -31,6 +43,8 @@ services:
       - '8000:8000'
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: >
       sh -c "npx prisma migrate deploy && npm start"
@@ -46,3 +60,4 @@ services:
 
 volumes:
   postgres_data:
+

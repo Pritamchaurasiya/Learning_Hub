@@ -3,6 +3,7 @@ import type { UserProgress, Theme, Achievement, Toast, LoadingState, Notificatio
 import type { TestQuestion, TestResult } from '../services/testsAService'
 
 export type { User, UserProgress, Theme, Achievement, Toast, LoadingState, Notification }
+export type { TestQuestion, TestResult }
 
 // Quiz Types
 export interface QuizQuestion {
@@ -53,10 +54,12 @@ export interface AuthSlice {
   auth: {
     isAuthenticated: boolean
     user: User | null
+    isHydrated: boolean
   }
   setAuth: (token: string, refreshToken: string | null, user: User) => void
+  setHydrated: () => void
   updateUser: (user: Partial<User>) => void
-  logout: () => void
+  logout: () => Promise<void>
   fetchMe: () => Promise<void>
 }
 
@@ -77,13 +80,38 @@ export interface UISlice {
   addRecentSearch: (query: string) => void
   clearRecentSearches: () => void
   settings: {
+    // Master toggle
     notifications: boolean
-    soundEffects: boolean
-    autoplay: boolean
-    compactMode: boolean
-    lowPerformanceMode: boolean
+    // Individual notification & UI flags
+    dailyReminder?: boolean
+    progressUpdates?: boolean
+    achievements?: boolean
+    weeklyDigest?: boolean
+    soundEffects?: boolean
+    autoplay?: boolean
+    compactMode?: boolean
+    lowPerformanceMode?: boolean
+    // Privacy flags
+    showProfile?: boolean
+    showProgress?: boolean
+    showStreak?: boolean
   }
-  updateSettings: (settings: Partial<UISlice['settings']>) => void
+  updateSettings: (
+    settings: Partial<{
+      notifications: boolean
+      dailyReminder: boolean
+      progressUpdates: boolean
+      achievements: boolean
+      weeklyDigest: boolean
+      soundEffects: boolean
+      autoplay: boolean
+      compactMode: boolean
+      lowPerformanceMode: boolean
+      showProfile: boolean
+      showProgress: boolean
+      showStreak: boolean
+    }>
+  ) => void
   hasSeenOnboarding: boolean
   setHasSeenOnboarding: (seen: boolean) => void
 }
@@ -145,15 +173,23 @@ export interface TestsASlice {
     timeLimit: number
   ) => void
   answerQuestion: (questionId: string, optionId: string) => void
+  setConfidence: (questionId: string, confidence: 'LOW' | 'MEDIUM' | 'HIGH') => void
   flagQuestion: (questionId: string) => void
   unflagQuestion: (questionId: string) => void
   navigateToQuestion: (index: number) => void
   updateTestTimer: (timeRemaining: number) => void
-  setTestQuestions: (questions: TestQuestion[], testInfo: TestInfo, attemptId: string) => void
+  setTestQuestions: (
+    questions: TestQuestion[],
+    testInfo: TestInfo,
+    attemptId: string,
+    initialAnswers?: Record<string, string>,
+    timeRemaining?: number
+  ) => void
   submitTest: () => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
+  setLastAutosavedAt: (timestamp: number) => void
 }
 
 // Tests A+ State
@@ -162,6 +198,7 @@ export interface TestsAState {
   currentQuestionIndex: number
   questions: TestQuestion[]
   answers: Record<string, string>
+  confidences: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'>
   flaggedQuestions: string[]
   timeRemaining: number
   testInfo: TestInfo | null
@@ -170,6 +207,7 @@ export interface TestsAState {
   error: string | null
   results: TestResult | null
   isSubmitting: boolean
+  lastAutosavedAt: number | null
 }
 
 export interface TestInfo {

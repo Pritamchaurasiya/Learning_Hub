@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
       d.setDate(d.getDate() - i)
       const dateStr = d.toISOString().split('T')[0]
       const activityArray = Array.isArray(activityData) ? activityData : []
-      const found = activityArray.find(a => a.date && a.date.startsWith(dateStr))
+      const found = activityArray.find(a => a.date?.startsWith(dateStr))
       result[count - 1 - i] = found ? Math.round((found.time_spent / 60) * 10) / 10 : 0
     }
     return result

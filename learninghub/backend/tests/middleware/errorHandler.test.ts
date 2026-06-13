@@ -2,11 +2,19 @@ import { Request, Response, NextFunction } from 'express'
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
 import { errorHandler, notFoundHandler, AppError } from '../../src/middleware/errorHandler'
 
-jest.mock('../../src/utils/logger', () => ({
-  error: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-}))
+jest.mock('../../src/utils/logger', () => {
+  const mockLogger = {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  }
+  return {
+    ...mockLogger,
+    default: mockLogger,
+  }
+})
 
 describe('ErrorHandler Middleware', () => {
   let mockReq: DeepMockProxy<Request>
@@ -31,7 +39,7 @@ describe('ErrorHandler Middleware', () => {
 
   describe('errorHandler', () => {
     it('should handle operational errors with custom status code', () => {
-      const error = new AppError('Validation failed', 400, true)
+      const error = new AppError('Validation failed', 400, undefined, true)
 
       mockReq.originalUrl = '/api/test'
       mockReq.method = 'POST'
@@ -47,7 +55,7 @@ describe('ErrorHandler Middleware', () => {
     })
 
     it('should handle 404 not found errors', () => {
-      const error = new AppError('Resource not found', 404, true)
+      const error = new AppError('Resource not found', 404, undefined, true)
 
       mockReq.originalUrl = '/api/users/123'
       mockReq.method = 'GET'
@@ -62,7 +70,7 @@ describe('ErrorHandler Middleware', () => {
     })
 
     it('should handle 500 server errors with generic message', () => {
-      const error = new AppError('Database connection failed', 500, false)
+      const error = new AppError('Database connection failed', 500, undefined, false)
 
       mockReq.originalUrl = '/api/users'
       mockReq.method = 'POST'
@@ -78,7 +86,7 @@ describe('ErrorHandler Middleware', () => {
 
     it('should include stack trace in development mode', () => {
       process.env.NODE_ENV = 'development'
-      const error = new AppError('Test error', 500, false)
+      const error = new AppError('Test error', 500, undefined, false)
 
       mockReq.originalUrl = '/api/test'
       mockReq.method = 'GET'

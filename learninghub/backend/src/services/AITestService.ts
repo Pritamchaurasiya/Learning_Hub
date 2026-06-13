@@ -1,7 +1,7 @@
 /**
  * AI Test Generation Service
  *
- * Core engine for AI-powered test generation using Google Gemini.
+ * Core engine for AI-powered test generation using the Abstract AIServiceFactory.
  * Supports:
  *  - Country/exam pattern analysis
  *  - Adaptive difficulty
@@ -11,9 +11,12 @@
  *  - Bloom's Taxonomy classification
  */
 
-import { GoogleGenerativeAI, type GenerateContentResult } from '@google/generative-ai'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
+import { AIServiceFactory } from './ai/AIServiceFactory'
+import { topicPerformanceService } from './TopicPerformanceService'
+import { cacheService } from './CacheService'
+import { TokenTrimmer } from '../utils/TokenTrimmer'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -172,76 +175,98 @@ Respond with ONLY valid JSON:
     }
   ]
 }`,
+
+  subjective_grading: (questionText: string, answerText: string, maxPoints: number) => `
+You are an expert academic evaluator.
+
+Grade the following subjective answer provided by a student.
+Question: "${questionText}"
+Student Answer: "${answerText}"
+Max Points Possible: ${maxPoints}
+
+STRICT REQUIREMENTS:
+1. Provide a fair, objective score between 0 and ${maxPoints}.
+2. Provide constructive feedback explaining the score and how to improve.
+3. Check for factual correctness, completeness, and clarity.
+
+Respond with ONLY valid JSON:
+{
+  "score": 8,
+  "feedback": "Your explanation is good but misses the core technical nuance."
+}`
 }
 
 // ─── AI Test Service ─────────────────────────────────────────────────────────
-
-let _genAI: GoogleGenerativeAI | null = null
-
-function getGenAI(): GoogleGenerativeAI | null {
-  if (_genAI) return _genAI
-  const key = process.env.GEMINI_API_KEY
-  if (!key || key === 'mock-key' || key.trim() === '') {
-    return null
-  }
-  _genAI = new GoogleGenerativeAI(key)
-  return _genAI
-}
 
 export class AITestService {
   /**
    * Generate a complete AI-powered test and persist it to the database.
    */
   async generateTest(req: TestGenerationRequest): Promise<TestGenerationResult> {
-    const genAI = getGenAI()
-
-    if (!genAI) {
-      throw new Error('AI service unavailable — GEMINI_API_KEY not configured')
-    }
-
     const questionCount = Math.min(Math.max(req.count, 5), 50)
     const timeLimit = req.timeLimit ?? Math.max(10, questionCount * 2)
 
-    // Build prompt based on context
-    let prompt: string
-    if (req.examContext?.examId) {
-      const exam = await prisma.exam.findUnique({
-        where: { id: req.examContext.examId },
-        select: { name: true, pattern: true },
-      })
-      if (exam) {
-        const patternStr = exam.pattern ? JSON.stringify(exam.pattern) : 'Standard MCQ format'
-        prompt = PROMPT_TEMPLATES.exam_pattern(
-          req.topic,
-          req.difficulty,
-          questionCount,
-          exam.name,
-          patternStr
-        )
+    let questions: any[] = []
+    let isMock = false
+
+    try {
+      // Build prompt based on context
+      let prompt: string
+      if (req.examContext?.examId) {
+        const exam = await prisma.exam.findUnique({
+          where: { id: req.examContext.examId },
+          select: { name: true, pattern: true },
+        })
+        if (exam) {
+          const patternStr = exam.pattern ? JSON.stringify(exam.pattern) : 'Standard MCQ format'
+          prompt = PROMPT_TEMPLATES.exam_pattern(
+            req.topic,
+            req.difficulty,
+            questionCount,
+            exam.name,
+            patternStr
+          )
+        } else {
+          prompt = PROMPT_TEMPLATES.standard(req.topic, req.difficulty, questionCount)
+        }
+      } else if (req.mode === 'ADAPTIVE') {
+        const userLevel = await this.getUserLevel(req.userId, req.topic)
+        prompt = PROMPT_TEMPLATES.adaptive(req.topic, questionCount, userLevel)
       } else {
         prompt = PROMPT_TEMPLATES.standard(req.topic, req.difficulty, questionCount)
       }
-    } else if (req.mode === 'ADAPTIVE') {
-      const userLevel = await this.getUserLevel(req.userId)
-      prompt = PROMPT_TEMPLATES.adaptive(req.topic, questionCount, userLevel)
-    } else {
-      prompt = PROMPT_TEMPLATES.standard(req.topic, req.difficulty, questionCount)
-    }
 
-    // Call Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const result = await model.generateContent(prompt)
-    const text = result.response.text().trim()
+      // Call AI Agent via Factory
+      const ai = AIServiceFactory.getAgent()
+      const parsed = await ai.generateJSON<{ questions: any[] }>(prompt, {
+        model: 'gemini-2.0-flash',
+      })
 
-    // Parse response
-    const jsonText = this.extractJson(text)
-    const parsed = JSON.parse(jsonText)
+      // Validate and filter questions
+      questions = this.validateQuestions(parsed.questions ?? [], questionCount)
 
-    // Validate and filter questions
-    const questions = this.validateQuestions(parsed.questions ?? [], questionCount)
-
-    if (questions.length === 0) {
-      throw new Error('AI failed to generate valid questions')
+      if (questions.length === 0) {
+        throw new Error('AI failed to generate valid questions')
+      }
+    } catch (error) {
+      logger.warn('[AITestService] AI service unavailable or failed — generating mock questions', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      isMock = true
+      questions = Array.from({ length: questionCount }).map((_, i) => ({
+        text: `[MOCK] Sample Question ${i + 1} for topic: ${req.topic}`,
+        options: [
+          { id: 'a', text: 'Option A (Correct)' },
+          { id: 'b', text: 'Option B' },
+          { id: 'c', text: 'Option C' },
+          { id: 'd', text: 'Option D' },
+        ],
+        correct_option_id: 'a',
+        explanation: 'This is a mock explanation because the AI service is currently unavailable.',
+        difficulty: req.difficulty,
+        bloom_level: 'understand',
+        tags: [req.topic, 'mock'],
+      }))
     }
 
     // Persist test to database
@@ -252,7 +277,7 @@ export class AITestService {
         timeLimit,
         mode: req.mode,
         difficulty: req.difficulty,
-        isAiGenerated: true,
+        isAiGenerated: !isMock,
         isPublished: true,
         totalMarks: questions.length * 10,
         passingScore: 60,
@@ -264,7 +289,7 @@ export class AITestService {
             bloomLevel: q.bloom_level ?? 'understand',
             explanation: q.explanation,
             tags: q.tags ?? [req.topic],
-            isAiGenerated: true,
+            isAiGenerated: !isMock,
             points: 10,
             order: idx + 1,
             options: {
@@ -304,31 +329,51 @@ export class AITestService {
       questionCount: questions.length,
       timeLimit,
       questions: formattedQuestions,
-      ai_powered: true,
-      model: 'gemini-2.0-flash',
+      ai_powered: !isMock,
+      model: isMock ? 'mock' : 'gemini-2.0-flash',
       cached: false,
     }
   }
 
   /**
-   * Get user's performance level for adaptive difficulty.
+   * Get user's performance level for adaptive difficulty based on specific topic mastery.
    */
-  private async getUserLevel(userId: string): Promise<number> {
-    const recentResults = await prisma.testResult.findMany({
-      where: { userId, status: 'COMPLETED' },
-      orderBy: { completedAt: 'desc' },
-      take: 10,
-      select: { percentage: true },
+  private async getUserLevel(userId: string, topicName: string): Promise<number> {
+    const performance = await prisma.topicPerformance.findUnique({
+      where: { userId_topicName: { userId, topicName } },
     })
 
-    if (recentResults.length === 0) return 2 // Default medium
+    if (!performance) {
+      // Fallback to general level if no specific topic data
+      const recentResults = await prisma.testResult.findMany({
+        where: { userId, status: 'COMPLETED' },
+        orderBy: { completedAt: 'desc' },
+        take: 10,
+        select: { percentage: true },
+      })
 
-    const avgScore = recentResults.reduce((sum, r) => sum + r.percentage, 0) / recentResults.length
+      if (recentResults.length === 0) return 2 // Default medium
 
-    if (avgScore >= 80) return 4
-    if (avgScore >= 60) return 3
-    if (avgScore >= 40) return 2
-    return 1
+      const avgScore = recentResults.reduce((sum, r) => sum + r.percentage, 0) / recentResults.length
+
+      if (avgScore >= 80) return 4
+      if (avgScore >= 60) return 3
+      if (avgScore >= 40) return 2
+      return 1
+    }
+
+    // Map Bayesian strength level to 1-5 scale
+    switch (performance.strengthLevel) {
+      case 'mastered':
+        return 5
+      case 'proficient':
+        return 4
+      case 'developing':
+        return 2
+      case 'weak':
+      default:
+        return 1
+    }
   }
 
   /**
@@ -342,18 +387,6 @@ export class AITestService {
       ADAPTIVE: 1.5,
     }
     return map[difficulty] ?? 1.5
-  }
-
-  /**
-   * Extract JSON from AI response (handles markdown code fences).
-   */
-  private extractJson(text: string): string {
-    // Remove markdown code fences
-    if (text.startsWith('```')) {
-      const match = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
-      if (match) return match[1].trim()
-    }
-    return text.trim()
   }
 
   /**
@@ -380,47 +413,11 @@ export class AITestService {
    * Get user's weak topics based on test performance.
    */
   async getWeakTopics(userId: string): Promise<{ topic: string; accuracy: number }[]> {
-    const results = await prisma.testResult.findMany({
-      where: { userId, status: 'COMPLETED' },
-      include: {
-        test: {
-          include: {
-            questions: {
-              select: { id: true, tags: true },
-            },
-          },
-        },
-      },
-      take: 20,
-      orderBy: { completedAt: 'desc' },
-    })
-
-    const topicStats: Record<string, { correct: number; total: number }> = {}
-
-    for (const result of results) {
-      const answers = (result.answers as Record<string, string>) ?? {}
-      const questionResults = (result.questionResults as any[]) ?? []
-
-      for (const qr of questionResults) {
-        const question = result.test.questions.find(q => q.id === qr.question_id)
-        if (!question) continue
-
-        for (const tag of question.tags) {
-          if (!topicStats[tag]) topicStats[tag] = { correct: 0, total: 0 }
-          topicStats[tag].total++
-          if (qr.is_correct) topicStats[tag].correct++
-        }
-      }
-    }
-
-    return Object.entries(topicStats)
-      .map(([topic, stats]) => ({
-        topic,
-        accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
-      }))
-      .filter(t => t.accuracy < 60 && t.accuracy > 0)
-      .sort((a, b) => a.accuracy - b.accuracy)
-      .slice(0, 5)
+    const weakTopics = await topicPerformanceService.getWeakTopics(userId, 5)
+    return weakTopics.map(t => ({
+      topic: t.topicName,
+      accuracy: t.accuracy,
+    }))
   }
 
   /**
@@ -447,6 +444,29 @@ export class AITestService {
       count,
       mode: 'PRACTICE',
     })
+  }
+
+  /**
+   * Grade a subjective answer using the AI Agent.
+   */
+  async gradeSubjectiveAnswer(questionText: string, answerText: string, maxPoints: number) {
+    try {
+      // 1. Sanitize and trim token usage for safety
+      const safeQuestion = TokenTrimmer.sanitize(TokenTrimmer.trimToMaxTokens(questionText, 500))
+      const safeAnswer = TokenTrimmer.sanitize(TokenTrimmer.trimToMaxTokens(answerText, 2000))
+
+      const prompt = PROMPT_TEMPLATES.subjective_grading(safeQuestion, safeAnswer, maxPoints)
+      const agent = AIServiceFactory.getAgent()
+      const jsonResponse = await agent.generateJSON(prompt) as any
+      
+      return {
+        score: typeof jsonResponse.score === 'number' ? jsonResponse.score : 0,
+        feedback: typeof jsonResponse.feedback === 'string' ? jsonResponse.feedback : 'Graded by AI.'
+      }
+    } catch (error) {
+      logger.error('[AITestService] Failed to grade subjective answer', error instanceof Error ? error : new Error(String(error)))
+      return { score: 0, feedback: "Failed to grade via AI. Needs manual review." }
+    }
   }
 }
 

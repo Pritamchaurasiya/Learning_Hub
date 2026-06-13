@@ -16,7 +16,7 @@ interface ToastProps {
 }
 
 export function Toast({ toast }: ToastProps) {
-  const { removeToast } = useStore()
+  const removeToast = useStore(s => s.removeToast)
   const [progress, setProgress] = useState(100)
   const [isPaused, setIsPaused] = useState(false)
 
@@ -158,7 +158,7 @@ interface ToastContainerProps {
 }
 
 export function ToastContainer({ position = 'bottom-right', maxToasts = 5 }: ToastContainerProps) {
-  const { toasts } = useStore()
+  const toasts = useStore(s => s.toasts)
 
   // Limit toasts and reverse order for stack effect
   const visibleToasts = toasts.slice(-maxToasts).reverse()

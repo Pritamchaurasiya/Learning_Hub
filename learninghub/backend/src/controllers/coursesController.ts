@@ -1,110 +1,87 @@
 import { Request, Response } from 'express'
-import { Prisma } from '@prisma/client'
+import { PrismaClient, CoursePhase, DifficultyLevel } from '@prisma/client'
 import { prisma } from '../prismaClient'
-import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import logger from '../utils/logger'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendNotFound,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
+import { CourseService } from '../services/CourseService'
+
+const courseService = new CourseService(prisma as PrismaClient)
+
+const phaseMap: Record<string, string> = {
+  foundation: 'FOUNDATION',
+  beginner: 'BEGINNER',
+  intermediate: 'INTERMEDIATE',
+  advanced: 'ADVANCED',
+  expert: 'EXPERT',
+}
+
+const difficultyMap: Record<string, string> = {
+  easy: 'BEGINNER',
+  beginner: 'BEGINNER',
+  medium: 'INTERMEDIATE',
+  intermediate: 'INTERMEDIATE',
+  hard: 'ADVANCED',
+  advanced: 'ADVANCED',
+  expert: 'EXPERT',
+}
 
 export const listCourses = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { phase, difficulty, category, search } = req.query
-    const { page, limit, skip } = getPaginationParams(req.query)
+    const { phase, difficulty, category } = req.query
+    const search = typeof req.query.search === 'string' ? req.query.search : req.query.q
+    const page = parseInt((req.query.page as string) ?? '1', 10)
+    const limit = parseInt((req.query.limit as string) ?? '20', 10)
 
-    const filters: Prisma.CourseWhereInput = {}
-    if (phase && typeof phase === 'string') filters.phase = phase as Prisma.EnumCoursePhaseFilter
-    if (difficulty && typeof difficulty === 'string')
-      filters.difficulty = difficulty as Prisma.EnumDifficultyLevelFilter
-    if (category && typeof category === 'string') filters.category = category
-
-    // Add search by title or description
-    if (search && typeof search === 'string') {
-      filters.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ]
+    const filters = {
+      phase:
+        phase && typeof phase === 'string'
+          ? (phaseMap[phase.toLowerCase()] as CoursePhase)
+          : undefined,
+      difficulty:
+        difficulty && typeof difficulty === 'string'
+          ? (difficultyMap[difficulty.toLowerCase()] as DifficultyLevel)
+          : undefined,
+      category: category && typeof category === 'string' ? category : undefined,
+      search: search && typeof search === 'string' ? search : undefined,
+      page,
+      limit,
     }
 
-    // Parallelize count + findMany for performance
-    const [total, courses] = await Promise.all([
-      prisma.course.count({ where: filters }),
-      prisma.course.findMany({
-        where: filters,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: {
-            select: { progress: true, bookmarks: true },
-          },
-        },
-      }),
-    ])
-
-    res.status(200).json(createPaginatedResponse(courses, total, page, limit))
+    const { courses, pagination } = await courseService.listCourses(filters)
+    sendSuccess(res, courses, undefined, 200, pagination)
   } catch (error) {
     logger.error(
       '[CoursesController] listCourses error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getCourseDetails = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string
-    const course = await prisma.course.findUnique({
-      where: { id },
-      include: {
-        tests: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            passingScore: true,
-            timeLimit: true,
-            _count: { select: { questions: true } },
-          },
-        },
-        modules: {
-          orderBy: { order: 'asc' },
-          include: {
-            lessons: {
-              orderBy: { order: 'asc' },
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                duration: true,
-                order: true,
-                isFree: true,
-                videoUrl: true,
-                transcript: true,
-                resources: true,
-              },
-            },
-          },
-        },
-        instructor: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-            bio: true,
-          },
-        },
-      },
-    })
+    const userId = req.user?.userId
+
+    const course = await courseService.getCourse(id, userId)
 
     if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
+      sendNotFound(res, 'Course not found')
       return
     }
 
     // Transform modules to sections format expected by frontend
-    const sections = (course.modules || []).map(mod => ({
+    const sections = (course.modules ?? []).map(mod => ({
       id: mod.id,
       title: mod.title,
-      lessons: (mod.lessons || []).map(les => ({
+      lessons: (mod.lessons ?? []).map(les => ({
         id: les.id,
         title: les.title,
         description: les.description ?? null,
@@ -116,22 +93,7 @@ export const getCourseDetails = async (req: Request, res: Response): Promise<voi
       })),
     }))
 
-    // Check enrollment status if user is authenticated
-    let isEnrolled = false
-    let progressPercent: number | null = null
-    const userId = req.user?.userId
-    if (userId) {
-      const enrollment = await prisma.userProgress.findUnique({
-        where: { idx_unique_user_course: { userId, courseId: id } },
-      })
-      if (enrollment) {
-        isEnrolled = true
-        progressPercent = enrollment.progress
-      }
-    }
-
     // Build response matching CourseDetails interface
-    const instructor = course.instructor
     const responseData = {
       id: course.id,
       title: course.title,
@@ -140,10 +102,10 @@ export const getCourseDetails = async (req: Request, res: Response): Promise<voi
       thumbnail: course.thumbnail,
       trailer_video: course.trailerVideo,
       instructor: {
-        id: instructor?.id ?? 'instructor-1',
-        display_name: instructor?.username ?? 'Expert Instructor',
-        avatar: instructor?.avatar ?? null,
-        bio: instructor?.bio ?? null,
+        id: course.instructor?.id ?? 'instructor-1',
+        display_name: course.instructor?.username ?? 'Expert Instructor',
+        avatar: course.instructor?.avatar ?? null,
+        bio: course.instructor?.bio ?? null,
         total_students: course.studentCount,
         total_courses: 1,
       },
@@ -161,11 +123,11 @@ export const getCourseDetails = async (req: Request, res: Response): Promise<voi
       learning_outcomes: [],
       prerequisites: [],
       tags: course.category ? [course.category] : [],
-      is_enrolled: isEnrolled,
-      progress_percent: progressPercent,
+      is_enrolled: !!course.userProgress,
+      progress_percent: course.userProgress?.progress ?? null,
     }
 
-    res.status(200).json({ status: 'success', data: responseData })
+    sendSuccess(res, responseData)
   } catch (error) {
     logger.error(
       '[CoursesController] getCourseDetails error',
@@ -174,41 +136,7 @@ export const getCourseDetails = async (req: Request, res: Response): Promise<voi
         courseId: req.params.id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
-  }
-}
-
-export const getCourseReviews = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = req.params.id as string
-    const course = await prisma.course.findUnique({
-      where: { id },
-      select: { reviewCount: true, rating: true },
-    })
-    if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
-      return
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: [],
-      meta: {
-        total: course.reviewCount,
-        average_rating: course.rating,
-        page: 1,
-        pages: 0,
-      },
-    })
-  } catch (error) {
-    logger.error(
-      '[CoursesController] getCourseReviews error',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        courseId: req.params.id,
-      }
-    )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -216,49 +144,34 @@ export const enrollInCourse = async (req: Request, res: Response): Promise<void>
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const { courseId } = req.body
 
     if (!courseId) {
-      res.status(400).json({ status: 'error', message: 'Course ID is required' })
+      sendValidationError(res, 'Course ID is required')
       return
     }
 
-    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true } })
-    if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
-      return
-    }
-
-    const enrollment = await prisma.userProgress.upsert({
-      where: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        idx_unique_user_course: { userId: userId!, courseId },
-      },
-      update: {},
-      create: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        userId: userId!,
-        courseId,
-        status: 'IN_PROGRESS',
-        progress: 0,
-      },
-    })
-
-    res.status(201).json({ status: 'success', data: enrollment })
+    await courseService.enroll({ userId, courseId })
+    sendCreated(res, { status: 'enrolled' })
   } catch (error) {
-    logger.error(
-      '[CoursesController] enrollInCourse error',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-        courseId: req.body?.courseId,
-      }
-    )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('[CoursesController] enrollInCourse error', err, {
+      userId: req.user?.userId,
+      courseId: req.body?.courseId,
+    })
+    if (err.message === 'Already enrolled in this course') {
+      sendSuccess(res, { status: 'already_enrolled' }, 'Already enrolled')
+      return
+    }
+    if (err.message === 'Course not found or not available') {
+      sendNotFound(res, 'Course not found')
+      return
+    }
+    sendInternalError(res)
   }
 }
 
@@ -266,39 +179,19 @@ export const updateCourseProgress = async (req: Request, res: Response): Promise
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res, 'Authentication required')
       return
     }
 
     const { courseId, progress } = req.body
     const normalizedProgress = Math.max(0, Math.min(100, Number(progress)))
     if (!courseId || Number.isNaN(normalizedProgress)) {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Course ID and valid progress are required' })
+      sendValidationError(res, 'Course ID and valid progress are required')
       return
     }
 
-    const updated = await prisma.userProgress.upsert({
-      where: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        idx_unique_user_course: { userId: userId!, courseId },
-      },
-      update: {
-        progress: normalizedProgress,
-        status: normalizedProgress === 100 ? 'COMPLETED' : 'IN_PROGRESS',
-        updatedAt: new Date(),
-      },
-      create: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        userId: userId!,
-        courseId,
-        progress: normalizedProgress,
-        status: normalizedProgress === 100 ? 'COMPLETED' : 'IN_PROGRESS',
-      },
-    })
-
-    res.status(200).json({ status: 'success', data: updated })
+    await courseService.updateProgress({ userId, courseId, progress: normalizedProgress })
+    sendSuccess(res, { progress: normalizedProgress })
   } catch (error) {
     logger.error(
       '[CoursesController] updateProgress error',
@@ -308,6 +201,6 @@ export const updateCourseProgress = async (req: Request, res: Response): Promise
         courseId: req.body?.courseId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

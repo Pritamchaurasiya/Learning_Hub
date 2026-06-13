@@ -23,7 +23,7 @@ const OfflinePage = memo(() => {
 
   return (
     <AnimatedPage className="min-h-[80vh] flex items-center justify-center p-4">
-      <SEO title="You are offline" noindex />
+      <SEO title="You are offline" noindex={true} />
 
       <Card className="w-full max-w-lg p-8 sm:p-12 text-center border-none shadow-2xl rounded-[2.5rem]">
         <motion.div

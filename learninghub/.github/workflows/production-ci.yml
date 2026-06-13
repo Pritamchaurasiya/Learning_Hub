@@ -28,6 +28,16 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js 20
@@ -52,9 +62,11 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run Unit Tests
-        run: npm run test:coverage
+        run: npm run test
         env:
           DATABASE_URL: postgresql://learninghub:learninghub_secret@localhost:5432/learninghub_test
+          REDIS_ENABLED: true
+          REDIS_URL: redis://localhost:6379
           JWT_SECRET: testing-secret
           NODE_ENV: test
 

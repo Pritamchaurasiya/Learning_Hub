@@ -5,13 +5,30 @@ import { test, expect } from '@playwright/test'
  * Tests: Course List, Course Details, Lesson Player, Progress Tracking
  */
 test.describe('Course Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login before each course test
-    await page.goto('/auth')
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('password123')
-    await page.getByRole('button', { name: /sign in/i }).click()
-    await expect(page).toHaveURL('/', { timeout: 5000 })
+  let authToken = ''
+
+  test.beforeAll(async ({ request }) => {
+    // Authenticate once per worker to avoid auth rate limits
+    const response = await request.post('http://localhost:5000/api/v1/auth/login', {
+      data: {
+        email: 'student@learninghub.com',
+        password: 'Student@123!',
+      },
+    })
+    const body = await response.json()
+    if (body.data?.access_token) {
+      authToken = body.data.access_token
+    }
+  })
+
+  test.beforeEach(async ({ context, page }) => {
+    // Set localStorage tokens before any page navigation to avoid auth redirect race conditions
+    await context.addInitScript((token) => {
+      window.localStorage.setItem('cookieConsent', 'accepted')
+      if (token) {
+        window.localStorage.setItem('lh_token', token)
+      }
+    }, authToken)
   })
 
   test('should display course list on home page', async ({ page }) => {
@@ -27,9 +44,9 @@ test.describe('Course Flow', () => {
 
   test('should navigate to course details page', async ({ page }) => {
     // Navigate to a course (using sample ID)
-    await page.goto('/course/1')
+    await page.goto('/course/course-001')
 
-    await expect(page).toHaveURL('/course/1')
+    await expect(page).toHaveURL('/course/course-001')
 
     // Course page should load with content
     await page.waitForTimeout(2000)
@@ -39,7 +56,7 @@ test.describe('Course Flow', () => {
   })
 
   test('should display course lessons list', async ({ page }) => {
-    await page.goto('/course/1')
+    await page.goto('/course/course-001')
 
     await page.waitForTimeout(2000)
 
@@ -57,12 +74,12 @@ test.describe('Course Flow', () => {
   })
 
   test('should navigate to lesson player', async ({ page }) => {
-    await page.goto('/course/1')
+    await page.goto('/course/course-001')
 
     await page.waitForTimeout(2000)
 
-    // Find and click on a lesson
-    const lessonLink = page.locator('a[class*="lesson"], button[class*="lesson"]').first()
+    // Find and click on a lesson using robust data-testid
+    const lessonLink = page.locator('[data-testid="lesson-item"]').first()
 
     if (await lessonLink.isVisible().catch(() => false)) {
       await lessonLink.click()
@@ -97,8 +114,8 @@ test.describe('Course Flow', () => {
 
     await expect(page).toHaveURL('/search')
 
-    // Search input should be visible
-    const searchInput = page.getByPlaceholder(/search|find/i)
+    // Search input should be visible specifically on the search page
+    const searchInput = page.getByPlaceholder(/enter search query/i)
 
     if (await searchInput.isVisible().catch(() => false)) {
       await searchInput.fill('javascript')
@@ -114,14 +131,14 @@ test.describe('Course Flow', () => {
   })
 
   test('should bookmark a course', async ({ page }) => {
-    await page.goto('/course/1')
+    await page.goto('/course/course-001')
 
     await page.waitForTimeout(2000)
 
-    // Find bookmark button
+    // Find bookmark button (may not exist if course not in test DB)
     const bookmarkButton = page.getByRole('button', { name: /bookmark|save|favorite/i })
 
-    if (await bookmarkButton.isVisible().catch(() => false)) {
+    if (await bookmarkButton.isVisible({ timeout: 5000 }).catch(() => false)) {
       await bookmarkButton.click()
 
       // Should show feedback
@@ -129,7 +146,7 @@ test.describe('Course Flow', () => {
 
       // Bookmarked state or confirmation
       const bookmarked = page.locator('text=/bookmarked|saved|added/i').first()
-      if (await bookmarked.isVisible().catch(() => false)) {
+      if (await bookmarked.isVisible({ timeout: 3000 }).catch(() => false)) {
         await expect(bookmarked).toBeVisible()
       }
     }

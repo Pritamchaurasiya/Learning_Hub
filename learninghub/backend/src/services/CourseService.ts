@@ -10,6 +10,7 @@ import type {
 } from '@prisma/client'
 import { CourseRepository, UserRepository } from '../repositories'
 import type { CourseSummary, CourseListItem } from '../repositories/CourseRepository'
+import { DIFFICULTY_XP } from '../constants/xp'
 import { cacheService } from './CacheService'
 import { AuditService } from './AuditService'
 import logger from '../utils/logger'
@@ -33,6 +34,26 @@ export interface CourseWithProgress extends Course {
     completedAt: Date | null
   } | null
   isBookmarked?: boolean
+  modules?: Array<{
+    id: string
+    title: string
+    order: number
+    lessons?: Array<{
+      id: string
+      title: string
+      description: string | null
+      duration: number
+      videoUrl: string | null
+      order: number
+      isFree: boolean
+    }>
+  }>
+  instructor?: {
+    id: string
+    username: string | null
+    avatar: string | null
+    bio: string | null
+  } | null
 }
 
 export class CourseService {
@@ -344,15 +365,7 @@ export class CourseService {
       const course = await this.courseRepository.findById(courseId)
       if (!course) return
 
-      // Calculate XP based on difficulty
-      const baseXp = 100
-      const difficultyMultiplier: Record<string, number> = {
-        BEGINNER: 1,
-        INTERMEDIATE: 1.5,
-        ADVANCED: 2,
-        EXPERT: 3,
-      }
-      const xp = Math.floor(baseXp * (difficultyMultiplier[course.difficulty] || 1))
+      const xp = DIFFICULTY_XP[course.difficulty] ?? 100
 
       // Add XP to user
       const { newLevel } = await this.userRepository.addXp(userId, xp, this.prisma)

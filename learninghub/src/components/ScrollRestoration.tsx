@@ -16,15 +16,21 @@ export function ScrollRestoration() {
   const { pathname, key } = useLocation()
 
   useEffect(() => {
-    // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    // Scroll to top with smooth behavior (or instant for reduced motion)
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-    })
+    const mainEl = document.querySelector<HTMLElement>('main#main-content')
+    if (mainEl) {
+      mainEl.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      })
+    } else {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      })
+    }
   }, [pathname, key])
 
   return null

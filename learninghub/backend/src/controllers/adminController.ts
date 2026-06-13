@@ -4,6 +4,16 @@ import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { getPaginationParams } from '../utils/pagination'
 import { analyticsService } from '../services/AnalyticsService'
+import { jobQueueService } from '../services/JobQueueService'
+import { dataExportService } from '../services/DataExportService'
+import {
+  sendSuccess,
+  sendCreated,
+  sendForbidden,
+  sendNotFound,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 /**
  * Get admin dashboard statistics
@@ -50,20 +60,17 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       }),
     ])
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        total_users: totalUsers,
-        active_users_24h: activeUsers,
-        new_users_today: newUsersToday,
-        total_courses: totalCourses,
-        recent_completions: recentCompletions,
-        total_enrollments: totalEnrollments,
-        test_submissions_24h: testSubmissions,
-        total_revenue: null,
-        revenue_today: null,
-        revenue_tracking_enabled: false,
-      },
+    sendSuccess(res, {
+      total_users: totalUsers,
+      active_users_24h: activeUsers,
+      new_users_today: newUsersToday,
+      total_courses: totalCourses,
+      recent_completions: recentCompletions,
+      total_enrollments: totalEnrollments,
+      test_submissions_24h: testSubmissions,
+      total_revenue: null,
+      revenue_today: null,
+      revenue_tracking_enabled: false,
     })
   } catch (error) {
     logger.error(
@@ -73,7 +80,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
         adminId,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -121,21 +128,18 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
       prisma.user.count({ where }),
     ])
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        users,
-        pagination: {
-          page: parsedPage,
-          limit: parsedLimit,
-          total,
-          totalPages: Math.ceil(total / parsedLimit),
-        },
+    sendSuccess(res, {
+      users,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total,
+        totalPages: Math.ceil(total / parsedLimit),
       },
     })
   } catch (error) {
     logger.error('Admin getUsers error', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -150,7 +154,7 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
   try {
     const uppercaseRole = role?.toUpperCase()
     if (!['STUDENT', 'INSTRUCTOR', 'ADMIN', 'SUPERADMIN'].includes(uppercaseRole)) {
-      res.status(400).json({ status: 'error', message: 'Invalid role' })
+      sendValidationError(res, 'Invalid role')
       return
     }
 
@@ -168,11 +172,7 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
     // Log admin action using audit logger
     logger.audit('UPDATE_USER_ROLE', adminId, { targetUserId: id, newRole: role })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'User role updated successfully',
-      data: user,
-    })
+    sendSuccess(res, user, 'User role updated successfully')
   } catch (error) {
     logger.error(
       'Admin updateUserRole error',
@@ -183,7 +183,7 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
         newRole: role,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -197,7 +197,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
   try {
     // Prevent self-deletion
     if (id === adminId) {
-      res.status(400).json({ status: 'error', message: 'Cannot delete your own account' })
+      sendValidationError(res, 'Cannot delete your own account')
       return
     }
 
@@ -207,16 +207,14 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       select: { role: true, username: true },
     })
     if (!targetUser) {
-      res.status(404).json({ status: 'error', message: 'User not found' })
+      sendNotFound(res, 'User not found')
       return
     }
     if (
       (targetUser.role === 'ADMIN' || targetUser.role === 'SUPERADMIN') &&
       req.user?.role !== 'SUPERADMIN'
     ) {
-      res
-        .status(403)
-        .json({ status: 'error', message: 'Only SUPERADMIN can delete admin accounts' })
+      sendForbidden(res, 'Only SUPERADMIN can delete admin accounts')
       return
     }
 
@@ -234,16 +232,21 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       prisma.notification.deleteMany({ where: { userId: id } }),
       prisma.dailyGoal.deleteMany({ where: { userId: id } }),
       prisma.activityLog.deleteMany({ where: { userId: id } }),
+      prisma.problemSubmission.deleteMany({ where: { userId: id } }),
+      prisma.courseReview.deleteMany({ where: { userId: id } }),
+      prisma.topicPerformance.deleteMany({ where: { userId: id } }),
+      prisma.questionBookmark.deleteMany({ where: { userId: id } }),
+      prisma.contestParticipant.deleteMany({ where: { userId: id } }),
+      prisma.verificationToken.deleteMany({ where: { userId: id } }),
+      prisma.passwordResetToken.deleteMany({ where: { userId: id } }),
+      prisma.mentorshipSession.deleteMany({ where: { OR: [{ userId: id }, { mentorId: id }] } }),
       prisma.user.delete({ where: { id } }),
     ])
 
     // Log admin action using audit logger
     logger.audit('DELETE_USER', adminId, { targetUserId: id, targetUsername: targetUser.username })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'User deleted successfully',
-    })
+    sendSuccess(res, null, 'User deleted successfully')
   } catch (error) {
     logger.error(
       'Admin deleteUser error',
@@ -253,7 +256,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
         targetUserId: id,
       }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -270,13 +273,10 @@ export const getSystemStatus = async (req: Request, res: Response): Promise<void
     // Check database connection
     await prisma.$queryRaw`SELECT 1`
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        database: 'connected',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-      },
+    sendSuccess(res, {
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
     })
   } catch (error) {
     logger.error(
@@ -286,11 +286,38 @@ export const getSystemStatus = async (req: Request, res: Response): Promise<void
         adminId,
       }
     )
-    res.status(500).json({
-      status: 'error',
-      message: 'System check failed',
-      data: { database: 'disconnected' },
-    })
+    sendInternalError(res, 'System check failed')
+  }
+}
+
+/**
+ * Get job queue health status
+ */
+export const getJobQueueHealth = async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  try {
+    const health = await jobQueueService.getQueueHealth()
+    logger.audit('VIEW_QUEUE_HEALTH', adminId, {})
+    sendSuccess(res, health)
+  } catch (error) {
+    logger.error('Admin getJobQueueHealth error', error as Error)
+    sendInternalError(res, 'Failed to retrieve queue health')
+  }
+}
+
+/**
+ * Trigger GDPR data export for a user
+ */
+export const triggerDataExport = async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const userId = req.params.id as string
+  try {
+    const exportData = await dataExportService.generateUserExport(userId)
+    logger.audit('TRIGGER_DATA_EXPORT', adminId, { targetUserId: userId })
+    sendSuccess(res, exportData, 'Data export generated successfully')
+  } catch (error) {
+    logger.error('Admin triggerDataExport error', error as Error)
+    sendInternalError(res, 'Failed to generate data export')
   }
 }
 
@@ -362,15 +389,11 @@ export const getAdminCourses = async (req: Request, res: Response): Promise<void
       prisma.course.count({ where }),
     ])
 
-    res.status(200).json({
-      status: 'success',
-      data: courses,
-      pagination: {
-        page: parsedPage,
-        limit: parsedLimit,
-        total,
-        totalPages: Math.ceil(total / parsedLimit),
-      },
+    sendSuccess(res, courses, undefined, 200, {
+      page: parsedPage,
+      limit: parsedLimit,
+      total,
+      totalPages: Math.ceil(total / parsedLimit),
     })
   } catch (error) {
     logger.error(
@@ -378,7 +401,7 @@ export const getAdminCourses = async (req: Request, res: Response): Promise<void
       error instanceof Error ? error : new Error(String(error)),
       { adminId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -392,9 +415,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
     const { title, description, difficulty, category, thumbnail, price, instructorId } = req.body
 
     if (!title || !description || !difficulty) {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Title, description, and difficulty are required' })
+      sendValidationError(res, 'Title, description, and difficulty are required')
       return
     }
 
@@ -429,18 +450,14 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
 
     logger.audit('CREATE_COURSE', adminId, { courseId: course.id, title: course.title })
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Course created successfully',
-      data: course,
-    })
+    sendCreated(res, course, 'Course created successfully')
   } catch (error) {
     logger.error(
       'Admin createCourse error',
       error instanceof Error ? error : new Error(String(error)),
       { adminId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -456,7 +473,7 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
 
     const existing = await prisma.course.findUnique({ where: { id: courseId } })
     if (!existing) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
+      sendNotFound(res, 'Course not found')
       return
     }
 
@@ -485,18 +502,14 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
 
     logger.audit('UPDATE_COURSE', adminId, { courseId, fields: Object.keys(req.body) })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Course updated successfully',
-      data: updated,
-    })
+    sendSuccess(res, updated, 'Course updated successfully')
   } catch (error) {
     logger.error(
       'Admin updateCourse error',
       error instanceof Error ? error : new Error(String(error)),
       { adminId, courseId: req.params.id }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -510,7 +523,7 @@ export const deleteCourse = async (req: Request, res: Response): Promise<void> =
   try {
     const course = await prisma.course.findUnique({ where: { id: courseId } })
     if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
+      sendNotFound(res, 'Course not found')
       return
     }
 
@@ -518,17 +531,14 @@ export const deleteCourse = async (req: Request, res: Response): Promise<void> =
 
     logger.audit('DELETE_COURSE', adminId, { courseId, title: course.title })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Course deleted successfully',
-    })
+    sendSuccess(res, null, 'Course deleted successfully')
   } catch (error) {
     logger.error(
       'Admin deleteCourse error',
       error instanceof Error ? error : new Error(String(error)),
       { adminId, courseId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -548,12 +558,9 @@ export const getAnalytics = async (req: Request, res: Response): Promise<void> =
 
     logger.audit('ACCESS_ANALYTICS', adminId, { days })
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        ...analytics,
-        security,
-      },
+    sendSuccess(res, {
+      ...analytics,
+      security,
     })
   } catch (error) {
     logger.error(
@@ -561,7 +568,7 @@ export const getAnalytics = async (req: Request, res: Response): Promise<void> =
       error instanceof Error ? error : new Error(String(error)),
       { adminId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -588,14 +595,14 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
 
     logger.audit('VIEW_AUDIT_LOGS', adminId, { filters: req.query })
 
-    res.status(200).json({ status: 'success', data: logs })
+    sendSuccess(res, logs)
   } catch (error) {
     logger.error(
       'Admin getAuditLogs error',
       error instanceof Error ? error : new Error(String(error)),
       { adminId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -613,14 +620,14 @@ export const getSecurityEvents = async (req: Request, res: Response): Promise<vo
 
     logger.audit('VIEW_SECURITY', adminId, { days })
 
-    res.status(200).json({ status: 'success', data: events })
+    sendSuccess(res, events)
   } catch (error) {
     logger.error(
       'Admin getSecurityEvents error',
       error instanceof Error ? error : new Error(String(error)),
       { adminId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -629,34 +636,93 @@ export const getSecurityEvents = async (req: Request, res: Response): Promise<vo
  */
 export const getUserAnalytics = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user?.userId) {
+      sendForbidden(res)
+      return
+    }
     const byRole = await prisma.user.groupBy({
       by: ['role'],
       _count: { id: true },
     })
 
-    const growth = await prisma.user.groupBy({
-      by: ['createdAt'],
-      _count: { id: true },
-      orderBy: { createdAt: 'asc' },
-      take: 30,
+    // Fetch users for the last 30 days and group by date
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+    const recentUsers = await prisma.user.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      select: { createdAt: true },
     })
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        byRole: byRole.map(g => ({ role: g.role, count: g._count.id })),
-        growth: growth.map(g => ({
-          date: g.createdAt.toISOString().split('T')[0],
-          count: g._count.id,
-        })),
-      },
+    const growthMap = new Map<string, number>()
+    recentUsers.forEach(u => {
+      const dateStr = u.createdAt.toISOString().split('T')[0]
+      growthMap.set(dateStr, (growthMap.get(dateStr) || 0) + 1)
+    })
+
+    const growth = Array.from(growthMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    sendSuccess(res, {
+      byRole: byRole.map(g => ({ role: g.role, count: g._count.id })),
+      growth,
     })
   } catch (error) {
     logger.error(
       'Admin getUserAnalytics error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
+  }
+}
+
+/**
+ * Get Daily Active Users (DAU) analytics
+ */
+export const getDauAnalytics = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user?.userId) {
+      sendForbidden(res)
+      return
+    }
+
+    const days = parseInt(req.query.days as string) || 30
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
+    const activeUsers = await prisma.user.findMany({
+      where: { updatedAt: { gte: startDate } },
+      select: { updatedAt: true },
+    })
+
+    const dauMap = new Map<string, number>()
+
+    // Initialize all days with 0
+    for (let i = 0; i < days; i++) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      dauMap.set(d.toISOString().split('T')[0], 0)
+    }
+
+    activeUsers.forEach(u => {
+      const dateStr = u.updatedAt.toISOString().split('T')[0]
+      if (dauMap.has(dateStr)) {
+        dauMap.set(dateStr, dauMap.get(dateStr)! + 1)
+      }
+    })
+
+    const dauData = Array.from(dauMap.entries())
+      .map(([date, activeUsers]) => ({ date, activeUsers }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    sendSuccess(res, { data: dauData })
+  } catch (error) {
+    logger.error(
+      'Admin getDauAnalytics error',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res)
   }
 }
 
@@ -665,6 +731,10 @@ export const getUserAnalytics = async (req: Request, res: Response): Promise<voi
  */
 export const getCourseAnalytics = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user?.userId) {
+      sendForbidden(res)
+      return
+    }
     const popular = await prisma.course.findMany({
       take: 10,
       orderBy: { studentCount: 'desc' },
@@ -682,25 +752,22 @@ export const getCourseAnalytics = async (req: Request, res: Response): Promise<v
       where: { category: { not: null } },
     })
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        popular: popular.map(p => ({
-          id: p.id,
-          title: p.title,
-          enrollments: p.studentCount,
-        })),
-        byCategory: byCategory.map(c => ({
-          category: c.category ?? 'Uncategorized',
-          count: c._count.id,
-        })),
-      },
+    sendSuccess(res, {
+      popular: popular.map(p => ({
+        id: p.id,
+        title: p.title,
+        enrollments: p.studentCount,
+      })),
+      byCategory: byCategory.map(c => ({
+        category: c.category ?? 'Uncategorized',
+        count: c._count.id,
+      })),
     })
   } catch (error) {
     logger.error(
       'Admin getCourseAnalytics error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

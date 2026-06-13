@@ -6,8 +6,11 @@ import hpp from 'hpp'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import 'dotenv/config'
+import { initSentry } from './utils/sentry'
+initSentry()
+
+import path from 'path'
 import routes from './routes'
-import { verifyAccessToken } from './utils/auth'
 import { handleWebhook } from './controllers/paymentsController'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 import { requestId, requestLogger } from './middleware/authMiddleware'
@@ -20,12 +23,21 @@ import {
   generalRateLimit,
   authRateLimit,
   adminRateLimit,
-  sanitizeInput,
+  mfaRateLimit,
+  csrfRateLimit,
 } from './config'
+import { createAdapter } from '@socket.io/redis-adapter'
+import { createClient } from 'redis'
 import logger from './utils/logger'
 import { prisma } from './config'
 import { config } from './utils/env'
 import { startTokenCleanupScheduler, stopTokenCleanupScheduler } from './jobs/tokenCleanup'
+import { startAiNotificationsJob, stopAiNotificationsJob } from './jobs/aiNotificationsJob'
+import { startTestExpiryJob, stopTestExpiryJob } from './jobs/testExpiryJob'
+import { startStaleSessionJob, stopStaleSessionJob } from './jobs/staleSessionJob'
+import { setupWebSockets } from './websockets'
+import { notificationService } from './services/NotificationService'
+import { cacheService } from './services/CacheService'
 
 const app = express()
 const httpServer = createServer(app)
@@ -39,9 +51,27 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
 })
 
+// Inject IO into NotificationService
+notificationService.setSocketIO(io)
+
+// Setup Redis adapter for Socket.IO if enabled
+if (process.env.REDIS_ENABLED === 'true' && process.env.REDIS_URL) {
+  const pubClient = createClient({ url: process.env.REDIS_URL })
+  const subClient = pubClient.duplicate()
+
+  Promise.all([pubClient.connect(), subClient.connect()])
+    .then(() => {
+      io.adapter(createAdapter(pubClient, subClient))
+      logger.info('Socket.IO Redis adapter attached successfully')
+    })
+    .catch(err => {
+      logger.error('Failed to connect Socket.IO Redis clients:', err)
+    })
+}
+
 // Attach io to request for use in controllers
-app.use((req: Request, res: Response, next: NextFunction) => {
-  ;(req as any).io = io
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  req.io = io
   next()
 })
 
@@ -50,12 +80,15 @@ app.use(requestId)
 app.use(requestLogger)
 
 // Security Middlewares
-app.use(helmet(helmetConfig))
-app.use(compression())
-app.use(hpp()) // Prevent HTTP Parameter Pollution
+import { configureSecurity } from './middleware/securityMiddleware'
+import { globalLimiter } from './middleware/rateLimiter'
 
-// CORS configuration
-app.use(cors(corsOptions))
+configureSecurity(app)
+
+app.use(compression())
+
+// Apply Global Rate Limiting
+app.use(globalLimiter)
 
 // IMPORTANT: Stripe webhook MUST receive raw body before express.json() parsing.
 // Mount it before body-parsing middleware so the raw Buffer is preserved for
@@ -63,8 +96,8 @@ app.use(cors(corsOptions))
 app.post('/api/v1/payments/webhook', express.raw({ type: 'application/json' }), handleWebhook)
 
 // Body parsing (after webhook route)
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 // Global Input Sanitization
 app.use(sanitizeMiddleware)
@@ -72,8 +105,11 @@ app.use(sanitizeMiddleware)
 // CSRF Protection — skip for safe methods, webhooks, and auth routes
 app.use('/api/v1', csrfProtection)
 
-// CSRF token generation endpoint (for frontend to fetch)
-app.get('/api/v1/csrf-token', (req: Request, res: Response) => {
+// Serve uploads statically
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+
+// CSRF token generation endpoint (for frontend to fetch) — rate limited
+app.get('/api/v1/csrf-token', csrfRateLimit, async (req: Request, res: Response) => {
   const sessionId = req.headers['x-session-id'] as string
   if (!sessionId) {
     res.status(400).json({
@@ -83,7 +119,7 @@ app.get('/api/v1/csrf-token', (req: Request, res: Response) => {
     })
     return
   }
-  const token = generateCsrfTokenForSession(sessionId)
+  const token = await generateCsrfTokenForSession(sessionId)
   res.json({
     status: 'success',
     csrfToken: token,
@@ -100,174 +136,103 @@ app.use(sessionTimeoutMiddleware)
 // Apply specific rate limiting
 app.use('/api/v1/auth', authRateLimit) // Stricter rate limiting for auth
 app.use('/api/v1/admin', adminRateLimit) // Ultra-strict for admin
+app.use('/api/v1/auth/mfa', mfaRateLimit) // Ultra-strict for MFA verification
+app.use('/api/v1/auth/verify-mfa', mfaRateLimit)
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './config/swagger'
+
 app.use('/api/v1', routes)
+
+// Swagger Documentation Route (Only enabled in development or specific environments)
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+}
 
 // SECURITY: Root mount removed — all API access must go through /api/v1/
 // This ensures auth and admin rate limiters cannot be bypassed.
 
-// API Health Check at versioned endpoint
-app.get('/api/v1/health', async (req, res) => {
-  try {
-    // Check database connectivity
-    await prisma.$queryRaw`SELECT 1`
+// Setup WebSocket logic
+setupWebSockets(io)
 
-    res.json({
-      status: 'ok',
-      version: 'v1',
-      timestamp: new Date().toISOString(),
-      services: {
-        database: 'connected',
-      },
-    })
-  } catch (error) {
-    logger.error('Health check failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(503).json({
-      status: 'error',
-      version: 'v1',
-      timestamp: new Date().toISOString(),
-      services: {
-        database: 'disconnected',
-      },
-    })
-  }
-})
-
-// WebSocket logic
-io.use((socket, next) => {
-  const token = socket.handshake.auth.token || socket.handshake.query.token
-  if (!token) {
-    return next(new Error('Authentication required'))
-  }
-
-  try {
-    const decoded = verifyAccessToken(token as string)
-    socket.data.userId = decoded.userId
-    socket.data.userRole = decoded.role
-    next()
-  } catch {
-    return next(new Error('Invalid token'))
-  }
-})
-
-io.on('connection', socket => {
-  logger.info('User connected', { socketId: socket.id, userId: socket.data.userId })
-
-  socket.on('join-room', async (roomId: string) => {
-    // Verify user has access to this room (e.g., enrolled in course)
-    try {
-      const session = await prisma.liveSession.findUnique({
-        where: { id: roomId },
-        select: { id: true, status: true },
-      })
-      if (!session) {
-        socket.emit('error', { message: 'Session not found' })
-        return
-      }
-      void socket.join(roomId)
-      logger.info('User joined room', { socketId: socket.id, roomId, userId: socket.data.userId })
-      
-      // Notify other users in the room that a new peer has joined
-      socket.to(roomId).emit('user-joined', { socketId: socket.id, userId: socket.data.userId })
-    } catch {
-      socket.emit('error', { message: 'Failed to join room' })
-    }
-  })
-
-  socket.on('leave-room', (roomId: string) => {
-    void socket.leave(roomId)
-    socket.to(roomId).emit('user-left', { socketId: socket.id, userId: socket.data.userId })
-  })
-
-  // WebRTC Signaling
-  socket.on('webrtc-offer', (data: { target: string; offer: any; roomId: string }) => {
-    socket.to(data.target).emit('webrtc-offer', {
-      sender: socket.id,
-      offer: data.offer,
-    })
-  })
-
-  socket.on('webrtc-answer', (data: { target: string; answer: any; roomId: string }) => {
-    socket.to(data.target).emit('webrtc-answer', {
-      sender: socket.id,
-      answer: data.answer,
-    })
-  })
-
-  socket.on('webrtc-ice-candidate', (data: { target: string; candidate: any; roomId: string }) => {
-    socket.to(data.target).emit('webrtc-ice-candidate', {
-      sender: socket.id,
-      candidate: data.candidate,
-    })
-  })
-
-  // Real-time Chat Messaging with rate limiting
-  const messageCooldown = new Map<string, number>()
-  socket.on('send-message', (data: { roomId: string; message: string }) => {
-    const now = Date.now()
-    const lastMessage = messageCooldown.get(socket.id) || 0
-    if (now - lastMessage < 500) {
-      // 500ms cooldown
-      socket.emit('error', { message: 'Message rate limit exceeded' })
-      return
-    }
-    messageCooldown.set(socket.id, now)
-
-    if (!data.message || data.message.length > 2000) {
-      socket.emit('error', { message: 'Message too long' })
-      return
-    }
-
-    const sanitizedMessage = sanitizeInput(data.message)
-    if (!sanitizedMessage.trim()) {
-      socket.emit('error', { message: 'Message contains invalid characters' })
-      return
-    }
-
-    io.to(data.roomId).emit('new-message', {
-      message: sanitizedMessage,
-      sender: socket.data.userId,
-      timestamp: new Date().toISOString(),
-    })
-  })
-
-  // Real-time Hand Raise Event
-  socket.on('raise-hand', (data: { roomId: string }) => {
-    io.to(data.roomId).emit('hand-raised', { user: socket.data.userId })
-  })
-
-  socket.on('disconnect', () => {
-    logger.info('User disconnected', { socketId: socket.id, userId: socket.data.userId })
-  })
-})
+import * as Sentry from '@sentry/node'
+import { cleanupMemoryStore } from './middleware/rateLimiter'
+import { stopCsrfCleanup } from './middleware/csrfMiddleware'
 
 // Global Error Handlers
+Sentry.setupExpressErrorHandler(app)
 app.use(notFoundHandler)
 app.use(errorHandler)
 
 const PORT = config.port
 
-// Start server
-httpServer.listen(PORT, () => {
-  logger.info(`Server running on http://localhost:${PORT}`)
-  logger.info(`Environment: ${config.nodeEnv}`)
-  startTokenCleanupScheduler()
+const startServer = async (): Promise<void> => {
+  await cacheService.connect()
+
+  httpServer.listen(PORT, () => {
+    logger.info(`Server running on http://localhost:${PORT}`)
+    logger.info(`Environment: ${config.nodeEnv}`)
+    startTokenCleanupScheduler()
+    startAiNotificationsJob()
+    startTestExpiryJob()
+    startStaleSessionJob()
+    logger.info(`Server is running on port ${config.port}`)
+  })
+}
+
+void startServer()
+
+// Track active connections for draining
+const activeConnections = new Set<import('net').Socket>()
+
+httpServer.on('connection', socket => {
+  activeConnections.add(socket)
+  socket.on('close', () => activeConnections.delete(socket))
 })
 
-// Graceful shutdown — ensures DB connections are properly closed
+const shutdownResources = async (): Promise<void> => {
+  const results = await Promise.allSettled([
+    cacheService.disconnect(),
+    prisma.$disconnect(),
+    Promise.resolve(cleanupMemoryStore()),
+    Promise.resolve(stopCsrfCleanup()),
+  ])
+
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      logger.error(
+        '[Shutdown] Resource cleanup failed',
+        result.reason instanceof Error ? result.reason : new Error(String(result.reason))
+      )
+    }
+  }
+}
+
+// Graceful shutdown — ensures all connections and resources are properly closed
 const gracefulShutdown = (signal: string) => {
   logger.info(`${signal} received, shutting down gracefully`)
   stopTokenCleanupScheduler()
-  void io.close()
+  stopAiNotificationsJob()
+  stopTestExpiryJob()
+  stopStaleSessionJob()
+
+  // Stop accepting new connections
   httpServer.close(async () => {
-    await prisma.$disconnect()
-    logger.info('Server closed')
+    // Force-drain remaining keep-alive connections
+    for (const socket of activeConnections) {
+      socket.destroy()
+    }
+    activeConnections.clear()
+
+    await shutdownResources()
+    logger.info('Server closed successfully')
     process.exit(0)
   })
-  // Force kill after 10s if graceful shutdown hangs
+
+  // Force kill after 15s if graceful shutdown hangs
   setTimeout(() => {
     logger.error('Forced shutdown after timeout')
     process.exit(1)
-  }, 10000)
+  }, 15000)
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
@@ -276,6 +241,12 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 // Catch unhandled promise rejections to prevent silent crashes
 process.on('unhandledRejection', (reason: unknown) => {
   logger.error('Unhandled Rejection', reason instanceof Error ? reason : new Error(String(reason)))
+})
+
+// Catch uncaught exceptions (last resort)
+process.on('uncaughtException', (error: Error) => {
+  logger.error('Uncaught Exception', error)
+  gracefulShutdown('UNCAUGHT_EXCEPTION')
 })
 
 export { io }

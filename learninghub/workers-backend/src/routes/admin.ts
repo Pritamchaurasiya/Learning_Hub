@@ -1,129 +1,72 @@
-import { Client } from '@neondatabase/serverless'
-import { verifyToken } from '../utils/jwt'
+import { verifyToken } from '../middleware/auth'
 import { createJSONResponse, createErrorResponse } from '../utils/helpers'
+import { hashPassword } from '../utils/security'
+import { withDb, queryOne } from '../db/connection'
+import { requireUser, adminOnly } from '../utils/authHelper'
 import { Env } from '../types'
 
-/**
- * Admin routes handler
- * All routes require admin authentication
- */
 export async function handleAdmin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
   const path = url.pathname
   const method = request.method
 
-  // Verify admin access
   const authResult = await verifyAdminAccess(request, env)
   if (authResult) return authResult
 
-  // Users management
-  if (path === '/admin/users' && method === 'GET') {
-    return handleGetUsers(request, env)
+  if (path === '/admin/users' && method === 'GET') return handleGetUsers(request, env)
+  if (path.match(/^\/admin\/users\/[^/]+$/) && method === 'GET') {
+    return handleGetUserDetails(request, env, path.split('/')[3])
   }
-
-  if (path.match(/^\/admin\/users\/[^\/]+$/) && method === 'GET') {
-    const userId = path.split('/')[3]
-    return handleGetUserDetails(request, env, userId)
+  if (path.match(/^\/admin\/users\/[^/]+$/) && method === 'PUT') {
+    return handleUpdateUser(request, env, path.split('/')[3])
   }
-
-  if (path.match(/^\/admin\/users\/[^\/]+$/) && method === 'PUT') {
-    const userId = path.split('/')[3]
-    return handleUpdateUser(request, env, userId)
+  if (path.match(/^\/admin\/users\/[^/]+$/) && method === 'DELETE') {
+    return handleDeleteUser(request, env, path.split('/')[3])
   }
-
-  if (path.match(/^\/admin\/users\/[^\/]+$/) && method === 'DELETE') {
-    const userId = path.split('/')[3]
-    return handleDeleteUser(request, env, userId)
+  if (path === '/admin/dashboard' && method === 'GET') return handleDashboard(request, env)
+  if (path === '/admin/auth/register' && method === 'POST') return handleAdminRegister(request, env)
+  if (path === '/admin/courses' && method === 'GET') return handleGetCourses(request, env)
+  if (path === '/admin/courses' && method === 'POST') return handleCreateCourse(request, env)
+  if (path.match(/^\/admin\/courses\/[^/]+$/) && method === 'PUT') {
+    return handleUpdateCourse(request, env, path.split('/')[3])
   }
-
-  // Courses management
-  if (path === '/admin/courses' && method === 'POST') {
-    return handleCreateCourse(request, env)
+  if (path.match(/^\/admin\/courses\/[^/]+$/) && method === 'DELETE') {
+    return handleDeleteCourse(request, env, path.split('/')[3])
   }
-
-  if (path.match(/^\/admin\/courses\/[^\/]+$/) && method === 'PUT') {
-    const courseId = path.split('/')[3]
-    return handleUpdateCourse(request, env, courseId)
-  }
-
-  if (path.match(/^\/admin\/courses\/[^\/]+$/) && method === 'DELETE') {
-    const courseId = path.split('/')[3]
-    return handleDeleteCourse(request, env, courseId)
-  }
-
-  // Analytics
-  if (path === '/admin/analytics' && method === 'GET') {
-    return handleGetAnalytics(request, env)
-  }
-
-  if (path === '/admin/analytics/users' && method === 'GET') {
-    return handleGetUserAnalytics(request, env)
-  }
-
-  if (path === '/admin/analytics/courses' && method === 'GET') {
-    return handleGetCourseAnalytics(request, env)
-  }
+  if (path === '/admin/analytics' && method === 'GET') return handleGetAnalytics(request, env)
+  if (path === '/admin/analytics/users' && method === 'GET') return handleGetUserAnalytics(request, env)
+  if (path === '/admin/analytics/courses' && method === 'GET') return handleGetCourseAnalytics(request, env)
 
   return createErrorResponse('Admin endpoint not found', 404)
 }
 
-/**
- * Verify admin access
- */
 async function verifyAdminAccess(request: Request, env: Env): Promise<Response | null> {
-  const authHeader = request.headers.get('Authorization')
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return createErrorResponse('Unauthorized', 401)
-  }
-
-  const token = authHeader.split(' ')[1]
-  const payload = await verifyToken(token, env.JWT_SECRET)
-
-  if (!payload || payload.role !== 'admin') {
-    return createErrorResponse('Forbidden - Admin access required', 403)
-  }
-
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
+  if (!adminOnly(user)) return createErrorResponse('Forbidden - Admin access required', 403)
   return null
 }
 
-/**
- * Get all users (paginated)
- */
 async function handleGetUsers(request: Request, env: Env): Promise<Response> {
   try {
     const url = new URL(request.url)
-    const page = parseInt(url.searchParams.get('page') || '1')
-    const limit = parseInt(url.searchParams.get('limit') || '20')
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
+    const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')))
     const offset = (page - 1) * limit
 
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const usersResult = await client.query(
+        `SELECT id, email, username, role, xp, level, streak, created_at, is_active
+         FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      )
+      const countResult = await client.query('SELECT COUNT(*) FROM users')
+      const total = parseInt(countResult.rows[0].count)
 
-    const usersResult = await client.query(
-      `SELECT id, email, username, role, xp, level, streak, created_at, is_active
-       FROM users
-       ORDER BY created_at DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
-    )
-
-    const countResult = await client.query('SELECT COUNT(*) FROM users')
-    const total = parseInt(countResult.rows[0].count)
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: {
-        users: usersResult.rows,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      },
+      return createJSONResponse({
+        status: 'success',
+        data: { users: usersResult.rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
+      })
     })
   } catch (error) {
     console.error('Get users error:', error)
@@ -131,56 +74,30 @@ async function handleGetUsers(request: Request, env: Env): Promise<Response> {
   }
 }
 
-/**
- * Get single user details
- */
 async function handleGetUserDetails(request: Request, env: Env, userId: string): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const userResult = await client.query(
+        `SELECT id, email, username, role, xp, level, streak, bio, location, website, created_at, is_active
+         FROM users WHERE id = $1`, [userId]
+      )
+      if (userResult.rows.length === 0) return createErrorResponse('User not found', 404)
 
-    const userResult = await client.query(
-      `SELECT id, email, username, role, xp, level, streak, bio, location, website, created_at, is_active
-       FROM users
-       WHERE id = $1`,
-      [userId]
-    )
+      const progressResult = await client.query(`
+        SELECT c.id, c.title, p.progress, p.started_at, p.last_accessed_at
+        FROM user_progress p JOIN courses c ON p.course_id = c.id WHERE p.user_id = $1
+      `, [userId])
 
-    if (userResult.rows.length === 0) {
-      await client.end()
-      return createErrorResponse('User not found', 404)
-    }
+      const resultsResult = await client.query(`
+        SELECT t.title, tr.score, tr.completed_at, tr.passed
+        FROM test_results tr JOIN tests t ON tr.test_id = t.id WHERE tr.user_id = $1
+        ORDER BY tr.completed_at DESC
+      `, [userId])
 
-    // Get user's course progress
-    const progressResult = await client.query(
-      `SELECT 
-        c.id, c.title, p.progress, p.started_at, p.last_accessed_at
-       FROM user_progress p
-       JOIN courses c ON p.course_id = c.id
-       WHERE p.user_id = $1`,
-      [userId]
-    )
-
-    // Get user's test results
-    const resultsResult = await client.query(
-      `SELECT 
-        t.title, tr.score, tr.completed_at, tr.passed
-       FROM test_results tr
-       JOIN tests t ON tr.test_id = t.id
-       WHERE tr.user_id = $1
-       ORDER BY tr.completed_at DESC`,
-      [userId]
-    )
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: {
-        user: userResult.rows[0],
-        progress: progressResult.rows,
-        testResults: resultsResult.rows,
-      },
+      return createJSONResponse({
+        status: 'success',
+        data: { user: userResult.rows[0], progress: progressResult.rows, testResults: resultsResult.rows },
+      })
     })
   } catch (error) {
     console.error('Get user details error:', error)
@@ -188,54 +105,28 @@ async function handleGetUserDetails(request: Request, env: Env, userId: string):
   }
 }
 
-/**
- * Update user (role, is_active, etc.)
- */
+const ALLOWED_USER_COLUMNS = new Set(['role', 'is_active', 'username', 'bio', 'location', 'website'])
+const ALLOWED_COURSE_COLUMNS = new Set(['title', 'description', 'short_description', 'phase', 'difficulty', 'category', 'content', 'price', 'published'])
+
 async function handleUpdateUser(request: Request, env: Env, userId: string): Promise<Response> {
   try {
     const body = await request.json()
-    const { role, is_active, username } = body
+    const updates: Record<string, unknown> = {}
 
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
-
-    // Build dynamic update query
-    const updates: string[] = []
-    const values: any[] = []
-    let paramIndex = 1
-
-    if (role !== undefined) {
-      updates.push(`role = $${paramIndex}`)
-      values.push(role)
-      paramIndex++
+    for (const key of Object.keys(body)) {
+      if (ALLOWED_USER_COLUMNS.has(key)) {
+        updates[key] = body[key]
+      }
     }
 
-    if (is_active !== undefined) {
-      updates.push(`is_active = $${paramIndex}`)
-      values.push(is_active)
-      paramIndex++
-    }
+    if (Object.keys(updates).length === 0) return createErrorResponse('No valid fields to update', 400)
 
-    if (username !== undefined) {
-      updates.push(`username = $${paramIndex}`)
-      values.push(username)
-      paramIndex++
-    }
-
-    if (updates.length === 0) {
-      await client.end()
-      return createErrorResponse('No fields to update', 400)
-    }
-
-    values.push(userId)
-
-    await client.query(`UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`, values)
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      message: 'User updated successfully',
+    return await withDb(env, async (client) => {
+      const cols = Object.keys(updates)
+      const setClauses = cols.map((k, i) => `${k} = $${i + 1}`).join(', ')
+      const values = [...Object.values(updates), userId]
+      await client.query(`UPDATE users SET ${setClauses} WHERE id = $${cols.length + 1}`, values)
+      return createJSONResponse({ status: 'success', message: 'User updated successfully' })
     })
   } catch (error) {
     console.error('Update user error:', error)
@@ -243,21 +134,16 @@ async function handleUpdateUser(request: Request, env: Env, userId: string): Pro
   }
 }
 
-/**
- * Delete user
- */
 async function handleDeleteUser(request: Request, env: Env, userId: string): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
-
-    await client.query('DELETE FROM users WHERE id = $1', [userId])
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      message: 'User deleted successfully',
+    return await withDb(env, async (client) => {
+      // Cascade deletes across all related tables
+      const tables = ['enrollments', 'user_progress', 'test_attempts', 'test_results', 'bookmarks', 'user_achievements', 'notifications', 'certificates', 'discussions', 'discussion_replies', 'discussion_votes', 'learning_path_enrollments', 'password_reset_tokens', 'email_verification_tokens', 'activity_log']
+      for (const table of tables) {
+        await client.query(`DELETE FROM ${table} WHERE user_id = $1`, [userId])
+      }
+      await client.query('DELETE FROM users WHERE id = $1', [userId])
+      return createJSONResponse({ status: 'success', message: 'User deleted successfully' })
     })
   } catch (error) {
     console.error('Delete user error:', error)
@@ -265,66 +151,29 @@ async function handleDeleteUser(request: Request, env: Env, userId: string): Pro
   }
 }
 
-/**
- * Create new course
- */
 async function handleCreateCourse(request: Request, env: Env): Promise<Response> {
   try {
     const body = await request.json()
-    const {
-      title,
-      description,
-      shortDescription,
-      phase,
-      duration,
-      difficulty,
-      category,
-      content,
-      thumbnail,
-      instructorName,
-      instructorBio,
-      price,
-      originalPrice,
-      prerequisites,
-      whatYouWillLearn,
-    } = body
 
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const result = await client.query(`
+        INSERT INTO courses (id, title, description, short_description, phase, duration,
+          difficulty, category, content, thumbnail, instructor_name,
+          instructor_bio, price, original_price, prerequisites, what_you_will_learn,
+          published, created_at, updated_at
+        ) VALUES (
+          gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        body.title, body.description, body.shortDescription, body.phase,
+        body.duration, body.difficulty, body.category, body.content,
+        body.thumbnail, body.instructorName, body.instructorBio,
+        body.price, body.originalPrice,
+        JSON.stringify(body.prerequisites || []),
+        JSON.stringify(body.whatYouWillLearn || []),
+      ])
 
-    const result = await client.query(
-      `INSERT INTO courses (
-        id, title, description, short_description, phase, duration,
-        difficulty, category, content, thumbnail, instructor_name,
-        instructor_bio, price, original_price, prerequisites, what_you_will_learn,
-        published, created_at, updated_at
-      ) VALUES (
-        gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true, NOW(), NOW()
-      ) RETURNING *`,
-      [
-        title,
-        description,
-        shortDescription,
-        phase,
-        duration,
-        difficulty,
-        category,
-        content,
-        thumbnail,
-        instructorName,
-        instructorBio,
-        price,
-        originalPrice,
-        JSON.stringify(prerequisites),
-        JSON.stringify(whatYouWillLearn),
-      ]
-    )
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: result.rows[0],
+      return createJSONResponse({ status: 'success', data: result.rows[0] })
     })
   } catch (error) {
     console.error('Create course error:', error)
@@ -332,64 +181,26 @@ async function handleCreateCourse(request: Request, env: Env): Promise<Response>
   }
 }
 
-/**
- * Update course
- */
 async function handleUpdateCourse(request: Request, env: Env, courseId: string): Promise<Response> {
   try {
     const body = await request.json()
-    const { title, description, phase, difficulty, category, content, price, published } = body
+    const updates: Record<string, unknown> = {}
 
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
-
-    const updates: string[] = []
-    const values: any[] = []
-    let paramIndex = 1
-
-    if (title) {
-      updates.push(`title = $${paramIndex++}`)
-      values.push(title)
-    }
-    if (description) {
-      updates.push(`description = $${paramIndex++}`)
-      values.push(description)
-    }
-    if (phase) {
-      updates.push(`phase = $${paramIndex++}`)
-      values.push(phase)
-    }
-    if (difficulty) {
-      updates.push(`difficulty = $${paramIndex++}`)
-      values.push(difficulty)
-    }
-    if (category) {
-      updates.push(`category = $${paramIndex++}`)
-      values.push(category)
-    }
-    if (content) {
-      updates.push(`content = $${paramIndex++}`)
-      values.push(content)
-    }
-    if (price !== undefined) {
-      updates.push(`price = $${paramIndex++}`)
-      values.push(price)
-    }
-    if (published !== undefined) {
-      updates.push(`published = $${paramIndex++}`)
-      values.push(published)
+    for (const key of Object.keys(body)) {
+      if (ALLOWED_COURSE_COLUMNS.has(key)) {
+        updates[key] = body[key]
+      }
     }
 
-    updates.push(`updated_at = NOW()`)
-    values.push(courseId)
+    if (Object.keys(updates).length === 0) return createErrorResponse('No valid fields to update', 400)
 
-    await client.query(`UPDATE courses SET ${updates.join(', ')} WHERE id = $${paramIndex}`, values)
+    return await withDb(env, async (client) => {
+      const cols = Object.keys(updates)
+      const setClauses = cols.map((k, i) => `${k} = $${i + 1}`).join(', ')
+      const values = [...Object.values(updates), courseId]
+      await client.query(`UPDATE courses SET ${setClauses}, updated_at = NOW() WHERE id = $${cols.length + 1}`, values)
 
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      message: 'Course updated successfully',
+      return createJSONResponse({ status: 'success', message: 'Course updated successfully' })
     })
   } catch (error) {
     console.error('Update course error:', error)
@@ -397,21 +208,11 @@ async function handleUpdateCourse(request: Request, env: Env, courseId: string):
   }
 }
 
-/**
- * Delete course
- */
 async function handleDeleteCourse(request: Request, env: Env, courseId: string): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
-
-    await client.query('DELETE FROM courses WHERE id = $1', [courseId])
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      message: 'Course deleted successfully',
+    return await withDb(env, async (client) => {
+      await client.query('DELETE FROM courses WHERE id = $1', [courseId])
+      return createJSONResponse({ status: 'success', message: 'Course deleted successfully' })
     })
   } catch (error) {
     console.error('Delete course error:', error)
@@ -419,38 +220,30 @@ async function handleDeleteCourse(request: Request, env: Env, courseId: string):
   }
 }
 
-/**
- * Get platform analytics
- */
 async function handleGetAnalytics(request: Request, env: Env): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const [usersCount, coursesCount, testsCount, enrollmentsCount, completionsCount, recentUsers] =
+        await Promise.all([
+          client.query('SELECT COUNT(*) FROM users'),
+          client.query('SELECT COUNT(*) FROM courses'),
+          client.query('SELECT COUNT(*) FROM tests'),
+          client.query('SELECT COUNT(*) FROM user_progress'),
+          client.query('SELECT COUNT(*) FROM test_results'),
+          client.query(`SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days'`),
+        ])
 
-    // Get counts
-    const usersCount = await client.query('SELECT COUNT(*) FROM users')
-    const coursesCount = await client.query('SELECT COUNT(*) FROM courses')
-    const testsCount = await client.query('SELECT COUNT(*) FROM tests')
-    const enrollmentsCount = await client.query('SELECT COUNT(*) FROM user_progress')
-    const completionsCount = await client.query('SELECT COUNT(*) FROM test_results')
-
-    // Get recent signups (last 30 days)
-    const recentUsers = await client.query(
-      `SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days'`
-    )
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: {
-        users: parseInt(usersCount.rows[0].count),
-        courses: parseInt(coursesCount.rows[0].count),
-        tests: parseInt(testsCount.rows[0].count),
-        enrollments: parseInt(enrollmentsCount.rows[0].count),
-        completions: parseInt(completionsCount.rows[0].count),
-        recentSignups: parseInt(recentUsers.rows[0].count),
-      },
+      return createJSONResponse({
+        status: 'success',
+        data: {
+          users: parseInt(usersCount.rows[0].count),
+          courses: parseInt(coursesCount.rows[0].count),
+          tests: parseInt(testsCount.rows[0].count),
+          enrollments: parseInt(enrollmentsCount.rows[0].count),
+          completions: parseInt(completionsCount.rows[0].count),
+          recentSignups: parseInt(recentUsers.rows[0].count),
+        },
+      })
     })
   } catch (error) {
     console.error('Get analytics error:', error)
@@ -458,36 +251,22 @@ async function handleGetAnalytics(request: Request, env: Env): Promise<Response>
   }
 }
 
-/**
- * Get user analytics
- */
 async function handleGetUserAnalytics(request: Request, env: Env): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const [byRole, growth] = await Promise.all([
+        client.query('SELECT role, COUNT(*) FROM users GROUP BY role'),
+        client.query(`
+          SELECT DATE(created_at) as date, COUNT(*) as count
+          FROM users WHERE created_at > NOW() - INTERVAL '7 days'
+          GROUP BY DATE(created_at) ORDER BY date
+        `),
+      ])
 
-    // Active users by role
-    const byRole = await client.query(`SELECT role, COUNT(*) FROM users GROUP BY role`)
-
-    // User growth over last 7 days
-    const growth = await client.query(
-      `SELECT 
-        DATE(created_at) as date,
-        COUNT(*) as count
-       FROM users
-       WHERE created_at > NOW() - INTERVAL '7 days'
-       GROUP BY DATE(created_at)
-       ORDER BY date`
-    )
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: {
-        byRole: byRole.rows,
-        growth: growth.rows,
-      },
+      return createJSONResponse({
+        status: 'success',
+        data: { byRole: byRole.rows, growth: growth.rows },
+      })
     })
   } catch (error) {
     console.error('Get user analytics error:', error)
@@ -495,39 +274,113 @@ async function handleGetUserAnalytics(request: Request, env: Env): Promise<Respo
   }
 }
 
-/**
- * Get course analytics
- */
+async function handleDashboard(request: Request, env: Env): Promise<Response> {
+  try {
+    return await withDb(env, async (client) => {
+      const [usersCount, coursesCount, testsCount, enrollmentsCount, completionsCount, revenueResult, recentUsers, recentResults] =
+        await Promise.all([
+          client.query('SELECT COUNT(*) FROM users'),
+          client.query('SELECT COUNT(*) FROM courses'),
+          client.query('SELECT COUNT(*) FROM tests'),
+          client.query('SELECT COUNT(*) FROM user_progress'),
+          client.query('SELECT COUNT(*) FROM test_results'),
+          client.query('SELECT COUNT(*) as count FROM test_results WHERE passed = true'),
+          client.query(`SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days'`),
+          client.query(`SELECT COUNT(*) FROM test_results WHERE completed_at > NOW() - INTERVAL '30 days'`),
+        ])
+
+      return createJSONResponse({
+        status: 'success',
+        data: {
+          users: parseInt(usersCount.rows[0].count),
+          courses: parseInt(coursesCount.rows[0].count),
+          tests: parseInt(testsCount.rows[0].count),
+          enrollments: parseInt(enrollmentsCount.rows[0].count),
+          completions: parseInt(completionsCount.rows[0].count),
+          passed: parseInt(revenueResult.rows[0].count),
+          recentSignups: parseInt(recentUsers.rows[0].count),
+          recentCompletions: parseInt(recentResults.rows[0].count),
+        },
+      })
+    })
+  } catch (error) {
+    console.error('Dashboard error:', error)
+    return createErrorResponse('Failed to fetch dashboard', 500)
+  }
+}
+
+async function handleAdminRegister(request: Request, env: Env): Promise<Response> {
+  try {
+    const body = await request.json()
+    const { email, password, username } = body
+
+    if (!email || !password || !username) {
+      return createErrorResponse('Email, password, and username required', 400)
+    }
+
+    const passwordHash = await hashPassword(password)
+
+    return await withDb(env, async (client) => {
+      const existing = await queryOne<{ id: string }>(client, 'SELECT id FROM users WHERE email = $1', [email])
+      if (existing) return createErrorResponse('User already exists', 409)
+
+      await client.query(
+        `INSERT INTO users (id, email, username, password_hash, role) VALUES (gen_random_uuid(), $1, $2, $3, 'admin')`,
+        [email, username, passwordHash]
+      )
+      return createJSONResponse({ status: 'success', message: 'Admin registered' }, 201)
+    })
+  } catch (error) {
+    console.error('Admin register error:', error)
+    return createErrorResponse('Failed to register admin', 500)
+  }
+}
+
+async function handleGetCourses(request: Request, env: Env): Promise<Response> {
+  try {
+    const url = new URL(request.url)
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
+    const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')))
+    const offset = (page - 1) * limit
+
+    return await withDb(env, async (client) => {
+      const coursesResult = await client.query(`
+        SELECT c.*, 
+          (SELECT COUNT(*) FROM user_progress WHERE course_id = c.id) as enrollment_count,
+          (SELECT COUNT(*) FROM tests WHERE course_id = c.id) as test_count
+        FROM courses c ORDER BY c.created_at DESC LIMIT $1 OFFSET $2
+      `, [limit, offset])
+
+      const countResult = await client.query('SELECT COUNT(*) FROM courses')
+      const total = parseInt(countResult.rows[0].count)
+
+      return createJSONResponse({
+        status: 'success',
+        data: { courses: coursesResult.rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
+      })
+    })
+  } catch (error) {
+    console.error('Get courses error:', error)
+    return createErrorResponse('Failed to fetch courses', 500)
+  }
+}
+
 async function handleGetCourseAnalytics(request: Request, env: Env): Promise<Response> {
   try {
-    const client = new Client(env.DATABASE_URL)
-    await client.connect()
+    return await withDb(env, async (client) => {
+      const [popular, byCategory] = await Promise.all([
+        client.query(`
+          SELECT c.id, c.title, c.category, COUNT(p.user_id) as enrollments
+          FROM courses c LEFT JOIN user_progress p ON c.id = p.course_id
+          GROUP BY c.id ORDER BY enrollments DESC LIMIT 10
+        `),
+        client.query('SELECT category, COUNT(*) FROM courses GROUP BY category'),
+      ])
 
-    // Most popular courses by enrollment
-    const popular = await client.query(
-      `SELECT 
-        c.id, c.title, c.category,
-        COUNT(p.user_id) as enrollments
-       FROM courses c
-       LEFT JOIN user_progress p ON c.id = p.course_id
-       GROUP BY c.id
-       ORDER BY enrollments DESC
-       LIMIT 10`
-    )
-
-    // Courses by category
-    const byCategory = await client.query(
-      `SELECT category, COUNT(*) FROM courses GROUP BY category`
-    )
-
-    await client.end()
-
-    return createJSONResponse({
-      status: 'success',
-      data: {
-        popular: popular.rows,
-        byCategory: byCategory.rows,
-      },
+      return createJSONResponse({
+        status: 'success',
+        data: { popular: popular.rows, byCategory: byCategory.rows },
+      })
     })
   } catch (error) {
     console.error('Get course analytics error:', error)

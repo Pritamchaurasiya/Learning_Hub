@@ -7,9 +7,9 @@ vi.mock('../utils/api', () => ({
 }))
 
 describe('useStore', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     const { logout } = useStore.getState()
-    logout()
+    await logout()
     vi.clearAllMocks()
     localStorage.clear()
   })
@@ -62,7 +62,7 @@ describe('useStore', () => {
     expect(state.toasts.length).toBe(0)
   })
 
-  it('should handle authentication state', () => {
+  it('should handle authentication state', async () => {
     const { setAuth, logout } = useStore.getState()
     const mockUser = {
       id: '1',
@@ -77,7 +77,7 @@ describe('useStore', () => {
     expect(useStore.getState().auth.isAuthenticated).toBe(true)
     expect(useStore.getState().auth.user).toEqual(mockUser)
 
-    logout()
+    await logout()
     expect(useStore.getState().auth.isAuthenticated).toBe(false)
     expect(useStore.getState().auth.user).toBeNull()
   })

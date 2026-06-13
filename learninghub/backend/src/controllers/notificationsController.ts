@@ -1,12 +1,18 @@
 import { Request, Response } from 'express'
 import { notificationService } from '../services/NotificationService'
 import logger from '../utils/logger'
+import {
+  sendSuccess,
+  sendUnauthorized,
+  sendNotFound,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 export const getNotifications = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -21,17 +27,13 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
       type,
     })
 
-    res.json({
-      status: 'success',
-      data: result.notifications,
+    sendSuccess(res, result.notifications, undefined, 200, {
+      unreadCount: result.unreadCount,
       pagination: {
         page,
         limit,
         total: result.total,
         pages: Math.ceil(result.total / limit),
-      },
-      meta: {
-        unreadCount: result.unreadCount,
       },
     })
   } catch (error) {
@@ -39,38 +41,35 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
       '[NotificationsController] getNotifications error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getUnreadCount = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const count = await notificationService.getUnreadCount(userId)
 
-    res.json({
-      status: 'success',
-      data: { count },
-    })
+    sendSuccess(res, { count })
   } catch (error) {
     logger.error(
       '[NotificationsController] getUnreadCount error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const markAsRead = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -78,47 +77,41 @@ export const markAsRead = async (req: Request, res: Response): Promise<void> => 
 
     const notification = await notificationService.markAsRead(id, userId)
 
-    res.json({
-      status: 'success',
-      data: notification,
-    })
+    sendSuccess(res, notification)
   } catch (error) {
     logger.error(
       '[NotificationsController] markAsRead error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(404).json({ status: 'error', message: 'Notification not found' })
+    sendNotFound(res, 'Notification not found')
   }
 }
 
 export const markAllAsRead = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const result = await notificationService.markAllAsRead(userId)
 
-    res.json({
-      status: 'success',
-      data: result,
-    })
+    sendSuccess(res, result)
   } catch (error) {
     logger.error(
       '[NotificationsController] markAllAsRead error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const deleteNotification = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -126,15 +119,12 @@ export const deleteNotification = async (req: Request, res: Response): Promise<v
 
     await notificationService.deleteNotification(id, userId)
 
-    res.json({
-      status: 'success',
-      message: 'Notification deleted',
-    })
+    sendSuccess(res, null, 'Notification deleted')
   } catch (error) {
     logger.error(
       '[NotificationsController] deleteNotification error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(404).json({ status: 'error', message: 'Notification not found' })
+    sendNotFound(res, 'Notification not found')
   }
 }

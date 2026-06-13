@@ -8,7 +8,8 @@ import { NotificationPanel } from './NotificationPanel'
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasInitialFetch, setHasInitialFetch] = useState(false)
-  const { unreadCount, fetchNotifications } = useStore()
+  const unreadCount = useStore(s => s.unreadCount)
+  const fetchNotifications = useStore(s => s.fetchNotifications)
   const bellRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 

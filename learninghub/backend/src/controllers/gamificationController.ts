@@ -1,10 +1,15 @@
 import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
-// getPaginationParams and createPaginatedResponse reserved for future pagination
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import logger from '../utils/logger'
 import { queryOptimizationService } from '../services/QueryOptimizationService'
+import {
+  sendSuccess,
+  sendUnauthorized,
+  sendValidationError,
+  sendForbidden,
+  sendError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,13 +21,13 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
       limit: limit ? parseInt(limit as string) : undefined,
     })
 
-    res.json({ status: 'success', data: result })
+    sendSuccess(res, result)
   } catch (error) {
     logger.error(
       '[GamificationController] getLeaderboard error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -30,7 +35,7 @@ export const getAchievements = async (req: Request, res: Response): Promise<void
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
     const achievements = await prisma.userAchievement.findMany({
@@ -38,16 +43,14 @@ export const getAchievements = async (req: Request, res: Response): Promise<void
       orderBy: { unlockedAt: 'desc' },
     })
 
-    res.json({ status: 'success', data: achievements })
+    sendSuccess(res, achievements)
   } catch (error) {
     logger.error(
       '[GamificationController] getAchievements error',
       error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-      }
+      { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -55,39 +58,36 @@ export const updateDailyGoal = async (req: Request, res: Response): Promise<void
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
-    // Validate minutes input
     const rawMinutes = Number(req.body.minutes)
     if (!Number.isFinite(rawMinutes) || rawMinutes <= 0 || rawMinutes > 1440) {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Minutes must be a positive number (max 1440)' })
+      sendValidationError(res, 'Minutes must be a positive number (max 1440)')
       return
     }
     const minutes = Math.floor(rawMinutes)
 
-    // Rate limiting: max 10 updates per hour to prevent XP farming
     const recentUpdates = await prisma.dailyGoal.count({
       where: {
         userId,
-        date: { gte: new Date(Date.now() - 3600000) }, // Last hour
+        date: { gte: new Date(Date.now() - 3600000) },
       },
     })
     if (recentUpdates >= 10) {
-      res.status(429).json({
-        status: 'error',
-        message: 'Too many updates. Please wait before logging more study time.',
-      })
+      sendError(
+        res,
+        'Too many updates. Please wait before logging more study time.',
+        429,
+        'RATE_LIMITED'
+      )
       return
     }
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // Atomic transaction to prevent race conditions on XP award
     const result = await prisma.$transaction(async tx => {
       const goal = await tx.dailyGoal.upsert({
         where: {
@@ -105,7 +105,6 @@ export const updateDailyGoal = async (req: Request, res: Response): Promise<void
       })
 
       let xpAwarded = 0
-      // Award XP atomically when goal is first completed
       if (goal.completedMinutes >= goal.targetMinutes && !goal.completed) {
         await tx.dailyGoal.update({
           where: { id: goal.id },
@@ -121,21 +120,69 @@ export const updateDailyGoal = async (req: Request, res: Response): Promise<void
       return { goal, xpAwarded }
     })
 
-    // Emit global realtime event for Leaderboard auto-refresh
     if (result.xpAwarded > 0 && req.io) {
       req.io.emit('ranking_update', { userId, xpEarned: result.xpAwarded })
     }
 
-    res.json({ status: 'success', data: result.goal })
+    sendSuccess(res, result.goal)
   } catch (error) {
     logger.error(
       '[GamificationController] updateDailyGoal error',
       error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-      }
+      { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
+  }
+}
+
+export const awardXp = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      sendUnauthorized(res)
+      return
+    }
+
+    const userRole = (req.user as Record<string, unknown>).role as string | undefined
+    if (!userRole || (userRole !== 'ADMIN' && userRole !== 'SUPERADMIN')) {
+      sendForbidden(res, 'Admin access required to award XP')
+      return
+    }
+
+    const { amount } = req.body
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+      sendValidationError(res, 'Valid XP amount is required')
+      return
+    }
+
+    const targetUserId = req.body.userId
+    if (!targetUserId || typeof targetUserId !== 'string') {
+      sendValidationError(res, 'Target userId is required')
+      return
+    }
+
+    const user = await prisma.user.update({
+      where: { id: targetUserId },
+      data: { xp: { increment: amount } },
+      select: { xp: true, level: true },
+    })
+
+    const newLevel = Math.floor(user.xp / 100) + 1
+    if (newLevel !== user.level) {
+      await prisma.user.update({
+        where: { id: targetUserId },
+        data: { level: newLevel },
+      })
+    }
+
+    sendSuccess(res, { xp: user.xp, level: newLevel }, 'XP awarded successfully')
+  } catch (error) {
+    logger.error(
+      '[GamificationController] awardXp error',
+      error instanceof Error ? error : new Error(String(error)),
+      { userId: req.user?.userId }
+    )
+    sendInternalError(res)
   }
 }
 
@@ -143,7 +190,7 @@ export const getDsaStats = async (req: Request, res: Response): Promise<void> =>
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -181,31 +228,26 @@ export const getDsaStats = async (req: Request, res: Response): Promise<void> =>
 
     const rank = user ? (await prisma.user.count({ where: { xp: { gt: user.xp } } })) + 1 : 0
 
-    res.json({
-      status: 'success',
-      data: {
-        total_problems: totalProblems,
-        solved_problems: solvedProblemsCount,
-        total_easy: totalEasy,
-        easy_solved: easySolved,
-        total_medium: totalMedium,
-        medium_solved: mediumSolved,
-        total_hard: totalHard,
-        hard_solved: hardSolved,
-        acceptance_rate: acceptanceRate,
-        current_streak: user?.streak ?? 0,
-        longest_streak: user?.longestStreak ?? 0,
-        rank,
-      },
+    sendSuccess(res, {
+      total_problems: totalProblems,
+      solved_problems: solvedProblemsCount,
+      total_easy: totalEasy,
+      easy_solved: easySolved,
+      total_medium: totalMedium,
+      medium_solved: mediumSolved,
+      total_hard: totalHard,
+      hard_solved: hardSolved,
+      acceptance_rate: acceptanceRate,
+      current_streak: user?.streak ?? 0,
+      longest_streak: user?.longestStreak ?? 0,
+      rank,
     })
   } catch (error) {
     logger.error(
       '[GamificationController] getDsaStats error',
       error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-      }
+      { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

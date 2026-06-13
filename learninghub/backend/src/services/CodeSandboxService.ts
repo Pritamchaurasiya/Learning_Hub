@@ -53,6 +53,9 @@ const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   rust: { language: 'rust', version: '1.68.2' },
 }
 
+import crypto from 'crypto'
+import { cacheService } from './CacheService'
+
 export class CodeSandboxService {
   static async execute(req: ExecutionRequest): Promise<ExecutionResult> {
     const langConfig = LANGUAGE_MAP[req.language.toLowerCase()]
@@ -67,13 +70,32 @@ export class CodeSandboxService {
       }
     }
 
+    // ── Sandbox Deduplication Cache ──
+    const payloadHash = crypto.createHash('sha256').update(JSON.stringify(req)).digest('hex')
+    const cacheKey = `sandbox_cache:${payloadHash}`
+
+    const cachedResult = await cacheService.get<ExecutionResult>(cacheKey)
+    if (cachedResult) {
+      return cachedResult
+    }
+
+    const result = await CodeSandboxService._executeInternal(langConfig, req)
+    // Save to cache for 1 hour to heavily reduce duplicate Piston API hits
+    await cacheService.set(cacheKey, result, 3600)
+    return result
+  }
+
+  private static async _executeInternal(
+    langConfig: { language: string; version: string },
+    req: ExecutionRequest
+  ): Promise<ExecutionResult> {
     let passed = 0
     let totalExecutionTime = 0
     let maxMemory = 0
 
     for (let i = 0; i < req.testCases.length; i++) {
       const tc = req.testCases[i]
-      const result = await this.runTestCase(langConfig, req.code, tc.input, req.timeLimit)
+      const result = await CodeSandboxService.runTestCase(langConfig, req.code, tc.input, req.timeLimit)
 
       if (result.status === 'time_limit_exceeded') {
         return {
@@ -111,7 +133,7 @@ export class CodeSandboxService {
       totalExecutionTime += result.executionTime
       maxMemory = Math.max(maxMemory, result.memoryUsed)
 
-      if (this.compareOutput(result.output, tc.output)) {
+      if (CodeSandboxService.compareOutput(result.output, tc.output)) {
         passed++
       } else {
         return {

@@ -1,16 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnimatedPage from '../components/AnimatedPage'
-import {
-  Bookmark,
-  BookOpen,
-  Clock,
-  Trash2,
-  Search,
-  Loader2,
-  AlertCircle,
-  RefreshCw,
-} from 'lucide-react'
+import { Skeleton } from '../components/ui/Skeleton'
+import { Bookmark, BookOpen, Clock, Trash2, Search, AlertCircle, RefreshCw } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { userService, type BookmarkedCourse as BaseBookmarkedCourse } from '../services/userService'
 
@@ -20,9 +12,27 @@ interface BookmarkedCourse extends BaseBookmarkedCourse {
   level?: string
 }
 
+function BookmarkSkeleton() {
+  return (
+    <div className="card p-5">
+      <div className="flex items-start justify-between mb-3">
+        <Skeleton className="w-10 h-10 rounded-xl" />
+        <Skeleton className="w-8 h-8 rounded-lg" />
+      </div>
+      <Skeleton className="h-5 w-3/4 mb-2" />
+      <Skeleton className="h-4 w-full mb-1" />
+      <Skeleton className="h-4 w-2/3 mb-4" />
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-5 w-20 rounded-lg" />
+      </div>
+    </div>
+  )
+}
+
 export default function BookmarksPage() {
   const navigate = useNavigate()
-  const { addToast } = useStore()
+  const addToast = useStore(state => state.addToast)
 
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -72,26 +82,39 @@ export default function BookmarksPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
-        <p className="mt-4 text-gray-500">Loading bookmarks...</p>
-      </div>
+      <AnimatedPage className="space-y-6">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Skeleton className="w-8 h-8 rounded-xl" />
+            <Skeleton className="h-8 w-32" />
+          </div>
+          <Skeleton className="h-4 w-48 mt-2" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <BookmarkSkeleton key={i} />
+          ))}
+        </div>
+      </AnimatedPage>
     )
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">{error}</p>
-        <button
-          onClick={() => fetchBookmarks()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Retry
-        </button>
-      </div>
+      <AnimatedPage>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
+          <h2 className="text-xl font-bold mb-2">Failed to load bookmarks</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">{error}</p>
+          <button
+            onClick={() => fetchBookmarks()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        </div>
+      </AnimatedPage>
     )
   }
 
@@ -100,7 +123,7 @@ export default function BookmarksPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-            <Bookmark className="w-4.5 h-4.5 text-primary-500" />
+            <Bookmark className="w-4 h-4 text-primary-500" />
           </div>
           Bookmarks
         </h1>

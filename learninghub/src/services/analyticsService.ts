@@ -4,13 +4,19 @@ export interface DashboardStats {
   total_courses: number
   completed_courses: number
   in_progress_courses: number
-  total_learning_time: number // in minutes
+  total_learning_time: number
   average_score: number
   current_streak: number
   longest_streak: number
   xp_points: number
   level: number
   rank?: string
+  topic_performance?: Array<{
+    topic: string
+    subject: string
+    attempts: number
+    accuracy: number
+  }>
 }
 
 export interface CourseAnalytics {
@@ -20,7 +26,7 @@ export interface CourseAnalytics {
   progress_percent: number
   completed_lessons: number
   total_lessons: number
-  time_spent: number // in minutes
+  time_spent: number
   last_accessed: string
   average_quiz_score: number
   is_completed: boolean
@@ -31,7 +37,7 @@ export interface LearningActivity {
   date: string
   courses_accessed: number
   lessons_completed: number
-  time_spent: number // in minutes
+  time_spent: number
   xp_earned: number
 }
 
@@ -41,6 +47,25 @@ export interface SkillProgress {
   proficiency_percent: number
   courses_completed: number
   total_courses: number
+}
+
+export interface TestAnalytics {
+  total_tests: number
+  passed_tests: number
+  pass_rate: number
+  average_score: number
+  by_difficulty?: Record<string, { total: number; passed: number; avgScore: number }>
+  trend?: Array<{
+    test_title: string
+    score: number
+    passed: boolean
+    completed_at: string
+  }>
+  topic_performance?: Array<{
+    topic: string
+    accuracy: number
+    total_attempts: number
+  }>
 }
 
 export interface AchievementAnalytics {
@@ -55,73 +80,128 @@ export interface AchievementAnalytics {
   }>
 }
 
+interface RawProgressItem {
+  courseId?: string
+  course?: { id?: string; title?: string; thumbnail?: string | null }
+  course_title?: string
+  progress?: number
+  createdAt?: string
+  created_at?: string
+  timeSpentSeconds?: number
+  time_spent_seconds?: number
+  lastActivityAt?: string
+  last_activity_at?: string
+  updatedAt?: string
+  status?: string
+}
+
+interface RawTopicPerformance {
+  topic?: string
+  topicName?: string
+  subject?: string
+  subjectName?: string
+  accuracy?: number
+  attempts?: number
+}
+
+interface RawAchievement {
+  id: string
+  name?: string
+  achievement_name?: string
+  description?: string
+  achievement_description?: string
+  unlockedAt?: string
+  unlocked_at?: string
+  icon?: string
+  achievement_icon?: string
+}
+
 export const analyticsService = {
-  // Get dashboard stats - uses admin endpoint (requires admin role)
   async getDashboardStats(): Promise<{ status: string; data: DashboardStats }> {
-    return fetchApi('/admin/analytics')
+    return fetchApi('/analytics/dashboard')
   },
 
-  // Get course analytics - uses admin endpoint
   async getCourseAnalytics(): Promise<{ status: string; data: CourseAnalytics[] }> {
-    return fetchApi('/admin/analytics/courses')
+    return fetchApi('/analytics/dashboard').then(res => {
+      return fetchApi('/auth/me').then(meRes => {
+        const payload = meRes.data ?? meRes
+        const progress: RawProgressItem[] = payload.user?.progress ?? payload.progress ?? []
+        return {
+          status: res.status ?? 'success',
+          data: progress.map((item: RawProgressItem) => ({
+            course_id: item.courseId ?? item.course?.id ?? '',
+            course_title: item.course?.title ?? item.course_title ?? 'Course',
+            enrollment_date: item.createdAt ?? item.created_at ?? new Date(0).toISOString(),
+            progress_percent: item.progress ?? 0,
+            completed_lessons: (item.progress ?? 0) >= 100 ? 1 : 0,
+            total_lessons: 0,
+            time_spent: Math.round((item.timeSpentSeconds ?? item.time_spent_seconds ?? 0) / 60),
+            last_accessed:
+              item.lastActivityAt ??
+              item.last_activity_at ??
+              item.updatedAt ??
+              new Date(0).toISOString(),
+            average_quiz_score: 0,
+            is_completed: item.status === 'COMPLETED' || (item.progress ?? 0) >= 100,
+            certificate_issued: false,
+          })),
+        }
+      })
+    })
   },
 
-  // Get learning activity from user progress
   async getLearningActivity(
     days: number = 30
   ): Promise<{ status: string; data: LearningActivity[] }> {
-    return fetchApi('/auth/me').then(res => {
-      const data = res.data ?? res
-      void (data.user ?? data) // user context available if needed later
-      // Map available user data to activity format
-      const activity: LearningActivity[] = []
-      const today = new Date()
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today)
-        date.setDate(date.getDate() - i)
-        activity.push({
-          date: date.toISOString().split('T')[0],
-          courses_accessed: 0,
-          lessons_completed: 0,
-          time_spent: 0,
-          xp_earned: 0,
+    return fetchApi(`/analytics/learning-activity?days=${days}`)
+  },
+
+  async getSkillProgress(): Promise<{ status: string; data: SkillProgress[] }> {
+    return fetchApi('/analytics/dashboard').then(res => {
+      const stats = res.data ?? res
+      const topics: RawTopicPerformance[] = stats.topic_performance ?? []
+      const skills: SkillProgress[] = topics.map((t: RawTopicPerformance) => ({
+        skill_name: t.topic ?? t.topicName ?? 'Unknown Topic',
+        category: t.subject ?? t.subjectName ?? 'General',
+        proficiency_percent: t.accuracy ?? 0,
+        courses_completed: 0,
+        total_courses: t.attempts ?? 1,
+      }))
+      if (skills.length === 0) {
+        return fetchApi('/auth/me').then(meRes => {
+          const data = meRes.data ?? meRes
+          const userData = data.user ?? data
+          const progress: RawProgressItem[] = userData.progress ?? []
+          return {
+            status: meRes.status ?? 'success',
+            data: progress.map((p: RawProgressItem) => ({
+              skill_name: p.course?.title ?? p.course_title ?? p.courseId ?? 'Course',
+              category: 'General',
+              proficiency_percent: p.progress ?? 0,
+              courses_completed: (p.progress ?? 0) >= 100 ? 1 : 0,
+              total_courses: 1,
+            })),
+          }
         })
       }
-      return {
-        status: res.status ?? 'success',
-        data: activity,
-      }
+      return { status: 'success', data: skills }
     })
   },
 
-  // Get skill progress - derive from user progress
-  async getSkillProgress(): Promise<{ status: string; data: SkillProgress[] }> {
-    return fetchApi('/auth/me').then(res => {
-      const data = res.data ?? res
-      const userData = data.user ?? data
-      const progress = userData.progress ?? []
-      const skills: SkillProgress[] = progress.map((p: any) => ({
-        skill_name: p.course_title ?? p.courseId ?? 'Course',
-        category: 'General',
-        proficiency_percent: p.progress ?? 0,
-        courses_completed: p.progress >= 100 ? 1 : 0,
-        total_courses: 1,
-      }))
-      return { status: res.status ?? 'success', data: skills }
-    })
+  async getTestAnalytics(): Promise<{ status: string; data: TestAnalytics }> {
+    return fetchApi('/tests/analytics')
   },
 
-  // Get achievement analytics
   async getAchievementAnalytics(): Promise<{ status: string; data: AchievementAnalytics }> {
-    return fetchApi('/achievements').then(res => {
+    return fetchApi('/gamification/achievements').then(res => {
       const data = res.data ?? res
-      const achievements = Array.isArray(data) ? data : (data?.achievements ?? [])
+      const achievements: RawAchievement[] = Array.isArray(data) ? data : (data?.achievements ?? [])
       return {
         status: res.status ?? 'success',
         data: {
-          total_achievements: 20, // Total available in system
+          total_achievements: 20,
           unlocked_achievements: achievements.length,
-          recent_achievements: achievements.slice(0, 5).map((a: any) => ({
+          recent_achievements: achievements.slice(0, 5).map((a: RawAchievement) => ({
             id: a.id,
             name: a.name ?? a.achievement_name ?? '',
             description: a.description ?? a.achievement_description ?? '',
@@ -133,56 +213,42 @@ export const analyticsService = {
     })
   },
 
-  // Get study streak - derive from user data
   async getStudyStreak(): Promise<{
     status: string
     data: { current: number; longest: number; history: boolean[] }
   }> {
-    return fetchApi('/auth/me').then(res => {
-      const data = res.data ?? res
-      const userData = data.user ?? data
-      const currentStreak = userData.streak ?? 0
-      const longestStreak = userData.longestStreak ?? userData.longest_streak ?? currentStreak
-      // Generate 30-day streak history (simplified)
+    return fetchApi('/analytics/dashboard').then(res => {
+      const stats = res.data ?? res
+      const currentStreak = stats.current_streak ?? 0
+      const longestStreak = stats.longest_streak ?? currentStreak
       const history = Array(30).fill(false)
       for (let i = 0; i < Math.min(currentStreak, 30); i++) {
         history[29 - i] = true
       }
       return {
-        status: res.status ?? 'success',
+        status: 'success',
         data: { current: currentStreak, longest: longestStreak, history },
       }
     })
   },
 
-  // Generate learning report - simplified client-side report
   async generateReport(
     format: 'pdf' | 'csv' = 'pdf'
   ): Promise<{ status: string; download_url: string }> {
-    // Fetch all needed data in parallel
-    const [stats, courses] = await Promise.all([fetchApi('/auth/me'), fetchApi('/courses')])
-    const statsData: unknown = stats.data ?? stats
-    const coursesData: unknown[] =
-      (courses.data ?? courses)?.courses ?? (courses.data ?? courses)?.results ?? []
-
-    // Generate report data
+    const [dashboard, courses] = await Promise.all([
+      fetchApi('/analytics/dashboard'),
+      fetchApi('/courses'),
+    ])
     const reportData = {
-      user: statsData,
-      courses: coursesData,
+      analytics: dashboard.data ?? dashboard,
+      courses: courses.data ?? courses,
       generatedAt: new Date().toISOString(),
       format,
     }
-
     const jsonStr = JSON.stringify(reportData, null, 2)
     const blob = new Blob([jsonStr], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-
-    // Auto-revoke blob URL after download to prevent memory leak
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
-
-    return {
-      status: 'success',
-      download_url: url,
-    }
+    return { status: 'success', download_url: url }
   },
 }

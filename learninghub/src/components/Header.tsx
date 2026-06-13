@@ -17,47 +17,39 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
+import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
-import { useBreakpoint } from '../hooks/useMediaQuery'
 import { NotificationBell } from './NotificationBell'
 
 const Header = memo(() => {
   const navigate = useNavigate()
-  const { theme, toggleDarkMode, progress, setSidebarOpen, dailyGoal, auth, logout } = useStore()
+  const theme = useStore(s => s.theme)
+  const toggleDarkMode = useStore(s => s.toggleDarkMode)
+  const progress = useStore(s => s.progress)
+  const setSidebarOpen = useStore(s => s.setSidebarOpen)
+  const dailyGoal = useStore(s => s.dailyGoal)
+  const isAuthenticated = useStore(s => s.auth.isAuthenticated)
+  const authUser = useStore(s => s.auth.user)
+  const logout = useStore(s => s.logout)
   const [searchInput, setSearchInput] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
-  const isMd = useBreakpoint('md')
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useOnClickOutside(userMenuRef, () => setUserMenuOpen(false))
 
   // Ctrl+K / Cmd+K keyboard shortcut for search
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault()
-        // Desktop: focus the search input
-        const searchInput = document.querySelector('form[role="search"] input') as HTMLInputElement
-        if (searchInput && isMd) {
-          searchInput.focus()
-        } else {
-          // Mobile: open mobile search overlay
-          setMobileSearchOpen(true)
-        }
+        const activeTag = document.activeElement?.tagName
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
+        setMobileSearchOpen(true)
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isMd])
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -249,10 +241,10 @@ const Header = memo(() => {
         </motion.button>
 
         {/* Notification Bell */}
-        {auth?.isAuthenticated && <NotificationBell />}
+        {isAuthenticated && <NotificationBell />}
 
         {/* User Menu Dropdown */}
-        {auth?.isAuthenticated && (
+        {isAuthenticated && (
           <div className="relative" ref={userMenuRef}>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -264,7 +256,7 @@ const Header = memo(() => {
               aria-expanded={userMenuOpen}
             >
               <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center overflow-hidden border border-primary-200 dark:border-primary-800/50">
-                <User className="w-4.5 h-4.5 text-primary-600 dark:text-primary-400" />
+                <User className="w-4 h-4 text-primary-600 dark:text-primary-400" />
               </div>
               <ChevronDown
                 className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`}
@@ -286,7 +278,7 @@ const Header = memo(() => {
                       Account
                     </p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {auth.user?.username ?? 'Learner'}
+                      {authUser?.username ?? 'Learner'}
                     </p>
                   </div>
 
@@ -326,7 +318,7 @@ const Header = memo(() => {
                   <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
                   <button
                     onClick={() => {
-                      logout()
+                      void logout()
                       navigate('/auth')
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-medium"

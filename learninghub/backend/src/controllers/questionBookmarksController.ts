@@ -1,6 +1,14 @@
 import { Request, Response } from 'express'
 import logger from '../utils/logger'
 import { testEngineService } from '../services/TestEngineService'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendConflict,
+  sendValidationError,
+  sendInternalError,
+} from '../utils/responseHelper'
 
 /**
  * POST /api/v1/questions/bookmarks
@@ -10,23 +18,23 @@ export const bookmarkQuestion = async (req: Request, res: Response): Promise<voi
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const { question_id, notes } = req.body
 
     if (!question_id) {
-      res.status(400).json({ status: 'error', message: 'question_id is required' })
+      sendValidationError(res, 'question_id is required')
       return
     }
 
     const bookmark = await testEngineService.bookmarkQuestion(userId, question_id, notes)
 
-    res.status(201).json({ status: 'success', data: bookmark })
+    sendCreated(res, bookmark)
   } catch (error) {
     if (error instanceof Error && error.message === 'Question already bookmarked') {
-      res.status(409).json({ status: 'error', message: error.message })
+      sendConflict(res, error.message)
       return
     }
     logger.error(
@@ -34,7 +42,7 @@ export const bookmarkQuestion = async (req: Request, res: Response): Promise<voi
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -46,20 +54,20 @@ export const getBookmarkedQuestions = async (req: Request, res: Response): Promi
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const bookmarks = await testEngineService.getBookmarkedQuestions(userId)
 
-    res.json({ status: 'success', data: { bookmarks, count: bookmarks.length } })
+    sendSuccess(res, { bookmarks, count: bookmarks.length })
   } catch (error) {
     logger.error(
       '[QuestionBookmarks] getBookmarkedQuestions error',
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -73,19 +81,19 @@ export const removeBookmark = async (req: Request, res: Response): Promise<void>
     const questionId = req.params.questionId as string
 
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     await testEngineService.removeBookmark(userId, questionId)
 
-    res.json({ status: 'success', message: 'Bookmark removed' })
+    sendSuccess(res, null, 'Bookmark removed')
   } catch (error) {
     logger.error(
       '[QuestionBookmarks] removeBookmark error',
       error instanceof Error ? error : new Error(String(error)),
       { userId: req.user?.userId, questionId: req.params.questionId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }

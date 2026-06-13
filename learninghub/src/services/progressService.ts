@@ -17,6 +17,13 @@ export interface CourseProgress {
   lastAccessedAt: string
 }
 
+export interface RawUserProgress {
+  courseId: string
+  progress?: number
+  lastActivityAt?: string
+  lastActive?: string
+}
+
 export const progressService = {
   // Save lesson progress via course lesson endpoint
   saveLessonProgress: async (
@@ -28,7 +35,7 @@ export const progressService = {
   ): Promise<boolean> => {
     try {
       await fetchApi(`/courses/${courseId}/lessons/${lessonId}/progress`, {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify({
           progress: completed ? 100 : Math.round((currentTime / duration) * 100) || 0,
         }),
@@ -151,8 +158,13 @@ export const progressService = {
     try {
       const response = await fetchApi('/auth/me')
       const data = response.data ?? response
-      const progress = data.progress ?? data.userProgress ?? []
-      return progress.map((p: any) => ({
+      const progress: Array<{
+        courseId: string
+        progress?: number
+        lastActivityAt?: string
+        lastActive?: string
+      }> = data.progress ?? data.userProgress ?? []
+      return progress.map(p => ({
         courseId: p.courseId,
         completedLessons: [],
         totalLessons: 0,

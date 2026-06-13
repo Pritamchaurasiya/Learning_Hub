@@ -1,17 +1,90 @@
-﻿import { Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import logger from '../utils/logger'
 import { Prisma } from '@prisma/client'
+import {
+  sendSuccess,
+  sendCreated,
+  sendUnauthorized,
+  sendNotFound,
+  sendValidationError,
+  sendForbidden,
+  sendInternalError,
+  sendError,
+} from '../utils/responseHelper'
+import { parseJsonArray, parseJsonObject } from '../utils/json'
+import { testScoringService } from '../services/TestScoringService'
+import { cacheService as queryCache } from '../services/CacheService'
+
+import {
+  mapQuestionSafe,
+  TEST_MODES,
+  TEST_DIFFICULTIES,
+  normalizeEnumFilter,
+  getRemainingSeconds,
+  hasSubmittedAnswer,
+  countQuestionResults,
+} from '../utils/testsHelper'
 
 export const listTests = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { courseId } = req.query
+    const { courseId, examId, countryId, exam, country, mode, difficulty, search } = req.query
     const { page, limit, skip } = getPaginationParams(req.query)
     const userId = req.user?.userId
 
+    const cacheKey = queryCache.generateKey('listTests', JSON.stringify({ ...req.query, userId }))
+    const cachedResponse = await queryCache.get(cacheKey)
+    if (cachedResponse) {
+      const { data, meta } = cachedResponse as any
+      sendSuccess(res, data, undefined, 200, meta)
+      return
+    }
+
     const filters: Prisma.TestWhereInput = { isPublished: true }
     if (courseId) filters.courseId = courseId as string
+
+    const modeFilter = normalizeEnumFilter(mode, TEST_MODES)
+    if (modeFilter) filters.mode = modeFilter as any
+
+    const difficultyFilter = normalizeEnumFilter(difficulty, TEST_DIFFICULTIES)
+    if (difficultyFilter) filters.difficulty = difficultyFilter as any
+
+    if (typeof search === 'string' && search.trim()) {
+      const query = search.trim()
+      filters.OR = [
+        { title: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+      ]
+    }
+
+    const examFilters: Prisma.ExamWhereInput = {}
+    if (examId) examFilters.id = examId as string
+    if (countryId) examFilters.countryId = countryId as string
+
+    if (typeof exam === 'string' && exam.trim()) {
+      const examQuery = exam.trim()
+      examFilters.OR = [
+        { id: examQuery },
+        { slug: examQuery },
+        { name: { contains: examQuery, mode: 'insensitive' } },
+      ]
+    }
+
+    if (typeof country === 'string' && country.trim()) {
+      const countryQuery = country.trim()
+      examFilters.country = {
+        OR: [
+          { id: countryQuery },
+          { code: { equals: countryQuery.toUpperCase() } },
+          { name: { contains: countryQuery, mode: 'insensitive' } },
+        ],
+      }
+    }
+
+    if (Object.keys(examFilters).length > 0) {
+      filters.exam = examFilters
+    }
 
     const total = await prisma.test.count({ where: filters })
 
@@ -26,6 +99,16 @@ export const listTests = async (req: Request, res: Response): Promise<void> => {
         },
         course: {
           select: { title: true, id: true },
+        },
+        exam: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            country: {
+              select: { id: true, name: true, code: true },
+            },
+          },
         },
       },
     })
@@ -44,32 +127,57 @@ export const listTests = async (req: Request, res: Response): Promise<void> => {
       id: t.id,
       title: t.title,
       description: t.description,
+      exam_id: t.examId,
+      exam_name: t.exam?.name ?? '',
+      exam_code: t.exam?.slug ?? '',
+      country_id: t.exam?.country?.id ?? '',
+      country_name: t.exam?.country?.name ?? '',
+      country_code: t.exam?.country?.code ?? '',
       course_id: t.courseId,
-      course_title: t.course?.title || 'General',
+      course_title: t.course?.title ?? 'General',
       time_limit: t.timeLimit,
+      time_limit_minutes: t.timeLimit,
       passing_score: t.passingScore,
       total_questions: t._count.questions,
+      question_count: t._count.questions,
       max_attempts: 3,
       attempts_made: userAttemptMap.get(t.id) ?? 0,
+      attempt_count: userAttemptMap.get(t.id) ?? 0,
       mode: t.mode,
       difficulty: t.difficulty,
       total_marks: t.totalMarks,
       negative_marks: t.negativeMarks,
+      negative_marks_per_question: t.negativeMarks,
+      is_ai_generated: t.isAiGenerated,
+      created_at: t.createdAt.toISOString(),
     }))
 
-    res.status(200).json(createPaginatedResponse(transformedTests, total, page, limit))
+    const paginated = createPaginatedResponse(transformedTests, total, page, limit)
+
+    // Cache the response for 60 seconds to avoid hitting DB continuously for same list queries
+    await queryCache.set(cacheKey, { data: paginated.data, meta: paginated.meta }, 60)
+
+    sendSuccess(res, paginated.data, undefined, 200, paginated.meta)
   } catch (error) {
     logger.error(
       '[TestsController] listTests error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
 export const getTestDetails = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string
+
+    const cacheKey = queryCache.generateKey('getTestDetails', id)
+    const cachedTest = await queryCache.get(cacheKey)
+    if (cachedTest) {
+      sendSuccess(res, { quiz: cachedTest })
+      return
+    }
+
     const test = await prisma.test.findUnique({
       where: { id },
       include: {
@@ -83,7 +191,7 @@ export const getTestDetails = async (req: Request, res: Response): Promise<void>
     })
 
     if (!test) {
-      res.status(404).json({ status: 'error', message: 'Test not found' })
+      sendNotFound(res, 'Test not found')
       return
     }
 
@@ -92,7 +200,7 @@ export const getTestDetails = async (req: Request, res: Response): Promise<void>
       title: test.title,
       description: test.description,
       course_id: test.courseId,
-      course_title: test.course?.title || 'General',
+      course_title: test.course?.title ?? 'General',
       time_limit: test.timeLimit,
       passing_score: test.passingScore,
       total_questions: test._count.questions,
@@ -103,13 +211,16 @@ export const getTestDetails = async (req: Request, res: Response): Promise<void>
       is_ai_generated: test.isAiGenerated,
     }
 
-    res.json({ status: 'success', data: { quiz: quizData } })
+    // Cache test details for 5 minutes
+    await queryCache.set(cacheKey, quizData, 300)
+
+    sendSuccess(res, { quiz: quizData })
   } catch (error) {
     logger.error(
       '[TestsController] getTestDetails error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -118,7 +229,7 @@ export const startTest = async (req: Request, res: Response): Promise<void> => {
     const testId = req.params.id as string
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -138,7 +249,7 @@ export const startTest = async (req: Request, res: Response): Promise<void> => {
     })
 
     if (!test) {
-      res.status(404).json({ status: 'error', message: 'Test not found' })
+      sendNotFound(res, 'Test not found')
       return
     }
 
@@ -146,34 +257,33 @@ export const startTest = async (req: Request, res: Response): Promise<void> => {
       where: {
         userId,
         testId,
-        completedAt: null,
+        status: 'IN_PROGRESS',
+      },
+      orderBy: { attemptNumber: 'desc' },
+      select: {
+        id: true,
+        attemptNumber: true,
+        answers: true,
+        startedAt: true,
       },
     })
 
     if (existingResult) {
-      const questions = test.questions.map(q => ({
-        id: q.id,
-        text: q.text,
-        type: q.type,
-        points: q.points,
-        order: q.order,
-        options: q.options.map(o => ({
-          id: o.id,
-          text: o.text,
-          order: o.order,
-        })),
-      }))
+      const questions = test.questions.map(mapQuestionSafe)
+      const answers = parseJsonObject(existingResult.answers)
+      const timeRemainingSeconds = getRemainingSeconds(existingResult.startedAt, test.timeLimit)
 
-      res.status(200).json({
-        status: 'success',
-        data: {
-          attempt_id: existingResult.id,
-          attempt_number: existingResult.attemptNumber,
-          questions,
-          time_limit: test.timeLimit,
-          total_marks: test.totalMarks,
-          mode: test.mode,
-        },
+      sendSuccess(res, {
+        attempt_id: existingResult.id,
+        attempt_number: existingResult.attemptNumber,
+        questions,
+        answers,
+        answered_count: Object.values(answers).filter(hasSubmittedAnswer).length,
+        time_limit: test.timeLimit,
+        time_limit_seconds: test.timeLimit * 60,
+        time_remaining_seconds: timeRemainingSeconds,
+        total_marks: test.totalMarks,
+        mode: test.mode,
       })
       return
     }
@@ -188,11 +298,11 @@ export const startTest = async (req: Request, res: Response): Promise<void> => {
     // Enforce max attempts (configurable, default 3)
     const MAX_ATTEMPTS = parseInt(process.env.MAX_TEST_ATTEMPTS ?? '3', 10)
     if (maxAttemptResult && maxAttemptResult.attemptNumber >= MAX_ATTEMPTS) {
-      res.status(403).json({
-        status: 'error',
-        message: `Maximum attempts (${MAX_ATTEMPTS}) reached for this test`,
-        code: 'MAX_ATTEMPTS_REACHED',
-      })
+      sendForbidden(
+        res,
+        `Maximum attempts (${MAX_ATTEMPTS}) reached for this test`,
+        'MAX_ATTEMPTS_REACHED'
+      )
       return
     }
 
@@ -205,41 +315,31 @@ export const startTest = async (req: Request, res: Response): Promise<void> => {
         percentage: 0,
         passed: false,
         timeTaken: 0,
-        answers: JSON.stringify({}),
+        answers: {},
         attemptNumber: nextAttemptNumber,
       },
     })
 
-    const questions = test.questions.map(q => ({
-      id: q.id,
-      text: q.text,
-      type: q.type,
-      points: q.points,
-      order: q.order,
-      options: q.options.map(o => ({
-        id: o.id,
-        text: o.text,
-        order: o.order,
-      })),
-    }))
+    const questions = test.questions.map(mapQuestionSafe)
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        attempt_id: result.id,
-        attempt_number: result.attemptNumber,
-        questions,
-        time_limit: test.timeLimit,
-        total_marks: test.totalMarks,
-        mode: test.mode,
-      },
+    sendCreated(res, {
+      attempt_id: result.id,
+      attempt_number: result.attemptNumber,
+      questions,
+      answers: {},
+      answered_count: 0,
+      time_limit: test.timeLimit,
+      time_limit_seconds: test.timeLimit * 60,
+      time_remaining_seconds: getRemainingSeconds(result.startedAt, test.timeLimit),
+      total_marks: test.totalMarks,
+      mode: test.mode,
     })
   } catch (error) {
     logger.error('StartTest error', error instanceof Error ? error : new Error(String(error)), {
       testId: req.params.id,
       userId: req.user?.userId,
     })
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -247,12 +347,12 @@ export const getTestAttempts = async (req: Request, res: Response): Promise<void
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const attempts = await prisma.testResult.findMany({
-      where: { userId, status: 'COMPLETED' },
+      where: { userId },
       include: {
         test: {
           select: {
@@ -264,41 +364,50 @@ export const getTestAttempts = async (req: Request, res: Response): Promise<void
             timeLimit: true,
             passingScore: true,
             totalMarks: true,
+            questions: {
+              select: { id: true },
+            },
           },
         },
       },
-      orderBy: { completedAt: 'desc' },
+      orderBy: { startedAt: 'desc' },
     })
 
-    const transformedAttempts = attempts.map(attempt => ({
-      id: attempt.id,
-      test_id: attempt.testId,
-      test_title: attempt.test?.title || 'Unknown Test',
-      exam_name: '',
-      mode: attempt.test?.mode || 'mock',
-      status: attempt.status,
-      score: attempt.score,
-      total_marks: attempt.totalPoints,
-      percentage: attempt.percentage,
-      passed: attempt.passed,
-      time_taken_seconds: attempt.timeTaken,
-      attempt_number: attempt.attemptNumber,
-      started_at: attempt.startedAt.toISOString(),
-      submitted_at: attempt.completedAt?.toISOString() ?? null,
-    }))
+    const transformedAttempts = attempts.map(attempt => {
+      const answers = parseJsonObject(attempt.answers)
+
+      return {
+        id: attempt.id,
+        test_id: attempt.testId,
+        test_title: attempt.test?.title || 'Unknown Test',
+        exam_name: '',
+        mode: attempt.test?.mode || 'mock',
+        status: attempt.status,
+        score: attempt.score,
+        total_marks: attempt.totalPoints,
+        percentage: attempt.percentage,
+        passed: attempt.passed,
+        time_taken_seconds: attempt.timeTaken,
+        time_remaining_seconds:
+          attempt.status === 'IN_PROGRESS'
+            ? getRemainingSeconds(attempt.startedAt, attempt.test?.timeLimit ?? 0)
+            : 0,
+        attempt_number: attempt.attemptNumber,
+        answered_count: Object.values(answers).filter(hasSubmittedAnswer).length,
+        started_at: attempt.startedAt.toISOString(),
+        submitted_at: attempt.completedAt?.toISOString() ?? null,
+      }
+    })
 
     const totalXp = attempts.reduce((sum, a) => sum + (a.passed ? Math.round(a.score) : 0), 0)
 
-    res.status(200).json({
-      status: 'success',
-      data: { results: transformedAttempts, totalXp },
-    })
+    sendSuccess(res, { results: transformedAttempts, totalXp })
   } catch (error) {
     logger.error(
       '[TestsController] getTestAttempts error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -308,7 +417,7 @@ export const getTestResults = async (req: Request, res: Response): Promise<void>
     const testId = req.params.id as string
 
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -334,13 +443,12 @@ export const getTestResults = async (req: Request, res: Response): Promise<void>
     // Return the most recent result for /result endpoint
     const mostRecent = attempts[0]
     if (!mostRecent) {
-      res.status(404).json({ status: 'error', message: 'No results found' })
+      sendNotFound(res, 'No results found')
       return
     }
 
-    const qr = mostRecent.questionResults as any[] | null
-    const correctCount = qr ? qr.filter((q: any) => q.is_correct).length : 0
-    const incorrectCount = qr ? qr.filter((q: any) => !q.is_correct).length : 0
+    const qr = parseJsonArray<any>(mostRecent.questionResults)
+    const { correctCount, incorrectCount, unansweredCount } = countQuestionResults(qr)
 
     const transformed = {
       attempt_id: mostRecent.id,
@@ -355,21 +463,18 @@ export const getTestResults = async (req: Request, res: Response): Promise<void>
       time_limit: mostRecent.test?.timeLimit ?? 0,
       correct_count: correctCount,
       incorrect_count: incorrectCount,
-      unanswered_count: 0,
-      question_results: qr ?? [],
+      unanswered_count: unansweredCount,
+      question_results: qr,
     }
 
-    res.status(200).json({
-      status: 'success',
-      data: transformed,
-    })
+    sendSuccess(res, transformed)
   } catch (error) {
     logger.error(
       '[TestsController] getTestResults error',
       error instanceof Error ? error : new Error(String(error)),
       { testId: req.params.id, userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -379,7 +484,7 @@ export const getTestAttemptDetails = async (req: Request, res: Response): Promis
     const attemptId = req.params.id as string
 
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
@@ -402,22 +507,23 @@ export const getTestAttemptDetails = async (req: Request, res: Response): Promis
     })
 
     if (!attempt) {
-      res.status(404).json({ status: 'error', message: 'Attempt not found' })
+      sendNotFound(res, 'Attempt not found')
       return
     }
 
     if (attempt.userId !== userId) {
-      res.status(403).json({ status: 'error', message: 'Access denied' })
+      sendForbidden(res, 'Access denied')
       return
     }
 
     const isCompleted = attempt.status === 'COMPLETED'
+    const attemptAnswers = parseJsonObject(attempt.answers)
 
     // For completed tests, fetch correct answers for review
     // For in-progress tests, do NOT expose correct options
     const questions = attempt.test.questions.map(q => {
       const correctOption = isCompleted ? q.options.find(o => (o as any).isCorrect) : null
-      const userAnswer = (attempt.answers as Record<string, unknown>)?.[q.id]
+      const userAnswer = attemptAnswers[q.id]
       const isCorrect = isCompleted && userAnswer !== undefined && userAnswer === correctOption?.id
 
       return {
@@ -432,20 +538,17 @@ export const getTestAttemptDetails = async (req: Request, res: Response): Promis
       }
     })
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        ...attempt,
-        answers: (attempt.answers as Record<string, unknown>) ?? {},
-        question_results: questions,
-      },
+    sendSuccess(res, {
+      ...attempt,
+      answers: attemptAnswers,
+      question_results: questions,
     })
   } catch (error) {
     logger.error(
       '[TestsController] getTestAttemptDetails error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendInternalError(res)
   }
 }
 
@@ -453,50 +556,59 @@ export const autosaveTest = async (req: Request, res: Response): Promise<void> =
   try {
     const userId = req.user?.userId
     const testId = req.params.id as string
-    const { answers } = req.body
+    const { answers, attempt_id } = req.body
 
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     if (!answers || typeof answers !== 'object') {
-      res
-        .status(400)
-        .json({ status: 'error', message: 'Answers are required and must be an object' })
+      sendValidationError(res, 'Answers are required and must be an object')
       return
     }
 
-    const attempt = await prisma.testResult.findFirst({
-      where: { userId, testId, status: 'IN_PROGRESS' },
-      select: { id: true, answers: true },
-    })
-
-    if (!attempt) {
-      res.status(404).json({ status: 'error', message: 'No active test attempt found' })
+    if (attempt_id && typeof attempt_id !== 'string') {
+      sendValidationError(res, 'attempt_id must be a string')
       return
     }
 
-    const existingAnswers = (attempt.answers as Record<string, unknown>) ?? {}
-    const mergedAnswers = { ...existingAnswers, ...answers }
+    const result = await prisma.$transaction(async tx => {
+      const attempt = await tx.testResult.findFirst({
+        where: attempt_id
+          ? { id: attempt_id, userId, testId, status: 'IN_PROGRESS' }
+          : { userId, testId, status: 'IN_PROGRESS' },
+        orderBy: { attemptNumber: 'desc' },
+        select: { id: true, answers: true },
+      })
 
-    await prisma.testResult.update({
-      where: { id: attempt.id },
-      data: { answers: mergedAnswers as any },
+      if (!attempt) {
+        return null
+      }
+
+      const existingAnswers = parseJsonObject(attempt.answers)
+      const mergedAnswers = { ...existingAnswers, ...answers }
+
+      await tx.testResult.update({
+        where: { id: attempt.id },
+        data: { answers: mergedAnswers as any },
+      })
+      return Object.keys(answers).length
     })
 
-    res.json({
-      status: 'success',
-      message: 'Answer autosaved',
-      data: { saved_count: Object.keys(answers).length },
-    })
+    if (result === null) {
+      sendNotFound(res, 'No active test attempt found')
+      return
+    }
+
+    sendSuccess(res, { saved_count: result }, 'Answer autosaved')
   } catch (error) {
     logger.error(
       '[TestsController] autosaveTest error',
       error instanceof Error ? error : new Error(String(error)),
       { testId: req.params.id, userId: req.user?.userId }
     )
-    res.status(500).json({ status: 'error', message: 'Autosave failed' })
+    sendInternalError(res, 'Autosave failed')
   }
 }
 
@@ -504,244 +616,74 @@ export const submitTest = async (req: Request, res: Response): Promise<void> => 
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
     const testId = req.params.id as string
-    const { answers, timeTaken, attempt_id } = req.body
+    const { answers, timeTaken, attempt_id, confidences } = req.body
 
     if (!answers || typeof answers !== 'object') {
-      res.status(400).json({ status: 'error', message: 'Answers are required' })
+      sendValidationError(res, 'Answers are required')
       return
     }
 
-    const test = await prisma.test.findUnique({
-      where: { id: testId },
-      include: {
-        questions: {
-          include: {
-            options: true,
-          },
-        },
-      },
-    })
-
-    if (!test) {
-      res.status(404).json({ status: 'error', message: 'Test not found' })
-      return
-    }
-
-    const timeLimitSeconds = test.timeLimit * 60
-    const submittedTimeTaken = typeof timeTaken === 'number' ? timeTaken : 0
-    const isOverTime = submittedTimeTaken > timeLimitSeconds
-
-    if (isOverTime) {
-      logger.warn(
-        `User ${userId} submitted test ${testId} ${submittedTimeTaken - timeLimitSeconds}s over time limit`
-      )
-    }
-
-    let score = 0
-    let correctCount = 0
-    let incorrectCount = 0
-    const totalQuestions = test.questions.length
-
-    const questionResults = test.questions.map(q => {
-      const correctOption = q.options.find(o => o.isCorrect)
-      const userAnswerId = answers[q.id]
-      const isCorrect =
-        userAnswerId !== undefined &&
-        correctOption !== undefined &&
-        userAnswerId === correctOption.id
-
-      if (isCorrect) {
-        score += q.points
-        correctCount++
-      } else if (userAnswerId !== undefined) {
-        incorrectCount++
-        if (test.negativeMarks > 0) {
-          score -= test.negativeMarks
-        }
-      }
-
-      return {
-        question_id: q.id,
-        question_text: q.text,
-        question_type: q.type,
-        selected_options: userAnswerId ? [{ id: userAnswerId }] : [],
-        correct_options: correctOption ? [{ id: correctOption.id, text: correctOption.text }] : [],
-        is_correct: isCorrect,
-        marks_obtained: isCorrect ? q.points : userAnswerId !== undefined ? -test.negativeMarks : 0,
-        explanation: q.explanation,
-        time_spent: 0,
-        is_flagged: false,
-      }
-    })
-
-    // Apply overtime penalty BEFORE clamping to preserve the penalty effect
-    if (isOverTime) {
-      score = Math.floor(score * 0.75)
-    }
-
-    // Clamp score to 0 (can't have negative total)
-    score = Math.max(0, score)
-
-    const totalPossibleScore = test.questions.reduce((acc, q) => acc + q.points, 0)
-    const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
-    const passed = percentage >= test.passingScore
-    const unansweredCount = totalQuestions - correctCount - incorrectCount
-
-    const result = await prisma.$transaction(async tx => {
-      let existingResult: {
-        id: string
-        status: string
-        score: number
-        totalPoints: number
-        percentage: number
-        passed: boolean
-        timeTaken: number
-        attemptNumber: number
-      } | null = null
-
-      if (attempt_id) {
-        existingResult = await tx.testResult.findUnique({
-          where: { id: attempt_id, userId },
-          select: {
-            id: true,
-            status: true,
-            score: true,
-            totalPoints: true,
-            percentage: true,
-            passed: true,
-            timeTaken: true,
-            attemptNumber: true,
-          },
-        })
-      }
-
-      if (!existingResult) {
-        existingResult = await tx.testResult.findFirst({
-          where: { userId, testId, status: 'IN_PROGRESS' },
-          select: {
-            id: true,
-            status: true,
-            score: true,
-            totalPoints: true,
-            percentage: true,
-            passed: true,
-            timeTaken: true,
-            attemptNumber: true,
-          },
-        })
-      }
-
-      if (existingResult?.status === 'COMPLETED') {
-        return { ...existingResult, isDuplicate: true }
-      }
-
-      const submissionData = {
-        score,
-        totalPoints: totalPossibleScore,
-        percentage,
-        passed,
-        timeTaken: submittedTimeTaken,
-        answers: answers as any,
-        questionResults: questionResults as any,
-        completedAt: new Date(),
-        status: 'COMPLETED' as const,
-      }
-
-      let resultRecord
-      if (existingResult) {
-        resultRecord = await tx.testResult.update({
-          where: { id: existingResult.id },
-          data: submissionData,
-        })
-      } else {
-        const maxAttemptResult = await tx.testResult.findFirst({
-          where: { userId, testId },
-          orderBy: { attemptNumber: 'desc' },
-          select: { attemptNumber: true },
-        })
-        const nextAttemptNumber = (maxAttemptResult?.attemptNumber ?? 0) + 1
-
-        const MAX_ATTEMPTS = parseInt(process.env.MAX_TEST_ATTEMPTS ?? '3', 10)
-        if (maxAttemptResult && maxAttemptResult.attemptNumber >= MAX_ATTEMPTS) {
-          throw new Error(`Maximum attempts (${MAX_ATTEMPTS}) reached for this test`)
-        }
-
-        resultRecord = await tx.testResult.create({
-          data: {
-            userId,
-            testId,
-            ...submissionData,
-            attemptNumber: nextAttemptNumber,
-          },
-        })
-      }
-
-      if (passed) {
-        await tx.user.update({
-          where: { id: userId },
-          data: { xp: { increment: Math.round(score) } },
-        })
-      }
-
-      return { ...resultRecord, isDuplicate: false }
-    })
-
-    if ((result as any).isDuplicate) {
-      res.status(200).json({
-        status: 'success',
-        message: 'Test was already submitted',
-        data: {
-          attempt_id: result.id,
-          test_id: testId,
-          test_title: test.title,
-          mode: test.mode,
-          score: result.score,
-          total_marks: result.totalPoints,
-          percentage: result.percentage,
-          passed: result.passed,
-          time_taken: result.timeTaken,
-          time_limit: test.timeLimit,
-          correct_count: correctCount,
-          incorrect_count: incorrectCount,
-          unanswered_count: unansweredCount,
-          question_results: questionResults,
-        },
+    const { result, test, isDuplicate, correctCount, incorrectCount } =
+      await testScoringService.scoreAndSubmitTest({
+        userId,
+        testId,
+        answers,
+        timeTaken,
+        attemptId: attempt_id,
+        confidences,
       })
+
+    const questionResults = parseJsonArray<any>(result.questionResults)
+    const { unansweredCount } = countQuestionResults(questionResults, test.questions.length)
+    const effectiveCorrectCount =
+      correctCount ?? countQuestionResults(questionResults, test.questions.length).correctCount
+    const effectiveIncorrectCount =
+      incorrectCount ?? countQuestionResults(questionResults, test.questions.length).incorrectCount
+
+    const responsePayload = {
+      attempt_id: result.id,
+      test_id: testId,
+      test_title: test.title,
+      mode: test.mode,
+      score: result.score,
+      total_marks: result.totalPoints,
+      percentage: result.percentage,
+      passed: result.passed,
+      time_taken: result.timeTaken,
+      time_limit: test.timeLimit,
+      correct_count: effectiveCorrectCount,
+      correct_answers: effectiveCorrectCount,
+      incorrect_count: effectiveIncorrectCount,
+      unanswered_count: unansweredCount,
+      question_results: questionResults,
+    }
+
+    if (isDuplicate) {
+      sendSuccess(res, responsePayload, 'Test was already submitted')
       return
     }
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        attempt_id: result.id,
-        test_id: testId,
-        test_title: test.title,
-        mode: test.mode,
-        score: result.score,
-        total_marks: result.totalPoints,
-        percentage: result.percentage,
-        passed: result.passed,
-        time_taken: result.timeTaken,
-        time_limit: test.timeLimit,
-        correct_count: correctCount,
-        incorrect_count: incorrectCount,
-        unanswered_count: unansweredCount,
-        question_results: questionResults,
-      },
-    })
+    sendCreated(res, responsePayload)
   } catch (error) {
     logger.error(
       '[TestsController] submitTest error',
       error instanceof Error ? error : new Error(String(error)),
       { testId: req.params.id, userId: req.user?.userId }
     )
-    res.status(500).json({
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Internal server error',
-    })
+
+    if (
+      error instanceof Error &&
+      (error.message === 'Test not found' || error.message === 'Attempt not found')
+    ) {
+      sendNotFound(res, error.message)
+      return
+    }
+
+    console.error('SUBMIT TEST ERROR:', error)
+    sendError(res, error instanceof Error ? error.message : 'Internal server error', 500)
   }
 }

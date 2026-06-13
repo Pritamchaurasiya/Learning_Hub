@@ -25,6 +25,10 @@ export const useStore = create<AppState>()(
         dailyGoal: state.dailyGoal,
         hasSeenOnboarding: state.hasSeenOnboarding,
         settings: state.settings,
+        // Persist Auth State
+        auth: {
+          user: state.auth.user,
+        },
         progress: {
           completedCourses: state.progress.completedCourses,
           bookmarks: state.progress.bookmarks,
@@ -42,6 +46,8 @@ export const useStore = create<AppState>()(
                 answers: state.quiz.answers,
                 flaggedQuestions: state.quiz.flaggedQuestions,
                 timeRemaining: state.quiz.timeRemaining,
+                questions: state.quiz.questions,
+                quizInfo: state.quiz.quizInfo,
                 currentQuestionIndex: state.quiz.currentQuestionIndex,
                 lastSavedAt: state.quiz.lastSavedAt,
               }
@@ -62,24 +68,29 @@ export const useStore = create<AppState>()(
             ? {
                 isActive: state.testsA.isActive,
                 currentQuestionIndex: state.testsA.currentQuestionIndex,
+                questions: state.testsA.questions,
                 answers: state.testsA.answers,
                 flaggedQuestions: state.testsA.flaggedQuestions,
                 timeRemaining: state.testsA.timeRemaining,
                 testInfo: state.testsA.testInfo,
                 attemptId: state.testsA.attemptId,
                 isSubmitting: false,
+                lastAutosavedAt: state.testsA.lastAutosavedAt,
               }
             : {
                 isActive: false,
                 currentQuestionIndex: 0,
+                questions: [],
                 answers: {},
                 flaggedQuestions: [],
                 timeRemaining: 0,
                 testInfo: null,
                 attemptId: null,
                 isSubmitting: false,
+                lastAutosavedAt: null,
               },
       }),
+      skipHydration: true,
     }
   )
 )

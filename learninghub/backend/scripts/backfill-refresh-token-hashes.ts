@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
+import { isAlreadyHashed } from '../src/utils/auth'
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,10 @@ async function backfill() {
   let count = 0
   for (const t of tokens) {
     if (t.token) {
+      if (isAlreadyHashed(t.token)) {
+        console.log(`Skipping already-hashed token ${t.id}`)
+        continue
+      }
       const hash = crypto.createHash('sha256').update(t.token).digest('hex')
       await prisma.refreshToken.update({ where: { id: t.id }, data: { token: hash } })
       count++

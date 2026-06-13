@@ -1,22 +1,65 @@
 import { StateCreator } from 'zustand'
 import { fetchApi } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
-import { AppState, AuthSlice } from '../types'
+import { extractData } from '../../utils/apiHelpers'
+import { SecureStorage } from '../../utils/security'
+import type { AppState, AuthSlice } from '../types'
+
+const getTokenExpiry = (token: string): number | null => {
+  try {
+    const [, payload] = token.split('.')
+    if (!payload) return null
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const pad = base64.length % 4
+    const padded = pad ? base64 + '='.repeat(4 - pad) : base64
+    const decoded = JSON.parse(atob(padded))
+    return typeof decoded.exp === 'number' ? decoded.exp * 1000 : null
+  } catch {
+    return null
+  }
+}
+
+function getTokenFromStorage(): string | null {
+  try {
+    return localStorage.getItem('lh_token')
+  } catch {
+    return null
+  }
+}
 
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   auth: {
-    // Auth state: tokens are stored in localStorage and sent as Bearer headers
-    isAuthenticated: !!localStorage.getItem('token'),
+    isAuthenticated: (() => {
+      try {
+        const token = localStorage.getItem('lh_token') || localStorage.getItem('token')
+        if (!token) return false
+        const expiry = getTokenExpiry(token)
+        return expiry ? expiry > Date.now() : false
+      } catch {
+        return false
+      }
+    })(),
     user: null,
+    isHydrated: false,
   },
   setAuth: (token, refreshToken, user) => {
-    // Store tokens in localStorage for Bearer auth
-    if (token) localStorage.setItem('token', token)
-    if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+    try {
+      localStorage.setItem('lh_token', token)
+      localStorage.removeItem('token')
+      if (refreshToken) {
+        localStorage.setItem('lh_refreshToken', refreshToken)
+        localStorage.removeItem('refreshToken')
+      }
+      SecureStorage.setItem('token', token)
+      if (refreshToken) SecureStorage.setItem('refreshToken', refreshToken)
+    } catch {
+      // fallback to plain storage
+      if (token) localStorage.setItem('token', token)
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+    }
 
-    // Store user data in memory only + sync progress from user profile
     set(state => ({
-      auth: { isAuthenticated: true, user },
+      auth: { isAuthenticated: true, user, isHydrated: state.auth.isHydrated },
       progress: {
         ...state.progress,
         xp: user?.xp ?? state.progress.xp ?? 0,
@@ -35,56 +78,87 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       },
     }))
   },
-  logout: () => {
-    // Clear tokens from localStorage
+  logout: async () => {
+    const refreshToken = getTokenFromStorage()
+    if (refreshToken && get().auth.isAuthenticated) {
+      try {
+        await fetchApi('/auth/logout', {
+          method: 'POST',
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        })
+      } catch {
+        // silently fail - best effort
+      }
+    }
+
+    localStorage.removeItem('lh_token')
+    localStorage.removeItem('lh_refreshToken')
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
+    SecureStorage.removeItem('token')
+    SecureStorage.removeItem('refreshToken')
 
-    // Clear auth state from memory
-    set({ auth: { isAuthenticated: false, user: null } })
+    set({ auth: { isAuthenticated: false, user: null, isHydrated: false } })
     trackEvent('user_logged_out')
+  },
+  setHydrated: () => {
+    try {
+      const token = localStorage.getItem('lh_token') || localStorage.getItem('token')
+      const expiry = token ? getTokenExpiry(token) : null
+      const isTokenValid = expiry ? expiry > Date.now() : false
+      set(state => ({
+        auth: { ...state.auth, isHydrated: true, isAuthenticated: isTokenValid },
+      }))
+    } catch {
+      set(state => ({
+        auth: { ...state.auth, isHydrated: true, isAuthenticated: false },
+      }))
+    }
   },
   fetchMe: async () => {
     try {
       const response = await fetchApi('/auth/me')
-      // Handle nested response formats: { status, data: { user: {...} } } or { data: {...} }
-      const payload = response.data ?? response
-      const userData = payload.user ?? response.user ?? payload
+      const payload =
+        extractData<Record<string, unknown>>(response) ?? (response as Record<string, unknown>)
+      const userData = (payload?.user ?? response?.user ?? payload) as
+        | Record<string, unknown>
+        | undefined
 
-      // Validate we have at least an id - if not, this isn't a valid user response
       if (!userData?.id) {
-        get().logout()
-        return null
+        void get().logout()
+        return
       }
 
       set(state => ({
-        auth: { isAuthenticated: true, user: userData },
+        auth: {
+          ...state.auth,
+          isAuthenticated: true,
+          user: userData as unknown as AppState['auth']['user'],
+        },
         progress: {
           ...state.progress,
-          xp: userData.xp ?? state.progress.xp ?? 0,
-          level: userData.level ?? state.progress.level ?? 1,
-          streak: userData.streak ?? state.progress.streak ?? 0,
+          xp: (userData.xp as number) ?? state.progress.xp ?? 0,
+          level: (userData.level as number) ?? state.progress.level ?? 1,
+          streak: (userData.streak as number) ?? state.progress.streak ?? 0,
           lastActive:
-            userData.lastActive ??
-            userData.last_login_at ??
+            (userData.lastActive as string) ??
+            (userData.last_login_at as string) ??
             state.progress.lastActive ??
             new Date().toISOString(),
           completedCourses:
-            userData.completedCourses ??
-            userData.completed_courses ??
+            (userData.completedCourses as string[]) ??
+            (userData.completed_courses as string[]) ??
             state.progress.completedCourses ??
             [],
         },
       }))
-      return userData
     } catch (err) {
       if (
         err instanceof Error &&
         (err.message === 'Unauthorized' || err.message.includes('Session expired'))
       ) {
-        get().logout()
+        void get().logout()
       }
-      throw err
     }
   },
 })

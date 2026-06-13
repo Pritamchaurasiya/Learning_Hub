@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '../ui/Button'
 import { Play, ArrowRight, Star, Users, BookOpen, Award } from 'lucide-react'
+import { useABTest } from '../../hooks/useABTest'
 
 interface HeroSectionProps {
   onStartFree: () => void
@@ -8,6 +9,21 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
+  const { variant, trackConversion } = useABTest('homepage-cta')
+
+  const handleStartFree = () => {
+    void trackConversion('start_free_click', 1)
+    onStartFree()
+  }
+
+  // Determine button color based on A/B test variant
+  let ctaColorClass = 'bg-white text-blue-700 hover:bg-blue-50'
+  if (variant === 'blue') {
+    ctaColorClass = 'bg-blue-900 text-white hover:bg-blue-950 border-2 border-white/20'
+  } else if (variant === 'green') {
+    ctaColorClass = 'bg-green-500 text-white hover:bg-green-600 border-2 border-green-400'
+  }
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800">
       {/* Background Pattern */}
@@ -55,8 +71,8 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <Button
                 size="lg"
-                onClick={onStartFree}
-                className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-8 py-4 text-lg shadow-xl"
+                onClick={handleStartFree}
+                className={`${ctaColorClass} font-semibold px-8 py-4 text-lg shadow-xl transition-all`}
               >
                 Start Free Practice
                 <ArrowRight className="w-5 h-5 ml-2" />

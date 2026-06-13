@@ -1,7 +1,7 @@
-/**
- * Structured Logger Utility
- * Provides consistent logging across the application with different log levels
- */
+import winston from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
+import fs from 'fs'
+import path from 'path'
 
 export enum LogLevel {
   ERROR = 0,
@@ -10,84 +10,205 @@ export enum LogLevel {
   DEBUG = 3,
 }
 
-function getCurrentLogLevel(): number {
-  return process.env.LOG_LEVEL
-    ? parseInt(process.env.LOG_LEVEL)
-    : process.env.NODE_ENV === 'production'
-      ? LogLevel.WARN
-      : LogLevel.DEBUG
+const getLogLevel = (): string => {
+  const configuredLevel = process.env.LOG_LEVEL?.trim().toLowerCase()
+  if (configuredLevel) {
+    if (['error', 'warn', 'info', 'debug'].includes(configuredLevel)) {
+      return configuredLevel
+    }
+
+    const numericLevel = Number.parseInt(configuredLevel, 10)
+    const numericLevelMap: Record<number, string> = {
+      [LogLevel.ERROR]: 'error',
+      [LogLevel.WARN]: 'warn',
+      [LogLevel.INFO]: 'info',
+      [LogLevel.DEBUG]: 'debug',
+      4: 'debug',
+    }
+
+    if (numericLevel in numericLevelMap) {
+      return numericLevelMap[numericLevel]
+    }
+  }
+
+  return process.env.NODE_ENV === 'production' ? 'warn' : 'debug'
 }
 
-interface LogEntry {
-  timestamp: string
-  level: string
-  message: string
-  context?: Record<string, unknown>
-  error?: Error
+// Ensure logs directory exists
+const logDir = path.join(process.cwd(), 'logs')
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true })
 }
 
-function createLogEntry(
-  level: LogLevel,
+const { combine, timestamp, printf, colorize, errors, json } = winston.format
+
+// Custom format for terminal output
+const consoleFormat = printf(({ level, message, timestamp, stack, context, ...metadata }) => {
+  let log = `${timestamp} [${level}]: ${message}`
+  if (context) {
+    log += `\nContext: ${JSON.stringify(context, null, 2)}`
+  }
+  if (Object.keys(metadata).length > 0) {
+    log += `\nMeta: ${JSON.stringify(metadata)}`
+  }
+  if (stack) {
+    log += `\nStack: ${stack}`
+  }
+  return log
+})
+
+const winstonLogger = winston.createLogger({
+  level: getLogLevel(),
+  format: combine(errors({ stack: true }), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), json()),
+  defaultMeta: { service: 'learninghub-backend' },
+  transports: [
+    // Standard application logs
+    new DailyRotateFile({
+      dirname: logDir,
+      filename: 'application-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+      level: 'info', // Minimum level to write to standard log
+    }),
+    // Error logs separated for quick scanning
+    new DailyRotateFile({
+      dirname: logDir,
+      filename: 'error-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d',
+      level: 'error',
+    }),
+  ],
+})
+
+const auditLogger = winston.createLogger({
+  level: 'info',
+  format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), json()),
+  defaultMeta: { service: 'learninghub-backend', type: 'AUDIT' },
+  transports: [
+    new DailyRotateFile({
+      dirname: logDir,
+      filename: 'audit-%DATE%.log',
+      datePattern: 'YYYY-MM',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '12m', // Keep audit logs for 12 months
+    }),
+  ],
+})
+
+// Add console transport for local development, or when explicitly requested.
+if (
+  (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') ||
+  process.env.LOG_TO_CONSOLE === 'true'
+) {
+  winstonLogger.add(
+    new winston.transports.Console({
+      format: combine(colorize({ all: true }), timestamp({ format: 'HH:mm:ss' }), consoleFormat),
+    })
+  )
+}
+
+type AppLogLevel = 'error' | 'warn' | 'info' | 'debug'
+
+const LOG_LEVEL_PRIORITY: Record<AppLogLevel, LogLevel> = {
+  error: LogLevel.ERROR,
+  warn: LogLevel.WARN,
+  info: LogLevel.INFO,
+  debug: LogLevel.DEBUG,
+}
+
+const isLevelEnabled = (level: AppLogLevel): boolean => {
+  const configured = getLogLevel() as AppLogLevel
+  return LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[configured]
+}
+
+const emitTestLog = (
+  level: AppLogLevel,
   message: string,
-  context?: Record<string, unknown>,
-  error?: Error
-): LogEntry {
-  return {
+  fields: Record<string, unknown> = {}
+): void => {
+  if (
+    !process.env.JEST_WORKER_ID ||
+    process.env.LOG_TO_CONSOLE !== 'true' ||
+    !isLevelEnabled(level)
+  )
+    return
+
+  const payload = {
     timestamp: new Date().toISOString(),
-    // eslint-disable-next-line security/detect-object-injection
-    level: LogLevel[level],
+    level: level.toUpperCase(),
     message,
-    context,
-    error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined,
+    ...fields,
+  }
+  const serialized = JSON.stringify(payload)
+
+  if (level === 'error') {
+    console.error(serialized)
+  } else if (level === 'warn') {
+    console.warn(serialized)
+  } else {
+    console.log(serialized)
   }
 }
 
-function shouldLog(level: LogLevel): boolean {
-  return level <= getCurrentLogLevel()
+const emitTestAuditLog = (
+  action: string,
+  userId: string,
+  details: Record<string, unknown>
+): void => {
+  if (!process.env.JEST_WORKER_ID || process.env.LOG_TO_CONSOLE !== 'true') return
+
+  console.log(
+    JSON.stringify({
+      type: 'AUDIT',
+      timestamp: new Date().toISOString(),
+      action,
+      userId,
+      details,
+    })
+  )
 }
 
 export const logger = {
   error: (message: string, error?: Error, context?: Record<string, unknown>) => {
-    if (shouldLog(LogLevel.ERROR)) {
-      const entry = createLogEntry(LogLevel.ERROR, message, context, error)
-      console.error(JSON.stringify(entry))
-    }
+    emitTestLog('error', message, {
+      error: error ? { message: error.message, stack: error.stack, name: error.name } : undefined,
+      context,
+    })
+    winstonLogger.error(message, {
+      error: error ? { message: error.message, stack: error.stack, name: error.name } : undefined,
+      context,
+    })
   },
 
   warn: (message: string, context?: Record<string, unknown>) => {
-    if (shouldLog(LogLevel.WARN)) {
-      const entry = createLogEntry(LogLevel.WARN, message, context)
-      console.warn(JSON.stringify(entry))
-    }
+    emitTestLog('warn', message, { context })
+    winstonLogger.warn(message, { context })
   },
 
   info: (message: string, context?: Record<string, unknown>) => {
-    if (shouldLog(LogLevel.INFO)) {
-      const entry = createLogEntry(LogLevel.INFO, message, context)
-      // eslint-disable-next-line no-console
-      console.log(JSON.stringify(entry))
-    }
+    emitTestLog('info', message, { context })
+    winstonLogger.info(message, { context })
   },
 
   debug: (message: string, context?: Record<string, unknown>) => {
-    if (shouldLog(LogLevel.DEBUG)) {
-      const entry = createLogEntry(LogLevel.DEBUG, message, context)
-      // eslint-disable-next-line no-console
-      console.log(JSON.stringify(entry))
-    }
+    emitTestLog('debug', message, { context })
+    winstonLogger.debug(message, { context })
   },
 
   // Audit logging for sensitive operations
   audit: (action: string, userId: string, details: Record<string, unknown>) => {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      type: 'AUDIT',
+    emitTestAuditLog(action, userId, details)
+    auditLogger.info(action, {
       action,
       userId,
       details,
-    }
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(entry))
+    })
   },
 }
 

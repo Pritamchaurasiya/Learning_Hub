@@ -27,8 +27,8 @@ async function main() {
   await prisma.course.deleteMany()
   await prisma.user.deleteMany()
 
-  const adminPassword = await bcrypt.hash('admin123', 12)
-  const studentPassword = await bcrypt.hash('student123', 12)
+  const adminPassword = await bcrypt.hash('Admin@123!', 12)
+  const studentPassword = await bcrypt.hash('Student@123!', 12)
 
   const [admin, student] = await Promise.all([
     prisma.user.create({
@@ -67,6 +67,8 @@ async function main() {
         category: 'development',
         content: '# Web Development Basics',
         instructorId: admin.id,
+        isPublished: true,
+        publishedAt: new Date(),
         rating: 4.8,
         reviewCount: 320,
         studentCount: 1200,
@@ -85,6 +87,8 @@ async function main() {
         category: 'development',
         content: '# React Fundamentals',
         instructorId: admin.id,
+        isPublished: true,
+        publishedAt: new Date(),
         rating: 4.9,
         reviewCount: 210,
         studentCount: 860,
@@ -224,8 +228,9 @@ async function main() {
       percentage: 100,
       passed: true,
       timeTaken: 600,
-      answers: JSON.stringify({}),
+      answers: {},
       completedAt: new Date(),
+      status: 'COMPLETED',
     },
   })
 
@@ -254,10 +259,11 @@ async function main() {
     data: {
       id: 'problem-001',
       title: 'Two Sum',
+      slug: 'two-sum',
       description: 'Find two indices whose values add up to target.',
       difficulty: 'easy',
       category: 'algorithms',
-      tags: 'array,hash-table',
+      tags: ['array', 'hash-table'],
       starterCode: 'function twoSum(nums, target) {\n  return [];\n}',
       testCases: JSON.stringify([{ input: [[2, 7, 11, 15], 9], output: [0, 1] }]),
     },
@@ -270,7 +276,7 @@ async function main() {
         examType: 'UPSC',
         year: 2023,
         paper: 'Prelims',
-        subject: 'History',
+        subjectName: 'History',
         question: 'Which of the following was the first battle fought by the East India Company?',
         options: [
           'Battle of Plassey',
@@ -290,7 +296,7 @@ async function main() {
         examType: 'UPSC',
         year: 2023,
         paper: 'Prelims',
-        subject: 'Geography',
+        subjectName: 'Geography',
         question: 'Which of the following is the highest peak in the Western Ghats?',
         options: ['Anamudi', 'Doddabetta', 'Kalsubai', 'Mullayanagiri'],
         answer: 'Anamudi',
@@ -309,7 +315,6 @@ async function main() {
     data: [
       {
         examType: 'JEE_MAIN',
-        subject: 'Physics',
         topic: 'Mechanics',
         name: "Newton's Second Law",
         formula: 'F = ma',
@@ -320,7 +325,6 @@ async function main() {
       },
       {
         examType: 'JEE_MAIN',
-        subject: 'Chemistry',
         topic: 'Thermodynamics',
         name: 'Ideal Gas Law',
         formula: 'PV = nRT',
@@ -343,7 +347,6 @@ async function main() {
     data: [
       {
         examType: 'NEET',
-        subject: 'Biology',
         topic: 'Cell Structure',
         content:
           '# Cell Structure\n\n## Prokaryotic vs Eukaryotic Cells\n\n### Prokaryotic Cells:\n- No membrane-bound nucleus\n- No organelles\n- Single circular chromosome\n- Examples: Bacteria, Archaea\n\n### Eukaryotic Cells:\n- Membrane-bound nucleus\n- Contains organelles\n- Linear chromosomes\n- Examples: Plant, Animal, Fungi cells',
@@ -358,8 +361,8 @@ async function main() {
   })
 
   console.log('✅ Seed complete')
-  console.log(`Admin: admin@learninghub.com / admin123`)
-  console.log(`Student: student@learninghub.com / student123`)
+  console.log(`Admin: admin@learninghub.com / Admin@123!`)
+  console.log(`Student: student@learninghub.com / Student@123!`)
 }
 
 main()

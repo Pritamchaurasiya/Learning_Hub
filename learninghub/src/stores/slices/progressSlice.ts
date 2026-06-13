@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
 import { fetchApi } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
-import { AppState, ProgressSlice, Achievement, Notification } from '../types'
+import type { AppState, ProgressSlice, Achievement, Notification } from '../types'
 
 const defaultProgress = {
   completedCourses: [],
@@ -40,6 +40,7 @@ const defaultAchievements: Achievement[] = [
 
 export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> = (set, get) => ({
   progress: defaultProgress,
+
   completeCourse: async (courseId, xp) => {
     const isAlreadyCompleted = get().progress.completedCourses.includes(courseId)
     if (isAlreadyCompleted) return
@@ -48,84 +49,70 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
 
     set(state => ({
       loading: { ...state.loading, isLoading: true, message: 'Saving progress...' },
-      progress: {
-        ...state.progress,
-        completedCourses: [...state.progress.completedCourses, courseId],
-        xp: state.progress.xp + xp,
-        level: Math.floor((state.progress.xp + xp) / 100) + 1,
-      },
     }))
 
-    get().addToast({ message: `Course completed! +${xp} XP`, type: 'success' })
-    trackEvent('course_completed', { course_id: courseId, xp })
-
-    if (isFirstCourse) {
-      get().unlockAchievement('first-course')
-    }
-    get().updateDailyGoal(xp)
-
     try {
-      const res = await fetchApi('/gamification/award-xp/', {
+      const res = await fetchApi('/progress/complete-course', {
         method: 'POST',
-        body: JSON.stringify({ amount: xp, reason: `Completed course: ${courseId}` }),
+        body: JSON.stringify({ courseId }),
       })
-      // Sync actual server state if available
-      if (res.data?.xp !== undefined) {
-        set(state => ({
-          progress: {
-            ...state.progress,
-            xp: res.data.xp,
-            level: res.data.level ?? state.progress.level,
-          },
-        }))
-      }
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('[Progress] Sync failed:', err)
-      // Rollback optimistic update on failure
+      const awardedXp = res?.data?.xp_awarded ?? xp
+
       set(state => ({
         progress: {
           ...state.progress,
-          completedCourses: state.progress.completedCourses.filter(id => id !== courseId),
-          xp: Math.max(0, state.progress.xp - xp),
-          level: Math.max(1, Math.floor(Math.max(0, state.progress.xp - xp) / 100) + 1),
+          completedCourses: [...state.progress.completedCourses, courseId],
+          xp: state.progress.xp + awardedXp,
+          level: Math.floor((state.progress.xp + awardedXp) / 100) + 1,
         },
+        loading: { ...state.loading, isLoading: false },
       }))
-    } finally {
+
+      get().addToast({ message: `Course completed! +${awardedXp} XP`, type: 'success' })
+      trackEvent('course_completed', { course_id: courseId, xp: awardedXp })
+
+      if (isFirstCourse) get().unlockAchievement('first-course')
+      get().updateDailyGoal(awardedXp)
+    } catch {
       set(state => ({ loading: { ...state.loading, isLoading: false } }))
+      get().addToast({ message: 'Failed to save progress. Please try again.', type: 'error' })
     }
   },
+
   setCurrentCourse: courseId => {
     set(state => ({ progress: { ...state.progress, currentCourse: courseId } }))
   },
-  toggleBookmark: async courseId => {
+
+  toggleBookmark: async itemId => {
     const previousBookmarks = get().progress.bookmarks
-    const isBookmarked = previousBookmarks.includes(courseId)
+    const isBookmarked = previousBookmarks.includes(itemId)
 
     set(state => {
       const newBookmarks = isBookmarked
-        ? state.progress.bookmarks.filter(id => id !== courseId)
-        : [...state.progress.bookmarks, courseId]
+        ? state.progress.bookmarks.filter(id => id !== itemId)
+        : [...state.progress.bookmarks, itemId]
       return { progress: { ...state.progress, bookmarks: newBookmarks } }
     })
 
-    get().addToast({
-      message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
-      type: 'success',
-    })
-
     try {
-      if (isBookmarked) await fetchApi(`/users/bookmarks/${courseId}`, { method: 'DELETE' })
-      else
-        await fetchApi('/users/bookmarks', {
+      if (isBookmarked) {
+        await fetchApi(`/bookmarks/${itemId}`, { method: 'DELETE' })
+      } else {
+        await fetchApi('/bookmarks', {
           method: 'POST',
-          body: JSON.stringify({ course_id: courseId }),
+          body: JSON.stringify({ item_id: itemId, item_type: 'course' }),
         })
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('[Progress] Bookmark sync failed, reverting:', err)
+      }
+      get().addToast({
+        message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
+        type: 'success',
+      })
+    } catch {
       set(state => ({ progress: { ...state.progress, bookmarks: previousBookmarks } }))
       get().addToast({ message: 'Sync failed. Bookmark reverted.', type: 'error' })
     }
   },
+
   addBookmark: async courseId => {
     const previousBookmarks = get().progress.bookmarks
     if (previousBookmarks.includes(courseId)) return
@@ -133,22 +120,21 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
     set(state => ({
       progress: { ...state.progress, bookmarks: [...state.progress.bookmarks, courseId] },
     }))
-    get().addToast({ message: 'Added to bookmarks', type: 'success' })
 
     try {
-      await fetchApi('/users/bookmarks', {
+      await fetchApi('/bookmarks', {
         method: 'POST',
-        body: JSON.stringify({ course_id: courseId }),
+        body: JSON.stringify({ item_id: courseId, item_type: 'course' }),
       })
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('[Progress] Bookmark add failed, reverting:', err)
+      get().addToast({ message: 'Added to bookmarks', type: 'success' })
+    } catch {
       set(state => ({ progress: { ...state.progress, bookmarks: previousBookmarks } }))
       get().addToast({ message: 'Failed to add bookmark.', type: 'error' })
     }
   },
+
   removeBookmark: async courseId => {
     const previousBookmarks = get().progress.bookmarks
-
     set(state => ({
       progress: {
         ...state.progress,
@@ -156,31 +142,40 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
       },
     }))
     try {
-      await fetchApi(`/users/bookmarks/${courseId}`, { method: 'DELETE' })
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('[Progress] Bookmark remove failed, reverting:', err)
+      await fetchApi(`/bookmarks/${courseId}`, { method: 'DELETE' })
+    } catch {
+      if (import.meta.env.DEV) console.warn('[Progress] Bookmark remove failed, reverting:')
       set(state => ({ progress: { ...state.progress, bookmarks: previousBookmarks } }))
-      get().addToast({ message: 'Failed to remove bookmark.', type: 'error' })
     }
   },
+
   addNote: (courseId, note) => {
     set(state => ({
       progress: { ...state.progress, notes: { ...state.progress.notes, [courseId]: note } },
     }))
   },
+
   updateStreak: async () => {
     if (get().auth.isAuthenticated) {
-      set(state => ({
-        progress: {
-          ...state.progress,
-          streak: state.progress.streak + 1,
-          lastActive: new Date().toISOString(),
-        },
-      }))
       try {
-        await fetchApi('/gamification/streak', { method: 'POST' })
+        const res = await fetchApi('/progress/update-streak', { method: 'POST' })
+        const serverStreak = res?.data?.streak
+        set(state => ({
+          progress: {
+            ...state.progress,
+            streak: serverStreak ?? state.progress.streak + 1,
+            lastActive: new Date().toISOString(),
+          },
+        }))
       } catch {
-        if (import.meta.env.DEV) console.warn('[Progress] Streak sync failed')
+        // Offline — increment locally anyway
+        set(state => ({
+          progress: {
+            ...state.progress,
+            streak: state.progress.streak + 1,
+            lastActive: new Date().toISOString(),
+          },
+        }))
       }
     }
   },
@@ -220,34 +215,11 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
   notifications: [],
   unreadCount: 0,
   fetchNotifications: async () => {
-    try {
-      const response = await fetchApi('/notifications')
-      const notifs = response.data ?? []
-      set({
-        notifications: notifs,
-        unreadCount: notifs.filter((n: Notification) => !n.isRead).length,
-      })
-    } catch {
-      if (import.meta.env.DEV) console.warn('[Progress] Failed to fetch notifications')
-    }
   },
-  markNotificationAsRead: id => {
-    set(state => ({
-      notifications: state.notifications.map(n => (n.id === id ? { ...n, isRead: true } : n)),
-      unreadCount: Math.max(0, state.unreadCount - 1),
-    }))
-    fetchApi(`/notifications/${id}/mark-read`, { method: 'POST' }).catch(() => {})
-  },
-  markAllNotificationsAsRead: () => {
-    set(state => ({
-      notifications: state.notifications.map(n => ({ ...n, isRead: true })),
-      unreadCount: 0,
-    }))
-    fetchApi('/notifications/mark-all-read', { method: 'POST' }).catch(() => {})
-  },
+  markNotificationAsRead: () => {},
+  markAllNotificationsAsRead: () => {},
   clearNotifications: () => {
     set({ notifications: [], unreadCount: 0 })
-    fetchApi('/notifications/clear-all', { method: 'POST' }).catch(() => {})
   },
   addNotification: notification => {
     const newNotification: Notification = {

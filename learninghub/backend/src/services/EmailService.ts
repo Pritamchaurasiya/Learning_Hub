@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import type { Transporter, SentMessageInfo } from 'nodemailer'
+import type { Transporter } from 'nodemailer'
 import logger from '../utils/logger'
 
 export interface EmailOptions {
@@ -19,10 +19,9 @@ export class EmailService {
 
   private initialize(): void {
     const host = process.env.SMTP_HOST
-    const port = parseInt(process.env.SMTP_PORT || '587', 10)
+    const port = parseInt(process.env.SMTP_PORT ?? '587', 10)
     const user = process.env.SMTP_USER
     const pass = process.env.SMTP_PASS
-    const from = process.env.FROM_EMAIL || 'noreply@learninghub.com'
 
     if (!host || !user || !pass) {
       logger.warn('[EmailService] SMTP not configured. Emails will be logged only.')
@@ -47,20 +46,20 @@ export class EmailService {
     }
   }
 
-  async send(options: EmailOptions): Promise<boolean> {
+  async sendInline(options: EmailOptions): Promise<boolean> {
     if (!this.isConfigured || !this.transporter) {
       logger.info(`[EmailService] ${options.subject} - Would send to: ${options.to}`)
       return true
     }
 
     try {
-      const from = process.env.FROM_EMAIL || 'noreply@learninghub.com'
+      const from = process.env.FROM_EMAIL ?? 'noreply@learninghub.com'
       await this.transporter.sendMail({
         from: `LearningHub <${from}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
-        text: options.text || this.stripHtml(options.html),
+        text: options.text ?? this.stripHtml(options.html),
       })
 
       logger.info(`[EmailService] Sent "${options.subject}" to ${options.to}`)
@@ -74,9 +73,15 @@ export class EmailService {
     }
   }
 
+  async send(options: EmailOptions): Promise<boolean> {
+    const { emailQueue } = await import('./EmailQueue')
+    await emailQueue.enqueue({ type: 'send', options })
+    return true
+  }
+
   async sendVerificationEmail(to: string, token: string, username?: string): Promise<boolean> {
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`
-    const html = this.templates.verification(username || 'User', verificationUrl)
+    const verificationUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/verify-email?token=${token}`
+    const html = this.templates.verification(username ?? 'User', verificationUrl)
 
     return this.send({
       to,
@@ -86,8 +91,8 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string, username?: string): Promise<boolean> {
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`
-    const html = this.templates.passwordReset(username || 'User', resetUrl)
+    const resetUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/reset-password?token=${token}`
+    const html = this.templates.passwordReset(username ?? 'User', resetUrl)
 
     return this.send({
       to,
@@ -97,8 +102,8 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(to: string, username?: string): Promise<boolean> {
-    const dashboardUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`
-    const html = this.templates.welcome(username || 'User', dashboardUrl)
+    const dashboardUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/dashboard`
+    const html = this.templates.welcome(username ?? 'User', dashboardUrl)
 
     return this.send({
       to,
@@ -113,9 +118,9 @@ export class EmailService {
     startTime: Date,
     username?: string
   ): Promise<boolean> {
-    const contestUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/contests`
+    const contestUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/contests`
     const html = this.templates.contestNotification(
-      username || 'User',
+      username ?? 'User',
       contestTitle,
       startTime,
       contestUrl
@@ -134,7 +139,7 @@ export class EmailService {
     amount: string,
     username?: string
   ): Promise<boolean> {
-    const html = this.templates.subscriptionConfirmation(username || 'User', tierName, amount)
+    const html = this.templates.subscriptionConfirmation(username ?? 'User', tierName, amount)
 
     return this.send({
       to,

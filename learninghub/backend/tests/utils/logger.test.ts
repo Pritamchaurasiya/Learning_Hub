@@ -13,6 +13,7 @@ describe('Logger Utils', () => {
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    process.env.LOG_TO_CONSOLE = 'true'
   })
 
   afterEach(() => {
@@ -20,6 +21,7 @@ describe('Logger Utils', () => {
     consoleWarnSpy.mockRestore()
     consoleLogSpy.mockRestore()
     delete process.env.LOG_LEVEL
+    delete process.env.LOG_TO_CONSOLE
     delete process.env.NODE_ENV
   })
 

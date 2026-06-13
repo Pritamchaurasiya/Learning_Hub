@@ -1,14 +1,14 @@
-import NodeCache from 'node-cache'
 import { Request, Response, NextFunction } from 'express'
 import logger from '../utils/logger'
-
-// Default TTL: 5 minutes (300 seconds)
-export const apiCache = new NodeCache({ stdTTL: 300, checkperiod: 120 })
+import { cacheService } from '../services/CacheService'
 
 export const cacheMiddleware = (durationInSeconds: number) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    // Only cache GET requests
-    if (req.method !== 'GET') {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Only cache public GET requests. Several optional-auth routes include
+    // per-user flags (enrollment, completion, attempt counts) and mount this
+    // middleware before optionalAuth, so a bearer request must not reuse the
+    // anonymous response.
+    if (req.method !== 'GET' || (req.headers.authorization && !req.user?.userId)) {
       next()
       return
     }
@@ -18,13 +18,17 @@ export const cacheMiddleware = (durationInSeconds: number) => {
     // So we append the userId if present to ensure user-scoped caching where needed.
     const key = `__express__${req.originalUrl || req.url}_${req.user?.userId ?? 'anonymous'}`
 
-    const cachedResponse = apiCache.get(key)
-    if (cachedResponse) {
-      if (process.env.NODE_ENV !== 'test') {
-        logger.info(`[Cache] HIT for ${key}`)
+    try {
+      const cachedResponse = await cacheService.get(key)
+      if (cachedResponse) {
+        if (process.env.NODE_ENV !== 'test') {
+          logger.info(`[Cache] HIT for ${key}`)
+        }
+        res.json(cachedResponse)
+        return
       }
-      res.json(cachedResponse)
-      return
+    } catch (err) {
+      logger.warn(`[Cache] Redis get failed, continuing without cache for ${key}`)
     }
 
     if (process.env.NODE_ENV !== 'test') {
@@ -37,7 +41,9 @@ export const cacheMiddleware = (durationInSeconds: number) => {
     res.json = (body: any) => {
       // Only cache success responses (assuming status 200)
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        apiCache.set(key, body, durationInSeconds)
+        cacheService.set(key, body, durationInSeconds).catch(err => {
+          logger.error(`[Cache] Redis set failed for ${key}`, err as Error)
+        })
       }
       return originalJson(body)
     }
@@ -46,10 +52,14 @@ export const cacheMiddleware = (durationInSeconds: number) => {
   }
 }
 
-export const clearCache = (req: Request, res: Response, next: NextFunction): void => {
-  apiCache.flushAll()
-  if (process.env.NODE_ENV !== 'test') {
-    logger.info('[Cache] Cleared all cache entries')
+export const clearCache = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await cacheService.deletePattern('__express__*')
+    if (process.env.NODE_ENV !== 'test') {
+      logger.info('[Cache] Cleared all express cache entries')
+    }
+  } catch (err) {
+    logger.error('[Cache] Failed to clear cache entries', err as Error)
   }
   next()
 }

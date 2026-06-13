@@ -20,6 +20,7 @@ const icons = {
   social: Users,
   system: Settings,
   payment: DollarSign,
+  reminder: Bell,
 }
 
 const colors = {
@@ -28,6 +29,7 @@ const colors = {
   social: 'text-purple-500 bg-purple-100 dark:bg-purple-900/30',
   system: 'text-gray-500 bg-gray-100 dark:bg-gray-800',
   payment: 'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30',
+  reminder: 'text-orange-500 bg-orange-100 dark:bg-orange-900/30',
 }
 
 interface NotificationPanelProps {
@@ -36,8 +38,10 @@ interface NotificationPanelProps {
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
-  const { notifications, markNotificationAsRead, markAllNotificationsAsRead, clearNotifications } =
-    useStore()
+  const notifications = useStore(state => state.notifications)
+  const markNotificationAsRead = useStore(state => state.markNotificationAsRead)
+  const markAllNotificationsAsRead = useStore(state => state.markAllNotificationsAsRead)
+  const clearNotifications = useStore(state => state.clearNotifications)
 
   const filteredNotifications =
     filter === 'unread' ? notifications.filter(n => !n.isRead) : notifications

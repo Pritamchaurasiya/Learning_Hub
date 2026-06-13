@@ -1,4 +1,4 @@
-import { verifyToken } from '../utils/jwt'
+import { verifyToken } from './auth'
 import { createErrorResponse } from '../utils/helpers'
 import { Env } from '../types'
 
@@ -20,8 +20,8 @@ export async function requireAdmin(request: Request, env: Env): Promise<Response
     return createErrorResponse('Invalid token', 401)
   }
 
-  // Check if user has admin role
-  if (payload.role !== 'admin') {
+  // Check if user has admin/moderator role
+  if (payload.role !== 'admin' && payload.role !== 'moderator') {
     return createErrorResponse('Forbidden - Admin access required', 403)
   }
 
@@ -48,5 +48,5 @@ export async function isAdmin(request: Request, env: Env): Promise<boolean> {
     return false
   }
 
-  return payload.role === 'admin'
+  return payload.role === 'admin' || payload.role === 'moderator'
 }

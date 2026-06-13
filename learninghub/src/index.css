@@ -51,6 +51,17 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
   }
+
+  /* Keyboard focus-visible ring — only shows on keyboard nav, not mouse clicks */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-500/60 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
+  }
+
+  /* Remove default focus styles when using mouse */
+  :focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 @layer components {
@@ -199,11 +210,41 @@
     @apply bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500 bg-clip-text text-transparent;
   }
 
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-300 dark:bg-gray-600;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  /* Hide scrollbar utility for flex containers that don't need visible scrollbars */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .bg-mesh {
     background-image:
       radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
       radial-gradient(ellipse at 40% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+  }
+
+  /* Dark mode bg-mesh with adjusted opacity */
+  .dark .bg-mesh {
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 40% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
   }
 
   /* Accessibility: Screen reader only */
@@ -537,6 +578,7 @@
   filter: blur(60px);
   pointer-events: none;
   opacity: 0.15;
+  will-change: transform, opacity;
 }
 
 .orb-1 {
@@ -564,6 +606,17 @@
   top: 50%;
   left: 30%;
   animation: float 18s ease-in-out infinite 2s;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .orb-1,
+  .orb-2,
+  .orb-3 {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* Safe area inset utilities for notched/rounded-corner devices */

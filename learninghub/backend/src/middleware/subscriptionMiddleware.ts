@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { subscriptionService } from '../services/SubscriptionService'
+import { sendError } from '../utils/responseHelper'
 import logger from '../utils/logger'
 
-/**
- * Middleware to require premium subscription.
- */
 export const requirePremium = async (
   req: Request,
   res: Response,
@@ -13,17 +11,13 @@ export const requirePremium = async (
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendError(res, 'Authentication required', 401, 'NO_TOKEN')
       return
     }
 
     const hasAccess = await subscriptionService.hasPremiumAccess(userId)
     if (!hasAccess) {
-      res.status(403).json({
-        status: 'error',
-        message: 'Premium subscription required',
-        code: 'PREMIUM_REQUIRED',
-      })
+      sendError(res, 'Premium subscription required', 403, 'PREMIUM_REQUIRED')
       return
     }
 
@@ -33,14 +27,10 @@ export const requirePremium = async (
       '[requirePremium] error',
       error instanceof Error ? error : new Error(String(error))
     )
-    res.status(500).json({ status: 'error', message: 'Internal server error' })
+    sendError(res, 'Internal server error', 500, 'INTERNAL_ERROR')
   }
 }
 
-/**
- * Middleware to check usage limits.
- * @param limitType - The type of usage limit to check
- */
 export const checkUsageLimit = (
   limitType: 'testsTaken' | 'aiGenerations' | 'questionsAnswered'
 ) => {
@@ -48,34 +38,29 @@ export const checkUsageLimit = (
     try {
       const userId = req.user?.userId
       if (!userId) {
-        res.status(401).json({ status: 'error', message: 'Authentication required' })
+        sendError(res, 'Authentication required', 401, 'NO_TOKEN')
         return
       }
 
       const result = await subscriptionService.checkUsageLimit(userId, limitType)
 
       if (!result.allowed) {
-        res.status(429).json({
-          status: 'error',
-          message: 'Usage limit exceeded. Upgrade your plan for more.',
-          code: 'USAGE_LIMIT_EXCEEDED',
-          data: {
-            current: result.current,
-            limit: result.limit,
-          },
-        })
+        sendError(
+          res,
+          'Usage limit exceeded. Upgrade your plan for more.',
+          429,
+          'USAGE_LIMIT_EXCEEDED'
+        )
         return
       }
 
-      // Attach limit info to request for downstream use
-      // req.usageLimit = result
       next()
     } catch (error) {
       logger.error(
         '[checkUsageLimit] error',
         error instanceof Error ? error : new Error(String(error))
       )
-      res.status(500).json({ status: 'error', message: 'Internal server error' })
+      sendError(res, 'Internal server error', 500, 'INTERNAL_ERROR')
     }
   }
 }

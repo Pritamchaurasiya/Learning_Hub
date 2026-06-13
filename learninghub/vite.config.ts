@@ -121,20 +121,31 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000, // Increased limit for heavy modules
+    chunkSizeWarningLimit: 1000,
     sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // Group heavy modules more effectively to avoid circularity and reduce chunk count
+            // Large libraries - separate chunks
             if (id.includes('framer-motion')) return 'animations'
             if (id.includes('lucide-react')) return 'icons'
             if (id.includes('highlight.js')) return 'highlight'
-            if (id.includes('monaco-editor')) return 'editor'
             if (id.includes('marked') || id.includes('dompurify')) return 'markdown'
             if (id.includes('recharts')) return 'charts'
-            if (id.includes('zustand')) return 'store'
+            
+            // Code editor - only load on DSA pages (378KB)
+            if (id.includes('codemirror') || id.includes('@uiw/react-codemirror')) return 'editor'
+            
+            // Core libraries
+            if (id.includes('/node_modules/zustand/')) return 'store'
+            if (id.includes('/node_modules/react-router-dom/') || id.includes('/node_modules/react-router/')) return 'router'
+            if (id.includes('/node_modules/@tanstack/react-query/') || id.includes('/node_modules/@tanstack/query-core/')) return 'query'
+            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/scheduler/')) return 'react-core'
+            if (id.includes('/node_modules/socket.io-client/')) return 'socket'
+            if (id.includes('/node_modules/i18next/') || id.includes('/node_modules/react-i18next/')) return 'i18n'
+            
+            // Everything else
             return 'vendor'
           }
         },

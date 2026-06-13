@@ -2,7 +2,6 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
-import { Request } from 'express'
 import logger from '../utils/logger'
 
 export enum FileType {
@@ -110,8 +109,8 @@ export interface UploadedFile {
   url: string
 }
 
-export function processUploadedFile(file: Express.Multer.File, fileType: FileType): UploadedFile {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:5000'
+export function processUploadedFile(file: Express.Multer.File, _fileType: FileType): UploadedFile {
+  const baseUrl = process.env.BASE_URL ?? 'http://localhost:5000'
   const relativePath = path.relative(process.cwd(), file.path)
 
   return {

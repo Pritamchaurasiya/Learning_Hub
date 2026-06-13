@@ -9,6 +9,7 @@
  */
 
 import { prisma } from '../prismaClient'
+import { cacheService } from './CacheService'
 
 export interface LeaderboardOptions {
   page?: number
@@ -24,14 +25,43 @@ export class QueryOptimizationService {
    */
   async getLeaderboard(options: LeaderboardOptions = {}) {
     const limit = Math.min(options.limit ?? 20, 100)
-    const cursor = options.cursor ? parseInt(options.cursor) : undefined
+    const timeframe = options.timeframe ?? 'all'
+
+    // Parse composite cursor "xp:id" for uniqueness guarantee
+    let cursorXP: number | undefined
+    let cursorId: string | undefined
+    if (options.cursor) {
+      const parts = options.cursor.split(':')
+      if (parts.length === 2) {
+        cursorXP = parseInt(parts[0])
+        cursorId = parts[1]
+      } else {
+        // Backwards compatibility: treat as XP-only cursor
+        cursorXP = parseInt(parts[0])
+      }
+    }
+
+    // Attempt to hit cache first
+    const cacheKey = cacheService.leaderboardKey(`${timeframe}-${limit}-${options.cursor ?? 'first'}`)
+    const cachedData = await cacheService.get(cacheKey)
+    if (cachedData) {
+      return cachedData
+    }
 
     const where: Record<string, unknown> = {
       deletedAt: null,
     }
 
-    if (cursor !== undefined) {
-      where.xp = { lt: cursor }
+    // Composite cursor filter: users with (lower xp) OR (same xp but later id)
+    if (cursorXP !== undefined) {
+      if (cursorId) {
+        where.OR = [
+          { xp: { lt: cursorXP } },
+          { xp: cursorXP, id: { gt: cursorId } },
+        ]
+      } else {
+        where.xp = { lt: cursorXP }
+      }
     }
 
     // Apply timeframe filter if specified
@@ -59,7 +89,7 @@ export class QueryOptimizationService {
     const users = await prisma.user.findMany({
       where: where as any,
       take: limit + 1, // Fetch one extra to check if there's a next page
-      orderBy: { xp: 'desc' },
+      orderBy: [{ xp: 'desc' }, { id: 'asc' }], // Composite sort for deterministic ordering
       select: {
         id: true,
         username: true,
@@ -75,16 +105,19 @@ export class QueryOptimizationService {
       users.pop() // Remove the extra item
     }
 
+    // Composite cursor: "xp:id"
     const nextCursor =
-      hasNextPage && users.length > 0 ? users[users.length - 1].xp.toString() : null
+      hasNextPage && users.length > 0
+        ? `${users[users.length - 1].xp}:${users[users.length - 1].id}`
+        : null
 
     // Get total count only for first page
     let total: number | undefined
-    if (!cursor) {
-      total = await prisma.user.count({ where: where as any })
+    if (!options.cursor) {
+      total = await prisma.user.count({ where: { deletedAt: null, ...(where.lastActive ? { lastActive: where.lastActive } : {}) } as any })
     }
 
-    return {
+    const result = {
       users,
       pagination: {
         limit,
@@ -93,6 +126,11 @@ export class QueryOptimizationService {
         has_next_page: hasNextPage,
       },
     }
+
+    // Cache the result for 60 seconds to keep leaderboard fresh
+    await cacheService.set(cacheKey, result, 60)
+
+    return result
   }
 
   /**
@@ -165,6 +203,13 @@ export class QueryOptimizationService {
     const limit = Math.min(params.limit ?? 20, 50)
     const skip = (page - 1) * limit
 
+    const cacheKey = cacheService.generateKey(
+      'discover',
+      `p${page}_l${limit}_c${params.category ?? ''}_d${params.difficulty ?? ''}_s${params.search ?? ''}`
+    )
+    const cachedData = await cacheService.get(cacheKey)
+    if (cachedData) return cachedData
+
     const where: Record<string, unknown> = {
       isPublished: true,
       deletedAt: null,
@@ -216,7 +261,7 @@ export class QueryOptimizationService {
 
     const total = await prisma.course.count({ where: where as any })
 
-    return {
+    const result = {
       courses,
       pagination: {
         page,
@@ -225,6 +270,11 @@ export class QueryOptimizationService {
         pages: Math.ceil(total / limit),
       },
     }
+
+    // Cache discover courses for 5 minutes
+    await cacheService.set(cacheKey, result, 300)
+
+    return result
   }
 
   /**

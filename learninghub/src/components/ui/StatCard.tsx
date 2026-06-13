@@ -8,6 +8,7 @@ interface StatCardProps {
   color: string
   delay?: number
   animated?: boolean
+  className?: string
 }
 
 // Counter animation hook
@@ -36,14 +37,24 @@ function useCountUp(end: number, duration: number = 1000) {
 }
 
 export const StatCard = React.memo(
-  ({ icon: Icon, label, value, color, delay = 0, animated = false }: StatCardProps) => {
+  ({
+    icon: Icon,
+    label,
+    value,
+    color,
+    delay = 0,
+    animated = false,
+    className = '',
+  }: StatCardProps) => {
     const numericValue = typeof value === 'number' ? value : parseInt(value as string) || 0
     const animatedCount = useCountUp(animated ? numericValue : 0, 1500)
     const displayValue = animated ? animatedCount : value
 
     return (
       <motion.div
-        className="card-static p-4 sm:p-5 flex items-center gap-3 sm:gap-4 group hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800"
+        className={`card-static p-4 sm:p-5 flex items-center gap-3 sm:gap-4 group hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800 ${
+          className
+        }`}
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: delay / 1000, duration: 0.4, ease: 'easeOut' }}

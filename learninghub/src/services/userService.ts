@@ -1,4 +1,4 @@
-﻿import { fetchApi } from '../utils/api'
+import { fetchApi } from '../utils/api'
 
 export interface UserProfile {
   id: string
@@ -145,23 +145,11 @@ export const userService = {
 
   uploadAvatar: async (file: File): Promise<{ status: string; data: { avatar_url: string } }> => {
     const formData = new FormData()
-    formData.append('avatar', file)
-
-    const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api/v1'
-
-    const response = await fetch(`${API_URL}/auth/avatar`, {
+    formData.append('file', file)
+    return fetchApi('/media/avatar', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
       body: formData,
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to upload avatar')
-    }
-
-    return response.json()
+    }) as Promise<{ status: string; data: { avatar_url: string } }>
   },
 
   getStats: async (): Promise<{ status: string; data: UserStats }> => {

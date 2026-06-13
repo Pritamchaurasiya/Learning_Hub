@@ -38,40 +38,16 @@ export interface CartItemResponse {
   data: CartItem
 }
 
-// Default empty cart for when backend doesn't support cart yet
-const emptyCart: Cart = {
-  id: 'cart-empty',
-  items: [],
-  total_items: 0,
-  subtotal: 0,
-  discount: 0,
-  total: 0,
-  currency: 'USD',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-}
-
 export const cartService = {
   getCart: async (options?: { signal?: AbortSignal }): Promise<CartResponse> => {
-    try {
-      // Try to fetch from backend cart endpoint
-      const res = await fetchApi('/commerce/cart/', { signal: options?.signal })
-      return res as CartResponse
-    } catch {
-      // Backend cart not implemented - return empty cart
-      return { status: 'success', data: emptyCart }
-    }
+    return fetchApi('/commerce/cart/', { signal: options?.signal }) as Promise<CartResponse>
   },
 
   addToCart: async (courseId: string, quantity: number = 1): Promise<CartResponse> => {
-    try {
-      return (await fetchApi('/commerce/cart/add/', {
-        method: 'POST',
-        body: JSON.stringify({ course_id: courseId, quantity }),
-      })) as CartResponse
-    } catch {
-      throw new Error('Cart functionality not available. Please try direct enrollment.')
-    }
+    return (await fetchApi('/commerce/cart/add/', {
+      method: 'POST',
+      body: JSON.stringify({ course_id: courseId, quantity }),
+    })) as CartResponse
   },
 
   updateCartItem: async (itemId: string, quantity: number): Promise<CartItemResponse> => {
@@ -94,7 +70,7 @@ export const cartService = {
   },
 
   applyCoupon: async (code: string): Promise<CartResponse> => {
-    return fetchApi('/payments/apply-coupon/', {
+    return fetchApi('/payments/coupons', {
       method: 'POST',
       body: JSON.stringify({ code }),
     })
@@ -104,7 +80,7 @@ export const cartService = {
   checkout: async (paymentMethod: string, courseId?: string): Promise<any> => {
     // If cart is not implemented, use direct course enrollment
     if (courseId) {
-      return fetchApi('/payments/create-order/', {
+      return fetchApi('/payments/orders', {
         method: 'POST',
         body: JSON.stringify({
           gateway: paymentMethod,
@@ -120,7 +96,7 @@ export const cartService = {
       throw new Error('Cart is empty')
     }
 
-    return fetchApi('/payments/create-order/', {
+    return fetchApi('/payments/orders', {
       method: 'POST',
       body: JSON.stringify({
         gateway: paymentMethod,

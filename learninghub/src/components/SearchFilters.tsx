@@ -36,7 +36,7 @@ const phaseOptions = [
   { value: 'beginner', label: 'Beginner', icon: Layers },
   { value: 'intermediate', label: 'Intermediate', icon: Layers },
   { value: 'advanced', label: 'Advanced', icon: Layers },
-  { value: 'singularity', label: 'Singularity', icon: Layers },
+  { value: 'expert', label: 'Expert', icon: Layers },
 ]
 
 const durationOptions = [

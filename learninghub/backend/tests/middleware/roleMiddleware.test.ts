@@ -43,7 +43,8 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Unauthorized',
+        code: 'NO_TOKEN',
+        message: 'Authentication required',
       })
       expect(mockNext).not.toHaveBeenCalled()
     })
@@ -57,7 +58,8 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(403)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Forbidden: Insufficient permissions',
+        code: 'FORBIDDEN',
+        message: 'Insufficient permissions',
       })
       expect(mockNext).not.toHaveBeenCalled()
     })
@@ -89,7 +91,8 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Unauthorized',
+        code: 'NO_TOKEN',
+        message: 'Authentication required',
       })
     })
 
@@ -101,6 +104,7 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(403)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
+        code: 'FORBIDDEN',
         message: 'Admin access required',
       })
     })
@@ -113,6 +117,7 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(403)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
+        code: 'FORBIDDEN',
         message: 'Admin access required',
       })
     })
@@ -143,7 +148,8 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
-        message: 'Unauthorized',
+        code: 'NO_TOKEN',
+        message: 'Authentication required',
       })
     })
 
@@ -155,6 +161,7 @@ describe('RoleMiddleware', () => {
       expect(statusMock).toHaveBeenCalledWith(403)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
+        code: 'FORBIDDEN',
         message: 'Instructor or Admin access required',
       })
     })

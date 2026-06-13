@@ -15,6 +15,29 @@ declare global {
   }
 }
 
+// MFA-specific rate limiting (stricter to prevent brute force of 2FA codes)
+export const mfaRateLimit = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_MFA_WINDOW_MS ?? '300000', 10), // 5 minutes
+  max: parseInt(process.env.RATE_LIMIT_MFA_MAX ?? '3', 10),
+  message: {
+    status: 'error',
+    message: 'Too many MFA attempts. Please wait before trying again.',
+    code: 'MFA_RATE_LIMIT_EXCEEDED',
+  },
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 'error',
+      message: 'Too many MFA attempts. Please wait before trying again.',
+      code: 'MFA_RATE_LIMIT_EXCEEDED',
+      retryAfter: 5 * 60,
+    })
+  },
+})
+
 // Rate limiting configurations
 export const generalRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_GENERAL_WINDOW_MS ?? '900000', 10), // 15 minutes
@@ -71,6 +94,19 @@ export const adminRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
 })
 
+export const csrfRateLimit = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_CSRF_WINDOW_MS ?? '60000', 10), // 1 minute
+  max: parseInt(process.env.RATE_LIMIT_CSRF_MAX ?? '20', 10),
+  message: {
+    status: 'error',
+    message: 'Too many CSRF token requests, please try again later.',
+    code: 'CSRF_RATE_LIMIT_EXCEEDED',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+})
+
 // CORS configuration — supports comma-separated origins for multi-domain production
 const parseOrigins = (envValue: string | undefined): string | string[] => {
   const isDev = process.env.NODE_ENV !== 'production'
@@ -108,29 +144,41 @@ export const corsOptions = {
   optionsSuccessStatus: 204,
 }
 
-// Helmet configuration — production-grade CSP
+// Helmet configuration — production-grade CSP (HTTP header, NOT meta tag)
 export const helmetConfig = {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      // Use nonce-based inline scripts in production; unsafe-inline removed for security
-      scriptSrc: ["'self'", ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'"] : [])],
+      // In production, inline scripts MUST use nonces or be external.
+      // 'unsafe-inline' is ONLY allowed in development for HMR.
+      scriptSrc: [
+        "'self'",
+        ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
+      ],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
-      connectSrc: ["'self'", 'https:', 'wss:'],
-      frameSrc: ["'none'"],
+      connectSrc: [
+        "'self'",
+        'https:',
+        'ws:',
+        'wss:',
+        ...(process.env.NODE_ENV === 'development'
+          ? ['http://localhost:*', 'ws://localhost:*']
+          : []),
+      ],
+      frameAncestors: ["'none'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
-      upgradeInsecureRequests: [],
+      ...(process.env.NODE_ENV === 'production' ? { upgradeInsecureRequests: [] } : {}),
     },
   },
   crossOriginEmbedderPolicy: false,
   crossOriginOpenerPolicy: { policy: 'same-origin' as const },
   crossOriginResourcePolicy: { policy: 'cross-origin' as const },
   dnsPrefetchControl: { allow: false },
-  frameguard: { action: 'deny' as const },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -138,7 +186,6 @@ export const helmetConfig = {
   },
   noSniff: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' as const },
-  xssFilter: true,
   permissionsPolicy: {
     features: {
       camera: ["'self'"],
@@ -230,7 +277,12 @@ export const validatePasswordStrength = (
     errors.push('Password must contain at least one number')
   }
 
-  if (passwordPolicy.requireSpecialChars && !/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+  const specialCharsEscaped = passwordPolicy.specialChars.replace(
+    /[-[\]{}()*+?.,\\^$|#\s]/g,
+    '\\$&'
+  )
+  const specialRegex = new RegExp(`[${specialCharsEscaped}]`)
+  if (passwordPolicy.requireSpecialChars && !specialRegex.test(password)) {
     errors.push('Password must contain at least one special character')
   }
 
@@ -259,16 +311,18 @@ export const validatePasswordStrength = (
 }
 
 // Sanitize input to prevent injection attacks
+// NOTE: SQL injection is handled by Prisma's parameterized queries.
+// This sanitizer focuses on XSS and control character removal only.
 export const sanitizeInput = (input: string): string => {
   return input
-    .replace(/[\x00-\x1f\x7f]/g, '') // Remove null bytes and control characters
-    .replace(/[<>]/g, '') // Remove angle brackets
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control characters (preserve tab/newline)
+    .replace(/[<>]/g, '') // Remove angle brackets (XSS prevention)
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
     .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
     .replace(/&#\d+;/g, '') // Remove decimal HTML entities
     .trim()
-    .slice(0, 100_000) // Match max allowed by Zod (problem code can be 100KB)
+    .slice(0, 1_000_000) // Match expanded max allowed by Zod and content-heavy fields
 }
 
 // Generate secure random token

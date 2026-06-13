@@ -8,7 +8,7 @@ interface ExperimentAssignment {
 }
 
 export function useABTest(experimentId: string) {
-  const { auth } = useStore()
+  const auth = useStore(state => state.auth)
   const user = auth.user
   const [variant, setVariant] = useState<string>('control')
   const [loading, setLoading] = useState(true)
@@ -23,7 +23,9 @@ export function useABTest(experimentId: string) {
     const fetchVariant = async () => {
       try {
         const response = await fetchApi('/ab-testing/my-experiments')
-        const assignments: ExperimentAssignment[] = Array.isArray(response.data) ? response.data : (response.data?.data || [])
+        const assignments: ExperimentAssignment[] = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.data ?? [])
         const assignment = assignments.find(a => a.experimentId === experimentId)
         if (assignment) {
           setVariant(assignment.variant)
@@ -35,7 +37,7 @@ export function useABTest(experimentId: string) {
       }
     }
 
-    fetchVariant()
+    void fetchVariant()
   }, [user, experimentId])
 
   const trackConversion = async (eventName: string, value: number = 0) => {
@@ -43,7 +45,7 @@ export function useABTest(experimentId: string) {
     try {
       await fetchApi('/ab-testing/track', {
         method: 'POST',
-        body: JSON.stringify({ experimentId, eventName, value })
+        body: JSON.stringify({ experimentId, eventName, value }),
       })
     } catch (error) {
       console.error('Error tracking AB test conversion', error)
