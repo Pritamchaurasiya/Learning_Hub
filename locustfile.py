@@ -10,16 +10,16 @@ class WebsiteUser(HttpUser):
 
     @task(1)
     def list_courses(self):
-        self.client.get("/api/courses/")
+        self.client.get("/api/v1/courses/")
 
     @task(1)
     def check_health(self):
-        self.client.get("/health/")
+        self.client.get("/api/v1/health/")
 
     # Simulate AI traffic (lower weight)
     @task(1)
     def ask_ai(self):
-        self.client.post("/api/ai/tutor/", json={
+        self.client.post("/api/v1/ai/tutor/", json={
             "question": "What is Python?",
             "module_filename": "intro_python"
         })

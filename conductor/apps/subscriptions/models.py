@@ -13,7 +13,7 @@ class SubscriptionPlan(models.Model):
     Subscription plan definitions.
     Defines pricing, features, and limits for each tier.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=30, unique=True, db_index=True)  # free, pro, enterprise
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -60,7 +60,7 @@ class UserSubscription(models.Model):
     """
     User's active or historical subscription.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscriptions')
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='user_subscriptions')
 
@@ -156,7 +156,7 @@ class UsageTracking(models.Model):
     Daily usage tracking per user.
     Used to enforce subscription limits.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='usage_tracking')
     date = models.DateField(db_index=True)
 
@@ -202,7 +202,7 @@ class PaymentTransaction(models.Model):
     """
     Payment transaction records.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_transactions')
     subscription = models.ForeignKey(UserSubscription, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
 
@@ -256,7 +256,7 @@ class Coupon(models.Model):
     """
     Discount coupons for subscriptions.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=50, unique=True, db_index=True)
     description = models.TextField(blank=True)
 

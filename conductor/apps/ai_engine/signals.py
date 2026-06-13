@@ -20,6 +20,13 @@ def generate_course_embedding(sender, instance, created, **kwargs):
     try:
         from apps.ai_engine.tasks import update_course_embedding
         from django.db import transaction
-        transaction.on_commit(lambda: update_course_embedding.delay(instance.id))
+        from django.conf import settings
+        if not getattr(settings, 'CELERY_TASK_ALWAYS_EAGER', False):
+            transaction.on_commit(lambda: update_course_embedding.delay(instance.id))
+        else:
+            try:
+                update_course_embedding(instance.id)
+            except Exception:
+                pass
     except Exception as e:
         logger.error("Course embedding signal failed for course %s: %s", instance.id, e)

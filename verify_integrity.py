@@ -6,7 +6,7 @@ def check_integrity():
     print("🤖 Learning Hub Integrity Checker 🤖")
     print("------------------------------------")
     
-    base_dir = r"c:\Users\shiva\Desktop\windows_app"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     backend_urls_path = os.path.join(base_dir, "conductor", "config", "urls.py")
     frontend_api_path = os.path.join(base_dir, "my_flutter_app", "lib", "src", "core", "constants", "api_constants.dart")
     

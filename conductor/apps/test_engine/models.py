@@ -31,7 +31,7 @@ class Question(models.Model):
         ('create', 'Create'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='mcq')
@@ -111,7 +111,7 @@ class Question(models.Model):
 
 class Option(models.Model):
     """Options for multiple choice questions."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     text = models.TextField()
     is_correct = models.BooleanField(default=False)
@@ -150,7 +150,7 @@ class Test(models.Model):
         ('adaptive', 'Adaptive'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='tests')
     title = models.CharField(max_length=300)
     description = models.TextField(blank=True)
@@ -219,7 +219,7 @@ class Test(models.Model):
 
 class TestQuestion(models.Model):
     """Maps questions to a test with ordering and marks assignment."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='test_questions')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     order = models.IntegerField()
@@ -250,7 +250,7 @@ class TestAttempt(models.Model):
         ('abandoned', 'Abandoned'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='test_attempts')
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='attempts')
 
@@ -336,7 +336,7 @@ class TestAttempt(models.Model):
 
 class AttemptAnswer(models.Model):
     """User's answer to a specific question in a test attempt."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     attempt = models.ForeignKey(TestAttempt, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 

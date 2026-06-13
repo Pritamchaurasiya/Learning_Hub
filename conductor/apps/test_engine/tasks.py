@@ -17,26 +17,54 @@ def check_expired_attempts(self):
     """
     Find and auto-submit attempts that have exceeded their time limit.
     Runs every minute via Celery Beat.
+    Batch process to avoid long-running tasks.
     """
-    in_progress = TestAttempt.objects.filter(status='in_progress').select_related('test')
-    expired_count = 0
+    now = timezone.now()
+    # Process in batches of 100 to avoid memory spikes
+    batch_size = 100
+    expired_total = 0
+    qs = TestAttempt.objects.filter(status='in_progress').select_related('test').order_by('started_at')
+    offset = 0
 
-    for attempt in in_progress:
-        elapsed = (timezone.now() - attempt.started_at).total_seconds()
-        time_limit = attempt.test.time_limit_minutes * 60
-
-        if elapsed >= time_limit:
+    while True:
+        batch = list(qs[offset:offset + batch_size])
+        if not batch:
+            break
+        for attempt in batch:
             try:
-                from .services import TestSessionManager
-                TestSessionManager.submit_attempt(attempt.id)
-                attempt.status = 'expired'
-                attempt.save(update_fields=['status'])
-                expired_count += 1
-            except Exception as e:
-                logger.error(f"Failed to auto-submit attempt {attempt.id}: {e}")
+                elapsed = (now - attempt.started_at).total_seconds()
+                time_limit = (attempt.test.time_limit_minutes or 0) * 60
+                if time_limit <= 0:
+                    continue
 
-    logger.info(f"Checked {in_progress.count()} in-progress attempts, expired {expired_count}")
-    return {'checked': in_progress.count(), 'expired': expired_count}
+                if elapsed >= time_limit:
+                    from .services import TestSessionManager
+                    try:
+                        TestSessionManager.submit_attempt(attempt.id)
+                        attempt.refresh_from_db()
+                        # If the submission happened at/after timeout, mark expired
+                        if attempt.submitted_at:
+                            submitted_elapsed = (attempt.submitted_at - attempt.started_at).total_seconds()
+                            if submitted_elapsed >= time_limit:
+                                attempt.status = 'expired'
+                                attempt.save(update_fields=['status'])
+                                expired_total += 1
+                    except Exception as e:
+                        logger.exception(f"Auto-submit failed for attempt {attempt.id}: {e}")
+                        # Mark expired to prevent further activity
+                        try:
+                            TestAttempt.objects.filter(pk=attempt.pk).update(status='expired')
+                        except Exception:
+                            attempt.status = 'expired'
+                            attempt.save(update_fields=['status'])
+                        expired_total += 1
+            except Exception as e:
+                logger.exception(f"Failed to auto-submit attempt {attempt.id}: {e}")
+        offset += batch_size
+
+    total_in_progress = qs.count()
+    logger.info(f"Checked {total_in_progress} in-progress attempts, expired {expired_total}")
+    return {'checked': total_in_progress, 'expired': expired_total}
 
 
 @shared_task(bind=True, max_retries=3)

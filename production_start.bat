@@ -5,7 +5,7 @@ echo ========================================
 echo.
 
 echo [1/3] Building and Starting Docker Stack...
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 
 echo [2/3] Waiting for services to initialize...
 timeout /t 10 /nobreak >nul
@@ -19,6 +19,6 @@ echo  Application is running in production mode.
 echo  Backend: http://localhost/api/
 echo  Frontend: http://localhost/
 echo.
-echo  To stop: docker-compose -f docker-compose.prod.yml down
+echo  To stop: docker compose -f docker-compose.prod.yml down
 echo ========================================
 pause

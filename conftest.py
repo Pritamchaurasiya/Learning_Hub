@@ -4,7 +4,10 @@ Pytest fixtures for Learning Hub Backend tests.
 
 import pytest
 
-from apps.users.models import User
+try:
+    from apps.users.models import User
+except ImportError:
+    User = None  # Django not available; run tests from conductor/
 
 
 @pytest.fixture

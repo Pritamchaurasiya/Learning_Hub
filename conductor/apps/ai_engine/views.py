@@ -3,25 +3,23 @@ AI Engine Views - API endpoints for ML-powered features.
 """
 import logging
 
-logger = logging.getLogger(__name__)
-
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework import serializers, status as drf_status
 from django.http import StreamingHttpResponse
-from apps.core.throttles import AIChatRateThrottle, AIGenerationThrottle, AICriticRateThrottle
 from django.views.decorators.cache import cache_page
-
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import serializers
+
+from apps.core.throttles import AIChatRateThrottle, AIGenerationThrottle, AICriticRateThrottle
+from apps.courses.models import Course
+from apps.courses.serializers import CourseListSerializer
 
 from .services import (
     UserBehaviorService,
     CourseAnalyticsService,
     ContentService,
 )
-from apps.courses.models import Course
-from apps.courses.serializers import CourseListSerializer
 from .models import ResearchQuiz, ModuleProgress
 from .serializers import (
     ResearchQuizSerializer,
@@ -31,7 +29,8 @@ from .serializers import (
 from .tutor_service import TutorService
 from .world_models import run_world_model_experiment
 from .causal_inference import run_causal_experiment, CausalGraph, InterventionEngine
-from rest_framework import status as drf_status
+
+logger = logging.getLogger(__name__)
 
 # Lazy import to avoid cascading import errors from ai_client.py
 def get_curriculum_service():

@@ -15,7 +15,7 @@ spec:
       containers:
         - name: payment-service
           image: payment-service:latest
-          imagePullPolicy: Never # Use local image for Minikube/Docker Desktop
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:

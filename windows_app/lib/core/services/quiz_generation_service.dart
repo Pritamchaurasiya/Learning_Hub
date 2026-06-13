@@ -440,7 +440,7 @@ class QuizGenerationService {
   ) {
     // Generate question using AI service or fallback to template-based generation
     final options = _generateQuestionOptions(sourceText, topic, difficulty);
-    final correctIndex = 0; // First option is always correct before shuffle
+    const correctIndex = 0; // First option is always correct before shuffle
 
     final shuffledOptions = List<String>.from(options);
     shuffledOptions.shuffle(_random);
@@ -460,7 +460,7 @@ class QuizGenerationService {
     );
   }
 
-  List<String> _generateQuestionOptions(String sourceText, String topic, String difficulty) {
+  List<String> _generateQuestionOptions(String sourceText, String topic, QuizDifficulty difficulty) {
     // Generate meaningful distractors based on topic context
     final words = sourceText.split(' ').where((w) => w.length > 3).toList();
     final correctAnswer = words.take(3).join(' ');
@@ -576,17 +576,6 @@ class QuizGenerationService {
   ) {
     // For now, convert to MCQ since ordering requires process steps
     return _generateMCQ(id, sourceText, difficulty, topic);
-  }
-
-  /// Generate distractor option
-  String _generateDistractor(String correct, int index) {
-    final distractors = [
-      'A different concept',
-      'An alternative approach',
-      'Another perspective',
-      'A contrasting view',
-    ];
-    return distractors[index % distractors.length];
   }
 
   /// Negate a statement for true/false

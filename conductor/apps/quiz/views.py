@@ -3,7 +3,7 @@ Quiz API views for Learning Hub.
 """
 import uuid
 from django.db import models
-from django.db.models import Prefetch, Count, F
+from django.db.models import Prefetch, Count, F, Sum, Q
 from django.utils import timezone
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
@@ -76,7 +76,6 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        from django.db.models import Count, Sum
         quizzes = Quiz.objects.filter(
             course_id=course_id,
             is_published=True
@@ -295,7 +294,6 @@ class QuizAttemptViewSet(viewsets.ModelViewSet):
         time_taken = int((timezone.now() - attempt.started_at).total_seconds())
         
         # Calculate total score using aggregation to avoid N+1
-        from django.db.models import Sum
         total_marks = attempt.quiz.total_marks
         result = attempt.answers.aggregate(total=Sum('marks_obtained'))
         obtained_marks = result['total'] or 0
@@ -333,7 +331,6 @@ class QuizAttemptViewSet(viewsets.ModelViewSet):
             )
         
         # Calculate statistics using aggregation to avoid N+1
-        from django.db.models import Count, Q
         total_questions = attempt.quiz.total_questions
         answer_stats = attempt.answers.aggregate(
             correct_count=Count('id', filter=Q(is_correct=True)),

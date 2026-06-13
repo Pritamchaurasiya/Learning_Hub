@@ -11,7 +11,7 @@ from apps.courses.models import Course
 class Quiz(models.Model):
     """Quiz model for courses."""
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -52,7 +52,7 @@ class Question(models.Model):
         ('short_answer', 'Short Answer'),
     ]
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='mcq')
@@ -71,7 +71,7 @@ class Question(models.Model):
 class Option(models.Model):
     """Option model for multiple choice questions."""
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
@@ -94,7 +94,7 @@ class QuizAttempt(models.Model):
         ('abandoned', 'Abandoned'),
     ]
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quiz_attempts')
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='attempts')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
@@ -123,7 +123,7 @@ class QuizAttempt(models.Model):
 class QuizAnswer(models.Model):
     """User answer to a quiz question."""
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     attempt = models.ForeignKey(QuizAttempt, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     selected_option = models.ForeignKey(Option, on_delete=models.CASCADE, null=True, blank=True, related_name='answers')

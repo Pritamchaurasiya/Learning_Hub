@@ -53,7 +53,7 @@ jobs:
 
       - name: Run Migrations
         working-directory: ./conductor
-        run: python manage.py migrate --run-syncdb
+        run: python manage.py migrate
         env:
           SECRET_KEY: "ci-test-secret-key-not-for-prod"
           DEBUG: "True"
@@ -105,13 +105,13 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        working-directory: ./windows_app
+        working-directory: ./my_flutter_app
         run: flutter pub get
 
       - name: Analyze Code
-        working-directory: ./windows_app
+        working-directory: ./my_flutter_app
         run: flutter analyze --no-fatal-infos
 
       - name: Run Tests
-        working-directory: ./windows_app
+        working-directory: ./my_flutter_app
         run: flutter test --reporter expanded || true

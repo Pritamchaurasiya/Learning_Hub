@@ -77,6 +77,7 @@ static/collected/
 .pub-cache/
 .pub/
 /build/
+windows/flutter/ephemeral/
 *.class
 *.jar
 *.apk
@@ -191,9 +192,11 @@ bandit_results.json
 # ==================== MISC GENERATED FILES ====================
 .playwright-mcp/
 .kilo/
+.kiro/
 .qodo/
 .Jules/
 .agent/
+cli
 *.backup
 job_output.txt
 project_structure.txt
@@ -239,3 +242,8 @@ conductor/advanced_system_analysis_report_*.json
 conductor/setup_state.json
 
 learninghub/backend/prisma/dev.db
+learninghub/backend/load-tests/
+learninghub/qa-artifacts/
+learninghub/backend/coverage/
+*.err
+backend_pid.txt

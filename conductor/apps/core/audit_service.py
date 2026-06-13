@@ -97,7 +97,7 @@ class EnterpriseAuditLog(BaseModel):
     detailed security auditing and compliance reporting.
     """
     # Actor information
-    user_id = models.UUIDField(null=True, blank=True, db_index=True)
+    user_id = models.CharField(max_length=36, null=True, blank=True, db_index=True)
     username = models.CharField(max_length=150, blank=True)
     user_email = models.EmailField(blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)

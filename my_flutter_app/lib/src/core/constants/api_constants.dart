@@ -59,7 +59,7 @@ class ApiConstants {
   static const String login = 'auth/login/';
   static const String refresh = 'auth/refresh/';
   static const String register = 'auth/register/';
-  static const String userProfile = 'auth/user/';
+  static const String userProfile = 'auth/me/';
   static const String courses = 'courses/';
   static const String recommendations = 'courses/recommendations/';
   static const String certificates = 'courses/certificates/';

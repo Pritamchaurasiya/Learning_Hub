@@ -70,7 +70,7 @@ class UUIDMixin(models.Model):
 
     import uuid
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
 
     class Meta:
         abstract = True

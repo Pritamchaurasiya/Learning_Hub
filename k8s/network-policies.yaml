@@ -42,6 +42,13 @@ spec:
     - Egress
   egress:
     - to:
+        - namespaceSelector: {}       # Allow DNS resolution (kube-dns / coredns)
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
         - podSelector:
             matchLabels:
               app: postgres

@@ -5,4 +5,4 @@ metadata:
 data:
   DEBUG: "False"
   POSTGRES_DB: "conductor"
-  ALLOWED_HOSTS: "*"
+  ALLOWED_HOSTS: "localhost,127.0.0.1,your-domain.com"

@@ -5,7 +5,7 @@ class LearningHubUser(HttpUser):
 
     @task
     def test_api_endpoints(self):
-        self.client.get("/api/courses/")
-        self.client.get("/api/dsa/problems/")
-        self.client.get("/api/gamification/leaderboard/")
-        self.client.get("/api/users/profile/")
+        self.client.get("/api/v1/courses/")
+        self.client.get("/api/v1/dsa/problems/")
+        self.client.get("/api/v1/gamification/leaderboard/")
+        self.client.get("/api/v1/users/profile/")

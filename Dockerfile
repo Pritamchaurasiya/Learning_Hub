@@ -40,7 +40,7 @@ COPY --from=backend-build /app/backend /app/backend
 COPY windows_app/build/web /app/frontend/web
 
 # Configure Nginx
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Configure Supervisor
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -53,6 +53,6 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.production
 COPY docker/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 80 8000
 
 CMD ["/app/entrypoint.sh"]

@@ -43,6 +43,32 @@ flutter pub get
 flutter run -d windows      # or -d chrome for web
 ```
 
+### Optional: Redis Setup
+
+Redis is **optional** but recommended for production. It enables:
+- Distributed caching across multiple backend instances
+- Scalable rate limiting
+- WebSocket horizontal scaling (Socket.IO Redis adapter)
+
+**Install Redis (Windows):**
+```bash
+# Using Chocolatey
+choco install redis-64
+
+# Or download from https://github.com/microsoftarchive/redis/releases
+# Or use Docker: docker run -d -p 6379:6379 redis:alpine
+```
+
+**Enable Redis in backend:**
+```bash
+cd learninghub/backend
+# Edit .env file:
+REDIS_URL=redis://localhost:6379
+REDIS_ENABLED=true
+```
+
+Without Redis, the system gracefully falls back to in-memory storage.
+
 ### Docker Deployment
 
 ```bash

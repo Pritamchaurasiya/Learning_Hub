@@ -87,13 +87,7 @@ class CourseEmbedding(BaseModel):
 
     # Vector Field (Dimension 768 for models/text-embedding-004)
     # Note: Requires 'pgvector' extension in PostgreSQL
-    # Vector Field (Dimension 768 for models/text-embedding-004)
-    # Note: Requires 'pgvector' extension in PostgreSQL
-    try:
-        from pgvector.django import VectorField
-        embedding = VectorField(dimensions=384, help_text="Semantic Vector")
-    except ImportError:
-        embedding = models.TextField(help_text="Vector embedding (simulated for dev)")
+    embedding = models.JSONField(blank=True, null=True, help_text="Semantic Vector")
 
 
     class Meta:
@@ -398,11 +392,7 @@ class SemanticCache(BaseModel):
     response_payload = models.JSONField(help_text="The structured JSON or text response from the LLM")
     
     # Storing the vector of the query_text
-    try:
-        from pgvector.django import VectorField
-        query_embedding = VectorField(dimensions=384, help_text="Semantic Vector of the query")
-    except ImportError:
-        query_embedding = models.TextField(help_text="Vector embedding (simulated for dev)")
+    query_embedding = models.JSONField(blank=True, null=True, help_text="Semantic Vector of the query")
 
     class Meta:
         db_table = "semantic_cache"

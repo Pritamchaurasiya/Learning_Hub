@@ -1,23 +1,26 @@
-version: "3.8"
-
 services:
-  frontend:
-    build: ./windows_app
-    ports:
-      - "80:80"
+  db:
+    image: postgres:15-alpine
     volumes:
-      - static_volume:/app/static
-      - media_volume:/app/media
-    depends_on:
-      - backend
-      - daphne
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-conductor}
+      - POSTGRES_USER=${POSTGRES_USER:-conductor}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-strong_db_password_change_me}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conductor"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - learning_hub_network
 
-  payment_service:
-    build: ./windows_app/backend/payment_service
+  redis:
+    image: redis:7-alpine
     ports:
-      - "8080:8080"
+      - "6379:6379"
     networks:
       - learning_hub_network
 
@@ -27,13 +30,15 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    expose:
-      - 8000
+    ports:
+      - "8000:8000"
     env_file:
       - .env.prod
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - learning_hub_network
 
@@ -43,35 +48,10 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-      - redis
-    networks:
-      - learning_hub_network
-
-  db:
-    image: pgvector/pgvector:pg16
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-conductor}
-      - POSTGRES_USER=${POSTGRES_USER:-conductor}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
-    networks:
-      - learning_hub_network
-
-  redis:
-    image: redis:alpine
-    networks:
-      - learning_hub_network
-
-  redis-exporter:
-    image: oliver006/redis_exporter
-    ports:
-      - "9121:9121"
-    command:
-      - "--redis.addr=redis:6379"
-    depends_on:
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - learning_hub_network
 
@@ -81,41 +61,37 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - learning_hub_network
 
-  celery-exporter:
-    image: danihodovic/celery-exporter
-    command: --broker-url=redis://redis:6379/0
-    ports:
-      - "9808:9808"
+  celery_beat:
+    build: ./conductor
+    command: celery -A config beat -l info
+    env_file:
+      - .env.prod
     depends_on:
-      - redis
-      - celery_worker
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - learning_hub_network
 
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
+  nginx:
+    image: nginx:alpine
     ports:
-      - "9090:9090"
+      - "80:80"
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend
-    networks:
-      - learning_hub_network
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-    depends_on:
-      - prometheus
+      - daphne
     networks:
       - learning_hub_network
 

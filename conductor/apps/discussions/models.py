@@ -108,7 +108,7 @@ class DiscussionVote(BaseModel):
     from django.contrib.contenttypes.models import ContentType
     
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.UUIDField()
+    object_id = models.CharField(max_length=36, )
     content_object = GenericForeignKey('content_type', 'object_id')
     
     value = models.SmallIntegerField(choices=VOTE_TYPES)

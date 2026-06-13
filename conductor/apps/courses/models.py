@@ -141,15 +141,7 @@ class Course(BaseModel):
             [GinIndex(
                 fields=["title", "description"],
                 name="course_text_search_idx",
-                opclasses=["gin_trgm_ops", "gin_trgm_ops"]
             )] if GinIndex else []
-        ) + (
-            # Vector Search Index (requires pgvector)
-            [HnswIndex(
-               name="course_embedding_idx",
-               fields=["embedding"],
-               opclasses=["vector_cosine_ops"],
-            )] if HnswIndex else []
         )
 
     def __str__(self):

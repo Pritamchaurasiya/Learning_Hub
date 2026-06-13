@@ -12,7 +12,7 @@ class TopicPerformance(models.Model):
     Per-user, per-topic performance tracking.
     Updated after each test attempt.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='topic_performances')
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='user_performances')
 
@@ -95,7 +95,7 @@ class ExamPerformance(models.Model):
     Per-user, per-exam performance summary.
     Aggregated from all test attempts for an exam.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='exam_performances')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='user_performances')
 
@@ -141,7 +141,7 @@ class PerformanceTrend(models.Model):
     """
     Daily/weekly performance trend snapshots for charting.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='performance_trends')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -179,7 +179,7 @@ class AIRecommendation(models.Model):
     """
     AI-generated personalized recommendations for users.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ai_recommendations')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -197,9 +197,9 @@ class AIRecommendation(models.Model):
     description = models.TextField()
 
     # Target data
-    target_topic_id = models.UUIDField(null=True, blank=True)
-    target_test_id = models.UUIDField(null=True, blank=True)
-    target_exam_id = models.UUIDField(null=True, blank=True)
+    target_topic_id = models.CharField(max_length=36, null=True, blank=True)
+    target_test_id = models.CharField(max_length=36, null=True, blank=True)
+    target_exam_id = models.CharField(max_length=36, null=True, blank=True)
 
     # Priority
     priority = models.CharField(max_length=10, choices=[

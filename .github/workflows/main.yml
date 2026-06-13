@@ -30,11 +30,11 @@ jobs:
           ruff check .
 
       - name: Run Tests
-          env:
-            SECRET_KEY: "${{ secrets.SECRET_KEY }}"
-            DEBUG: "True"
-          run: |
-            pytest
+        env:
+          SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+          DEBUG: "True"
+        run: |
+          pytest
 
   frontend-quality:
     runs-on: ubuntu-latest

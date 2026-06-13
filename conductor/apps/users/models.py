@@ -195,7 +195,7 @@ class Bookmark(models.Model):
     Inherits id (UUID), created_at, updated_at from BaseModel.
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="bookmarks"
     )

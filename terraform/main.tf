@@ -1,15 +1,25 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
+}
+
 provider "aws" {
   region = "us-east-1"
 }
 
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
-  version         = "19.0.0"
+  version         = "20.0"
   cluster_name    = "learning-hub-god-mode"
-  cluster_version = "1.27"
+  cluster_version = "1.30"
 
-  vpc_id     = "vpc-12345678"
-  subnet_ids = ["subnet-abcde001", "subnet-abcde002"]
+  # 🔴 Replace with actual VPC and subnet IDs from your AWS account
+  vpc_id     = "vpc-12345678"    # TODO: update
+  subnet_ids = ["subnet-abcde001", "subnet-abcde002"]  # TODO: update
 
   eks_managed_node_groups = {
     default = {

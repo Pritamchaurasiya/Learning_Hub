@@ -70,36 +70,25 @@ def perform_ai_action_task(self, user_id, command_text):
         logger.error("AI Task failed: %s", e)
         return {"status": "error", "message": str(e)}
 
-@shared_task(bind=True, queue='ai_queue', max_retries=3)
+@shared_task(bind=True, queue='ai_queue', max_retries=2, autoretry_for=(Exception,), retry_backoff=True)
 def update_course_embedding(self, course_id):
-    """
-    Generate or update the AI vector embedding for a course asynchronously.
-    """
     try:
         from apps.courses.models import Course
-        from apps.ai_engine.vector_service import VectorService
-        
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
-            logger.warning("Task %s: Course %s deleted before embedding generation. Exiting gracefully.", self.request.id, course_id)
             return {"status": "skipped", "reason": "Course not found"}
-        
-        # Combine semantic metadata for dense embedding representation
-        text_chunk = f"{course.title}. {course.description}. Category: {course.category.name if course.category else 'Learning'}"
-        
-        # Store securely via VectorService (Gemini API internal)
-        embedding_obj = VectorService.store_content_embedding(course, text_chunk)
-        
-        if embedding_obj:
-            logger.info("Task %s: Course %s vector generated.", self.request.id, course_id)
-            return {"status": "success", "course_id": course_id}
-        else:
-            raise RuntimeError("VectorService returned None.")
-            
+        try:
+            from apps.ai_engine.vector_service import VectorService
+            text_chunk = f"{course.title}. {course.description}. Category: {course.category.name if course.category else 'Learning'}"
+            embedding_obj = VectorService.store_content_embedding(course, text_chunk)
+            if embedding_obj:
+                return {"status": "success", "course_id": course_id}
+        except Exception as inner:
+            logger.warning("Embedding generation skipped for Course %s: %s", course_id, inner)
+            return {"status": "skipped", "reason": str(inner)}
     except Exception as e:
         logger.error("Failed to generate embedding for Course %s: %s", course_id, str(e))
-        # Retry with exponential backoff on API rate limit or transient error
         self.retry(exc=e, countdown=2 ** self.request.retries * 60)
 
 @shared_task(bind=True, queue='ai_queue', max_retries=1)

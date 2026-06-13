@@ -53,7 +53,9 @@ class SearchRepository {
     int limit = 10,
   }) async {
     try {
-      if (query.isEmpty) return [];
+      if (query.isEmpty) {
+        return [];
+      }
 
       final response = await _apiClient.get(
         ApiConstants.searchSuggestions,
@@ -105,12 +107,24 @@ class SearchRepository {
       if (query != null && query.isNotEmpty) {
         queryParameters['q'] = query;
       }
-      if (category != null) queryParameters['category'] = category;
-      if (level != null) queryParameters['level'] = level;
-      if (priceMin != null) queryParameters['price_min'] = priceMin;
-      if (priceMax != null) queryParameters['price_max'] = priceMax;
-      if (rating != null) queryParameters['rating'] = rating;
-      if (duration != null) queryParameters['duration'] = duration;
+      if (category != null) {
+        queryParameters['category'] = category;
+      }
+      if (level != null) {
+        queryParameters['level'] = level;
+      }
+      if (priceMin != null) {
+        queryParameters['price_min'] = priceMin;
+      }
+      if (priceMax != null) {
+        queryParameters['price_max'] = priceMax;
+      }
+      if (rating != null) {
+        queryParameters['rating'] = rating;
+      }
+      if (duration != null) {
+        queryParameters['duration'] = duration;
+      }
       if (hasCertificate != null) {
         queryParameters['has_certificate'] = hasCertificate;
       }

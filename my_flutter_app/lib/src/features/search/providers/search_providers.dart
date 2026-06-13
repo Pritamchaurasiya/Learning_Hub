@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_flutter_app/src/core/network/api_client.dart';
 import 'package:my_flutter_app/src/features/search/data/search_repository.dart';
@@ -31,7 +32,9 @@ final searchResultsProvider =
 final searchSuggestionsProvider =
     FutureProvider.autoDispose<List<SearchSuggestion>>((ref) async {
   final query = ref.watch(searchQueryProvider);
-  if (query.length < 2) return [];
+  if (query.length < 2) {
+    return [];
+  }
 
   final repo = ref.watch(searchRepositoryProvider);
   return repo.getSuggestions(query: query);
@@ -60,6 +63,7 @@ final advancedSearchProvider = FutureProvider.autoDispose
 });
 
 /// Parameters for advanced search
+@immutable
 class AdvancedSearchParams {
 
   const AdvancedSearchParams({

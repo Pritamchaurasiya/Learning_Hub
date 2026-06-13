@@ -69,7 +69,7 @@ class AuthRepository {
           'email': email,
           'username': username,
           'password': password,
-          'confirm_password': password,
+          'password_confirm': password,
         },
       );
 

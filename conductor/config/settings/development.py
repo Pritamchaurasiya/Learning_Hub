@@ -11,27 +11,19 @@ from .base import BASE_DIR, LOGGING
 DEBUG = True
 
 # Remove postgres-specific and unavailable apps for SQLite development
+# Database - Fallback to base.py which uses dj_database_url from .env
+# Remove postgres-specific and unavailable apps for SQLite development
+# Keep them for Postgres development!
 _APPS_TO_REMOVE = {
-    "django.contrib.postgres",
     "django_prometheus",
-    "pgvector",
 }
-INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in _APPS_TO_REMOVE]  # type: ignore[name-defined]  # noqa: F405
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in _APPS_TO_REMOVE]
 
-# Remove prometheus and unavailable middleware for development
 _MIDDLEWARE_TO_REMOVE = {
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 }
-MIDDLEWARE = [m for m in MIDDLEWARE if m not in _MIDDLEWARE_TO_REMOVE]  # type: ignore[name-defined]  # noqa: F405
-
-# Database - Use SQLite for development
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db.sqlite3"),  # Convert Path to str
-    }
-}
+MIDDLEWARE = [m for m in MIDDLEWARE if m not in _MIDDLEWARE_TO_REMOVE]
 
 # Email - Console backend for development
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

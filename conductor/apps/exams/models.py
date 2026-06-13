@@ -9,7 +9,7 @@ from django.utils import timezone
 
 class Country(models.Model):
     """Country/region for exam classification."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=3, unique=True, db_index=True)  # US, IN, UK, AU, CA
     name = models.CharField(max_length=100)
     timezone = models.CharField(max_length=50, default='UTC')
@@ -37,7 +37,7 @@ class Exam(models.Model):
     Exam definition with pattern configuration.
     Examples: SAT, JEE Main, UPSC CSE, GRE, GMAT, NEET, GATE
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='exams')
     code = models.CharField(max_length=30, unique=True, db_index=True)
     name = models.CharField(max_length=200)
@@ -114,7 +114,7 @@ class Exam(models.Model):
 
 class Subject(models.Model):
     """Subject within an exam. Examples: Mathematics, Physics, General Studies."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='subjects')
     code = models.CharField(max_length=20)
     name = models.CharField(max_length=200)
@@ -152,7 +152,7 @@ class Topic(models.Model):
     Topic within a subject. Supports hierarchical structure.
     Examples: Algebra → Quadratic Equations → Discriminant
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='topics')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     name = models.CharField(max_length=200)
