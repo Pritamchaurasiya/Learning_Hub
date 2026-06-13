@@ -93,8 +93,8 @@ export const adminAuthService = {
       const role = userData.role?.toLowerCase() as AdminRole
       const validRole = ['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin'
 
-      const token = (response.data as unknown as Record<string, string>).access_token
-        ?? response.data.token
+      const token =
+        (response.data as unknown as Record<string, string>).access_token ?? response.data.token
 
       localStorage.setItem(ADMIN_TOKEN_KEY, token)
       localStorage.setItem(
