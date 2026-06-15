@@ -44,7 +44,13 @@ router.get('/:id/questions', authenticate, getTestQuestions)
 router.get('/:id/time', authenticate, getTimeRemaining)
 router.post('/:id/start', authenticate, testMutationLimiter, startTest)
 router.post('/:id/autosave', authenticate, testMutationLimiter, autosaveTest)
-router.post('/:id/submit', authenticate, testMutationLimiter, validate(submitTestSchema), submitTest)
+router.post(
+  '/:id/submit',
+  authenticate,
+  testMutationLimiter,
+  validate(submitTestSchema),
+  submitTest
+)
 router.post('/:id/practice/answer', authenticate, testMutationLimiter, practiceAnswer)
 router.get('/:id/result', authenticate, getTestResults)
 

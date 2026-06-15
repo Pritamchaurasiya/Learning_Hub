@@ -48,8 +48,16 @@ export const loginSchema = z.object({
 export const refreshSchema = z.object({
   body: z
     .object({
-      refresh_token: z.string().min(1, 'Refresh token is required').max(512, 'Refresh token too long').optional(),
-      refresh: z.string().min(1, 'Refresh token is required').max(512, 'Refresh token too long').optional(),
+      refresh_token: z
+        .string()
+        .min(1, 'Refresh token is required')
+        .max(512, 'Refresh token too long')
+        .optional(),
+      refresh: z
+        .string()
+        .min(1, 'Refresh token is required')
+        .max(512, 'Refresh token too long')
+        .optional(),
     })
     .refine(data => data.refresh_token ?? data.refresh, {
       message: 'Refresh token is required (provide refresh_token or refresh)',

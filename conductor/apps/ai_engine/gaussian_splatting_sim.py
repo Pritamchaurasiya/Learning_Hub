@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List
 """
 Phase 171: 3D Gaussian Splatting Simulator
 A real-time novel-view synthesis algorithm that replaces massive Neural Radiance Fields (NeRFs)

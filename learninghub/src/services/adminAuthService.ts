@@ -49,15 +49,28 @@ export interface AdminLoginResponse {
 
 const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
   superadmin: [
-    'users.read', 'users.write', 'users.delete',
-    'courses.read', 'courses.write', 'courses.delete',
-    'analytics.read', 'settings.read', 'settings.write',
-    'system.read', 'system.write', 'audit.read',
+    'users.read',
+    'users.write',
+    'users.delete',
+    'courses.read',
+    'courses.write',
+    'courses.delete',
+    'analytics.read',
+    'settings.read',
+    'settings.write',
+    'system.read',
+    'system.write',
+    'audit.read',
   ],
   admin: [
-    'users.read', 'users.write',
-    'courses.read', 'courses.write', 'courses.delete',
-    'analytics.read', 'settings.read', 'audit.read',
+    'users.read',
+    'users.write',
+    'courses.read',
+    'courses.write',
+    'courses.delete',
+    'analytics.read',
+    'settings.read',
+    'audit.read',
   ],
   moderator: ['users.read', 'courses.read', 'courses.write', 'analytics.read'],
 }
@@ -73,7 +86,11 @@ async function loadFromStorage(): Promise<void> {
   if (!memoryUser) {
     const raw = await SecureStorage.getItem(ADMIN_USER_KEY)
     if (raw) {
-      try { memoryUser = JSON.parse(raw) as AdminUser } catch { memoryUser = null }
+      try {
+        memoryUser = JSON.parse(raw) as AdminUser
+      } catch {
+        memoryUser = null
+      }
     }
   }
 }
@@ -88,9 +105,12 @@ export const adminAuthService = {
     if (response.status === 'success') {
       const userData = response.data.user
       const role = userData.role?.toLowerCase() as AdminRole
-      const validRole = (['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin') as AdminRole
+      const validRole = (
+        ['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin'
+      ) as AdminRole
 
-      const token = (response.data as unknown as Record<string, string>).access_token ?? response.data.token
+      const token =
+        (response.data as unknown as Record<string, string>).access_token ?? response.data.token
 
       const user: AdminUser = {
         ...userData,

@@ -24,7 +24,13 @@ export interface TestA {
 export interface TestQuestion {
   id: string
   text: string
-  question_type: 'mcq' | 'multiple_select' | 'true_false' | 'numerical' | 'fill_blank' | 'subjective'
+  question_type:
+    | 'mcq'
+    | 'multiple_select'
+    | 'true_false'
+    | 'numerical'
+    | 'fill_blank'
+    | 'subjective'
   type?: string
   difficulty: number
   bloom_level: string
