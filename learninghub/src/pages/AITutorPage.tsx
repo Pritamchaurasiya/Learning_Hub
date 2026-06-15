@@ -513,7 +513,9 @@ export default function AITutorPage() {
                             <div
                               className="prose-custom prose-sm max-w-none prose-headings:font-black prose-a:text-primary-500"
                               // eslint-disable-next-line react/no-danger
-                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(message.content)) }}
+                              dangerouslySetInnerHTML={{
+                                __html: DOMPurify.sanitize(renderMarkdown(message.content)),
+                              }}
                             />
                           ) : (
                             <p className="font-medium text-lg">{message.content}</p>

@@ -28,8 +28,25 @@ router.get('/', cacheMiddleware(600), optionalAuth, listCourses)
 router.get('/:id', cacheMiddleware(300), optionalAuth, getCourseDetails)
 router.get('/:id/reviews', cacheMiddleware(300), getCourseReviewsImpl)
 router.post('/:id/reviews', authenticate, courseMutationLimiter, createCourseReview)
-router.put('/:courseId/reviews/:reviewId/helpful', authenticate, courseMutationLimiter, markReviewHelpful)
-router.post('/enroll', authenticate, courseMutationLimiter, validate(enrollCourseSchema), enrollInCourse)
-router.put('/progress', authenticate, courseMutationLimiter, validate(updateProgressSchema), updateCourseProgress)
+router.put(
+  '/:courseId/reviews/:reviewId/helpful',
+  authenticate,
+  courseMutationLimiter,
+  markReviewHelpful
+)
+router.post(
+  '/enroll',
+  authenticate,
+  courseMutationLimiter,
+  validate(enrollCourseSchema),
+  enrollInCourse
+)
+router.put(
+  '/progress',
+  authenticate,
+  courseMutationLimiter,
+  validate(updateProgressSchema),
+  updateCourseProgress
+)
 
 export default router

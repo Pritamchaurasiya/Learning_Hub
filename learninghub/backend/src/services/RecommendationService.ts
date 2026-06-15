@@ -26,7 +26,7 @@ export interface StudyRecommendation {
   topicName: string
   subjectName?: string
   reason: string
-  priority: number        // 0-100, higher = more urgent
+  priority: number // 0-100, higher = more urgent
   currentAccuracy: number
   targetAccuracy: number
   estimatedQuestions: number // Estimated questions needed to reach target
@@ -178,9 +178,7 @@ export class RecommendationService {
         }
 
         // Sort by priority (highest first) and limit
-        return recommendations
-          .sort((a, b) => b.priority - a.priority)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.priority - a.priority).slice(0, limit)
       },
       300 // Cache for 5 minutes
     )
@@ -225,13 +223,15 @@ export class RecommendationService {
         const recommendations: TestRecommendation[] = tests.map(test => {
           const questionTags = test.questions.flatMap(q => q.tags)
           const matchingTags = questionTags.filter(t => weakTopicNames.includes(t))
-          const matchScore = questionTags.length > 0
-            ? Math.round((matchingTags.length / questionTags.length) * 100)
-            : 0
+          const matchScore =
+            questionTags.length > 0
+              ? Math.round((matchingTags.length / questionTags.length) * 100)
+              : 0
 
-          const weakTopicMatches = matchingTags.length > 0
-            ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
-            : 'General practice test'
+          const weakTopicMatches =
+            matchingTags.length > 0
+              ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
+              : 'General practice test'
 
           return {
             testId: test.id,
@@ -245,9 +245,7 @@ export class RecommendationService {
           }
         })
 
-        return recommendations
-          .sort((a, b) => b.matchScore - a.matchScore)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.matchScore - a.matchScore).slice(0, limit)
       },
       300
     )
@@ -288,20 +286,20 @@ export class RecommendationService {
           if (weekTopics.length === 0 && week > 1) break
 
           const focusTopicNames = weekTopics.map(t => t.topicName)
-          const avgAccuracy = weekTopics.length > 0
-            ? Math.round(weekTopics.reduce((s, t) => s + t.accuracy, 0) / weekTopics.length)
-            : mastery.overallAccuracy
+          const avgAccuracy =
+            weekTopics.length > 0
+              ? Math.round(weekTopics.reduce((s, t) => s + t.accuracy, 0) / weekTopics.length)
+              : mastery.overallAccuracy
 
           weeklyPlan.push({
             week,
-            focusTopics: focusTopicNames.length > 0
-              ? focusTopicNames
-              : ['Review all topics'],
+            focusTopics: focusTopicNames.length > 0 ? focusTopicNames : ['Review all topics'],
             recommendedTests: Math.max(3, weekTopics.length),
             targetAccuracy: Math.min(100, avgAccuracy + 15),
-            description: weekTopics.length > 0
-              ? `Focus on improving ${focusTopicNames.slice(0, 3).join(', ')}${focusTopicNames.length > 3 ? ` and ${focusTopicNames.length - 3} more` : ''}`
-              : 'Review and maintain current knowledge',
+            description:
+              weekTopics.length > 0
+                ? `Focus on improving ${focusTopicNames.slice(0, 3).join(', ')}${focusTopicNames.length > 3 ? ` and ${focusTopicNames.length - 3} more` : ''}`
+                : 'Review and maintain current knowledge',
           })
         }
 
@@ -356,9 +354,10 @@ export class RecommendationService {
               topicName: topic.topicName,
               subjectName: topic.subjectName ?? undefined,
               reason: `Due for review (${daysSinceAttempt} days since last practice, recommended interval: ${idealInterval} days)`,
-              priority: Math.min(100, Math.round(
-                (daysSinceAttempt / idealInterval) * 50 + (100 - topic.accuracy) * 0.5
-              )),
+              priority: Math.min(
+                100,
+                Math.round((daysSinceAttempt / idealInterval) * 50 + (100 - topic.accuracy) * 0.5)
+              ),
               currentAccuracy: topic.accuracy,
               targetAccuracy: Math.max(topic.accuracy, TARGET_ACCURACY),
               estimatedQuestions: 5,
@@ -368,9 +367,7 @@ export class RecommendationService {
           }
         }
 
-        return recommendations
-          .sort((a, b) => b.priority - a.priority)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.priority - a.priority).slice(0, limit)
       },
       300
     )
@@ -378,10 +375,7 @@ export class RecommendationService {
 
   // ─── Private Helpers ─────────────────────────────────────────────────────────
 
-  private calculatePriority(
-    topic: TopicPerformanceData,
-    type: 'weak_area' | 'review_due'
-  ): number {
+  private calculatePriority(topic: TopicPerformanceData, type: 'weak_area' | 'review_due'): number {
     const accuracyWeight = (100 - topic.accuracy) / 100 // 0-1, higher for lower accuracy
     const daysSince = topic.lastAttemptAt
       ? (Date.now() - topic.lastAttemptAt.getTime()) / (24 * 60 * 60 * 1000)

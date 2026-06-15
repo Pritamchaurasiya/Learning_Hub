@@ -19,7 +19,13 @@ const paymentLimiter = createRateLimiter({
 })
 
 router.post('/orders', authenticate, paymentLimiter, validate(createOrderSchema), createOrder)
-router.post('/verify-session', authenticate, paymentLimiter, validate(verifySessionSchema), verifySession)
+router.post(
+  '/verify-session',
+  authenticate,
+  paymentLimiter,
+  validate(verifySessionSchema),
+  verifySession
+)
 router.post('/coupons', authenticate, paymentLimiter, validate(applyCouponSchema), applyCoupon)
 
 export default router

@@ -25,10 +25,7 @@ const INTERVAL_MS = parseInt(
   10
 )
 
-const STALE_THRESHOLD_HOURS = parseInt(
-  process.env.STALE_SESSION_THRESHOLD_HOURS ?? '24',
-  10
-)
+const STALE_THRESHOLD_HOURS = parseInt(process.env.STALE_SESSION_THRESHOLD_HOURS ?? '24', 10)
 
 let intervalId: ReturnType<typeof setInterval> | undefined
 
@@ -37,9 +34,7 @@ let intervalId: ReturnType<typeof setInterval> | undefined
  */
 async function runStaleSessionSweep(): Promise<void> {
   try {
-    const thresholdDate = new Date(
-      Date.now() - STALE_THRESHOLD_HOURS * 60 * 60 * 1000
-    )
+    const thresholdDate = new Date(Date.now() - STALE_THRESHOLD_HOURS * 60 * 60 * 1000)
 
     // Find stale sessions: IN_PROGRESS with startedAt older than threshold
     // Only target tests with NO time limit (timed tests are handled by TestExpiryJob)

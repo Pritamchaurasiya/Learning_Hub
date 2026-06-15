@@ -42,7 +42,9 @@ export class QueryOptimizationService {
     }
 
     // Attempt to hit cache first
-    const cacheKey = cacheService.leaderboardKey(`${timeframe}-${limit}-${options.cursor ?? 'first'}`)
+    const cacheKey = cacheService.leaderboardKey(
+      `${timeframe}-${limit}-${options.cursor ?? 'first'}`
+    )
     const cachedData = await cacheService.get(cacheKey)
     if (cachedData) {
       return cachedData
@@ -55,10 +57,7 @@ export class QueryOptimizationService {
     // Composite cursor filter: users with (lower xp) OR (same xp but later id)
     if (cursorXP !== undefined) {
       if (cursorId) {
-        where.OR = [
-          { xp: { lt: cursorXP } },
-          { xp: cursorXP, id: { gt: cursorId } },
-        ]
+        where.OR = [{ xp: { lt: cursorXP } }, { xp: cursorXP, id: { gt: cursorId } }]
       } else {
         where.xp = { lt: cursorXP }
       }
@@ -114,7 +113,12 @@ export class QueryOptimizationService {
     // Get total count only for first page
     let total: number | undefined
     if (!options.cursor) {
-      total = await prisma.user.count({ where: { deletedAt: null, ...(where.lastActive ? { lastActive: where.lastActive } : {}) } as any })
+      total = await prisma.user.count({
+        where: {
+          deletedAt: null,
+          ...(where.lastActive ? { lastActive: where.lastActive } : {}),
+        } as any,
+      })
     }
 
     const result = {

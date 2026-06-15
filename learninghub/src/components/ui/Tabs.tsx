@@ -71,7 +71,7 @@ export function Tab({ value, children, className }: TabProps) {
       aria-controls={panelId}
       tabIndex={isActive ? 0 : -1}
       onClick={() => setActiveTab(value)}
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           setActiveTab(value)
@@ -109,12 +109,7 @@ export function TabPanel({ value, children, className }: TabPanelProps) {
   const tabId = `${baseId}-tab-${value}`
 
   return (
-    <div
-      role="tabpanel"
-      id={panelId}
-      aria-labelledby={tabId}
-      className={className}
-    >
+    <div role="tabpanel" id={panelId} aria-labelledby={tabId} className={className}>
       {children}
     </div>
   )

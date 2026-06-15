@@ -104,7 +104,6 @@ export async function deepHealthCheck(req: Request, res: Response): Promise<void
 
       if (db.status !== 'healthy') report.status = 'critical'
       else if (usedMem / totalMem > 0.9 || cpuPercent > 90) report.status = 'degraded'
-
       ;(report.components as Record<string, unknown>).system = {
         memory_used_percent: Math.round((usedMem / totalMem) * 100),
         cpu_percent: cpuPercent,
