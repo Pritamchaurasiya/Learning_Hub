@@ -128,16 +128,11 @@ const refreshAccessToken = async (): Promise<string> => {
       headers['X-CSRF-Token'] = csrfToken
     }
 
-    const refreshToken = await getRefreshToken()
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
+    // Refresh token is now sent automatically via httpOnly cookies
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
       headers,
-      body: JSON.stringify({ refresh_token: refreshToken }),
     })
 
     if (!response.ok) {
