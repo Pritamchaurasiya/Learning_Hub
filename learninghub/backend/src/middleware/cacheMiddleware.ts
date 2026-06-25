@@ -52,7 +52,11 @@ export const cacheMiddleware = (durationInSeconds: number) => {
   }
 }
 
-export const clearCache = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const clearCache = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     await cacheService.deletePattern('__express__*')
     if (process.env.NODE_ENV !== 'test') {

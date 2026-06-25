@@ -29,8 +29,32 @@ describe('SubscriptionService', () => {
   describe('getTiers', () => {
     it('should return active tiers ordered by price', async () => {
       mockPrisma.subscriptionTier.findMany.mockResolvedValue([
-        { id: 'free', name: 'Free', price: 0, interval: 'month', isActive: true, displayName: 'Free', description: '', currency: 'usd', trialDays: 0, features: [], limits: {} },
-        { id: 'pro', name: 'Pro', price: 19, interval: 'month', isActive: true, displayName: 'Pro', description: '', currency: 'usd', trialDays: 14, features: [], limits: {} },
+        {
+          id: 'free',
+          name: 'Free',
+          price: 0,
+          interval: 'month',
+          isActive: true,
+          displayName: 'Free',
+          description: '',
+          currency: 'usd',
+          trialDays: 0,
+          features: [],
+          limits: {},
+        },
+        {
+          id: 'pro',
+          name: 'Pro',
+          price: 19,
+          interval: 'month',
+          isActive: true,
+          displayName: 'Pro',
+          description: '',
+          currency: 'usd',
+          trialDays: 14,
+          features: [],
+          limits: {},
+        },
       ])
 
       const result = await service.getTiers()
@@ -87,7 +111,9 @@ describe('SubscriptionService', () => {
       })
       mockPrisma.$transaction.mockImplementation(async (cb: any) => {
         const tx = {
-          subscription: { create: jest.fn().mockResolvedValue({ id: 'sub-1', tierId: 'free', status: 'ACTIVE' }) },
+          subscription: {
+            create: jest.fn().mockResolvedValue({ id: 'sub-1', tierId: 'free', status: 'ACTIVE' }),
+          },
           usageLimit: { create: jest.fn().mockResolvedValue({ id: 'ul1' }) },
         }
         return cb(tx)
@@ -127,11 +153,12 @@ describe('SubscriptionService', () => {
       expect(createArgs.data.trialEndsAt).toBeInstanceOf(Date)
     })
 
-
     it('should throw for invalid tier', async () => {
       mockPrisma.subscriptionTier.findUnique.mockResolvedValue(null)
 
-      await expect(service.createSubscription({ userId: 'user-1', tierId: 'invalid' })).rejects.toThrow('Invalid subscription tier')
+      await expect(
+        service.createSubscription({ userId: 'user-1', tierId: 'invalid' })
+      ).rejects.toThrow('Invalid subscription tier')
     })
 
     it('should create yearly subscription', async () => {
@@ -143,14 +170,16 @@ describe('SubscriptionService', () => {
       })
       mockPrisma.$transaction.mockImplementation(async (cb: any) => {
         const tx = {
-          subscription: { create: jest.fn().mockImplementation((args: any) => {
-            const endDate = args.data.currentPeriodEnd
-            const yearFromNow = new Date()
-            yearFromNow.setFullYear(yearFromNow.getFullYear() + 1)
-            const diff = Math.abs(endDate.getTime() - yearFromNow.getTime())
-            expect(diff).toBeLessThan(1000)
-            return Promise.resolve({ id: 'sub-yearly' })
-          })},
+          subscription: {
+            create: jest.fn().mockImplementation((args: any) => {
+              const endDate = args.data.currentPeriodEnd
+              const yearFromNow = new Date()
+              yearFromNow.setFullYear(yearFromNow.getFullYear() + 1)
+              const diff = Math.abs(endDate.getTime() - yearFromNow.getTime())
+              expect(diff).toBeLessThan(1000)
+              return Promise.resolve({ id: 'sub-yearly' })
+            }),
+          },
           usageLimit: { create: jest.fn().mockResolvedValue({}) },
         }
         return cb(tx)

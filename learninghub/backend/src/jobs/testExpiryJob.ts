@@ -20,10 +20,7 @@ import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 
 const DEFAULT_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes
-const INTERVAL_MS = parseInt(
-  process.env.TEST_EXPIRY_INTERVAL_MS ?? String(DEFAULT_INTERVAL_MS),
-  10
-)
+const INTERVAL_MS = parseInt(process.env.TEST_EXPIRY_INTERVAL_MS ?? String(DEFAULT_INTERVAL_MS), 10)
 
 let intervalId: ReturnType<typeof setInterval> | undefined
 
@@ -60,12 +57,17 @@ async function runExpirySweep(): Promise<void> {
 
       for (const result of recentTimeouts) {
         // Award test_completed XP via job queue (gracefully degrades if Redis is down)
-        await jobQueueService.addGrowthJob({
-          userId: result.userId,
-          action: 'test_completed',
-        }).catch(e =>
-          logger.error('[TestExpiryJob] Failed to queue growth job', e instanceof Error ? e : new Error(String(e)))
-        )
+        await jobQueueService
+          .addGrowthJob({
+            userId: result.userId,
+            action: 'test_completed',
+          })
+          .catch(e =>
+            logger.error(
+              '[TestExpiryJob] Failed to queue growth job',
+              e instanceof Error ? e : new Error(String(e))
+            )
+          )
 
         // Dispatch analytics for topic performance tracking
         const questionResults = Array.isArray(result.questionResults)
@@ -73,17 +75,22 @@ async function runExpirySweep(): Promise<void> {
           : []
 
         if (questionResults.length > 0) {
-          await jobQueueService.addAnalyticsJob({
-            userId: result.userId,
-            testResultId: result.testId,
-            questionResults: questionResults.map((qr: any) => ({
-              questionId: qr.question_id ?? '',
-              topicName: qr.topic_name ?? 'General',
-              isCorrect: qr.is_correct ?? false,
-            })),
-          }).catch(e =>
-            logger.error('[TestExpiryJob] Failed to queue analytics job', e instanceof Error ? e : new Error(String(e)))
-          )
+          await jobQueueService
+            .addAnalyticsJob({
+              userId: result.userId,
+              testResultId: result.testId,
+              questionResults: questionResults.map((qr: any) => ({
+                questionId: qr.question_id ?? '',
+                topicName: qr.topic_name ?? 'General',
+                isCorrect: qr.is_correct ?? false,
+              })),
+            })
+            .catch(e =>
+              logger.error(
+                '[TestExpiryJob] Failed to queue analytics job',
+                e instanceof Error ? e : new Error(String(e))
+              )
+            )
         }
       }
     }
@@ -112,9 +119,7 @@ export function startTestExpiryJob(): void {
   // Prevent the interval from keeping the process alive during shutdown
   intervalId.unref?.()
 
-  logger.info(
-    `[TestExpiryJob] Scheduler started (every ${Math.round(INTERVAL_MS / 1000)}s)`
-  )
+  logger.info(`[TestExpiryJob] Scheduler started (every ${Math.round(INTERVAL_MS / 1000)}s)`)
 }
 
 /**

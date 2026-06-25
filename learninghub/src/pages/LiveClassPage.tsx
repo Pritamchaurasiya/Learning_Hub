@@ -191,12 +191,12 @@ export default function LiveClassPage() {
         try {
           // Find the active session to pass context if needed
           const currentSession = classes.find(c => c.id === activeSessionId)
-          
+
           const response = await aiTutorService.sendMessage({
             message: aiPrompt,
-            context: { topic: currentSession?.title || 'Live Class' }
+            context: { topic: currentSession?.title || 'Live Class' },
           })
-          
+
           if (response.status === 'success') {
             setMessages(prev => [
               ...prev,
@@ -208,7 +208,7 @@ export default function LiveClassPage() {
               },
             ])
           } else {
-             setMessages(prev => [
+            setMessages(prev => [
               ...prev,
               {
                 id: Math.random().toString(),
@@ -434,7 +434,9 @@ export default function LiveClassPage() {
                   className={`flex flex-col relative z-10 ${msg.sender === (auth.user?.username ?? 'You') ? 'items-end' : 'items-start'}`}
                 >
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${msg.sender === '🤖 AI Mentor' ? 'text-primary-500' : 'text-gray-900 dark:text-gray-300'}`}>
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-widest ${msg.sender === '🤖 AI Mentor' ? 'text-primary-500' : 'text-gray-900 dark:text-gray-300'}`}
+                    >
                       {msg.sender}
                     </span>
                     <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">

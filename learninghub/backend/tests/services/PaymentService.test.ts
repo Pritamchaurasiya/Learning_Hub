@@ -32,18 +32,22 @@ const mockStripeInstance = {
   },
 }
 
-jest.mock('stripe', () => {
-  const StripeConstructor = jest.fn().mockImplementation(() => {
-    if (stripeConstructorShouldThrow) {
-      throw new Error('Stripe package not installed mock error')
-    }
-    return mockStripeInstance
-  })
-  // Attach webhooks helper to the mock factory (just like stripe package has constructEvent on instance and webhooks namespace on the package)
-  return Object.assign(StripeConstructor, {
-    webhooks: mockStripeInstance.webhooks,
-  })
-}, { virtual: true })
+jest.mock(
+  'stripe',
+  () => {
+    const StripeConstructor = jest.fn().mockImplementation(() => {
+      if (stripeConstructorShouldThrow) {
+        throw new Error('Stripe package not installed mock error')
+      }
+      return mockStripeInstance
+    })
+    // Attach webhooks helper to the mock factory (just like stripe package has constructEvent on instance and webhooks namespace on the package)
+    return Object.assign(StripeConstructor, {
+      webhooks: mockStripeInstance.webhooks,
+    })
+  },
+  { virtual: true }
+)
 
 describe('PaymentService', () => {
   const originalEnv = process.env

@@ -81,7 +81,7 @@ export class ABTestingService {
         userId,
         event: eventName,
         value: value ?? 0,
-      }
+      },
     })
   }
 

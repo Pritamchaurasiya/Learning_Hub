@@ -43,7 +43,7 @@ describe('auth utilities', () => {
     })
 
     it('returns false for strings with non-hex characters', () => {
-      const longString = 'g' + 'a'.repeat(63) // 'g' is not hex
+      const longString = `g${'a'.repeat(63)}` // 'g' is not hex
       expect(isAlreadyHashed(longString)).toBe(false)
     })
 

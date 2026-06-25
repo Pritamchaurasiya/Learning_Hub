@@ -120,10 +120,7 @@ describe('ProblemsController', () => {
       expect(prisma.problem.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            OR: [
-              { id: 'prob-123-uuid' },
-              { slug: 'prob-123-uuid' },
-            ],
+            OR: [{ id: 'prob-123-uuid' }, { slug: 'prob-123-uuid' }],
           },
         })
       )
@@ -159,10 +156,7 @@ describe('ProblemsController', () => {
       expect(prisma.problem.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            OR: [
-              { id: 'reverse-string' },
-              { slug: 'reverse-string' },
-            ],
+            OR: [{ id: 'reverse-string' }, { slug: 'reverse-string' }],
           },
         })
       )
@@ -216,7 +210,6 @@ describe('ProblemsController', () => {
       mockReq.user = { userId: 'user-1' } as any
       ;(mockReq as any).params = { id: 'prob-nonexistent' }
       mockReq.body = { code: 'console.log("hello")', language: 'javascript' }
-
       ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(null)
 
       await submitProblemSolution(mockReq, mockRes)

@@ -232,28 +232,24 @@ ${userContext}${courseContext}
 If you don't know something, say so honestly rather than guessing.`
 
     let history: { role: 'user' | 'assistant' | 'system'; content: string }[] = []
-    
+
     if (sessionId) {
       const pastMessages = await prisma.aIChatMessage.findMany({
         where: { sessionId },
         orderBy: { createdAt: 'asc' },
         take: 20, // Keep context window manageable
       })
-      
+
       history = pastMessages.map(m => ({
         role: m.role as 'user' | 'assistant' | 'system',
-        content: m.content
+        content: m.content,
       }))
     }
 
     try {
       const ai = AIServiceFactory.getAgent()
       const result = await ai.generateChat(
-        [
-          { role: 'system', content: systemPrompt },
-          ...history,
-          { role: 'user', content: message },
-        ],
+        [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: message }],
         { model: 'gemini-2.0-flash' }
       )
 
@@ -343,17 +339,17 @@ ${userContext}${courseContext}
 If you don't know something, say so honestly rather than guessing.`
 
     let history: { role: 'user' | 'assistant' | 'system'; content: string }[] = []
-    
+
     if (sessionId) {
       const pastMessages = await prisma.aIChatMessage.findMany({
         where: { sessionId },
         orderBy: { createdAt: 'asc' },
         take: 20, // Limit history to last 20 messages for context
       })
-      
+
       history = pastMessages.map(m => ({
         role: m.role as 'user' | 'assistant' | 'system',
-        content: m.content
+        content: m.content,
       }))
     }
 
@@ -364,11 +360,7 @@ If you don't know something, say so honestly rather than guessing.`
       }
 
       const stream = ai.generateChatStream(
-        [
-          { role: 'system', content: systemPrompt },
-          ...history,
-          { role: 'user', content: message },
-        ],
+        [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: message }],
         { model: 'gemini-2.0-flash' }
       )
 
@@ -513,7 +505,7 @@ Do not include any text outside the JSON. Ensure JSON is strictly valid.`
   ): Promise<AICodeReviewResult> {
     try {
       const adapter = AIServiceFactory.getAgent()
-      
+
       const prompt = `
       You are an elite Senior Staff Software Engineer and Security Auditor.
       Perform a deep algorithmic and security review of the following student submission.
@@ -543,23 +535,29 @@ Do not include any text outside the JSON. Ensure JSON is strictly valid.`
       })
 
       // Strip markdown code block wrappers if Gemini adds them
-      const cleanJson = result.text.replace(/```json/g, '').replace(/```/g, '').trim()
-      
+      const cleanJson = result.text
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim()
+
       try {
         const parsed = JSON.parse(cleanJson) as AICodeReviewResult
         return parsed
       } catch (parseError) {
         logger.error('[AILearningService] Failed to parse code review JSON', new Error(result.text))
         return {
-          timeComplexity: "Unknown",
-          spaceComplexity: "Unknown",
+          timeComplexity: 'Unknown',
+          spaceComplexity: 'Unknown',
           vulnerabilities: [],
-          optimizationHints: ["Error parsing AI response"],
-          overallFeedback: result.text
+          optimizationHints: ['Error parsing AI response'],
+          overallFeedback: result.text,
         }
       }
     } catch (error) {
-      logger.error('[AILearningService] Code review failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AILearningService] Code review failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('AI Code Review failed')
     }
   }

@@ -21,7 +21,13 @@ const notifLimiter = createRateLimiter({
 
 router.get('/', authenticate, getNotifications)
 router.get('/unread-count', authenticate, getUnreadCount)
-router.patch('/:id/read', authenticate, notifLimiter, validate(markNotificationReadSchema), markAsRead)
+router.patch(
+  '/:id/read',
+  authenticate,
+  notifLimiter,
+  validate(markNotificationReadSchema),
+  markAsRead
+)
 router.post('/mark-all-read', authenticate, notifLimiter, markAllAsRead)
 router.delete('/:id', authenticate, notifLimiter, deleteNotification)
 

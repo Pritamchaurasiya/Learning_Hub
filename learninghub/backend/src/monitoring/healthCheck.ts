@@ -86,14 +86,14 @@ export async function healthCheck(_req: Request, res: Response): Promise<void> {
   // Redis check
   const { cacheService } = await import('../services/CacheService')
   let redisStatus = 'ok'
-  let redisEnabled = process.env.REDIS_ENABLED === 'true'
+  const redisEnabled = process.env.REDIS_ENABLED === 'true'
   if (redisEnabled) {
-     const isRedisHealthy = await cacheService.healthCheck()
-     if (!isRedisHealthy) {
-       redisStatus = 'error'
-     }
+    const isRedisHealthy = await cacheService.healthCheck()
+    if (!isRedisHealthy) {
+      redisStatus = 'error'
+    }
   } else {
-     redisStatus = 'disabled'
+    redisStatus = 'disabled'
   }
 
   // Memory check
@@ -102,7 +102,8 @@ export async function healthCheck(_req: Request, res: Response): Promise<void> {
   // Overall status
   let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
   if (dbStatus === 'error') overallStatus = 'unhealthy'
-  else if (dbStatus === 'slow' || memoryStatus === 'warning' || redisStatus === 'error') overallStatus = 'degraded'
+  else if (dbStatus === 'slow' || memoryStatus === 'warning' || redisStatus === 'error')
+    overallStatus = 'degraded'
   else if (memoryStatus === 'critical') overallStatus = 'unhealthy'
 
   const health: HealthStatus & { checks: { redis: { status: string } } } = {
@@ -165,20 +166,28 @@ export function livenessProbe(_req: Request, res: Response): void {
 export async function readinessProbe(_req: Request, res: Response): Promise<void> {
   try {
     await prisma.$queryRaw`SELECT 1`
-    
+
     let redisReady = true
     if (process.env.REDIS_ENABLED === 'true') {
-        const { cacheService } = await import('../services/CacheService')
-        redisReady = await cacheService.healthCheck()
+      const { cacheService } = await import('../services/CacheService')
+      redisReady = await cacheService.healthCheck()
     }
-    
+
     if (!redisReady) {
-        res.status(503).json({ status: 'not_ready', reason: 'redis_unavailable', timestamp: new Date().toISOString() })
-        return
+      res.status(503).json({
+        status: 'not_ready',
+        reason: 'redis_unavailable',
+        timestamp: new Date().toISOString(),
+      })
+      return
     }
 
     res.status(200).json({ status: 'ready', timestamp: new Date().toISOString() })
   } catch {
-    res.status(503).json({ status: 'not_ready', reason: 'database_unavailable', timestamp: new Date().toISOString() })
+    res.status(503).json({
+      status: 'not_ready',
+      reason: 'database_unavailable',
+      timestamp: new Date().toISOString(),
+    })
   }
 }

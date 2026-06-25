@@ -41,7 +41,7 @@ describe('TestEngineService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(mockPrisma.$transaction as jest.Mock) = jest.fn(async (callback) => {
+    ;(mockPrisma.$transaction as jest.Mock) = jest.fn(async callback => {
       return callback(mockPrisma)
     })
     service = new TestEngineService()
@@ -126,9 +126,7 @@ describe('TestEngineService', () => {
     it('should throw error for non-existent question', async () => {
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(null)
 
-      await expect(service.submitPracticeAnswer(mockRequest)).rejects.toThrow(
-        'Question not found'
-      )
+      await expect(service.submitPracticeAnswer(mockRequest)).rejects.toThrow('Question not found')
     })
 
     it('should throw error for non-practice mode', async () => {
@@ -316,9 +314,7 @@ describe('TestEngineService', () => {
         passed: true,
         status: 'COMPLETED',
         completedAt: new Date('2024-01-02'),
-        questionResults: [
-          { question_id: 'q3', is_correct: true, marks_obtained: 15 },
-        ],
+        questionResults: [{ question_id: 'q3', is_correct: true, marks_obtained: 15 }],
         test: {
           id: 'test-2',
           title: 'Science Test',
@@ -592,36 +588,38 @@ describe('TestEngineService', () => {
 
   describe('autoSubmitExpiredTests', () => {
     it('should auto-submit expired tests', async () => {
-      const expiredAttempts = [{
-        id: 'attempt-1',
-        userId: 'user-1',
-        testId: 'test-1',
-        status: 'IN_PROGRESS',
-        startedAt: new Date(Date.now() - 120 * 60 * 1000), // 120 minutes ago
-        answers: { 'q1': 'opt1' },
-        test: {
-          timeLimit: 60, // 60 minutes
-          passingScore: 60,
-          questions: [
-            {
-              id: 'q1',
-              points: 10,
-              options: [
-                { id: 'opt1', isCorrect: true },
-                { id: 'opt2', isCorrect: false },
-              ],
-            },
-            {
-              id: 'q2',
-              points: 10,
-              options: [
-                { id: 'opt3', isCorrect: true },
-                { id: 'opt4', isCorrect: false },
-              ],
-            },
-          ],
+      const expiredAttempts = [
+        {
+          id: 'attempt-1',
+          userId: 'user-1',
+          testId: 'test-1',
+          status: 'IN_PROGRESS',
+          startedAt: new Date(Date.now() - 120 * 60 * 1000), // 120 minutes ago
+          answers: { q1: 'opt1' },
+          test: {
+            timeLimit: 60, // 60 minutes
+            passingScore: 60,
+            questions: [
+              {
+                id: 'q1',
+                points: 10,
+                options: [
+                  { id: 'opt1', isCorrect: true },
+                  { id: 'opt2', isCorrect: false },
+                ],
+              },
+              {
+                id: 'q2',
+                points: 10,
+                options: [
+                  { id: 'opt3', isCorrect: true },
+                  { id: 'opt4', isCorrect: false },
+                ],
+              },
+            ],
+          },
         },
-      }]
+      ]
 
       ;(mockPrisma.testResult.findMany as jest.Mock).mockResolvedValue(expiredAttempts)
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
@@ -641,19 +639,21 @@ describe('TestEngineService', () => {
     })
 
     it('should not submit tests that are not expired', async () => {
-      const activeAttempts = [{
-        id: 'attempt-1',
-        userId: 'user-1',
-        testId: 'test-1',
-        status: 'IN_PROGRESS',
-        startedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        answers: {},
-        test: {
-          timeLimit: 60, // 60 minutes
-          passingScore: 60,
-          questions: [],
+      const activeAttempts = [
+        {
+          id: 'attempt-1',
+          userId: 'user-1',
+          testId: 'test-1',
+          status: 'IN_PROGRESS',
+          startedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+          answers: {},
+          test: {
+            timeLimit: 60, // 60 minutes
+            passingScore: 60,
+            questions: [],
+          },
         },
-      }]
+      ]
 
       ;(mockPrisma.testResult.findMany as jest.Mock).mockResolvedValue(activeAttempts)
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})

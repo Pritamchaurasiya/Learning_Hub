@@ -156,14 +156,14 @@ export const globalLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 500,
   keyPrefix: 'global',
-  message: 'Too many requests from this IP, please try again after 15 minutes.'
+  message: 'Too many requests from this IP, please try again after 15 minutes.',
 })
 
 export const strictLimiter = createRateLimiter({
   windowMs: 10 * 60 * 1000, // 10 minutes
   max: 10,
   keyPrefix: 'auth',
-  message: 'Too many attempts. Please try again after 10 minutes.'
+  message: 'Too many attempts. Please try again after 10 minutes.',
 })
 
 export default createRateLimiter

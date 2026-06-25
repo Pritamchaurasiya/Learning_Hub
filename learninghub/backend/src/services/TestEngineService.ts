@@ -120,7 +120,9 @@ export class TestEngineService {
             if (r.is_correct) currentScore += r.marks_obtained
           }
           // Total points = sum of points for all questions the user has attempted
-          const attemptedQuestionIds = existingResults.map((r: any) => r.question_id).filter(Boolean)
+          const attemptedQuestionIds = existingResults
+            .map((r: any) => r.question_id)
+            .filter(Boolean)
           let totalPoints = question.points // at minimum the current question
           if (attemptedQuestionIds.length > 0) {
             const attemptedQuestions = await tx.question.findMany({
@@ -166,7 +168,10 @@ export class TestEngineService {
         if (error?.code === 'P2002') {
           currentTry++
           if (currentTry >= maxRetries) {
-            logger.error('[TestEngineService] Max retries reached for Practice Answer concurrency', error)
+            logger.error(
+              '[TestEngineService] Max retries reached for Practice Answer concurrency',
+              error
+            )
             throw new Error('Concurrent submission error. Please try again.')
           }
           // Exponential backoff
@@ -176,7 +181,7 @@ export class TestEngineService {
         throw error
       }
     }
-    
+
     throw new Error('Unexpected error in practice answer flow')
   }
 
@@ -291,7 +296,7 @@ export class TestEngineService {
         topic: t.topicName,
         accuracy: t.accuracy,
         total_attempts: t.totalAttempts,
-        strength_level: t.strengthLevel
+        strength_level: t.strengthLevel,
       })),
     }
   }
@@ -510,7 +515,8 @@ export class TestEngineService {
         const questionResults = attempt.test.questions.map(q => {
           const correctOption = q.options.find(o => o.isCorrect)
           const userAnswer = answers[q.id]
-          const hasAnswer = userAnswer !== undefined && userAnswer !== null && String(userAnswer).trim().length > 0
+          const hasAnswer =
+            userAnswer !== undefined && userAnswer !== null && String(userAnswer).trim().length > 0
           const isCorrect = hasAnswer && userAnswer === correctOption?.id
 
           if (isCorrect) {
@@ -522,7 +528,7 @@ export class TestEngineService {
           return {
             question_id: q.id,
             is_correct: isCorrect,
-            marks_obtained: isCorrect ? q.points : (hasAnswer ? -attempt.test.negativeMarks : 0),
+            marks_obtained: isCorrect ? q.points : hasAnswer ? -attempt.test.negativeMarks : 0,
           }
         })
 
