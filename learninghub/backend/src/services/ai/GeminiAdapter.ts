@@ -11,7 +11,7 @@ export class GeminiAdapter implements IAIAgent {
   private defaultModel = 'gemini-1.5-flash'
   private circuitBreaker = new CircuitBreaker('GeminiAPI', {
     failureThreshold: 5,
-    resetTimeout: 30000
+    resetTimeout: 30000,
   })
 
   constructor(apiKey?: string) {
@@ -27,10 +27,7 @@ export class GeminiAdapter implements IAIAgent {
    * Retry wrapper with exponential backoff for transient API failures.
    * Retries on 429 (rate limit), 503 (service unavailable), and network errors.
    */
-  private async withRetry<T>(
-    operation: () => Promise<T>,
-    operationName: string
-  ): Promise<T> {
+  private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
     let lastError: Error | undefined
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -108,7 +105,7 @@ export class GeminiAdapter implements IAIAgent {
   ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const systemMessage = messages.find(m => m.role === 'system')
-      
+
       const model = this.ai.getGenerativeModel({
         model: options?.model ?? this.defaultModel,
         generationConfig: {

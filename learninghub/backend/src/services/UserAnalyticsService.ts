@@ -30,12 +30,12 @@ export interface SpeedTrendPoint {
 }
 
 export interface GrowthMetrics {
-  growthScore: number          // 0-100 composite score
-  accuracyDelta: number        // Change vs previous period
-  speedDelta: number           // Change vs previous period
-  consistencyScore: number     // Based on daily activity
-  topicsImproved: number       // Topics that went up in strength
-  topicsDegraded: number       // Topics that went down
+  growthScore: number // 0-100 composite score
+  accuracyDelta: number // Change vs previous period
+  speedDelta: number // Change vs previous period
+  consistencyScore: number // Based on daily activity
+  topicsImproved: number // Topics that went up in strength
+  topicsDegraded: number // Topics that went down
 }
 
 export interface UserDashboardAnalytics {
@@ -66,27 +66,18 @@ export class UserAnalyticsService {
   /**
    * Get comprehensive dashboard analytics for a user.
    */
-  async getDashboardAnalytics(
-    userId: string,
-    days: number = 30
-  ): Promise<UserDashboardAnalytics> {
+  async getDashboardAnalytics(userId: string, days: number = 30): Promise<UserDashboardAnalytics> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    const [
-      summary,
-      accuracyTrend,
-      speedTrend,
-      topicMastery,
-      growth,
-      recentActivity,
-    ] = await Promise.all([
-      this.getSummary(userId, startDate),
-      this.getAccuracyTrend(userId, days),
-      this.getSpeedTrend(userId, days),
-      topicPerformanceService.getTopicMasteryMap(userId),
-      this.getGrowthMetrics(userId, days),
-      this.getRecentActivity(userId, 20),
-    ])
+    const [summary, accuracyTrend, speedTrend, topicMastery, growth, recentActivity] =
+      await Promise.all([
+        this.getSummary(userId, startDate),
+        this.getAccuracyTrend(userId, days),
+        this.getSpeedTrend(userId, days),
+        topicPerformanceService.getTopicMasteryMap(userId),
+        this.getGrowthMetrics(userId, days),
+        this.getRecentActivity(userId, 20),
+      ])
 
     return {
       summary,
@@ -129,9 +120,10 @@ export class UserAnalyticsService {
 
     const totalTests = results.length
     const passedTests = results.filter(r => r.passed).length
-    const avgScore = totalTests > 0
-      ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalTests)
-      : 0
+    const avgScore =
+      totalTests > 0
+        ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalTests)
+        : 0
     const totalTimeSeconds = results.reduce((sum, r) => sum + r.timeTaken, 0)
 
     // Count total questions answered
@@ -139,7 +131,7 @@ export class UserAnalyticsService {
     let totalCorrect = 0
     for (const result of results) {
       const qResults = Array.isArray(result.questionResults)
-        ? result.questionResults as any[]
+        ? (result.questionResults as any[])
         : []
       totalQuestions += qResults.length
       totalCorrect += qResults.filter((qr: any) => qr.is_correct).length
@@ -148,13 +140,9 @@ export class UserAnalyticsService {
     return {
       totalTestsCompleted: totalTests,
       totalQuestionsAnswered: totalQuestions,
-      overallAccuracy: totalQuestions > 0
-        ? Math.round((totalCorrect / totalQuestions) * 100)
-        : 0,
+      overallAccuracy: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
       averageScore: avgScore,
-      passRate: totalTests > 0
-        ? Math.round((passedTests / totalTests) * 100)
-        : 0,
+      passRate: totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0,
       totalStudyTimeMinutes: Math.round(totalTimeSeconds / 60),
       currentStreak: user?.streak ?? 0,
       longestStreak: user?.longestStreak ?? 0,
@@ -164,10 +152,7 @@ export class UserAnalyticsService {
   /**
    * Accuracy trend over time — grouped by day.
    */
-  async getAccuracyTrend(
-    userId: string,
-    days: number = 30
-  ): Promise<AccuracyTrendPoint[]> {
+  async getAccuracyTrend(userId: string, days: number = 30): Promise<AccuracyTrendPoint[]> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
     const results = await prisma.testResult.findMany({
@@ -204,10 +189,7 @@ export class UserAnalyticsService {
   /**
    * Speed trend — average time per question, grouped by day.
    */
-  async getSpeedTrend(
-    userId: string,
-    days: number = 30
-  ): Promise<SpeedTrendPoint[]> {
+  async getSpeedTrend(userId: string, days: number = 30): Promise<SpeedTrendPoint[]> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
     const results = await prisma.testResult.findMany({
@@ -228,7 +210,7 @@ export class UserAnalyticsService {
     for (const r of results) {
       if (!r.completedAt) continue
       const date = r.completedAt.toISOString().split('T')[0]
-      const qResults = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
+      const qResults = Array.isArray(r.questionResults) ? (r.questionResults as any[]) : []
       const existing = dailyMap.get(date) ?? { totalTime: 0, totalQuestions: 0 }
       existing.totalTime += r.timeTaken
       existing.totalQuestions += qResults.length
@@ -237,9 +219,8 @@ export class UserAnalyticsService {
 
     return Array.from(dailyMap.entries()).map(([date, stats]) => ({
       date,
-      avgTimePerQuestion: stats.totalQuestions > 0
-        ? Math.round(stats.totalTime / stats.totalQuestions)
-        : 0,
+      avgTimePerQuestion:
+        stats.totalQuestions > 0 ? Math.round(stats.totalTime / stats.totalQuestions) : 0,
       questionsAnswered: stats.totalQuestions,
     }))
   }
@@ -247,10 +228,7 @@ export class UserAnalyticsService {
   /**
    * Growth metrics — compare current period to previous period.
    */
-  async getGrowthMetrics(
-    userId: string,
-    days: number = 30
-  ): Promise<GrowthMetrics> {
+  async getGrowthMetrics(userId: string, days: number = 30): Promise<GrowthMetrics> {
     const now = Date.now()
     const currentStart = new Date(now - days * 24 * 60 * 60 * 1000)
     const previousStart = new Date(now - 2 * days * 24 * 60 * 60 * 1000)
@@ -277,12 +255,14 @@ export class UserAnalyticsService {
       }),
     ])
 
-    const currentAvg = currentResults.length > 0
-      ? currentResults.reduce((s, r) => s + r.percentage, 0) / currentResults.length
-      : 0
-    const previousAvg = previousResults.length > 0
-      ? previousResults.reduce((s, r) => s + r.percentage, 0) / previousResults.length
-      : 0
+    const currentAvg =
+      currentResults.length > 0
+        ? currentResults.reduce((s, r) => s + r.percentage, 0) / currentResults.length
+        : 0
+    const previousAvg =
+      previousResults.length > 0
+        ? previousResults.reduce((s, r) => s + r.percentage, 0) / previousResults.length
+        : 0
 
     const currentAvgTime = this.avgTimePerQuestion(currentResults)
     const previousAvgTime = this.avgTimePerQuestion(previousResults)
@@ -345,7 +325,7 @@ export class UserAnalyticsService {
     let totalTime = 0
     let totalQuestions = 0
     for (const r of results) {
-      const qResults = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
+      const qResults = Array.isArray(r.questionResults) ? (r.questionResults as any[]) : []
       totalTime += r.timeTaken
       totalQuestions += qResults.length
     }

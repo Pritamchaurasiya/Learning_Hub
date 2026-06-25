@@ -85,7 +85,15 @@ describe('CoursesController', () => {
 
     it('should filter courses by search query', async () => {
       const courses = createCourses(1)
-      const pagination = { total: 1, page: 1, limit: 20, pages: 1, totalPages: 1, hasNext: false, hasPrev: false }
+      const pagination = {
+        total: 1,
+        page: 1,
+        limit: 20,
+        pages: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      }
 
       mockReq.query = { search: 'typescript' }
       mockCourseService.listCourses.mockResolvedValue({ courses, pagination })
@@ -102,7 +110,15 @@ describe('CoursesController', () => {
 
     it('should filter courses by difficulty', async () => {
       const courses = [createCourse({ difficulty: 'ADVANCED' })]
-      const pagination = { total: 1, page: 1, limit: 20, pages: 1, totalPages: 1, hasNext: false, hasPrev: false }
+      const pagination = {
+        total: 1,
+        page: 1,
+        limit: 20,
+        pages: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      }
 
       mockReq.query = { difficulty: 'advanced' }
       mockCourseService.listCourses.mockResolvedValue({ courses, pagination })
@@ -124,7 +140,22 @@ describe('CoursesController', () => {
       const userProgress = { progress: 50, status: 'IN_PROGRESS', completedAt: null }
       const mockCourseWithProgress = {
         ...course,
-        modules: [{ id: 'mod-1', title: 'Module 1', lessons: [{ id: 'les-1', title: 'Lesson 1', duration: 300, order: 1, isFree: true, videoUrl: 'url' }] }],
+        modules: [
+          {
+            id: 'mod-1',
+            title: 'Module 1',
+            lessons: [
+              {
+                id: 'les-1',
+                title: 'Lesson 1',
+                duration: 300,
+                order: 1,
+                isFree: true,
+                videoUrl: 'url',
+              },
+            ],
+          },
+        ],
         studentCount: 100,
         rating: 4.5,
         reviewCount: 10,
@@ -157,11 +188,13 @@ describe('CoursesController', () => {
       await getCourseDetails(mockReq, mockRes)
 
       expect(statusMock).toHaveBeenCalledWith(404)
-      expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
-        status: 'error',
-        message: 'Course not found',
-        code: 'NOT_FOUND'
-      }))
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'error',
+          message: 'Course not found',
+          code: 'NOT_FOUND',
+        })
+      )
     })
   })
 })

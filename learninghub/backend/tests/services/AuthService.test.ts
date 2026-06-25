@@ -429,7 +429,7 @@ describe('AuthService', () => {
       expect(mockPrisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: userId },
-          data: expect.objectContaining({ 
+          data: expect.objectContaining({
             password: 'hashed_new_password',
           }),
         })

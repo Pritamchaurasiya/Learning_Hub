@@ -83,66 +83,72 @@ export class TestScoringService {
     let correctCount = 0
     let incorrectCount = 0
 
-    const questionResults = await Promise.all(test.questions.map(async q => {
-      const correctOptions = q.options.filter(o => o.isCorrect)
-      const userAnswerId = answers[q.id]
-      const submittedIds = normalizeAnswerIds(userAnswerId)
-      const hasAnswer = submittedIds.length > 0 || (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
+    const questionResults = await Promise.all(
+      test.questions.map(async q => {
+        const correctOptions = q.options.filter(o => o.isCorrect)
+        const userAnswerId = answers[q.id]
+        const submittedIds = normalizeAnswerIds(userAnswerId)
+        const hasAnswer =
+          submittedIds.length > 0 ||
+          (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
 
-      let isCorrect = false
-      let marksObtained = 0
-      let aiFeedback = undefined
+        let isCorrect = false
+        let marksObtained = 0
+        let aiFeedback = undefined
 
-      if (hasAnswer) {
-        if (q.type === 'subjective') {
-          // Send raw string answer to AI Grading Engine
-          const answerText = Array.isArray(userAnswerId) ? userAnswerId[0] : String(userAnswerId ?? '')
-          const grading = await aiTestService.gradeSubjectiveAnswer(q.text, answerText, q.points)
-          marksObtained = grading.score
-          isCorrect = grading.score >= (q.points * 0.5) // Pass if score is 50%+
-          aiFeedback = grading.feedback
-        } else if (correctOptions.length > 0) {
-          if (q.type === 'multiple_select') {
-            isCorrect = answersMatch(
-              submittedIds,
-              correctOptions.map(o => o.id)
-            )
-          } else {
-            isCorrect = submittedIds[0] === correctOptions[0].id
+        if (hasAnswer) {
+          if (q.type === 'subjective') {
+            // Send raw string answer to AI Grading Engine
+            const answerText = Array.isArray(userAnswerId)
+              ? userAnswerId[0]
+              : String(userAnswerId ?? '')
+            const grading = await aiTestService.gradeSubjectiveAnswer(q.text, answerText, q.points)
+            marksObtained = grading.score
+            isCorrect = grading.score >= q.points * 0.5 // Pass if score is 50%+
+            aiFeedback = grading.feedback
+          } else if (correctOptions.length > 0) {
+            if (q.type === 'multiple_select') {
+              isCorrect = answersMatch(
+                submittedIds,
+                correctOptions.map(o => o.id)
+              )
+            } else {
+              isCorrect = submittedIds[0] === correctOptions[0].id
+            }
+            marksObtained = isCorrect ? q.points : -test.negativeMarks
           }
-          marksObtained = isCorrect ? q.points : -test.negativeMarks
         }
-      }
 
-      if (q.type !== 'subjective') {
-        if (isCorrect) {
-          score += q.points
-          correctCount++
+        if (q.type !== 'subjective') {
+          if (isCorrect) {
+            score += q.points
+            correctCount++
+          } else if (hasAnswer) {
+            incorrectCount++
+            if (test.negativeMarks > 0) score -= test.negativeMarks
+          }
         } else if (hasAnswer) {
-          incorrectCount++
-          if (test.negativeMarks > 0) score -= test.negativeMarks
+          score += marksObtained
+          if (isCorrect) correctCount++
+          else incorrectCount++
         }
-      } else if (hasAnswer) {
-        score += marksObtained
-        if (isCorrect) correctCount++
-        else incorrectCount++
-      }
 
-      return {
-        question_id: q.id,
-        question_text: q.text,
-        question_type: q.type,
-        selected_options: submittedIds.map(id => ({ id })),
-        correct_options: correctOptions.map(o => ({ id: o.id, text: o.text })),
-        is_correct: isCorrect,
-        marks_obtained: marksObtained,
-        explanation: aiFeedback ? aiFeedback : q.explanation,
-        time_spent: 0,
-        is_flagged: false,
-        confidence: confidences ? confidences[q.id] : undefined,
-        topic: q.tags?.[0] ?? 'General',
-      }
-    }))
+        return {
+          question_id: q.id,
+          question_text: q.text,
+          question_type: q.type,
+          selected_options: submittedIds.map(id => ({ id })),
+          correct_options: correctOptions.map(o => ({ id: o.id, text: o.text })),
+          is_correct: isCorrect,
+          marks_obtained: marksObtained,
+          explanation: aiFeedback ? aiFeedback : q.explanation,
+          time_spent: 0,
+          is_flagged: false,
+          confidence: confidences ? confidences[q.id] : undefined,
+          topic: q.tags?.[0] ?? 'General',
+        }
+      })
+    )
 
     if (isOverTime) score = Math.floor(score * 0.75)
     score = Math.max(0, score)
@@ -209,8 +215,19 @@ export class TestScoringService {
     const newResult = result.isDuplicate ? undefined : result.result
     if (newResult) {
       // Fire-and-forget analytics and growth triggers via background job queues
-      this.handlePostTestEvents(userId, test, newResult.id, questionResults, passed, actualTimeTaken, score).catch(e => {
-        logger.error('[TestScoringService] Post-test job queue dispatch failed', e instanceof Error ? e : new Error(String(e)))
+      this.handlePostTestEvents(
+        userId,
+        test,
+        newResult.id,
+        questionResults,
+        passed,
+        actualTimeTaken,
+        score
+      ).catch(e => {
+        logger.error(
+          '[TestScoringService] Post-test job queue dispatch failed',
+          e instanceof Error ? e : new Error(String(e))
+        )
       })
     }
 
@@ -237,11 +254,11 @@ export class TestScoringService {
         timeSpentSeconds: qr.time_spent || 0,
       }
     })
-    
+
     await jobQueueService.addAnalyticsJob({
       userId,
       testResultId,
-      questionResults: topicUpdates
+      questionResults: topicUpdates,
     })
 
     // 2. Dispatch Growth Jobs
@@ -250,10 +267,10 @@ export class TestScoringService {
     if (userStats === 1) {
       await jobQueueService.addGrowthJob({ userId, action: 'first_test' })
     }
-    
+
     // Base test completed XP
     await jobQueueService.addGrowthJob({ userId, action: 'test_completed' })
-    
+
     // Passing XP
     if (passed) {
       await jobQueueService.addGrowthJob({ userId, action: 'test_passed' })
@@ -270,18 +287,21 @@ export class TestScoringService {
     if (timeTakenMinutes > 0) {
       await this.retryAsync(
         () => growthEngineService.updateDailyGoal(userId, timeTakenMinutes),
-        'updateDailyGoal', userId
+        'updateDailyGoal',
+        userId
       )
     }
 
     // Streaks and Achievements — critical for user retention, must not silently fail
     await this.retryAsync(
       () => growthEngineService.checkAndUpdateStreak(userId),
-      'checkAndUpdateStreak', userId
+      'checkAndUpdateStreak',
+      userId
     )
     await this.retryAsync(
       () => growthEngineService.checkAchievements(userId),
-      'checkAchievements', userId
+      'checkAchievements',
+      userId
     )
   }
 

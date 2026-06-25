@@ -57,7 +57,10 @@ export default function PricingPage() {
 
   return (
     <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 px-4 sm:px-6 lg:px-8">
-      <SEO title="Pricing & Plans" description="Choose the perfect plan for your learning journey." />
+      <SEO
+        title="Pricing & Plans"
+        description="Choose the perfect plan for your learning journey."
+      />
 
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -108,13 +111,19 @@ export default function PricingPage() {
               )}
 
               <div className="mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tier.name}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {tier.name}
+                </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm h-10">{tier.description}</p>
               </div>
 
               <div className="mb-8 flex items-baseline gap-2">
-                <span className="text-5xl font-black text-gray-900 dark:text-white">${tier.price}</span>
-                {tier.price > 0 && <span className="text-gray-500 font-medium">/{tier.interval}</span>}
+                <span className="text-5xl font-black text-gray-900 dark:text-white">
+                  ${tier.price}
+                </span>
+                {tier.price > 0 && (
+                  <span className="text-gray-500 font-medium">/{tier.interval}</span>
+                )}
               </div>
 
               <Button
@@ -123,7 +132,11 @@ export default function PricingPage() {
                 onClick={() => handleSubscribe(tier.id)}
                 disabled={loadingTier !== null}
               >
-                {loadingTier === tier.id ? 'Processing...' : tier.price === 0 ? 'Start Free' : 'Subscribe Now'}
+                {loadingTier === tier.id
+                  ? 'Processing...'
+                  : tier.price === 0
+                    ? 'Start Free'
+                    : 'Subscribe Now'}
               </Button>
 
               <div className="space-y-4 flex-1">
@@ -132,7 +145,9 @@ export default function PricingPage() {
                     <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
                       <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
                     </div>
-                    <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">{feature}</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                      {feature}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -146,7 +161,8 @@ export default function PricingPage() {
             Enterprise-Grade Security
           </h4>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            All payments are processed securely via Stripe. We do not store your credit card information.
+            All payments are processed securely via Stripe. We do not store your credit card
+            information.
           </p>
         </div>
       </div>

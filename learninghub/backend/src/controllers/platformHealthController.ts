@@ -17,7 +17,10 @@ export const getPlatformHealth = async (req: Request, res: Response) => {
     const health = await platformHealthService.getHealth()
     res.json({ status: 'success', data: health })
   } catch (error) {
-    logger.error('[PlatformHealthController] getPlatformHealth failed', error instanceof Error ? error : new Error(String(error)))
+    logger.error(
+      '[PlatformHealthController] getPlatformHealth failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
     res.status(500).json({ status: 'error', message: 'Failed to fetch platform health' })
   }
 }
@@ -32,7 +35,10 @@ export const getChurnRiskUsers = async (req: Request, res: Response) => {
     const users = await platformHealthService.getChurnRiskUsers(limit)
     res.json({ status: 'success', data: users })
   } catch (error) {
-    logger.error('[PlatformHealthController] getChurnRiskUsers failed', error instanceof Error ? error : new Error(String(error)))
+    logger.error(
+      '[PlatformHealthController] getChurnRiskUsers failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
     res.status(500).json({ status: 'error', message: 'Failed to fetch churn risk data' })
   }
 }

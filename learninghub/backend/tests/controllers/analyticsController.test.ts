@@ -54,7 +54,13 @@ describe('AnalyticsController learner endpoints', () => {
         _avg: { percentage: 84.6 },
       })
       ;(prisma.topicPerformance.findMany as jest.Mock).mockResolvedValue([
-        { topicName: 'Math', subjectName: 'Algebra', totalAttempts: 10, correctAnswers: 8, accuracy: 80 }
+        {
+          topicName: 'Math',
+          subjectName: 'Algebra',
+          totalAttempts: 10,
+          correctAnswers: 8,
+          accuracy: 80,
+        },
       ])
 
       await getLearnerDashboardStats(mockReq as any, mockRes)
@@ -71,9 +77,7 @@ describe('AnalyticsController learner endpoints', () => {
           longest_streak: 8,
           xp_points: 140,
           level: 4,
-          topic_performance: [
-            { topic: 'Math', subject: 'Algebra', attempts: 10, accuracy: 80 }
-          ]
+          topic_performance: [{ topic: 'Math', subject: 'Algebra', attempts: 10, accuracy: 80 }],
         },
       })
     })
@@ -107,16 +111,12 @@ describe('AnalyticsController learner endpoints', () => {
       ;(prisma.dailyGoal.findMany as jest.Mock).mockResolvedValue([
         { date: today, completedMinutes: 25 },
       ])
-      ;(prisma.lessonCompletion.findMany as jest.Mock).mockResolvedValue([
-        { completedAt: today },
-      ])
+      ;(prisma.lessonCompletion.findMany as jest.Mock).mockResolvedValue([{ completedAt: today }])
       ;(prisma.testResult.findMany as jest.Mock).mockResolvedValue([
         { completedAt: today, passed: true, score: 14 },
         { completedAt: today, passed: false, score: 4 },
       ])
-      ;(prisma.userProgress.findMany as jest.Mock).mockResolvedValue([
-        { lastActivityAt: today },
-      ])
+      ;(prisma.userProgress.findMany as jest.Mock).mockResolvedValue([{ lastActivityAt: today }])
 
       await getLearningActivity(mockReq as any, mockRes)
 

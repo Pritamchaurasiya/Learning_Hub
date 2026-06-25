@@ -50,7 +50,10 @@ export class AdvancedAnalyticsService {
       `
       return results.map(r => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getDailyActiveUsers failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getDailyActiveUsers failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -73,7 +76,10 @@ export class AdvancedAnalyticsService {
       `
       return results.map(r => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getEnrollmentTrend failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getEnrollmentTrend failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -97,7 +103,10 @@ export class AdvancedAnalyticsService {
       `
       return results.map(r => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getTestCompletionTrend failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getTestCompletionTrend failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -147,7 +156,10 @@ export class AdvancedAnalyticsService {
         week4: Number(r.week4),
       }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getCohortRetention failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getCohortRetention failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -170,7 +182,10 @@ export class AdvancedAnalyticsService {
       `
       return results.map(r => ({ hour: Number(r.hour), activity: Number(r.activity) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getLearningPatternsByHour failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getLearningPatternsByHour failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -223,7 +238,10 @@ export class AdvancedAnalyticsService {
       `
       return results
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getTopCoursesByEngagement failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getTopCoursesByEngagement failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -247,7 +265,10 @@ export class AdvancedAnalyticsService {
       `
       return results.map(r => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getUserLearningVelocity failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getUserLearningVelocity failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }

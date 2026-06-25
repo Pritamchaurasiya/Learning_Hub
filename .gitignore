@@ -247,3 +247,7 @@ learninghub/qa-artifacts/
 learninghub/backend/coverage/
 *.err
 backend_pid.txt
+
+coverage/
+
+learninghub/backend/coverage/

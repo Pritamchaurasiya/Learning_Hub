@@ -39,7 +39,7 @@ const mockPrisma = {
   auditLog: {
     create: jest.fn(),
   },
-  $transaction: jest.fn((callback) => callback(mockPrisma)),
+  $transaction: jest.fn(callback => callback(mockPrisma)),
 } as unknown as PrismaClient
 
 describe('CourseService', () => {
@@ -148,9 +148,7 @@ describe('CourseService', () => {
 
     it('should list courses with user progress and bookmarks', async () => {
       const userId = 'user-1'
-      const mockProgress = [
-        { userId, courseId: 'course-1', progress: 50, status: 'IN_PROGRESS' },
-      ]
+      const mockProgress = [{ userId, courseId: 'course-1', progress: 50, status: 'IN_PROGRESS' }]
       const mockBookmarks = [{ userId, courseId: 'course-2' }]
 
       jest.spyOn(CourseRepository.prototype, 'findManyList').mockResolvedValue({
@@ -489,9 +487,7 @@ describe('CourseService', () => {
   describe('getCategories', () => {
     it('should return list of categories', async () => {
       const mockCategories = ['Programming', 'Data Science', 'Design']
-      jest
-        .spyOn(CourseRepository.prototype, 'getCategories')
-        .mockResolvedValue(mockCategories)
+      jest.spyOn(CourseRepository.prototype, 'getCategories').mockResolvedValue(mockCategories)
 
       const result = await courseService.getCategories()
 

@@ -106,91 +106,91 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
     name: 'First Step',
     description: 'Complete your first test',
     icon: '🎯',
-    condition: (s) => s.totalTestsCompleted >= 1,
+    condition: s => s.totalTestsCompleted >= 1,
   },
   {
     id: 'ten_tests',
     name: 'Test Warrior',
     description: 'Complete 10 tests',
     icon: '⚔️',
-    condition: (s) => s.totalTestsCompleted >= 10,
+    condition: s => s.totalTestsCompleted >= 10,
   },
   {
     id: 'fifty_tests',
     name: 'Test Master',
     description: 'Complete 50 tests',
     icon: '🏆',
-    condition: (s) => s.totalTestsCompleted >= 50,
+    condition: s => s.totalTestsCompleted >= 50,
   },
   {
     id: 'hundred_tests',
     name: 'Century Champion',
     description: 'Complete 100 tests',
     icon: '💯',
-    condition: (s) => s.totalTestsCompleted >= 100,
+    condition: s => s.totalTestsCompleted >= 100,
   },
   {
     id: 'first_perfect',
     name: 'Flawless Victory',
     description: 'Score 100% on a test',
     icon: '⭐',
-    condition: (s) => s.perfectScores >= 1,
+    condition: s => s.perfectScores >= 1,
   },
   {
     id: 'streak_7',
     name: 'Week Warrior',
     description: 'Maintain a 7-day streak',
     icon: '🔥',
-    condition: (s) => s.longestStreak >= 7,
+    condition: s => s.longestStreak >= 7,
   },
   {
     id: 'streak_30',
     name: 'Monthly Machine',
     description: 'Maintain a 30-day streak',
     icon: '🌟',
-    condition: (s) => s.longestStreak >= 30,
+    condition: s => s.longestStreak >= 30,
   },
   {
     id: 'streak_100',
     name: 'Unstoppable',
     description: 'Maintain a 100-day streak',
     icon: '🚀',
-    condition: (s) => s.longestStreak >= 100,
+    condition: s => s.longestStreak >= 100,
   },
   {
     id: 'accuracy_80',
     name: 'Sharp Shooter',
     description: 'Achieve 80%+ overall accuracy',
     icon: '🎯',
-    condition: (s) => s.overallAccuracy >= 80 && s.totalQuestionsAnswered >= 50,
+    condition: s => s.overallAccuracy >= 80 && s.totalQuestionsAnswered >= 50,
   },
   {
     id: 'level_5',
     name: 'Rising Star',
     description: 'Reach Level 5',
     icon: '✨',
-    condition: (s) => s.level >= 5,
+    condition: s => s.level >= 5,
   },
   {
     id: 'level_10',
     name: 'Knowledge Knight',
     description: 'Reach Level 10',
     icon: '🛡️',
-    condition: (s) => s.level >= 10,
+    condition: s => s.level >= 10,
   },
   {
     id: 'topic_master_5',
     name: 'Multi-Disciplinary',
     description: 'Master 5 different topics',
     icon: '📚',
-    condition: (s) => s.topicsmastered >= 5,
+    condition: s => s.topicsmastered >= 5,
   },
   {
     id: 'thousand_questions',
     name: 'Question Crusher',
     description: 'Answer 1000 questions',
     icon: '💪',
-    condition: (s) => s.totalQuestionsAnswered >= 1000,
+    condition: s => s.totalQuestionsAnswered >= 1000,
   },
 ]
 
@@ -200,11 +200,7 @@ export class GrowthEngineService {
   /**
    * Award XP to a user with automatic level-up check.
    */
-  async awardXP(
-    userId: string,
-    reason: XPReason,
-    txParam?: any
-  ): Promise<XPAwardResult | null> {
+  async awardXP(userId: string, reason: XPReason, txParam?: any): Promise<XPAwardResult | null> {
     const db = txParam ?? prisma
     const amount = XP_REWARDS[reason]
     if (!amount) return null
@@ -240,9 +236,10 @@ export class GrowthEngineService {
 
         const nextLevelXP = this.xpForLevel(newLevel + 1)
         const currentLevelXP = this.xpForLevel(newLevel)
-        const progressToNextLevel = nextLevelXP > currentLevelXP
-          ? Math.round(((newTotalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
-          : 100
+        const progressToNextLevel =
+          nextLevelXP > currentLevelXP
+            ? Math.round(((newTotalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
+            : 100
 
         return {
           xpAwarded: amount,
@@ -261,7 +258,10 @@ export class GrowthEngineService {
         return await db.$transaction(performUpdate, { isolationLevel: 'ReadCommitted' })
       }
     } catch (error) {
-      logger.error('[GrowthEngineService] Failed to award XP', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[GrowthEngineService] Failed to award XP',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return null
     }
   }
@@ -398,7 +398,9 @@ export class GrowthEngineService {
         // Unique constraint violation = already unlocked (race condition safe)
         if (!(error instanceof Error && error.message.includes('Unique constraint'))) {
           const errMsg = error instanceof Error ? error.message : String(error)
-          logger.error(`[GrowthEngine] Achievement check error: achievementId=${achievement.id} userId=${userId} error=${errMsg}`)
+          logger.error(
+            `[GrowthEngine] Achievement check error: achievementId=${achievement.id} userId=${userId} error=${errMsg}`
+          )
         }
       }
     }
@@ -422,9 +424,10 @@ export class GrowthEngineService {
     const currentLevelXP = this.xpForLevel(user.level)
     const nextLevelXP = this.xpForLevel(user.level + 1)
     const xpNeeded = nextLevelXP - user.xp
-    const progressPercent = nextLevelXP > currentLevelXP
-      ? Math.round(((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
-      : 100
+    const progressPercent =
+      nextLevelXP > currentLevelXP
+        ? Math.round(((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
+        : 100
 
     return {
       level: user.level,
@@ -566,7 +569,7 @@ export class GrowthEngineService {
     let totalQuestions = 0
     let totalCorrect = 0
     for (const r of testResults) {
-      const qr = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
+      const qr = Array.isArray(r.questionResults) ? (r.questionResults as any[]) : []
       totalQuestions += qr.length
       totalCorrect += qr.filter((q: any) => q.is_correct).length
     }
@@ -575,9 +578,7 @@ export class GrowthEngineService {
       where: { userId, progress: 100 },
     })
 
-    const topicsMastered = topicPerformances.filter(
-      t => t.strengthLevel === 'mastered'
-    ).length
+    const topicsMastered = topicPerformances.filter(t => t.strengthLevel === 'mastered').length
 
     return {
       totalTestsCompleted: totalTests,
@@ -591,9 +592,7 @@ export class GrowthEngineService {
       lessonsCompleted: lessonCompletions,
       totalQuestionsAnswered: totalQuestions,
       totalCorrectAnswers: totalCorrect,
-      overallAccuracy: totalQuestions > 0
-        ? Math.round((totalCorrect / totalQuestions) * 100)
-        : 0,
+      overallAccuracy: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
       topicsmastered: topicsMastered,
     }
   }

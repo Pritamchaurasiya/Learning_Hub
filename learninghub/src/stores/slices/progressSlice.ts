@@ -214,8 +214,7 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
 
   notifications: [],
   unreadCount: 0,
-  fetchNotifications: async () => {
-  },
+  fetchNotifications: async () => {},
   markNotificationAsRead: () => {},
   markAllNotificationsAsRead: () => {},
   clearNotifications: () => {

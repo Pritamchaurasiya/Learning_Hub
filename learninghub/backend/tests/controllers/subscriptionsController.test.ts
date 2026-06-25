@@ -21,7 +21,13 @@ jest.mock('../../src/services/CacheService', () => ({
   },
 }))
 
-import { getTiers, getMySubscription, createSubscription, cancelSubscription, validateCoupon } from '../../src/controllers/subscriptionsController'
+import {
+  getTiers,
+  getMySubscription,
+  createSubscription,
+  cancelSubscription,
+  validateCoupon,
+} from '../../src/controllers/subscriptionsController'
 
 function makeApp(userId = 'user-123') {
   const app = express()
@@ -98,7 +104,9 @@ describe('GET /subscriptions/me', () => {
       trialEndsAt: null,
       currentPeriodEnd: new Date('2099-01-01'),
       tier: TIER_PRO,
-      usageLimits: [{ id: 'ul-1', testsTaken: 5, aiGenerations: 10, questionsAnswered: 20, period: new Date() }],
+      usageLimits: [
+        { id: 'ul-1', testsTaken: 5, aiGenerations: 10, questionsAnswered: 20, period: new Date() },
+      ],
     })
 
     const res = await request(makeApp()).get('/api/v1/subscriptions/me')
@@ -148,14 +156,20 @@ describe('POST /subscriptions/create', () => {
     ;(prisma.subscriptionTier.findUnique as jest.Mock).mockResolvedValue(TIER_FREE)
     ;(prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => {
       const tx = {
-        subscription: { create: jest.fn().mockResolvedValue({ id: 'sub-free', status: 'ACTIVE', tier: TIER_FREE }) },
+        subscription: {
+          create: jest
+            .fn()
+            .mockResolvedValue({ id: 'sub-free', status: 'ACTIVE', tier: TIER_FREE }),
+        },
         usageLimit: { create: jest.fn().mockResolvedValue({}) },
       }
       return cb(tx)
     })
     ;(prisma.coupon.update as jest.Mock).mockResolvedValue({})
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/create').send({ tier_id: 'free' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/create')
+      .send({ tier_id: 'free' })
     expect(res.status).toBe(201)
     expect(res.body.data.id).toBe('sub-free')
   })
@@ -171,14 +185,18 @@ describe('POST /subscriptions/create', () => {
     ;(prisma.subscriptionTier.findMany as jest.Mock).mockResolvedValue([TIER_FREE, TIER_PRO])
     ;(prisma.coupon.findUnique as jest.Mock).mockResolvedValue(null)
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/create').send({ tier_id: 'free', coupon_code: 'FAKE' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/create')
+      .send({ tier_id: 'free', coupon_code: 'FAKE' })
     expect(res.status).toBe(400)
   })
 
   it('returns 404 when tier not found', async () => {
     ;(prisma.subscriptionTier.findMany as jest.Mock).mockResolvedValue([])
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/create').send({ tier_id: 'nonexistent' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/create')
+      .send({ tier_id: 'nonexistent' })
     expect(res.status).toBe(404)
   })
 
@@ -194,7 +212,9 @@ describe('POST /subscriptions/create', () => {
       },
     }))
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/create').send({ tier_id: 'pro' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/create')
+      .send({ tier_id: 'pro' })
     expect(res.status).toBe(201)
     expect(res.body.data.checkoutUrl).toBe('https://checkout.stripe.com/session-123')
   })
@@ -243,7 +263,6 @@ describe('POST /subscriptions/coupon/validate', () => {
   it('returns 200 with valid coupon', async () => {
     const futureDate = new Date()
     futureDate.setMonth(futureDate.getMonth() + 1)
-
     ;(prisma.coupon.findUnique as jest.Mock).mockResolvedValue({
       code: 'SAVE20',
       isActive: true,
@@ -256,7 +275,9 @@ describe('POST /subscriptions/coupon/validate', () => {
       discountValue: 20,
     })
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/coupon/validate').send({ code: 'SAVE20', tier_id: 'pro' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/coupon/validate')
+      .send({ code: 'SAVE20', tier_id: 'pro' })
     expect(res.status).toBe(200)
     expect(res.body.data.valid).toBe(true)
     expect(res.body.data.discount.value).toBe(20)
@@ -265,7 +286,9 @@ describe('POST /subscriptions/coupon/validate', () => {
   it('returns 200 for invalid coupon', async () => {
     ;(prisma.coupon.findUnique as jest.Mock).mockResolvedValue(null)
 
-    const res = await request(makeApp()).post('/api/v1/subscriptions/coupon/validate').send({ code: 'FAKE' })
+    const res = await request(makeApp())
+      .post('/api/v1/subscriptions/coupon/validate')
+      .send({ code: 'FAKE' })
     expect(res.status).toBe(200)
     expect(res.body.data.valid).toBe(false)
     expect(res.body.data.message).toBe('Coupon not found')

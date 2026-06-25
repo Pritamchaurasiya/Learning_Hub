@@ -82,11 +82,11 @@ export const subscriptionService = {
       method: 'POST',
       body: JSON.stringify({ tierId }),
     })
-    
+
     if (res.data?.checkoutUrl) {
       return res.data.checkoutUrl
     }
-    
+
     // If Stripe is not configured or fails, we return a mock success flow
     return `/payment-success?session_id=mock_${Date.now()}`
   },

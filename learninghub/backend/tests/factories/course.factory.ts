@@ -1,7 +1,7 @@
 import { Course, Prisma } from '@prisma/client'
 
 export const createCourse = (overrides: Partial<Course> = {}): Course => ({
-  id: 'course-' + Math.random().toString(36).substring(7),
+  id: `course-${Math.random().toString(36).substring(7)}`,
   title: 'Test Course',
   description: 'A test course description',
   shortDescription: null,
