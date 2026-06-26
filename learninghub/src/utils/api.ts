@@ -52,14 +52,7 @@ const setAccessToken = async (token: string | null): Promise<void> => {
   else SecureStorage.removeItem('token')
 }
 
-const getRefreshToken = async (): Promise<string | null> => {
-  return SecureStorage.getItem('refreshToken')
-}
-
-const setRefreshToken = async (token: string | null): Promise<void> => {
-  if (token) await SecureStorage.setItem('refreshToken', token)
-  else SecureStorage.removeItem('refreshToken')
-}
+// refresh token logic now handled purely by HTTP-only cookies
 
 export const initCsrfToken = async (forceRefresh = false): Promise<void> => {
   if (!forceRefresh && getCsrfToken()) return
@@ -72,6 +65,8 @@ export const initCsrfToken = async (forceRefresh = false): Promise<void> => {
     if (response.ok) {
       const data = await response.json()
       if (data.csrfToken) {
+        // The backend expects the frontend to read this cookie and send it in the X-CSRF-Token header.
+        // Therefore, it must not be HttpOnly. We set it here so it's accessible.
         const secureSuffix = window.location.protocol === 'https:' ? '; Secure' : ''
         document.cookie = `csrf-token=${data.csrfToken}; path=/; SameSite=Lax${secureSuffix}`
       }
@@ -128,16 +123,12 @@ const refreshAccessToken = async (): Promise<string> => {
       headers['X-CSRF-Token'] = csrfToken
     }
 
-    const refreshToken = await getRefreshToken()
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
       headers,
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      // refresh token is now sent via HttpOnly cookie
+      body: JSON.stringify({}),
     })
 
     if (!response.ok) {
@@ -147,16 +138,12 @@ const refreshAccessToken = async (): Promise<string> => {
     const data = await response.json()
     const tokenData = data?.data ?? data
     const newAccessToken = tokenData?.access_token ?? tokenData?.access ?? tokenData?.token
-    const newRefreshToken = tokenData?.refresh_token ?? tokenData?.refresh ?? null
 
     if (!newAccessToken) {
       throw new Error('Token refresh failed - no token received')
     }
 
     await setAccessToken(newAccessToken)
-    if (newRefreshToken) {
-      await setRefreshToken(newRefreshToken)
-    }
 
     window.dispatchEvent(new CustomEvent('auth:token-refreshed'))
     return newAccessToken
@@ -239,7 +226,7 @@ export const fetchApi = async (
             ...options,
             headers,
             credentials: 'include',
-            signal: controller?.signal ?? options.signal,
+            signal: controller ? controller.signal : options.signal,
           })
         } finally {
           if (timeoutId !== undefined) clearTimeout(timeoutId)

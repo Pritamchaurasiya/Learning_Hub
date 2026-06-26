@@ -96,11 +96,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const refreshToken = generateRefreshToken(user.id, user.email, user.role)
     await storeRefreshToken(user.id, refreshToken)
 
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+
     sendCreated(
       res,
       {
         access_token: token,
-        refresh_token: refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -186,11 +192,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const refreshToken = generateRefreshToken(user.id, user.email, user.role)
     await storeRefreshToken(user.id, refreshToken)
 
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+
     sendSuccess(
       res,
       {
         access_token: token,
-        refresh_token: refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -215,7 +227,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
-    const refreshToken = req.body.refresh_token ?? req.body.refresh
+    const refreshToken = req.cookies?.refresh_token ?? req.body.refresh_token ?? req.body.refresh
     if (refreshToken) {
       // Revoke the specific refresh token
       const tokenHash = hashToken(refreshToken)
@@ -224,6 +236,9 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
         data: { revokedAt: new Date() },
       })
     }
+
+    res.clearCookie('refresh_token')
+    res.clearCookie('csrf-token')
 
     // Optionally update user session if using session tracking
     const userId = req.user?.userId
@@ -246,7 +261,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 
 export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
-    const refreshToken = req.body.refresh_token ?? req.body.refresh
+    const refreshToken = req.cookies?.refresh_token ?? req.body.refresh_token ?? req.body.refresh
     if (!refreshToken) {
       sendValidationError(res, 'Refresh token is required')
       return
@@ -302,9 +317,15 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
       },
     })
 
+    res.cookie('refresh_token', new_refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+
     sendSuccess(res, {
       access_token,
-      refresh_token: new_refresh_token,
     })
   } catch (error) {
     logger.error('Token refresh error', error instanceof Error ? error : new Error(String(error)))

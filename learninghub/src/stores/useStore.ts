@@ -19,6 +19,11 @@ export const useStore = create<AppState>()(
     {
       name: 'learninghub-storage',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated()
+        }
+      },
       partialize: state => ({
         theme: state.theme,
         recentSearches: state.recentSearches,
@@ -90,7 +95,7 @@ export const useStore = create<AppState>()(
                 lastAutosavedAt: null,
               },
       }),
-      skipHydration: true,
+      // Removed skipHydration to allow onRehydrateStorage to run automatically
     }
   )
 )

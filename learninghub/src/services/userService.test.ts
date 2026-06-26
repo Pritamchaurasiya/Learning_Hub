@@ -63,16 +63,16 @@ describe('userService', () => {
 
   describe('uploadAvatar', () => {
     it('should upload user avatar', async () => {
+      const { fetchApi } = await import('../utils/api')
       const mockFile = new File(['avatar'], 'avatar.jpg', { type: 'image/jpeg' })
       const mockResponse = {
-        url: 'https://example.com/avatar.jpg',
+        avatar_url: 'https://example.com/avatar.jpg',
       }
 
-      // Mock global fetch for avatar upload (uses direct fetch, not fetchApi)
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ status: 'success', data: mockResponse }),
-      } as Response)
+      vi.mocked(fetchApi).mockResolvedValue({
+        status: 'success',
+        data: mockResponse,
+      })
 
       const result = await userService.uploadAvatar(mockFile)
 

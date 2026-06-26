@@ -95,7 +95,6 @@ describe('AuthController', () => {
         message: 'Registration successful',
         data: {
           access_token: 'mock-token',
-          refresh_token: 'mock-refresh-token',
           user: {
             id: createdUser.id,
             email: createdUser.email,
@@ -190,7 +189,6 @@ describe('AuthController', () => {
         message: 'Login successful',
         data: {
           access_token: 'mock-token',
-          refresh_token: 'mock-refresh-token',
           user: {
             id: existingUser.id,
             email: existingUser.email,
@@ -297,7 +295,6 @@ describe('AuthController', () => {
           status: 'success',
           data: expect.objectContaining({
             access_token: 'mock-token',
-            refresh_token: 'mock-refresh-token',
           }),
         })
       )
@@ -328,7 +325,6 @@ describe('AuthController', () => {
           status: 'success',
           data: expect.objectContaining({
             access_token: 'mock-token',
-            refresh_token: 'mock-refresh-token',
           }),
         })
       )
@@ -336,6 +332,7 @@ describe('AuthController', () => {
 
     it('should return 400 when refresh token is missing', async () => {
       mockReq.body = {}
+      mockReq.cookies = {}
 
       await refresh(mockReq, mockRes)
 
