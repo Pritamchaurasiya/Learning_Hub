@@ -26,11 +26,14 @@ import {
   resetPasswordSchema,
 } from '../../validations/schemas'
 import { strictLimiter } from '../../middleware/rateLimiter'
+import { mfaRateLimit } from '../../config/security'
 
 const router = Router()
 
 router.post('/register', strictLimiter, validate(registerSchema), register)
 router.post('/login', strictLimiter, validate(loginSchema), login)
+router.post('/mfa', mfaRateLimit, (req, res) => res.status(501).send('Not implemented'))
+router.post('/verify-mfa', mfaRateLimit, (req, res) => res.status(501).send('Not implemented'))
 router.post('/logout', authenticate, logout)
 router.post('/refresh', strictLimiter, validate(refreshSchema), refresh)
 router.get('/me', authenticate, me)

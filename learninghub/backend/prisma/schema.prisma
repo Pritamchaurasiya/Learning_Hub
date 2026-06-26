@@ -127,6 +127,7 @@ model Course {
   @@index([difficulty], map: "idx_course_difficulty")
   @@index([phase], map: "idx_course_phase")
   @@index([category], map: "idx_course_category")
+  @@index([title], map: "idx_course_title")
   @@index([createdAt], map: "idx_course_created_at")
   @@index([price], map: "idx_course_price")
   @@index([isPublished], map: "idx_course_is_published")
