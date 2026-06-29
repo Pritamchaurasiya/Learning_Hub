@@ -63,9 +63,12 @@ describe('API Integration Tests', () => {
 
   describe('Token Refresh', () => {
     it('should refresh token on 401', async () => {
-      localStorage.setItem('token', 'old-token')
-      localStorage.setItem('refreshToken', 'old-refresh')
+      // Create a dummy token value and set it using the secure storage implementation
+      const oldToken = 'old-token'
+      const oldRefreshToken = 'old-refresh'
 
+      // Need to mock SecureStorage or wait since getAccessToken reads from it async
+      // But we can just rely on the API doing its retry flow.
       const unauthorizedResponse = new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
@@ -88,6 +91,13 @@ describe('API Integration Tests', () => {
         .mockResolvedValueOnce(successResponse)
 
       vi.stubGlobal('fetch', mockFetch)
+
+      // The test previously failed because SecureStorage uses indexedDB or fallback
+      // but without the mock for getRefreshToken, the refresh throws an error.
+      // Let's set it up so getRefreshToken doesn't fail.
+      const { SecureStorage } = await import('./security')
+      await SecureStorage.setItem('refreshToken', oldRefreshToken)
+      await SecureStorage.setItem('token', oldToken)
 
       await fetchApi('/test')
 

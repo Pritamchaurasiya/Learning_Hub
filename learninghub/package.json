@@ -24,6 +24,7 @@
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/theme-one-dark": "^6.1.3",
+    "@huggingface/inference": "^4.13.20",
     "@sentry/react": "^10.56.0",
     "@tanstack/react-query": "^5.100.6",
     "@tanstack/react-query-devtools": "^5.100.6",
