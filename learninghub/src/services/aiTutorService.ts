@@ -285,9 +285,7 @@ export const aiTutorService = {
     }
   },
 
-  generateWeakAreaTest: async (
-    count: number = 10
-  ): Promise<GenerateTestResponse> => {
+  generateWeakAreaTest: async (count: number = 10): Promise<GenerateTestResponse> => {
     try {
       const res = await fetchApi('/ai/generate-weak-area-test', {
         method: 'POST',
@@ -300,12 +298,22 @@ export const aiTutorService = {
       }
       return {
         status: 'error',
-        data: { topic: 'Weak Areas', difficulty: 'mixed', question_count: 0, questions: [], error: 'Failed to generate questions' },
+        data: {
+          topic: 'Weak Areas',
+          difficulty: 'mixed',
+          question_count: 0,
+          questions: [],
+          error: 'Failed to generate questions',
+        },
       } as unknown as GenerateTestResponse
     }
   },
 
-  reviewCode: async (code: string, language: string, problemDescription: string): Promise<CodeReviewResponse> => {
+  reviewCode: async (
+    code: string,
+    language: string,
+    problemDescription: string
+  ): Promise<CodeReviewResponse> => {
     try {
       const res = await fetchApi('/ai/code-review', {
         method: 'POST',

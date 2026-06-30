@@ -54,7 +54,9 @@ export class CircuitBreaker {
     if (this.failureCount >= this.failureThreshold) {
       this.state = 'OPEN'
       this.nextAttempt = Date.now() + this.resetTimeout
-      logger.error(`[CircuitBreaker] ${this.serviceName} OPENED after ${this.failureCount} failures. Will retry after ${this.resetTimeout}ms`)
+      logger.error(
+        `[CircuitBreaker] ${this.serviceName} OPENED after ${this.failureCount} failures. Will retry after ${this.resetTimeout}ms`
+      )
     }
   }
 

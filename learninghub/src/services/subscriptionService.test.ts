@@ -14,8 +14,22 @@ describe('subscriptionService', () => {
     it('should fetch tiers from API when successful', async () => {
       const { fetchApi } = await import('../utils/api')
       const mockTiers = [
-        { id: 'free', name: 'Free', description: 'Basic access', price: 0, interval: 'month', features: [] },
-        { id: 'pro', name: 'Pro', description: 'Full access', price: 19, interval: 'month', features: [] },
+        {
+          id: 'free',
+          name: 'Free',
+          description: 'Basic access',
+          price: 0,
+          interval: 'month',
+          features: [],
+        },
+        {
+          id: 'pro',
+          name: 'Pro',
+          description: 'Full access',
+          price: 19,
+          interval: 'month',
+          features: [],
+        },
       ]
 
       vi.mocked(fetchApi).mockResolvedValue({

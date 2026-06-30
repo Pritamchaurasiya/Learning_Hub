@@ -95,7 +95,12 @@ export class CodeSandboxService {
 
     for (let i = 0; i < req.testCases.length; i++) {
       const tc = req.testCases[i]
-      const result = await CodeSandboxService.runTestCase(langConfig, req.code, tc.input, req.timeLimit)
+      const result = await CodeSandboxService.runTestCase(
+        langConfig,
+        req.code,
+        tc.input,
+        req.timeLimit
+      )
 
       if (result.status === 'time_limit_exceeded') {
         return {

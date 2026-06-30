@@ -124,7 +124,9 @@ export const courseService = {
   getCourseReviews: (id: string, params?: { page?: number; limit?: number }) =>
     withCache(
       () => {
-        const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''
+        const query = params
+          ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+          : ''
         return fetchApi(`/courses/${id}/reviews${query}`) as Promise<{
           status: string
           data: CourseReview[]

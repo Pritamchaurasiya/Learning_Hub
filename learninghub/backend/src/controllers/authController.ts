@@ -68,7 +68,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (!/[A-Z]/.test(password)) passwordErrors.push('Password must contain an uppercase letter')
     if (!/[a-z]/.test(password)) passwordErrors.push('Password must contain a lowercase letter')
     if (!/[0-9]/.test(password)) passwordErrors.push('Password must contain a number')
-    if (!/[^A-Za-z0-9]/.test(password)) passwordErrors.push('Password must contain a special character')
+    if (!/[^A-Za-z0-9]/.test(password))
+      passwordErrors.push('Password must contain a special character')
     if (password.length > 128) passwordErrors.push('Password must not exceed 128 characters')
     if (passwordErrors.length > 0) {
       sendValidationError(res, passwordErrors.join('; '))
@@ -380,7 +381,9 @@ export const me = async (req: Request, res: Response): Promise<void> => {
     const lastActiveUpdate = await cacheService.get<number>(lastActiveKey)
     const now = Date.now()
     if (!lastActiveUpdate || now - lastActiveUpdate > 300_000) {
-      void prisma.user.update({ where: { id: userId }, data: { lastActive: new Date() } }).catch(() => {})
+      void prisma.user
+        .update({ where: { id: userId }, data: { lastActive: new Date() } })
+        .catch(() => {})
       void cacheService.set(lastActiveKey, now, 300)
     }
 

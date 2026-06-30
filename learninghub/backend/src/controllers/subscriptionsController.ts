@@ -136,21 +136,25 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
         await subscriptionService.applyCoupon(coupon_code)
       }
 
-      sendCreated(res, {
-        id: subscription.id,
-        tier: subscription.tier.name,
-        status: subscription.status,
-        checkoutUrl: null
-      }, 'Subscription created')
+      sendCreated(
+        res,
+        {
+          id: subscription.id,
+          tier: subscription.tier.name,
+          status: subscription.status,
+          checkoutUrl: null,
+        },
+        'Subscription created'
+      )
       return
     }
 
     // Call PaymentService to create a Stripe checkout session for paid tiers
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
-    
+
     // Lazy-load PaymentService to avoid circular dependency
     const { PaymentService } = require('../services/PaymentService')
-    
+
     let checkoutUrl = null
     try {
       const session = await PaymentService.createSubscriptionCheckoutSession({

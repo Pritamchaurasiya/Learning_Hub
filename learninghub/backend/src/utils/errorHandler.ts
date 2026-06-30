@@ -21,9 +21,7 @@ export class AppError extends MiddlewareAppError {}
 
 export const errorHandler = middlewareErrorHandler
 
-export const asyncHandler = (
-  fn: (...args: unknown[]) => Promise<unknown>
-) => {
+export const asyncHandler = (fn: (...args: unknown[]) => Promise<unknown>) => {
   return (...args: unknown[]) => {
     Promise.resolve(fn(...args)).catch((err: unknown) => {
       const next = args[args.length - 1]
