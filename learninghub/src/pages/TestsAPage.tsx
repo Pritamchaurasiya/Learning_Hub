@@ -166,7 +166,7 @@ const QuestionCard = memo(
             {question.question_type === 'subjective' || question.type === 'subjective' ? (
               <textarea
                 value={selectedAnswer || ''}
-                onChange={(e) => onAnswer(e.target.value)}
+                onChange={e => onAnswer(e.target.value)}
                 placeholder="Type your detailed answer here..."
                 className="w-full min-h-[200px] p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-y"
               />
@@ -191,7 +191,9 @@ const QuestionCard = memo(
                           : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
-                      {selectedAnswer === option.id && <CheckCircle className="w-4 h-4 text-white" />}
+                      {selectedAnswer === option.id && (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      )}
                     </div>
                     <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
                   </div>
@@ -519,13 +521,13 @@ const TestsAPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasAccess, setHasAccess] = useState(true)
-  
+
   // AI Test Generation State
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiTestMode, setAiTestMode] = useState<'adaptive' | 'weak_area'>('adaptive')
   const [aiTestTopic, setAiTestTopic] = useState('')
-  const [aiTestDifficulty, setAiTestDifficulty] = useState<'easy'|'medium'|'hard'>('medium')
+  const [aiTestDifficulty, setAiTestDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
   const [aiTestCount, setAiTestCount] = useState<number>(10)
 
   const submitAttempted = useRef(false)
@@ -557,7 +559,11 @@ const TestsAPage = () => {
   const handleStartTest = useCallback(
     async (test: TestA) => {
       if (!hasAccess) {
-        addToast({ message: 'This is a premium feature. Please upgrade your subscription to unlock Tests A+.', type: 'error' })
+        addToast({
+          message:
+            'This is a premium feature. Please upgrade your subscription to unlock Tests A+.',
+          type: 'error',
+        })
         navigate('/pricing')
         return
       }
@@ -603,11 +609,11 @@ const TestsAPage = () => {
       addToast({ message: 'AI Test Generation is a premium feature.', type: 'error' })
       return
     }
-    
+
     try {
       setIsGenerating(true)
       setError(null)
-      let response;
+      let response
       if (aiTestMode === 'weak_area') {
         response = await aiTutorService.generateWeakAreaTest(aiTestCount)
       } else {
@@ -616,14 +622,19 @@ const TestsAPage = () => {
           setIsGenerating(false)
           return
         }
-        response = await aiTutorService.generatePracticeQuestions(aiTestTopic, aiTestDifficulty, aiTestCount)
+        response = await aiTutorService.generatePracticeQuestions(
+          aiTestTopic,
+          aiTestDifficulty,
+          aiTestCount
+        )
       }
 
       if (response.status === 'success' && response.data.questions) {
         const data = response.data
         const generatedTestId = `ai-test-${Date.now()}`
-        const testTitle = aiTestMode === 'weak_area' ? 'Targeted Weak Area Mock' : `Adaptive: ${aiTestTopic}`
-        
+        const testTitle =
+          aiTestMode === 'weak_area' ? 'Targeted Weak Area Mock' : `Adaptive: ${aiTestTopic}`
+
         startTestAttempt(generatedTestId, testTitle, data.question_count, data.question_count * 2)
 
         setTestQuestions(
@@ -641,7 +652,7 @@ const TestsAPage = () => {
           })),
           {
             testId: generatedTestId,
-            testTitle: testTitle,
+            testTitle,
             totalQuestions: data.question_count,
             timeLimit: data.question_count * 2,
           },
@@ -658,7 +669,17 @@ const TestsAPage = () => {
     } finally {
       setIsGenerating(false)
     }
-  }, [hasAccess, aiTestMode, aiTestCount, aiTestTopic, aiTestDifficulty, startTestAttempt, setTestQuestions, navigate, addToast])
+  }, [
+    hasAccess,
+    aiTestMode,
+    aiTestCount,
+    aiTestTopic,
+    aiTestDifficulty,
+    startTestAttempt,
+    setTestQuestions,
+    navigate,
+    addToast,
+  ])
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || submitAttempted.current) return
@@ -948,7 +969,8 @@ const TestsAPage = () => {
                 <Star className="w-5 h-5 text-primary-500 fill-current" /> Unlock Tests A+ Elite
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                You need a premium subscription to start taking mock tests and access deep analytics.
+                You need a premium subscription to start taking mock tests and access deep
+                analytics.
               </p>
             </div>
             <Button
@@ -1070,7 +1092,7 @@ const TestsAPage = () => {
                   <Input
                     placeholder="e.g. Advanced TypeScript Generics"
                     value={aiTestTopic}
-                    onChange={(e) => setAiTestTopic(e.target.value)}
+                    onChange={e => setAiTestTopic(e.target.value)}
                   />
                 </div>
                 <div>
@@ -1079,7 +1101,7 @@ const TestsAPage = () => {
                   </label>
                   <select
                     value={aiTestDifficulty}
-                    onChange={(e) => setAiTestDifficulty(e.target.value as any)}
+                    onChange={e => setAiTestDifficulty(e.target.value as any)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option value="easy">Easy</option>
@@ -1097,7 +1119,9 @@ const TestsAPage = () => {
               >
                 <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
                   <p className="text-sm text-indigo-800 dark:text-indigo-300">
-                    The AI Engine will analyze your historical Topic Performance and generate a specialized test heavily weighted towards the areas where you are <strong>Developing</strong> or <strong>Weak</strong>.
+                    The AI Engine will analyze your historical Topic Performance and generate a
+                    specialized test heavily weighted towards the areas where you are{' '}
+                    <strong>Developing</strong> or <strong>Weak</strong>.
                   </p>
                 </div>
               </motion.div>
@@ -1114,7 +1138,7 @@ const TestsAPage = () => {
               max="20"
               step="5"
               value={aiTestCount}
-              onChange={(e) => setAiTestCount(parseInt(e.target.value))}
+              onChange={e => setAiTestCount(parseInt(e.target.value))}
               className="w-full accent-purple-600"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">

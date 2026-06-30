@@ -137,11 +137,13 @@ export class TopicPerformanceService {
           },
         })
       }
-      
+
       await this.invalidateCache(userId)
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error)
-      logger.error(`[TopicPerformanceService] updateForSingleAnswer failed: userId=${userId} topicName=${topicName} error=${errMsg}`)
+      logger.error(
+        `[TopicPerformanceService] updateForSingleAnswer failed: userId=${userId} topicName=${topicName} error=${errMsg}`
+      )
     }
   }
 
@@ -150,10 +152,7 @@ export class TopicPerformanceService {
    * More efficient than updating one-by-one — groups by topic first.
    * Used by TestScoringService after scoring a complete test.
    */
-  async updateForTestResults(
-    userId: string,
-    results: QuestionResult[]
-  ): Promise<void> {
+  async updateForTestResults(userId: string, results: QuestionResult[]): Promise<void> {
     // Group results by topic
     const topicMap = new Map<
       string,
@@ -226,10 +225,12 @@ export class TopicPerformanceService {
         }
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error)
-        logger.error(`[TopicPerformanceService] updateForTestResults failed for topic: userId=${userId} topicName=${topicName} error=${errMsg}`)
+        logger.error(
+          `[TopicPerformanceService] updateForTestResults failed for topic: userId=${userId} topicName=${topicName} error=${errMsg}`
+        )
       }
     }
-    
+
     await this.invalidateCache(userId)
   }
 
@@ -257,19 +258,17 @@ export class TopicPerformanceService {
           lastAttemptAt: t.lastAttemptAt,
         }))
 
-        const weakTopics = topicData.filter(
-          t => t.strengthLevel === 'weak' && t.totalAttempts >= 3
-        )
+        const weakTopics = topicData.filter(t => t.strengthLevel === 'weak' && t.totalAttempts >= 3)
         const strongTopics = topicData.filter(
-          t => (t.strengthLevel === 'mastered' || t.strengthLevel === 'proficient') &&
-               t.totalAttempts >= 3
+          t =>
+            (t.strengthLevel === 'mastered' || t.strengthLevel === 'proficient') &&
+            t.totalAttempts >= 3
         )
 
         const totalAttempts = topicData.reduce((sum, t) => sum + t.totalAttempts, 0)
         const totalCorrect = topicData.reduce((sum, t) => sum + t.correctAnswers, 0)
-        const overallAccuracy = totalAttempts > 0
-          ? Math.round((totalCorrect / totalAttempts) * 100 * 100) / 100
-          : 0
+        const overallAccuracy =
+          totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100 * 100) / 100 : 0
 
         return {
           topics: topicData,
@@ -287,10 +286,7 @@ export class TopicPerformanceService {
    * Get weak topics — topics below 60% accuracy with at least 3 attempts.
    * Sorted by accuracy ascending (weakest first).
    */
-  async getWeakTopics(
-    userId: string,
-    limit: number = 10
-  ): Promise<TopicPerformanceData[]> {
+  async getWeakTopics(userId: string, limit: number = 10): Promise<TopicPerformanceData[]> {
     return cacheService.getOrSet(
       cacheService.topicWeakKey(userId),
       async () => {
@@ -340,8 +336,8 @@ export class TopicPerformanceService {
             lastAttemptAt: { lt: cutoffDate },
           },
           orderBy: [
-            { accuracy: 'asc' },      // Weakest first
-            { lastAttemptAt: 'asc' },  // Oldest first
+            { accuracy: 'asc' }, // Weakest first
+            { lastAttemptAt: 'asc' }, // Oldest first
           ],
           take: limit,
         })
@@ -384,7 +380,9 @@ export class TopicPerformanceService {
 
     if (updated > 0) {
       await this.invalidateCache(userId)
-      logger.info(`[TopicPerformanceService] Recalculated ${updated} strength levels for user ${userId}`)
+      logger.info(
+        `[TopicPerformanceService] Recalculated ${updated} strength levels for user ${userId}`
+      )
     }
 
     return updated

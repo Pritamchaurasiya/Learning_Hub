@@ -60,10 +60,6 @@ urlpatterns = [
             path("dashboard/", include("apps.dashboard.urls")),
             path("tutors/", include("apps.tutors.urls")),
             path("live/", include("apps.live_sessions.urls")),
-            path("downloads/", include("apps.downloads.urls")),
-            path("study/", include("apps.study_groups.urls")),
-            path("search/", include("apps.search.urls")),
-            path("analytics/", include("apps.analytics.urls")),
         ]),
     ),
 ]

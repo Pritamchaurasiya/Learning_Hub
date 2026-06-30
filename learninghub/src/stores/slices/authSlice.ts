@@ -31,7 +31,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
   auth: {
     isAuthenticated: (() => {
       try {
-        const token = localStorage.getItem('lh_token') || localStorage.getItem('token')
+        const token = localStorage.getItem('lh_token') ?? localStorage.getItem('token')
         if (!token) return false
         const expiry = getTokenExpiry(token)
         return expiry ? expiry > Date.now() : false
@@ -82,7 +82,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     const refreshToken = getTokenFromStorage()
     if (refreshToken && get().auth.isAuthenticated) {
       try {
-        await fetchApi('/auth/logout', {
+        await void void fetchApi('/auth/logout', {
           method: 'POST',
           body: JSON.stringify({ refresh_token: refreshToken }),
         })
@@ -99,7 +99,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     SecureStorage.removeItem('refreshToken')
 
     set({ auth: { isAuthenticated: false, user: null, isHydrated: false } })
-    trackEvent('user_logged_out')
+    void void trackEvent('user_logged_out')
   },
   setHydrated: () => {
     try {
