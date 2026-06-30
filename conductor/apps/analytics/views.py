@@ -447,8 +447,14 @@ def generate_report(request):
         'created_at': timezone.now().isoformat(),
     }, 3600)
     
-    # TODO: Trigger background task to generate report
-    # For now, return immediately with report ID
+    from .tasks import generate_report_task
+    generate_report_task.delay(
+        report_id,
+        report_type,
+        start_date.isoformat(),
+        end_date.isoformat(),
+        format_type
+    )
     
     return Response({
         'report_id': report_id,
@@ -457,6 +463,8 @@ def generate_report(request):
         'estimated_completion': '30 seconds',
     })
 
+
+from django.http import HttpResponse
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
@@ -470,8 +478,18 @@ def download_report(request, report_id):
         return Response({
             'error': 'Report not found or expired'
         }, status=status.HTTP_404_NOT_FOUND)
+
+    if report_data.get('status') != 'completed':
+        return Response(report_data, status=status.HTTP_202_ACCEPTED)
     
-    # For now, return JSON data
-    # TODO: Implement CSV/PDF generation
+    format_type = report_data.get('format', 'json')
+
+    if format_type == 'csv':
+        response = HttpResponse(
+            report_data.get('data', ''),
+            content_type='text/csv'
+        )
+        response['Content-Disposition'] = f'attachment; filename="report_{report_id}.csv"'
+        return response
     
     return Response(report_data)

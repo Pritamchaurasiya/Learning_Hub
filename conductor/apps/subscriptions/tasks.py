@@ -62,19 +62,38 @@ def convert_expired_trials():
     Convert expired trials to free plan (or prompt for payment).
     Runs daily via Celery Beat.
     """
+    from django.conf import settings
+    from django.core.mail import send_mail
+    from .models import SubscriptionPlan
+
     now = timezone.now()
     expired_trials = UserSubscription.objects.filter(
         status='trial',
         trial_ends_at__lt=now,
-    )
+    ).select_related('user', 'plan')
 
     converted = 0
+    free_plan = SubscriptionPlan.objects.filter(price=0).first()
+
     for sub in expired_trials:
         sub.status = 'expired'
-        sub.save(update_fields=['status'])
+        if free_plan:
+            sub.plan = free_plan
+            sub.save(update_fields=['status', 'plan'])
+        else:
+            sub.save(update_fields=['status'])
         converted += 1
-        # TODO: Send email prompting user to subscribe
-        # TODO: Downgrade user's feature access
+
+        try:
+            send_mail(
+                subject='Your LearningHub Trial has expired',
+                message='Your trial period has ended. You have been downgraded to the free tier. Subscribe now to regain access to premium features.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[sub.user.email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send trial expiration email to {sub.user.email}: {e}")
 
     logger.info(f"Converted {converted} expired trials")
     return {'converted': converted}

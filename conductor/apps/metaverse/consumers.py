@@ -17,9 +17,12 @@ class SpatialConsumer(AsyncWebsocketConsumer):
         self.room_slug = self.scope['url_route']['kwargs']['room_slug']
         self.room_group_name = f'metaverse_{self.room_slug}'
 
-        # TODO: Add authentication check here using self.scope['user']
-        # For Phase 2 prototype, we accept the connection
-        
+        user = self.scope.get('user')
+        if not user or not user.is_authenticated:
+            logger.warning(f"Unauthorized metaverse connection attempt to room {self.room_slug}")
+            await self.close()
+            return
+
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
