@@ -163,21 +163,21 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
         cancelUrl: `${FRONTEND_URL}/pricing?canceled=true`,
       })
       checkoutUrl = session.url
-    } catch (err) {
-      logger.warn(`Stripe not configured or failed: ${err}`)
-      // Fallback for local development without Stripe
-      checkoutUrl = `${FRONTEND_URL}/payment/success?session_id=mock_sub_${Date.now()}`
-    }
 
-    sendCreated(
-      res,
-      {
-        checkoutUrl,
-        tier: selectedTier.name,
-        status: 'PENDING_CHECKOUT',
-      },
-      'Checkout session created'
-    )
+      sendCreated(
+        res,
+        {
+          checkoutUrl,
+          tier: selectedTier.name,
+          status: 'PENDING_CHECKOUT',
+        },
+        'Checkout session created'
+      )
+    } catch (err) {
+      logger.error(`Stripe not configured or failed: ${err}`)
+      sendInternalError(res, 'Payment gateway not configured or unavailable.')
+      return
+    }
   } catch (error) {
     logger.error(
       '[Subscriptions] createSubscription error',
