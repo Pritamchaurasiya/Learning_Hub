@@ -151,7 +151,6 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
     // Lazy-load PaymentService to avoid circular dependency
     const { PaymentService } = require('../services/PaymentService')
     
-    let checkoutUrl = null
     try {
       const session = await PaymentService.createSubscriptionCheckoutSession({
         userId,
@@ -162,22 +161,20 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
         successUrl: `${FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${FRONTEND_URL}/pricing?canceled=true`,
       })
-      checkoutUrl = session.url
-    } catch (err) {
-      logger.warn(`Stripe not configured or failed: ${err}`)
-      // Fallback for local development without Stripe
-      checkoutUrl = `${FRONTEND_URL}/payment/success?session_id=mock_sub_${Date.now()}`
-    }
 
-    sendCreated(
-      res,
-      {
-        checkoutUrl,
-        tier: selectedTier.name,
-        status: 'PENDING_CHECKOUT',
-      },
-      'Checkout session created'
-    )
+      sendCreated(
+        res,
+        {
+          checkoutUrl: session.url,
+          tier: selectedTier.name,
+          status: 'PENDING_CHECKOUT',
+        },
+        'Checkout session created'
+      )
+    } catch (err) {
+      logger.error('Failed to create subscription checkout session', err instanceof Error ? err : new Error(String(err)))
+      sendInternalError(res, 'Payment service is unavailable. Please try again later.')
+    }
   } catch (error) {
     logger.error(
       '[Subscriptions] createSubscription error',

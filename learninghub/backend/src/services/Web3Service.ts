@@ -4,20 +4,6 @@ import logger from '../utils/logger'
 
 export class Web3Service {
   /**
-   * Generates a deterministic mock DID based on the user's ID
-   */
-  private generateDID(userId: string): string {
-    return `did:ethr:${crypto.createHash('sha256').update(userId).digest('hex').substring(0, 40)}`
-  }
-
-  /**
-   * Generates a mock Transaction Hash
-   */
-  private generateTxHash(): string {
-    return `0x${crypto.randomBytes(32).toString('hex')}`
-  }
-
-  /**
    * Get or create a Web3 profile for a user
    */
   async getProfile(userId: string) {
@@ -25,12 +11,17 @@ export class Web3Service {
       where: { userId },
     })
 
-    profile ??= await prisma.web3Profile.create({
-      data: {
-        userId,
-        did: this.generateDID(userId),
-      },
-    })
+    if (!profile) {
+        // Return a mock structure without persisting if missing, waiting for real connection
+        return {
+            id: 'unconnected',
+            userId,
+            walletAddress: null,
+            did: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        }
+    }
 
     return profile
   }
@@ -44,13 +35,16 @@ export class Web3Service {
       throw new Error('Invalid Ethereum wallet address format')
     }
 
+    // In a real implementation, DID would be derived properly via a DID provider
+    const did = `did:ethr:${walletAddress}`
+
     const profile = await prisma.web3Profile.upsert({
       where: { userId },
-      update: { walletAddress },
+      update: { walletAddress, did },
       create: {
         userId,
         walletAddress,
-        did: this.generateDID(userId),
+        did,
       },
     })
 
@@ -119,44 +113,8 @@ export class Web3Service {
       return existing
     }
 
-    // Mock Blockchain Minting Process (Merkle Tree & Hashing)
-    const tokenId = Math.floor(Math.random() * 1000000).toString()
-    const metadataUri = `ipfs://Qm${crypto
-      .randomBytes(32)
-      .toString('base64url')
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .substring(0, 44)}`
-
-    // Create a mock merkle tree path for verifiable credentials
-    const leaf = crypto.createHash('sha256').update(`${userId}-${courseId}`).digest('hex')
-    const merkleProof = [
-      crypto.createHash('sha256').update(Math.random().toString()).digest('hex'),
-      crypto.createHash('sha256').update(Math.random().toString()).digest('hex'),
-    ]
-    const merkleRoot = crypto
-      .createHash('sha256')
-      .update(leaf + merkleProof[0])
-      .digest('hex')
-
-    const nft = await prisma.nFTCertificate.create({
-      data: {
-        userId,
-        courseId,
-        tokenId,
-        merkleRoot,
-        merkleProof,
-        transactionHash: this.generateTxHash(),
-        metadataUri,
-      },
-      include: {
-        course: { select: { id: true, title: true } },
-      },
-    })
-
-    logger.info(
-      `[Web3Service] Minted NFT Certificate for User ${userId}, Course ${courseId}. TX: ${nft.transactionHash}`
-    )
-    return nft
+    // Prevent mock minting. In production, this must call a real blockchain network (e.g. Ethereum/Polygon)
+    throw new Error('Real blockchain integration is currently disabled. Contact support to issue certificates.')
   }
 }
 
