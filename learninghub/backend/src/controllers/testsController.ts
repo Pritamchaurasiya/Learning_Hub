@@ -381,7 +381,7 @@ export const getTestAttempts = async (req: Request, res: Response): Promise<void
         test_id: attempt.testId,
         test_title: attempt.test?.title || 'Unknown Test',
         exam_name: '',
-        mode: attempt.test?.mode || 'mock',
+        mode: attempt.test?.mode || 'PRACTICE',
         status: attempt.status,
         score: attempt.score,
         total_marks: attempt.totalPoints,

@@ -249,24 +249,11 @@ export class AITestService {
         throw new Error('AI failed to generate valid questions')
       }
     } catch (error) {
-      logger.warn('[AITestService] AI service unavailable or failed — generating mock questions', {
-        error: error instanceof Error ? error.message : String(error),
-      })
-      isMock = true
-      questions = Array.from({ length: questionCount }).map((_, i) => ({
-        text: `[MOCK] Sample Question ${i + 1} for topic: ${req.topic}`,
-        options: [
-          { id: 'a', text: 'Option A (Correct)' },
-          { id: 'b', text: 'Option B' },
-          { id: 'c', text: 'Option C' },
-          { id: 'd', text: 'Option D' },
-        ],
-        correct_option_id: 'a',
-        explanation: 'This is a mock explanation because the AI service is currently unavailable.',
-        difficulty: req.difficulty,
-        bloom_level: 'understand',
-        tags: [req.topic, 'mock'],
-      }))
+      logger.error(
+        '[AITestService] AI service unavailable or failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      throw new Error('AI service failed to generate questions. Please try again later.')
     }
 
     // Persist test to database
@@ -277,7 +264,7 @@ export class AITestService {
         timeLimit,
         mode: req.mode,
         difficulty: req.difficulty,
-        isAiGenerated: !isMock,
+        isAiGenerated: true,
         isPublished: true,
         totalMarks: questions.length * 10,
         passingScore: 60,
@@ -289,7 +276,7 @@ export class AITestService {
             bloomLevel: q.bloom_level ?? 'understand',
             explanation: q.explanation,
             tags: q.tags ?? [req.topic],
-            isAiGenerated: !isMock,
+            isAiGenerated: true,
             points: 10,
             order: idx + 1,
             options: {
@@ -329,8 +316,8 @@ export class AITestService {
       questionCount: questions.length,
       timeLimit,
       questions: formattedQuestions,
-      ai_powered: !isMock,
-      model: isMock ? 'mock' : 'gemini-2.0-flash',
+      ai_powered: true,
+      model: 'gemini-2.0-flash',
       cached: false,
     }
   }
