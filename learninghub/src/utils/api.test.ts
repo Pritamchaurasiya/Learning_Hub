@@ -89,6 +89,15 @@ describe('API Integration Tests', () => {
 
       vi.stubGlobal('fetch', mockFetch)
 
+      const secureStorage = await import('./security')
+      secureStorage.SecureStorage.getItem = vi.fn().mockImplementation((key) => {
+        if (key === 'token') return 'old-token'
+        if (key === 'refreshToken') return 'old-refresh'
+        return null
+      })
+      secureStorage.SecureStorage.setItem = vi.fn().mockResolvedValue(undefined)
+      secureStorage.SecureStorage.removeItem = vi.fn().mockResolvedValue(undefined)
+
       await fetchApi('/test')
 
       expect(mockFetch).toHaveBeenCalledTimes(3)
