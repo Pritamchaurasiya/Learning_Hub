@@ -100,10 +100,16 @@ class JobQueueService {
       logger.debug('Processing analytics job', { jobId: job.id, userId: job.data.userId })
       try {
         const { topicPerformanceService } = await import('./TopicPerformanceService')
-        await topicPerformanceService.updateForTestResults(job.data.userId, job.data.questionResults)
+        await topicPerformanceService.updateForTestResults(
+          job.data.userId,
+          job.data.questionResults
+        )
         return { completed: true, jobId: job.id }
       } catch (error) {
-        logger.error('Failed to process analytics job', error instanceof Error ? error : new Error(String(error)))
+        logger.error(
+          'Failed to process analytics job',
+          error instanceof Error ? error : new Error(String(error))
+        )
         throw error
       }
     })
@@ -115,14 +121,23 @@ class JobQueueService {
         await growthEngineService.awardXP(job.data.userId, job.data.action)
         return { completed: true, jobId: job.id }
       } catch (error) {
-        logger.error('Failed to process growth job', error instanceof Error ? error : new Error(String(error)))
+        logger.error(
+          'Failed to process growth job',
+          error instanceof Error ? error : new Error(String(error))
+        )
         throw error
       }
     })
   }
 
   private setupEventHandlers() {
-    const queues = [this.emailQueue, this.aiQueue, this.reportQueue, this.analyticsQueue, this.growthQueue]
+    const queues = [
+      this.emailQueue,
+      this.aiQueue,
+      this.reportQueue,
+      this.analyticsQueue,
+      this.growthQueue,
+    ]
     queues.forEach(queue => {
       queue?.on('completed', (job: Job) => {
         logger.info('Job completed', { queue: queue.name, jobId: job.id })
@@ -171,7 +186,9 @@ class JobQueueService {
     if (!this.enabled || !this.analyticsQueue) {
       // Synchronous fallback if Redis is disabled
       const { topicPerformanceService } = await import('./TopicPerformanceService')
-      await topicPerformanceService.updateForTestResults(data.userId, data.questionResults).catch(e => logger.error('Fallback analytics err', e as Error))
+      await topicPerformanceService
+        .updateForTestResults(data.userId, data.questionResults)
+        .catch(e => logger.error('Fallback analytics err', e as Error))
       return null
     }
     return this.analyticsQueue.add(data)
@@ -181,7 +198,9 @@ class JobQueueService {
     if (!this.enabled || !this.growthQueue) {
       // Synchronous fallback
       const { growthEngineService } = await import('./GrowthEngineService')
-      await growthEngineService.awardXP(data.userId, data.action).catch(e => logger.error('Fallback growth err', e as Error))
+      await growthEngineService
+        .awardXP(data.userId, data.action)
+        .catch(e => logger.error('Fallback growth err', e as Error))
       return null
     }
     return this.growthQueue.add(data)
@@ -197,7 +216,10 @@ class JobQueueService {
 
   async getQueueHealth() {
     if (!this.enabled) {
-      return { status: 'fallback_in_memory', message: 'Redis is disabled. Jobs are processing synchronously.' }
+      return {
+        status: 'fallback_in_memory',
+        message: 'Redis is disabled. Jobs are processing synchronously.',
+      }
     }
     try {
       const [email, ai, report, analytics, growth] = await Promise.all([
@@ -205,11 +227,11 @@ class JobQueueService {
         this.aiQueue?.getJobCounts() || Promise.resolve({}),
         this.reportQueue?.getJobCounts() || Promise.resolve({}),
         this.analyticsQueue?.getJobCounts() || Promise.resolve({}),
-        this.growthQueue?.getJobCounts() || Promise.resolve({})
+        this.growthQueue?.getJobCounts() || Promise.resolve({}),
       ])
       return {
         status: 'redis_active',
-        queues: { email, ai, report, analytics, growth }
+        queues: { email, ai, report, analytics, growth },
       }
     } catch (error) {
       return { status: 'error', message: (error as Error).message }
@@ -217,7 +239,13 @@ class JobQueueService {
   }
 
   async close() {
-    await Promise.all([this.emailQueue?.close(), this.aiQueue?.close(), this.reportQueue?.close(), this.analyticsQueue?.close(), this.growthQueue?.close()])
+    await Promise.all([
+      this.emailQueue?.close(),
+      this.aiQueue?.close(),
+      this.reportQueue?.close(),
+      this.analyticsQueue?.close(),
+      this.growthQueue?.close(),
+    ])
   }
 }
 

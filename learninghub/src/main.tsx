@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { useStore } from './stores/useStore'
 import './index.css'
 import * as Sentry from '@sentry/react'
 
@@ -20,15 +19,6 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
   })
 }
-
-// Rehydrate Zustand persisted state from localStorage before React renders.
-// This is required because the store uses skipHydration: true for SSR compat.
-// Await is critical — without it, setHydrated() fires before rehydration completes,
-// causing a flash where isHydrated=true but state hasn't loaded yet.
-;(async () => {
-  await useStore.persist.rehydrate()
-  useStore.getState().setHydrated()
-})()
 
 // Create React Query client with optimized defaults
 const queryClient = new QueryClient({

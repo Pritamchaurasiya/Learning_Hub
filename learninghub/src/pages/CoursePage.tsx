@@ -462,7 +462,7 @@ export default function CoursePage() {
                       {section.title}
                     </h3>
                   </div>
-                  <motion.div 
+                  <motion.div
                     className="grid grid-cols-1 gap-3"
                     initial="hidden"
                     animate="visible"

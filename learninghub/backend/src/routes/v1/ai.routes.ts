@@ -58,12 +58,7 @@ router.post(
 
 // AI Chat Session Routes
 router.get('/tutor/sessions', authenticate, getChatSessions)
-router.post(
-  '/tutor/sessions',
-  authenticate,
-  validate(createChatSessionSchema),
-  createChatSession
-)
+router.post('/tutor/sessions', authenticate, validate(createChatSessionSchema), createChatSession)
 router.get('/tutor/sessions/:id', authenticate, getChatSessionById)
 router.delete('/tutor/sessions/:id', authenticate, deleteChatSession)
 

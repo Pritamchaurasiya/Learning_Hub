@@ -58,7 +58,7 @@ export class DataExportService {
         streak: scrubbedUser.streak,
         loginCount: scrubbedUser.loginCount,
       },
-      testHistory: scrubbedUser.testResults.map((result) => ({
+      testHistory: scrubbedUser.testResults.map(result => ({
         testId: result.testId,
         testTitle: result.test.title,
         subjectId: result.test.subjectId,

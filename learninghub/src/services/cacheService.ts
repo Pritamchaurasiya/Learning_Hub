@@ -1,9 +1,4 @@
-import {
-  getCachedData,
-  setCachedData,
-  invalidateCache,
-  getCacheStats,
-} from '../utils/cache'
+import { getCachedData, setCachedData, invalidateCache, getCacheStats } from '../utils/cache'
 
 const DEFAULT_TTL = {
   SEARCH: 5 * 60 * 1000,

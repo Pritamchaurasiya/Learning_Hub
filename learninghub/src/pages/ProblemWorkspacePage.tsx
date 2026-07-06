@@ -128,7 +128,7 @@ export default function ProblemWorkspacePage() {
   const [output, setOutput] = useState<string | null>(null)
   const [isConsoleOpen, setIsConsoleOpen] = useState(true)
   const [isReviewing, setIsReviewing] = useState(false)
-  
+
   const consoleHeightRef = useRef(30) // percentage
   const consoleDragging = useRef(false)
   const editorPanelRef = useRef<HTMLDivElement>(null)
@@ -223,7 +223,9 @@ export default function ProblemWorkspacePage() {
   const handleAIReview = useCallback(async () => {
     if (!problem || !code.trim()) return
     setIsReviewing(true)
-    setOutput('⏳ Initiating Deep ML Code Analysis...\n\nScanning for Time/Space Complexity and Logic Flaws...')
+    setOutput(
+      '⏳ Initiating Deep ML Code Analysis...\n\nScanning for Time/Space Complexity and Logic Flaws...'
+    )
     setIsConsoleOpen(true)
     try {
       const response = await aiTutorService.reviewCode(code, language, problem.description)

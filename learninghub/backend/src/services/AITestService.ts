@@ -193,7 +193,7 @@ Respond with ONLY valid JSON:
 {
   "score": 8,
   "feedback": "Your explanation is good but misses the core technical nuance."
-}`
+}`,
 }
 
 // ─── AI Test Service ─────────────────────────────────────────────────────────
@@ -354,7 +354,8 @@ export class AITestService {
 
       if (recentResults.length === 0) return 2 // Default medium
 
-      const avgScore = recentResults.reduce((sum, r) => sum + r.percentage, 0) / recentResults.length
+      const avgScore =
+        recentResults.reduce((sum, r) => sum + r.percentage, 0) / recentResults.length
 
       if (avgScore >= 80) return 4
       if (avgScore >= 60) return 3
@@ -457,15 +458,19 @@ export class AITestService {
 
       const prompt = PROMPT_TEMPLATES.subjective_grading(safeQuestion, safeAnswer, maxPoints)
       const agent = AIServiceFactory.getAgent()
-      const jsonResponse = await agent.generateJSON(prompt) as any
-      
+      const jsonResponse = (await agent.generateJSON(prompt)) as any
+
       return {
         score: typeof jsonResponse.score === 'number' ? jsonResponse.score : 0,
-        feedback: typeof jsonResponse.feedback === 'string' ? jsonResponse.feedback : 'Graded by AI.'
+        feedback:
+          typeof jsonResponse.feedback === 'string' ? jsonResponse.feedback : 'Graded by AI.',
       }
     } catch (error) {
-      logger.error('[AITestService] Failed to grade subjective answer', error instanceof Error ? error : new Error(String(error)))
-      return { score: 0, feedback: "Failed to grade via AI. Needs manual review." }
+      logger.error(
+        '[AITestService] Failed to grade subjective answer',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      return { score: 0, feedback: 'Failed to grade via AI. Needs manual review.' }
     }
   }
 }

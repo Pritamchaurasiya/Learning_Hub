@@ -7,6 +7,7 @@
 import { Request, Response } from 'express'
 import { platformHealthService } from '../services/PlatformHealthService'
 import logger from '../utils/logger'
+import { sendSuccess, sendInternalError } from '../utils/responseHelper'
 
 /**
  * GET /api/v1/admin/platform-health
@@ -15,10 +16,13 @@ import logger from '../utils/logger'
 export const getPlatformHealth = async (req: Request, res: Response) => {
   try {
     const health = await platformHealthService.getHealth()
-    res.json({ status: 'success', data: health })
+    sendSuccess(res, health)
   } catch (error) {
-    logger.error('[PlatformHealthController] getPlatformHealth failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch platform health' })
+    logger.error(
+      '[PlatformHealthController] getPlatformHealth failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch platform health')
   }
 }
 
@@ -30,9 +34,12 @@ export const getChurnRiskUsers = async (req: Request, res: Response) => {
   try {
     const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 20, 1), 100)
     const users = await platformHealthService.getChurnRiskUsers(limit)
-    res.json({ status: 'success', data: users })
+    sendSuccess(res, users)
   } catch (error) {
-    logger.error('[PlatformHealthController] getChurnRiskUsers failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch churn risk data' })
+    logger.error(
+      '[PlatformHealthController] getChurnRiskUsers failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch churn risk data')
   }
 }
