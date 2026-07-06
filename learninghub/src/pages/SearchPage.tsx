@@ -1,7 +1,17 @@
 import React, { useState, useMemo, useEffect, useCallback, useDeferredValue } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useSearchParams } from 'react-router-dom'
-import { Search, X, History, Trash2, SlidersHorizontal, LayoutGrid, List, Sparkles, Bot } from 'lucide-react'
+import {
+  Search,
+  X,
+  History,
+  Trash2,
+  SlidersHorizontal,
+  LayoutGrid,
+  List,
+  Sparkles,
+  Bot,
+} from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
 
@@ -200,7 +210,7 @@ const SearchPage = React.memo(function SearchPage() {
             type="text"
             value={query}
             onChange={e => handleSearch(e.target.value)}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter') {
                 fetchAiAnswer(query)
               }
@@ -363,15 +373,17 @@ const SearchPage = React.memo(function SearchPage() {
                 AI Knowledge Engine
               </h2>
             </div>
-            
+
             {isAiLoading ? (
               <div className="flex items-center gap-3 text-indigo-500">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]" />
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]" />
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" />
                 </div>
-                <span className="text-sm font-bold uppercase tracking-widest">Synthesizing answer...</span>
+                <span className="text-sm font-bold uppercase tracking-widest">
+                  Synthesizing answer...
+                </span>
               </div>
             ) : (
               <div className="prose prose-indigo dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">

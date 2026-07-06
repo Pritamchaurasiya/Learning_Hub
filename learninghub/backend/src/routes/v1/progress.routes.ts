@@ -2,11 +2,7 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter } from '../../middleware/rateLimiter'
-import {
-  completeCourse,
-  toggleBookmark,
-  updateStreak,
-} from '../../controllers/progressController'
+import { completeCourse, toggleBookmark, updateStreak } from '../../controllers/progressController'
 import { completeCourseSchema, bookmarkSchema } from '../../validations/schemas'
 
 const router = Router()
@@ -24,13 +20,7 @@ router.post(
   validate(completeCourseSchema),
   completeCourse
 )
-router.post(
-  '/bookmark',
-  authenticate,
-  progressLimiter,
-  validate(bookmarkSchema),
-  toggleBookmark
-)
+router.post('/bookmark', authenticate, progressLimiter, validate(bookmarkSchema), toggleBookmark)
 router.post('/update-streak', authenticate, progressLimiter, updateStreak)
 
 export default router

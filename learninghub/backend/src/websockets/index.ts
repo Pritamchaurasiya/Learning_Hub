@@ -187,10 +187,11 @@ export const setupWebSockets = (io: Server) => {
     socket.on('disconnecting', () => {
       // socket.rooms is a Set containing all rooms the socket is currently in
       // including their own socket.id room and userId room.
-      socket.rooms.forEach((roomId) => {
+      socket.rooms.forEach(roomId => {
         if (roomId !== socket.id && roomId !== socket.data.userId) {
           void prisma.liveSession
-            .updateMany({ // use updateMany to avoid crashing if it's not a session ID
+            .updateMany({
+              // use updateMany to avoid crashing if it's not a session ID
               where: { id: roomId, currentParticipants: { gt: 0 } },
               data: { currentParticipants: { decrement: 1 } },
             })

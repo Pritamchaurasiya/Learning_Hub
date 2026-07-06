@@ -1,4 +1,3 @@
-
 const STORAGE_KEY_PREFIX = 'lh_'
 
 export function sanitizeHtml(input: string): string {

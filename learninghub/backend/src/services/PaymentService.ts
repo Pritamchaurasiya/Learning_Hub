@@ -223,7 +223,9 @@ export class PaymentService {
         })
       })
 
-      logger.info(`[PaymentService] User ${userId} subscribed to tier ${tierId} via payment ${session.id}`)
+      logger.info(
+        `[PaymentService] User ${userId} subscribed to tier ${tierId} via payment ${session.id}`
+      )
       return
     }
 

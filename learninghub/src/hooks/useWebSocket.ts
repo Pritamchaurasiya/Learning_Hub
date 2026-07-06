@@ -24,8 +24,11 @@ const MAX_RECONNECT_ATTEMPTS = 10
 // A set of setters to notify all instances of state changes
 const stateSubscribers = new Set<React.Dispatch<React.SetStateAction<WebSocketState>>>()
 
-function updateGlobalState(newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)) {
-  const nextState = typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState }
+function updateGlobalState(
+  newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)
+) {
+  const nextState =
+    typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState }
   globalState = nextState
   stateSubscribers.forEach(setState => setState(nextState))
 }
@@ -164,7 +167,8 @@ export function useWebSocket() {
     emit,
     joinRoom,
     leaveRoom,
-    get socket() { return globalSocket },
+    get socket() {
+      return globalSocket
+    },
   }
 }
-

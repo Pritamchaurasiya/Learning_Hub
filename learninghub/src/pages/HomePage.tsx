@@ -56,81 +56,86 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
     staleTime: 5 * 60 * 1000,
   })
 
-  const loadDashboard = useCallback(async (signal?: AbortSignal) => {
-    if (!isDashboard || !auth.isAuthenticated) return
-    try {
-      setLoading(true)
-      const [profileRes, testsRes] = await Promise.all([
-        fetchApi('/auth/me', { signal }),
-        fetchApi('/tests/attempts', { signal }),
-      ])
+  const loadDashboard = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!isDashboard || !auth.isAuthenticated) return
+      try {
+        setLoading(true)
+        const [profileRes, testsRes] = await Promise.all([
+          fetchApi('/auth/me', { signal }),
+          fetchApi('/tests/attempts', { signal }),
+        ])
 
-      const profile =
-        (profileRes?.data?.user as Record<string, unknown> | undefined) ??
-        (profileRes?.user as Record<string, unknown> | undefined) ??
-        profileRes
-      const testsData =
-        (testsRes?.data?.data as Record<string, unknown> | undefined) ?? testsRes?.data ?? testsRes
-      const testResults = (Array.isArray(testsData?.results) ? testsData.results : []) as Array<
-        Record<string, unknown>
-      >
+        const profile =
+          (profileRes?.data?.user as Record<string, unknown> | undefined) ??
+          (profileRes?.user as Record<string, unknown> | undefined) ??
+          profileRes
+        const testsData =
+          (testsRes?.data?.data as Record<string, unknown> | undefined) ??
+          testsRes?.data ??
+          testsRes
+        const testResults = (Array.isArray(testsData?.results) ? testsData.results : []) as Array<
+          Record<string, unknown>
+        >
 
-      const completedTests = testResults.filter(
-        (t: Record<string, unknown>) => t.status === 'COMPLETED'
-      )
-      const passedTests = completedTests.filter((t: Record<string, unknown>) => t.passed)
+        const completedTests = testResults.filter(
+          (t: Record<string, unknown>) => t.status === 'COMPLETED'
+        )
+        const passedTests = completedTests.filter((t: Record<string, unknown>) => t.passed)
 
-      const userProgress = (Array.isArray(profile?.progress) ? profile.progress : []) as Array<
-        Record<string, unknown>
-      >
-      const enrolledCoursesProgress = userProgress.filter(
-        (p: Record<string, unknown>) => p.status === 'IN_PROGRESS' || p.status === 'NOT_STARTED'
-      )
-      const completedCoursesProgress = userProgress.filter(
-        (p: Record<string, unknown>) => p.status === 'COMPLETED'
-      )
+        const userProgress = (Array.isArray(profile?.progress) ? profile.progress : []) as Array<
+          Record<string, unknown>
+        >
+        const enrolledCoursesProgress = userProgress.filter(
+          (p: Record<string, unknown>) => p.status === 'IN_PROGRESS' || p.status === 'NOT_STARTED'
+        )
+        const completedCoursesProgress = userProgress.filter(
+          (p: Record<string, unknown>) => p.status === 'COMPLETED'
+        )
 
-      if (signal?.aborted) return
+        if (signal?.aborted) return
 
-      setDashboardData({
-        enrolledCourses: enrolledCoursesProgress.length,
-        completedCourses: completedCoursesProgress.length,
-        testsAttempted: completedTests.length,
-        testsPassed: passedTests.length,
-        totalXp: (profile?.xp as number) ?? 0,
-        currentStreak: (profile?.streak as number) ?? 0,
-        level: (profile?.level as number) ?? 1,
-        recentActivity: [],
-        enrolledCoursesList: enrolledCoursesProgress
-          .slice(0, 5)
-          .map((p: Record<string, unknown>) => ({
-            id: p.courseId as string,
-            title: ((p.course as Record<string, unknown>)?.title as string) ?? 'Course',
-            progress: (p.progress as number) ?? 0,
-            thumbnail: ((p.course as Record<string, unknown>)?.thumbnail as string) ?? null,
-          })),
-      })
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return
-      if (import.meta.env.DEV) {
-        console.error('Dashboard load error:', err)
+        setDashboardData({
+          enrolledCourses: enrolledCoursesProgress.length,
+          completedCourses: completedCoursesProgress.length,
+          testsAttempted: completedTests.length,
+          testsPassed: passedTests.length,
+          totalXp: (profile?.xp as number) ?? 0,
+          currentStreak: (profile?.streak as number) ?? 0,
+          level: (profile?.level as number) ?? 1,
+          recentActivity: [],
+          enrolledCoursesList: enrolledCoursesProgress
+            .slice(0, 5)
+            .map((p: Record<string, unknown>) => ({
+              id: p.courseId as string,
+              title: ((p.course as Record<string, unknown>)?.title as string) ?? 'Course',
+              progress: (p.progress as number) ?? 0,
+              thumbnail: ((p.course as Record<string, unknown>)?.thumbnail as string) ?? null,
+            })),
+        })
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        if (import.meta.env.DEV) {
+          console.error('Dashboard load error:', err)
+        }
+        if (signal?.aborted) return
+        setDashboardData({
+          enrolledCourses: 0,
+          completedCourses: 0,
+          testsAttempted: 0,
+          testsPassed: 0,
+          totalXp: progress.xp ?? 0,
+          currentStreak: progress.streak ?? 0,
+          level: progress.level ?? 1,
+          recentActivity: [],
+          enrolledCoursesList: [],
+        })
+      } finally {
+        if (!signal?.aborted) setLoading(false)
       }
-      if (signal?.aborted) return
-      setDashboardData({
-        enrolledCourses: 0,
-        completedCourses: 0,
-        testsAttempted: 0,
-        testsPassed: 0,
-        totalXp: progress.xp ?? 0,
-        currentStreak: progress.streak ?? 0,
-        level: progress.level ?? 1,
-        recentActivity: [],
-        enrolledCoursesList: [],
-      })
-    } finally {
-      if (!signal?.aborted) setLoading(false)
-    }
-  }, [isDashboard, auth.isAuthenticated, progress.xp, progress.streak, progress.level])
+    },
+    [isDashboard, auth.isAuthenticated, progress.xp, progress.streak, progress.level]
+  )
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -390,7 +395,10 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
                 {recommendations && recommendations.length > 0 ? (
                   <div className="space-y-4">
                     {recommendations.map((rec: any, idx: number) => (
-                      <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+                      <div
+                        key={idx}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
                             {rec.topicName}
@@ -408,7 +416,8 @@ export default function HomePage({ isDashboard = false }: HomePageProps) {
                 ) : (
                   <div className="bg-white/5 rounded-xl p-6 text-center border border-white/10">
                     <p className="text-sm text-indigo-200">
-                      Keep learning! Your AI-curated recommendations will appear here as you progress.
+                      Keep learning! Your AI-curated recommendations will appear here as you
+                      progress.
                     </p>
                   </div>
                 )}

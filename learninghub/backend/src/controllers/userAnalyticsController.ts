@@ -10,6 +10,7 @@ import { recommendationService } from '../services/RecommendationService'
 import { growthEngineService } from '../services/GrowthEngineService'
 import { topicPerformanceService } from '../services/TopicPerformanceService'
 import logger from '../utils/logger'
+import { sendSuccess, sendInternalError, sendUnauthorized } from '../utils/responseHelper'
 
 /**
  * GET /api/v1/analytics/me
@@ -19,20 +20,20 @@ export const getMyAnalytics = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const days = Math.min(Math.max(parseInt(req.query.days as string) || 30, 1), 365)
     const analytics = await userAnalyticsService.getDashboardAnalytics(userId, days)
 
-    res.json({
-      status: 'success',
-      data: analytics,
-    })
+    sendSuccess(res, analytics)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getMyAnalytics failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch analytics' })
+    logger.error(
+      '[UserAnalyticsController] getMyAnalytics failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch analytics')
   }
 }
 
@@ -44,17 +45,20 @@ export const getAccuracyTrend = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const days = Math.min(Math.max(parseInt(req.query.days as string) || 30, 1), 365)
     const trend = await userAnalyticsService.getAccuracyTrend(userId, days)
 
-    res.json({ status: 'success', data: trend })
+    sendSuccess(res, trend)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getAccuracyTrend failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch accuracy trend' })
+    logger.error(
+      '[UserAnalyticsController] getAccuracyTrend failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch accuracy trend')
   }
 }
 
@@ -66,15 +70,18 @@ export const getTopicMastery = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const mastery = await topicPerformanceService.getTopicMasteryMap(userId)
-    res.json({ status: 'success', data: mastery })
+    sendSuccess(res, mastery)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getTopicMastery failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch topic mastery' })
+    logger.error(
+      '[UserAnalyticsController] getTopicMastery failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch topic mastery')
   }
 }
 
@@ -86,17 +93,20 @@ export const getGrowthMetrics = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const days = Math.min(Math.max(parseInt(req.query.days as string) || 30, 1), 365)
     const growth = await userAnalyticsService.getGrowthMetrics(userId, days)
 
-    res.json({ status: 'success', data: growth })
+    sendSuccess(res, growth)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getGrowthMetrics failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch growth metrics' })
+    logger.error(
+      '[UserAnalyticsController] getGrowthMetrics failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch growth metrics')
   }
 }
 
@@ -108,17 +118,20 @@ export const getRecommendations = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 10, 1), 50)
     const recommendations = await recommendationService.getStudyRecommendations(userId, limit)
 
-    res.json({ status: 'success', data: recommendations })
+    sendSuccess(res, recommendations)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getRecommendations failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch recommendations' })
+    logger.error(
+      '[UserAnalyticsController] getRecommendations failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch recommendations')
   }
 }
 
@@ -130,17 +143,20 @@ export const getNextTestRecommendation = async (req: Request, res: Response) => 
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 5, 1), 20)
     const recommendations = await recommendationService.getNextTestRecommendation(userId, limit)
 
-    res.json({ status: 'success', data: recommendations })
+    sendSuccess(res, recommendations)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getNextTestRecommendation failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch test recommendations' })
+    logger.error(
+      '[UserAnalyticsController] getNextTestRecommendation failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch test recommendations')
   }
 }
 
@@ -152,17 +168,20 @@ export const getImprovementRoadmap = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const weeks = Math.min(Math.max(parseInt(req.query.weeks as string) || 4, 1), 12)
     const roadmap = await recommendationService.getImprovementRoadmap(userId, weeks)
 
-    res.json({ status: 'success', data: roadmap })
+    sendSuccess(res, roadmap)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getImprovementRoadmap failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to generate roadmap' })
+    logger.error(
+      '[UserAnalyticsController] getImprovementRoadmap failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to generate roadmap')
   }
 }
 
@@ -174,17 +193,23 @@ export const getSpacedRepetition = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 5, 1), 20)
-    const recommendations = await recommendationService.getSpacedRepetitionRecommendations(userId, limit)
+    const recommendations = await recommendationService.getSpacedRepetitionRecommendations(
+      userId,
+      limit
+    )
 
-    res.json({ status: 'success', data: recommendations })
+    sendSuccess(res, recommendations)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getSpacedRepetition failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch review schedule' })
+    logger.error(
+      '[UserAnalyticsController] getSpacedRepetition failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch review schedule')
   }
 }
 
@@ -196,14 +221,17 @@ export const getLevelProgress = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId
     if (!userId) {
-      res.status(401).json({ status: 'error', message: 'Authentication required' })
+      sendUnauthorized(res)
       return
     }
 
     const progress = await growthEngineService.getLevelProgress(userId)
-    res.json({ status: 'success', data: progress })
+    sendSuccess(res, progress)
   } catch (error) {
-    logger.error('[UserAnalyticsController] getLevelProgress failed', error instanceof Error ? error : new Error(String(error)))
-    res.status(500).json({ status: 'error', message: 'Failed to fetch level progress' })
+    logger.error(
+      '[UserAnalyticsController] getLevelProgress failed',
+      error instanceof Error ? error : new Error(String(error))
+    )
+    sendInternalError(res, 'Failed to fetch level progress')
   }
 }

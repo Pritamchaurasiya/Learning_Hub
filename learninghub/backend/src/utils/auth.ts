@@ -14,11 +14,7 @@ export interface DecodedToken {
   role: string
 }
 
-const signToken = (
-  payload: Record<string, unknown>,
-  secret: string,
-  expiresIn: string
-): string => {
+const signToken = (payload: Record<string, unknown>, secret: string, expiresIn: string): string => {
   return jwt.sign(payload, secret, {
     expiresIn: expiresIn as jwt.SignOptions['expiresIn'],
     algorithm: jwtConfig.algorithm as jwt.Algorithm,

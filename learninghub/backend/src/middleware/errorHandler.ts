@@ -142,16 +142,26 @@ export const errorFactory = {
 
 function mapStatusToErrorCode(statusCode: number): ErrorCode {
   switch (statusCode) {
-    case 400: return ErrorCode.VALIDATION_ERROR
-    case 401: return ErrorCode.UNAUTHORIZED
-    case 403: return ErrorCode.FORBIDDEN
-    case 404: return ErrorCode.NOT_FOUND
-    case 409: return ErrorCode.CONFLICT
-    case 429: return ErrorCode.RATE_LIMITED
-    case 500: return ErrorCode.INTERNAL_ERROR
-    case 502: return ErrorCode.EXTERNAL_SERVICE_ERROR
-    case 503: return ErrorCode.SERVICE_UNAVAILABLE
-    default: return ErrorCode.INTERNAL_ERROR
+    case 400:
+      return ErrorCode.VALIDATION_ERROR
+    case 401:
+      return ErrorCode.UNAUTHORIZED
+    case 403:
+      return ErrorCode.FORBIDDEN
+    case 404:
+      return ErrorCode.NOT_FOUND
+    case 409:
+      return ErrorCode.CONFLICT
+    case 429:
+      return ErrorCode.RATE_LIMITED
+    case 500:
+      return ErrorCode.INTERNAL_ERROR
+    case 502:
+      return ErrorCode.EXTERNAL_SERVICE_ERROR
+    case 503:
+      return ErrorCode.SERVICE_UNAVAILABLE
+    default:
+      return ErrorCode.INTERNAL_ERROR
   }
 }
 
@@ -220,9 +230,7 @@ export const errorHandler = (
         details: err.details,
       })
     } else {
-      logger.warn(
-        `AppError: ${err.message} [${err.code}] requestId=${req.requestId ?? 'unknown'}`
-      )
+      logger.warn(`AppError: ${err.message} [${err.code}] requestId=${req.requestId ?? 'unknown'}`)
     }
   } else if (err instanceof ZodError) {
     statusCode = 400
