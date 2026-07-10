@@ -63,6 +63,14 @@ describe('API Integration Tests', () => {
 
   describe('Token Refresh', () => {
     it('should refresh token on 401', async () => {
+      const { SecureStorage } = await import('./security')
+      vi.spyOn(SecureStorage, 'getItem').mockImplementation(async (key: string) => {
+        if (key === 'token') return 'old-token'
+        if (key === 'refreshToken') return 'old-refresh'
+        return null
+      })
+      vi.spyOn(SecureStorage, 'setItem').mockResolvedValue()
+
       localStorage.setItem('token', 'old-token')
       localStorage.setItem('refreshToken', 'old-refresh')
 

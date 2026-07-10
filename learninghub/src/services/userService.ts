@@ -146,10 +146,11 @@ export const userService = {
   uploadAvatar: async (file: File): Promise<{ status: string; data: { avatar_url: string } }> => {
     const formData = new FormData()
     formData.append('file', file)
-    return fetchApi('/media/avatar', {
+    const res = await fetchApi('/media/avatar', {
       method: 'POST',
       body: formData,
-    }) as Promise<{ status: string; data: { avatar_url: string } }>
+    })
+    return { status: 'success', data: { avatar_url: res?.avatar_url || res?.url || res } }
   },
 
   getStats: async (): Promise<{ status: string; data: UserStats }> => {
