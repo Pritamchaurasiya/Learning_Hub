@@ -23,11 +23,13 @@ import { NotificationBell } from './NotificationBell'
 
 const Header = memo(() => {
   const navigate = useNavigate()
-  const theme = useStore(s => s.theme)
+  const themeMode = useStore(s => s.theme.mode)
   const toggleDarkMode = useStore(s => s.toggleDarkMode)
-  const progress = useStore(s => s.progress)
+  const progressXp = useStore(s => s.progress.xp)
+  const progressLevel = useStore(s => s.progress.level)
   const setSidebarOpen = useStore(s => s.setSidebarOpen)
-  const dailyGoal = useStore(s => s.dailyGoal)
+  const dailyTarget = useStore(s => s.dailyGoal.target)
+  const dailyProgressAmount = useStore(s => s.dailyGoal.progress)
   const isAuthenticated = useStore(s => s.auth.isAuthenticated)
   const authUser = useStore(s => s.auth.user)
   const logout = useStore(s => s.logout)
@@ -61,7 +63,7 @@ const Header = memo(() => {
   }
 
   const themeIcon = () => {
-    switch (theme.mode) {
+    switch (themeMode) {
       case 'dark':
         return <Moon className="w-5 h-5" />
       case 'light':
@@ -72,7 +74,7 @@ const Header = memo(() => {
   }
 
   const themeLabel = () => {
-    switch (theme.mode) {
+    switch (themeMode) {
       case 'dark':
         return 'Dark mode (click for system)'
       case 'light':
@@ -82,7 +84,7 @@ const Header = memo(() => {
     }
   }
 
-  const dailyProgress = dailyGoal.target > 0 ? (dailyGoal.progress / dailyGoal.target) * 100 : 0
+  const dailyProgress = dailyTarget > 0 ? (dailyProgressAmount / dailyTarget) * 100 : 0
 
   return (
     <header className="h-16 glass-strong bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700/40 flex items-center justify-between px-4 md:px-6 shrink-0 relative z-30">
@@ -194,8 +196,8 @@ const Header = memo(() => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           className="hidden sm:flex items-center cursor-help"
-          title={`Daily Goal: ${dailyGoal.progress}/${dailyGoal.target} XP`}
-          aria-label={`Daily Goal Progress: ${dailyGoal.progress} of ${dailyGoal.target} XP`}
+          title={`Daily Goal: ${dailyProgressAmount}/${dailyTarget} XP`}
+          aria-label={`Daily Goal Progress: ${dailyProgressAmount} of ${dailyTarget} XP`}
           role="img"
         >
           <ProgressRing progress={dailyProgress} size={32} strokeWidth={2.5} />
@@ -207,11 +209,11 @@ const Header = memo(() => {
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40"
-            aria-label={`${progress.xp} experience points`}
+            aria-label={`${progressXp} experience points`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-              {progress.xp}
+              {progressXp}
             </span>
           </motion.div>
           <motion.div
@@ -219,11 +221,11 @@ const Header = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200/60 dark:border-purple-800/40"
-            aria-label={`Level ${progress.level}`}
+            aria-label={`Level ${progressLevel}`}
           >
             <Trophy className="w-3.5 h-3.5 text-purple-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
-              Lv.{progress.level}
+              Lv.{progressLevel}
             </span>
           </motion.div>
         </div>

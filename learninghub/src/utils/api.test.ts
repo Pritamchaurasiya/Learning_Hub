@@ -63,8 +63,9 @@ describe('API Integration Tests', () => {
 
   describe('Token Refresh', () => {
     it('should refresh token on 401', async () => {
-      localStorage.setItem('token', 'old-token')
-      localStorage.setItem('refreshToken', 'old-refresh')
+      const { SecureStorage } = await import('./security')
+      await SecureStorage.setItem('token', 'old-token')
+      await SecureStorage.setItem('refreshToken', 'old-refresh')
 
       const unauthorizedResponse = new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
