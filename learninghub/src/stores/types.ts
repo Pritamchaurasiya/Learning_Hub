@@ -145,16 +145,16 @@ export interface ProgressSlice {
 
 export interface QuizSlice {
   quiz: QuizState
-  startQuizAttempt: (
+  quizStartAttempt: (
     quizId: string,
     quizTitle: string,
     totalQuestions: number,
     timeLimit: number
   ) => void
-  answerQuestion: (questionId: string, answerValue: string) => void
-  flagQuestion: (questionId: string) => void
-  unflagQuestion: (questionId: string) => void
-  navigateToQuestion: (index: number) => void
+  quizAnswerQuestion: (questionId: string, answerValue: string) => void
+  quizFlagQuestion: (questionId: string) => void
+  quizUnflagQuestion: (questionId: string) => void
+  quizNavigateToQuestion: (index: number) => void
   updateQuizTimer: (timeRemaining: number) => void
   setQuizQuestions: (questions: QuizQuestion[], quizInfo: QuizInfo) => void
   submitQuiz: () => Promise<{ success: boolean; score: number }>
@@ -190,6 +190,15 @@ export interface TestsASlice {
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
   setLastAutosavedAt: (timestamp: number) => void
+  updateSubjectiveGrade: (payload: {
+    questionId: string
+    marksObtained: number
+    isCorrect: boolean
+    aiFeedback: string
+    newTotalScore: number
+    percentage: number
+    passed: boolean
+  }) => void
 }
 
 // Tests A+ State

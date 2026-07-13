@@ -183,22 +183,55 @@ describe('quizService', () => {
   })
 
   describe('getMyResults', () => {
-    it('should fetch user quiz results', async () => {
+    it('should fetch user quiz results with total XP from list response', async () => {
       const { fetchApi } = await import('../utils/api')
       const mockResults = [
         { id: 'result-1', score: 85 },
         { id: 'result-2', score: 90 },
       ]
 
+      // Backend /tests/my-results returns { results, totalXp } (not nested under data)
       vi.mocked(fetchApi).mockResolvedValue({
         status: 'success',
-        data: { data: mockResults }, // expects res.data?.data
+        data: { results: mockResults, totalXp: 42 },
       })
 
       const result = await quizService.getMyResults()
 
       expect(fetchApi).toHaveBeenCalledWith('/tests/my-results')
       expect(result.data.results).toEqual(mockResults)
+      expect(result.data.totalXp).toBe(42)
+    })
+  })
+
+  describe('listQuizzes', () => {
+    it('should return quizzes when the backend returns a plain array', async () => {
+      const { fetchApi } = await import('../utils/api')
+      const mockTests = [
+        { id: 't1', title: 'Test 1', time_limit: 30 },
+        { id: 't2', title: 'Test 2', time_limit: 45 },
+      ]
+
+      vi.mocked(fetchApi).mockResolvedValue({
+        status: 'success',
+        data: mockTests,
+      })
+
+      const result = await quizService.listQuizzes()
+      expect(result.data).toEqual(mockTests)
+    })
+
+    it('should unwrap a paginated { data } envelope if present', async () => {
+      const { fetchApi } = await import('../utils/api')
+      const mockTests = [{ id: 't1', title: 'Test 1' }]
+
+      vi.mocked(fetchApi).mockResolvedValue({
+        status: 'success',
+        data: { data: mockTests, meta: { page: 1, total: 1 } },
+      })
+
+      const result = await quizService.listQuizzes()
+      expect(result.data).toEqual(mockTests)
     })
   })
 })

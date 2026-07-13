@@ -215,9 +215,49 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
   notifications: [],
   unreadCount: 0,
   fetchNotifications: async () => {
+    if (!get().auth.isAuthenticated) return
+    try {
+      const res = await fetchApi('/notifications')
+      const data = res?.data ?? res?.notifications ?? []
+      const notifs = Array.isArray(data) ? data : []
+      set({
+        notifications: notifs.map((n: any) => ({
+          id: n.id ?? `notif-${Math.random()}`,
+          type: n.type ?? 'info',
+          title: n.title ?? '',
+          message: n.message ?? '',
+          createdAt: n.createdAt ?? new Date().toISOString(),
+          ...n,
+          isRead: n.isRead ?? n.read ?? false,
+        })) as any[],
+        unreadCount: notifs.filter((n: any) => !(n.isRead ?? n.read ?? false)).length,
+      })
+    } catch {
+      if (import.meta.env.DEV) console.warn('[Progress] Failed to fetch notifications')
+    }
   },
-  markNotificationAsRead: () => {},
-  markAllNotificationsAsRead: () => {},
+  markNotificationAsRead: async (id: string) => {
+    set(state => ({
+      notifications: state.notifications.map(n => (n.id === id ? { ...n, isRead: true } : n)),
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    }))
+    try {
+      await fetchApi(`/notifications/${id}/read`, { method: 'POST' })
+    } catch {
+      if (import.meta.env.DEV) console.warn('[Progress] Failed to mark notification as read')
+    }
+  },
+  markAllNotificationsAsRead: async () => {
+    set(state => ({
+      notifications: state.notifications.map(n => ({ ...n, isRead: true })),
+      unreadCount: 0,
+    }))
+    try {
+      await fetchApi('/notifications/read-all', { method: 'POST' })
+    } catch {
+      if (import.meta.env.DEV) console.warn('[Progress] Failed to mark all as read')
+    }
+  },
   clearNotifications: () => {
     set({ notifications: [], unreadCount: 0 })
   },

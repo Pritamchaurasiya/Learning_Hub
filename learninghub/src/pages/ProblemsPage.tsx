@@ -254,6 +254,7 @@ export default function ProblemsPage() {
               <div className="flex gap-2">
                 <select
                   value={selectedDifficulty}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={e => setSelectedDifficulty(e.target.value as any)}
                   className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
                 >
@@ -264,6 +265,7 @@ export default function ProblemsPage() {
                 </select>
                 <select
                   value={selectedStatus}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={e => setSelectedStatus(e.target.value as any)}
                   className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
                 >

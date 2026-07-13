@@ -53,14 +53,7 @@ export interface Submission {
 }
 
 export type ProgrammingLanguage =
-  | 'python'
-  | 'javascript'
-  | 'java'
-  | 'cpp'
-  | 'c'
-  | 'typescript'
-  | 'go'
-  | 'rust'
+  'python' | 'javascript' | 'java' | 'cpp' | 'c' | 'typescript' | 'go' | 'rust'
 
 export interface LanguageConfig {
   id: ProgrammingLanguage

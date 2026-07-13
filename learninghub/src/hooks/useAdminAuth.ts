@@ -34,7 +34,7 @@ export function useAdminAuth(): UseAdminAuthReturn {
 
   // Initialize from storage on mount
   useEffect(() => {
-    ;(async () => {
+    void (async () => {
       await adminAuthService.initFromStorage()
       const storedAdmin = adminAuthService.getAdminUser()
       if (storedAdmin && adminAuthService.isAuthenticated()) {

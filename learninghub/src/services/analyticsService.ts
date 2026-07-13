@@ -41,6 +41,21 @@ export interface LearningActivity {
   xp_earned: number
 }
 
+export interface Recommendation {
+  id: string
+  type: string
+  confidence: number
+  reason: string
+}
+
+export interface SpacedRepetitionItem {
+  id: string
+  nextReview: string
+  topicName: string
+  subjectName: string
+  intervalDays: number
+}
+
 export interface SkillProgress {
   skill_name: string
   category: string
@@ -250,5 +265,13 @@ export const analyticsService = {
     const url = URL.createObjectURL(blob)
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
     return { status: 'success', download_url: url }
+  },
+
+  async getRecommendations(): Promise<{ status: string; data: Recommendation[] }> {
+    return fetchApi('/analytics/recommendations').catch(() => ({ status: 'error', data: [] }))
+  },
+
+  async getSpacedRepetitionSchedule(): Promise<{ status: string; data: SpacedRepetitionItem[] }> {
+    return fetchApi('/analytics/spaced-repetition').catch(() => ({ status: 'error', data: [] }))
   },
 }

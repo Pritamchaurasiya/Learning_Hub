@@ -60,25 +60,15 @@ function QuizPage() {
   })
 
   // Global Quiz State (persists during active session)
-  const {
-    flaggedQuestions,
-    flagQuestion,
-    unflagQuestion,
-    quiz,
-    answerQuestion,
-    navigateToQuestion,
-    updateQuizTimer,
-    clearQuiz,
-  } = useStore(state => ({
-    flaggedQuestions: state.quiz.flaggedQuestions,
-    flagQuestion: state.flagQuestion,
-    unflagQuestion: state.unflagQuestion,
-    quiz: state.quiz,
-    answerQuestion: state.answerQuestion,
-    navigateToQuestion: state.navigateToQuestion,
-    updateQuizTimer: state.updateQuizTimer,
-    clearQuiz: state.clearQuiz,
-  }))
+
+  const flaggedQuestions = useStore(state => state.quiz.flaggedQuestions)
+  const flagQuestion = useStore(state => state.flagQuestion)
+  const unflagQuestion = useStore(state => state.unflagQuestion)
+  const quiz = useStore(state => state.quiz)
+  const answerQuestion = useStore(state => state.answerQuestion)
+  const navigateToQuestion = useStore(state => state.navigateToQuestion)
+  const updateQuizTimer = useStore(state => state.updateQuizTimer)
+  const clearQuiz = useStore(state => state.clearQuiz)
 
   const { answers, timeRemaining, currentQuestionIndex } = quiz
 

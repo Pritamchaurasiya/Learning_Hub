@@ -53,6 +53,7 @@ export default function AdminABTestingPage() {
 
   useEffect(() => {
     void fetchResults()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedExperiment])
 
   const chartData = results.map(r => ({
@@ -159,6 +160,7 @@ export default function AdminABTestingPage() {
                     const rate = users > 0 ? ((events / users) * 100).toFixed(1) : '0.0'
 
                     return (
+                      // eslint-disable-next-line react/no-array-index-key
                       <tr key={i} className="text-gray-800 dark:text-gray-200">
                         <td className="py-4 font-medium capitalize">{r.variant}</td>
                         <td className="py-4 text-right">{users}</td>

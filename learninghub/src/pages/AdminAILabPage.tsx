@@ -24,6 +24,7 @@ export default function AdminAILabPage() {
       const res = await adminService.generateCourse(prompt, difficulty, modulesCount)
       addToast({ message: 'Course successfully generated!', type: 'success' })
       navigate(`/course/${res.data.courseId}`)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       addToast({
         message: error.message ?? 'Failed to generate course',

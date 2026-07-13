@@ -34,6 +34,7 @@ interface Props {
   children: ReactNode
   fallback?: ReactNode
   onReset?: () => void
+  onGoHome?: () => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: Record<string, any> // For error tracking context
 }
@@ -95,7 +96,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleGoHome = () => {
-    window.location.href = '/'
+    if (this.props.onGoHome) {
+      this.props.onGoHome()
+    } else {
+      window.location.href = '/'
+    }
   }
 
   render() {

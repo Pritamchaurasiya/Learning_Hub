@@ -27,6 +27,7 @@ export const useStore = create<AppState>()(
         settings: state.settings,
         // Persist Auth State
         auth: {
+          isAuthenticated: state.auth.isAuthenticated,
           user: state.auth.user,
         },
         progress: {
@@ -41,16 +42,7 @@ export const useStore = create<AppState>()(
         // Persist active quiz state for recovery
         quiz:
           state.quiz.currentAttempt?.status === 'in_progress'
-            ? {
-                currentAttempt: state.quiz.currentAttempt,
-                answers: state.quiz.answers,
-                flaggedQuestions: state.quiz.flaggedQuestions,
-                timeRemaining: state.quiz.timeRemaining,
-                questions: state.quiz.questions,
-                quizInfo: state.quiz.quizInfo,
-                currentQuestionIndex: state.quiz.currentQuestionIndex,
-                lastSavedAt: state.quiz.lastSavedAt,
-              }
+            ? state.quiz
             : {
                 currentAttempt: null,
                 answers: {},
@@ -62,19 +54,27 @@ export const useStore = create<AppState>()(
                 isSubmitting: false,
                 lastSavedAt: null,
               },
-        // Persist Tests A+ state for recovery
+        // Persist Tests A+ state for recovery (compact — essential fields only)
         testsA:
           state.testsA.isActive && state.testsA.attemptId
             ? {
                 isActive: state.testsA.isActive,
                 currentQuestionIndex: state.testsA.currentQuestionIndex,
-                questions: state.testsA.questions,
+                questions: [], // Excluded from localStorage to prevent QuotaExceededError
                 answers: state.testsA.answers,
+                confidences: state.testsA.confidences,
                 flaggedQuestions: state.testsA.flaggedQuestions,
                 timeRemaining: state.testsA.timeRemaining,
-                testInfo: state.testsA.testInfo,
+                testInfo: state.testsA.testInfo
+                  ? {
+                      testId: state.testsA.testInfo.testId,
+                      testTitle: state.testsA.testInfo.testTitle,
+                      totalQuestions: state.testsA.testInfo.totalQuestions,
+                      timeLimit: state.testsA.testInfo.timeLimit,
+                    }
+                  : null,
                 attemptId: state.testsA.attemptId,
-                isSubmitting: false,
+                isSubmitting: state.testsA.isSubmitting,
                 lastAutosavedAt: state.testsA.lastAutosavedAt,
               }
             : {
@@ -82,6 +82,7 @@ export const useStore = create<AppState>()(
                 currentQuestionIndex: 0,
                 questions: [],
                 answers: {},
+                confidences: {},
                 flaggedQuestions: [],
                 timeRemaining: 0,
                 testInfo: null,

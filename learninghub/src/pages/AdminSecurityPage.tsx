@@ -37,8 +37,9 @@ export default function AdminSecurityPage() {
       setSetupMode(false)
       setMfaToken('')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      addToast({ message: err.message || 'Invalid MFA token', type: 'error' })
+      addToast({ message: err.message ?? 'Invalid MFA token', type: 'error' })
     },
   })
 

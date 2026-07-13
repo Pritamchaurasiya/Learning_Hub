@@ -24,7 +24,8 @@ export interface TestA {
 export interface TestQuestion {
   id: string
   text: string
-  question_type: 'mcq' | 'multiple_select' | 'true_false' | 'numerical' | 'fill_blank' | 'subjective'
+  question_type:
+    'mcq' | 'multiple_select' | 'true_false' | 'numerical' | 'fill_blank' | 'subjective'
   type?: string
   difficulty: number
   bloom_level: string
@@ -92,6 +93,8 @@ export interface TestResult {
     correct_options: Array<{ id: string; text: string }>
     is_correct: boolean | null
     marks_obtained: number
+    text_answer?: string
+    ai_feedback?: string
     explanation: string
     time_spent: number
     is_flagged: boolean
@@ -258,7 +261,9 @@ const normalizeAttemptResult = (raw: RawResultData): TestResult => {
       explanation: question.explanation ?? '',
       time_spent: question.time_spent ?? 0,
       is_flagged: question.is_flagged ?? false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       topic: (question as any).topic,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       confidence: (question as any).confidence,
     })
   )

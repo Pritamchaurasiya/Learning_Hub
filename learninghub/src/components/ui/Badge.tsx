@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { cn } from '../../utils/cn'
 
 type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info'
@@ -18,28 +18,30 @@ interface BadgeProps {
   className?: string
 }
 
-export function Badge({ children, variant = 'default', size = 'sm', className }: BadgeProps) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center font-medium rounded-full',
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm',
-        // eslint-disable-next-line security/detect-object-injection
-        variantClasses[variant],
-        className
-      )}
-    >
-      {children}
-    </span>
-  )
-}
+export const Badge = memo(
+  ({ children, variant = 'default', size = 'sm', className }: BadgeProps) => {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center font-medium rounded-full',
+          size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm',
+          // eslint-disable-next-line security/detect-object-injection
+          variantClasses[variant],
+          className
+        )}
+      >
+        {children}
+      </span>
+    )
+  }
+)
 
 interface StatusBadgeProps {
   status: 'online' | 'offline' | 'away' | 'busy'
   showLabel?: boolean
 }
 
-export function StatusBadge({ status, showLabel = false }: StatusBadgeProps) {
+export const StatusBadge = memo(({ status, showLabel = false }: StatusBadgeProps) => {
   const statusConfig = {
     online: { color: 'bg-green-500', label: 'Online' },
     offline: { color: 'bg-gray-400', label: 'Offline' },
@@ -56,4 +58,4 @@ export function StatusBadge({ status, showLabel = false }: StatusBadgeProps) {
       {showLabel && <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>}
     </div>
   )
-}
+})

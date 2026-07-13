@@ -19,9 +19,37 @@ import {
   Cell,
   Legend,
 } from 'recharts'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Skeleton } from '../components/ui/Skeleton'
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899']
+
+class ChartErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Chart rendering error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+          <Activity className="w-8 h-8 text-rose-500 mb-2 opacity-50" />
+          <p className="text-sm font-medium">Chart data unavailable</p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 export default function AdminAnalyticsPage() {
   const { data: userAnalytics, isLoading: loadingUsers } = useQuery({
@@ -75,41 +103,43 @@ export default function AdminAnalyticsPage() {
                 {loadingUsers ? (
                   <Skeleton className="w-full h-full rounded-xl" />
                 ) : userAnalytics?.growth && userAnalytics.growth.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={userAnalytics.growth}
-                      margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={str => {
-                          const date = new Date(str)
-                          return `${date.getMonth() + 1}/${date.getDate()}`
-                        }}
-                        stroke="#9ca3af"
-                        fontSize={12}
-                      />
-                      <YAxis stroke="#9ca3af" fontSize={12} />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                        labelFormatter={str => new Date(str).toLocaleDateString()}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="count"
-                        name="New Users"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <ChartErrorBoundary>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={userAnalytics.growth}
+                        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={str => {
+                            const date = new Date(str)
+                            return `${date.getMonth() + 1}/${date.getDate()}`
+                          }}
+                          stroke="#9ca3af"
+                          fontSize={12}
+                        />
+                        <YAxis stroke="#9ca3af" fontSize={12} />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          }}
+                          labelFormatter={str => new Date(str).toLocaleDateString()}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="count"
+                          name="New Users"
+                          stroke="#3b82f6"
+                          strokeWidth={3}
+                          dot={{ r: 4, strokeWidth: 2 }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
                     No growth data available yet.
@@ -128,38 +158,40 @@ export default function AdminAnalyticsPage() {
                 {loadingDau ? (
                   <Skeleton className="w-full h-full rounded-xl" />
                 ) : dauData && dauData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={dauData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={str => {
-                          const date = new Date(str)
-                          return `${date.getMonth() + 1}/${date.getDate()}`
-                        }}
-                        stroke="#9ca3af"
-                        fontSize={12}
-                      />
-                      <YAxis stroke="#9ca3af" fontSize={12} />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                        labelFormatter={str => new Date(str).toLocaleDateString()}
-                      />
-                      <Line
-                        type="stepAfter"
-                        dataKey="activeUsers"
-                        name="Active Users"
-                        stroke="#4f46e5"
-                        strokeWidth={3}
-                        dot={{ r: 3, strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <ChartErrorBoundary>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={dauData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={str => {
+                            const date = new Date(str)
+                            return `${date.getMonth() + 1}/${date.getDate()}`
+                          }}
+                          stroke="#9ca3af"
+                          fontSize={12}
+                        />
+                        <YAxis stroke="#9ca3af" fontSize={12} />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          }}
+                          labelFormatter={str => new Date(str).toLocaleDateString()}
+                        />
+                        <Line
+                          type="stepAfter"
+                          dataKey="activeUsers"
+                          name="Active Users"
+                          stroke="#4f46e5"
+                          strokeWidth={3}
+                          dot={{ r: 3, strokeWidth: 2 }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
                     No DAU data available.
@@ -178,32 +210,35 @@ export default function AdminAnalyticsPage() {
                 {loadingUsers ? (
                   <Skeleton className="w-full h-full rounded-xl" />
                 ) : userAnalytics?.byRole && userAnalytics.byRole.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={userAnalytics.byRole}
-                        cx="50%"
-                        cy="45%"
-                        innerRadius={80}
-                        outerRadius={110}
-                        paddingAngle={5}
-                        dataKey="count"
-                        nameKey="role"
-                      >
-                        {userAnalytics.byRole.map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                      />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <ChartErrorBoundary>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={userAnalytics.byRole}
+                          cx="50%"
+                          cy="45%"
+                          innerRadius={80}
+                          outerRadius={110}
+                          paddingAngle={5}
+                          dataKey="count"
+                          nameKey="role"
+                        >
+                          {userAnalytics.byRole.map((_entry, index) => (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          }}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
                     No role data available.
@@ -224,47 +259,52 @@ export default function AdminAnalyticsPage() {
                 {loadingCourses ? (
                   <Skeleton className="w-full h-full rounded-xl" />
                 ) : courseAnalytics?.popular && courseAnalytics.popular.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={courseAnalytics.popular}
-                      layout="vertical"
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={true}
-                        vertical={false}
-                        stroke="#e5e7eb"
-                      />
-                      <XAxis type="number" stroke="#9ca3af" fontSize={12} />
-                      <YAxis
-                        dataKey="title"
-                        type="category"
-                        stroke="#9ca3af"
-                        fontSize={12}
-                        width={100}
-                        tickFormatter={str => str.substring(0, 15) + (str.length > 15 ? '...' : '')}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                        cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                      />
-                      <Bar
-                        dataKey="enrollments"
-                        fill="#10b981"
-                        radius={[0, 4, 4, 0]}
-                        name="Enrollments"
+                  <ChartErrorBoundary>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={courseAnalytics.popular}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
-                        {courseAnalytics.popular.map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={true}
+                          vertical={false}
+                          stroke="#e5e7eb"
+                        />
+                        <XAxis type="number" stroke="#9ca3af" fontSize={12} />
+                        <YAxis
+                          dataKey="title"
+                          type="category"
+                          stroke="#9ca3af"
+                          fontSize={12}
+                          width={100}
+                          tickFormatter={str =>
+                            str.substring(0, 15) + (str.length > 15 ? '...' : '')
+                          }
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          }}
+                          cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                        />
+                        <Bar
+                          dataKey="enrollments"
+                          fill="#10b981"
+                          radius={[0, 4, 4, 0]}
+                          name="Enrollments"
+                        >
+                          {courseAnalytics.popular.map((_entry, index) => (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
                     No course data available.
@@ -283,33 +323,38 @@ export default function AdminAnalyticsPage() {
                 {loadingCourses ? (
                   <Skeleton className="w-full h-full rounded-xl" />
                 ) : courseAnalytics?.byCategory && courseAnalytics.byCategory.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={courseAnalytics.byCategory}
-                        cx="50%"
-                        cy="45%"
-                        outerRadius={110}
-                        dataKey="count"
-                        nameKey="category"
-                        label={({ name, percent }) =>
-                          `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
-                        }
-                        labelLine={false}
-                      >
-                        {courseAnalytics.byCategory.map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index + 3) % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <ChartErrorBoundary>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={courseAnalytics.byCategory}
+                          cx="50%"
+                          cy="45%"
+                          outerRadius={110}
+                          dataKey="count"
+                          nameKey="category"
+                          label={({ name, percent }) =>
+                            `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
+                          }
+                          labelLine={false}
+                        >
+                          {courseAnalytics.byCategory.map((_entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[(index + 3) % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
                     No category data available.

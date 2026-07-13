@@ -19,6 +19,57 @@ test.describe('Authentication Flow', () => {
       sessionStorage.clear()
       localStorage.setItem('cookieConsent', 'accepted')
     })
+    
+    // Mock user authentication context
+    await page.route('**/auth/login', async route => {
+      const body = JSON.parse(route.request().postData() || '{}')
+      if (body.email === 'student@learninghub.com' && body.password === 'Student@123!') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'success',
+            data: { user: { id: 'user-1', email: body.email, role: 'STUDENT' }, tokens: { accessToken: 'mock-token' } }
+          })
+        })
+      } else {
+        await route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({ status: 'error', message: 'Invalid credentials' })
+        })
+      }
+    })
+
+    await page.route('**/auth/me', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'success',
+          data: { user: { id: 'user-1', email: 'student@learninghub.com', role: 'STUDENT' } }
+        })
+      })
+    })
+
+    await page.route('**/auth/logout', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success' })
+      })
+    })
+
+    // Mock notifications and user data to prevent redirects
+    await page.route('**/notifications*', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: { notifications: [], count: 0 } }) })
+    })
+    await page.route('**/gamification/achievements', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: [] }) })
+    })
+    await page.route('**/tests/attempts*', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: [] }) })
+    })
   })
 
   test('should redirect unauthenticated user to login page', async ({ page }) => {
@@ -76,7 +127,9 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
 
     // Home page content should be visible
-    await expect(page.getByText(/learninghub|welcome|dashboard/i).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText(/learninghub|welcome|dashboard/i).first()).toBeVisible({
+      timeout: 15000,
+    })
   })
 
   test('should logout successfully', async ({ page }) => {
@@ -114,6 +167,8 @@ test.describe('Authentication Flow', () => {
 
     // Should still be on home page (session maintained)
     await expect(page).toHaveURL('/dashboard')
-    await expect(page.getByText(/learninghub|welcome|dashboard/i).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText(/learninghub|welcome|dashboard/i).first()).toBeVisible({
+      timeout: 15000,
+    })
   })
 })

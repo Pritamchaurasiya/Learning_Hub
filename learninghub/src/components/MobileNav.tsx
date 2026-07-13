@@ -10,7 +10,7 @@ const navItems = [
   { to: '/library', icon: Library, label: 'Library', authOnly: true },
   { to: '/tests-a', icon: Brain, label: 'Tests', authOnly: true },
   { to: '/problems', icon: Code2, label: 'Practice', authOnly: true },
-  { to: '/learning-path', icon: BookOpen, label: 'Path', authOnly: true },
+  { to: '/study-planner', icon: BookOpen, label: 'Plan', authOnly: true },
   { to: '/analytics', icon: BarChart3, label: 'Stats', authOnly: true },
 ]
 
@@ -29,14 +29,14 @@ export default function MobileNav() {
     >
       <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/30 shadow-[0_-4px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-4px_30px_rgb(0,0,0,0.3)]" />
 
-      <div className="relative flex items-center gap-1 px-2 py-1 h-[68px] overflow-x-auto no-scrollbar">
+      <div className="relative flex items-center justify-around gap-0.5 px-1 py-1 h-[68px]">
         {visibleItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-2xl transition-all duration-300 min-w-[56px] relative group shrink-0',
+                'flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 max-w-[72px] relative group',
                 isActive
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-400 dark:text-gray-500 active:text-gray-600 dark:active:text-gray-300'

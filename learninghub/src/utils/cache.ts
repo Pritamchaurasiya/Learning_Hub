@@ -4,6 +4,8 @@
  * - Request deduplication (prevents duplicate in-flight requests)
  * - Offline fallback support
  * - Cache invalidation strategies
+ * - Hit/miss tracking with real-time stats
+ * - Pattern-based TTL overrides
  */
 
 interface CacheEntry<T> {
@@ -19,8 +21,20 @@ interface CacheConfig {
   enabled: boolean
 }
 
+interface PatternTTL {
+  pattern: RegExp
+  ttl: number
+}
+
+interface CacheStats {
+  hits: number
+  misses: number
+  sets: number
+  evictions: number
+}
+
 const DEFAULT_CONFIG: CacheConfig = {
-  defaultTTL: 5 * 60 * 1000, // 5 minutes
+  defaultTTL: 60 * 1000, // 1 minute (reduced from 5min to minimize stale data)
   maxEntries: 100,
   enabled: true,
 }
@@ -30,6 +44,12 @@ const cache = new Map<string, CacheEntry<unknown>>()
 
 // Track in-flight requests for deduplication
 const inFlightRequests = new Map<string, Promise<unknown>>()
+
+// Pattern-based TTL overrides (applied in order, first match wins)
+const patternTTLs: PatternTTL[] = []
+
+// Hit/miss tracking
+const stats: CacheStats = { hits: 0, misses: 0, sets: 0, evictions: 0 }
 
 let config: CacheConfig = { ...DEFAULT_CONFIG }
 
@@ -68,24 +88,37 @@ function cleanup(): void {
 /**
  * Enforce maximum cache size (LRU eviction)
  */
-function enforceMaxSize(): void {
-  if (cache.size <= config.maxEntries) return
+function enforceMaxSize(): number {
+  if (cache.size <= config.maxEntries) return 0
 
-  // Convert to array and sort by timestamp (oldest first)
   const entries = Array.from(cache.entries()).sort((a, b) => a[1].timestamp - b[1].timestamp)
 
-  // Remove oldest entries
   const toRemove = entries.slice(0, entries.length - config.maxEntries)
   for (const [key] of toRemove) {
     cache.delete(key)
   }
+  return toRemove.length
 }
 
 /**
  * Configure cache settings
  */
-export function configureCache(options: Partial<CacheConfig>): void {
+export function configureCache(
+  options: Partial<CacheConfig & { patternTTLs?: PatternTTL[] }>
+): void {
   config = { ...config, ...options }
+  if (options.patternTTLs) {
+    patternTTLs.length = 0
+    patternTTLs.push(...options.patternTTLs)
+  }
+}
+
+function resolveTTL(url: string, ttl?: number): number {
+  if (ttl !== undefined) return ttl
+  for (const pt of patternTTLs) {
+    if (pt.pattern.test(url)) return pt.ttl
+  }
+  return config.defaultTTL
 }
 
 /**
@@ -113,6 +146,7 @@ export function getCachedData<T>(url: string, options?: RequestInit): T | null {
   const entry = cache.get(key) as CacheEntry<T> | undefined
 
   if (entry && isValid(entry)) {
+    stats.hits++
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.log(`[Cache] Hit: ${url}`)
@@ -120,8 +154,8 @@ export function getCachedData<T>(url: string, options?: RequestInit): T | null {
     return entry.data
   }
 
+  stats.misses++
   if (entry) {
-    // Expired entry, remove it
     cache.delete(key)
   }
 
@@ -129,21 +163,24 @@ export function getCachedData<T>(url: string, options?: RequestInit): T | null {
 }
 
 /**
- * Store data in cache
+ * Store data in cache with pattern-based TTL resolution
  */
 export function setCachedData<T>(url: string, data: T, options?: RequestInit, ttl?: number): void {
   if (!isCacheable(url, options)) return
 
   const key = generateCacheKey(url, options)
+  const resolvedTtl = resolveTTL(url, ttl)
   const entry: CacheEntry<T> = {
     data,
     timestamp: Date.now(),
-    ttl: ttl ?? config.defaultTTL,
+    ttl: resolvedTtl,
     url,
   }
 
   cache.set(key, entry as CacheEntry<unknown>)
-  enforceMaxSize()
+  stats.sets++
+  const evicted = enforceMaxSize()
+  stats.evictions += evicted
 
   if (import.meta.env.DEV) {
     // eslint-disable-next-line no-console
@@ -215,11 +252,17 @@ export function getCacheStats(): {
   size: number
   maxSize: number
   hitRate: number
+  hits: number
+  misses: number
+  sets: number
+  evictions: number
 } {
+  const total = stats.hits + stats.misses
   return {
     size: cache.size,
     maxSize: config.maxEntries,
-    hitRate: 0, // Could implement hit/miss tracking if needed
+    hitRate: total > 0 ? stats.hits / total : 0,
+    ...stats,
   }
 }
 

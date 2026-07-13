@@ -1,6 +1,17 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  lazy,
+  Suspense,
+  useMemo,
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 const CodeMirror = lazy(() => import('@uiw/react-codemirror'))
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
@@ -24,7 +35,42 @@ import {
   Tag,
   Clock,
   BrainCircuit,
+  AlertCircle,
 } from 'lucide-react'
+
+// ─── Error Boundary for Lazy Loaded Editor ───────────────────────────
+class EditorErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Editor chunk load error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center text-gray-500 bg-gray-950 p-6 text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-rose-500/50" />
+          <div>
+            <h3 className="text-gray-300 font-bold mb-1">Failed to load code editor</h3>
+            <p className="text-xs">A network error occurred or a new version was deployed.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            Reload Workspace
+          </Button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const DEFAULT_CODE: Record<string, string> = {
   javascript: `/**
@@ -128,7 +174,7 @@ export default function ProblemWorkspacePage() {
   const [output, setOutput] = useState<string | null>(null)
   const [isConsoleOpen, setIsConsoleOpen] = useState(true)
   const [isReviewing, setIsReviewing] = useState(false)
-  
+
   const consoleHeightRef = useRef(30) // percentage
   const consoleDragging = useRef(false)
   const editorPanelRef = useRef<HTMLDivElement>(null)
@@ -153,6 +199,7 @@ export default function ProblemWorkspacePage() {
   }, [slug, language])
 
   useEffect(() => {
+    // eslint-disable-next-line security/detect-object-injection
     if (!slug || code === DEFAULT_CODE[language]) return
     const timeoutId = setTimeout(() => {
       localStorage.setItem(`draft_${slug}_${language}`, code)
@@ -175,8 +222,10 @@ export default function ProblemWorkspacePage() {
   }, [language, code])
 
   // ── Data queries ──────────────────────────────────────────────────
+  const queryClient = useQueryClient()
   const { data: problem, isLoading } = useQuery({
     queryKey: ['problem', slug],
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     queryFn: () => problemService.getProblem(slug!).then(r => r.data),
     enabled: !!slug,
   })
@@ -186,6 +235,7 @@ export default function ProblemWorkspacePage() {
   }, [problem?.description])
 
   const runCodeMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mutationFn: () => problemService.submitSolution(problem!.id, language, code),
     onSuccess: res => {
       const d = res.data
@@ -198,10 +248,16 @@ export default function ProblemWorkspacePage() {
       ].filter(Boolean)
       setOutput(lines.join('\n'))
       setIsConsoleOpen(true)
+
+      // Proactively invalidate user XP and stats to update gamification UI instantly
+      void queryClient.invalidateQueries({ queryKey: ['user'] })
+      void queryClient.invalidateQueries({ queryKey: ['dsaStats'] })
     },
-    onError: (err: Error) => {
-      setOutput(`❌ Error: ${err.message}`)
+    onError: error => {
+      const msg = error instanceof Error ? error.message : 'Execution failed'
+      setOutput(`❌ Error: ${msg}`)
       setIsConsoleOpen(true)
+      addToast({ message: 'Code submission failed', type: 'error' })
     },
   })
 
@@ -223,7 +279,9 @@ export default function ProblemWorkspacePage() {
   const handleAIReview = useCallback(async () => {
     if (!problem || !code.trim()) return
     setIsReviewing(true)
-    setOutput('⏳ Initiating Deep ML Code Analysis...\n\nScanning for Time/Space Complexity and Logic Flaws...')
+    setOutput(
+      '⏳ Initiating Deep ML Code Analysis...\n\nScanning for Time/Space Complexity and Logic Flaws...'
+    )
     setIsConsoleOpen(true)
     try {
       const response = await aiTutorService.reviewCode(code, language, problem.description)
@@ -248,7 +306,7 @@ ${review.overallFeedback}
       } else {
         setOutput('❌ AI Review Failed: Unable to analyze code.')
       }
-    } catch (err) {
+    } catch {
       setOutput('❌ Error contacting ML Engine.')
     } finally {
       setIsReviewing(false)
@@ -436,7 +494,7 @@ ${review.overallFeedback}
 
             {/* Description */}
             <div className="prose prose-invert prose-sm max-w-none prose-headings:text-gray-200 prose-p:text-gray-400 prose-code:text-primary-400 prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 prose-pre:border prose-pre:border-gray-800">
-              <div dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
+              <div>{sanitizedDescription}</div>
             </div>
 
             {/* Examples */}
@@ -445,6 +503,7 @@ ${review.overallFeedback}
                 <h3 className="text-sm font-semibold text-gray-200">Examples</h3>
                 {problem.examples.map((ex, i) => (
                   <div
+                    // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     className="bg-gray-900/70 border border-gray-800 rounded-lg p-3 space-y-2 text-sm"
                   >
@@ -531,32 +590,34 @@ ${review.overallFeedback}
               className="min-h-0 overflow-hidden"
               style={{ height: isConsoleOpen ? `${100 - consoleHeightRef.current}%` : '100%' }}
             >
-              <Suspense
-                fallback={
-                  <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-                    Loading editor...
-                  </div>
-                }
-              >
-                <CodeMirror
-                  value={code}
-                  height="100%"
-                  theme={oneDark}
-                  extensions={[getLanguageExtension(language)]}
-                  onChange={(val: string) => setCode(val)}
-                  className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:!overflow-auto text-sm"
-                  basicSetup={{
-                    lineNumbers: true,
-                    highlightActiveLineGutter: true,
-                    highlightActiveLine: true,
-                    foldGutter: true,
-                    autocompletion: true,
-                    bracketMatching: true,
-                    closeBrackets: true,
-                    indentOnInput: true,
-                  }}
-                />
-              </Suspense>
+              <EditorErrorBoundary>
+                <Suspense
+                  fallback={
+                    <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                      Loading editor...
+                    </div>
+                  }
+                >
+                  <CodeMirror
+                    value={code}
+                    height="100%"
+                    theme={oneDark}
+                    extensions={[getLanguageExtension(language)]}
+                    onChange={(val: string) => setCode(val)}
+                    className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:!overflow-auto text-sm"
+                    basicSetup={{
+                      lineNumbers: true,
+                      highlightActiveLineGutter: true,
+                      highlightActiveLine: true,
+                      foldGutter: true,
+                      autocompletion: true,
+                      bracketMatching: true,
+                      closeBrackets: true,
+                      indentOnInput: true,
+                    }}
+                  />
+                </Suspense>
+              </EditorErrorBoundary>
             </div>
 
             {/* Console Resize Handle */}

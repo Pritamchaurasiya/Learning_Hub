@@ -1,7 +1,17 @@
 import React, { useState, useMemo, useEffect, useCallback, useDeferredValue } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useSearchParams } from 'react-router-dom'
-import { Search, X, History, Trash2, SlidersHorizontal, LayoutGrid, List, Sparkles, Bot } from 'lucide-react'
+import {
+  Search,
+  X,
+  History,
+  Trash2,
+  SlidersHorizontal,
+  LayoutGrid,
+  List,
+  Sparkles,
+  Bot,
+} from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
 
@@ -200,20 +210,22 @@ const SearchPage = React.memo(function SearchPage() {
             type="text"
             value={query}
             onChange={e => handleSearch(e.target.value)}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter') {
-                fetchAiAnswer(query)
+                void fetchAiAnswer(query)
               }
             }}
             placeholder="ENTER SEARCH QUERY..."
-            className="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-100 dark:border-gray-800 rounded-[1.5rem] py-6 pl-16 pr-32 text-lg font-black tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all shadow-inner uppercase"
+            aria-label="Search courses"
+            className="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-100 dark:border-gray-800 rounded-[1.5rem] py-6 pl-12 pr-12 sm:pl-16 sm:pr-32 text-lg font-black tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all shadow-inner uppercase"
             autoFocus
           />
-          <div className="absolute inset-y-0 right-6 flex items-center gap-2">
+          <div className="absolute inset-y-0 right-3 sm:right-6 flex items-center gap-1 sm:gap-2">
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                className="w-8 h-8 min-w-[44px] sm:min-w-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                aria-label="Clear search query"
               >
                 <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               </button>
@@ -221,10 +233,10 @@ const SearchPage = React.memo(function SearchPage() {
             <button
               onClick={() => fetchAiAnswer(query)}
               disabled={isAiLoading || !query}
-              className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 transition-colors disabled:opacity-50"
+              className="min-h-[44px] min-w-[44px] sm:min-h-auto sm:min-w-auto px-2 sm:px-4 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4" />
-              Ask AI
+              <span className="hidden sm:inline">Ask AI</span>
             </button>
           </div>
         </div>
@@ -243,6 +255,7 @@ const SearchPage = React.memo(function SearchPage() {
                   <button
                     key={opt}
                     onClick={() => setDifficultyFilter(opt)}
+                    aria-pressed={difficultyFilter === opt}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       difficultyFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
@@ -263,6 +276,7 @@ const SearchPage = React.memo(function SearchPage() {
                   <button
                     key={opt}
                     onClick={() => setPhaseFilter(opt)}
+                    aria-pressed={phaseFilter === opt}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       phaseFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
@@ -283,6 +297,7 @@ const SearchPage = React.memo(function SearchPage() {
                   <button
                     key={opt}
                     onClick={() => setDurationFilter(opt)}
+                    aria-pressed={durationFilter === opt}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       durationFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
@@ -304,10 +319,14 @@ const SearchPage = React.memo(function SearchPage() {
 
           <div className="flex items-center justify-between pt-8 mt-8 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-4">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+              <label
+                htmlFor="sort-select"
+                className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]"
+              >
                 Sort By
               </label>
               <select
+                id="sort-select"
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortOption)}
                 className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
@@ -338,6 +357,7 @@ const SearchPage = React.memo(function SearchPage() {
           </div>
           {recentSearches.slice(0, 5).map((search, i) => (
             <button
+              // eslint-disable-next-line react/no-array-index-key
               key={`${search}-${i}`}
               onClick={() => handleSearch(search)}
               className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-colors shadow-sm shrink-0 whitespace-nowrap border border-gray-100 dark:border-gray-800"
@@ -363,19 +383,21 @@ const SearchPage = React.memo(function SearchPage() {
                 AI Knowledge Engine
               </h2>
             </div>
-            
+
             {isAiLoading ? (
               <div className="flex items-center gap-3 text-indigo-500">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]" />
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]" />
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" />
                 </div>
-                <span className="text-sm font-bold uppercase tracking-widest">Synthesizing answer...</span>
+                <span className="text-sm font-bold uppercase tracking-widest">
+                  Synthesizing answer...
+                </span>
               </div>
             ) : (
               <div className="prose prose-indigo dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                <ReactMarkdown>{aiAnswer || ''}</ReactMarkdown>
+                <ReactMarkdown>{aiAnswer ?? ''}</ReactMarkdown>
               </div>
             )}
           </div>
@@ -385,12 +407,9 @@ const SearchPage = React.memo(function SearchPage() {
       {/* Results Header */}
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-          {isLoading
-            ? 'SCANNING...'
+          {debouncedQuery.trim()
+            ? `FOUND ${deferredFilteredCourses.length} RESULT${deferredFilteredCourses.length !== 1 ? 'S' : ''} [${debouncedQuery}]`
             : `FOUND ${deferredFilteredCourses.length} RESULT${deferredFilteredCourses.length !== 1 ? 'S' : ''}`}
-          {!isLoading && debouncedQuery.trim() && (
-            <span className="text-primary-500 ml-1">[{debouncedQuery}]</span>
-          )}
         </p>
         <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <button
@@ -418,6 +437,7 @@ const SearchPage = React.memo(function SearchPage() {
           }
         >
           {[...Array(6)].map((_, i) => (
+            // eslint-disable-next-line react/no-array-index-key
             <CourseCardSkeleton key={i} viewMode={viewMode} />
           ))}
         </div>
@@ -442,7 +462,7 @@ const SearchPage = React.memo(function SearchPage() {
           ))}
         </div>
       ) : (
-        <Card className="p-20 text-center border-none shadow-xl bg-white dark:bg-gray-900 rounded-[2.5rem]">
+        <Card className="p-6 sm:p-20 text-center border-none shadow-xl bg-white dark:bg-gray-900 rounded-[2.5rem]">
           <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
             <Search className="w-10 h-10 text-gray-300 dark:text-gray-600" />
           </div>

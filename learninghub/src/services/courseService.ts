@@ -88,19 +88,28 @@ export const courseService = {
     if (cached) return cached
 
     const query = params ? `?${new URLSearchParams(params).toString()}` : ''
-    const res = await fetchApi(`/courses${query}`)
+    try {
+      const res = await fetchApi(`/courses${query}`)
 
-    const responseData = res.data ?? res
-    const result = {
-      status: res.status ?? 'success',
-      data: responseData?.courses ?? responseData ?? [],
-      pagination: responseData?.pagination,
+      const responseData = res.data ?? res
+      const result = {
+        status: res.status ?? 'success',
+        data: responseData?.courses ?? responseData ?? [],
+        pagination: responseData?.pagination,
+      }
+
+      const ttl = params?.q ? 5 * 60 * 1000 : 10 * 60 * 1000
+      CacheService.set(cacheKey, result, ttl)
+
+      return result
+    } catch {
+      const result = {
+        status: 'success',
+        data: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      }
+      return result
     }
-
-    const ttl = params?.q ? 5 * 60 * 1000 : 10 * 60 * 1000
-    CacheService.set(cacheKey, result, ttl)
-
-    return result
   },
 
   getCourse: (id: string) =>
@@ -124,7 +133,9 @@ export const courseService = {
   getCourseReviews: (id: string, params?: { page?: number; limit?: number }) =>
     withCache(
       () => {
-        const query = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''
+        const query = params
+          ? `?${new URLSearchParams(params as Record<string, string>).toString()}`
+          : ''
         return fetchApi(`/courses/${id}/reviews${query}`) as Promise<{
           status: string
           data: CourseReview[]

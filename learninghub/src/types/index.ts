@@ -1,9 +1,10 @@
+export type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert'
+
 export interface Course {
   id: string
   title: string
   description: string
-  phase: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert'
+  difficulty: Difficulty
   content: string
   tags: string[]
   estimatedTime: number

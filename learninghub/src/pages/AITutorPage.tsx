@@ -22,9 +22,10 @@ import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
 import { aiTutorService, type AIChatMessage, type AIChatSession } from '../services/aiTutorService'
 import { useStore } from '../stores/useStore'
-import DOMPurify from 'dompurify'
+
 import { renderMarkdown } from '../utils/markdown'
 import { useBreakpoint } from '../hooks/useMediaQuery'
+import { getCsrfToken, getSessionId } from '../utils/api'
 
 const quickActions = [
   {
@@ -197,17 +198,24 @@ export default function AITutorPage() {
     setIsStreaming(true)
 
     try {
-      const token = localStorage.getItem('token')
+      const csrfToken = getCsrfToken()
+      const sessionId = getSessionId()
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (csrfToken) headers['x-csrf-token'] = csrfToken
+      if (sessionId) headers['x-session-id'] = sessionId
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/tutor/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           message: userMessageContent,
           session_id: currentSessionId,
         }),
+        credentials: 'include',
       })
 
       if (!response.body) throw new Error('No readable stream')
@@ -215,50 +223,60 @@ export default function AITutorPage() {
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let fullResponse = ''
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.replace('data: ', '').trim()
-            if (dataStr === '[DONE]') break
+        // Process complete events separated by \n\n
+        let eventEndIndex
+        while ((eventEndIndex = buffer.indexOf('\n\n')) >= 0) {
+          const event = buffer.substring(0, eventEndIndex)
+          buffer = buffer.substring(eventEndIndex + 2)
 
-            try {
-              const data = JSON.parse(dataStr)
-              if (data.text) {
-                fullResponse += data.text
-                // Update the UI with streamed text
-                queryClient.setQueryData(
-                  ['aiTutor', 'session', currentSessionId],
-                  (old: AIChatMessage[] = []) => {
-                    const newMessages = [...old]
-                    const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
-                    if (targetIdx !== -1) {
-                      newMessages[targetIdx] = {
-                        ...newMessages[targetIdx],
-                        content: fullResponse,
+          const lines = event.split('\n')
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.replace('data: ', '').trim()
+              if (dataStr === '[DONE]') break
+
+              try {
+                const data = JSON.parse(dataStr)
+                if (data.text) {
+                  fullResponse += data.text
+                  // Update the UI with streamed text
+                  queryClient.setQueryData(
+                    ['aiTutor', 'session', currentSessionId],
+                    (old: AIChatMessage[] = []) => {
+                      const newMessages = [...old]
+                      const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
+                      if (targetIdx !== -1) {
+                        // eslint-disable-next-line security/detect-object-injection
+                        newMessages[targetIdx] = {
+                          // eslint-disable-next-line security/detect-object-injection
+                          ...newMessages[targetIdx],
+                          content: fullResponse,
+                        }
                       }
+                      return newMessages
                     }
-                    return newMessages
-                  }
-                )
-                // Auto-scroll as text comes in
-                messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+                  )
+                  // Auto-scroll as text comes in
+                  messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+                }
+              } catch {
+                // Ignore partial JSON chunks
               }
-            } catch (e) {
-              // Ignore partial JSON chunks
             }
           }
         }
       }
 
       // We could optionally persist this message to the backend session state here
-    } catch (error) {
+    } catch {
       addToast({ message: 'Failed to stream response from AI Tutor.', type: 'error' })
       // Remove placeholder message on error
       queryClient.setQueryData(
@@ -271,17 +289,27 @@ export default function AITutorPage() {
     }
   }
 
+  const [hasAttemptedCreate, setHasAttemptedCreate] = useState(false)
+
   useEffect(() => {
     // If no sessions exist after loading, create one automatically
     if (
       !isSessionsLoading &&
       sessions.length === 0 &&
       !createSessionMutation.isPending &&
-      !currentSessionId
+      !currentSessionId &&
+      !hasAttemptedCreate
     ) {
+      setHasAttemptedCreate(true)
       createSessionMutation.mutate()
     }
-  }, [sessions.length, isSessionsLoading, createSessionMutation, currentSessionId])
+  }, [
+    sessions.length,
+    isSessionsLoading,
+    createSessionMutation,
+    currentSessionId,
+    hasAttemptedCreate,
+  ])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -513,7 +541,9 @@ export default function AITutorPage() {
                             <div
                               className="prose-custom prose-sm max-w-none prose-headings:font-black prose-a:text-primary-500"
                               // eslint-disable-next-line react/no-danger
-                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(message.content)) }}
+                              dangerouslySetInnerHTML={{
+                                __html: renderMarkdown(message.content),
+                              }}
                             />
                           ) : (
                             <p className="font-medium text-lg">{message.content}</p>
@@ -546,6 +576,7 @@ export default function AITutorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {quickActions.map((action, i) => (
                     <button
+                      // eslint-disable-next-line react/no-array-index-key
                       key={i}
                       onClick={() => setInput(action.prompt)}
                       className="p-6 rounded-[1.5rem] bg-gray-50/50 dark:bg-gray-800/30 border-2 border-gray-100 dark:border-gray-800 hover:border-primary-500/30 hover:bg-white dark:hover:bg-gray-800 text-left transition-all group shadow-sm hover:shadow-md"
@@ -581,7 +612,7 @@ export default function AITutorPage() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
-                      handleSendMessage()
+                      void handleSendMessage()
                       const target = e.target as HTMLTextAreaElement
                       target.style.height = 'auto'
                     }

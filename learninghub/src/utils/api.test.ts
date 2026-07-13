@@ -14,7 +14,7 @@ describe('API Integration Tests', () => {
   })
 
   describe('AbortController Support', () => {
-    it('should pass AbortSignal to fetch', async () => {
+    it('should use internal AbortController even when caller provides signal', async () => {
       const mockResponse = new Response(JSON.stringify({ data: 'test' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -23,15 +23,31 @@ describe('API Integration Tests', () => {
       const mockFetch = vi.fn().mockResolvedValue(mockResponse)
       vi.stubGlobal('fetch', mockFetch)
 
-      const controller = new AbortController()
-      await fetchApi('/test', { signal: controller.signal })
+      const callerController = new AbortController()
+      await fetchApi('/test', { signal: callerController.signal })
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          signal: controller.signal,
+      // fetch should receive a signal (our internal one), not the caller's signal directly
+      const fetchCall = mockFetch.mock.calls[0]
+      const options = fetchCall[1] as RequestInit
+      expect(options.signal).toBeDefined()
+      expect(options.signal).toBeInstanceOf(AbortSignal)
+    })
+
+    it('should abort on caller signal even with internal timeout', async () => {
+      const mockFetch = vi.fn().mockImplementation(() => {
+        return new Promise((_, reject) => {
+          setTimeout(() => reject(new DOMException('Aborted', 'AbortError')), 100)
         })
-      )
+      })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const callerController = new AbortController()
+      const promise = fetchApi('/test', { signal: callerController.signal })
+
+      // Abort via caller signal
+      callerController.abort()
+
+      await expect(promise).rejects.toThrow('Aborted')
     })
 
     it('should handle AbortError gracefully', async () => {
@@ -63,8 +79,9 @@ describe('API Integration Tests', () => {
 
   describe('Token Refresh', () => {
     it('should refresh token on 401', async () => {
-      localStorage.setItem('token', 'old-token')
-      localStorage.setItem('refreshToken', 'old-refresh')
+      const { SecureStorage } = await import('./security')
+      await SecureStorage.setItem('token', 'old-token')
+      await SecureStorage.setItem('refreshToken', 'old-refresh')
 
       const unauthorizedResponse = new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

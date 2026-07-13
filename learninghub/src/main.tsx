@@ -21,13 +21,10 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   })
 }
 
-// Rehydrate Zustand persisted state from localStorage before React renders.
-// This is required because the store uses skipHydration: true for SSR compat.
-// Await is critical — without it, setHydrated() fires before rehydration completes,
-// causing a flash where isHydrated=true but state hasn't loaded yet.
-;(async () => {
+// Rehydrate Zustand persisted state
+void (async () => {
   await useStore.persist.rehydrate()
-  useStore.getState().setHydrated()
+  await useStore.getState().setHydrated()
 })()
 
 // Create React Query client with optimized defaults
@@ -46,16 +43,6 @@ const queryClient = new QueryClient({
     },
   },
 })
-
-// ============================================
-// SECURITY: Token storage configuration
-// ============================================
-// Tokens are stored in localStorage with httpOnly cookie fallback
-// For production, migrate to httpOnly cookies for XSS protection
-if (import.meta.env.DEV) {
-  // eslint-disable-next-line no-console
-  console.log('[Security] Token storage: localStorage (migrate to httpOnly cookies for production)')
-}
 
 // ============================================
 // ERROR HANDLING: Global error monitoring
@@ -112,53 +99,8 @@ if (prefersReducedMotion.matches) {
 // ============================================
 // PERFORMANCE: Optimized event listeners
 // ============================================
-// Global event listener for copy code buttons on markdown blocks
-document.addEventListener('click', e => {
-  const target = e.target as HTMLElement
-  const btn = target.closest('.copy-code-button') as HTMLButtonElement | null
-
-  if (btn) {
-    const encodedCode = btn.getAttribute('data-code')
-    if (encodedCode) {
-      const code = decodeURIComponent(encodedCode)
-      void navigator.clipboard.writeText(code).then(() => {
-        // Store original children for restoration
-        const originalChildren = Array.from(btn.childNodes)
-
-        // Clear and add success state using DOM methods (safer than innerHTML)
-        btn.textContent = ''
-
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-        svg.setAttribute('class', 'w-4 h-4 text-green-500')
-        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-        svg.setAttribute('width', '24')
-        svg.setAttribute('height', '24')
-        svg.setAttribute('viewBox', '0 0 24 24')
-        svg.setAttribute('fill', 'none')
-        svg.setAttribute('stroke', 'currentColor')
-        svg.setAttribute('stroke-width', '2')
-        svg.setAttribute('stroke-linecap', 'round')
-        svg.setAttribute('stroke-linejoin', 'round')
-
-        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
-        polyline.setAttribute('points', '20 6 9 17 4 12')
-        svg.appendChild(polyline)
-
-        const span = document.createElement('span')
-        span.className = 'text-xs font-medium mr-1 text-green-500'
-        span.textContent = 'Copied!'
-
-        btn.appendChild(svg)
-        btn.appendChild(span)
-
-        setTimeout(() => {
-          btn.textContent = ''
-          originalChildren.forEach(child => btn.appendChild(child))
-        }, 2000)
-      })
-    }
-  }
-})
+// Note: Global event listener for copy code buttons on markdown blocks
+// has been moved to the React-idiomatic CodeCopyHandler component rendered in App.tsx.
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById('root')!).render(

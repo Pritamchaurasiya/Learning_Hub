@@ -22,16 +22,15 @@ import {
   BrainCircuit,
 } from 'lucide-react'
 import { testsAService, TestA, TestQuestion, TestResult } from '../services/testsAService'
-import { aiTutorService } from '../services/aiTutorService'
 import { useStore } from '../stores/useStore'
+import { useWebSocket } from '../hooks/useWebSocket'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import { ProgressBar } from '../components/ui/ProgressBar'
-import { Modal } from '../components/ui/Modal'
-import { Input } from '../components/ui/Input'
+import { AITestGeneratorModal } from '../components/AITestGeneratorModal'
 
 interface TestCardProps {
   test: TestA
@@ -68,8 +67,8 @@ const TestCard = memo(({ test, onStart }: TestCardProps) => {
 
   return (
     <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-      <Card className="h-full flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <div className="p-6 flex-1 flex flex-col">
+      <Card className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-800 hover:border-purple-500/50 hover:shadow-xl transition-all duration-300 backdrop-blur-xl group">
+        <div className="p-6 flex-1 flex flex-col relative z-10">
           <div className="flex items-start justify-between mb-4">
             <Badge className={difficultyColors[test.difficulty] ?? difficultyColors.mixed}>
               {test.difficulty}
@@ -157,16 +156,16 @@ const QuestionCard = memo(
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
+        <div className="bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 shadow-md border border-gray-100 dark:border-gray-800 backdrop-blur-xl">
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-8 leading-relaxed">
             {question.text}
           </h3>
 
           <div className="space-y-3">
             {question.question_type === 'subjective' || question.type === 'subjective' ? (
               <textarea
-                value={selectedAnswer || ''}
-                onChange={(e) => onAnswer(e.target.value)}
+                value={selectedAnswer ?? ''}
+                onChange={e => onAnswer(e.target.value)}
                 placeholder="Type your detailed answer here..."
                 className="w-full min-h-[200px] p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-y"
               />
@@ -191,7 +190,9 @@ const QuestionCard = memo(
                           : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
-                      {selectedAnswer === option.id && <CheckCircle className="w-4 h-4 text-white" />}
+                      {selectedAnswer === option.id && (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      )}
                     </div>
                     <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
                   </div>
@@ -234,6 +235,7 @@ const QuestionCard = memo(
               ].map(({ level, label, color, activeColor }) => (
                 <button
                   key={level}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => onConfidenceChange(level as any)}
                   className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                     confidence === level ? activeColor : color
@@ -429,28 +431,34 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
                   </div>
                   <Badge
                     className={
-                      q.is_correct
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      q.is_correct === null
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                        : q.is_correct
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                     }
                   >
-                    {q.is_correct ? 'Correct' : 'Incorrect'}
+                    {q.is_correct === null ? 'Grading...' : q.is_correct ? 'Correct' : 'Incorrect'}
                   </Badge>
                 </div>
 
                 <div className="pl-11 space-y-4">
                   {/* Options */}
                   <div className="space-y-2">
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-start gap-3">
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row sm:items-start gap-3">
                       <div className="mt-0.5">
-                        <span className="text-sm font-medium text-gray-500">Your Answer:</span>
+                        <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
+                          Your Answer:
+                        </span>
                       </div>
                       <div className="text-gray-700 dark:text-gray-300">
-                        {q.selected_options?.[0]?.text || 'No answer'}
+                        {q.question_type === 'subjective'
+                          ? (q.text_answer ?? 'No answer provided')
+                          : q.selected_options?.[0]?.text || 'No answer'}
                       </div>
                     </div>
 
-                    {!q.is_correct && (
+                    {!q.is_correct && q.question_type !== 'subjective' && (
                       <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
                         <div className="mt-0.5">
                           <span className="text-sm font-medium text-green-600 dark:text-green-500">
@@ -459,6 +467,26 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
                         </div>
                         <div className="text-gray-700 dark:text-gray-300">
                           {q.correct_options?.[0]?.text || 'Not available'}
+                        </div>
+                      </div>
+                    )}
+
+                    {q.question_type === 'subjective' && q.ai_feedback && (
+                      <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-900/30 flex flex-col gap-2 mt-4">
+                        <div className="flex items-center gap-2">
+                          <BrainCircuit className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <span className="text-sm font-bold text-purple-700 dark:text-purple-400">
+                            AI Feedback (Score: {q.marks_obtained}/
+                            {
+                              q.marks_obtained
+                                ? q.marks_obtained * 2
+                                : 0 /* approximate total based on passing logic */
+                            }
+                            )
+                          </span>
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">
+                          {q.ai_feedback}
                         </div>
                       </div>
                     )}
@@ -499,7 +527,7 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
   )
 })
 
-const TestsAPage = () => {
+const TestsAPage = memo(() => {
   const { testId } = useParams<{ testId: string }>()
   const navigate = useNavigate()
   const testsA = useStore(state => state.testsA)
@@ -519,17 +547,30 @@ const TestsAPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasAccess, setHasAccess] = useState(true)
-  
-  // AI Test Generation State
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [aiTestMode, setAiTestMode] = useState<'adaptive' | 'weak_area'>('adaptive')
-  const [aiTestTopic, setAiTestTopic] = useState('')
-  const [aiTestDifficulty, setAiTestDifficulty] = useState<'easy'|'medium'|'hard'>('medium')
-  const [aiTestCount, setAiTestCount] = useState<number>(10)
 
   const submitAttempted = useRef(false)
   const addToast = useStore(state => state.addToast)
+
+  const { on } = useWebSocket()
+  const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
+
+  // Listen for real-time grading updates from the backend
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const unsubscribe = on('subjective_grade_completed', (data: any) => {
+      // Only process if it matches the current active result
+      if (testsA.results && testsA.results.attempt_id === data.testResultId) {
+        updateSubjectiveGrade(data)
+        addToast({
+          message: 'AI grading completed for subjective answer!',
+          type: 'success',
+        })
+      }
+    })
+    return unsubscribe
+  }, [on, testsA.results, updateSubjectiveGrade, addToast])
+
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
 
   useEffect(() => {
     const loadAccessAndTests = async () => {
@@ -554,10 +595,71 @@ const TestsAPage = () => {
     }
   }, [filter, testId, testsA.isActive])
 
+  // Recover missing questions for active tests (e.g. after page reload)
+  useEffect(() => {
+    const recoverTestQuestions = async () => {
+      if (testsA.isActive && testsA.testInfo?.testId && testsA.questions.length === 0) {
+        setLoading(true)
+        try {
+          // startTest on the backend automatically resumes if IN_PROGRESS
+          const response = await testsAService.startTest(testsA.testInfo.testId)
+          if (response.status === 'success' && response.data.questions) {
+            setTestQuestions(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              response.data.questions.map((q: any) => ({
+                id: q.id,
+                text: q.text ?? '',
+                question_type: q.type ?? 'mcq',
+                difficulty: q.difficulty ?? 0.5,
+                bloom_level: q.bloom_level ?? 'understand',
+                options: q.options ?? [],
+                order: q.order ?? 0,
+                marks: q.points ?? 1,
+              })),
+              {
+                testId: testsA.testInfo.testId,
+                testTitle: testsA.testInfo.testTitle,
+                totalQuestions: testsA.testInfo.totalQuestions,
+                timeLimit: response.data.time_limit ?? testsA.testInfo.timeLimit,
+              },
+              response.data.attempt_id ?? testsA.attemptId ?? '',
+              response.data.answers ?? {},
+              response.data.time_remaining_seconds
+            )
+          } else {
+            setError('Failed to recover test attempt.')
+            resetTestState()
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to recover test')
+          resetTestState()
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+
+    void recoverTestQuestions()
+  }, [
+    testsA.isActive,
+    testsA.testInfo?.testId,
+    testsA.testInfo?.testTitle,
+    testsA.testInfo?.totalQuestions,
+    testsA.testInfo?.timeLimit,
+    testsA.attemptId,
+    testsA.questions.length,
+    setTestQuestions,
+    resetTestState,
+  ])
+
   const handleStartTest = useCallback(
     async (test: TestA) => {
       if (!hasAccess) {
-        addToast({ message: 'This is a premium feature. Please upgrade your subscription to unlock Tests A+.', type: 'error' })
+        addToast({
+          message:
+            'This is a premium feature. Please upgrade your subscription to unlock Tests A+.',
+          type: 'error',
+        })
         navigate('/pricing')
         return
       }
@@ -570,6 +672,7 @@ const TestsAPage = () => {
         if (response.status === 'success') {
           const data = response.data
           setTestQuestions(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (data.questions ?? []).map((q: any) => ({
               id: q.id,
               text: q.text ?? '',
@@ -595,70 +698,40 @@ const TestsAPage = () => {
         resetTestState()
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [startTestAttempt, setTestQuestions, navigate, resetTestState]
   )
 
-  const handleGenerateAITest = useCallback(async () => {
-    if (!hasAccess) {
-      addToast({ message: 'AI Test Generation is a premium feature.', type: 'error' })
-      return
-    }
-    
-    try {
-      setIsGenerating(true)
-      setError(null)
-      let response;
-      if (aiTestMode === 'weak_area') {
-        response = await aiTutorService.generateWeakAreaTest(aiTestCount)
-      } else {
-        if (!aiTestTopic.trim()) {
-          addToast({ message: 'Please enter a topic for Adaptive Generation.', type: 'error' })
-          setIsGenerating(false)
-          return
-        }
-        response = await aiTutorService.generatePracticeQuestions(aiTestTopic, aiTestDifficulty, aiTestCount)
-      }
-
-      if (response.status === 'success' && response.data.questions) {
-        const data = response.data
-        const generatedTestId = `ai-test-${Date.now()}`
-        const testTitle = aiTestMode === 'weak_area' ? 'Targeted Weak Area Mock' : `Adaptive: ${aiTestTopic}`
-        
-        startTestAttempt(generatedTestId, testTitle, data.question_count, data.question_count * 2)
-
-        setTestQuestions(
-          data.questions.map((q: any, i: number) => ({
-            id: `q-${Date.now()}-${i}`,
-            text: q.text ?? '',
-            question_type: 'mcq',
-            difficulty: q.difficulty === 'hard' ? 0.8 : q.difficulty === 'medium' ? 0.5 : 0.2,
-            bloom_level: q.bloom_level ?? 'apply',
-            options: q.options ?? [],
-            order: i,
-            marks: 1,
-            correct_option_id: q.correct_option_id,
-            explanation: q.explanation,
-          })),
-          {
-            testId: generatedTestId,
-            testTitle: testTitle,
-            totalQuestions: data.question_count,
-            timeLimit: data.question_count * 2,
-          },
-          `attempt-${Date.now()}`
-        )
-        setIsAIModalOpen(false)
-        navigate(`/tests-a/${generatedTestId}`)
-      } else {
-        throw new Error((response.data as any).error || 'Failed to generate test.')
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'AI Test Generation failed')
-      addToast({ message: 'Failed to generate AI Test', type: 'error' })
-    } finally {
-      setIsGenerating(false)
-    }
-  }, [hasAccess, aiTestMode, aiTestCount, aiTestTopic, aiTestDifficulty, startTestAttempt, setTestQuestions, navigate, addToast])
+  const handleTestGenerated = useCallback(
+    (testData: {
+      questions: any[]
+      testId: string
+      testTitle: string
+      totalQuestions: number
+      timeLimit: number
+      attemptId: string
+    }) => {
+      startTestAttempt(
+        testData.testId,
+        testData.testTitle,
+        testData.totalQuestions,
+        testData.timeLimit
+      )
+      setTestQuestions(
+        testData.questions,
+        {
+          testId: testData.testId,
+          testTitle: testData.testTitle,
+          totalQuestions: testData.totalQuestions,
+          timeLimit: testData.timeLimit,
+        },
+        testData.attemptId
+      )
+      setIsAIModalOpen(false)
+      navigate(`/tests-a/${testData.testId}`)
+    },
+    [startTestAttempt, setTestQuestions, navigate]
+  )
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || submitAttempted.current) return
@@ -678,18 +751,14 @@ const TestsAPage = () => {
   }, [submitTest, isSubmitting])
 
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>()
+  const isActiveRef = useRef(testsA.isActive)
+  const isSubmittingRef = useRef(testsA.isSubmitting)
 
-  const timerCallback = useCallback(() => {
-    useStore.setState(state => {
-      if (state.testsA.timeRemaining > 0) {
-        return { testsA: { ...state.testsA, timeRemaining: state.testsA.timeRemaining - 1 } }
-      }
-      return state
-    })
-  }, [])
+  isActiveRef.current = testsA.isActive
+  isSubmittingRef.current = testsA.isSubmitting
 
   useEffect(() => {
-    if (!testsA.isActive || testsA.timeRemaining <= 0 || testsA.isSubmitting) {
+    if (!testsA.isActive || testsA.isSubmitting) {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = undefined
@@ -697,14 +766,49 @@ const TestsAPage = () => {
       return
     }
 
-    timerRef.current = setInterval(timerCallback, 1000)
+    if (timerRef.current) return
+
+    timerRef.current = setInterval(() => {
+      useStore.setState(state => {
+        if (state.testsA.timeRemaining > 1) {
+          return {
+            testsA: { ...state.testsA, timeRemaining: state.testsA.timeRemaining - 1 },
+          }
+        }
+        return { testsA: { ...state.testsA, timeRemaining: 0 } }
+      })
+    }, 1000)
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = undefined
       }
     }
-  }, [testsA.isActive, testsA.timeRemaining, testsA.isSubmitting, timerCallback])
+  }, [testsA.isActive, testsA.isSubmitting])
+
+  // Periodic autosave every 30 seconds during active test
+  useEffect(() => {
+    if (!testsA.isActive || testsA.isSubmitting || !testsA.attemptId) {
+      return
+    }
+
+    const autosaveInterval = setInterval(async () => {
+      try {
+        const answers = testsA.answers || {}
+        if (testsA.testInfo?.testId) {
+          await testsAService.batchAutosave(testsA.testInfo.testId, answers, testsA.attemptId || undefined)
+          useStore.setState(state => ({
+            testsA: { ...state.testsA, lastAutosavedAt: Date.now() },
+          }))
+        }
+      } catch (err) {
+        console.warn('[TestsAPage] Autosave failed:', err)
+      }
+    }, 30000)
+
+    return () => clearInterval(autosaveInterval)
+  }, [testsA.isActive, testsA.isSubmitting, testsA.attemptId, testsA.testInfo?.testId, testsA.answers])
 
   useEffect(() => {
     if (
@@ -799,6 +903,12 @@ const TestsAPage = () => {
                     {String(testsA.timeRemaining % 60).padStart(2, '0')}
                   </span>
                 </div>
+                {testsA.lastAutosavedAt && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    Saved {new Date(testsA.lastAutosavedAt).toLocaleTimeString()}
+                  </div>
+                )}
                 <Button onClick={handleSubmit} variant="primary" size="sm" disabled={isSubmitting}>
                   {isSubmitting ? 'Submitting...' : 'Submit'}
                 </Button>
@@ -815,7 +925,7 @@ const TestsAPage = () => {
         </div>
 
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex flex-wrap gap-1 sm:gap-2 mb-6 overflow-x-auto pb-2">
+          <div className="flex flex-nowrap gap-1 sm:gap-2 mb-6 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
             {testsA.questions.map((q, index) => {
               const isAnswered = testsA.answers[q.id] !== undefined
               const isCurrentFlagged = testsA.flaggedQuestions.includes(q.id)
@@ -948,7 +1058,8 @@ const TestsAPage = () => {
                 <Star className="w-5 h-5 text-primary-500 fill-current" /> Unlock Tests A+ Elite
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                You need a premium subscription to start taking mock tests and access deep analytics.
+                You need a premium subscription to start taking mock tests and access deep
+                analytics.
               </p>
             </div>
             <Button
@@ -1025,124 +1136,14 @@ const TestsAPage = () => {
         )}
       </div>
 
-      <Modal
+      <AITestGeneratorModal
         isOpen={isAIModalOpen}
-        onClose={() => !isGenerating && setIsAIModalOpen(false)}
-        title="AI Dynamic Test Generation"
-      >
-        <div className="space-y-6 py-4">
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1.5 rounded-2xl">
-            <button
-              onClick={() => setAiTestMode('adaptive')}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                aiTestMode === 'adaptive'
-                  ? 'bg-white dark:bg-gray-700 text-purple-600 shadow-md'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Adaptive Subject
-            </button>
-            <button
-              onClick={() => setAiTestMode('weak_area')}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                aiTestMode === 'weak_area'
-                  ? 'bg-white dark:bg-gray-700 text-indigo-600 shadow-md'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <BrainCircuit className="w-4 h-4" /> Target Weak Areas
-            </button>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {aiTestMode === 'adaptive' ? (
-              <motion.div
-                key="adaptive"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Subject / Topic
-                  </label>
-                  <Input
-                    placeholder="e.g. Advanced TypeScript Generics"
-                    value={aiTestTopic}
-                    onChange={(e) => setAiTestTopic(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Base Difficulty
-                  </label>
-                  <select
-                    value={aiTestDifficulty}
-                    onChange={(e) => setAiTestDifficulty(e.target.value as any)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="weak_area"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
-                  <p className="text-sm text-indigo-800 dark:text-indigo-300">
-                    The AI Engine will analyze your historical Topic Performance and generate a specialized test heavily weighted towards the areas where you are <strong>Developing</strong> or <strong>Weak</strong>.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Number of Questions
-            </label>
-            <input
-              type="range"
-              min="5"
-              max="20"
-              step="5"
-              value={aiTestCount}
-              onChange={(e) => setAiTestCount(parseInt(e.target.value))}
-              className="w-full accent-purple-600"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>5</span>
-              <span>{aiTestCount} Questions</span>
-              <span>20</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={handleGenerateAITest}
-            disabled={isGenerating || (!aiTestTopic.trim() && aiTestMode === 'adaptive')}
-            className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 border-none text-white shadow-lg"
-          >
-            {isGenerating ? (
-              <span className="animate-pulse flex items-center gap-2">
-                <BrainCircuit className="w-5 h-5 animate-spin" /> Neural Syncing...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5" /> Generate Deep Learning Mock
-              </span>
-            )}
-          </Button>
-        </div>
-      </Modal>
+        onClose={() => setIsAIModalOpen(false)}
+        onTestGenerated={handleTestGenerated}
+        hasAccess={hasAccess}
+      />
     </div>
   )
-}
+})
 
 export default TestsAPage

@@ -346,6 +346,7 @@ const TestsAHistoryPage = () => {
                       border: 'none',
                       boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formatter={(value: any) => [`${value}%`, 'Score']}
                   />
                   <Line

@@ -17,9 +17,9 @@ const defaultQuizState = {
 
 export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, get) => ({
   quiz: defaultQuizState,
-  startQuizAttempt: (quizId, quizTitle, totalQuestions, timeLimit) => {
+  quizStartAttempt: (quizId, quizTitle, totalQuestions, timeLimit) => {
     const attempt = {
-      attemptId: `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      attemptId: `attempt-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       quizId,
       quizTitle,
       status: 'in_progress' as const,
@@ -37,7 +37,7 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
     })
     trackEvent('quiz_started', { quiz_id: quizId, total_questions: totalQuestions })
   },
-  answerQuestion: (questionId: string, answerValue: string) => {
+  quizAnswerQuestion: (questionId: string, answerValue: string) => {
     set(state => {
       const newAnswers = { ...state.quiz.answers, [questionId]: answerValue }
       return {
@@ -52,7 +52,7 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
       }
     })
   },
-  flagQuestion: questionId => {
+  quizFlagQuestion: questionId => {
     set(state => ({
       quiz: {
         ...state.quiz,
@@ -62,7 +62,7 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
       },
     }))
   },
-  unflagQuestion: questionId => {
+  quizUnflagQuestion: questionId => {
     set(state => ({
       quiz: {
         ...state.quiz,
@@ -70,7 +70,7 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
       },
     }))
   },
-  navigateToQuestion: index => {
+  quizNavigateToQuestion: index => {
     set(state => ({
       quiz: {
         ...state.quiz,

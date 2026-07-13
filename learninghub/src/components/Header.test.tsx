@@ -18,12 +18,14 @@ const { mockUseStore, setMockStore } = vi.hoisted(() => {
   })
 
   let storeState = createDefaultStore()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockUseStore = vi.fn((selector?: (state: any) => unknown) =>
     typeof selector === 'function' ? selector(storeState) : storeState
   )
 
   const setMockStore = (overrides: Record<string, unknown> = {}) => {
     storeState = { ...createDefaultStore(), ...overrides }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseStore.mockImplementation((selector?: (state: any) => unknown) =>
       typeof selector === 'function' ? selector(storeState) : storeState
     )
@@ -51,6 +53,7 @@ vi.mock('framer-motion', () => ({
       whileHover: _whileHover,
       whileTap: _whileTap,
       ...props
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) => <div {...props}>{children}</div>,
     h1: ({
       children,
@@ -61,6 +64,7 @@ vi.mock('framer-motion', () => ({
       whileHover: _whileHover,
       whileTap: _whileTap,
       ...props
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) => <h1 {...props}>{children}</h1>,
     button: ({
       children,
@@ -71,16 +75,20 @@ vi.mock('framer-motion', () => ({
       whileHover: _whileHover,
       whileTap: _whileTap,
       ...props
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) => <button {...props}>{children}</button>,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
 vi.mock('./NotificationBell', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   NotificationBell: (_props: any) => <div>🔔</div>,
 }))
 
 vi.mock('./ui/ProgressRing', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: (_props: any) => <div>progress</div>,
 }))
 

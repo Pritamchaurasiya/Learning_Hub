@@ -104,6 +104,7 @@ export default function AchievementsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
+            // eslint-disable-next-line react/no-array-index-key
             <div key={i} className="card-static p-5">
               <div className="flex items-start gap-4">
                 <Skeleton className="w-14 h-14 rounded-xl shrink-0" />

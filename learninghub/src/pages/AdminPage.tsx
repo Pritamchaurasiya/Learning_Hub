@@ -65,6 +65,7 @@ export default function AdminPage() {
     enabled: activeTab === 'users' || activeTab === 'overview', // Preload
     staleTime: 60 * 1000,
   })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const users = usersData ?? []
 
   // Courses Query
@@ -74,6 +75,7 @@ export default function AdminPage() {
     enabled: activeTab === 'courses' || activeTab === 'overview', // Preload
     staleTime: 60 * 1000,
   })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const courses = coursesData ?? []
 
   // Analytics Query
@@ -197,6 +199,7 @@ export default function AdminPage() {
                   },
                 ].map((stat, i) => (
                   <Card
+                    // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     className="p-6 group hover:shadow-xl transition-all border-none shadow-sm bg-white dark:bg-gray-900 h-full flex flex-col justify-center relative overflow-hidden"
                   >
@@ -379,6 +382,7 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50 bg-white dark:bg-gray-900">
                       {isLoadingCourses ? (
                         Array.from({ length: 5 }).map((_, i) => (
+                          // eslint-disable-next-line react/no-array-index-key
                           <tr key={i}>
                             <td className="px-6 py-5">
                               <Skeleton className="h-10 w-48" />
@@ -500,6 +504,7 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50 bg-white dark:bg-gray-900">
                       {isLoadingUsers ? (
                         Array.from({ length: 5 }).map((_, i) => (
+                          // eslint-disable-next-line react/no-array-index-key
                           <tr key={i}>
                             <td className="px-6 py-5">
                               <Skeleton className="h-10 w-48" />
@@ -609,6 +614,7 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       {analytics.byCategory.map((item, i) => (
                         <div
+                          // eslint-disable-next-line react/no-array-index-key
                           key={i}
                           className="flex justify-between items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                         >
@@ -644,6 +650,7 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       {analytics.popular.map((item, i) => (
                         <div
+                          // eslint-disable-next-line react/no-array-index-key
                           key={i}
                           className="flex justify-between items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                         >

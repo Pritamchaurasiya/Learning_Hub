@@ -6,39 +6,39 @@ interface BreadcrumbItem {
   href?: string
 }
 
-const routeLabels: Record<string, string> = {
-  '/': 'Home',
-  '/dashboard': 'Dashboard',
-  '/course': 'Courses',
-  '/search': 'Search',
-  '/bookmarks': 'Bookmarks',
-  '/achievements': 'Achievements',
-  '/problems': 'Problems',
-  '/quiz': 'Quiz',
-  '/quiz-history': 'Quiz History',
-  '/tests-a': 'Tests A+',
-  '/tests-a-history': 'Test History',
-  '/contest': 'Contests',
-  '/leaderboard': 'Leaderboard',
-  '/profile': 'Profile',
-  '/settings': 'Settings',
-  '/library': 'Library',
-  '/analytics': 'Analytics',
-  '/notifications': 'Notifications',
-  '/admin': 'Admin Panel',
-  '/monitoring': 'System Health',
-  '/downloads': 'Downloads',
-  '/certificates': 'Certificates',
-  '/discussions': 'Discussions',
-  '/mentorship': 'Mentorship',
-  '/ai-tutor': 'AI Tutor',
-  '/cart': 'Cart',
-  '/learning-path': 'Learning Path',
-  '/live-class': 'Live Class',
-  '/study-planner': 'Study Planner',
-  '/offline': 'Offline',
-  '/lesson-player': 'Lesson Player',
-}
+const routeLabels = new Map<string, string>([
+  ['/', 'Home'],
+  ['/dashboard', 'Dashboard'],
+  ['/course', 'Courses'],
+  ['/search', 'Search'],
+  ['/bookmarks', 'Bookmarks'],
+  ['/achievements', 'Achievements'],
+  ['/problems', 'Problems'],
+  ['/quiz', 'Quiz'],
+  ['/quiz-history', 'Quiz History'],
+  ['/tests-a', 'Tests A+'],
+  ['/tests-a-history', 'Test History'],
+  ['/contest', 'Contests'],
+  ['/leaderboard', 'Leaderboard'],
+  ['/profile', 'Profile'],
+  ['/settings', 'Settings'],
+  ['/library', 'Library'],
+  ['/analytics', 'Analytics'],
+  ['/notifications', 'Notifications'],
+  ['/admin', 'Admin Panel'],
+  ['/monitoring', 'System Health'],
+  ['/downloads', 'Downloads'],
+  ['/certificates', 'Certificates'],
+  ['/discussions', 'Discussions'],
+  ['/mentorship', 'Mentorship'],
+  ['/ai-tutor', 'AI Tutor'],
+  ['/cart', 'Cart'],
+  ['/learning-path', 'Learning Path'],
+  ['/live-class', 'Live Class'],
+  ['/study-planner', 'Study Planner'],
+  ['/offline', 'Offline'],
+  ['/lesson-player', 'Lesson Player'],
+])
 
 const topLevelRoutes = [
   '/',
@@ -82,27 +82,23 @@ function parseBreadcrumbs(pathname: string): BreadcrumbItem[] {
   for (let i = 0; i < segments.length; i++) {
     const path = `/${segments.slice(0, i + 1).join('/')}`
 
-    // eslint-disable-next-line security/detect-object-injection
-    if (routeLabels[path]) {
-      // eslint-disable-next-line security/detect-object-injection
-      items.push({ label: routeLabels[path], href: path })
+    const label = routeLabels.get(path)
+    if (label) {
+      items.push({ label, href: path })
     } else if (path.startsWith('/course/')) {
-      // eslint-disable-next-line security/detect-object-injection
       const courseId = segments[i]
-      const label = courseId
+      const courseLabel = courseId
         .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
-      items.push({ label, href: path })
+      items.push({ label: courseLabel, href: path })
     } else if (path.startsWith('/problem/')) {
-      // For problems, we might not have local data, so we'll capitalize the slug
-      // eslint-disable-next-line security/detect-object-injection
       const slug = segments[i]
-      const label = slug
+      const problemLabel = slug
         .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
-      items.push({ label, href: path })
+      items.push({ label: problemLabel, href: path })
     }
   }
 

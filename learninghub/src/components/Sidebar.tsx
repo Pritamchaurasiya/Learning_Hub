@@ -13,7 +13,6 @@ import {
   Trophy,
   Library,
   BarChart3,
-  Video,
   Settings,
   User,
   Shield,
@@ -86,7 +85,6 @@ export default function Sidebar() {
       label: 'Community',
       defaultOpen: true,
       items: [
-        { to: '/live-class', icon: Video, label: 'Live Classes' },
         { to: '/discussions', icon: MessageSquare, label: 'Discussions' },
       ],
     },
@@ -149,12 +147,12 @@ export default function Sidebar() {
         initial={false}
         animate={isDesktop || sidebarOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-700/40 flex flex-col overflow-hidden shadow-2xl lg:shadow-none lg:translate-x-0"
+        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden lg:shadow-none lg:translate-x-0"
         aria-label="Main navigation"
         role="navigation"
       >
         {/* Sidebar header */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-200/60 dark:border-gray-700/40 shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-200/40 dark:border-white/10 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/25">
               L
@@ -210,29 +208,34 @@ export default function Sidebar() {
               <NavLink
                 key={to}
                 to={to}
-                className={({ isActive }) => `
-                  flex items-center gap-3 px-4 py-2.5 rounded-xl mb-1
-                  transition-all duration-200 group relative
-                  ${
+                className={({ isActive }) =>
+                  `group flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 relative overflow-hidden mb-1 ${
                     isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold'
-                      : 'hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                  }
-                `}
+                      ? 'text-primary-700 dark:text-primary-300 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-white/5'
+                  }`
+                }
                 onClick={closeMobileSidebar}
               >
                 {({ isActive }) => (
                   <>
-                    {/* Active route indicator bar */}
+                    {/* Active route indicator background */}
                     {isActive && (
                       <motion.div
-                        layoutId="sidebar-active-indicator"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary-600 rounded-r-full"
+                        layoutId="sidebar-main-bg"
+                        className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
+                        initial={false}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
-                    <Icon className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                    <span className="text-sm font-medium">{label}</span>
+                    <Icon
+                      className={`w-5 h-5 relative z-10 transition-colors duration-300 ${
+                        isActive
+                          ? 'text-primary-600 dark:text-primary-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500'
+                      }`}
+                    />
+                    <span className="relative z-10 text-sm">{label}</span>
                   </>
                 )}
               </NavLink>
@@ -270,28 +273,33 @@ export default function Sidebar() {
                           <NavLink
                             key={to}
                             to={to}
-                            className={({ isActive }) => `
-                              flex items-center gap-3 px-4 py-2 rounded-xl mb-0.5
-                              transition-all duration-200 group relative
-                              ${
+                            className={({ isActive }) =>
+                              `group flex items-center gap-3 px-4 py-2 rounded-xl mb-0.5 font-medium transition-all duration-300 relative overflow-hidden ${
                                 isActive
-                                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold'
-                                  : 'hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                              }
-                            `}
+                                  ? 'text-primary-700 dark:text-primary-300'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-white/5'
+                              }`
+                            }
                             onClick={closeMobileSidebar}
                           >
                             {({ isActive }) => (
                               <>
                                 {isActive && (
                                   <motion.div
-                                    layoutId="sidebar-section-indicator"
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary-500 rounded-r-full"
+                                    layoutId="sidebar-section-bg"
+                                    className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
+                                    initial={false}
                                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                   />
                                 )}
-                                <Icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                                <span className="text-sm font-medium">{label}</span>
+                                <Icon
+                                  className={`w-4 h-4 relative z-10 transition-colors duration-300 ${
+                                    isActive
+                                      ? 'text-primary-600 dark:text-primary-400'
+                                      : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500'
+                                  }`}
+                                />
+                                <span className="relative z-10 text-sm">{label}</span>
                               </>
                             )}
                           </NavLink>

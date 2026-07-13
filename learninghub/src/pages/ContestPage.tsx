@@ -268,6 +268,7 @@ export default function ContestPage() {
                       </p>
                     </div>
                   ) : (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     contestResults.map((result: any, i: number) => {
                       const contest = apiContests.find(
                         (c: Contest) => c.contest_id === result.contestId

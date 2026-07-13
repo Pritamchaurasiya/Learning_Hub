@@ -219,6 +219,7 @@ export default function DiscussionsPage() {
               <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <select
                 value={sortBy}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={e => setSortBy(e.target.value as any)}
                 className="appearance-none pl-12 pr-8 py-4 border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 font-black text-[10px] uppercase tracking-widest cursor-pointer outline-none w-full lg:w-auto"
               >

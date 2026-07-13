@@ -1,4 +1,3 @@
-
 const STORAGE_KEY_PREFIX = 'lh_'
 
 export function sanitizeHtml(input: string): string {
@@ -77,10 +76,23 @@ export class RateLimiter {
 
 export const apiRateLimiter = new RateLimiter(10, 60000)
 
-async function getEncryptionKey(): Promise<CryptoKey> {
+const STORAGE_SALT_KEY = 'lh_salt_v2'
+
+function getOrCreateSalt(): Uint8Array {
+  const stored = localStorage.getItem(STORAGE_SALT_KEY)
+  if (stored) {
+    return Uint8Array.from(atob(stored), c => c.charCodeAt(0))
+  }
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  localStorage.setItem(STORAGE_SALT_KEY, btoa(String.fromCharCode(...salt)))
+  return salt
+}
+
+async function getEncryptionKey(salt: BufferSource): Promise<CryptoKey> {
+  const appIdentifier = `learninghub-v2:${window.location.origin}`
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode('learninghub-storage-key-v1'),
+    new TextEncoder().encode(appIdentifier),
     'PBKDF2',
     false,
     ['deriveKey']
@@ -88,8 +100,8 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: new TextEncoder().encode('learninghub-salt'),
-      iterations: 100000,
+      salt,
+      iterations: 600000,
       hash: 'SHA-256',
     },
     keyMaterial,
@@ -102,41 +114,31 @@ async function getEncryptionKey(): Promise<CryptoKey> {
 let encryptionKeyPromise: Promise<CryptoKey> | null = null
 
 function getKey(): Promise<CryptoKey> {
-  if (!encryptionKeyPromise) {
-    encryptionKeyPromise = getEncryptionKey()
-  }
+  encryptionKeyPromise ??= getEncryptionKey(getOrCreateSalt() as BufferSource)
   return encryptionKeyPromise
 }
 
 export class SecureStorage {
   static async setItem(key: string, value: string): Promise<void> {
-    try {
-      const k = await getKey()
-      const iv = crypto.getRandomValues(new Uint8Array(12))
-      const encoded = new TextEncoder().encode(value)
-      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, encoded)
-      const combined = new Uint8Array(iv.length + encrypted.byteLength)
-      combined.set(iv)
-      combined.set(new Uint8Array(encrypted), iv.length)
-      localStorage.setItem(STORAGE_KEY_PREFIX + key, btoa(String.fromCharCode(...combined)))
-    } catch {
-      localStorage.setItem(STORAGE_KEY_PREFIX + key, value)
-    }
+    const k = await getKey()
+    const iv = crypto.getRandomValues(new Uint8Array(12))
+    const encoded = new TextEncoder().encode(value)
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, encoded)
+    const combined = new Uint8Array(iv.length + encrypted.byteLength)
+    combined.set(iv)
+    combined.set(new Uint8Array(encrypted), iv.length)
+    localStorage.setItem(STORAGE_KEY_PREFIX + key, btoa(String.fromCharCode(...combined)))
   }
 
   static async getItem(key: string): Promise<string | null> {
     const stored = localStorage.getItem(STORAGE_KEY_PREFIX + key)
     if (!stored) return null
-    try {
-      const k = await getKey()
-      const combined = Uint8Array.from(atob(stored), c => c.charCodeAt(0))
-      const iv = combined.slice(0, 12)
-      const data = combined.slice(12)
-      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k, data)
-      return new TextDecoder().decode(decrypted)
-    } catch {
-      return stored
-    }
+    const k = await getKey()
+    const combined = Uint8Array.from(atob(stored), c => c.charCodeAt(0))
+    const iv = combined.slice(0, 12)
+    const data = combined.slice(12)
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k, data)
+    return new TextDecoder().decode(decrypted)
   }
 
   static removeItem(key: string): void {

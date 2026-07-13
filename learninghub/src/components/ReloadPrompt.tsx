@@ -13,7 +13,7 @@ export default function ReloadPrompt() {
       if (r) {
         setInterval(
           () => {
-            r.update()
+            void r.update()
           },
           60 * 60 * 1000
         )

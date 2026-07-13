@@ -359,30 +359,38 @@ export default function MonitoringPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
-                  {processes?.map((proc: any) => (
-                    <tr
-                      key={proc.pid}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <td className="px-8 py-5 text-xs font-black tabular-nums text-gray-400">
-                        #{proc.pid}
-                      </td>
-                      <td className="px-8 py-5 text-xs font-black text-gray-900 dark:text-gray-200 uppercase tracking-tight">
-                        {proc.name}
-                      </td>
-                      <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-primary-500">
-                        {proc.cpu_percent.toFixed(1)}%
-                      </td>
-                      <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-purple-500">
-                        {proc.memory_percent.toFixed(1)}%
-                      </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-sm">
-                          {proc.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {processes?.map(
+                    (proc: {
+                      pid: number | string
+                      name: string
+                      cpu_percent: number
+                      memory_percent: number
+                      status: string
+                    }) => (
+                      <tr
+                        key={proc.pid}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <td className="px-8 py-5 text-xs font-black tabular-nums text-gray-400">
+                          #{proc.pid}
+                        </td>
+                        <td className="px-8 py-5 text-xs font-black text-gray-900 dark:text-gray-200 uppercase tracking-tight">
+                          {proc.name}
+                        </td>
+                        <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-primary-500">
+                          {proc.cpu_percent.toFixed(1)}%
+                        </td>
+                        <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-purple-500">
+                          {proc.memory_percent.toFixed(1)}%
+                        </td>
+                        <td className="px-8 py-5 text-center">
+                          <span className="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-sm">
+                            {proc.status}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  )}
                   {(!processes || processes.length === 0) && (
                     <tr>
                       <td

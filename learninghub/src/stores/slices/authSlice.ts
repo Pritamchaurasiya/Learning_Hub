@@ -1,63 +1,26 @@
 import { StateCreator } from 'zustand'
 import { fetchApi } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
-import { extractData } from '../../utils/apiHelpers'
-import { SecureStorage } from '../../utils/security'
 import type { AppState, AuthSlice } from '../types'
 
-const getTokenExpiry = (token: string): number | null => {
-  try {
-    const [, payload] = token.split('.')
-    if (!payload) return null
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
-    const pad = base64.length % 4
-    const padded = pad ? base64 + '='.repeat(4 - pad) : base64
-    const decoded = JSON.parse(atob(padded))
-    return typeof decoded.exp === 'number' ? decoded.exp * 1000 : null
-  } catch {
-    return null
-  }
-}
+const initialAuthState = { isAuthenticated: false, user: null, isHydrated: false }
 
-function getTokenFromStorage(): string | null {
-  try {
-    return localStorage.getItem('lh_token')
-  } catch {
-    return null
+function extractUserFromResponse(response: unknown): Record<string, unknown> | undefined {
+  if (!response || typeof response !== 'object') return undefined
+  const obj = response as Record<string, unknown>
+  if (obj?.data && typeof obj.data === 'object') {
+    const data = obj.data as Record<string, unknown>
+    if (data?.user && typeof data.user === 'object') return data.user as Record<string, unknown>
+    if (data?.id) return data
   }
+  if (obj?.user && typeof obj.user === 'object') return obj.user as Record<string, unknown>
+  if (obj?.id) return obj
+  return undefined
 }
 
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
-  auth: {
-    isAuthenticated: (() => {
-      try {
-        const token = localStorage.getItem('lh_token') || localStorage.getItem('token')
-        if (!token) return false
-        const expiry = getTokenExpiry(token)
-        return expiry ? expiry > Date.now() : false
-      } catch {
-        return false
-      }
-    })(),
-    user: null,
-    isHydrated: false,
-  },
-  setAuth: (token, refreshToken, user) => {
-    try {
-      localStorage.setItem('lh_token', token)
-      localStorage.removeItem('token')
-      if (refreshToken) {
-        localStorage.setItem('lh_refreshToken', refreshToken)
-        localStorage.removeItem('refreshToken')
-      }
-      SecureStorage.setItem('token', token)
-      if (refreshToken) SecureStorage.setItem('refreshToken', refreshToken)
-    } catch {
-      // fallback to plain storage
-      if (token) localStorage.setItem('token', token)
-      if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
-    }
-
+  auth: initialAuthState,
+  setAuth: (_token, _refreshToken, user) => {
     set(state => ({
       auth: { isAuthenticated: true, user, isHydrated: state.auth.isHydrated },
       progress: {
@@ -79,50 +42,27 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     }))
   },
   logout: async () => {
-    const refreshToken = getTokenFromStorage()
-    if (refreshToken && get().auth.isAuthenticated) {
+    if (get().auth.isAuthenticated) {
       try {
-        await fetchApi('/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        })
-      } catch {
-        // silently fail - best effort
+        await fetchApi('/auth/logout', { method: 'POST' })
+      } catch (error) {
+        // Log logout failures for debugging but still clear local state
+        console.warn('[Auth] Logout request failed:', error)
       }
     }
 
-    localStorage.removeItem('lh_token')
-    localStorage.removeItem('lh_refreshToken')
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-    SecureStorage.removeItem('token')
-    SecureStorage.removeItem('refreshToken')
-
-    set({ auth: { isAuthenticated: false, user: null, isHydrated: false } })
+    set({ auth: { isAuthenticated: false, user: null, isHydrated: true } })
     trackEvent('user_logged_out')
   },
-  setHydrated: () => {
-    try {
-      const token = localStorage.getItem('lh_token') || localStorage.getItem('token')
-      const expiry = token ? getTokenExpiry(token) : null
-      const isTokenValid = expiry ? expiry > Date.now() : false
-      set(state => ({
-        auth: { ...state.auth, isHydrated: true, isAuthenticated: isTokenValid },
-      }))
-    } catch {
-      set(state => ({
-        auth: { ...state.auth, isHydrated: true, isAuthenticated: false },
-      }))
-    }
+  setHydrated: async () => {
+    set(state => ({
+      auth: { ...state.auth, isHydrated: true },
+    }))
   },
   fetchMe: async () => {
     try {
       const response = await fetchApi('/auth/me')
-      const payload =
-        extractData<Record<string, unknown>>(response) ?? (response as Record<string, unknown>)
-      const userData = (payload?.user ?? response?.user ?? payload) as
-        | Record<string, unknown>
-        | undefined
+      const userData = extractUserFromResponse(response)
 
       if (!userData?.id) {
         void get().logout()

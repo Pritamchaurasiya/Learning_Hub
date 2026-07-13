@@ -50,6 +50,7 @@ export default function StudyPlannerPage() {
       // but let's assume backend returns all and we can filter, or backend handles it.
       const data = res.data
       if (filter === 'completed') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return data.filter((t: any) => t.status === 'completed')
       }
       return data
@@ -61,6 +62,7 @@ export default function StudyPlannerPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => studyPlannerService.deleteTask(id),
     onSuccess: (_, deletedId) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(['study', 'tasks', filter], (old: any) =>
         Array.isArray(old) ? old.filter(t => t.id !== deletedId) : old
       )
@@ -84,6 +86,7 @@ export default function StudyPlannerPage() {
     onMutate: async ({ id, newStatus }) => {
       await queryClient.cancelQueries({ queryKey: ['study', 'tasks', filter] })
       const previousTasks = queryClient.getQueryData(['study', 'tasks', filter])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(['study', 'tasks', filter], (old: any) =>
         Array.isArray(old) ? old.map(t => (t.id === id ? { ...t, status: newStatus } : t)) : old
       )
@@ -198,12 +201,14 @@ export default function StudyPlannerPage() {
             <div className="space-y-8">
               {isGoalsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={i} className="space-y-3">
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-3 w-full rounded-full" />
                   </div>
                 ))
               ) : goals.length > 0 ? (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 goals.map((goal: any) => (
                   <div key={goal.id} className="space-y-4">
                     <div className="flex justify-between items-start">
@@ -268,6 +273,7 @@ export default function StudyPlannerPage() {
           <div className="space-y-4">
             {isTasksLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <Skeleton key={i} className="h-32 w-full rounded-3xl" />
               ))
             ) : tasks.length === 0 ? (

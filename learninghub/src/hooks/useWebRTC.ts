@@ -65,6 +65,12 @@ export function useWebRTC(roomId: string | null) {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
+          // Note: Add production TURN credentials here for symmetric NATs
+          {
+            urls: 'turn:turn.learninghub.com:3478',
+            username: 'webrtc-user',
+            credential: 'webrtc-password',
+          },
         ],
       })
 
@@ -173,6 +179,10 @@ export function useWebRTC(roomId: string | null) {
       }
       setRemoteStreams(prev => {
         const newMap = new Map(prev)
+        const remoteStream = newMap.get(data.socketId)
+        if (remoteStream) {
+          remoteStream.getTracks().forEach(track => track.stop())
+        }
         newMap.delete(data.socketId)
         return newMap
       })
@@ -213,6 +223,10 @@ export function useWebRTC(roomId: string | null) {
     return () => {
       peersRef.current.forEach(peer => peer.close())
       peersRef.current.clear()
+      setRemoteStreams(prev => {
+        prev.forEach(stream => stream.getTracks().forEach(track => track.stop()))
+        return new Map()
+      })
     }
   }, [])
 

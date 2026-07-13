@@ -122,7 +122,7 @@ export function Modal({
               aria-labelledby={title ? 'modal-title' : undefined}
               aria-describedby={description ? 'modal-description' : undefined}
               className={cn(
-                'relative w-full bg-white dark:bg-gray-900 rounded-2xl shadow-2xl',
+                'relative w-full bg-white/95 dark:bg-gray-900/90 rounded-3xl shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-gray-800/50',
                 'overflow-hidden',
                 // eslint-disable-next-line security/detect-object-injection
                 sizeClasses[size],

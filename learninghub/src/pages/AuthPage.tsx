@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
@@ -27,14 +27,14 @@ interface FieldErrors {
 const calculatePasswordStrength = (pass: string) => {
   let score = 0
   if (!pass) return score
-  if (pass.length > 8) score += 1
+  if (pass.length >= 8) score += 1
   if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1
   if (/[0-9]/.test(pass)) score += 1
-  if (/[^A-Za-z0-9]/.test(pass)) score += 1
+  if (/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(pass)) score += 1
   return score
 }
 
-export default function AuthPage() {
+const AuthPage = memo(function AuthPage() {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -89,7 +89,7 @@ export default function AuthPage() {
         errors.password = 'Must contain a lowercase letter'
       } else if (!/[0-9]/.test(password)) {
         errors.password = 'Must contain a number'
-      } else if (!/[^A-Za-z0-9]/.test(password)) {
+      } else if (!/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(password)) {
         errors.password = 'Must contain a special character'
       }
     }
@@ -121,14 +121,11 @@ export default function AuthPage() {
         body: JSON.stringify(body),
       })
 
-      const rawData = response.data ?? response
-      const data = rawData.data ?? rawData
-      const token = data.access_token ?? data.accessToken ?? data.token
-      const refreshToken = data.refresh_token ?? data.refreshToken ?? data.refresh
-      const user = data.user ?? rawData
+      const data = response?.data ?? response
+      const user = data?.user ?? data
 
-      if (token && user?.id) {
-        setAuth(token, refreshToken ?? null, user)
+      if (user?.id) {
+        setAuth('', null, user)
         addToast({
           message: isLogin ? 'Welcome back!' : 'Account created successfully!',
           type: 'success',
@@ -136,7 +133,7 @@ export default function AuthPage() {
         navigate(from, { replace: true })
       } else {
         addToast({
-          message: data.message ?? 'Authentication failed. Please try again.',
+          message: response?.message ?? data?.message ?? 'Authentication failed. Please try again.',
           type: 'error',
         })
       }
@@ -158,19 +155,25 @@ export default function AuthPage() {
     setPassword('Student@123!')
   }
 
-  const fieldClass = (field: keyof FieldErrors) =>
-    `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
-      fieldErrors[field]
+  const fieldClass = (field: keyof FieldErrors) => {
+    // eslint-disable-next-line security/detect-object-injection
+    const hasError = field === 'email' ? fieldErrors.email : fieldErrors[field]
+    return `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
+      hasError
         ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
-        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600'
     }`
+  }
 
-  const passwordFieldClass = (field: keyof FieldErrors) =>
-    `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-10 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
-      fieldErrors[field]
+  const passwordFieldClass = (field: keyof FieldErrors) => {
+    // eslint-disable-next-line security/detect-object-injection
+    const hasError = field === 'password' ? fieldErrors.password : fieldErrors[field]
+    return `flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-10 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
+      hasError
         ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
-        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500 hover:border-gray-300 dark:hover:border-gray-600'
     }`
+  }
 
   return (
     <AnimatedPage>
@@ -267,7 +270,7 @@ export default function AuthPage() {
                 )}
               </div>
               {fieldErrors.email && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
                   <AlertCircle className="h-3 w-3" />
                   {fieldErrors.email}
                 </p>
@@ -301,17 +304,27 @@ export default function AuthPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  tabIndex={-1}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {fieldErrors.password && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
                   <AlertCircle className="h-3 w-3" />
                   {fieldErrors.password}
                 </p>
+              )}
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
               )}
               {!isLogin && (
                 <div className="mt-2 space-y-1.5">
@@ -337,10 +350,11 @@ export default function AuthPage() {
                   <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     {calculatePasswordStrength(password) === 0 &&
                       'Must contain uppercase, lowercase, number, and special character'}
-                    {calculatePasswordStrength(password) === 1 && 'Weak password'}
-                    {calculatePasswordStrength(password) === 2 && 'Fair password'}
-                    {calculatePasswordStrength(password) === 3 && 'Good password'}
-                    {calculatePasswordStrength(password) === 4 && 'Strong password'}
+                    {calculatePasswordStrength(password) === 1 && 'Weak - add more variety'}
+                    {calculatePasswordStrength(password) === 2 &&
+                      'Fair - add numbers & special chars'}
+                    {calculatePasswordStrength(password) === 3 && 'Good - add special chars'}
+                    {calculatePasswordStrength(password) >= 4 && 'Strong password'}
                   </p>
                 </div>
               )}
@@ -376,7 +390,7 @@ export default function AuthPage() {
                   />
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
                     <AlertCircle className="h-3 w-3" />
                     {fieldErrors.confirmPassword}
                   </p>
@@ -444,6 +458,7 @@ export default function AuthPage() {
                 className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                aria-label={isLogin ? 'Switch to sign up' : 'Switch to sign in'}
               >
                 {isLogin ? 'Sign up' : 'Sign in'}
               </motion.button>
@@ -486,4 +501,6 @@ export default function AuthPage() {
       </div>
     </AnimatedPage>
   )
-}
+})
+
+export default AuthPage

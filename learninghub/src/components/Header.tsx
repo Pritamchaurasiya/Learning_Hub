@@ -17,25 +17,48 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 
 const Header = memo(() => {
   const navigate = useNavigate()
-  const theme = useStore(s => s.theme)
-  const toggleDarkMode = useStore(s => s.toggleDarkMode)
-  const progress = useStore(s => s.progress)
-  const setSidebarOpen = useStore(s => s.setSidebarOpen)
-  const dailyGoal = useStore(s => s.dailyGoal)
-  const isAuthenticated = useStore(s => s.auth.isAuthenticated)
-  const authUser = useStore(s => s.auth.user)
-  const logout = useStore(s => s.logout)
+  const {
+    theme,
+    toggleDarkMode,
+    progress,
+    setSidebarOpen,
+    dailyGoal,
+    isAuthenticated,
+    authUser,
+    logout,
+  } = useStore(
+    useShallow(s => ({
+      theme: s.theme,
+      toggleDarkMode: s.toggleDarkMode,
+      progress: s.progress,
+      setSidebarOpen: s.setSidebarOpen,
+      dailyGoal: s.dailyGoal,
+      isAuthenticated: s.auth.isAuthenticated,
+      authUser: s.auth.user,
+      logout: s.logout,
+    }))
+  )
   const [searchInput, setSearchInput] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(userMenuRef, () => setUserMenuOpen(false))
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Ctrl+K / Cmd+K keyboard shortcut for search
   useEffect(() => {
@@ -85,13 +108,19 @@ const Header = memo(() => {
   const dailyProgress = dailyGoal.target > 0 ? (dailyGoal.progress / dailyGoal.target) * 100 : 0
 
   return (
-    <header className="h-16 glass-strong bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700/40 flex items-center justify-between px-4 md:px-6 shrink-0 relative z-30">
+    <header
+      className={`h-16 flex items-center justify-between px-4 md:px-6 shrink-0 relative z-30 transition-all duration-300 ${
+        isScrolled
+          ? 'glass-strong bg-white/70 dark:bg-slate-900/60 border-b border-gray-200/40 dark:border-white/10'
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
       <div className="flex items-center gap-3">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
+          className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -183,7 +212,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setMobileSearchOpen(true)}
-          className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
+          className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Open search"
         >
           <Search className="w-5 h-5" />
@@ -233,7 +262,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
           onClick={toggleDarkMode}
-          className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
+          className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label={themeLabel()}
           title={themeLabel()}
         >

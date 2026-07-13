@@ -32,6 +32,7 @@ export const certificateService = {
   // Get all certificates for current user
   async getCertificates(): Promise<{ status: string; data: Certificate[] }> {
     const res = await fetchApi('/certificates/my-certificates')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped = (res.data?.certificates ?? []).map((c: any) => ({
       id: c.id,
       certificate_code: c.certificateUrl, // using URL as code for download/share

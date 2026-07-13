@@ -28,13 +28,14 @@ export default function AnimatedPage({ children, className = '' }: AnimatedPageP
       exit="exit"
       variants={pageVariants}
       transition={pageTransition}
-      className={cn('w-full min-h-full', className)}
+      className={cn('w-full min-h-full outline-none', className)}
       style={{
         willChange: 'opacity, transform',
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
       }}
-      aria-live="polite"
+      role="region"
+      aria-label="Page content"
     >
       {children}
     </motion.div>

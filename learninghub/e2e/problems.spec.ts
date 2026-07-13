@@ -2,14 +2,18 @@ import { test, expect } from '@playwright/test'
 
 test.describe('DSA Practice Module', () => {
   test.beforeEach(async ({ context, page }) => {
-    page.on('request', request => console.log('>>', request.method(), request.url()))
-    page.on('response', response => console.log('<<', response.status(), response.url()))
-    page.on('console', msg => console.log('BROWSER:', msg.text()))
-    page.on('pageerror', err => console.log('BROWSER ERROR:', err.message))
     // Set localStorage tokens before any page navigation to avoid auth redirect race conditions
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
-      window.localStorage.setItem('lh_token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOiA5OTk5OTk5OTk5fQ==.mock-signature')
+      window.localStorage.setItem('learninghub-storage', JSON.stringify({
+        state: {
+          auth: {
+            isAuthenticated: true,
+            user: { id: "user-1", username: "TestUser", role: "STUDENT" }
+          }
+        },
+        version: 0
+      }))
     })
 
     // Mock user authentication
@@ -19,15 +23,36 @@ test.describe('DSA Practice Module', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           status: 'success',
-          data: { user: { id: 'user-1', username: 'TestUser', role: 'STUDENT', streak: 5, xp: 100, level: 2 } }
-        })
+          data: {
+            user: {
+              id: 'user-1',
+              username: 'TestUser',
+              role: 'STUDENT',
+              streak: 5,
+              xp: 100,
+              level: 2,
+            },
+          },
+        }),
+      })
+    })
+
+    // Mock notifications to prevent 401 redirects from useNotificationConnection
+    await page.route('**/notifications*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'success',
+          data: [],
+        }),
       })
     })
   })
 
   test('should display DSA stats and problems on /problems', async ({ page }) => {
     // Mock DSA Stats
-    await page.route('**/gamification/dsa-stats', async route => {
+    await page.route('**/gamification/dsa-stats*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -47,9 +72,9 @@ test.describe('DSA Practice Module', () => {
             hard_solved: 7,
             total_easy: 30,
             total_medium: 40,
-            total_hard: 30
-          }
-        })
+            total_hard: 30,
+          },
+        }),
       })
     })
 
@@ -72,7 +97,7 @@ test.describe('DSA Practice Module', () => {
                 points: 10,
                 tags: [{ id: 't1', name: 'Arrays', slug: 'arrays' }],
                 acceptance_rate: 85.5,
-                user_status: 'SOLVED'
+                user_status: 'SOLVED',
               },
               {
                 id: 'prob-2',
@@ -83,19 +108,19 @@ test.describe('DSA Practice Module', () => {
                 points: 30,
                 tags: [{ id: 't2', name: 'LinkedList', slug: 'linked-list' }],
                 acceptance_rate: 60.2,
-                user_status: 'UNATTEMPTED'
-              }
+                user_status: 'UNATTEMPTED',
+              },
             ],
             total: 2,
             page: 1,
-            pages: 1
-          }
-        })
+            pages: 1,
+          },
+        }),
       })
     })
 
     await page.goto('/problems')
-    
+
     // Verify Stats
     await expect(page.getByText('42', { exact: true }).first()).toBeVisible({ timeout: 10000 }) // Solved
     await expect(page.getByText('66%', { exact: true }).first()).toBeVisible({ timeout: 10000 }) // Accuracy (rounded 65.5 to 66)
@@ -120,24 +145,28 @@ test.describe('DSA Practice Module', () => {
             results: [],
             total: 0,
             page: 1,
-            pages: 1
-          }
-        })
+            pages: 1,
+          },
+        }),
       })
     })
-    
-    await page.route(/.*\/gamification\/dsa-stats/, async route => {
+
+    await page.route('**/gamification/dsa-stats*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ status: 'success', data: null })
+        body: JSON.stringify({ status: 'success', data: null }),
       })
     })
 
     await page.goto('/problems')
 
     // Wait for the empty state to appear
-    await expect(page.getByRole('heading', { name: 'No Problems Found' })).toBeVisible({ timeout: 10000 })
-    await expect(page.getByText('Try adjusting your filters').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: 'No Problems Found' })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByText(/Try adjusting your filters/i).first()).toBeVisible({
+      timeout: 10000,
+    })
   })
 })

@@ -49,31 +49,45 @@ export interface AdminLoginResponse {
 
 const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
   superadmin: [
-    'users.read', 'users.write', 'users.delete',
-    'courses.read', 'courses.write', 'courses.delete',
-    'analytics.read', 'settings.read', 'settings.write',
-    'system.read', 'system.write', 'audit.read',
+    'users.read',
+    'users.write',
+    'users.delete',
+    'courses.read',
+    'courses.write',
+    'courses.delete',
+    'analytics.read',
+    'settings.read',
+    'settings.write',
+    'system.read',
+    'system.write',
+    'audit.read',
   ],
   admin: [
-    'users.read', 'users.write',
-    'courses.read', 'courses.write', 'courses.delete',
-    'analytics.read', 'settings.read', 'audit.read',
+    'users.read',
+    'users.write',
+    'courses.read',
+    'courses.write',
+    'courses.delete',
+    'analytics.read',
+    'settings.read',
+    'audit.read',
   ],
   moderator: ['users.read', 'courses.read', 'courses.write', 'analytics.read'],
 }
 
-const ADMIN_TOKEN_KEY = 'adminToken'
 const ADMIN_USER_KEY = 'adminUser'
 
-let memoryToken: string | null = null
 let memoryUser: AdminUser | null = null
 
 async function loadFromStorage(): Promise<void> {
-  if (!memoryToken) memoryToken = await SecureStorage.getItem(ADMIN_TOKEN_KEY)
   if (!memoryUser) {
     const raw = await SecureStorage.getItem(ADMIN_USER_KEY)
     if (raw) {
-      try { memoryUser = JSON.parse(raw) as AdminUser } catch { memoryUser = null }
+      try {
+        memoryUser = JSON.parse(raw) as AdminUser
+      } catch {
+        memoryUser = null
+      }
     }
   }
 }
@@ -88,13 +102,14 @@ export const adminAuthService = {
     if (response.status === 'success') {
       const userData = response.data.user
       const role = userData.role?.toLowerCase() as AdminRole
-      const validRole = (['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin') as AdminRole
-
-      const token = (response.data as unknown as Record<string, string>).access_token ?? response.data.token
+      const validRole = (
+        ['admin', 'superadmin', 'moderator'].includes(role) ? role : 'admin'
+      ) as AdminRole
 
       const user: AdminUser = {
         ...userData,
         role: validRole,
+        // eslint-disable-next-line security/detect-object-injection
         permissions: ROLE_PERMISSIONS[validRole] || [],
         isActive: true,
         twoFactorEnabled: false,
@@ -102,20 +117,16 @@ export const adminAuthService = {
         updatedAt: new Date().toISOString(),
       }
 
-      memoryToken = token
       memoryUser = user
 
-      await Promise.all([
-        SecureStorage.setItem(ADMIN_TOKEN_KEY, token),
-        SecureStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user)),
-      ])
+      await SecureStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user))
     }
 
     return response
   },
 
   async logout(): Promise<void> {
-    this.clearSession()
+    void this.clearSession()
   },
 
   getAdminUser(): AdminUser | null {
@@ -123,32 +134,16 @@ export const adminAuthService = {
   },
 
   getToken(): string | null {
-    return memoryToken
+    return null
   },
 
   isAuthenticated(): boolean {
-    const token = this.getToken()
-    if (!token) return false
-    try {
-      const [, payload] = token.split('.')
-      if (!payload) return false
-      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
-      const pad = base64.length % 4
-      const padded = pad ? base64 + '='.repeat(4 - pad) : base64
-      const decoded = JSON.parse(atob(padded))
-      return typeof decoded.exp === 'number' ? decoded.exp * 1000 > Date.now() : false
-    } catch {
-      return false
-    }
+    return memoryUser !== null
   },
 
   async clearSession(): Promise<void> {
-    memoryToken = null
     memoryUser = null
-    await Promise.all([
-      SecureStorage.removeItem(ADMIN_TOKEN_KEY),
-      SecureStorage.removeItem(ADMIN_USER_KEY),
-    ])
+    await SecureStorage.removeItem(ADMIN_USER_KEY)
   },
 
   async initFromStorage(): Promise<void> {

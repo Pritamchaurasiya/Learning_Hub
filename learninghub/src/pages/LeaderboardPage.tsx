@@ -58,7 +58,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      connect('')
+      connect()
       // Listen for global ranking_update emitted by gamificationController
       const cleanup = on('ranking_update', () => {
         // Soft refresh
@@ -186,6 +186,7 @@ export default function LeaderboardPage() {
           {/* List Skeleton */}
           <Card className="divide-y divide-gray-100 dark:divide-gray-800/50 rounded-[2rem] p-4">
             {[...Array(5)].map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key
               <div key={i} className="flex items-center gap-6 p-4">
                 <Skeleton className="w-8 h-8 rounded-lg" />
                 <Skeleton className="w-14 h-14 rounded-2xl" />
@@ -205,6 +206,7 @@ export default function LeaderboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               {/* Podium rendering order: 2, 1, 3 for visual effect */}
               {[1, 0, 2].map(idx => {
+                // eslint-disable-next-line security/detect-object-injection
                 const entry = leaderboardData[idx]
                 if (!entry) return null
                 const rank = idx + 1

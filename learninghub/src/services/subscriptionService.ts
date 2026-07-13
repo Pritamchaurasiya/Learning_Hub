@@ -24,7 +24,7 @@ export const subscriptionService = {
   getTiers: async (): Promise<SubscriptionTier[]> => {
     try {
       const res = await fetchApi('/subscriptions/tiers')
-      return res.data?.tiers || []
+      return res.data?.tiers ?? []
     } catch {
       // Fallback tiers if backend is missing/failing
       return [
@@ -71,7 +71,7 @@ export const subscriptionService = {
   getMySubscription: async (): Promise<UserSubscription | null> => {
     try {
       const res = await fetchApi('/subscriptions/me')
-      return res.data?.subscription || null
+      return res.data?.subscription ?? null
     } catch {
       return null
     }
@@ -82,11 +82,11 @@ export const subscriptionService = {
       method: 'POST',
       body: JSON.stringify({ tierId }),
     })
-    
+
     if (res.data?.checkoutUrl) {
       return res.data.checkoutUrl
     }
-    
+
     // If Stripe is not configured or fails, we return a mock success flow
     return `/payment-success?session_id=mock_${Date.now()}`
   },

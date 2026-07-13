@@ -178,6 +178,8 @@ export const createTestsASlice: StateCreator<AppState, [], [], TestsASlice> = (s
             isSubmitting: false,
           },
         }))
+        // Re-hydrate user XP and global state optimistically to stay in sync with Gamification backend
+        void get().fetchMe()
         return { success: true, score: Number(resultData.score ?? 0) }
       }
 
@@ -252,6 +254,38 @@ export const createTestsASlice: StateCreator<AppState, [], [], TestsASlice> = (s
         lastAutosavedAt: timestamp,
       },
     }))
+  },
+
+  updateSubjectiveGrade: payload => {
+    set(state => {
+      if (!state.testsA.results?.question_results) {
+        return state
+      }
+
+      const newQuestionResults = state.testsA.results.question_results.map(qr => {
+        if (qr.question_id === payload.questionId) {
+          return {
+            ...qr,
+            marks_obtained: payload.marksObtained,
+            is_correct: payload.isCorrect,
+            explanation: payload.aiFeedback || qr.explanation,
+          }
+        }
+        return qr
+      })
+
+      return {
+        testsA: {
+          ...state.testsA,
+          results: {
+            ...state.testsA.results,
+            score: payload.percentage, // Score in UI is percentage
+            passed: payload.passed,
+            question_results: newQuestionResults,
+          },
+        },
+      }
+    })
   },
 })
 

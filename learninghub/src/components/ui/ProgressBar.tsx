@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { cn } from '../../utils/cn'
 
 interface ProgressBarProps {
@@ -5,7 +6,7 @@ interface ProgressBarProps {
   className?: string
 }
 
-export function ProgressBar({ progress, className }: ProgressBarProps) {
+export const ProgressBar = memo(({ progress, className }: ProgressBarProps) => {
   return (
     <div className={cn('w-full bg-gray-200 rounded-full overflow-hidden', className)}>
       <div
@@ -14,4 +15,4 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
       />
     </div>
   )
-}
+})

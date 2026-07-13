@@ -22,15 +22,6 @@ function normalizeNotification(data: SocketNotification): Omit<Notification, 'id
   }
 }
 
-/**
- * Manages real-time notification WebSocket connection.
- *
- * Key design decisions:
- * - fetchNotifications is called ONCE on mount (guarded by fetchedRef)
- * - WebSocket connect is called ONCE per auth session (guarded by connectedRef)
- * - addNotification is accessed via getState() to avoid dependency-triggered re-renders
- * - This prevents the infinite re-render loop that was causing dashboard freezes
- */
 export function useNotificationConnection() {
   const auth = useStore(s => s.auth)
   const unreadCount = useStore(s => s.unreadCount)
@@ -39,17 +30,18 @@ export function useNotificationConnection() {
   const fetchedRef = useRef(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-
-    if (!auth.isAuthenticated || !token) {
+    const isAuthenticated = auth.isAuthenticated
+    if (!isAuthenticated) {
       ws.disconnect()
       connectedRef.current = false
       fetchedRef.current = false
       return
     }
 
+    const cleanupRef: { current: (() => void) | null } = { current: null }
+
     if (!connectedRef.current) {
-      ws.connect(token)
+      ws.connect()
       connectedRef.current = true
     }
 
@@ -62,21 +54,12 @@ export function useNotificationConnection() {
       useStore.getState().addNotification(normalizeNotification(data))
     })
 
-    const handleTokenRefreshed = () => {
-      const newToken = localStorage.getItem('token')
-      if (newToken && auth.isAuthenticated) {
-        ws.disconnect()
-        connectedRef.current = false
-        ws.connect(newToken)
-        connectedRef.current = true
-      }
+    cleanupRef.current = () => {
+      unsubscribe()
     }
 
-    window.addEventListener('auth:token-refreshed', handleTokenRefreshed)
-
     return () => {
-      unsubscribe()
-      window.removeEventListener('auth:token-refreshed', handleTokenRefreshed)
+      cleanupRef.current?.()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.isAuthenticated])

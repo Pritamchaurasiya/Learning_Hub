@@ -67,27 +67,46 @@ export interface ChatRequest {
     course_id?: string
     lesson_id?: string
     topic?: string
+    /** Rich context for context-aware AI tutor */
+    question_text?: string
+    options?: string[]
+    selected_option?: string
+    problem_title?: string
+    problem_description?: string
+    user_code?: string
+    language?: string
+    is_review?: boolean
   }
 }
 
 export interface GeneratedQuestion {
+  id?: string
   text: string
   options: { id: string; text: string }[]
   correct_option_id: string
   explanation: string
   difficulty: string
   bloom_level: string
+  points?: number
 }
 
 export interface GenerateTestResponse {
   status: string
   data: {
-    topic: string
+    testId: string
+    test_id: string
+    title: string
+    topic?: string
     difficulty: string
     question_count: number
+    questionCount: number
+    time_limit: number
+    timeLimit: number
+    time_limit_minutes: number
     questions: GeneratedQuestion[]
     ai_powered: boolean
     model: string
+    error?: string
   }
 }
 
@@ -102,6 +121,48 @@ export interface AICodeReviewResult {
 export interface CodeReviewResponse {
   status: string
   data: AICodeReviewResult
+}
+
+const toNumber = (value: unknown, fallback: number): number => {
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const normalizeGeneratedTestResponse = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  response: any,
+  fallbackTopic: string
+): GenerateTestResponse => {
+  const data = response?.data ?? {}
+  const questions = Array.isArray(data.questions) ? data.questions : []
+  const questionCount = toNumber(data.question_count ?? data.questionCount, questions.length)
+  const timeLimit = toNumber(
+    data.time_limit ?? data.timeLimit ?? data.time_limit_minutes,
+    Math.max(10, questionCount * 2)
+  )
+  const testId = String(data.testId ?? data.test_id ?? '')
+
+  return {
+    status: response?.status ?? 'success',
+    data: {
+      ...data,
+      testId,
+      test_id: String(data.test_id ?? testId),
+      title: String(
+        data.title ?? (fallbackTopic ? `AI Practice: ${fallbackTopic}` : 'AI Practice')
+      ),
+      topic: data.topic ? String(data.topic) : fallbackTopic,
+      difficulty: String(data.difficulty ?? 'medium').toLowerCase(),
+      question_count: questionCount,
+      questionCount,
+      time_limit: timeLimit,
+      timeLimit,
+      time_limit_minutes: timeLimit,
+      questions,
+      ai_powered: data.ai_powered ?? false,
+      model: String(data.model ?? 'unknown'),
+    },
+  }
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -213,17 +274,19 @@ export const aiTutorService = {
     try {
       const res = await fetchApi('/ai/learning-path', { method: 'POST', body: JSON.stringify({}) })
       if (res.status === 'success' && res.data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const d = res.data as any
         const recs: AIRecommendation[] = []
 
-        if (d.next_steps) {
-          ;(d.next_steps as string[]).forEach((step: string, i: number) => {
+        if (Array.isArray(d.next_steps)) {
+          d.next_steps.forEach((step: unknown, i: number) => {
+            const stepStr = String(step)
             recs.push({
               id: `rec-${i}`,
               type: 'practice',
-              title: step,
-              description: step,
-              reason: d.recommendation ?? '',
+              title: stepStr,
+              description: stepStr,
+              reason: d.recommendation ? String(d.recommendation) : '',
               relevance_score: 0.9 - i * 0.1,
             })
           })
@@ -266,46 +329,82 @@ export const aiTutorService = {
   generatePracticeQuestions: async (
     topic: string,
     difficulty: 'easy' | 'medium' | 'hard',
-    count: number = 5
+    count: number = 5,
+    asyncQueue: boolean = false
   ): Promise<GenerateTestResponse> => {
     try {
       const res = await fetchApi('/ai/generate-test', {
         method: 'POST',
-        body: JSON.stringify({ topic, difficulty, count }),
+        body: JSON.stringify({ topic, difficulty, count, async: asyncQueue }),
       })
-      return res as GenerateTestResponse
+      if (asyncQueue) {
+        return res as unknown as GenerateTestResponse
+      }
+      return normalizeGeneratedTestResponse(res, topic)
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('[AITutor] generatePracticeQuestions failed:', error)
       }
       return {
         status: 'error',
-        data: { test_id: '', questions: [], error: 'Failed to generate questions' },
-      } as unknown as GenerateTestResponse
+        data: {
+          testId: '',
+          test_id: '',
+          title: '',
+          topic,
+          difficulty,
+          question_count: 0,
+          questionCount: 0,
+          time_limit: 0,
+          timeLimit: 0,
+          time_limit_minutes: 0,
+          questions: [],
+          ai_powered: false,
+          model: 'unavailable',
+          error: 'Failed to generate questions',
+        },
+      }
     }
   },
 
-  generateWeakAreaTest: async (
-    count: number = 10
-  ): Promise<GenerateTestResponse> => {
+  generateWeakAreaTest: async (count: number = 10): Promise<GenerateTestResponse> => {
     try {
       const res = await fetchApi('/ai/generate-weak-area-test', {
         method: 'POST',
         body: JSON.stringify({ count }),
       })
-      return res as GenerateTestResponse
+      return normalizeGeneratedTestResponse(res, 'Weak Areas')
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('[AITutor] generateWeakAreaTest failed:', error)
       }
       return {
         status: 'error',
-        data: { topic: 'Weak Areas', difficulty: 'mixed', question_count: 0, questions: [], error: 'Failed to generate questions' },
-      } as unknown as GenerateTestResponse
+        data: {
+          testId: '',
+          test_id: '',
+          title: 'Weak Areas',
+          topic: 'Weak Areas',
+          difficulty: 'mixed',
+          question_count: 0,
+          questionCount: 0,
+          time_limit: 0,
+          timeLimit: 0,
+          time_limit_minutes: 0,
+          questions: [],
+          ai_powered: false,
+          model: 'unavailable',
+          error: 'Failed to generate questions',
+        },
+      }
     }
   },
 
-  reviewCode: async (code: string, language: string, problemDescription: string): Promise<CodeReviewResponse> => {
+  reviewCode: async (
+    code: string,
+    language: string,
+    problemDescription: string
+  ): Promise<CodeReviewResponse> => {
     try {
       const res = await fetchApi('/ai/code-review', {
         method: 'POST',

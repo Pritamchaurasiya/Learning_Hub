@@ -70,37 +70,38 @@ function StatCard({ icon: Icon, label, value, trend, color, delay = 0 }: StatCar
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week')
   const daysMap = { week: 7, month: 30, year: 365 }
+  // eslint-disable-next-line security/detect-object-injection
   const daysParam = daysMap[timeRange]
 
   // Use parallel queries for resilient data fetching
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
     queryKey: ['analytics', 'dashboard'],
     queryFn: () => analyticsService.getDashboardStats().then(res => res.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 
   const { data: activityData, isLoading: isLoadingActivity } = useQuery({
     queryKey: ['analytics', 'activity', daysParam],
     queryFn: () => analyticsService.getLearningActivity(daysParam).then(res => res.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 
   const { data: skillsData, isLoading: isLoadingSkills } = useQuery({
     queryKey: ['analytics', 'skills'],
     queryFn: () => analyticsService.getSkillProgress().then(res => res.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 
   const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
     queryKey: ['analytics', 'courses'],
     queryFn: () => analyticsService.getCourseAnalytics().then(res => res.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 
   const { data: testAnalyticsData, isLoading: isLoadingTestStats } = useQuery({
     queryKey: ['analytics', 'tests'],
     queryFn: () => analyticsService.getTestAnalytics().then(res => res.data),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   })
 
   const dayCount = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365
@@ -129,6 +130,7 @@ export default function AnalyticsPage() {
       result[count - 1 - i] = found ? Math.round((found.time_spent / 60) * 10) / 10 : 0
     }
     return result
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityData, dayCount, timeRange])
 
   const maxWeeklyHours = useMemo(() => Math.max(...weeklyProgress, 1), [weeklyProgress])
@@ -242,6 +244,7 @@ export default function AnalyticsPage() {
             ) : (
               <div className="flex items-end justify-between gap-4 h-64 relative z-10">
                 {weeklyProgress.map((hours, index) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={index} className="flex-1 flex flex-col items-center gap-3 group">
                     <div className="relative w-full flex flex-col justify-end">
                       <motion.div
@@ -256,6 +259,7 @@ export default function AnalyticsPage() {
                       </motion.div>
                     </div>
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                      {/* eslint-disable-next-line security/detect-object-injection */}
                       {chartDays[index]}
                     </span>
                   </div>
@@ -287,6 +291,7 @@ export default function AnalyticsPage() {
             ) : skillsData && Array.isArray(skillsData) && skillsData.length > 0 ? (
               <div className="space-y-6">
                 {skillsData.slice(0, 5).map((skill, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black uppercase tracking-wide text-gray-600 dark:text-gray-300">
@@ -340,6 +345,7 @@ export default function AnalyticsPage() {
                   .reverse()
                   .map((day, i) => (
                     <div
+                      // eslint-disable-next-line react/no-array-index-key
                       key={i}
                       className="flex items-start gap-4 p-4 rounded-[1.5rem] bg-gray-50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
                     >

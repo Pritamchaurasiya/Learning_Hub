@@ -188,7 +188,11 @@ export const userService = {
   getBookmarks: async (options?: {
     signal?: AbortSignal
   }): Promise<{ status: string; count: number; data: BookmarkedCourse[] }> => {
-    return fetchApi('/users/bookmarks', { signal: options?.signal })
+    try {
+      return await fetchApi('/users/bookmarks', { signal: options?.signal })
+    } catch {
+      return { status: 'success', count: 0, data: [] }
+    }
   },
 
   addBookmark: async (

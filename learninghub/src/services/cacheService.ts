@@ -1,15 +1,10 @@
-import {
-  getCachedData,
-  setCachedData,
-  invalidateCache,
-  getCacheStats,
-} from '../utils/cache'
+import { getCachedData, setCachedData, invalidateCache, getCacheStats } from '../utils/cache'
 
 const DEFAULT_TTL = {
-  SEARCH: 5 * 60 * 1000,
-  COURSE: 10 * 60 * 1000,
-  USER: 5 * 60 * 1000,
-  STATIC: 60 * 60 * 1000,
+  SEARCH: 2 * 60 * 1000,
+  COURSE: 5 * 60 * 1000,
+  USER: 2 * 60 * 1000,
+  STATIC: 30 * 60 * 1000,
 }
 
 export class CacheService {

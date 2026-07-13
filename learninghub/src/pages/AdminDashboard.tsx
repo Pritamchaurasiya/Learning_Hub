@@ -125,6 +125,7 @@ export function AdminDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <Card key={i} className="p-6 border-none shadow-sm rounded-2xl">
                     <div className="flex items-center gap-4">
                       <Skeleton className="h-12 w-12 rounded-xl" />

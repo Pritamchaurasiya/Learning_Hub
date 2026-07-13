@@ -74,11 +74,15 @@ export const quizService = {
     }) as Promise<{ status: string; data: Quiz[] }>,
 
   getQuiz: (quizId: string) =>
-    fetchApi(`/tests/${quizId}`).then(res => ({
-      status: res.status ?? 'success',
-      data: {
-        quiz: res.data ?? res,
-        questions: ((res.data?.questions ?? res.questions ?? []) as RawQuestion[]).map(q => ({
+    fetchApi(`/tests/${quizId}`).then(res => {
+      // Backend responds with { status, data: { quiz, questions } }. The quiz object is
+      // nested under `data.quiz`, so unwrap it to avoid a double-nested `quiz.quiz`.
+      const quiz = res.data?.quiz ?? res.data ?? res
+      return {
+        status: res.status ?? 'success',
+        data: {
+          quiz,
+          questions: ((quiz?.questions ?? res.questions ?? []) as RawQuestion[]).map(q => ({
           id: q.id,
           question: q.text,
           type: q.question_type,
@@ -88,10 +92,11 @@ export const quizService = {
           points: q.marks,
         })),
       },
-    })) as Promise<{
-      status: string
-      data: { quiz: Quiz; questions: QuizQuestion[] }
-    }>,
+    }
+  }) as Promise<{
+    status: string
+    data: { quiz: Quiz; questions: QuizQuestion[] }
+  }>,
 
   startAttempt: (quizId: string) =>
     fetchApi(`/tests/${quizId}/start`, {
@@ -162,13 +167,17 @@ export const quizService = {
   },
 
   getMyResults: () =>
-    fetchApi(`/tests/my-results`).then(res => ({
-      status: res.status ?? 'success',
-      data: {
-        results: res.data?.data ?? [],
-        totalXp: 0,
-      },
-    })) as Promise<{
+    fetchApi(`/tests/my-results`).then(res => {
+      // Backend responds with { status, data: { results, totalXp } }.
+      const payload = res.data ?? {}
+      return {
+        status: res.status ?? 'success',
+        data: {
+          results: payload.results ?? payload.data ?? [],
+          totalXp: payload.totalXp ?? 0,
+        },
+      }
+    }) as Promise<{
       status: string
       data: { results: QuizResult[]; totalXp: number }
     }>,
@@ -176,6 +185,8 @@ export const quizService = {
   listQuizzes: () =>
     fetchApi(`/tests`).then(res => ({
       status: res.status ?? 'success',
-      data: res.data?.data ?? res.results ?? [],
+      data: Array.isArray(res.data)
+        ? res.data
+        : (res.data?.data ?? res.data?.results ?? res.results ?? []),
     })) as Promise<{ status: string; data: Quiz[] }>,
 }

@@ -13,6 +13,8 @@ export default function AdminUsersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const queryClient = useQueryClient()
   const addToast = useStore(state => state.addToast)
+  const auth = useStore(state => state.auth)
+  const currentUserId = auth.user?.id
   const limit = 10
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
@@ -27,6 +29,7 @@ export default function AdminUsersPage() {
       )
       return {
         ...json.data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         users: json.data.users.map((raw: any) => ({
           id: raw.id,
           email: raw.email ?? '',
@@ -181,7 +184,7 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {user.role !== 'SUPERADMIN' && (
+                            {user.role !== 'SUPERADMIN' && user.id !== currentUserId && (
                               <>
                                 <button
                                   onClick={() =>

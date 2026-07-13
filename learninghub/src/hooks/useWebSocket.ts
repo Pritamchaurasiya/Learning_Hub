@@ -19,13 +19,17 @@ let globalState: WebSocketState = {
 }
 const globalEventHandlers = new Map<string, Set<WebSocketEventHandler>>()
 let connectAttemptCount = 0
+let activeConnectionCount = 0
 const MAX_RECONNECT_ATTEMPTS = 10
 
 // A set of setters to notify all instances of state changes
 const stateSubscribers = new Set<React.Dispatch<React.SetStateAction<WebSocketState>>>()
 
-function updateGlobalState(newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)) {
-  const nextState = typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState }
+function updateGlobalState(
+  newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)
+) {
+  const nextState =
+    typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState }
   globalState = nextState
   stateSubscribers.forEach(setState => setState(nextState))
 }
@@ -36,6 +40,7 @@ function updateGlobalState(newState: Partial<WebSocketState> | ((prev: WebSocket
  * - Maximum reconnection attempts (10) with increasing delays
  * - Silent failure handling — no console spam in production
  * - Singleton socket instance per application lifecycle
+ * - Cookie-based authentication (httpOnly JWT cookies)
  */
 export function useWebSocket() {
   const [state, setState] = useState<WebSocketState>(globalState)
@@ -47,7 +52,8 @@ export function useWebSocket() {
     }
   }, [])
 
-  const connect = useCallback((token: string) => {
+  const connect = useCallback(() => {
+    activeConnectionCount++
     if (globalSocket?.connected || globalSocket?.active) return
 
     if (connectAttemptCount >= MAX_RECONNECT_ATTEMPTS) {
@@ -59,11 +65,15 @@ export function useWebSocket() {
 
     updateGlobalState({ isConnecting: true, error: null })
 
-    const API_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') ?? 'http://localhost:5000'
+    const envUrl = import.meta.env.VITE_API_URL
+    if (!envUrl && import.meta.env.PROD) {
+      throw new Error('VITE_API_URL environment variable is required for WebSocket connection')
+    }
+    const API_URL = envUrl?.replace('/api/v1', '') ?? ''
 
     globalSocket = io(API_URL, {
-      auth: { token },
       transports: ['websocket', 'polling'],
+      withCredentials: true,
       reconnection: true,
       reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
       reconnectionDelay: 2000,
@@ -116,7 +126,8 @@ export function useWebSocket() {
   }, [])
 
   const disconnect = useCallback(() => {
-    if (globalSocket) {
+    activeConnectionCount = Math.max(0, activeConnectionCount - 1)
+    if (activeConnectionCount === 0 && globalSocket) {
       globalSocket.removeAllListeners()
       globalSocket.disconnect()
       globalSocket = null
@@ -129,7 +140,7 @@ export function useWebSocket() {
     if (!globalEventHandlers.has(event)) {
       globalEventHandlers.set(event, new Set())
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     globalEventHandlers.get(event)!.add(handler)
 
     globalSocket?.on(event, handler)
@@ -164,7 +175,8 @@ export function useWebSocket() {
     emit,
     joinRoom,
     leaveRoom,
-    get socket() { return globalSocket },
+    get socket() {
+      return globalSocket
+    },
   }
 }
-
