@@ -101,7 +101,7 @@ export class TestEngineService {
                   break
                 } catch (error) {
                   const err = error as Error & { code?: string }
-                  if (err.code === 'P2002' && attempt < 3) {
+                  if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
                     nextAttemptNumber++
                     continue
                   }

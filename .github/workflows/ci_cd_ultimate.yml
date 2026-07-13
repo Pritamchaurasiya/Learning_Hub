@@ -100,5 +100,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Logic for Build (Simulated)
-        run: echo "Building Docker Images... Done."
+      - name: Build Docker Images
+        run: |
+          docker build -t learning-hub-conductor:latest ./conductor
+          docker build -t learning-hub-flutter:latest ./my_flutter_app

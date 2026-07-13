@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: learning-hub-backend:latest
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/learning-hub-backend:latest
           ports:
             - containerPort: 8000
           env:
@@ -39,6 +39,7 @@ spec:
                   key: SECRET_KEY
           readinessProbe:
             httpGet:
+              # Matches server.ts mount at /api/v1 + routes/index.ts /health/ready
               path: /api/v1/health/ready
               port: 8000
             initialDelaySeconds: 10

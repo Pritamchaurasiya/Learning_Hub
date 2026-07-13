@@ -28,8 +28,11 @@ function processFile(filePath) {
 
   const newContent = content.replace(regex, (match, varsGroup) => {
     modified = true
-    const vars = varsGroup.split(',').map(v => v.trim()).filter(Boolean)
-    
+    const vars = varsGroup
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean)
+
     const lines = vars.map(v => {
       // Handle aliases like `settings: globalSettings`
       if (v.includes(':')) {

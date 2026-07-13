@@ -49,32 +49,42 @@
     <meta property="twitter:image" content="/og-image.png" />
 
     <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-
-    <!-- CSP: permissive for development (localhost cross-origin).
-         Production should use stricter Helmet CSP headers instead. -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' http://localhost:* ws://localhost:* https: ws: wss:; frame-src 'none'; object-src 'none'"
-    />
+    <style>
+      /* Prevent FOIT: swap ensures text remains visible during font load */
+      @font-face {
+        font-family: 'Inter';
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Fira Code';
+        font-display: swap;
+      }
+    </style>
 
     <title>LearningHub - Complete Software Engineering Learning Platform</title>
     <script>
       // Prevents theme flash: apply dark class before React hydrates
-      (function() {
+      ;(function () {
         try {
-          var stored = JSON.parse(localStorage.getItem('learninghub-storage') || '{}');
-          var theme = stored && stored.theme && stored.theme.mode;
-          if (theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
+          var stored = JSON.parse(localStorage.getItem('learninghub-storage') || '{}')
+          var theme = stored && stored.theme && stored.theme.mode
+          if (
+            theme === 'dark' ||
+            (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ) {
+            document.documentElement.classList.add('dark')
           } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove('dark')
           }
-        } catch(e) {}
-      })();
+        } catch (e) {}
+      })()
     </script>
   </head>
   <body>

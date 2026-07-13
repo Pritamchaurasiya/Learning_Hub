@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Tests
         env:
-          SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+          SECRET_KEY: "${{ secrets.SECRET_KEY || 'ci-test-secret-key-not-for-prod' }}"
           DEBUG: "True"
         run: |
           pytest
@@ -71,7 +71,7 @@ jobs:
         run: helm lint ./conductor/charts/learning-hub
 
       - name: Snyk Security Scan
-        uses: snyk/actions/python@master
+        uses: snyk/actions/python@v0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:

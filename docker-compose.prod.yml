@@ -4,9 +4,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=learninghub_prod
-      - POSTGRES_USER=learninghub_admin
-      - POSTGRES_PASSWORD=secure_prod_password_change_me
+      - POSTGRES_DB=${POSTGRES_DB:-learninghub_prod}
+      - POSTGRES_USER=${POSTGRES_USER:-learninghub_admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U learninghub_admin -d learninghub_prod"]
@@ -43,11 +43,11 @@ services:
     expose:
       - 8000
     environment:
-      - DEBUG=False
-      - SECRET_KEY=prod_secret_key_change_me_in_real_deployment
-      - ALLOWED_HOSTS=backend,localhost,127.0.0.1
-      - DATABASE_URL=postgres://learninghub_admin:secure_prod_password_change_me@db:5432/learninghub_prod
-      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-backend,localhost,127.0.0.1}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - DJANGO_SETTINGS_MODULE=config.settings.production
     depends_on:
       db:

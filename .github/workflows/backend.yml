@@ -58,14 +58,14 @@ jobs:
         run: python -m flake8 .
 
       - name: Static Security Analysis (Bandit)
-        run: python -m bandit -r . -c pyproject.toml || true # Fail open for now, adjust config later
+        run: python -m bandit -r . -c pyproject.toml
 
       - name: Type Checking (Mypy)
         run: python -m mypy .
 
       - name: Run Tests
         env:
-          SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+          SECRET_KEY: "${{ secrets.SECRET_KEY || 'ci-test-secret-key' }}"
           DEBUG: "True"
           ALLOWED_HOSTS: localhost
           DATABASE_URL: postgres://conductor:conductor_password@localhost:5432/conductor

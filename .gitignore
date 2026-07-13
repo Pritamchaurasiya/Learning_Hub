@@ -92,6 +92,7 @@ GeneratedPluginRegistrant.*
 .env.production.local
 .env.production
 .env.development
+.env.prod
 *.env.production
 *.env.development
 secrets/
