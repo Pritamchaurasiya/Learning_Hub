@@ -5,6 +5,7 @@ import { Application } from 'express'
 import { corsOptions, helmetConfig } from '../config'
 
 export const configureSecurity = (app: Application) => {
+  const isDev = process.env.NODE_ENV === 'development'
   app.use(
     helmet({
       ...helmetConfig,
@@ -13,8 +14,7 @@ export const configureSecurity = (app: Application) => {
           defaultSrc: ["'self'"],
           scriptSrc: [
             "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
+            ...(isDev ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
             'https://*.googletagmanager.com',
           ],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
