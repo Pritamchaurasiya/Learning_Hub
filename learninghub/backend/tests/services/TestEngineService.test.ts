@@ -33,6 +33,13 @@ jest.mock('../../src/services/TopicPerformanceService', () => ({
 jest.mock('../../src/services/GrowthEngineService', () => ({
   growthEngineService: {
     awardXP: jest.fn().mockResolvedValue(true),
+    checkAndUpdateStreak: jest.fn().mockResolvedValue(true),
+  },
+}))
+
+jest.mock('../../src/services/JobQueueService', () => ({
+  jobQueueService: {
+    addTestSubmissionJob: jest.fn().mockResolvedValue(true),
   },
 }))
 
@@ -41,7 +48,10 @@ describe('TestEngineService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(mockPrisma.$transaction as jest.Mock) = jest.fn(async (callback) => {
+    if (mockPrisma.$transaction && (mockPrisma.$transaction as jest.Mock).mockReset) {
+      (mockPrisma.$transaction as jest.Mock).mockReset()
+    }
+    (mockPrisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
       return callback(mockPrisma)
     })
     service = new TestEngineService()
@@ -167,10 +177,41 @@ describe('TestEngineService', () => {
         expect.objectContaining({
           where: { id: 'result-1' },
           data: expect.objectContaining({
-            score: 20, // 10 from previous + 10 from current
+            score: { increment: 10 },
+            totalPoints: { increment: 10 },
           }),
         })
       )
+    })
+
+    it('should retry on unique constraint violation (attemptNumber race condition)', async () => {
+      ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
+      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.topicPerformance.upsert as jest.Mock).mockResolvedValue({})
+
+      // First create fails with P2002, second succeeds
+      const prismaError = new Error('P2002: Unique constraint violation') as any
+      prismaError.code = 'P2002'
+
+      const createMock = jest.fn()
+        .mockRejectedValueOnce(prismaError)
+        .mockResolvedValueOnce({
+          id: 'result-1',
+          userId: mockRequest.userId,
+          testId: mockRequest.testId,
+          score: 0,
+          answers: {},
+          questionResults: [],
+          attemptNumber: 1,
+        })
+
+      ;(mockPrisma.testResult.create as jest.Mock) = createMock
+
+      const result = await service.submitPracticeAnswer(mockRequest)
+
+      expect(result.isCorrect).toBe(true)
+      expect(createMock).toHaveBeenCalledTimes(2)
     })
 
     it('should update topic performance', async () => {
@@ -196,8 +237,7 @@ describe('TestEngineService', () => {
       expect(topicPerformanceService.updateForSingleAnswer).toHaveBeenCalledWith(
         mockRequest.userId,
         'math',
-        true,
-        expect.any(Object)
+        true
       )
     })
   })
@@ -592,81 +632,62 @@ describe('TestEngineService', () => {
 
   describe('autoSubmitExpiredTests', () => {
     it('should auto-submit expired tests', async () => {
-      const expiredAttempts = [{
-        id: 'attempt-1',
-        userId: 'user-1',
-        testId: 'test-1',
-        status: 'IN_PROGRESS',
-        startedAt: new Date(Date.now() - 120 * 60 * 1000), // 120 minutes ago
-        answers: { 'q1': 'opt1' },
-        test: {
-          timeLimit: 60, // 60 minutes
-          passingScore: 60,
-          questions: [
-            {
-              id: 'q1',
-              points: 10,
-              options: [
-                { id: 'opt1', isCorrect: true },
-                { id: 'opt2', isCorrect: false },
-              ],
-            },
-            {
-              id: 'q2',
-              points: 10,
-              options: [
-                { id: 'opt3', isCorrect: true },
-                { id: 'opt4', isCorrect: false },
-              ],
-            },
-          ],
+      const expiredAttempts = [
+        {
+          id: 'attempt-1',
+          userId: 'user-1',
+          testId: 'test-1',
+          status: 'IN_PROGRESS',
+          startedAt: new Date(Date.now() - 120 * 60 * 1000), // 120 minutes ago
+          answers: { q1: 'opt1' },
+          test: {
+            timeLimit: 60, // 60 minutes
+            passingScore: 60,
+            questions: [
+              {
+                id: 'q1',
+                points: 10,
+                options: [
+                  { id: 'opt1', isCorrect: true },
+                  { id: 'opt2', isCorrect: false },
+                ],
+              },
+              {
+                id: 'q2',
+                points: 10,
+                options: [
+                  { id: 'opt3', isCorrect: true },
+                  { id: 'opt4', isCorrect: false },
+                ],
+              },
+            ],
+          },
         },
-      }]
+      ]
 
-      ;(mockPrisma.testResult.findMany as jest.Mock).mockResolvedValue(expiredAttempts)
-      ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
+      ;(mockPrisma.$queryRaw as jest.Mock).mockResolvedValue(expiredAttempts)
 
       const count = await service.autoSubmitExpiredTests()
 
       expect(count).toBe(1)
-      expect(mockPrisma.testResult.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: 'attempt-1' },
-          data: expect.objectContaining({
-            status: 'TIMEOUT',
-            completedAt: expect.any(Date),
-          }),
-        })
-      )
+      const { jobQueueService } = require('../../src/services/JobQueueService')
+      expect(jobQueueService.addTestSubmissionJob).toHaveBeenCalledWith({
+        attemptId: 'attempt-1',
+        testId: 'test-1',
+        userId: 'user-1',
+      })
     })
 
     it('should not submit tests that are not expired', async () => {
-      const activeAttempts = [{
-        id: 'attempt-1',
-        userId: 'user-1',
-        testId: 'test-1',
-        status: 'IN_PROGRESS',
-        startedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        answers: {},
-        test: {
-          timeLimit: 60, // 60 minutes
-          passingScore: 60,
-          questions: [],
-        },
-      }]
-
-      ;(mockPrisma.testResult.findMany as jest.Mock).mockResolvedValue(activeAttempts)
-      ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
+      ;(mockPrisma.$queryRaw as jest.Mock).mockResolvedValue([])
 
       const count = await service.autoSubmitExpiredTests()
 
       expect(count).toBe(0)
-      expect(mockPrisma.testResult.update).not.toHaveBeenCalled()
     })
 
     it('should return 0 when no expired tests', async () => {
-      const emptyAttempts: any[] = []
-      ;(mockPrisma.testResult.findMany as jest.Mock).mockResolvedValue(emptyAttempts)
+      ;(mockPrisma.$queryRaw as jest.Mock).mockResolvedValue([])
 
       const count = await service.autoSubmitExpiredTests()
 

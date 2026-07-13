@@ -16,6 +16,13 @@ jest.mock('../../src/services/CacheService', () => ({
     userKey: (userId: string) => `user:${userId}`,
     userProgressKey: (userId: string, courseId: string) => `progress:${userId}:${courseId}`,
     courseKey: (courseId: string) => `course:${courseId}`,
+    topicMasteryKey: (userId: string) => `topic-performance:mastery:${userId}`,
+    topicWeakKey: (userId: string) => `topic-performance:weak:${userId}`,
+    topicReviewKey: (userId: string) => `topic-performance:review:${userId}`,
+    recommendationStudyKey: (userId: string) => `recommendation:study:${userId}`,
+    recommendationTestKey: (userId: string) => `recommendation:test:${userId}`,
+    recommendationRoadmapKey: (userId: string) => `recommendation:roadmap:${userId}`,
+    recommendationSpacedKey: (userId: string) => `recommendation:spaced:${userId}`,
   },
 }))
 
@@ -43,6 +50,7 @@ const mockPrisma = {
   auditLog: {
     create: jest.fn(),
   },
+  $transaction: jest.fn(),
 } as unknown as PrismaClient
 
 describe('AuthService', () => {
@@ -116,14 +124,14 @@ describe('AuthService', () => {
     it('should reject duplicate email', async () => {
       ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'existing-user' })
 
-      await expect(authService.register(validInput)).rejects.toThrow('Email already registered')
+      await expect(authService.register(validInput)).rejects.toThrow('Registration failed: Invalid request')
     })
 
     it('should reject duplicate username', async () => {
       ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(null) // email check
       ;(mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({ id: 'existing-user' }) // username check
 
-      await expect(authService.register(validInput)).rejects.toThrow('Username already taken')
+      await expect(authService.register(validInput)).rejects.toThrow('Registration failed: Invalid request')
     })
   })
 
@@ -255,19 +263,22 @@ describe('AuthService', () => {
       })
       ;(mockPrisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(mockStoredToken)
       ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser)
-      ;(mockPrisma.refreshToken.update as jest.Mock).mockResolvedValue(mockStoredToken)
       ;(mockPrisma.refreshToken.create as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.refreshToken.findMany as jest.Mock).mockResolvedValue([])
+      ;(mockPrisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => {
+        const tx = {
+          refreshToken: {
+            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          },
+        }
+        return cb(tx)
+      })
       ;(jwt.sign as jest.Mock).mockReturnValue('new_access_token')
 
       const result = await authService.refreshToken(mockRefreshToken)
 
       expect(result.accessToken).toBe('new_access_token')
-      expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ usedAt: expect.any(Date) }),
-        })
-      )
+      expect(mockPrisma.$transaction).toHaveBeenCalled()
     })
 
     it('should reject expired refresh token', async () => {
@@ -429,7 +440,7 @@ describe('AuthService', () => {
       expect(mockPrisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: userId },
-          data: expect.objectContaining({ 
+          data: expect.objectContaining({
             password: 'hashed_new_password',
           }),
         })

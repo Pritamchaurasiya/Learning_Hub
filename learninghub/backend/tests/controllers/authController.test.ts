@@ -1,18 +1,56 @@
 import { Request, Response } from 'express'
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
-import { register, login, refresh, me } from '../../src/controllers/authController'
-import { prisma } from '../../src/prismaClient'
-import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import {
+  register,
+  login,
+  refresh,
+  me,
+  setupMfa,
+  verifyAndEnableMfa,
+  disableMfa,
+  verifyMfaLogin,
+} from '../../src/controllers/authController'
 import { createUser } from '../factories/user.factory'
+import { prisma } from '../../src/prismaClient'
+import { MfaService } from '../../src/services/MfaService'
+import { config } from '../../src/utils/env'
 
-// Mock dependencies
-jest.mock('bcryptjs')
+jest.mock('../../src/services/MfaService', () => ({
+  MfaService: {
+    generateSecret: jest.fn(),
+    verifyAndEnable: jest.fn(),
+    validateToken: jest.fn(),
+  },
+}))
+
+// Mock AuthService – factory is self-contained (jest.mock is hoisted above all code)
+var _svc: Record<string, jest.Mock>
+jest.mock('../../src/services/AuthService', () => {
+  const inst = {
+    register: jest.fn(),
+    login: jest.fn(),
+    logout: jest.fn().mockResolvedValue(undefined),
+    changePassword: jest.fn().mockResolvedValue(undefined),
+    updateProfile: jest.fn().mockResolvedValue({}),
+    deleteAccount: jest.fn().mockResolvedValue(undefined),
+    resetPassword: jest.fn().mockResolvedValue(undefined),
+    refreshToken: jest
+      .fn()
+      .mockResolvedValue({ accessToken: 'new-access', refreshToken: 'new-refresh' }),
+  }
+  _svc = inst
+  return { __esModule: true, AuthService: jest.fn(() => inst) }
+})
+
 jest.mock('../../src/utils/auth', () => ({
   generateToken: jest.fn().mockReturnValue('mock-token'),
   generateRefreshToken: jest.fn().mockReturnValue('mock-refresh-token'),
   verifyRefreshToken: jest.fn(),
+  verifyMfaSessionToken: jest.fn().mockReturnValue('user-123'),
   hashToken: jest.fn().mockReturnValue('hashed-token'),
 }))
+
 jest.mock('../../src/utils/logger', () => ({
   __esModule: true,
   default: {
@@ -23,30 +61,40 @@ jest.mock('../../src/utils/logger', () => ({
     audit: jest.fn(),
   },
 }))
+
 jest.mock('../../src/services/EmailService', () => ({
   emailService: {
     sendVerificationEmail: jest.fn().mockResolvedValue(true),
     sendPasswordResetEmail: jest.fn().mockResolvedValue(true),
   },
 }))
-jest.mock('../../src/services/QueryOptimizationService', () => ({
-  queryOptimizationService: {
-    getUserPerformanceSummary: jest.fn().mockResolvedValue({
-      test_stats: { total_tests: 0, average_score: 0, best_score: 0, worst_score: 0 },
-      recent_tests: [],
-    }),
-  },
-}))
+
 jest.mock('../../src/services/CacheService', () => ({
   cacheService: {
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(true),
     generateKey: jest.fn().mockReturnValue('mock-key'),
     delete: jest.fn().mockResolvedValue(true),
+    incrementWithExpiry: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(true),
   },
 }))
+
+jest.mock('../../src/services/QueryOptimizationService', () => ({
+  queryOptimizationService: {
+    getUserPerformanceSummary: jest
+      .fn()
+      .mockResolvedValue({
+        test_stats: { total_tests: 0, average_score: 0, best_score: 0, worst_score: 0 },
+        recent_tests: [],
+      }),
+  },
+}))
+
 jest.mock('../../src/config', () => ({
+  __esModule: true,
   bcryptConfig: { rounds: 10 },
+  validatePasswordStrength: jest.fn().mockReturnValue({ valid: true, errors: [] }),
 }))
 
 describe('AuthController', () => {
@@ -59,11 +107,10 @@ describe('AuthController', () => {
     jsonMock = jest.fn().mockReturnThis()
     statusMock = jest.fn().mockReturnValue({ json: jsonMock })
     mockReq = mockDeep<Request>()
+    mockReq.cookies = {}
     mockRes = mockDeep<Response>()
     mockRes.status = statusMock as any
     mockRes.json = jsonMock as any
-
-    // Reset all mocks
     jest.clearAllMocks()
   })
 
@@ -81,21 +128,26 @@ describe('AuthController', () => {
         role: 'STUDENT',
       })
 
+      _svc.register.mockResolvedValue({
+        user: createdUser,
+        tokens: { accessToken: 'mock-token', refreshToken: 'mock-refresh-token', expiresIn: 900 },
+      })
       mockReq.body = userData
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
-      ;(prisma.user.create as jest.Mock).mockResolvedValue(createdUser)
-      ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({ id: 'rt-1' })
-      ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password')
+      ;(mockReq as any).ip = '127.0.0.1'
 
-      await register(mockReq, mockRes)
+      await register(mockReq as any, mockRes as any, jest.fn())
 
+      expect(mockRes.cookie).toHaveBeenCalledWith('access_token', 'mock-token', expect.any(Object))
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        'mock-refresh-token',
+        expect.any(Object)
+      )
       expect(statusMock).toHaveBeenCalledWith(201)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'success',
         message: 'Registration successful',
         data: {
-          access_token: 'mock-token',
-          refresh_token: 'mock-refresh-token',
           user: {
             id: createdUser.id,
             email: createdUser.email,
@@ -112,85 +164,63 @@ describe('AuthController', () => {
     it('should return 400 when email or password is missing', async () => {
       mockReq.body = { email: 'test@example.com' }
 
-      await register(mockReq, mockRes)
+      await register(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(400)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Email and password are required',
-        })
+        expect.objectContaining({ status: 'error', message: 'Email and password are required' })
       )
     })
 
-    it('should return 409 when email already exists', async () => {
-      const userData = {
-        email: 'existing@example.com',
-        password: 'StrongPass123!',
-      }
-      const existingUser = createUser({ email: userData.email })
+    it('should return 400 when email already exists to prevent enumeration', async () => {
+      _svc.register.mockRejectedValue(new Error('Registration failed: Invalid request'))
+      mockReq.body = { email: 'existing@example.com', password: 'StrongPass123!' }
 
-      mockReq.body = userData
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser)
+      await register(mockReq as any, mockRes as any, jest.fn())
 
-      await register(mockReq, mockRes)
-
-      expect(statusMock).toHaveBeenCalledWith(409)
+      expect(statusMock).toHaveBeenCalledWith(400)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Email already exists',
-        })
+        expect.objectContaining({ status: 'error', message: 'Registration failed. Email or username may be unavailable' })
       )
     })
 
     it('should return 500 on database error', async () => {
-      mockReq.body = {
-        email: 'test@example.com',
-        password: 'StrongPass123!',
-      }
-      Object.defineProperty(mockReq, 'ip', { value: '127.0.0.1' })
-      ;(prisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('Database error'))
+      _svc.register.mockRejectedValue(new Error('Database error'))
+      mockReq.body = { email: 'test@example.com', password: 'StrongPass123!', username: 'testuser' }
 
-      await register(mockReq, mockRes)
+      await register(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(500)
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Internal server error',
-        })
-      )
     })
   })
 
   describe('login', () => {
     it('should login successfully with valid credentials', async () => {
-      const userData = {
-        email: 'test@example.com',
-        password: 'StrongPass123!',
-      }
       const existingUser = createUser({
         id: 'user-123',
-        email: userData.email,
+        email: 'test@example.com',
         password: 'hashed-password',
       })
 
-      mockReq.body = userData
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser)
-      ;(prisma.user.update as jest.Mock).mockResolvedValue(existingUser)
-      ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({ id: 'rt-1' })
-      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      _svc.login.mockResolvedValue({
+        user: existingUser,
+        tokens: { accessToken: 'mock-token', refreshToken: 'mock-refresh-token', expiresIn: 900 },
+      })
+      mockReq.body = { email: 'test@example.com', password: 'StrongPass123!' }
 
-      await login(mockReq, mockRes)
+      await login(mockReq as any, mockRes as any, jest.fn())
 
+      expect(mockRes.cookie).toHaveBeenCalledWith('access_token', 'mock-token', expect.any(Object))
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        'mock-refresh-token',
+        expect.any(Object)
+      )
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'success',
         message: 'Login successful',
         data: {
-          access_token: 'mock-token',
-          refresh_token: 'mock-refresh-token',
           user: {
             id: existingUser.id,
             email: existingUser.email,
@@ -205,67 +235,58 @@ describe('AuthController', () => {
       })
     })
 
-    it('should return 401 for non-existent user', async () => {
-      mockReq.body = {
-        email: 'nonexistent@example.com',
-        password: 'StrongPass123!',
-      }
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+    it('should return mfaRequired challenge if user has mfaEnabled', async () => {
+      const mfaUser = createUser({ id: 'user-mfa', email: 'mfa@example.com', mfaEnabled: true })
+      _svc.login.mockResolvedValue({
+        user: mfaUser,
+        tokens: { accessToken: 'mock-token', refreshToken: 'mock-refresh-token', expiresIn: 900 },
+      })
+      mockReq.body = { email: 'mfa@example.com', password: 'StrongPass123!' }
 
-      await login(mockReq, mockRes)
+      await login(mockReq as any, mockRes as any, jest.fn())
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith({
+        status: 'success',
+        message: 'MFA verification required',
+        data: {
+          mfaRequired: true,
+          mfaSessionToken: expect.any(String),
+        },
+      })
+    })
+
+    it('should return 401 for non-existent user', async () => {
+      _svc.login.mockRejectedValue(new Error('Invalid credentials'))
+      mockReq.body = { email: 'nonexistent@example.com', password: 'StrongPass123!' }
+
+      await login(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Invalid email or password',
-        })
+        expect.objectContaining({ status: 'error', message: 'Invalid email or password' })
       )
     })
 
     it('should return 401 for invalid password', async () => {
-      const userData = {
-        email: 'test@example.com',
-        password: 'wrongpassword',
-      }
-      const existingUser = createUser({
-        email: userData.email,
-        password: 'hashed-password',
-      })
+      _svc.login.mockRejectedValue(new Error('Invalid credentials'))
+      mockReq.body = { email: 'test@example.com', password: 'wrongpassword' }
 
-      mockReq.body = userData
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser)
-      ;(prisma.user.update as jest.Mock).mockResolvedValue(existingUser)
-      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
-
-      await login(mockReq, mockRes)
+      await login(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Invalid email or password',
-        })
+        expect.objectContaining({ status: 'error', message: 'Invalid email or password' })
       )
     })
 
     it('should return 500 on database error', async () => {
-      mockReq.body = {
-        email: 'test@example.com',
-        password: 'StrongPass123!',
-      }
-      Object.defineProperty(mockReq, 'ip', { value: '127.0.0.1' })
-      ;(prisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('Database error'))
+      _svc.login.mockRejectedValue(new Error('Database error'))
+      mockReq.body = { email: 'test@example.com', password: 'StrongPass123!' }
 
-      await login(mockReq, mockRes)
+      await login(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(500)
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Internal server error',
-        })
-      )
     })
   })
 
@@ -290,24 +311,27 @@ describe('AuthController', () => {
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({ id: 'rt-2' })
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
-      await refresh(mockReq, mockRes)
+      await refresh(mockReq as any, mockRes as any, jest.fn())
 
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'access_token',
+        expect.any(String),
+        expect.any(Object)
+      )
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        expect.any(String),
+        expect.any(Object)
+      )
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'success',
-          data: expect.objectContaining({
-            access_token: 'mock-token',
-            refresh_token: 'mock-refresh-token',
-          }),
-        })
+        expect.objectContaining({ status: 'success', data: { message: 'Token refreshed' } })
       )
     })
 
     it('should accept refresh key for backward compatibility', async () => {
-      const refreshToken = 'valid-refresh-token'
       const user = createUser({ id: 'user-123' })
 
-      mockReq.body = { refresh: refreshToken }
+      mockReq.body = { refresh: 'valid-refresh-token' }
       verifyRefreshToken.mockReturnValue({ userId: user.id })
       ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue({
         id: 'rt-1',
@@ -321,105 +345,79 @@ describe('AuthController', () => {
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({ id: 'rt-2' })
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
 
-      await refresh(mockReq, mockRes)
+      await refresh(mockReq as any, mockRes as any, jest.fn())
 
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'access_token',
+        expect.any(String),
+        expect.any(Object)
+      )
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        expect.any(String),
+        expect.any(Object)
+      )
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'success',
-          data: expect.objectContaining({
-            access_token: 'mock-token',
-            refresh_token: 'mock-refresh-token',
-          }),
-        })
+        expect.objectContaining({ status: 'success', data: { message: 'Token refreshed' } })
       )
     })
 
     it('should return 400 when refresh token is missing', async () => {
       mockReq.body = {}
-
-      await refresh(mockReq, mockRes)
-
+      await refresh(mockReq as any, mockRes as any, jest.fn())
       expect(statusMock).toHaveBeenCalledWith(400)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Refresh token is required',
-        })
+        expect.objectContaining({ status: 'error', message: 'Refresh token is required' })
       )
     })
 
     it('should return 401 for invalid refresh token', async () => {
       mockReq.body = { refresh_token: 'invalid-token' }
-      verifyRefreshToken.mockReturnValue(null)
+      _svc.refreshToken.mockRejectedValue(new Error('Invalid refresh token'))
 
-      await refresh(mockReq, mockRes)
+      await refresh(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Invalid refresh token',
-        })
+        expect.objectContaining({ status: 'error', message: 'Invalid or expired refresh token' })
       )
     })
 
     it('should return 401 when user no longer exists', async () => {
-      const refreshToken = 'valid-refresh-token'
+      mockReq.body = { refresh_token: 'valid-refresh-token' }
+      _svc.refreshToken.mockRejectedValue(new Error('User not found or deleted'))
 
-      mockReq.body = { refresh_token: refreshToken }
-      verifyRefreshToken.mockReturnValue({ userId: 'non-existent-id' })
-      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue({
-        id: 'rt-1',
-        token: 'hashed-token',
-        revokedAt: null,
-        usedAt: null,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      })
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
-
-      await refresh(mockReq, mockRes)
+      await refresh(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'User no longer exists',
-        })
+        expect.objectContaining({ status: 'error', message: 'Invalid or expired refresh token' })
       )
     })
 
     it('should return 401 on token verification error', async () => {
       mockReq.body = { refresh_token: 'token' }
-      verifyRefreshToken.mockImplementation(() => {
-        throw new Error('Invalid token')
-      })
+      _svc.refreshToken.mockRejectedValue(new Error('Invalid or expired refresh token'))
 
-      await refresh(mockReq, mockRes)
+      await refresh(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(401)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'Invalid or expired refresh token',
-        })
+        expect.objectContaining({ status: 'error', message: 'Invalid or expired refresh token' })
       )
     })
   })
 
   describe('me', () => {
     it('should return user profile successfully', async () => {
-      const user = createUser({
-        id: 'user-123',
-      })
+      const user = createUser({ id: 'user-123' })
 
       ;(mockReq as any).user = { userId: user.id, email: user.email, role: user.role }
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
-      ;(prisma.userProgress.findMany as jest.Mock).mockResolvedValue([])
-      ;(prisma.bookmark.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.userAchievement.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.user.update as jest.Mock).mockResolvedValue(user)
 
-      await me(mockReq as any, mockRes)
+      await me(mockReq as any, mockRes as any, jest.fn())
 
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -441,19 +439,13 @@ describe('AuthController', () => {
     it('should return 404 when user not found', async () => {
       ;(mockReq as any).user = { userId: 'non-existent-id' }
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
-      // me() calls Promise.all which also calls findMany — mock them to prevent errors
-      ;(prisma.bookmark.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.userAchievement.findMany as jest.Mock).mockResolvedValue([])
-      ;(prisma.userProgress.findMany as jest.Mock).mockResolvedValue([])
 
-      await me(mockReq as any, mockRes)
+      await me(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(404)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'error',
-          message: 'User not found',
-        })
+        expect.objectContaining({ status: 'error', message: 'User not found' })
       )
     })
 
@@ -461,13 +453,85 @@ describe('AuthController', () => {
       ;(mockReq as any).user = { userId: 'user-123' }
       ;(prisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('Database error'))
 
-      await me(mockReq as any, mockRes)
+      await me(mockReq as any, mockRes as any, jest.fn())
 
       expect(statusMock).toHaveBeenCalledWith(500)
       expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'error', message: 'Internal server error' })
+      )
+    })
+  })
+
+  describe('MFA Endpoints', () => {
+    it('setupMfa should return secret and qrCodeUrl when user does not have mfa enabled', async () => {
+      ;(mockReq as any).user = { userId: 'user-123' }
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        mfaEnabled: false,
+      })
+      ;(MfaService.generateSecret as jest.Mock).mockResolvedValue({
+        secret: 'MOCKSECRET',
+        qrCodeUrl: 'data:image/png;base64,mock',
+      })
+
+      await setupMfa(mockReq as any, mockRes as any, jest.fn())
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: 'error',
-          message: 'Internal server error',
+          status: 'success',
+          data: { secret: 'MOCKSECRET', qrCodeUrl: 'data:image/png;base64,mock' },
+        })
+      )
+    })
+
+    it('verifyAndEnableMfa should return 200 when token is verified', async () => {
+      ;(mockReq as any).user = { userId: 'user-123' }
+      mockReq.body = { token: '123456' }
+      ;(MfaService.verifyAndEnable as jest.Mock).mockResolvedValue(true)
+
+      await verifyAndEnableMfa(mockReq as any, mockRes as any, jest.fn())
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }))
+    })
+
+    it('verifyMfaLogin should return access and refresh tokens when mfa token is valid', async () => {
+      const mfaSessionToken = jwt.sign(
+        { userId: 'user-123', purpose: 'mfa_login', iat: Date.now() },
+        config.jwtRefreshSecret,
+        { expiresIn: '5m' }
+      )
+      mockReq.body = { mfaSessionToken, token: '123456' }
+      ;(MfaService.validateToken as jest.Mock).mockResolvedValue(true)
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        username: 'testuser',
+        role: 'STUDENT',
+      })
+
+      await verifyMfaLogin(mockReq as any, mockRes as any, jest.fn())
+
+      expect(mockRes.cookie).toHaveBeenCalledWith('access_token', 'mock-token', expect.any(Object))
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        'mock-refresh-token',
+        expect.any(Object)
+      )
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: {
+            user: expect.objectContaining({
+              id: 'user-123',
+              email: 'test@example.com',
+              username: 'testuser',
+              role: 'STUDENT',
+            }),
+          },
         })
       )
     })

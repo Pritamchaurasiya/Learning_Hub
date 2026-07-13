@@ -31,6 +31,7 @@ describe('ErrorHandler Middleware', () => {
     mockRes.status = statusMock as any
     mockRes.json = jsonMock as any
     mockNext = jest.fn()
+    mockReq.requestId = undefined as any
 
     // Reset environment
     delete process.env.NODE_ENV

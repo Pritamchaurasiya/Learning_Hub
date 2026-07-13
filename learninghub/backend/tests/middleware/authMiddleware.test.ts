@@ -191,7 +191,11 @@ describe('optionalAuth middleware', () => {
   it('calls next() without user when token belongs to locked account', async () => {
     const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
-    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: new Date(Date.now() + 60000) })
+    mockFindUnique.mockResolvedValue({
+      id: 'u2',
+      deletedAt: null,
+      lockedUntil: new Date(Date.now() + 60000),
+    })
     const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await optionalAuth(req, res, next)
     expect(next).toHaveBeenCalled()

@@ -1,0 +1,78 @@
+import {
+  Test,
+  TestResult,
+  Question,
+  Option,
+  AttemptStatus,
+  TestMode,
+  TestDifficulty,
+  QuestionType,
+  BloomLevel,
+} from '@prisma/client'
+
+export const createTest = (overrides: Partial<Test> = {}): Test => ({
+  id: 'test-' + Math.random().toString(36).substring(7),
+  examId: null,
+  title: 'Sample Test',
+  description: 'A sample test description',
+  timeLimit: 30,
+  passingScore: 60,
+  maxAttempts: 3,
+  mode: 'MOCK' as TestMode,
+  difficulty: 'MIXED' as TestDifficulty,
+  totalMarks: 100,
+  negativeMarks: 0,
+  isPublished: true,
+  isAiGenerated: false,
+  templateId: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+  ...overrides,
+})
+
+export const createQuestion = (overrides: Partial<Question> = {}): Question => ({
+  id: 'q-' + Math.random().toString(36).substring(7),
+  testId: 'test-123',
+  topicId: null,
+  text: 'Sample question?',
+  type: 'MCQ' as QuestionType,
+  difficulty: 0.5,
+  bloomLevel: 'UNDERSTAND' as BloomLevel,
+  explanation: 'Explanation here',
+  solutionSteps: null,
+  tags: [],
+  isAiGenerated: false,
+  points: 10,
+  order: 0,
+  ...overrides,
+})
+
+export const createOption = (overrides: Partial<Option> = {}): Option => ({
+  id: 'opt-' + Math.random().toString(36).substring(7),
+  questionId: 'q-123',
+  text: 'Option text',
+  isCorrect: false,
+  explanation: null,
+  order: 0,
+  ...overrides,
+})
+
+export const createTestResult = (overrides: Partial<TestResult> = {}): TestResult => ({
+  id: 'tr-' + Math.random().toString(36).substring(7),
+  userId: 'user-123',
+  testId: 'test-123',
+  attemptNumber: 1,
+  score: 80,
+  cbmScore: 0,
+  totalPoints: 100,
+  percentage: 80,
+  passed: true,
+  timeTaken: 1200,
+  status: 'COMPLETED' as AttemptStatus,
+  completedAt: new Date(),
+  startedAt: new Date(Date.now() - 1200000),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+})

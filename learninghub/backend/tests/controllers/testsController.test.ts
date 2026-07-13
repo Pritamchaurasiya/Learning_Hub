@@ -7,12 +7,12 @@ import express, { Router } from 'express'
 import { prisma } from '../../src/prismaClient'
 
 jest.mock('../../src/utils/logger', () => {
-  const mockLogger = { 
-    info: jest.fn(), 
-    error: jest.fn((...args) => console.error('LOGGER ERROR:', ...args)), 
-    warn: jest.fn(), 
-    audit: jest.fn(), 
-    debug: jest.fn() 
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    audit: jest.fn(),
+    debug: jest.fn(),
   }
   return {
     __esModule: true,
@@ -20,6 +20,17 @@ jest.mock('../../src/utils/logger', () => {
     logger: mockLogger,
   }
 })
+
+jest.mock('../../src/services/GrowthEngineService', () => ({
+  growthEngineService: {
+    checkAndUpdateStreak: jest.fn().mockResolvedValue(true),
+    checkAchievements: jest.fn().mockResolvedValue(true),
+    updateDailyGoal: jest.fn().mockResolvedValue(true),
+    calculateLevel: jest.fn().mockReturnValue(1),
+    awardXP: jest.fn().mockResolvedValue({}),
+    getUserStats: jest.fn().mockResolvedValue({}),
+  },
+}))
 
 jest.mock('../../src/services/CacheService', () => ({
   cacheService: {
@@ -30,20 +41,29 @@ jest.mock('../../src/services/CacheService', () => ({
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(true),
     invalidatePattern: jest.fn().mockResolvedValue(true),
-    delete: jest.fn().mockResolvedValue(true)
-  }
+    delete: jest.fn().mockResolvedValue(true),
+  },
 }))
 
-import { listTests, getTestDetails, startTest, submitTest, getTestAttempts } from '../../src/controllers/testsController'
+import {
+  listTests,
+  getTestDetails,
+  startTest,
+  submitTest,
+  getTestAttempts,
+} from '../../src/controllers/testsController'
 
 // ─── App factory ──────────────────────────────────────────────────────────────
 function makeApp(userId = 'user-123') {
   const app = express()
   app.use(express.json())
-  app.use((req: any, _res: any, next: any) => { req.user = { userId, email: 'test@test.com', role: 'STUDENT' }; next() })
+  app.use((req: any, _res: any, next: any) => {
+    req.user = { userId, email: 'test@test.com', role: 'STUDENT' }
+    next()
+  })
   const r = Router()
   r.get('/tests', listTests)
-  r.get('/tests/attempts', getTestAttempts)   // static BEFORE /:id
+  r.get('/tests/attempts', getTestAttempts) // static BEFORE /:id
   r.get('/tests/:id', getTestDetails)
   r.post('/tests/:id/start', startTest)
   r.post('/tests/:id/submit', submitTest)
@@ -52,8 +72,38 @@ function makeApp(userId = 'user-123') {
 }
 
 // ─── Shared fixtures ──────────────────────────────────────────────────────────
-const Q1 = { id: 'q1', text: 'What is 2+2?', type: 'mcq', difficulty: 0.3, bloomLevel: 'remember', points: 10, order: 1, explanation: '4', options: [{ id: 'o1', text: '3', isCorrect: false, order: 0 }, { id: 'o2', text: '4', isCorrect: true, order: 1 }] }
-const TEST = { id: 'test-1', title: 'Sample', description: 'desc', courseId: 'c1', timeLimit: 30, passingScore: 60, totalMarks: 10, negativeMarks: 0, mode: 'mock', difficulty: 'medium', isPublished: true, isAiGenerated: false, createdAt: new Date(), updatedAt: new Date(), _count: { questions: 1, results: 0 }, course: { title: 'Course', id: 'c1' }, questions: [Q1] }
+const Q1 = {
+  id: 'q1',
+  text: 'What is 2+2?',
+  type: 'mcq',
+  difficulty: 0.3,
+  bloomLevel: 'remember',
+  points: 10,
+  order: 1,
+  explanation: '4',
+  options: [
+    { id: 'o1', text: '3', isCorrect: false, order: 0 },
+    { id: 'o2', text: '4', isCorrect: true, order: 1 },
+  ],
+}
+const TEST = {
+  id: 'test-1',
+  title: 'Sample',
+  description: 'desc',
+  examId: 'e1',
+  timeLimit: 30,
+  passingScore: 60,
+  totalMarks: 10,
+  negativeMarks: 0,
+  mode: 'mock',
+  difficulty: 'medium',
+  isPublished: true,
+  isAiGenerated: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  _count: { questions: 1, results: 0 },
+  questions: [Q1],
+}
 
 // ─── GET /tests ───────────────────────────────────────────────────────────────
 describe('GET /tests', () => {
@@ -65,17 +115,6 @@ describe('GET /tests', () => {
     const res = await request(makeApp()).get('/api/tests')
     expect(res.status).toBe(200)
     expect(res.body.data[0].id).toBe('test-1')
-  })
-
-  it('filters by courseId', async () => {
-    ;(prisma.test.count as jest.Mock).mockResolvedValue(0)
-    ;(prisma.test.findMany as jest.Mock).mockResolvedValue([])
-    ;(prisma.testResult.groupBy as jest.Mock).mockResolvedValue([])
-
-    const res = await request(makeApp()).get('/api/tests?courseId=c1')
-    expect(res.status).toBe(200)
-    const where = (prisma.test.findMany as jest.Mock).mock.calls[0]?.[0]?.where
-    expect(where).toMatchObject({ courseId: 'c1' })
   })
 
   it('returns 500 on DB error', async () => {
@@ -109,8 +148,8 @@ describe('POST /tests/:id/start', () => {
   it('creates new attempt → 201', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
     ;(prisma.testResult.findFirst as jest.Mock)
-      .mockResolvedValueOnce(null)   // no in-progress
-      .mockResolvedValueOnce(null)   // no previous (attempt #1)
+      .mockResolvedValueOnce(null) // no in-progress
+      .mockResolvedValueOnce(null) // no previous (attempt #1)
     ;(prisma.testResult.create as jest.Mock).mockResolvedValue({ id: 'a1', attemptNumber: 1 })
 
     const res = await request(makeApp()).post('/api/tests/test-1/start')
@@ -121,7 +160,13 @@ describe('POST /tests/:id/start', () => {
 
   it('resumes in-progress attempt → 200', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
-    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({ id: 'existing', attemptNumber: 1, completedAt: null })
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+      id: 'existing',
+      attemptNumber: 1,
+      completedAt: null,
+      startedAt: new Date(),
+      attemptAnswers: [],
+    })
 
     const res = await request(makeApp()).post('/api/tests/test-1/start')
     expect(res.status).toBe(200)
@@ -145,6 +190,30 @@ describe('POST /tests/:id/start', () => {
     expect(res.status).toBe(403)
     expect(res.body.code).toBe('MAX_ATTEMPTS_REACHED')
   })
+
+  it('retries on unique constraint violation (attemptNumber race condition)', async () => {
+    ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
+    ;(prisma.testResult.findFirst as jest.Mock)
+      .mockResolvedValueOnce(null) // no in-progress
+      .mockResolvedValueOnce(null) // no previous attempts
+
+    // First create fails with P2002, second succeeds
+    const prismaError = new Error('P2002: Unique constraint violation') as any
+    prismaError.code = 'P2002'
+
+    const createMock = jest.fn()
+      .mockRejectedValueOnce(prismaError)
+      .mockResolvedValueOnce({ id: 'a1', attemptNumber: 1 })
+
+    ;(prisma.testResult.create as jest.Mock) = createMock
+
+    const res = await request(makeApp()).post('/api/tests/test-1/start')
+    expect(res.status).toBe(201)
+    expect(res.body.data.attempt_id).toBe('a1')
+    expect(createMock).toHaveBeenCalledTimes(2)
+    // Second call should have attemptNumber: 2
+    expect(createMock.mock.calls[1][0].data.attemptNumber).toBe(2)
+  })
 })
 
 // ─── POST /tests/:id/submit ───────────────────────────────────────────────────
@@ -155,9 +224,29 @@ describe('POST /tests/:id/submit', () => {
       const tx = {
         testResult: {
           findUnique: overrides.findUnique ?? jest.fn().mockResolvedValue(null),
-          findFirst:  overrides.findFirst  ?? jest.fn().mockResolvedValue(null),
-          update:     overrides.update     ?? jest.fn().mockResolvedValue({}),
-          create:     overrides.create     ?? jest.fn().mockResolvedValue({}),
+          findFirst: overrides.findFirst ?? jest.fn().mockResolvedValue(null),
+          update: overrides.update ?? jest.fn().mockResolvedValue({}),
+          create: overrides.create ?? jest.fn().mockResolvedValue({}),
+        },
+        testAttemptAnswer: {
+          createMany: jest.fn().mockResolvedValue({ count: 1 }),
+          upsert: jest.fn().mockResolvedValue({}),
+        },
+        user: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ id: 'user-123', xp: 0, level: 1, streak: 0, longestStreak: 0 }),
+          update: jest.fn().mockResolvedValue({}),
+        },
+        achievement: {
+          findMany: jest.fn().mockResolvedValue([]),
+        },
+        userAchievement: {
+          findMany: jest.fn().mockResolvedValue([]),
+          createMany: jest.fn().mockResolvedValue({ count: 0 }),
+        },
+        topicPerformance: {
+          findMany: jest.fn().mockResolvedValue([]),
         },
       }
       return cb(tx)
@@ -166,15 +255,41 @@ describe('POST /tests/:id/submit', () => {
 
   it('scores correctly, passes, awards XP → 201', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
-    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', startedAt: new Date(Date.now() - 120000), attemptNumber: 1 })
-    const mockUpdate = jest.fn().mockResolvedValue({ id: 'a1', score: 10, totalPoints: 10, percentage: 100, passed: true, timeTaken: 120, completedAt: new Date(), attemptNumber: 1, questionResults: '[]' })
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+      id: 'a1',
+      status: 'IN_PROGRESS',
+      startedAt: new Date(Date.now() - 120000),
+      attemptNumber: 1,
+    })
+    const mockUpdate = jest.fn().mockResolvedValue({
+      id: 'a1',
+      score: 10,
+      totalPoints: 10,
+      percentage: 100,
+      passed: true,
+      timeTaken: 120,
+      completedAt: new Date(),
+      attemptNumber: 1,
+      questionResults: '[]',
+    })
     mockTx({
       findFirst: jest.fn().mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS' }),
-      findUnique: jest.fn().mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', score: 0, totalPoints: 0, percentage: 0, passed: false, timeTaken: 0, attemptNumber: 1 }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'a1',
+        status: 'IN_PROGRESS',
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        passed: false,
+        timeTaken: 0,
+        attemptNumber: 1,
+      }),
       update: mockUpdate,
     })
 
-    const res = await request(makeApp()).post('/api/tests/test-1/submit').send({ answers: { q1: 'o2' }, timeTaken: 120, attempt_id: 'a1' })
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/submit')
+      .send({ answers: { q1: 'o2' }, timeTaken: 120, attempt_id: 'a1' })
     if (res.status === 500) console.error('TEXT:', res.text)
     expect(res.status).toBe(201)
     expect(res.body.data.passed).toBe(true)
@@ -184,13 +299,39 @@ describe('POST /tests/:id/submit', () => {
 
   it('applies negative marking for wrong answer → 201', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue({ ...TEST, negativeMarks: 2 })
-    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', startedAt: new Date(Date.now() - 120000), attemptNumber: 1 })
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+      id: 'a1',
+      status: 'IN_PROGRESS',
+      startedAt: new Date(Date.now() - 120000),
+      attemptNumber: 1,
+    })
     mockTx({
-      findUnique: jest.fn().mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', score: 0, totalPoints: 0, percentage: 0, passed: false, timeTaken: 0, attemptNumber: 1 }),
-      update: jest.fn().mockResolvedValue({ id: 'a1', score: 0, totalPoints: 10, percentage: 0, passed: false, timeTaken: 60, completedAt: new Date(), attemptNumber: 1, questionResults: '[]' }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'a1',
+        status: 'IN_PROGRESS',
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        passed: false,
+        timeTaken: 0,
+        attemptNumber: 1,
+      }),
+      update: jest.fn().mockResolvedValue({
+        id: 'a1',
+        score: 0,
+        totalPoints: 10,
+        percentage: 0,
+        passed: false,
+        timeTaken: 60,
+        completedAt: new Date(),
+        attemptNumber: 1,
+        questionResults: '[]',
+      }),
     })
 
-    const res = await request(makeApp()).post('/api/tests/test-1/submit').send({ answers: { q1: 'o1' }, timeTaken: 60, attempt_id: 'a1' })
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/submit')
+      .send({ answers: { q1: 'o1' }, timeTaken: 60, attempt_id: 'a1' })
     if (res.status === 500) console.error('TEXT:', res.text)
     expect(res.status).toBe(201)
     expect(res.body.data.incorrect_count).toBe(1)
@@ -204,7 +345,9 @@ describe('POST /tests/:id/submit', () => {
 
   it('returns 404 when test not found', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(null)
-    const res = await request(makeApp()).post('/api/tests/bad/submit').send({ answers: {}, timeTaken: 0, attempt_id: 'a1' })
+    const res = await request(makeApp())
+      .post('/api/tests/bad/submit')
+      .send({ answers: { q1: 'a' }, timeTaken: 0, attempt_id: 'a1' })
     if (res.status === 500) console.error('TEXT:', res.text)
     expect(res.status).toBe(404)
   })
@@ -213,11 +356,31 @@ describe('POST /tests/:id/submit', () => {
 // ─── GET /tests/attempts ──────────────────────────────────────────────────────
 describe('GET /tests/attempts', () => {
   it('returns attempt history → 200', async () => {
-    ;(prisma.testResult.findMany as jest.Mock).mockResolvedValue([{
-      id: 'a1', testId: 'test-1', score: 80, totalPoints: 100, percentage: 80, passed: true,
-      timeTaken: 900, attemptNumber: 1, status: 'COMPLETED', startedAt: new Date(), completedAt: new Date(),
-      test: { id: 'test-1', title: 'Sample', mode: 'mock', difficulty: 'medium', timeLimit: 30, passingScore: 60, totalMarks: 100 },
-    }])
+    ;(prisma.testResult.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'a1',
+        testId: 'test-1',
+        score: 80,
+        totalPoints: 100,
+        percentage: 80,
+        passed: true,
+        timeTaken: 900,
+        attemptNumber: 1,
+        status: 'COMPLETED',
+        startedAt: new Date(),
+        completedAt: new Date(),
+        test: {
+          id: 'test-1',
+          title: 'Sample',
+          mode: 'mock',
+          difficulty: 'medium',
+          timeLimit: 30,
+          passingScore: 60,
+          totalMarks: 100,
+        },
+        attemptAnswers: [],
+      },
+    ])
 
     const res = await request(makeApp()).get('/api/tests/attempts')
     expect(res.status).toBe(200)

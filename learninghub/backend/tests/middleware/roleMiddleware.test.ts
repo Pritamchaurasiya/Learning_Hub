@@ -1,169 +1,133 @@
 import { Request, Response, NextFunction } from 'express'
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
-import {
-  requireRole,
-  requireAdmin,
-  requireInstructorOrAdmin,
-} from '../../src/middleware/roleMiddleware'
+import { authorize, authorizeAdmin, authorizeInstructor, authorizeSuperAdmin } from '../../src/middleware/authMiddleware'
 
-describe('RoleMiddleware', () => {
-  let mockReq: DeepMockProxy<Request>
-  let mockRes: DeepMockProxy<Response>
-  let mockNext: jest.Mock
-  let jsonMock: jest.Mock
-  let statusMock: jest.Mock
+jest.mock('../../src/utils/logger', () => ({
+  __esModule: true,
+  default: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    audit: jest.fn(),
+  },
+}))
 
+function makeReqResNext(userRole?: string) {
+  const req = {
+    headers: {},
+    user: userRole ? { userId: 'u1', email: 'a@b.com', role: userRole } : undefined,
+    requestId: 'test-req-id',
+  } as unknown as Request
+
+  const json = jest.fn()
+  const status = jest.fn().mockReturnValue({ json })
+  const res = { status, json } as unknown as Response
+  const next = jest.fn() as unknown as NextFunction
+
+  return { req, res, next, json, status }
+}
+
+describe('authorize middleware (RBAC)', () => {
   beforeEach(() => {
-    jsonMock = jest.fn().mockReturnThis()
-    statusMock = jest.fn().mockReturnValue({ json: jsonMock })
-    mockReq = mockDeep<Request>()
-    mockRes = mockDeep<Response>()
-    mockRes.status = statusMock as any
-    mockRes.json = jsonMock as any
-    mockNext = jest.fn()
+    jest.clearAllMocks()
   })
 
-  describe('requireRole', () => {
-    it('should call next() when user has required role', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' }
-
-      const middleware = requireRole(['admin', 'instructor'])
-      middleware(mockReq as any, mockRes, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
-      expect(statusMock).not.toHaveBeenCalled()
+  describe('authorize', () => {
+    it('returns 401 when no user attached', () => {
+      const { req, res, next, status } = makeReqResNext()
+      authorize('ADMIN')(req, res, next)
+      expect(status).toHaveBeenCalledWith(401)
+      expect(next).not.toHaveBeenCalled()
     })
 
-    it('should return 401 when user is not authenticated', () => {
-      mockReq.user = undefined
-
-      const middleware = requireRole(['admin'])
-      middleware(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(401)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'NO_TOKEN',
-        message: 'Authentication required',
-      })
-      expect(mockNext).not.toHaveBeenCalled()
+    it('returns 403 when user role not in allowed list', () => {
+      const { req, res, next, status } = makeReqResNext('STUDENT')
+      authorize('ADMIN')(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
     })
 
-    it('should return 403 when user lacks required role', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' }
-
-      const middleware = requireRole(['admin'])
-      middleware(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(403)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
-      })
-      expect(mockNext).not.toHaveBeenCalled()
+    it('calls next() when user role is allowed', () => {
+      const { req, res, next } = makeReqResNext('ADMIN')
+      authorize('ADMIN')(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should accept multiple roles', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' }
+    it('allows multiple roles', () => {
+      const { req, res, next } = makeReqResNext('INSTRUCTOR')
+      authorize('ADMIN', 'INSTRUCTOR', 'SUPERADMIN')(req, res, next)
+      expect(next).toHaveBeenCalled()
+    })
 
-      const middleware = requireRole(['admin', 'instructor'])
-      middleware(mockReq as any, mockRes, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
+    it('rejects when user has none of the allowed roles', () => {
+      const { req, res, next, status } = makeReqResNext('STUDENT')
+      authorize('ADMIN', 'INSTRUCTOR')(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
     })
   })
 
-  describe('requireAdmin', () => {
-    it('should call next() for admin user', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' }
-
-      requireAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
+  describe('authorizeAdmin', () => {
+    it('allows ADMIN role', () => {
+      const { req, res, next } = makeReqResNext('ADMIN')
+      authorizeAdmin(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should return 401 when user is not authenticated', () => {
-      mockReq.user = undefined
-
-      requireAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(401)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'NO_TOKEN',
-        message: 'Authentication required',
-      })
+    it('allows SUPERADMIN role', () => {
+      const { req, res, next } = makeReqResNext('SUPERADMIN')
+      authorizeAdmin(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should return 403 for non-admin users', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' }
-
-      requireAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(403)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'FORBIDDEN',
-        message: 'Admin access required',
-      })
-    })
-
-    it('should return 403 for instructor users', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' }
-
-      requireAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(403)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'FORBIDDEN',
-        message: 'Admin access required',
-      })
+    it('blocks STUDENT role', () => {
+      const { req, res, next, status } = makeReqResNext('STUDENT')
+      authorizeAdmin(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
     })
   })
 
-  describe('requireInstructorOrAdmin', () => {
-    it('should call next() for admin user', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'admin' }
-
-      requireInstructorOrAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
+  describe('authorizeInstructor', () => {
+    it('allows INSTRUCTOR role', () => {
+      const { req, res, next } = makeReqResNext('INSTRUCTOR')
+      authorizeInstructor(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should call next() for instructor user', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'instructor' }
-
-      requireInstructorOrAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
+    it('allows ADMIN role', () => {
+      const { req, res, next } = makeReqResNext('ADMIN')
+      authorizeInstructor(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should return 401 when user is not authenticated', () => {
-      mockReq.user = undefined
+    it('blocks STUDENT role', () => {
+      const { req, res, next, status } = makeReqResNext('STUDENT')
+      authorizeInstructor(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
+    })
+  })
 
-      requireInstructorOrAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(401)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'NO_TOKEN',
-        message: 'Authentication required',
-      })
+  describe('authorizeSuperAdmin', () => {
+    it('allows SUPERADMIN role', () => {
+      const { req, res, next } = makeReqResNext('SUPERADMIN')
+      authorizeSuperAdmin(req, res, next)
+      expect(next).toHaveBeenCalled()
     })
 
-    it('should return 403 for student users', () => {
-      mockReq.user = { userId: 'user-123', email: 'test@example.com', role: 'student' }
+    it('blocks ADMIN role', () => {
+      const { req, res, next, status } = makeReqResNext('ADMIN')
+      authorizeSuperAdmin(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
+    })
 
-      requireInstructorOrAdmin(mockReq as any, mockRes, mockNext)
-
-      expect(statusMock).toHaveBeenCalledWith(403)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'error',
-        code: 'FORBIDDEN',
-        message: 'Instructor or Admin access required',
-      })
+    it('blocks STUDENT role', () => {
+      const { req, res, next, status } = makeReqResNext('STUDENT')
+      authorizeSuperAdmin(req, res, next)
+      expect(status).toHaveBeenCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
     })
   })
 })

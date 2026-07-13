@@ -1,6 +1,6 @@
 import {
   createRateLimiter,
-  cleanupMemoryStore,
+  stopMemoryStoreCleanup,
   getClientIp,
 } from '../../src/middleware/rateLimiter'
 import { Request, Response, NextFunction } from 'express'
@@ -25,10 +25,12 @@ describe('RateLimiter Middleware', () => {
   beforeAll(() => {
     originalEnv = process.env.NODE_ENV
     process.env.NODE_ENV = 'production' // Bypass the test environment check
+    process.env.RATE_LIMIT_ENABLED = 'true' // Override global test setup
   })
 
   afterAll(() => {
     process.env.NODE_ENV = originalEnv
+    delete process.env.RATE_LIMIT_ENABLED
   })
 
   beforeEach(() => {
@@ -163,8 +165,8 @@ describe('RateLimiter Middleware', () => {
     expect(setHeaderMock).toHaveBeenCalledWith('X-RateLimit-Remaining', '0')
   })
 
-  it('should clean up expired records in memory store', () => {
-    expect(() => cleanupMemoryStore()).not.toThrow()
+  it('should stop memory store cleanup without throwing', () => {
+    expect(() => stopMemoryStoreCleanup()).not.toThrow()
   })
 
   describe('getClientIp helper', () => {

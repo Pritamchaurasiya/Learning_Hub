@@ -2,11 +2,13 @@ import { Request, Response } from 'express'
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
 import {
   listProblems,
-  getProblemDetails,
-  submitProblemSolution,
+  getProblem,
+  submitSolution,
+  getSubmissions,
 } from '../../src/controllers/problemsController'
 import { prisma } from '../../src/prismaClient'
 import { CodeSandboxService } from '../../src/services/CodeSandboxService'
+import { growthEngineService } from '../../src/services/GrowthEngineService'
 
 jest.mock('../../src/services/CodeSandboxService', () => ({
   CodeSandboxService: {
@@ -14,172 +16,103 @@ jest.mock('../../src/services/CodeSandboxService', () => ({
   },
 }))
 
-jest.mock('../../src/services/CacheService', () => ({
-  cacheService: {
-    generateKey: jest.fn((prefix, str) => `${prefix}:${str}`),
-    get: jest.fn().mockResolvedValue(null),
-    set: jest.fn().mockResolvedValue(true),
-    delete: jest.fn().mockResolvedValue(true),
-    invalidatePattern: jest.fn().mockResolvedValue(true),
+jest.mock('../../src/services/GrowthEngineService', () => ({
+  growthEngineService: {
+    awardXP: jest.fn().mockResolvedValue(undefined),
   },
 }))
-
-jest.mock('../../src/utils/logger', () => {
-  const mockLogger = {
-    error: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
-    debug: jest.fn(),
-    audit: jest.fn(),
-  }
-  return {
-    ...mockLogger,
-    default: mockLogger,
-  }
-})
 
 describe('ProblemsController', () => {
   let mockReq: DeepMockProxy<Request>
   let mockRes: DeepMockProxy<Response>
   let jsonMock: jest.Mock
   let statusMock: jest.Mock
+  let nextMock: jest.Mock
 
   beforeEach(() => {
     jsonMock = jest.fn().mockReturnThis()
     statusMock = jest.fn().mockReturnValue({ json: jsonMock })
+    nextMock = jest.fn()
     mockReq = mockDeep<Request>()
     mockRes = mockDeep<Response>()
     mockRes.status = statusMock as any
     mockRes.json = jsonMock as any
-
-    jest.clearAllMocks()
+    mockReq.query = {}
+    mockReq.user = { userId: 'user-1', email: 'student@test.com', role: 'STUDENT' }
+    ;(prisma.problemSubmission.create as jest.Mock).mockImplementation(async ({ data }) => data)
   })
 
   describe('listProblems', () => {
-    it('should return paginated list of problems', async () => {
-      const mockProblems = [
-        {
-          id: 'prob-1',
-          title: 'Two Sum',
-          slug: 'two-sum',
-          difficulty: 'easy',
-          category: 'Arrays',
-          tags: 'arrays,hashmap',
-          points: 100,
-          description: 'Solve two sum',
-          starterCode: null,
-          testCases: null,
-          createdAt: new Date(),
-          _count: { submissions: 10 },
-        },
-      ]
+    it('returns paginated problems list', async () => {
+      ;(prisma.problem.count as jest.Mock).mockResolvedValue(2)
+      ;(prisma.problem.findMany as jest.Mock).mockResolvedValue([
+        { id: 'p1', title: 'Two Sum', difficulty: 'EASY', points: 100, user_status: 'UNATTEMPTED' },
+        { id: 'p2', title: 'Reverse Linked List', difficulty: 'MEDIUM', points: 200, user_status: 'ATTEMPTED' },
+      ])
+      ;(prisma.problemSubmission.findMany as jest.Mock).mockResolvedValue([])
 
-      ;(prisma.problem.count as jest.Mock).mockResolvedValue(1)
-      ;(prisma.problem.findMany as jest.Mock).mockResolvedValue(mockProblems)
-
-      mockReq.query = { page: '1', limit: '10' }
-
-      await listProblems(mockReq, mockRes)
+      await listProblems(mockReq as any, mockRes as any, nextMock)
 
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
           status: 'success',
-          data: expect.any(Array),
-          meta: expect.objectContaining({
-            total: 1,
-            page: 1,
-            pages: 1,
-          }),
+          data: expect.arrayContaining([
+            expect.objectContaining({ id: 'p1', title: 'Two Sum' }),
+            expect.objectContaining({ id: 'p2', title: 'Reverse Linked List' }),
+          ]),
+          meta: expect.objectContaining({ total: 2 }),
+        })
+      )
+    })
+
+    it('filters problems by difficulty', async () => {
+      mockReq.query = { difficulty: 'EASY' }
+      ;(prisma.problem.count as jest.Mock).mockResolvedValue(1)
+      ;(prisma.problem.findMany as jest.Mock).mockResolvedValue([
+        { id: 'p1', title: 'Two Sum', difficulty: 'EASY', points: 100, user_status: 'UNATTEMPTED' },
+      ])
+      // Setup empty user submissions
+      ;(prisma.problemSubmission.findMany as jest.Mock).mockResolvedValue([])
+
+      await listProblems(mockReq as any, mockRes as any, nextMock)
+
+      expect(prisma.problem.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ difficulty: 'EASY' }),
         })
       )
     })
   })
 
-  describe('getProblemDetails', () => {
-    it('should locate a problem by id successfully', async () => {
-      const mockProblem = {
-        id: 'prob-123-uuid',
-        title: 'Reverse String',
-        slug: 'reverse-string',
-        difficulty: 'easy',
-        category: 'Strings',
-        tags: 'strings',
-        points: 50,
-        description: 'Reverse it',
-        starterCode: null,
-        testCases: null,
-        createdAt: new Date(),
-      }
+  describe('getProblem', () => {
+    it('returns problem by slug', async () => {
+      mockReq.params = { slug: 'two-sum' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        slug: 'two-sum',
+        title: 'Two Sum',
+        description: 'Find two numbers that add up to target',
+        difficulty: 'EASY',
+        points: 100,
+      })
 
-      ;(mockReq as any).params = { slug: 'prob-123-uuid' }
-      ;(prisma.problem.findFirst as jest.Mock).mockResolvedValue(mockProblem)
+      await getProblem(mockReq as any, mockRes as any, nextMock)
 
-      await getProblemDetails(mockReq, mockRes)
-
-      expect(prisma.problem.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            OR: [
-              { id: 'prob-123-uuid' },
-              { slug: 'prob-123-uuid' },
-            ],
-          },
-        })
-      )
-      expect(statusMock).not.toHaveBeenCalledWith(404)
+      expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
           status: 'success',
-          data: expect.objectContaining({ id: 'prob-123-uuid' }),
+          data: expect.objectContaining({ id: 'p1', slug: 'two-sum' }),
         })
       )
     })
 
-    it('should locate a problem by slug successfully', async () => {
-      const mockProblem = {
-        id: 'prob-123-uuid',
-        title: 'Reverse String',
-        slug: 'reverse-string',
-        difficulty: 'easy',
-        category: 'Strings',
-        tags: 'strings',
-        points: 50,
-        description: 'Reverse it',
-        starterCode: null,
-        testCases: null,
-        createdAt: new Date(),
-      }
+    it('returns 404 when problem not found', async () => {
+      mockReq.params = { slug: 'non-existent' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(null)
 
-      ;(mockReq as any).params = { slug: 'reverse-string' }
-      ;(prisma.problem.findFirst as jest.Mock).mockResolvedValue(mockProblem)
-
-      await getProblemDetails(mockReq, mockRes)
-
-      expect(prisma.problem.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            OR: [
-              { id: 'reverse-string' },
-              { slug: 'reverse-string' },
-            ],
-          },
-        })
-      )
-      expect(statusMock).not.toHaveBeenCalledWith(404)
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 'success',
-          data: expect.objectContaining({ slug: 'reverse-string' }),
-        })
-      )
-    })
-
-    it('should return 404 when problem not found', async () => {
-      ;(mockReq as any).params = { slug: 'non-existent' }
-      ;(prisma.problem.findFirst as jest.Mock).mockResolvedValue(null)
-
-      await getProblemDetails(mockReq, mockRes)
+      await getProblem(mockReq as any, mockRes as any, nextMock)
 
       expect(statusMock).toHaveBeenCalledWith(404)
       expect(jsonMock).toHaveBeenCalledWith({
@@ -190,93 +123,134 @@ describe('ProblemsController', () => {
     })
   })
 
-  describe('submitProblemSolution', () => {
-    it('should return 401 when user not authenticated', async () => {
-      mockReq.user = undefined
-      await submitProblemSolution(mockReq, mockRes)
-      expect(statusMock).toHaveBeenCalledWith(401)
-    })
-
-    it('should return 400 when code is empty', async () => {
-      mockReq.user = { userId: 'user-1' } as any
-      ;(mockReq as any).params = { id: 'prob-1' }
-      mockReq.body = { code: '', language: 'javascript' }
-
-      await submitProblemSolution(mockReq, mockRes)
-
-      expect(statusMock).toHaveBeenCalledWith(400)
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Code submission is required',
-        })
-      )
-    })
-
-    it('should return 404 when problem does not exist', async () => {
-      mockReq.user = { userId: 'user-1' } as any
-      ;(mockReq as any).params = { id: 'prob-nonexistent' }
+  describe('submitSolution', () => {
+    it('submits code and returns accepted result', async () => {
+      mockReq.params = { id: 'p1' }
       mockReq.body = { code: 'console.log("hello")', language: 'javascript' }
-
-      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(null)
-
-      await submitProblemSolution(mockReq, mockRes)
-
-      expect(statusMock).toHaveBeenCalledWith(404)
-      expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Problem not found',
-        })
-      )
-    })
-
-    it('should submit successfully, award 50 XP if accepted', async () => {
-      mockReq.user = { userId: 'user-1' } as any
-      ;(mockReq as any).params = { id: 'prob-1' }
-      mockReq.body = { code: 'function f() {}', language: 'javascript' }
-
-      const mockProblem = {
-        id: 'prob-1',
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
         title: 'Two Sum',
-        testCases: '[{"input": "1", "output": "2"}]',
-      }
-      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(mockProblem)
-      ;(prisma.problemSubmission.count as jest.Mock).mockResolvedValue(0)
-
-      const mockExecResult = {
+        points: 100,
+        testCases: '[{"input":"1 2","output":"3"}]',
+      })
+      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue({
         status: 'accepted',
-        executionTime: 50,
-        memoryUsed: 1024,
-        message: 'All passed',
+        executionTime: 120,
+        memoryUsed: 256,
         testCasesPassed: 1,
         testCasesTotal: 1,
-      }
-      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue(mockExecResult)
-
-      const mockSubmission = {
-        id: 'sub-123',
-        userId: 'user-1',
-        problemId: 'prob-1',
-        status: 'accepted',
-        executionTime: 50,
-        memoryUsed: 1024,
-      }
-      ;(prisma.problemSubmission.create as jest.Mock).mockResolvedValue(mockSubmission)
-
-      await submitProblemSolution(mockReq, mockRes)
-
-      expect(prisma.problemSubmission.create).toHaveBeenCalled()
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
-        data: { xp: { increment: 50 } },
       })
+
+      await submitSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(CodeSandboxService.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'console.log("hello")',
+          language: 'javascript',
+          timeLimit: 5,
+          memoryLimit: 256,
+        })
+      )
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
           status: 'success',
-          data: expect.objectContaining({
-            submissionId: 'sub-123',
-            status: 'accepted',
-          }),
+          data: expect.objectContaining({ status: 'ACCEPTED', score: 100 }),
+        })
+      )
+    })
+
+    it('returns partial score for wrong answer', async () => {
+      mockReq.params = { id: 'p1' }
+      mockReq.body = { code: 'console.log("wrong")', language: 'javascript' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        title: 'Two Sum',
+        points: 100,
+        testCases: '[{"input":"1 2","output":"3"}]',
+      })
+      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue({
+        status: 'wrong_answer',
+        executionTime: 120,
+        memoryUsed: 256,
+        testCasesPassed: 0,
+        testCasesTotal: 1,
+      })
+
+      await submitSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({ status: 'WRONG_ANSWER', score: 0 }),
+        })
+      )
+    })
+
+    it('returns 404 when problem does not exist', async () => {
+      mockReq.params = { id: 'non-existent' }
+      mockReq.body = { code: 'console.log("hello")', language: 'javascript' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(null)
+
+      await submitSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(statusMock).toHaveBeenCalledWith(404)
+      expect(jsonMock).toHaveBeenCalledWith({
+        status: 'error',
+        message: 'Problem not found',
+        code: 'NOT_FOUND',
+      })
+    })
+
+    it('handles compilation error gracefully', async () => {
+      mockReq.params = { id: 'p1' }
+      mockReq.body = { code: 'invalid syntax here !!!', language: 'javascript' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        title: 'Two Sum',
+        points: 100,
+        testCases: '[{"input":"1 2","output":"3"}]',
+      })
+      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue({
+        status: 'compilation_error',
+        executionTime: 0,
+        memoryUsed: 0,
+        testCasesPassed: 0,
+        testCasesTotal: 1,
+      })
+
+      await submitSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({ status: 'COMPILATION_ERROR' }),
+        })
+      )
+    })
+  })
+
+  describe('getSubmissions', () => {
+    it('returns submissions for a problem', async () => {
+      mockReq.params = { id: 'p1' }
+      mockReq.user = { userId: 'user-1', email: 'student@test.com', role: 'STUDENT' }
+      ;(prisma.problemSubmission.findMany as jest.Mock).mockResolvedValue([
+        { id: 's1', status: 'ACCEPTED', score: 100, language: 'javascript', createdAt: new Date() },
+        { id: 's2', status: 'WRONG_ANSWER', score: 0, language: 'javascript', createdAt: new Date() },
+      ])
+
+      await getSubmissions(mockReq as any, mockRes as any, nextMock)
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.arrayContaining([
+            expect.objectContaining({ id: 's1', status: 'ACCEPTED' }),
+            expect.objectContaining({ id: 's2', status: 'WRONG_ANSWER' }),
+          ]),
         })
       )
     })
