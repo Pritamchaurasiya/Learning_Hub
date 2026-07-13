@@ -180,4 +180,12 @@ export const strictLimiter = createRateLimiter({
   message: 'Too many attempts. Please try again after 10 minutes.',
 })
 
+export const mfaLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 3, // 3 attempts
+  keyPrefix: 'mfa',
+  message: 'Too many MFA attempts. Please try again after 5 minutes.',
+})
+
 export default createRateLimiter
+

@@ -1,8 +1,7 @@
 import { Router } from 'express'
 import { authenticate, authorizeAdmin } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
-import { createRateLimiter } from '../../middleware/rateLimiter'
-import { mfaRateLimit } from '../../config/security'
+import { createRateLimiter, mfaLimiter } from '../../middleware/rateLimiter'
 import {
   getDashboardStats,
   getUsers,
@@ -41,7 +40,7 @@ const adminAuthLimiter = createRateLimiter({
 
 // Auth routes (no admin auth required for initial admin registration)
 router.post('/auth/login', adminAuthLimiter, validate(adminLoginSchema), adminLogin)
-router.post('/auth/verify-mfa', mfaRateLimit, validate(verifyMfaSchema), verifyMfa)
+router.post('/auth/verify-mfa', mfaLimiter, validate(verifyMfaSchema), verifyMfa)
 router.post(
   '/auth/register/initial',
   adminAuthLimiter,

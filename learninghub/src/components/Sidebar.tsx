@@ -54,7 +54,7 @@ export default function Sidebar() {
   }
 
   const userRole = (auth.user?.role ?? '').toUpperCase()
-  const isAdmin = userRole === 'ADMIN' || userRole === 'SUPERADMIN'
+  const isAdmin = ['ADMIN', 'SUPERADMIN', 'MODERATOR', 'INSTRUCTOR'].includes(userRole)
 
   const mainNavItems = [
     { to: '/dashboard', icon: Home, label: 'Dashboard' },
