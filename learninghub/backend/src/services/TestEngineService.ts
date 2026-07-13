@@ -364,7 +364,10 @@ export class TestEngineService {
     const passedTests = results.filter((r: { passed: boolean | null }) => r.passed).length
     const avgScore =
       totalTests > 0
-        ? Math.round(results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) / totalTests)
+        ? Math.round(
+            results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) /
+              totalTests
+          )
         : 0
 
     // Performance by difficulty
@@ -376,7 +379,9 @@ export class TestEngineService {
       if (r.passed) byDifficulty[diff].passed++ // eslint-disable-line security/detect-object-injection
     }
     for (const key of Object.keys(byDifficulty)) {
-      const items = results.filter((r: { test: { difficulty: string } }) => r.test.difficulty === key)
+      const items = results.filter(
+        (r: { test: { difficulty: string } }) => r.test.difficulty === key
+      )
       // eslint-disable-next-line security/detect-object-injection
       byDifficulty[key].avgScore = Math.round(
         items.reduce((s: number, r: { percentage: number }) => s + r.percentage, 0) / items.length
@@ -387,12 +392,19 @@ export class TestEngineService {
     const trend = results
       .slice(0, 10)
       .reverse()
-      .map((r: { test: { title: string }; percentage: number; passed: boolean | null; completedAt: Date | null }) => ({
-        test_title: r.test.title,
-        score: r.percentage,
-        passed: r.passed,
-        completed_at: r.completedAt,
-      }))
+      .map(
+        (r: {
+          test: { title: string }
+          percentage: number
+          passed: boolean | null
+          completedAt: Date | null
+        }) => ({
+          test_title: r.test.title,
+          score: r.percentage,
+          passed: r.passed,
+          completed_at: r.completedAt,
+        })
+      )
 
     // Use the shared topic map from topicPerformanceService for accurate global topic data
     const topicMastery = await topicPerformanceService.getTopicMasteryMap(userId)
@@ -668,9 +680,7 @@ export class TestEngineService {
 
   // ─── Private Helpers ───────────────────────────────────────────────────────
 
-  private async getExistingAnswers(
-    attemptId: string
-  ): Promise<Record<string, string | string[]>> {
+  private async getExistingAnswers(attemptId: string): Promise<Record<string, string | string[]>> {
     // Scope answers to the specific attempt (testResultId) rather than the latest
     // IN_PROGRESS result for the user+test. Otherwise an auto-submitted expired
     // attempt could be scored using answers saved to a different concurrent attempt.
@@ -682,8 +692,7 @@ export class TestEngineService {
     const result: Record<string, string | string[]> = {}
     for (const a of answers) {
       result[a.questionId] =
-        a.textAnswer ??
-        (a.selectedOptions.length === 1 ? a.selectedOptions[0] : a.selectedOptions)
+        a.textAnswer ?? (a.selectedOptions.length === 1 ? a.selectedOptions[0] : a.selectedOptions)
     }
     return result
   }

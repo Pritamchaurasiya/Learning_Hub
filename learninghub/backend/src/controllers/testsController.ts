@@ -467,7 +467,10 @@ export const getTestAttempts = asyncHandler(async (req: Request, res: Response):
     }
   })
 
-  const totalXp = attempts.reduce((sum: number, a: any) => sum + (a.passed ? Math.round(a.score) : 0), 0)
+  const totalXp = attempts.reduce(
+    (sum: number, a: any) => sum + (a.passed ? Math.round(a.score) : 0),
+    0
+  )
   sendSuccess(res, { results: transformedAttempts, totalXp })
 })
 
@@ -750,6 +753,10 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
 
     sendCreated(res, responsePayload)
   } catch (error) {
+    if (error instanceof Error && error.message === 'MAX_ATTEMPTS_REACHED') {
+      sendForbidden(res, 'Maximum attempts reached for this test', 'MAX_ATTEMPTS_REACHED')
+      return
+    }
     if (
       error instanceof Error &&
       (error.message === 'Test not found' || error.message === 'Attempt not found')

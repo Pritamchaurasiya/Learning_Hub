@@ -1,6 +1,5 @@
 import { GrowthEngineService } from '../../services/GrowthEngineService'
 import { prisma } from '../../prismaClient'
-import logger from '../../utils/logger'
 
 jest.mock('../../utils/logger', () => ({
   info: jest.fn(),

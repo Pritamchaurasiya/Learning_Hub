@@ -241,7 +241,9 @@ export class TopicPerformanceService {
         },
       })
 
-      const existingTopicsMap = new Map<string, any>(existingTopics.map((t: any) => [t.topicName, t]))
+      const existingTopicsMap = new Map<string, any>(
+        existingTopics.map((t: any) => [t.topicName, t])
+      )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const operations: any[] = []
 
@@ -348,15 +350,23 @@ export class TopicPerformanceService {
           lastAttemptAt: t.lastAttemptAt,
         }))
 
-        const weakTopics = topicData.filter((t: TopicPerformanceData) => t.strengthLevel === 'weak' && t.totalAttempts >= 3)
+        const weakTopics = topicData.filter(
+          (t: TopicPerformanceData) => t.strengthLevel === 'weak' && t.totalAttempts >= 3
+        )
         const strongTopics = topicData.filter(
           (t: TopicPerformanceData) =>
             (t.strengthLevel === 'mastered' || t.strengthLevel === 'proficient') &&
             t.totalAttempts >= 3
         )
 
-        const totalAttempts = topicData.reduce((sum: number, t: TopicPerformanceData) => sum + t.totalAttempts, 0)
-        const totalCorrect = topicData.reduce((sum: number, t: TopicPerformanceData) => sum + t.correctAnswers, 0)
+        const totalAttempts = topicData.reduce(
+          (sum: number, t: TopicPerformanceData) => sum + t.totalAttempts,
+          0
+        )
+        const totalCorrect = topicData.reduce(
+          (sum: number, t: TopicPerformanceData) => sum + t.correctAnswers,
+          0
+        )
         const overallAccuracy =
           totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100 * 100) / 100 : 0
 

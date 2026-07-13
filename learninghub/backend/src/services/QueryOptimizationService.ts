@@ -188,13 +188,20 @@ export class QueryOptimizationService {
         best_score: Math.round(stats._max.percentage ?? 0),
         worst_score: Math.round(stats._min.percentage ?? 0),
       },
-      recent_tests: recentTests.map((t: { test: { title: string; mode: string }; percentage: number; passed: boolean; completedAt: Date | null }) => ({
-        title: t.test.title,
-        mode: t.test.mode,
-        score: t.percentage,
-        passed: t.passed,
-        completed_at: t.completedAt,
-      })),
+      recent_tests: recentTests.map(
+        (t: {
+          test: { title: string; mode: string }
+          percentage: number
+          passed: boolean
+          completedAt: Date | null
+        }) => ({
+          title: t.test.title,
+          mode: t.test.mode,
+          score: t.percentage,
+          passed: t.passed,
+          completed_at: t.completedAt,
+        })
+      ),
     }
   }
 
@@ -245,7 +252,10 @@ export class QueryOptimizationService {
         total_tests: results.length,
         average_score:
           results.length > 0
-            ? Math.round(results.reduce((s: number, r: { percentage: number }) => s + r.percentage, 0) / results.length)
+            ? Math.round(
+                results.reduce((s: number, r: { percentage: number }) => s + r.percentage, 0) /
+                  results.length
+              )
             : 0,
         improvement: this.calculateImprovement(results),
       },

@@ -265,9 +265,15 @@ export class PlatformHealthService {
       // Prisma metrics are available if enabled in schema previewFeatures = ["metrics"]
       // We wrap in try-catch in case metrics are disabled
       const metrics = await prisma.$metrics.json()
-      const poolActive = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_pool_connections_busy')
-      const poolIdle = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_pool_connections_idle')
-      const poolWait = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_client_queries_wait')
+      const poolActive = metrics.counters.find(
+        (c: { key: string; value: number }) => c.key === 'prisma_pool_connections_busy'
+      )
+      const poolIdle = metrics.counters.find(
+        (c: { key: string; value: number }) => c.key === 'prisma_pool_connections_idle'
+      )
+      const poolWait = metrics.counters.find(
+        (c: { key: string; value: number }) => c.key === 'prisma_client_queries_wait'
+      )
 
       activeConnections = poolActive?.value ?? 0
       idleConnections = poolIdle?.value ?? 0
@@ -317,27 +323,36 @@ export class PlatformHealthService {
       take: limit,
     })
 
-    return users.map((user: { id: string; email: string; username: string | null; lastActive: Date; streak: number; _count: { testResults: number } }) => {
-      const daysSinceActive = Math.floor(
-        (Date.now() - user.lastActive.getTime()) / (24 * 60 * 60 * 1000)
-      )
+    return users.map(
+      (user: {
+        id: string
+        email: string
+        username: string | null
+        lastActive: Date
+        streak: number
+        _count: { testResults: number }
+      }) => {
+        const daysSinceActive = Math.floor(
+          (Date.now() - user.lastActive.getTime()) / (24 * 60 * 60 * 1000)
+        )
 
-      let riskLevel: 'high' | 'medium' | 'low'
-      if (daysSinceActive > 30) riskLevel = 'high'
-      else if (daysSinceActive > 14) riskLevel = 'medium'
-      else riskLevel = 'low'
+        let riskLevel: 'high' | 'medium' | 'low'
+        if (daysSinceActive > 30) riskLevel = 'high'
+        else if (daysSinceActive > 14) riskLevel = 'medium'
+        else riskLevel = 'low'
 
-      return {
-        userId: user.id,
-        email: user.email,
-        username: user.username,
-        lastActive: user.lastActive,
-        daysSinceActive,
-        streak: user.streak,
-        totalTests: user._count.testResults,
-        riskLevel,
+        return {
+          userId: user.id,
+          email: user.email,
+          username: user.username,
+          lastActive: user.lastActive,
+          daysSinceActive,
+          streak: user.streak,
+          totalTests: user._count.testResults,
+          riskLevel,
+        }
       }
-    })
+    )
   }
 }
 

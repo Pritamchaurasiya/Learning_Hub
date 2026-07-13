@@ -576,7 +576,10 @@ export class GrowthEngineService {
           FROM "test_results" tr
           JOIN "test_attempt_answers" taa ON taa."testResultId" = tr.id
           WHERE tr."userId" = ${userId} AND tr.status = 'COMPLETED'
-        `.then((rows: Array<{ totalQuestions: bigint; totalCorrect: bigint }>) => rows[0] ?? { totalQuestions: BigInt(0), totalCorrect: BigInt(0) }),
+        `.then(
+          (rows: Array<{ totalQuestions: bigint; totalCorrect: bigint }>) =>
+            rows[0] ?? { totalQuestions: BigInt(0), totalCorrect: BigInt(0) }
+        ),
         prisma.topicPerformance.count({
           where: { userId, strengthLevel: 'mastered' },
         }),

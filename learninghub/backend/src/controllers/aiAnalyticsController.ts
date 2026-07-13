@@ -26,7 +26,9 @@ export class AIAnalyticsController {
         take: 10,
       })
 
-      const topicIds = upcomingReviews.map((r: any) => r.topicId).filter((id: any): id is string => id !== null)
+      const topicIds = upcomingReviews
+        .map((r: any) => r.topicId)
+        .filter((id: any): id is string => id !== null)
 
       const topics =
         topicIds.length > 0

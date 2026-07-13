@@ -196,6 +196,7 @@ describe('POST /tests/:id/start', () => {
     ;(prisma.testResult.findFirst as jest.Mock)
       .mockResolvedValueOnce(null) // no in-progress
       .mockResolvedValueOnce(null) // no previous attempts
+      .mockResolvedValueOnce(null) // no concurrent attempt inside transaction
 
     // First create fails with P2002, second succeeds
     const prismaError = new Error('P2002: Unique constraint violation') as any

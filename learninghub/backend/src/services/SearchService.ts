@@ -50,7 +50,8 @@ export const searchService = {
           `,
         ])
       : [[], []]
-    const testIdFilter = testIds.length > 0 ? { id: { in: testIds.map((r: { id: string }) => r.id) } } : { id: '-1' }
+    const testIdFilter =
+      testIds.length > 0 ? { id: { in: testIds.map((r: { id: string }) => r.id) } } : { id: '-1' }
 
     const [exams, tests, _total] = await Promise.all([
       examIds.length > 0
@@ -160,7 +161,10 @@ export const searchService = {
           })
         : Promise.resolve([]),
     ])
-    return [...exams.map((e: { name: string }) => e.name), ...tests.map((t: { title: string }) => t.title)]
+    return [
+      ...exams.map((e: { name: string }) => e.name),
+      ...tests.map((t: { title: string }) => t.title),
+    ]
   },
 
   async getTrending(): Promise<SearchResult[]> {

@@ -304,7 +304,7 @@ class JobQueueService {
     } else if (data.operation === 'GENERATE_PRACTICE_TEST') {
       const { aiTestService } = await import('./AITestService')
       const { webSocketService } = await import('./WebSocketService')
-      
+
       try {
         const testResult = await aiTestService.generateTest({
           userId: data.userId,

@@ -84,9 +84,7 @@ export default function Sidebar() {
     {
       label: 'Community',
       defaultOpen: true,
-      items: [
-        { to: '/discussions', icon: MessageSquare, label: 'Discussions' },
-      ],
+      items: [{ to: '/discussions', icon: MessageSquare, label: 'Discussions' }],
     },
     {
       label: 'AI & Tools',

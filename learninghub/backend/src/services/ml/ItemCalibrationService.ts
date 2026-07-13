@@ -65,7 +65,9 @@ export class ItemCalibrationService {
 
         if (!irtParams || typeof irtParams.difficulty !== 'number') {
           // Fallback to basic heuristic if ML engine is unreachable or invalid
-          const pCorrect = answers.filter((a: { isCorrect: boolean | null }) => a.isCorrect).length / answers.length
+          const pCorrect =
+            answers.filter((a: { isCorrect: boolean | null }) => a.isCorrect).length /
+            answers.length
           const empiricalDifficulty = 1.0 - pCorrect
           await this.applyDifficultyShift(question.id, question.difficulty, empiricalDifficulty)
           stats.calibratedWithHeuristics++

@@ -300,15 +300,17 @@ export class AITestService {
         if (existingTest && existingTest.questions.length >= questionCount) {
           logger.info(`[AITestService] Reusing existing AI generated test for topic: ${safeTopic}`)
 
-          const formattedQuestions = existingTest.questions.slice(0, questionCount).map((q: any) => ({
-            text: q.text,
-            options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
-            correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
-            explanation: q.explanation ?? '',
-            difficulty: q.difficulty.toString(),
-            bloom_level: q.bloomLevel,
-            tags: q.tags,
-          }))
+          const formattedQuestions = existingTest.questions
+            .slice(0, questionCount)
+            .map((q: any) => ({
+              text: q.text,
+              options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
+              correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
+              explanation: q.explanation ?? '',
+              difficulty: q.difficulty.toString(),
+              bloom_level: q.bloomLevel,
+              tags: q.tags,
+            }))
 
           return {
             testId: existingTest.id,

@@ -64,7 +64,9 @@ export class AILearningService {
 
       const avgScore =
         recentTests.length > 0
-          ? Math.round(recentTests.reduce((s: any, r: any) => s + r.percentage, 0) / recentTests.length)
+          ? Math.round(
+              recentTests.reduce((s: any, r: any) => s + r.percentage, 0) / recentTests.length
+            )
           : null
 
       return [
@@ -118,7 +120,9 @@ export class AILearningService {
 
     const avgScore =
       testResults.length > 0
-        ? Math.round(testResults.reduce((s: any, r: any) => s + r.percentage, 0) / testResults.length)
+        ? Math.round(
+            testResults.reduce((s: any, r: any) => s + r.percentage, 0) / testResults.length
+          )
         : 0
     const passRate =
       testResults.length > 0

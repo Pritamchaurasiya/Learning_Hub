@@ -142,9 +142,15 @@ export class UserAnalyticsService {
     const passedTests = results.filter((r: { passed: boolean | null }) => r.passed).length
     const avgScore =
       totalTests > 0
-        ? Math.round(results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) / totalTests)
+        ? Math.round(
+            results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) /
+              totalTests
+          )
         : 0
-    const totalTimeSeconds = results.reduce((sum: number, r: { timeTaken: number }) => sum + r.timeTaken, 0)
+    const totalTimeSeconds = results.reduce(
+      (sum: number, r: { timeTaken: number }) => sum + r.timeTaken,
+      0
+    )
 
     return {
       totalTestsCompleted: totalTests,

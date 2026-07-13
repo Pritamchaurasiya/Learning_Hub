@@ -797,7 +797,11 @@ const TestsAPage = memo(() => {
       try {
         const answers = testsA.answers || {}
         if (testsA.testInfo?.testId) {
-          await testsAService.batchAutosave(testsA.testInfo.testId, answers, testsA.attemptId || undefined)
+          await testsAService.batchAutosave(
+            testsA.testInfo.testId,
+            answers,
+            testsA.attemptId || undefined
+          )
           useStore.setState(state => ({
             testsA: { ...state.testsA, lastAutosavedAt: Date.now() },
           }))
@@ -808,7 +812,13 @@ const TestsAPage = memo(() => {
     }, 30000)
 
     return () => clearInterval(autosaveInterval)
-  }, [testsA.isActive, testsA.isSubmitting, testsA.attemptId, testsA.testInfo?.testId, testsA.answers])
+  }, [
+    testsA.isActive,
+    testsA.isSubmitting,
+    testsA.attemptId,
+    testsA.testInfo?.testId,
+    testsA.answers,
+  ])
 
   useEffect(() => {
     if (

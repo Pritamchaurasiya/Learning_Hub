@@ -1,12 +1,10 @@
 import { Request, Response } from 'express'
-import crypto from 'crypto'
 import { prisma } from '../prismaClient'
-import { generateToken, generateRefreshToken, hashToken } from '../utils/auth'
+import { generateToken, generateRefreshToken } from '../utils/auth'
 import { AuthService } from '../services/AuthService'
 import logger from '../utils/logger'
 import { queryOptimizationService } from '../services/QueryOptimizationService'
 import { cacheService } from '../services/CacheService'
-import { emailService } from '../services/EmailService'
 import { MfaService } from '../services/MfaService'
 import {
   sendSuccess,
@@ -97,7 +95,11 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
-    if (message === 'Registration failed: Invalid request' || message === 'Email already registered' || message === 'Username already taken') {
+    if (
+      message === 'Registration failed: Invalid request' ||
+      message === 'Email already registered' ||
+      message === 'Username already taken'
+    ) {
       sendValidationError(res, 'Registration failed. Email or username may be unavailable')
       return
     }

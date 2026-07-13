@@ -195,7 +195,14 @@ export class TestScoringService {
           orderBy: { attemptNumber: 'desc' },
           select: { attemptNumber: true },
         })
-        let attemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
+        const currentAttemptNumber = maxAttempt?.attemptNumber ?? 0
+        const maxAttempts = test.maxAttempts ?? parseInt(process.env.MAX_TEST_ATTEMPTS ?? '3', 10)
+        if (currentAttemptNumber >= maxAttempts) {
+          // No in-progress attempt exists and the user has exhausted their attempts.
+          // Refuse to silently create a new attempt, which would bypass the limit enforced in startTest.
+          throw new Error('MAX_ATTEMPTS_REACHED')
+        }
+        let attemptNumber = currentAttemptNumber + 1
 
         // Retry on unique constraint violation (attemptNumber race condition)
         for (let attempt = 1; attempt <= 3; attempt++) {

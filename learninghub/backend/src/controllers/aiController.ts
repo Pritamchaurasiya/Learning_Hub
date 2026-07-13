@@ -177,7 +177,10 @@ export const generatePracticeTest = asyncHandler(
         operation: 'GENERATE_PRACTICE_TEST',
         params,
       })
-      sendSuccess(res, { message: 'Test generation queued. You will be notified when it completes.', isAsync: true })
+      sendSuccess(res, {
+        message: 'Test generation queued. You will be notified when it completes.',
+        isAsync: true,
+      })
       return
     }
 

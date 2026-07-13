@@ -83,20 +83,20 @@ export const quizService = {
         data: {
           quiz,
           questions: ((quiz?.questions ?? res.questions ?? []) as RawQuestion[]).map(q => ({
-          id: q.id,
-          question: q.text,
-          type: q.question_type,
-          options: q.options?.map(o => o.text) ?? [],
-          correct_answer: q.options?.find(o => o.is_correct)?.text ?? '',
-          explanation: q.explanation ?? '',
-          points: q.marks,
-        })),
-      },
-    }
-  }) as Promise<{
-    status: string
-    data: { quiz: Quiz; questions: QuizQuestion[] }
-  }>,
+            id: q.id,
+            question: q.text,
+            type: q.question_type,
+            options: q.options?.map(o => o.text) ?? [],
+            correct_answer: q.options?.find(o => o.is_correct)?.text ?? '',
+            explanation: q.explanation ?? '',
+            points: q.marks,
+          })),
+        },
+      }
+    }) as Promise<{
+      status: string
+      data: { quiz: Quiz; questions: QuizQuestion[] }
+    }>,
 
   startAttempt: (quizId: string) =>
     fetchApi(`/tests/${quizId}/start`, {

@@ -274,30 +274,40 @@ export class RecommendationService {
         })
 
         // Score each test by how well it matches weak areas
-        const recommendations: TestRecommendation[] = tests.map((test: { id: string; title: string; difficulty: string; mode: string; timeLimit: number | null; _count: { questions: number }; questions: Array<{ tags: string[]; id: string }> }) => {
-          const questionTags = test.questions.flatMap((q: { tags: string[] }) => q.tags)
-          const matchingTags = questionTags.filter((t: string) => weakTopicNames.includes(t))
-          const matchScore =
-            questionTags.length > 0
-              ? Math.round((matchingTags.length / questionTags.length) * 100)
-              : 0
+        const recommendations: TestRecommendation[] = tests.map(
+          (test: {
+            id: string
+            title: string
+            difficulty: string
+            mode: string
+            timeLimit: number | null
+            _count: { questions: number }
+            questions: Array<{ tags: string[]; id: string }>
+          }) => {
+            const questionTags = test.questions.flatMap((q: { tags: string[] }) => q.tags)
+            const matchingTags = questionTags.filter((t: string) => weakTopicNames.includes(t))
+            const matchScore =
+              questionTags.length > 0
+                ? Math.round((matchingTags.length / questionTags.length) * 100)
+                : 0
 
-          const weakTopicMatches =
-            matchingTags.length > 0
-              ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
-              : 'General practice test'
+            const weakTopicMatches =
+              matchingTags.length > 0
+                ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
+                : 'General practice test'
 
-          return {
-            testId: test.id,
-            testTitle: test.title,
-            reason: weakTopicMatches,
-            difficulty: test.difficulty,
-            mode: test.mode,
-            questionCount: test._count.questions,
-            estimatedTime: test.timeLimit,
-            matchScore,
+            return {
+              testId: test.id,
+              testTitle: test.title,
+              reason: weakTopicMatches,
+              difficulty: test.difficulty,
+              mode: test.mode,
+              questionCount: test._count.questions,
+              estimatedTime: test.timeLimit,
+              matchScore,
+            }
           }
-        })
+        )
 
         return recommendations.sort((a, b) => b.matchScore - a.matchScore).slice(0, limit)
       },

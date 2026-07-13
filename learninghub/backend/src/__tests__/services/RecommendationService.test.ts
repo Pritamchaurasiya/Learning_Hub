@@ -1,7 +1,6 @@
 import { RecommendationService } from '../../services/RecommendationService'
 import { prisma } from '../../prismaClient'
 import { topicPerformanceService } from '../../services/TopicPerformanceService'
-import { cacheService } from '../../services/CacheService'
 
 jest.mock('../../prismaClient', () => ({
   prisma: {
