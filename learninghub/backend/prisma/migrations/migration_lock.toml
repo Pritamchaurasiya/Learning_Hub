@@ -1,3 +1,4 @@
-# migration_lock.toml
+# This is an auto-generated file.
+# Please write safely if you edit it manually.
 
-schema = "048d0448aa5ed4fbb4c3574f6b3f80b9e8dd3e30f5d7b9c1a2b3c4d5e6f7a8b9c"
+provider = "postgresql"

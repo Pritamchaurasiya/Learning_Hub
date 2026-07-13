@@ -42,10 +42,11 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
   const { page, limit, skip } = getPaginationParams(req.query)
   const userId = req.user?.userId // This endpoint might allow unauthenticated access (optionalAuth)
 
-  const cacheKey = queryCache.generateKey('listTests', {
-    ...normalizeCacheKey(req.query as Record<string, unknown>),
-    userId: userId ?? 'anonymous',
-  })
+  const cacheKey = queryCache.generateKey(
+    'listTests',
+    userId ?? 'anonymous',
+    normalizeCacheKey(req.query as Record<string, unknown>)
+  )
   const cachedResponse = await queryCache.get(cacheKey)
   if (cachedResponse) {
     const { data, meta } = cachedResponse as { data: unknown; meta: unknown }
@@ -344,6 +345,16 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
 
   // Create test result with retry on unique constraint violation (attemptNumber race condition)
   const result = await prisma.$transaction(async (tx: any) => {
+    // Guard against a concurrent start (e.g. rapid double-click) that already created an
+    // IN_PROGRESS attempt between the pre-check above and this transaction. Resume the
+    // existing attempt instead of creating a second, orphaned one.
+    const concurrent = await tx.testResult.findFirst({
+      where: { userId, testId, status: 'IN_PROGRESS' },
+      orderBy: { attemptNumber: 'desc' },
+      select: { id: true, attemptNumber: true, startedAt: true },
+    })
+    if (concurrent) return concurrent
+
     let attemptNumber = nextAttemptNumber
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {

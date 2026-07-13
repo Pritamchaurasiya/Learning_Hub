@@ -621,9 +621,10 @@ export class TestEngineService {
           queuedCount++
         } catch (err) {
           // A single failure (e.g. Redis down) must not abort the whole batch.
-          logger.error(`Failed to queue expired test ${attempt.id} for auto-submission`, {
-            error: err instanceof Error ? err.message : String(err),
-          })
+          logger.error(
+            `Failed to queue expired test ${attempt.id} for auto-submission`,
+            err instanceof Error ? err : new Error(String(err))
+          )
         }
       }
       logger.info(`Queued ${queuedCount} expired tests for auto-submission`)
