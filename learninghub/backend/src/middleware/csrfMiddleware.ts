@@ -1,55 +1,45 @@
 import { Request, Response, NextFunction } from 'express'
 import crypto from 'crypto'
-import { sendError } from '../utils/responseHelper'
-import { cacheService } from '../services/CacheService'
+import { sendError, sendSuccess } from '../utils/responseHelper'
 
-const CSRF_TOKEN_LENGTH = 32
 const CSRF_HEADER = 'x-csrf-token'
-const CSRF_TOKEN_TTL = 24 * 60 * 60 // 24 hours in seconds
+const CSRF_TOKEN_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
-// In-memory fallback store (used when Redis unavailable)
-const csrfTokenStore = new Map<string, { token: string; expiresAt: number }>()
+const CSRF_SECRET = (() => {
+  const secret = process.env.CSRF_SECRET
+  if (!secret || secret.length < 32) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'CSRF_SECRET must be set and at least 32 characters long. ' +
+          "Generate with: node -e \"console.log(require('crypto').randomBytes(48).toString('hex'))\""
+      )
+    }
+    // In development, auto-generate a random secret to prevent startup crashes
+    const generated = crypto.randomBytes(48).toString('hex')
+    console.warn(
+      '[CSRF] WARNING: CSRF_SECRET not set or too short. Auto-generated for development. ' +
+        'Set CSRF_SECRET in your .env file for consistent CSRF tokens across restarts.'
+    )
+    return generated
+  }
+  return secret
+})()
 
-function generateCsrfToken(): string {
-  return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex')
+/**
+ * Generate a stateless HMAC signed CSRF token
+ * Format: base64(sessionId.expiresAt.hmac(sessionId + expiresAt))
+ */
+export async function generateCsrfTokenForSession(sessionId: string): Promise<string> {
+  const expiresAt = Date.now() + CSRF_TOKEN_TTL_MS
+  const payload = `${sessionId}.${expiresAt}`
+  const hmac = crypto.createHmac('sha256', CSRF_SECRET).update(payload).digest('hex')
+  const token = Buffer.from(`${payload}.${hmac}`).toString('base64url')
+  return token
 }
 
-function getCsrfToken(req: Request): string | undefined {
-  const headerToken = req.headers[CSRF_HEADER]
-  if (typeof headerToken === 'string') {
-    return headerToken
-  }
-  return req.body?.[CSRF_HEADER] as string | undefined
-}
-
-async function storeCsrfToken(sessionId: string, token: string): Promise<void> {
-  const key = `csrf:${sessionId}`
-  if (cacheService.isAvailable()) {
-    await cacheService.set(key, token, CSRF_TOKEN_TTL)
-  } else {
-    csrfTokenStore.set(sessionId, {
-      token,
-      expiresAt: Date.now() + CSRF_TOKEN_TTL * 1000,
-    })
-  }
-}
-
-async function getStoredCsrfToken(sessionId: string): Promise<string | null> {
-  const key = `csrf:${sessionId}`
-
-  if (cacheService.isAvailable()) {
-    return await cacheService.get<string>(key)
-  }
-
-  const stored = csrfTokenStore.get(sessionId)
-  if (!stored || stored.expiresAt < Date.now()) {
-    csrfTokenStore.delete(sessionId)
-    return null
-  }
-
-  return stored.token
-}
-
+/**
+ * Stateless CSRF Protection Middleware
+ */
 export async function csrfProtection(
   req: Request,
   res: Response,
@@ -68,11 +58,11 @@ export async function csrfProtection(
 
   if (
     req.originalUrl.match(
-      /^\/api\/v1\/auth\/(login|register|forgot-password|reset-password|verify-email|refresh|logout)/
+      /^\/api\/v1\/auth\/(login|register|forgot-password|reset-password|verify-email|refresh)$/
     )
   ) {
-    // CSRF exemption: These endpoints use body-based refresh tokens
-    // If switching to cookie-based auth, this exemption should be removed
+    // CSRF exemption: These endpoints use body-based refresh tokens.
+    // /logout is intentionally excluded — requires CSRF token to prevent forced logout attacks.
     next()
     return
   }
@@ -83,75 +73,70 @@ export async function csrfProtection(
     return
   }
 
-  const clientToken = getCsrfToken(req)
+  const clientToken = req.headers[CSRF_HEADER] as string | undefined
+
   if (!clientToken) {
     sendError(res, 'Missing CSRF token', 403, 'CSRF_MISSING_TOKEN')
     return
   }
 
-  const storedToken = await getStoredCsrfToken(sessionId)
-  if (!storedToken) {
-    sendError(res, 'Invalid or expired CSRF token', 403, 'CSRF_INVALID_TOKEN')
-    return
-  }
+  try {
+    const decoded = Buffer.from(clientToken, 'base64url').toString('utf-8')
+    const parts = decoded.split('.')
 
-  const storedBuffer = Buffer.from(storedToken)
-  const clientBuffer = Buffer.from(clientToken)
-  if (
-    storedBuffer.length !== clientBuffer.length ||
-    !crypto.timingSafeEqual(storedBuffer, clientBuffer)
-  ) {
-    sendError(res, 'Invalid CSRF token', 403, 'CSRF_INVALID_TOKEN')
-    return
-  }
-
-  next()
-}
-
-export async function generateCsrfTokenForSession(sessionId: string): Promise<string> {
-  const token = generateCsrfToken()
-  await storeCsrfToken(sessionId, token)
-  return token
-}
-
-export async function getCsrfTokenForSession(sessionId: string): Promise<string | undefined> {
-  const token = await getStoredCsrfToken(sessionId)
-  return token ?? undefined
-}
-
-// Cleanup in-memory tokens every 30 minutes (only runs if Redis unavailable)
-const csrfCleanupInterval = setInterval(
-  () => {
-    const now = Date.now()
-    for (const [sessionId, data] of csrfTokenStore.entries()) {
-      if (data.expiresAt < now) {
-        csrfTokenStore.delete(sessionId)
-      }
+    if (parts.length !== 3) {
+      sendError(res, 'Invalid CSRF token format', 403, 'CSRF_INVALID_TOKEN')
+      return
     }
-  },
-  30 * 60 * 1000
-)
-csrfCleanupInterval.unref()
 
-export function stopCsrfCleanup(): void {
-  clearInterval(csrfCleanupInterval)
-  csrfTokenStore.clear()
+    const [tokenSessionId, tokenExpiresAt, tokenHmac] = parts
+
+    // Verify session ID matches (timing-safe)
+    if (!crypto.timingSafeEqual(Buffer.from(tokenSessionId), Buffer.from(sessionId))) {
+      sendError(res, 'CSRF token does not match session', 403, 'CSRF_SESSION_MISMATCH')
+      return
+    }
+
+    // Verify expiration
+    if (parseInt(tokenExpiresAt, 10) < Date.now()) {
+      sendError(res, 'CSRF token expired', 403, 'CSRF_TOKEN_EXPIRED')
+      return
+    }
+
+    // Verify HMAC signature (length-safe comparison)
+    const expectedPayload = `${tokenSessionId}.${tokenExpiresAt}`
+    const expectedHmac = crypto
+      .createHmac('sha256', CSRF_SECRET)
+      .update(expectedPayload)
+      .digest('hex')
+
+    const tokenBuf = Buffer.from(tokenHmac)
+    const expectedBuf = Buffer.from(expectedHmac)
+
+    if (tokenBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(tokenBuf, expectedBuf)) {
+      sendError(res, 'Invalid CSRF token signature', 403, 'CSRF_INVALID_SIGNATURE')
+      return
+    }
+
+    next()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    sendError(res, 'Malformed CSRF token', 403, 'CSRF_MALFORMED_TOKEN')
+    return
+  }
 }
 
 export async function csrfTokenHandler(req: Request, res: Response): Promise<void> {
   const sessionId = req.headers['x-session-id'] as string
   if (!sessionId) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Missing session identifier',
-      code: 'CSRF_MISSING_SESSION',
-    })
+    sendError(res, 'Missing session identifier', 400, 'CSRF_MISSING_SESSION')
     return
   }
 
   const token = await generateCsrfTokenForSession(sessionId)
-  res.json({
-    status: 'success',
-    csrfToken: token,
-  })
+  sendSuccess(res, { csrfToken: token })
+}
+
+export async function getCsrfTokenForSession(sessionId: string): Promise<string | undefined> {
+  return generateCsrfTokenForSession(sessionId)
 }

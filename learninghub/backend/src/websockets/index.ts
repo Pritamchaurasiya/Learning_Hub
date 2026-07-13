@@ -3,6 +3,8 @@ import { verifyAccessToken } from '../utils/auth'
 import { prisma } from '../config'
 import logger from '../utils/logger'
 import { sanitizeInput } from '../config'
+import { webSocketService } from '../services/WebSocketService'
+import { parseCookies } from '../utils/cookies'
 
 type UserAccountStatus = {
   id: string
@@ -14,17 +16,41 @@ const isAccountActive = (user: UserAccountStatus): boolean => {
   return !user.deletedAt && !(user.lockedUntil && user.lockedUntil > new Date())
 }
 
+async function hasRoomAccess(userId: string, roomId: string): Promise<boolean> {
+  if (roomId === userId) return true
+
+  const testSession = await prisma.testSession.findFirst({
+    where: { id: roomId, userId },
+    select: { id: true },
+  })
+  if (testSession) return true
+
+  const chatSession = await prisma.aIChatSession.findFirst({
+    where: { id: roomId, userId },
+    select: { id: true },
+  })
+  if (chatSession) return true
+
+  return false
+}
+
 export const setupWebSockets = (io: Server) => {
+  webSocketService.setSocketIO(io)
+
   io.use(async (socket, next) => {
-    const token = socket.handshake.auth.token ?? socket.handshake.query.token
-    if (!token) {
+    const authToken = socket.handshake.auth.token
+    const cookies = parseCookies(socket.handshake.headers.cookie as string | undefined)
+    const cookieToken = cookies?.access_token
+    const token = (authToken && typeof authToken === 'string' ? authToken : cookieToken) as
+      string | undefined
+    if (!token || typeof token !== 'string') {
       return next(new Error('Authentication required'))
     }
 
     let decoded: { userId: string; role: string }
 
     try {
-      decoded = verifyAccessToken(token as string)
+      decoded = verifyAccessToken(token)
     } catch {
       return next(new Error('Invalid token'))
     }
@@ -59,58 +85,38 @@ export const setupWebSockets = (io: Server) => {
     }
   })
 
+  const messageCooldown = new Map<string, number>()
+  // Prevent memory leaks by cleaning up stale cooldowns periodically
+  setInterval(() => {
+    const now = Date.now()
+    for (const [id, timestamp] of messageCooldown.entries()) {
+      if (now - timestamp > 500) {
+        messageCooldown.delete(id)
+      }
+    }
+  }, 10000).unref() // Sweep every 10s
+
   io.on('connection', socket => {
     logger.info('User connected', { socketId: socket.id, userId: socket.data.userId })
+    webSocketService.registerSocket(socket)
 
     // Automatically join a personal room for direct messages and notifications
     void socket.join(socket.data.userId)
 
     socket.on('join-room', async (roomId: string) => {
       try {
-        const session = await prisma.liveSession.findUnique({
-          where: { id: roomId },
-          select: {
-            id: true,
-            status: true,
-            maxParticipants: true,
-            currentParticipants: true,
-            instructorId: true,
-          },
-        })
-        if (!session) {
-          socket.emit('error', { message: 'Session not found' })
-          return
-        }
-
-        if (session.status === 'completed' || session.status === 'cancelled') {
-          socket.emit('error', { message: 'Session is not available' })
-          return
-        }
-
-        if (session.currentParticipants >= session.maxParticipants) {
-          socket.emit('error', { message: 'Session is full' })
-          return
-        }
-
-        const isInstructor =
-          socket.data.userRole === 'ADMIN' ||
-          socket.data.userRole === 'SUPERADMIN' ||
-          socket.data.userRole === 'INSTRUCTOR' ||
-          session.instructorId === socket.data.userId
-
-        if (!isInstructor) {
-          socket.emit('error', { message: 'You do not have permission to join this session' })
+        const hasAccess = await hasRoomAccess(socket.data.userId, roomId)
+        if (!hasAccess) {
+          logger.warn('Unauthorized room join attempt', {
+            socketId: socket.id,
+            roomId,
+            userId: socket.data.userId,
+          })
+          socket.emit('error', { message: 'Access denied' })
           return
         }
 
         void socket.join(roomId)
-        void prisma.liveSession
-          .update({
-            where: { id: roomId },
-            data: { currentParticipants: { increment: 1 } },
-          })
-          .catch(() => {})
-
         logger.info('User joined room', { socketId: socket.id, roomId, userId: socket.data.userId })
         socket.to(roomId).emit('user-joined', { socketId: socket.id, userId: socket.data.userId })
       } catch {
@@ -124,6 +130,7 @@ export const setupWebSockets = (io: Server) => {
     })
 
     // WebRTC Signaling
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     socket.on('webrtc-offer', (data: { target: string; offer: any; roomId: string }) => {
       socket.to(data.target).emit('webrtc-offer', {
         sender: socket.id,
@@ -131,6 +138,7 @@ export const setupWebSockets = (io: Server) => {
       })
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     socket.on('webrtc-answer', (data: { target: string; answer: any; roomId: string }) => {
       socket.to(data.target).emit('webrtc-answer', {
         sender: socket.id,
@@ -140,6 +148,7 @@ export const setupWebSockets = (io: Server) => {
 
     socket.on(
       'webrtc-ice-candidate',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (data: { target: string; candidate: any; roomId: string }) => {
         socket.to(data.target).emit('webrtc-ice-candidate', {
           sender: socket.id,
@@ -149,7 +158,6 @@ export const setupWebSockets = (io: Server) => {
     )
 
     // Real-time Chat Messaging with rate limiting
-    const messageCooldown = new Map<string, number>()
     socket.on('send-message', (data: { roomId: string; message: string }) => {
       const now = Date.now()
       const lastMessage = messageCooldown.get(socket.id) ?? 0
@@ -187,14 +195,8 @@ export const setupWebSockets = (io: Server) => {
     socket.on('disconnecting', () => {
       // socket.rooms is a Set containing all rooms the socket is currently in
       // including their own socket.id room and userId room.
-      socket.rooms.forEach((roomId) => {
+      socket.rooms.forEach(roomId => {
         if (roomId !== socket.id && roomId !== socket.data.userId) {
-          void prisma.liveSession
-            .updateMany({ // use updateMany to avoid crashing if it's not a session ID
-              where: { id: roomId, currentParticipants: { gt: 0 } },
-              data: { currentParticipants: { decrement: 1 } },
-            })
-            .catch(() => {})
           socket.to(roomId).emit('user-left', { socketId: socket.id, userId: socket.data.userId })
         }
       })
@@ -202,6 +204,7 @@ export const setupWebSockets = (io: Server) => {
 
     socket.on('disconnect', () => {
       logger.info('User disconnected', { socketId: socket.id, userId: socket.data.userId })
+      messageCooldown.delete(socket.id)
     })
   })
 }

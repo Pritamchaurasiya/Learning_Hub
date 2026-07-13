@@ -8,6 +8,7 @@
  *  - Course discovery with relevance scoring
  */
 
+import { Prisma } from '@prisma/client'
 import { prisma } from '../prismaClient'
 import { cacheService } from './CacheService'
 
@@ -33,32 +34,37 @@ export class QueryOptimizationService {
     if (options.cursor) {
       const parts = options.cursor.split(':')
       if (parts.length === 2) {
-        cursorXP = parseInt(parts[0])
-        cursorId = parts[1]
+        const val = parseInt(parts[0], 10)
+        if (!isNaN(val)) {
+          cursorXP = val
+          cursorId = parts[1]
+        }
       } else {
         // Backwards compatibility: treat as XP-only cursor
-        cursorXP = parseInt(parts[0])
+        const val = parseInt(parts[0], 10)
+        if (!isNaN(val)) {
+          cursorXP = val
+        }
       }
     }
 
     // Attempt to hit cache first
-    const cacheKey = cacheService.leaderboardKey(`${timeframe}-${limit}-${options.cursor ?? 'first'}`)
+    const cacheKey = cacheService.leaderboardKey(
+      `${timeframe}-${limit}-${options.cursor ?? 'first'}`
+    )
     const cachedData = await cacheService.get(cacheKey)
     if (cachedData) {
       return cachedData
     }
 
-    const where: Record<string, unknown> = {
+    const where: Prisma.UserWhereInput = {
       deletedAt: null,
     }
 
     // Composite cursor filter: users with (lower xp) OR (same xp but later id)
     if (cursorXP !== undefined) {
       if (cursorId) {
-        where.OR = [
-          { xp: { lt: cursorXP } },
-          { xp: cursorXP, id: { gt: cursorId } },
-        ]
+        where.OR = [{ xp: { lt: cursorXP } }, { xp: cursorXP, id: { gt: cursorId } }]
       } else {
         where.xp = { lt: cursorXP }
       }
@@ -87,7 +93,7 @@ export class QueryOptimizationService {
     }
 
     const users = await prisma.user.findMany({
-      where: where as any,
+      where,
       take: limit + 1, // Fetch one extra to check if there's a next page
       orderBy: [{ xp: 'desc' }, { id: 'asc' }], // Composite sort for deterministic ordering
       select: {
@@ -114,7 +120,12 @@ export class QueryOptimizationService {
     // Get total count only for first page
     let total: number | undefined
     if (!options.cursor) {
-      total = await prisma.user.count({ where: { deletedAt: null, ...(where.lastActive ? { lastActive: where.lastActive } : {}) } as any })
+      total = await prisma.user.count({
+        where: {
+          deletedAt: null,
+          ...(where.lastActive ? { lastActive: where.lastActive } : {}),
+        } satisfies Prisma.UserWhereInput,
+      })
     }
 
     const result = {
@@ -137,7 +148,7 @@ export class QueryOptimizationService {
    * Get user's performance summary — optimized single query.
    */
   async getUserPerformanceSummary(userId: string) {
-    const [user, stats] = await Promise.all([
+    const [user, stats, recentTests] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -156,19 +167,18 @@ export class QueryOptimizationService {
         _max: { percentage: true },
         _min: { percentage: true },
       }),
+      prisma.testResult.findMany({
+        where: { userId, status: 'COMPLETED' },
+        orderBy: { completedAt: 'desc' },
+        take: 5,
+        select: {
+          percentage: true,
+          passed: true,
+          completedAt: true,
+          test: { select: { title: true, mode: true } },
+        },
+      }),
     ])
-
-    const recentTests = await prisma.testResult.findMany({
-      where: { userId, status: 'COMPLETED' },
-      orderBy: { completedAt: 'desc' },
-      take: 5,
-      select: {
-        percentage: true,
-        passed: true,
-        completedAt: true,
-        test: { select: { title: true, mode: true } },
-      },
-    })
 
     return {
       user,
@@ -178,7 +188,7 @@ export class QueryOptimizationService {
         best_score: Math.round(stats._max.percentage ?? 0),
         worst_score: Math.round(stats._min.percentage ?? 0),
       },
-      recent_tests: recentTests.map(t => ({
+      recent_tests: recentTests.map((t: { test: { title: string; mode: string }; percentage: number; passed: boolean; completedAt: Date | null }) => ({
         title: t.test.title,
         mode: t.test.mode,
         score: t.percentage,
@@ -186,128 +196,6 @@ export class QueryOptimizationService {
         completed_at: t.completedAt,
       })),
     }
-  }
-
-  /**
-   * Get course discovery results with relevance scoring.
-   * Uses weighted scoring: rating (40%), student count (30%), recency (30%).
-   */
-  async getDiscoverCourses(params: {
-    page?: number
-    limit?: number
-    category?: string
-    difficulty?: string
-    search?: string
-  }) {
-    const page = Math.max(1, params.page ?? 1)
-    const limit = Math.min(params.limit ?? 20, 50)
-    const skip = (page - 1) * limit
-
-    const cacheKey = cacheService.generateKey(
-      'discover',
-      `p${page}_l${limit}_c${params.category ?? ''}_d${params.difficulty ?? ''}_s${params.search ?? ''}`
-    )
-    const cachedData = await cacheService.get(cacheKey)
-    if (cachedData) return cachedData
-
-    const where: Record<string, unknown> = {
-      isPublished: true,
-      deletedAt: null,
-    }
-
-    if (params.category) {
-      where.category = { equals: params.category, mode: 'insensitive' }
-    }
-
-    if (params.difficulty) {
-      where.difficulty = params.difficulty
-    }
-
-    if (params.search) {
-      where.OR = [
-        { title: { contains: params.search, mode: 'insensitive' } },
-        { description: { contains: params.search, mode: 'insensitive' } },
-        { tags: { has: params.search } },
-      ]
-    }
-
-    // Use raw query for relevance scoring
-    const courses = await prisma.course.findMany({
-      where: where as any,
-      skip,
-      take: limit,
-      orderBy: [{ rating: 'desc' }, { studentCount: 'desc' }, { createdAt: 'desc' }],
-      select: {
-        id: true,
-        title: true,
-        shortDescription: true,
-        thumbnail: true,
-        difficulty: true,
-        category: true,
-        rating: true,
-        studentCount: true,
-        price: true,
-        duration: true,
-        certificate: true,
-        createdAt: true,
-        instructor: {
-          select: {
-            username: true,
-            avatar: true,
-          },
-        },
-      },
-    })
-
-    const total = await prisma.course.count({ where: where as any })
-
-    const result = {
-      courses,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    }
-
-    // Cache discover courses for 5 minutes
-    await cacheService.set(cacheKey, result, 300)
-
-    return result
-  }
-
-  /**
-   * Batch fetch course progress for multiple courses — avoids N+1 queries.
-   */
-  async getBatchProgress(userId: string, courseIds: string[]) {
-    if (courseIds.length === 0) return new Map<string, any>()
-
-    const progressRecords = await prisma.userProgress.findMany({
-      where: {
-        userId,
-        courseId: { in: courseIds },
-      },
-      select: {
-        courseId: true,
-        progress: true,
-        status: true,
-        completedAt: true,
-        timeSpentSeconds: true,
-      },
-    })
-
-    const progressMap = new Map<string, any>()
-    for (const record of progressRecords) {
-      progressMap.set(record.courseId, {
-        progress: record.progress,
-        status: record.status,
-        completed_at: record.completedAt,
-        time_spent_seconds: record.timeSpentSeconds,
-      })
-    }
-
-    return progressMap
   }
 
   /**
@@ -334,9 +222,14 @@ export class QueryOptimizationService {
     const dailyScores: Record<string, { total: number; count: number }> = {}
 
     for (const result of results) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const date = result.completedAt!.toISOString().split('T')[0]
+
+      // eslint-disable-next-line security/detect-object-injection
       if (!dailyScores[date]) dailyScores[date] = { total: 0, count: 0 }
+      // eslint-disable-next-line security/detect-object-injection
       dailyScores[date].total += result.percentage
+      // eslint-disable-next-line security/detect-object-injection
       dailyScores[date].count++
     }
 
@@ -352,13 +245,14 @@ export class QueryOptimizationService {
         total_tests: results.length,
         average_score:
           results.length > 0
-            ? Math.round(results.reduce((s, r) => s + r.percentage, 0) / results.length)
+            ? Math.round(results.reduce((s: number, r: { percentage: number }) => s + r.percentage, 0) / results.length)
             : 0,
         improvement: this.calculateImprovement(results),
       },
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private calculateImprovement(results: any[]): number {
     if (results.length < 2) return 0
 

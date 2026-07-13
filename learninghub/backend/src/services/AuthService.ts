@@ -6,8 +6,9 @@ import { UserRepository } from '../repositories'
 import { AuditService } from './AuditService'
 import { cacheService } from './CacheService'
 import { jwtConfig, bcryptConfig, validatePasswordStrength } from '../config'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import logger from '../utils/logger'
+import { emailService } from './EmailService'
 
 export interface RegisterInput {
   email: string
@@ -73,17 +74,17 @@ export class AuthService {
       throw new Error(`Password validation failed: ${passwordValidation.errors.join(', ')}`)
     }
 
-    // Check if email is taken
+    // Check if email is taken (use generic message to prevent enumeration)
     const existingUser = await this.userRepository.findByEmail(input.email)
     if (existingUser) {
-      throw new Error('Email already registered')
+      throw new Error('Registration failed: Invalid request')
     }
 
-    // Check if username is taken
+    // Check if username is taken (use generic message to prevent enumeration)
     if (input.username) {
       const existingUsername = await this.userRepository.findByUsername(input.username)
       if (existingUsername) {
-        throw new Error('Username already taken')
+        throw new Error('Registration failed: Invalid request')
       }
     }
 
@@ -107,6 +108,24 @@ export class AuthService {
       description: 'User registered',
       ipAddress,
     })
+
+    // Send verification email
+    try {
+      const rawToken = crypto.randomBytes(32).toString('hex')
+      const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      await this.prisma.verificationToken.upsert({
+        where: { userId: user.id },
+        update: { token: hashedToken, expiresAt },
+        create: { userId: user.id, token: hashedToken, expiresAt },
+      })
+      await emailService.sendVerificationEmail(user.email, rawToken, user.username ?? undefined)
+    } catch (error) {
+      logger.error(
+        'Failed to send verification email during registration',
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     // Generate tokens
     const tokens = await this.generateTokens(user)
@@ -209,14 +228,19 @@ export class AuthService {
         throw new Error('User not found or deleted')
       }
 
-      // Mark old token as used
-      await this.prisma.refreshToken.update({
-        where: { id: storedToken.id },
-        data: { usedAt: new Date() },
+      // Mark old token as used atomically — prevents race condition on concurrent refreshToken calls
+      const updateResult = await this.prisma.$transaction(async tx => {
+        const updated = await tx.refreshToken.updateMany({
+          where: { id: storedToken.id, usedAt: null },
+          data: { usedAt: new Date() },
+        })
+        if (updated.count === 0) {
+          throw new Error('Refresh token already used — possible token reuse attack')
+        }
+        return this.generateTokens(user)
       })
 
-      // Generate new tokens
-      return await this.generateTokens(user)
+      return updateResult
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         throw new Error('Refresh token expired')
@@ -228,32 +252,56 @@ export class AuthService {
   /**
    * Logout user
    */
-  async logout(userId: string, refreshToken?: string, ipAddress?: string): Promise<void> {
+  async logout(
+    userId?: string,
+    refreshToken?: string,
+    ipAddress?: string,
+    accessToken?: string
+  ): Promise<void> {
     // Revoke refresh token if provided
     if (refreshToken) {
       const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
       await this.prisma.refreshToken.updateMany({
-        where: { token: tokenHash, userId },
+        where: { token: tokenHash, ...(userId && { userId }) },
         data: { revokedAt: new Date() },
       })
     }
 
-    // Clear user cache
-    await cacheService.delete(cacheService.userKey(userId))
+    // Blacklist current access token
+    if (accessToken) {
+      const hashedAccess = crypto.createHash('sha256').update(accessToken).digest('hex')
+      // Max access token life is 15 minutes (900s), so we cache the blacklist for 900s
+      await cacheService.set(`bl:token:${hashedAccess}`, 'revoked', 900)
+    }
 
-    // Log logout
-    await this.auditService.log({
-      action: 'LOGOUT',
-      userId,
-      description: 'User logged out',
-      ipAddress,
-    })
+    // Update lastActive if userId provided
+    if (userId) {
+      await this.prisma.user
+        .update({
+          where: { id: userId },
+          data: { lastActive: new Date() },
+        })
+        .catch(() => {}) // Ignore errors for lastActive update
+
+      // Clear user cache
+      await cacheService.delete(cacheService.userKey(userId))
+    }
+
+    // Log logout if userId provided
+    if (userId) {
+      await this.auditService.log({
+        action: 'LOGOUT',
+        userId,
+        description: 'User logged out',
+        ipAddress,
+      })
+    }
   }
 
   /**
    * Logout from all devices
    */
-  async logoutAllDevices(userId: string, ipAddress?: string): Promise<void> {
+  async logoutAllDevices(userId: string, ipAddress?: string, accessToken?: string): Promise<void> {
     // Revoke all refresh tokens
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
@@ -265,6 +313,14 @@ export class AuthService {
       where: { userId, isRevoked: false },
       data: { isRevoked: true, revokedAt: new Date() },
     })
+
+    // Globally blacklist all previously issued access tokens for this user for 15 mins
+    await cacheService.set(`bl:user:${userId}`, Date.now(), 900)
+
+    if (accessToken) {
+      const hashedAccess = crypto.createHash('sha256').update(accessToken).digest('hex')
+      await cacheService.set(`bl:token:${hashedAccess}`, 'revoked', 900)
+    }
 
     // Clear user cache
     await cacheService.deletePattern(`user:${userId}*`)
@@ -478,6 +534,245 @@ export class AuthService {
   private sanitizeUser(user: User): Omit<User, 'password' | 'mfaSecret'> {
     const { password: _, mfaSecret: __, ...sanitized } = user
     return sanitized as Omit<User, 'password' | 'mfaSecret'>
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(
+    userId: string,
+    data: {
+      username?: string
+      email?: string
+      bio?: string
+      location?: string
+      website?: string
+    },
+    ipAddress?: string
+  ): Promise<Omit<User, 'password' | 'mfaSecret'>> {
+    // Validate email format if provided
+    if (data.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(data.email)) {
+        throw new Error('Invalid email format')
+      }
+
+      // Check if email is taken by another user
+      const existingUser = await this.userRepository.isEmailTaken(data.email, userId)
+      if (existingUser) {
+        throw new Error('Email is already in use')
+      }
+    }
+
+    // Update user
+    const updatedUser = await this.userRepository.update(userId, {
+      ...(data.username && { username: data.username }),
+      ...(data.email && {
+        email: data.email.toLowerCase().trim(),
+        emailVerified: false,
+      }),
+      ...(data.bio !== undefined && { bio: data.bio }),
+      ...(data.location !== undefined && { location: data.location }),
+      ...(data.website !== undefined && { website: data.website }),
+    })
+
+    // Log profile update
+    await this.auditService.log({
+      action: data.email ? 'EMAIL_CHANGE' : 'SETTINGS_CHANGE',
+      userId,
+      description: data.email ? 'Email address changed' : 'Profile updated',
+      severity: data.email ? 'WARNING' : 'INFO',
+      ipAddress,
+    })
+
+    return this.sanitizeUser(updatedUser)
+  }
+
+  /**
+   * Delete user account
+   */
+  async deleteAccount(userId: string, ipAddress?: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        deletedAt: new Date(),
+        email: `deleted_${userId}@deleted.local`,
+        username: null,
+      },
+    })
+
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    })
+
+    await this.prisma.userSession.updateMany({
+      where: { userId },
+      data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
+    })
+
+    // Log deletion
+    await this.auditService.log({
+      action: 'DELETE',
+      userId,
+      description: 'Account deleted',
+      ipAddress,
+    })
+  }
+
+  /**
+   * Request password reset
+   */
+  async forgotPassword(email: string): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail) return
+
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } })
+    if (!user) {
+      // Don't leak user existence
+      return
+    }
+
+    // Invalidate existing active reset tokens
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    })
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const token = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt,
+      },
+    })
+
+    // Using emailService from outside (imported at the top)
+    await emailService.sendPasswordResetEmail(user.email, rawToken, user.username ?? undefined)
+
+    // Log event
+    await this.auditService.log({
+      action: 'SETTINGS_CHANGE',
+      userId: user.id,
+      description: 'Password reset requested',
+      severity: 'INFO',
+    })
+  }
+
+  /**
+   * Send verification email
+   */
+  async sendVerificationEmail(userId: string): Promise<void> {
+    const user = await this.userRepository.findById(userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    if (user.emailVerified) {
+      throw new Error('Email already verified')
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const token = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    await this.prisma.verificationToken.upsert({
+      where: { userId },
+      update: { token, expiresAt },
+      create: {
+        userId,
+        token,
+        expiresAt,
+      },
+    })
+
+    await emailService.sendVerificationEmail(user.email, rawToken, user.username ?? undefined)
+  }
+
+  /**
+   * Verify email
+   */
+  async verifyEmail(rawToken: string): Promise<void> {
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+
+    const verificationToken = await this.prisma.verificationToken.findUnique({
+      where: { token: hashedToken },
+    })
+
+    if (!verificationToken || verificationToken.expiresAt < new Date()) {
+      throw new Error('Invalid or expired verification token')
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+        },
+      }),
+      this.prisma.verificationToken.delete({
+        where: { token: hashedToken },
+      }),
+    ])
+
+    // Log event
+    await this.auditService.log({
+      action: 'LOGIN', // close enough, or user updated
+      userId: verificationToken.userId,
+      description: 'Email verified',
+      severity: 'INFO',
+    })
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string, ipAddress?: string): Promise<void> {
+    // Validate password strength
+    const passwordValidation = validatePasswordStrength(newPassword)
+    if (!passwordValidation.valid) {
+      throw new Error(`Password validation failed: ${passwordValidation.errors.join(', ')}`)
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+    const resetToken = await this.prisma.passwordResetToken.findUnique({
+      where: { token: hashedToken },
+      include: { user: true },
+    })
+
+    if (!resetToken || resetToken.expiresAt < new Date() || resetToken.usedAt) {
+      throw new Error('Invalid or expired reset token')
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: resetToken.userId },
+        data: {
+          password: hashedPassword,
+          failedLogins: 0,
+          lockedUntil: null,
+        },
+      }),
+      this.prisma.passwordResetToken.deleteMany({
+        where: { userId: resetToken.userId },
+      }),
+      this.prisma.refreshToken.deleteMany({
+        where: { userId: resetToken.userId },
+      }),
+    ])
+
+    // Log password reset
+    await this.auditService.log({
+      action: 'PASSWORD_CHANGE',
+      userId: resetToken.userId,
+      description: 'Password reset',
+      ipAddress,
+    })
   }
 }
 

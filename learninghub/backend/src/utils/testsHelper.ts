@@ -12,7 +12,7 @@ export const mapQuestionSafe = (q: {
   text: q.text,
   type: q.type,
   difficulty: q.difficulty ?? 0.5,
-  bloom_level: q.bloomLevel ?? 'understand',
+  bloom_level: q.bloomLevel ?? 'UNDERSTAND',
   points: q.points,
   marks: q.points,
   order: q.order,
@@ -67,18 +67,26 @@ export const answersMatch = (submittedIds: string[], correctIds: string[]): bool
   if (submittedIds.length !== correctIds.length) return false
   const submitted = [...submittedIds].sort()
   const correct = [...correctIds].sort()
+  // eslint-disable-next-line security/detect-object-injection
   return submitted.every((id, index) => id === correct[index])
 }
 
-export const hasQuestionResultAnswer = (questionResult: any): boolean => {
+export interface LegacyQuestionResult {
+  is_correct?: boolean | null
+  selected_options?: { id: string }[]
+  selected_option_id?: string
+  [key: string]: unknown
+}
+
+export const hasQuestionResultAnswer = (questionResult: LegacyQuestionResult): boolean => {
   if (Array.isArray(questionResult?.selected_options)) {
-    return questionResult.selected_options.some((option: any) => hasSubmittedAnswer(option?.id))
+    return questionResult.selected_options.some(option => hasSubmittedAnswer(option?.id))
   }
   return hasSubmittedAnswer(questionResult?.selected_option_id)
 }
 
 export const countQuestionResults = (
-  questionResults: any[],
+  questionResults: LegacyQuestionResult[],
   totalQuestions: number = questionResults.length
 ): { correctCount: number; incorrectCount: number; unansweredCount: number } => {
   const correctCount = questionResults.filter(q => q.is_correct === true).length

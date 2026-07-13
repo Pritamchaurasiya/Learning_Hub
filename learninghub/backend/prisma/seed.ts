@@ -6,26 +6,27 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...\n')
 
+  // Clean old data in dependency order
+  await prisma.testAttemptAnswer.deleteMany()
+  await prisma.testResult.deleteMany()
+  await prisma.question.deleteMany()
+  await prisma.test.deleteMany()
+  await prisma.topicPerformance.deleteMany()
   await prisma.pYQ.deleteMany()
   await prisma.formula.deleteMany()
   await prisma.revisionNote.deleteMany()
   await prisma.problemSubmission.deleteMany()
   await prisma.problem.deleteMany()
-  await prisma.testResult.deleteMany()
-  await prisma.question.deleteMany()
-  await prisma.test.deleteMany()
-  await prisma.lessonCompletion.deleteMany()
-  await prisma.note.deleteMany()
-  await prisma.lesson.deleteMany()
-  await prisma.module.deleteMany()
-  await prisma.bookmark.deleteMany()
-  await prisma.userProgress.deleteMany()
-  await prisma.userAchievement.deleteMany()
   await prisma.notification.deleteMany()
   await prisma.activityLog.deleteMany()
   await prisma.dailyGoal.deleteMany()
-  await prisma.course.deleteMany()
+  await prisma.userAchievement.deleteMany()
+  await prisma.userExamPreference.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.exam.deleteMany()
+  await prisma.subject.deleteMany()
+  await prisma.topic.deleteMany()
+  await prisma.country.deleteMany()
 
   const adminPassword = await bcrypt.hash('Admin@123!', 12)
   const studentPassword = await bcrypt.hash('Student@123!', 12)
@@ -54,267 +55,209 @@ async function main() {
     }),
   ])
 
-  const [course1, course2] = await Promise.all([
-    prisma.course.create({
-      data: {
-        id: 'course-001',
-        title: 'Introduction to Web Development',
-        description: 'Learn HTML, CSS, and JavaScript fundamentals.',
-        shortDescription: 'Build your first website',
-        phase: 'BEGINNER',
-        duration: 480,
-        difficulty: 'BEGINNER',
-        category: 'development',
-        content: '# Web Development Basics',
-        instructorId: admin.id,
-        isPublished: true,
-        publishedAt: new Date(),
-        rating: 4.8,
-        reviewCount: 320,
-        studentCount: 1200,
-        price: 0,
-      },
-    }),
-    prisma.course.create({
-      data: {
-        id: 'course-002',
-        title: 'React.js Fundamentals',
-        description: 'Master React components, hooks, and routing.',
-        shortDescription: 'Modern frontend development',
-        phase: 'INTERMEDIATE',
-        duration: 720,
-        difficulty: 'INTERMEDIATE',
-        category: 'development',
-        content: '# React Fundamentals',
-        instructorId: admin.id,
-        isPublished: true,
-        publishedAt: new Date(),
-        rating: 4.9,
-        reviewCount: 210,
-        studentCount: 860,
-        price: 49,
-      },
-    }),
-  ])
+  // 1. Seed Countries
+  const uk = await prisma.country.create({
+    data: { code: 'GB', name: 'United Kingdom', flagEmoji: '🇬🇧' },
+  })
 
-  const [module1, module2] = await Promise.all([
-    prisma.module.create({
-      data: {
-        id: 'module-001',
-        courseId: course1.id,
-        title: 'HTML Fundamentals',
-        order: 1,
-      },
-    }),
-    prisma.module.create({
-      data: {
-        id: 'module-002',
-        courseId: course2.id,
-        title: 'React Basics',
-        order: 1,
-      },
-    }),
-  ])
+  const us = await prisma.country.create({
+    data: { code: 'US', name: 'United States', flagEmoji: '🇺🇸' },
+  })
 
-  await Promise.all([
-    prisma.lesson.create({
-      data: {
-        id: 'lesson-001',
-        moduleId: module1.id,
-        title: 'Introduction to HTML',
-        content: 'HTML is the standard markup language for web pages.',
-        duration: 45,
-        order: 1,
-        isFree: true,
-      },
-    }),
-    prisma.lesson.create({
-      data: {
-        id: 'lesson-002',
-        moduleId: module2.id,
-        title: 'What is JSX?',
-        content: 'JSX lets you write UI markup inside JavaScript.',
-        duration: 60,
-        order: 1,
-        isFree: true,
-      },
-    }),
-  ])
+  const india = await prisma.country.create({
+    data: { code: 'IN', name: 'India', flagEmoji: '🇮🇳' },
+  })
 
-  const [test1, test2] = await Promise.all([
-    prisma.test.create({
-      data: {
-        id: 'test-001',
-        courseId: course1.id,
-        title: 'HTML Basics Quiz',
-        description: 'Quick test on HTML basics',
-        timeLimit: 20,
-        passingScore: 60,
-      },
-    }),
-    prisma.test.create({
-      data: {
-        id: 'test-002',
-        courseId: course2.id,
-        title: 'React Basics Quiz',
-        description: 'Quick test on React basics',
-        timeLimit: 25,
-        passingScore: 65,
-      },
-    }),
-  ])
-
-  await Promise.all([
-    prisma.question.create({
-      data: {
-        testId: test1.id,
-        text: 'What does HTML stand for?',
-        type: 'mcq',
-        points: 10,
-        order: 1,
-        explanation: 'HTML stands for Hyper Text Markup Language.',
-        options: {
-          create: [
-            { text: 'Hyper Text Markup Language', isCorrect: true, order: 0 },
-            { text: 'High Text Machine Language', isCorrect: false, order: 1 },
-            { text: 'Hyperlink and Text Markup Language', isCorrect: false, order: 2 },
-            { text: 'Home Tool Markup Language', isCorrect: false, order: 3 },
-          ],
-        },
-      },
-    }),
-    prisma.question.create({
-      data: {
-        testId: test2.id,
-        text: 'JSX is primarily used with which library?',
-        type: 'mcq',
-        points: 10,
-        order: 1,
-        explanation: 'JSX is most commonly used in React applications.',
-        options: {
-          create: [
-            { text: 'Angular', isCorrect: false, order: 0 },
-            { text: 'Vue', isCorrect: false, order: 1 },
-            { text: 'React', isCorrect: true, order: 2 },
-            { text: 'Svelte', isCorrect: false, order: 3 },
-          ],
-        },
-      },
-    }),
-  ])
-
-  await prisma.userProgress.create({
+  // 2. Seed Exams
+  const gcse = await prisma.exam.create({
     data: {
-      userId: student.id,
-      courseId: course1.id,
-      progress: 35,
-      status: 'IN_PROGRESS',
+      countryId: uk.id,
+      name: 'GCSE',
+      slug: 'gcse',
+      description: 'General Certificate of Secondary Education',
     },
   })
 
-  await prisma.bookmark.create({
+  const aLevel = await prisma.exam.create({
     data: {
-      userId: student.id,
-      courseId: course2.id,
+      countryId: uk.id,
+      name: 'A-Level',
+      slug: 'a-level',
+      description: 'Advanced Level Qualifications',
     },
   })
 
-  await prisma.testResult.create({
+  const sat = await prisma.exam.create({
     data: {
-      userId: student.id,
-      testId: test1.id,
-      score: 10,
-      totalPoints: 10,
-      percentage: 100,
-      passed: true,
-      timeTaken: 600,
-      answers: {},
-      completedAt: new Date(),
-      status: 'COMPLETED',
+      countryId: us.id,
+      name: 'SAT',
+      slug: 'sat',
+      description: 'Scholastic Assessment Test',
     },
   })
 
-  await prisma.notification.create({
+  const jee = await prisma.exam.create({
     data: {
-      userId: student.id,
-      type: 'course_complete',
-      title: 'Welcome to LearningHub!',
-      message: 'Start with your first lesson today.',
-      isRead: false,
-      actionUrl: '/course/course-001',
+      countryId: india.id,
+      name: 'JEE Mains',
+      slug: 'jee-mains',
+      description: 'Joint Entrance Examination',
     },
   })
 
-  await prisma.userAchievement.create({
+  const neet = await prisma.exam.create({
     data: {
-      userId: student.id,
-      achievementId: 'first-login',
-      name: 'First Login',
-      description: 'You logged in successfully for the first time.',
-      icon: '🎯',
+      countryId: india.id,
+      name: 'NEET',
+      slug: 'neet',
+      description: 'National Eligibility cum Entrance Test',
     },
   })
 
-  await prisma.problem.create({
+  // 3. Seed Subjects for A-Level
+  const mathALevel = await prisma.subject.create({
     data: {
-      id: 'problem-001',
-      title: 'Two Sum',
-      slug: 'two-sum',
-      description: 'Find two indices whose values add up to target.',
-      difficulty: 'easy',
-      category: 'algorithms',
-      tags: ['array', 'hash-table'],
-      starterCode: 'function twoSum(nums, target) {\n  return [];\n}',
-      testCases: JSON.stringify([{ input: [[2, 7, 11, 15], 9], output: [0, 1] }]),
-    },
-  })
-
-  // Seed PYQs for UPSC
-  await prisma.pYQ.createMany({
-    data: [
-      {
-        examType: 'UPSC',
-        year: 2023,
-        paper: 'Prelims',
-        subjectName: 'History',
-        question: 'Which of the following was the first battle fought by the East India Company?',
-        options: [
-          'Battle of Plassey',
-          'Battle of Buxar',
-          'Battle of Wandiwash',
-          'Battle of Carnatic',
+      examId: aLevel.id,
+      name: 'Mathematics',
+      slug: 'a-level-mathematics',
+      topics: {
+        create: [
+          { name: 'Pure Mathematics', slug: 'pure-mathematics' },
+          { name: 'Mechanics', slug: 'mechanics' },
+          { name: 'Statistics', slug: 'statistics' },
         ],
-        answer: 'Battle of Plassey',
-        explanation:
-          'The Battle of Plassey was fought in 1757 between the East India Company and Siraj-ud-Daulah, the Nawab of Bengal.',
-        difficulty: 'MEDIUM',
-        marks: 2,
-        negativeMarks: 0.66,
-        tags: ['modern-history', 'colonialism'],
       },
-      {
-        examType: 'UPSC',
-        year: 2023,
-        paper: 'Prelims',
-        subjectName: 'Geography',
-        question: 'Which of the following is the highest peak in the Western Ghats?',
-        options: ['Anamudi', 'Doddabetta', 'Kalsubai', 'Mullayanagiri'],
-        answer: 'Anamudi',
-        explanation:
-          'Anamudi is the highest peak in the Western Ghats at 2,695 meters (8,842 ft) above sea level.',
-        difficulty: 'EASY',
-        marks: 2,
-        negativeMarks: 0.66,
-        tags: ['geography', 'western-ghats'],
-      },
-    ],
+    },
   })
 
-  // Seed Formulas for JEE
+  const physicsALevel = await prisma.subject.create({
+    data: {
+      examId: aLevel.id,
+      name: 'Physics',
+      slug: 'a-level-physics',
+      topics: {
+        create: [
+          { name: 'Mechanics', slug: 'physics-mechanics' },
+          { name: 'Waves', slug: 'waves' },
+          { name: 'Electricity', slug: 'electricity' },
+          { name: 'Quantum Physics', slug: 'quantum-physics' },
+        ],
+      },
+    },
+  })
+
+  const physicsJEE = await prisma.subject.create({
+    data: { examId: jee.id, name: 'Physics', slug: 'jee-physics' },
+  })
+
+  const bioNEET = await prisma.subject.create({
+    data: { examId: neet.id, name: 'Biology', slug: 'neet-biology' },
+  })
+
+  // 4. Seed PYQs (Previous Year Questions) for A-Level Math
+  await prisma.pYQ.create({
+    data: {
+      examType: 'A_LEVEL',
+      examId: aLevel.id,
+      subjectId: mathALevel.id,
+      year: 2023,
+      paper: 'Paper 1: Pure Mathematics',
+      question: 'Find the derivative of $f(x) = x^3 - 4x^2 + 5x - 2$.',
+      marks: 3,
+      tags: ['Calculus', 'Differentiation'],
+      answer: "$f'(x) = 3x^2 - 8x + 5$",
+      explanation: 'Use power rule on each term separately.',
+      difficulty: 'MEDIUM',
+    },
+  })
+
+  // 5. Seed PYQs for JEE Mains Physics
+  const jeePhysicsQuestions = [
+    {
+      question:
+        'A particle moves along the x-axis from x=0 to x=5m under the influence of a force given by F = 7 - 2x + 3x^2. The work done in the process is:',
+      options: ['135 J', '235 J', '85 J', '15 J'],
+      correctOption: '135 J',
+      explanation:
+        'Work done W = \\int F dx = \\int_0^5 (7 - 2x + 3x^2) dx = [7x - x^2 + x^3]_0^5 = 35 - 25 + 125 = 135 J.',
+      difficulty: 'MEDIUM',
+      tags: ['Work, Energy and Power', 'Integration'],
+    },
+    {
+      question:
+        'Two coherent point sources S1 and S2 are separated by a small distance d. The fringes obtained on the screen will be:',
+      options: ['Straight lines', 'Concentric circles', 'Hyperbolas', 'Parabolas'],
+      correctOption: 'Hyperbolas',
+      explanation:
+        'For two coherent point sources, the locus of points with a constant path difference is a hyperbola.',
+      difficulty: 'HARD',
+      tags: ['Wave Optics', 'Interference'],
+    },
+  ]
+
+  for (const q of jeePhysicsQuestions) {
+    await prisma.pYQ.create({
+      data: {
+        examType: 'JEE_MAIN',
+        examId: jee.id,
+        subjectId: physicsJEE.id,
+        year: 2023,
+        paper: 'JEE Main 2023 Shift 1',
+        question: q.question,
+        options: q.options,
+        marks: 4,
+        tags: q.tags,
+        answer: q.correctOption,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+      },
+    })
+  }
+
+  // 6. Seed PYQs for NEET Biology
+  const neetBioQuestions = [
+    {
+      question:
+        'Which of the following represents the correct sequence of phases in the cell cycle?',
+      options: [
+        'G1 -> S -> G2 -> M',
+        'G1 -> G2 -> S -> M',
+        'M -> G1 -> G2 -> S',
+        'S -> G1 -> G2 -> M',
+      ],
+      correctOption: 'G1 -> S -> G2 -> M',
+      explanation:
+        'The correct sequence of the cell cycle is G1 (Gap 1), S (Synthesis), G2 (Gap 2), and M (Mitosis).',
+      difficulty: 'EASY',
+      tags: ['Cell Cycle', 'Cell Division'],
+    },
+  ]
+
+  for (const q of neetBioQuestions) {
+    await prisma.pYQ.create({
+      data: {
+        examType: 'NEET',
+        examId: neet.id,
+        subjectId: bioNEET.id,
+        year: 2023,
+        paper: 'NEET 2023',
+        question: q.question,
+        options: q.options,
+        marks: 4,
+        tags: q.tags,
+        answer: q.correctOption,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+      },
+    })
+  }
+
+  // 7. Seed Formulas
   await prisma.formula.createMany({
     data: [
       {
         examType: 'JEE_MAIN',
+        subjectId: physicsJEE.id,
         topic: 'Mechanics',
         name: "Newton's Second Law",
         formula: 'F = ma',
@@ -323,30 +266,15 @@ async function main() {
         examples: ['Example 1: A 5kg object accelerating at 2m/s² experiences F = 5 × 2 = 10N'],
         tags: ['newton-laws', 'force', 'mechanics'],
       },
-      {
-        examType: 'JEE_MAIN',
-        topic: 'Thermodynamics',
-        name: 'Ideal Gas Law',
-        formula: 'PV = nRT',
-        description: 'Pressure times volume equals moles times gas constant times temperature',
-        variables: JSON.stringify({
-          P: 'Pressure (Pa)',
-          V: 'Volume (m³)',
-          n: 'Moles',
-          R: 'Gas constant',
-          T: 'Temperature (K)',
-        }),
-        examples: ['Example: Calculate pressure of 2 moles at 300K in 0.1m³'],
-        tags: ['gases', 'thermodynamics', 'equations'],
-      },
     ],
   })
 
-  // Seed Revision Notes for NEET
+  // 8. Seed Revision Notes
   await prisma.revisionNote.createMany({
     data: [
       {
         examType: 'NEET',
+        subjectId: bioNEET.id,
         topic: 'Cell Structure',
         content:
           '# Cell Structure\n\n## Prokaryotic vs Eukaryotic Cells\n\n### Prokaryotic Cells:\n- No membrane-bound nucleus\n- No organelles\n- Single circular chromosome\n- Examples: Bacteria, Archaea\n\n### Eukaryotic Cells:\n- Membrane-bound nucleus\n- Contains organelles\n- Linear chromosomes\n- Examples: Plant, Animal, Fungi cells',
@@ -358,6 +286,77 @@ async function main() {
         tags: ['cell-biology', 'anatomy'],
       },
     ],
+  })
+
+  // 9. Seed a default practice test
+  const defaultTest = await prisma.test.create({
+    data: {
+      examId: jee.id,
+      title: 'JEE Physics Mechanics Kickstart',
+      description: 'Test your understanding of basic kinematics and Newton laws.',
+      timeLimit: 15,
+      passingScore: 60,
+      mode: 'PRACTICE',
+      difficulty: 'MEDIUM',
+      totalMarks: 20,
+      negativeMarks: 1.0,
+      isPublished: true,
+      questions: {
+        create: [
+          {
+            text: 'A car starts from rest and accelerates uniformly at 2 m/s² for 10 seconds. The distance traveled is:',
+            type: 'MCQ',
+            difficulty: 0.3,
+            bloomLevel: 'APPLY',
+            explanation: 'Using s = ut + 0.5at², s = 0 + 0.5 * 2 * (10)^2 = 100 meters.',
+            points: 10,
+            order: 1,
+            tags: ['kinematics', 'mechanics'],
+            options: {
+              create: [
+                { text: '50 m', isCorrect: false, order: 0 },
+                { text: '100 m', isCorrect: true, order: 1 },
+                { text: '200 m', isCorrect: false, order: 2 },
+                { text: '150 m', isCorrect: false, order: 3 },
+              ],
+            },
+          },
+          {
+            text: 'What force is required to accelerate a 5 kg mass at 4 m/s²?',
+            type: 'MCQ',
+            difficulty: 0.2,
+            bloomLevel: 'APPLY',
+            explanation: 'F = ma = 5 kg * 4 m/s² = 20 N.',
+            points: 10,
+            order: 2,
+            tags: ['newton-laws', 'mechanics'],
+            options: {
+              create: [
+                { text: '10 N', isCorrect: false, order: 0 },
+                { text: '20 N', isCorrect: true, order: 1 },
+                { text: '30 N', isCorrect: false, order: 2 },
+                { text: '40 N', isCorrect: false, order: 3 },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  })
+
+  // 10. Seed a mock test result
+  await prisma.testResult.create({
+    data: {
+      userId: student.id,
+      testId: defaultTest.id,
+      score: 20,
+      totalPoints: 20,
+      percentage: 100,
+      passed: true,
+      timeTaken: 120,
+      status: 'COMPLETED',
+      completedAt: new Date(),
+    },
   })
 
   console.log('✅ Seed complete')

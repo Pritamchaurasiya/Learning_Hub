@@ -10,17 +10,21 @@
  *  - Test attempt history
  */
 
+import crypto from 'crypto'
+import { Prisma, TestMode, AttemptStatus } from '@prisma/client'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
-import { parseJsonArray, parseJsonObject } from '../utils/json'
 import { topicPerformanceService } from './TopicPerformanceService'
 import { growthEngineService } from './GrowthEngineService'
+import { adaptiveTestEngine } from '../engines/test/AdaptiveTestEngine'
 
 export interface PracticeAnswerRequest {
   userId: string
   testId: string
   questionId: string
-  selectedOptionId: string
+  selectedOptionId?: string | string[]
+  textAnswer?: string
+  timeSpent?: number
 }
 
 export interface PracticeAnswerResponse {
@@ -40,6 +44,7 @@ export class TestEngineService {
       where: { id: req.questionId },
       include: {
         options: true,
+        topic: { select: { name: true } },
         test: { select: { id: true, mode: true, timeLimit: true } },
       },
     })
@@ -48,11 +53,11 @@ export class TestEngineService {
       throw new Error('Question not found')
     }
 
-    if (question.test.mode !== 'PRACTICE') {
+    if (question.test.mode !== 'PRACTICE' && question.test.mode !== 'ADAPTIVE') {
       throw new Error('Practice mode is only available for practice tests')
     }
 
-    const correctOption = question.options.find(o => o.isCorrect)
+    const correctOption = question.options.find((o: { isCorrect: boolean }) => o.isCorrect)
     const isCorrect = req.selectedOptionId === correctOption?.id
 
     const maxRetries = 3
@@ -60,132 +65,170 @@ export class TestEngineService {
 
     while (currentTry < maxRetries) {
       try {
-        return await prisma.$transaction(async tx => {
-          // Find or create a practice test result for this user/test
-          let practiceResult = await tx.testResult.findFirst({
-            where: { userId: req.userId, testId: req.testId, status: 'IN_PROGRESS' },
-            orderBy: { attemptNumber: 'desc' },
-          })
-
-          if (!practiceResult) {
-            // Get next attempt number
-            const maxAttempt = await tx.testResult.findFirst({
-              where: { userId: req.userId, testId: req.testId },
+        const txResult = await prisma.$transaction(
+          async (tx: Prisma.TransactionClient) => {
+            // Find or create a practice test result for this user/test
+            let practiceResult: any = await tx.testResult.findFirst({
+              where: { userId: req.userId, testId: req.testId, status: 'IN_PROGRESS' },
               orderBy: { attemptNumber: 'desc' },
-              select: { attemptNumber: true },
             })
-            const nextAttemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
 
-            practiceResult = await tx.testResult.create({
-              data: {
-                userId: req.userId,
-                testId: req.testId,
-                score: 0,
-                totalPoints: 0,
-                percentage: 0,
-                passed: false,
-                timeTaken: 0,
-                answers: {},
-                questionResults: [],
-                status: 'IN_PROGRESS',
-                attemptNumber: nextAttemptNumber,
+            if (!practiceResult) {
+              // Get next attempt number
+              const maxAttempt = await tx.testResult.findFirst({
+                where: { userId: req.userId, testId: req.testId },
+                orderBy: { attemptNumber: 'desc' },
+                select: { attemptNumber: true },
+              })
+              let nextAttemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
+
+              // Retry on unique constraint violation (attemptNumber race condition)
+              for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                  practiceResult = await tx.testResult.create({
+                    data: {
+                      userId: req.userId,
+                      testId: req.testId,
+                      score: 0,
+                      totalPoints: 0,
+                      percentage: 0,
+                      passed: false,
+                      timeTaken: 0,
+                      status: 'IN_PROGRESS',
+                      attemptNumber: nextAttemptNumber,
+                    },
+                  })
+                  break
+                } catch (error) {
+                  const err = error as Error & { code?: string }
+                  if (err.code === 'P2002' && attempt < 3) {
+                    nextAttemptNumber++
+                    continue
+                  }
+                  throw error
+                }
+              }
+            }
+
+            // 1. Upsert TestAttemptAnswer with incremental score update
+            const submittedIds = req.selectedOptionId
+              ? Array.isArray(req.selectedOptionId)
+                ? req.selectedOptionId
+                : [req.selectedOptionId]
+              : []
+
+            const existingAnswer = await tx.testAttemptAnswer.findUnique({
+              where: {
+                testResultId_questionId: {
+                  testResultId: practiceResult.id,
+                  questionId: req.questionId,
+                },
+              },
+              select: { marksObtained: true },
+            })
+
+            const newMarks = isCorrect ? question.points : 0
+            const oldMarks = existingAnswer?.marksObtained ?? 0
+            const marksDelta = newMarks - oldMarks
+
+            await tx.testAttemptAnswer.upsert({
+              where: {
+                testResultId_questionId: {
+                  testResultId: practiceResult.id,
+                  questionId: req.questionId,
+                },
+              },
+              create: {
+                testResultId: practiceResult.id,
+                questionId: req.questionId,
+                selectedOptions: submittedIds,
+                textAnswer: req.textAnswer ?? null,
+                isCorrect,
+                marksObtained: newMarks,
+                timeSpent: req.timeSpent ?? 0,
+              },
+              update: {
+                selectedOptions: submittedIds,
+                textAnswer: req.textAnswer ?? null,
+                isCorrect,
+                marksObtained: newMarks,
+                timeSpent: req.timeSpent ?? 0,
               },
             })
-          }
 
-          // Merge answers
-          const existingAnswers = parseJsonObject(practiceResult.answers) as Record<string, string>
-          const updatedAnswers = { ...existingAnswers, [req.questionId]: req.selectedOptionId }
-
-          // Merge question results
-          const existingResults = parseJsonArray<any>(practiceResult.questionResults)
-          const existingResultIndex = existingResults.findIndex(
-            (r: any) => r.question_id === req.questionId
-          )
-          const newResult = {
-            question_id: req.questionId,
-            is_correct: isCorrect,
-            marks_obtained: isCorrect ? question.points : 0,
-          }
-
-          if (existingResultIndex >= 0) {
-            existingResults[existingResultIndex] = newResult
-          } else {
-            existingResults.push(newResult)
-          }
-
-          // Calculate current score across ALL answered questions
-          let currentScore = 0
-          for (const r of existingResults) {
-            if (r.is_correct) currentScore += r.marks_obtained
-          }
-          // Total points = sum of points for all questions the user has attempted
-          const attemptedQuestionIds = existingResults.map((r: any) => r.question_id).filter(Boolean)
-          let totalPoints = question.points // at minimum the current question
-          if (attemptedQuestionIds.length > 0) {
-            const attemptedQuestions = await tx.question.findMany({
-              where: { id: { in: attemptedQuestionIds } },
-              select: { points: true },
+            // 2. Update aggregate score incrementally (no full-scan N+1)
+            const totalPointsIncrement = existingAnswer ? 0 : question.points
+            const updatedResult = await tx.testResult.update({
+              where: { id: practiceResult.id },
+              data: {
+                score: { increment: marksDelta },
+                totalPoints: { increment: totalPointsIncrement },
+              },
+              select: { score: true, totalPoints: true },
             })
-            totalPoints = (attemptedQuestions ?? []).reduce((s, q) => s + q.points, 0)
+            await tx.testResult.update({
+              where: { id: practiceResult.id },
+              data: {
+                percentage:
+                  updatedResult.totalPoints > 0
+                    ? Math.round((updatedResult.score / updatedResult.totalPoints) * 100)
+                    : 0,
+              },
+            })
+
+            return {
+              questionId: question.id,
+              isCorrect,
+              explanation: question.explanation || 'No explanation available',
+              correctOptionId: correctOption?.id || '',
+              points: isCorrect ? question.points : 0,
+            }
+          },
+          { isolationLevel: 'ReadCommitted' }
+        )
+
+        // Fire-and-forget growth engine updates AFTER transaction commits successfully.
+        // These are non-critical and should not block the response or hold a DB transaction open.
+        try {
+          await growthEngineService.checkAndUpdateStreak(req.userId)
+          await growthEngineService.awardXP(req.userId, 'practice_session')
+          if (question.tags && question.tags.length > 0) {
+            await topicPerformanceService.updateForSingleAnswer(
+              req.userId,
+              question.tags[0],
+              isCorrect
+            )
           }
-          const percentage = totalPoints > 0 ? (currentScore / totalPoints) * 100 : 0
-
-          await tx.testResult.update({
-            where: { id: practiceResult.id },
-            data: {
-              score: currentScore,
-              totalPoints,
-              percentage,
-              passed: percentage >= 60,
-              answers: updatedAnswers as any,
-              questionResults: existingResults as any,
-            },
-          })
-
-          // Update topic performance (Core Analytics Engine)
-          const topicName = question.tags?.[0] ?? 'General'
-          await topicPerformanceService.updateForSingleAnswer(req.userId, topicName, isCorrect, {
-            subjectName: (question.test as any).subjectId,
-            tx,
-          })
-
-          // Growth Engine: Practice XP securely executed IN transaction
-          await growthEngineService.awardXP(req.userId, 'practice_session', tx)
-
-          return {
-            questionId: req.questionId,
-            isCorrect,
-            explanation: question.explanation ?? '',
-            correctOptionId: correctOption?.id ?? '',
-            points: isCorrect ? question.points : 0,
-          }
-        })
-      } catch (error: any) {
-        // P2002: Unique constraint failed
-        if (error?.code === 'P2002') {
-          currentTry++
-          if (currentTry >= maxRetries) {
-            logger.error('[TestEngineService] Max retries reached for Practice Answer concurrency', error)
-            throw new Error('Concurrent submission error. Please try again.')
-          }
-          // Exponential backoff
-          await new Promise(res => setTimeout(res, 50 * Math.pow(2, currentTry)))
-          continue
+        } catch (growthErr: unknown) {
+          logger.warn(
+            '[TestEngineService] Non-critical growth engine update failed:',
+            growthErr instanceof Error ? { error: growthErr.message } : { error: String(growthErr) }
+          )
         }
-        throw error
+
+        return txResult
+      } catch (error) {
+        currentTry++
+        if (currentTry >= maxRetries) {
+          logger.error(
+            `[TestEngineService] submitPracticeAnswer failed after ${maxRetries} tries`,
+            error instanceof Error ? error : new Error(String(error))
+          )
+          throw error
+        }
+        await new Promise(r => setTimeout(r, 50 * Math.pow(2, currentTry)))
       }
     }
-    
-    throw new Error('Unexpected error in practice answer flow')
+    throw new Error('Failed to submit answer')
   }
 
   /**
-   * Get questions for a test with randomized order.
+   * Get questions for a test with randomized order (or IRT adaptive ordering).
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getTestQuestions(testId: string, _userId: string): Promise<any[]> {
     const test = await prisma.test.findUnique({
-      where: { id: testId, isPublished: true },
+      where: { id: testId, isPublished: true, deletedAt: null },
       include: {
         questions: {
           orderBy: { order: 'asc' },
@@ -203,11 +246,19 @@ export class TestEngineService {
       throw new Error('Test not found')
     }
 
-    // For practice mode, shuffle questions
-    const questions =
-      test.mode === 'PRACTICE' ? this.shuffleArray([...test.questions]) : test.questions
+    // For practice mode, shuffle questions. For adaptive mode, sort by IRT Fisher Information.
+    let questions = test.questions
+    if (test.mode === 'PRACTICE') {
+      questions = this.shuffleArray([...test.questions])
+    } else if (test.mode === 'ADAPTIVE') {
+      const theta = await adaptiveTestEngine.estimateUserAbility(
+        _userId,
+        test.questions[0]?.topicId
+      )
+      questions = adaptiveTestEngine.sortQuestionsByInformation([...test.questions], theta)
+    }
 
-    return questions.map(q => ({
+    return questions.map((q: any) => ({
       id: q.id,
       text: q.text,
       type: q.type,
@@ -215,7 +266,7 @@ export class TestEngineService {
       bloom_level: q.bloomLevel,
       points: q.points,
       order: q.order,
-      options: q.options.map(o => ({
+      options: q.options.map((o: any) => ({
         id: o.id,
         text: o.text,
         order: o.order,
@@ -224,11 +275,76 @@ export class TestEngineService {
   }
 
   /**
+   * Get the optimal next question for an adaptive test based on real-time IRT ability theta.
+   */
+
+  async getNextAdaptiveTestQuestion(
+    testId: string,
+    userId: string,
+    answeredQuestionIds: string[]
+  ): Promise<any | null> {
+    const test = await prisma.test.findUnique({
+      where: { id: testId, isPublished: true, deletedAt: null },
+      include: {
+        questions: {
+          where:
+            answeredQuestionIds.length > 0 ? { id: { notIn: answeredQuestionIds } } : undefined,
+          include: {
+            options: {
+              orderBy: { order: 'asc' },
+              select: { id: true, text: true, order: true },
+            },
+          },
+        },
+      },
+    })
+
+    if (!test || test.questions.length === 0) {
+      return null
+    }
+
+    const theta = await adaptiveTestEngine.estimateUserAbility(userId, test.questions[0]?.topicId)
+    const sorted = adaptiveTestEngine.sortQuestionsByInformation(test.questions, theta)
+    const bestQ = sorted[0] as any
+
+    if (!bestQ) return null
+
+    return {
+      id: bestQ.id,
+      text: bestQ.text,
+      type: bestQ.type,
+      difficulty: bestQ.difficulty,
+      bloom_level: bestQ.bloomLevel,
+      points: bestQ.points,
+      order: bestQ.order,
+      options: bestQ.options.map((o: any) => ({
+        id: o.id,
+        text: o.text,
+        order: o.order,
+      })),
+    }
+  }
+
+  /**
    * Get test analytics for a user — performance breakdown by topic, difficulty, etc.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getTestAnalytics(userId: string): Promise<any> {
+    const userPref = await prisma.userExamPreference.findUnique({
+      where: { userId },
+      select: { examId: true },
+    })
+
+    const targetExamId = userPref?.examId ?? undefined
+
     const results = await prisma.testResult.findMany({
-      where: { userId, status: 'COMPLETED' },
+      where: {
+        userId,
+        status: 'COMPLETED',
+        ...(targetExamId && {
+          test: { examId: targetExamId },
+        }),
+      },
       include: {
         test: {
           select: {
@@ -245,24 +361,25 @@ export class TestEngineService {
     })
 
     const totalTests = results.length
-    const passedTests = results.filter(r => r.passed).length
+    const passedTests = results.filter((r: { passed: boolean | null }) => r.passed).length
     const avgScore =
       totalTests > 0
-        ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalTests)
+        ? Math.round(results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) / totalTests)
         : 0
 
     // Performance by difficulty
     const byDifficulty: Record<string, { total: number; passed: number; avgScore: number }> = {}
     for (const r of results) {
       const diff = r.test.difficulty
-      if (!byDifficulty[diff]) byDifficulty[diff] = { total: 0, passed: 0, avgScore: 0 }
-      byDifficulty[diff].total++
-      if (r.passed) byDifficulty[diff].passed++
+      if (!byDifficulty[diff]) byDifficulty[diff] = { total: 0, passed: 0, avgScore: 0 } // eslint-disable-line security/detect-object-injection
+      byDifficulty[diff].total++ // eslint-disable-line security/detect-object-injection
+      if (r.passed) byDifficulty[diff].passed++ // eslint-disable-line security/detect-object-injection
     }
     for (const key of Object.keys(byDifficulty)) {
-      const items = results.filter(r => r.test.difficulty === key)
+      const items = results.filter((r: { test: { difficulty: string } }) => r.test.difficulty === key)
+      // eslint-disable-next-line security/detect-object-injection
       byDifficulty[key].avgScore = Math.round(
-        items.reduce((s, r) => s + r.percentage, 0) / items.length
+        items.reduce((s: number, r: { percentage: number }) => s + r.percentage, 0) / items.length
       )
     }
 
@@ -270,7 +387,7 @@ export class TestEngineService {
     const trend = results
       .slice(0, 10)
       .reverse()
-      .map(r => ({
+      .map((r: { test: { title: string }; percentage: number; passed: boolean | null; completedAt: Date | null }) => ({
         test_title: r.test.title,
         score: r.percentage,
         passed: r.passed,
@@ -291,7 +408,7 @@ export class TestEngineService {
         topic: t.topicName,
         accuracy: t.accuracy,
         total_attempts: t.totalAttempts,
-        strength_level: t.strengthLevel
+        strength_level: t.strengthLevel,
       })),
     }
   }
@@ -299,6 +416,7 @@ export class TestEngineService {
   /**
    * Bookmark a question for later review.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async bookmarkQuestion(userId: string, questionId: string, notes?: string): Promise<any> {
     const existing = await prisma.questionBookmark.findUnique({
       where: { userId_questionId: { userId, questionId } },
@@ -331,6 +449,7 @@ export class TestEngineService {
   /**
    * Get user's bookmarked questions.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getBookmarkedQuestions(userId: string): Promise<any[]> {
     return prisma.questionBookmark.findMany({
       where: { userId },
@@ -371,19 +490,20 @@ export class TestEngineService {
       page?: number
       limit?: number
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const page = filters?.page ?? 1
     const limit = Math.min(filters?.limit ?? 20, 100)
     const skip = (page - 1) * limit
 
-    const where: Record<string, unknown> = { userId }
+    const where: Prisma.TestResultWhereInput = { userId }
     if (filters?.testId) where.testId = filters.testId
-    if (filters?.mode) where.test = { mode: filters.mode }
-    if (filters?.status) where.status = filters.status
+    if (filters?.mode) where.test = { mode: filters.mode as TestMode }
+    if (filters?.status) where.status = filters.status as AttemptStatus
 
     const [attempts, total] = await Promise.all([
       prisma.testResult.findMany({
-        where: where as any,
+        where,
         skip,
         take: limit,
         include: {
@@ -401,11 +521,11 @@ export class TestEngineService {
         },
         orderBy: { completedAt: 'desc' },
       }),
-      prisma.testResult.count({ where: where as any }),
+      prisma.testResult.count({ where }),
     ])
 
     return {
-      attempts: attempts.map(a => ({
+      attempts: attempts.map((a: any) => ({
         id: a.id,
         test_id: a.testId,
         test_title: a.test?.title ?? 'Unknown',
@@ -470,111 +590,107 @@ export class TestEngineService {
   }
 
   /**
-   * Auto-submit test when time expires.
+   * Auto-submit test when time expires - pushes jobs to BullMQ for distributed processing.
    */
   async autoSubmitExpiredTests(): Promise<number> {
-    const expiredAttempts = await prisma.testResult.findMany({
-      where: {
-        status: 'IN_PROGRESS',
-        test: {
-          timeLimit: { gt: 0 },
-        },
-      },
-      include: {
-        test: {
-          include: {
-            questions: {
-              include: { options: true },
-            },
-          },
-        },
-      },
+    // Highly optimized raw query: Calculate expiration in PostgreSQL instead of pulling all rows into Node.js
+    const expiredAttempts = await prisma.$queryRaw<
+      { id: string; testId: string; userId: string }[]
+    >`
+      SELECT tr.id, tr."testId", tr."userId"
+      FROM "test_results" tr
+      INNER JOIN "tests" t ON tr."testId" = t.id
+      WHERE tr.status = 'IN_PROGRESS'
+        AND t."timeLimit" > 0
+        AND tr."startedAt" + (t."timeLimit" * interval '1 minute') < NOW()
+    `
+
+    let queuedCount = 0
+
+    if (expiredAttempts.length > 0) {
+      // Import dynamically to avoid circular dependencies if any
+      const { jobQueueService } = await import('./JobQueueService')
+
+      for (const attempt of expiredAttempts) {
+        try {
+          await jobQueueService.addTestSubmissionJob({
+            attemptId: attempt.id,
+            testId: attempt.testId,
+            userId: attempt.userId,
+          })
+          queuedCount++
+        } catch (err) {
+          // A single failure (e.g. Redis down) must not abort the whole batch.
+          logger.error(`Failed to queue expired test ${attempt.id} for auto-submission`, {
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
+      }
+      logger.info(`Queued ${queuedCount} expired tests for auto-submission`)
+    }
+
+    return queuedCount
+  }
+
+  /**
+   * Worker processor function to actually score an auto-submitted test.
+   */
+  async processExpiredTestSubmission(attemptId: string): Promise<void> {
+    const attempt = await prisma.testResult.findUnique({
+      where: { id: attemptId },
+      include: { test: true },
     })
 
-    let submittedCount = 0
+    // Double check status to avoid double processing
 
-    for (const attempt of expiredAttempts) {
-      const timeLimitSeconds = attempt.test.timeLimit * 60
-      const startedAtMs =
-        attempt.startedAt instanceof Date
-          ? attempt.startedAt.getTime()
-          : Date.parse(String(attempt.startedAt))
-      const elapsedSeconds = Number.isFinite(startedAtMs)
-        ? Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000))
-        : 0
-
-      if (elapsedSeconds > timeLimitSeconds) {
-        const answers = parseJsonObject(attempt.answers) as Record<string, string>
-
-        let score = 0
-        const questionResults = attempt.test.questions.map(q => {
-          const correctOption = q.options.find(o => o.isCorrect)
-          const userAnswer = answers[q.id]
-          const hasAnswer = userAnswer !== undefined && userAnswer !== null && String(userAnswer).trim().length > 0
-          const isCorrect = hasAnswer && userAnswer === correctOption?.id
-
-          if (isCorrect) {
-            score += q.points
-          } else if (hasAnswer && attempt.test.negativeMarks > 0) {
-            score -= attempt.test.negativeMarks
-          }
-
-          return {
-            question_id: q.id,
-            is_correct: isCorrect,
-            marks_obtained: isCorrect ? q.points : (hasAnswer ? -attempt.test.negativeMarks : 0),
-          }
-        })
-
-        score = Math.max(0, score)
-
-        const totalPossibleScore = attempt.test.questions.reduce((acc, q) => acc + q.points, 0)
-        const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
-
-        await prisma.testResult.update({
-          where: { id: attempt.id },
-          data: {
-            score,
-            totalPoints: totalPossibleScore,
-            percentage,
-            passed: percentage >= attempt.test.passingScore,
-            timeTaken: timeLimitSeconds,
-            questionResults: questionResults as any,
-            completedAt: new Date(),
-            status: 'TIMEOUT',
-          },
-        })
-
-        submittedCount++
-      }
+    if (!attempt || attempt.status !== 'IN_PROGRESS') {
+      return
     }
 
-    if (submittedCount > 0) {
-      logger.info(`Auto-submitted ${submittedCount} expired tests`)
-    }
+    try {
+      const answers = await this.getExistingAnswers(attempt.id)
 
-    return submittedCount
+      // Use TestScoringService to ensure Analytics + Growth logic executes
+      const { testScoringService } = await import('./TestScoringService')
+      await testScoringService.scoreAndSubmitTest({
+        userId: attempt.userId,
+        testId: attempt.testId,
+        answers,
+        timeTaken: attempt.test.timeLimit * 60,
+        attemptId: attempt.id,
+      })
+      logger.info(`Successfully auto-submitted expired test attempt ${attemptId}`)
+    } catch (e) {
+      logger.error('Failed to trigger post-test analytics for auto-submission', e as Error)
+    }
   }
 
   // ─── Private Helpers ───────────────────────────────────────────────────────
 
   private async getExistingAnswers(
-    userId: string,
-    testId: string
-  ): Promise<Record<string, string>> {
-    // Find the most recent in-progress attempt (not hardcoded to attempt 1)
-    const result = await prisma.testResult.findFirst({
-      where: { userId, testId, status: 'IN_PROGRESS' },
-      orderBy: { attemptNumber: 'desc' },
-      select: { answers: true },
+    attemptId: string
+  ): Promise<Record<string, string | string[]>> {
+    // Scope answers to the specific attempt (testResultId) rather than the latest
+    // IN_PROGRESS result for the user+test. Otherwise an auto-submitted expired
+    // attempt could be scored using answers saved to a different concurrent attempt.
+    const answers = await prisma.testAttemptAnswer.findMany({
+      where: { testResultId: attemptId },
+      select: { questionId: true, textAnswer: true, selectedOptions: true },
     })
-    return parseJsonObject(result?.answers) as Record<string, string>
+
+    const result: Record<string, string | string[]> = {}
+    for (const a of answers) {
+      result[a.questionId] =
+        a.textAnswer ??
+        (a.selectedOptions.length === 1 ? a.selectedOptions[0] : a.selectedOptions)
+    }
+    return result
   }
 
   private shuffleArray<T>(array: T[]): T[] {
     for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[array[i], array[j]] = [array[j], array[i]]
+      const j = crypto.randomInt(0, i + 1)
+      ;[array[i], array[j]] = [array[j], array[i]] // eslint-disable-line security/detect-object-injection
     }
     return array
   }

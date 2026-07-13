@@ -47,6 +47,7 @@ export class ABTestingService {
     const hashInt = parseInt(hash.substring(0, 8), 16)
     const variantIndex = hashInt % experiment.variants.length
 
+    // eslint-disable-next-line security/detect-object-injection
     return experiment.variants[variantIndex]
   }
 
@@ -81,7 +82,7 @@ export class ABTestingService {
         userId,
         event: eventName,
         value: value ?? 0,
-      }
+      },
     })
   }
 
@@ -89,6 +90,7 @@ export class ABTestingService {
    * Get experiment results
    */
   async getExperimentResults(experimentId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results = await prisma.$queryRaw<any[]>`
       SELECT 
         "variant",
@@ -102,7 +104,7 @@ export class ABTestingService {
       ORDER BY "variant"
     `
 
-    return results.map(r => ({
+    return results.map((r: any) => ({
       variant: r.variant,
       users: Number(r.users),
       events: Number(r.events),
@@ -124,8 +126,8 @@ export class ABTestingService {
     }
 
     // Simplified chi-square calculation
-    const control = results.find(r => r.variant === 'control')
-    const variant = results.find(r => r.variant !== 'control')
+    const control = results.find((r: any) => r.variant === 'control')
+    const variant = results.find((r: any) => r.variant !== 'control')
 
     if (!control || !variant) {
       return { significant: false, pValue: 1.0 }

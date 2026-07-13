@@ -17,8 +17,8 @@
 
 import { prisma } from '../prismaClient'
 import { topicPerformanceService, type TopicPerformanceData } from './TopicPerformanceService'
-import logger from '../utils/logger'
 import { cacheService } from './CacheService'
+import { conductorClient } from './ml/ConductorClient'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ export interface StudyRecommendation {
   topicName: string
   subjectName?: string
   reason: string
-  priority: number        // 0-100, higher = more urgent
+  priority: number // 0-100, higher = more urgent
   currentAccuracy: number
   targetAccuracy: number
   estimatedQuestions: number // Estimated questions needed to reach target
@@ -85,11 +85,18 @@ export class RecommendationService {
           topicPerformanceService.getTopicsDueForReview(userId, 7, 20),
           prisma.userExamPreference.findUnique({
             where: { userId },
-            include: {
+            select: {
+              subjectIds: true,
               exam: {
-                include: {
+                select: {
                   subjects: {
-                    include: { topics: true },
+                    select: {
+                      id: true,
+                      name: true,
+                      topics: {
+                        select: { id: true, name: true },
+                      },
+                    },
                   },
                 },
               },
@@ -97,12 +104,31 @@ export class RecommendationService {
           }),
         ])
 
+        // Build list of active topic names based on preferences
+        const activeTopicNames = new Set<string>()
+        if (userExamPref?.exam?.subjects) {
+          for (const subject of userExamPref.exam.subjects) {
+            if (
+              userExamPref.subjectIds.length > 0 &&
+              !userExamPref.subjectIds.includes(subject.id)
+            ) {
+              continue
+            }
+            for (const topic of subject.topics) {
+              activeTopicNames.add(topic.name)
+            }
+          }
+        }
+
         const recommendations: StudyRecommendation[] = []
         const addedTopics = new Set<string>()
 
         // 1. Weak areas (highest priority)
         for (const topic of weakTopics) {
           if (addedTopics.has(topic.topicName)) continue
+          // Filter to only user's active topics if preferences are set
+          if (activeTopicNames.size > 0 && !activeTopicNames.has(topic.topicName)) continue
+
           addedTopics.add(topic.topicName)
 
           const daysSinceAttempt = topic.lastAttemptAt
@@ -127,6 +153,9 @@ export class RecommendationService {
         // 2. Topics due for review (spaced repetition)
         for (const topic of dueForReview) {
           if (addedTopics.has(topic.topicName)) continue
+          // Filter to only user's active topics if preferences are set
+          if (activeTopicNames.size > 0 && !activeTopicNames.has(topic.topicName)) continue
+
           addedTopics.add(topic.topicName)
 
           const daysSinceAttempt = topic.lastAttemptAt
@@ -136,7 +165,7 @@ export class RecommendationService {
           const priority = this.calculatePriority(topic, 'review_due')
 
           recommendations.push({
-            topicName: topic.topicName,
+            topicName: topic.topicName ?? 'Unknown',
             subjectName: topic.subjectName,
             reason: `Not practiced in ${daysSinceAttempt ?? '?'} days — review needed to maintain knowledge`,
             priority,
@@ -151,12 +180,18 @@ export class RecommendationService {
         // 3. New topics from user's exam preference (topics not yet attempted)
         if (userExamPref?.exam?.subjects) {
           for (const subject of userExamPref.exam.subjects) {
+            if (
+              userExamPref.subjectIds.length > 0 &&
+              !userExamPref.subjectIds.includes(subject.id)
+            ) {
+              continue
+            }
             for (const topic of subject.topics) {
               if (addedTopics.has(topic.name)) continue
 
               // Check if user has any performance data for this topic
               const existing = await prisma.topicPerformance.findUnique({
-                where: { userId_topicName: { userId, topicName: topic.name } },
+                where: { userId_topicId: { userId, topicId: topic.id } },
               })
 
               if (!existing) {
@@ -178,9 +213,7 @@ export class RecommendationService {
         }
 
         // Sort by priority (highest first) and limit
-        return recommendations
-          .sort((a, b) => b.priority - a.priority)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.priority - a.priority).slice(0, limit)
       },
       300 // Cache for 5 minutes
     )
@@ -197,20 +230,39 @@ export class RecommendationService {
     return cacheService.getOrSet(
       cacheService.recommendationTestKey(userId),
       async () => {
-        const weakTopics = await topicPerformanceService.getWeakTopics(userId, 5)
-        const weakTopicNames = weakTopics.map(t => t.topicName)
+        const [weakTopics, userExamPref] = await Promise.all([
+          topicPerformanceService.getWeakTopics(userId, 5),
+          prisma.userExamPreference.findUnique({
+            where: { userId },
+            select: { examId: true },
+          }),
+        ])
+        const weakTopicNames = weakTopics.map((t: { topicName: string }) => t.topicName)
+        const targetExamId = userExamPref?.examId
 
-        // Find tests that target weak areas
-        const tests = await prisma.test.findMany({
-          where: {
-            isPublished: true,
-            questions: {
-              some: {
-                tags: { hasSome: weakTopicNames.length > 0 ? weakTopicNames : ['general'] },
-              },
+        // Find tests that target weak areas and match the user's target exam
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const whereClause: any = {
+          isPublished: true,
+          questions: {
+            some: {
+              tags: { hasSome: weakTopicNames.length > 0 ? weakTopicNames : ['general'] },
             },
           },
-          include: {
+        }
+
+        if (targetExamId) {
+          whereClause.examId = targetExamId
+        }
+
+        const tests = await prisma.test.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            title: true,
+            difficulty: true,
+            mode: true,
+            timeLimit: true,
             questions: {
               select: { tags: true, id: true },
             },
@@ -222,16 +274,18 @@ export class RecommendationService {
         })
 
         // Score each test by how well it matches weak areas
-        const recommendations: TestRecommendation[] = tests.map(test => {
-          const questionTags = test.questions.flatMap(q => q.tags)
-          const matchingTags = questionTags.filter(t => weakTopicNames.includes(t))
-          const matchScore = questionTags.length > 0
-            ? Math.round((matchingTags.length / questionTags.length) * 100)
-            : 0
+        const recommendations: TestRecommendation[] = tests.map((test: { id: string; title: string; difficulty: string; mode: string; timeLimit: number | null; _count: { questions: number }; questions: Array<{ tags: string[]; id: string }> }) => {
+          const questionTags = test.questions.flatMap((q: { tags: string[] }) => q.tags)
+          const matchingTags = questionTags.filter((t: string) => weakTopicNames.includes(t))
+          const matchScore =
+            questionTags.length > 0
+              ? Math.round((matchingTags.length / questionTags.length) * 100)
+              : 0
 
-          const weakTopicMatches = matchingTags.length > 0
-            ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
-            : 'General practice test'
+          const weakTopicMatches =
+            matchingTags.length > 0
+              ? `Covers weak areas: ${[...new Set(matchingTags)].slice(0, 3).join(', ')}`
+              : 'General practice test'
 
           return {
             testId: test.id,
@@ -245,9 +299,7 @@ export class RecommendationService {
           }
         })
 
-        return recommendations
-          .sort((a, b) => b.matchScore - a.matchScore)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.matchScore - a.matchScore).slice(0, limit)
       },
       300
     )
@@ -288,20 +340,20 @@ export class RecommendationService {
           if (weekTopics.length === 0 && week > 1) break
 
           const focusTopicNames = weekTopics.map(t => t.topicName)
-          const avgAccuracy = weekTopics.length > 0
-            ? Math.round(weekTopics.reduce((s, t) => s + t.accuracy, 0) / weekTopics.length)
-            : mastery.overallAccuracy
+          const avgAccuracy =
+            weekTopics.length > 0
+              ? Math.round(weekTopics.reduce((s, t) => s + t.accuracy, 0) / weekTopics.length)
+              : mastery.overallAccuracy
 
           weeklyPlan.push({
             week,
-            focusTopics: focusTopicNames.length > 0
-              ? focusTopicNames
-              : ['Review all topics'],
+            focusTopics: focusTopicNames.length > 0 ? focusTopicNames : ['Review all topics'],
             recommendedTests: Math.max(3, weekTopics.length),
             targetAccuracy: Math.min(100, avgAccuracy + 15),
-            description: weekTopics.length > 0
-              ? `Focus on improving ${focusTopicNames.slice(0, 3).join(', ')}${focusTopicNames.length > 3 ? ` and ${focusTopicNames.length - 3} more` : ''}`
-              : 'Review and maintain current knowledge',
+            description:
+              weekTopics.length > 0
+                ? `Focus on improving ${focusTopicNames.slice(0, 3).join(', ')}${focusTopicNames.length > 3 ? ` and ${focusTopicNames.length - 3} more` : ''}`
+                : 'Review and maintain current knowledge',
           })
         }
 
@@ -330,9 +382,19 @@ export class RecommendationService {
     return cacheService.getOrSet(
       cacheService.recommendationSpacedKey(userId),
       async () => {
+        // Try fetching advanced DKT recommendations from the ML Engine
+        const mlRecs = await conductorClient.getDktRecommendations(userId)
+
         const topics = await prisma.topicPerformance.findMany({
           where: { userId, totalAttempts: { gte: 1 } },
           orderBy: { lastAttemptAt: 'asc' },
+          select: {
+            topicName: true,
+            subjectName: true,
+            accuracy: true,
+            totalAttempts: true,
+            lastAttemptAt: true,
+          },
         })
 
         const recommendations: StudyRecommendation[] = []
@@ -344,21 +406,41 @@ export class RecommendationService {
             (Date.now() - topic.lastAttemptAt.getTime()) / (24 * 60 * 60 * 1000)
           )
 
-          // Determine ideal review interval based on mastery
-          const intervalIndex = Math.min(
-            SPACED_REPETITION_INTERVALS.length - 1,
-            Math.floor(topic.accuracy / 20) // Higher accuracy = longer intervals
-          )
-          const idealInterval = SPACED_REPETITION_INTERVALS[intervalIndex]
+          let priority = 0
+          let reason = ''
 
-          if (daysSinceAttempt >= idealInterval) {
+          if (mlRecs) {
+            // Use ML predictions
+            const mlMatch = mlRecs.find(r => r.topic_name === topic.topicName)
+            if (mlMatch && mlMatch.priority > 50) {
+              priority = mlMatch.priority
+              reason = `ML predicts knowledge decay: expected accuracy dropped to ${Math.round(mlMatch.expected_accuracy)}%`
+            }
+          } else {
+            // Fallback to basic heuristics
+            const accuracyFactor = Math.floor(topic.accuracy / 25)
+            const attemptFactor = Math.min(2, Math.floor((topic.totalAttempts - 1) / 2))
+            const intervalIndex = Math.min(
+              SPACED_REPETITION_INTERVALS.length - 1,
+              accuracyFactor + attemptFactor
+            )
+            const idealInterval = SPACED_REPETITION_INTERVALS[intervalIndex]
+
+            if (daysSinceAttempt >= idealInterval) {
+              priority = Math.min(
+                100,
+                Math.round((daysSinceAttempt / idealInterval) * 50 + (100 - topic.accuracy) * 0.5)
+              )
+              reason = `Due for review (${daysSinceAttempt} days since last practice, recommended interval: ${idealInterval} days)`
+            }
+          }
+
+          if (priority > 0) {
             recommendations.push({
-              topicName: topic.topicName,
+              topicName: topic.topicName ?? 'Unknown',
               subjectName: topic.subjectName ?? undefined,
-              reason: `Due for review (${daysSinceAttempt} days since last practice, recommended interval: ${idealInterval} days)`,
-              priority: Math.min(100, Math.round(
-                (daysSinceAttempt / idealInterval) * 50 + (100 - topic.accuracy) * 0.5
-              )),
+              reason,
+              priority,
               currentAccuracy: topic.accuracy,
               targetAccuracy: Math.max(topic.accuracy, TARGET_ACCURACY),
               estimatedQuestions: 5,
@@ -368,9 +450,7 @@ export class RecommendationService {
           }
         }
 
-        return recommendations
-          .sort((a, b) => b.priority - a.priority)
-          .slice(0, limit)
+        return recommendations.sort((a, b) => b.priority - a.priority).slice(0, limit)
       },
       300
     )
@@ -378,16 +458,14 @@ export class RecommendationService {
 
   // ─── Private Helpers ─────────────────────────────────────────────────────────
 
-  private calculatePriority(
-    topic: TopicPerformanceData,
-    type: 'weak_area' | 'review_due'
-  ): number {
-    const accuracyWeight = (100 - topic.accuracy) / 100 // 0-1, higher for lower accuracy
+  private calculatePriority(topic: TopicPerformanceData, type: 'weak_area' | 'review_due'): number {
+    const accuracy = Number.isFinite(topic.accuracy) ? topic.accuracy : 0
+    const accuracyWeight = (100 - accuracy) / 100 // 0-1, higher for lower accuracy
     const daysSince = topic.lastAttemptAt
       ? (Date.now() - topic.lastAttemptAt.getTime()) / (24 * 60 * 60 * 1000)
       : 30
     const recencyWeight = Math.min(1, daysSince / 30) // 0-1, higher for older
-    const attemptWeight = Math.min(1, topic.totalAttempts / 20) // 0-1, higher for more attempts
+    const attemptWeight = Math.min(1, (topic.totalAttempts || 0) / 20) // 0-1, higher for more attempts
 
     let basePriority: number
     if (type === 'weak_area') {
@@ -407,6 +485,7 @@ export class RecommendationService {
    * Assumes 70% correct rate on new practice (learning curve).
    */
   private estimateQuestionsNeeded(currentAccuracy: number, targetAccuracy: number): number {
+    if (!Number.isFinite(currentAccuracy) || currentAccuracy < 0) return 10
     if (currentAccuracy >= targetAccuracy) return 0
     const gap = targetAccuracy - currentAccuracy
     // Roughly 2 questions per percentage point of improvement
@@ -414,6 +493,7 @@ export class RecommendationService {
   }
 
   private determineLevel(accuracy: number): string {
+    if (!Number.isFinite(accuracy) || accuracy < 0) return 'Beginner'
     if (accuracy >= 90) return 'Expert'
     if (accuracy >= 75) return 'Advanced'
     if (accuracy >= 60) return 'Intermediate'

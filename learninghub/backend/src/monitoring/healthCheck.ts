@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { prisma } from '../config'
+import v8 from 'v8'
 
 const startTime = Date.now()
 
@@ -58,13 +59,14 @@ function formatUptime(ms: number): string {
  *       503:
  *         description: System is degraded or unhealthy
  */
-export async function healthCheck(_req: Request, res: Response): Promise<void> {
+export async function healthCheck(req: Request, res: Response): Promise<void> {
   const uptimeMs = Date.now() - startTime
   const memUsage = process.memoryUsage()
   const heapUsedMB = Math.round((memUsage.heapUsed / 1024 / 1024) * 100) / 100
   const heapTotalMB = Math.round((memUsage.heapTotal / 1024 / 1024) * 100) / 100
   const rssMB = Math.round((memUsage.rss / 1024 / 1024) * 100) / 100
-  const percentUsed = Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100)
+  const heapLimit = v8.getHeapStatistics().heap_size_limit
+  const percentUsed = Math.round((memUsage.heapUsed / heapLimit) * 100)
 
   // Database check
   let dbStatus = 'ok'
@@ -86,14 +88,14 @@ export async function healthCheck(_req: Request, res: Response): Promise<void> {
   // Redis check
   const { cacheService } = await import('../services/CacheService')
   let redisStatus = 'ok'
-  let redisEnabled = process.env.REDIS_ENABLED === 'true'
+  const redisEnabled = process.env.REDIS_ENABLED === 'true'
   if (redisEnabled) {
-     const isRedisHealthy = await cacheService.healthCheck()
-     if (!isRedisHealthy) {
-       redisStatus = 'error'
-     }
+    const isRedisHealthy = await cacheService.healthCheck()
+    if (!isRedisHealthy) {
+      redisStatus = 'error'
+    }
   } else {
-     redisStatus = 'disabled'
+    redisStatus = 'disabled'
   }
 
   // Memory check
@@ -102,8 +104,17 @@ export async function healthCheck(_req: Request, res: Response): Promise<void> {
   // Overall status
   let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
   if (dbStatus === 'error') overallStatus = 'unhealthy'
-  else if (dbStatus === 'slow' || memoryStatus === 'warning' || redisStatus === 'error') overallStatus = 'degraded'
+  else if (dbStatus === 'slow' || memoryStatus === 'warning' || redisStatus === 'error')
+    overallStatus = 'degraded'
   else if (memoryStatus === 'critical') overallStatus = 'unhealthy'
+
+  const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPERADMIN'
+
+  if (!isAdmin) {
+    const statusCode = overallStatus === 'unhealthy' ? 503 : 200
+    res.status(statusCode).json({ status: overallStatus })
+    return
+  }
 
   const health: HealthStatus & { checks: { redis: { status: string } } } = {
     status: overallStatus,
@@ -165,20 +176,28 @@ export function livenessProbe(_req: Request, res: Response): void {
 export async function readinessProbe(_req: Request, res: Response): Promise<void> {
   try {
     await prisma.$queryRaw`SELECT 1`
-    
+
     let redisReady = true
     if (process.env.REDIS_ENABLED === 'true') {
-        const { cacheService } = await import('../services/CacheService')
-        redisReady = await cacheService.healthCheck()
+      const { cacheService } = await import('../services/CacheService')
+      redisReady = await cacheService.healthCheck()
     }
-    
+
     if (!redisReady) {
-        res.status(503).json({ status: 'not_ready', reason: 'redis_unavailable', timestamp: new Date().toISOString() })
-        return
+      res.status(503).json({
+        status: 'not_ready',
+        reason: 'redis_unavailable',
+        timestamp: new Date().toISOString(),
+      })
+      return
     }
 
     res.status(200).json({ status: 'ready', timestamp: new Date().toISOString() })
   } catch {
-    res.status(503).json({ status: 'not_ready', reason: 'database_unavailable', timestamp: new Date().toISOString() })
+    res.status(503).json({
+      status: 'not_ready',
+      reason: 'database_unavailable',
+      timestamp: new Date().toISOString(),
+    })
   }
 }

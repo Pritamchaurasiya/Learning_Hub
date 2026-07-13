@@ -26,11 +26,7 @@ interface ExecutionRequest {
 
 interface ExecutionResult {
   status:
-    | 'accepted'
-    | 'wrong_answer'
-    | 'compilation_error'
-    | 'runtime_error'
-    | 'time_limit_exceeded'
+    'accepted' | 'wrong_answer' | 'compilation_error' | 'runtime_error' | 'time_limit_exceeded'
   executionTime: number
   memoryUsed: number
   message: string
@@ -38,7 +34,7 @@ interface ExecutionResult {
   testCasesTotal: number
 }
 
-const PISTON_API_URL = process.env.PISTON_API_URL ?? 'https://emkc.org/api/v2/piston'
+const PISTON_API_URL = process.env.PISTON_API_URL ?? 'http://localhost:2000/api/v2'
 
 const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   python: { language: 'python', version: '3.10.0' },
@@ -55,8 +51,12 @@ const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
 
 import crypto from 'crypto'
 import { cacheService } from './CacheService'
+import logger from '../utils/logger'
 
 export class CodeSandboxService {
+  private static consecutiveFailures = 0
+  private static circuitOpenUntil = 0
+
   static async execute(req: ExecutionRequest): Promise<ExecutionResult> {
     const langConfig = LANGUAGE_MAP[req.language.toLowerCase()]
     if (!langConfig) {
@@ -94,8 +94,14 @@ export class CodeSandboxService {
     let maxMemory = 0
 
     for (let i = 0; i < req.testCases.length; i++) {
+      // eslint-disable-next-line security/detect-object-injection
       const tc = req.testCases[i]
-      const result = await CodeSandboxService.runTestCase(langConfig, req.code, tc.input, req.timeLimit)
+      const result = await CodeSandboxService.runTestCase(
+        langConfig,
+        req.code,
+        tc.input,
+        req.timeLimit
+      )
 
       if (result.status === 'time_limit_exceeded') {
         return {
@@ -169,6 +175,16 @@ export class CodeSandboxService {
     executionTime: number
     memoryUsed: number
   }> {
+    if (Date.now() < CodeSandboxService.circuitOpenUntil) {
+      return {
+        status: 'runtime_error',
+        output: '',
+        message: 'Code execution service is temporarily unavailable (circuit open)',
+        executionTime: 0,
+        memoryUsed: 0,
+      }
+    }
+
     try {
       const timeoutSeconds = Math.max(1, Math.floor(timeLimit / 1000))
 
@@ -188,6 +204,7 @@ export class CodeSandboxService {
       })
 
       if (!response.ok) {
+        CodeSandboxService.recordFailure()
         return {
           status: 'runtime_error',
           output: '',
@@ -198,6 +215,7 @@ export class CodeSandboxService {
       }
 
       const data = await response.json()
+      CodeSandboxService.recordSuccess()
 
       if (data.compile && data.compile.code !== 0) {
         return {
@@ -246,6 +264,7 @@ export class CodeSandboxService {
           memoryUsed: 0,
         }
       }
+      CodeSandboxService.recordFailure()
       return {
         status: 'runtime_error',
         output: '',
@@ -253,6 +272,24 @@ export class CodeSandboxService {
         executionTime: 0,
         memoryUsed: 0,
       }
+    }
+  }
+
+  private static recordFailure() {
+    this.consecutiveFailures++
+    if (this.consecutiveFailures >= 5) {
+      this.circuitOpenUntil = Date.now() + 60000 // Open for 1 minute
+      logger.error(
+        `[CodeSandbox] Circuit breaker opened due to ${this.consecutiveFailures} consecutive failures.`
+      )
+    }
+  }
+
+  private static recordSuccess() {
+    if (this.circuitOpenUntil > 0 || this.consecutiveFailures > 0) {
+      this.consecutiveFailures = 0
+      this.circuitOpenUntil = 0
+      logger.info('[CodeSandbox] Circuit breaker closed. Service restored.')
     }
   }
 

@@ -101,4 +101,10 @@ export function cleanupExpiredRateLimits(): void {
 const cleanupInterval = setInterval(cleanupExpiredRateLimits, 5 * 60 * 1000)
 cleanupInterval.unref?.()
 
+export function stopUserRateLimitCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval)
+  }
+}
+
 export default createUserRateLimit

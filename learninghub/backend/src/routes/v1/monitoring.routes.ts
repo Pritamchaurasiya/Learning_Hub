@@ -1,6 +1,5 @@
 import { Router } from 'express'
-import { authenticate, optionalAuth } from '../../middleware/authMiddleware'
-import { requireAdmin } from '../../middleware/roleMiddleware'
+import { authenticate, optionalAuth, authorizeAdmin } from '../../middleware/authMiddleware'
 import {
   deepHealthCheck,
   getMetrics,
@@ -12,9 +11,9 @@ import {
 const router = Router()
 
 router.get('/health', optionalAuth, deepHealthCheck)
-router.get('/metrics', authenticate, requireAdmin, getMetrics)
-router.get('/database', authenticate, requireAdmin, getDatabaseStatus)
-router.get('/cache', authenticate, requireAdmin, getCacheStatus)
-router.get('/processes', authenticate, requireAdmin, getProcesses)
+router.get('/metrics', authenticate, authorizeAdmin, getMetrics)
+router.get('/database', authenticate, authorizeAdmin, getDatabaseStatus)
+router.get('/cache', authenticate, authorizeAdmin, getCacheStatus)
+router.get('/processes', authenticate, authorizeAdmin, getProcesses)
 
 export default router

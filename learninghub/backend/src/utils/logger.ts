@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename */
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 import fs from 'fs'
@@ -27,6 +28,7 @@ const getLogLevel = (): string => {
     }
 
     if (numericLevel in numericLevelMap) {
+      // eslint-disable-next-line security/detect-object-injection
       return numericLevelMap[numericLevel]
     }
   }
@@ -124,7 +126,22 @@ const LOG_LEVEL_PRIORITY: Record<AppLogLevel, LogLevel> = {
 
 const isLevelEnabled = (level: AppLogLevel): boolean => {
   const configured = getLogLevel() as AppLogLevel
+
+  // eslint-disable-next-line security/detect-object-injection
   return LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[configured]
+}
+
+const safeStringify = (obj: unknown): string => {
+  const cache = new Set()
+  return JSON.stringify(obj, (_key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (cache.has(value)) {
+        return '[Circular]'
+      }
+      cache.add(value)
+    }
+    return value
+  })
 }
 
 const emitTestLog = (
@@ -145,13 +162,14 @@ const emitTestLog = (
     message,
     ...fields,
   }
-  const serialized = JSON.stringify(payload)
+  const serialized = safeStringify(payload)
 
   if (level === 'error') {
     console.error(serialized)
   } else if (level === 'warn') {
     console.warn(serialized)
   } else {
+    // eslint-disable-next-line no-console
     console.log(serialized)
   }
 }
@@ -163,8 +181,9 @@ const emitTestAuditLog = (
 ): void => {
   if (!process.env.JEST_WORKER_ID || process.env.LOG_TO_CONSOLE !== 'true') return
 
+  // eslint-disable-next-line no-console
   console.log(
-    JSON.stringify({
+    safeStringify({
       type: 'AUDIT',
       timestamp: new Date().toISOString(),
       action,

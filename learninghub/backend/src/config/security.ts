@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp */
 import rateLimit from 'express-rate-limit'
 import { Request, Response } from 'express'
 
@@ -39,26 +40,6 @@ export const mfaRateLimit = rateLimit({
 })
 
 // Rate limiting configurations
-export const generalRateLimit = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_GENERAL_WINDOW_MS ?? '900000', 10), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_GENERAL_MAX ?? '100', 10),
-  message: {
-    status: 'error',
-    message: 'Too many requests from this IP, please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      status: 'error',
-      message: 'Too many requests from this IP, please try again later.',
-      code: 'RATE_LIMIT_EXCEEDED',
-      retryAfter: Math.ceil((req.rateLimit?.resetTime?.getTime() ?? Date.now()) / 1000),
-    })
-  },
-})
-
 export const authRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS ?? '900000', 10), // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_AUTH_MAX ?? '5', 10),
@@ -96,7 +77,11 @@ export const adminRateLimit = rateLimit({
 
 export const csrfRateLimit = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_CSRF_WINDOW_MS ?? '60000', 10), // 1 minute
-  max: parseInt(process.env.RATE_LIMIT_CSRF_MAX ?? '20', 10),
+  max: parseInt(process.env.RATE_LIMIT_CSRF_MAX ?? '10', 10),
+  keyGenerator: req => {
+    const sessionId = req.headers['x-session-id']
+    return typeof sessionId === 'string' ? `csrf:${sessionId}` : (req.ip ?? 'unknown')
+  },
   message: {
     status: 'error',
     message: 'Too many CSRF token requests, please try again later.',
@@ -104,7 +89,7 @@ export const csrfRateLimit = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { xForwardedForHeader: false },
+  validate: { xForwardedForHeader: false, keyGeneratorIpFallback: false },
 })
 
 // CORS configuration — supports comma-separated origins for multi-domain production
@@ -202,6 +187,7 @@ export const helmetConfig = {
 
 // JWT configuration — FAILS if secrets are not set (no insecure defaults)
 const getEnvOrThrow = (envVar: string, hint: string): string => {
+  // eslint-disable-next-line security/detect-object-injection
   const value = process.env[envVar]
   if (!value || value.length < 32) {
     throw new Error(`${envVar} must be set and at least 32 characters long. ${hint}`)
@@ -316,7 +302,6 @@ export const validatePasswordStrength = (
 export const sanitizeInput = (input: string): string => {
   return input
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control characters (preserve tab/newline)
-    .replace(/[<>]/g, '') // Remove angle brackets (XSS prevention)
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
     .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities

@@ -1,18 +1,19 @@
+import { NotificationType as PrismaNotificationType } from '@prisma/client'
 import { prisma } from '../config/database'
 import logger from '../utils/logger'
 import { Server as SocketIOServer } from 'socket.io'
 
 export enum NotificationType {
-  ACHIEVEMENT = 'achievement',
-  COURSE_COMPLETE = 'course_complete',
-  STREAK = 'streak',
-  REMINDER = 'reminder',
-  CONTEST_START = 'contest_start',
-  CONTEST_RESULT = 'contest_result',
-  SUBSCRIPTION = 'subscription',
-  SYSTEM = 'system',
-  TEST_RESULT = 'test_result',
-  LEVEL_UP = 'level_up',
+  ACHIEVEMENT = 'ACHIEVEMENT',
+  COURSE_COMPLETE = 'COURSE_COMPLETE',
+  STREAK = 'STREAK',
+  REMINDER = 'REMINDER',
+  CONTEST_START = 'CONTEST_START',
+  CONTEST_RESULT = 'CONTEST_RESULT',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  SYSTEM = 'SYSTEM',
+  TEST_RESULT = 'TEST_RESULT',
+  LEVEL_UP = 'LEVEL_UP',
 }
 
 export interface CreateNotificationData {
@@ -30,12 +31,13 @@ export class NotificationService {
     this.io = io
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(data: CreateNotificationData): Promise<any> {
     try {
       const notification = await prisma.notification.create({
         data: {
           userId: data.userId,
-          type: data.type,
+          type: data.type as PrismaNotificationType,
           title: data.title,
           message: data.message,
           actionUrl: data.actionUrl,
@@ -69,12 +71,14 @@ export class NotificationService {
     page: number = 1,
     limit: number = 20,
     filter?: { isRead?: boolean; type?: string }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<{ notifications: any[]; total: number; unreadCount: number }> {
     const skip = (page - 1) * limit
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { userId }
     if (filter?.isRead !== undefined) where.isRead = filter.isRead
-    if (filter?.type) where.type = filter.type
+    if (filter?.type) where.type = filter.type.toUpperCase()
 
     const [notifications, total, unreadCount] = await Promise.all([
       prisma.notification.findMany({
@@ -90,6 +94,7 @@ export class NotificationService {
     return { notifications, total, unreadCount }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async markAsRead(notificationId: string, userId: string): Promise<any> {
     const notification = await prisma.notification.findUnique({
       where: { id: notificationId },
@@ -149,6 +154,7 @@ export class NotificationService {
   }
 
   // Convenience methods for common notification types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendAchievementNotification(userId: string, achievementName: string): Promise<any> {
     return this.create({
       userId,
@@ -159,6 +165,7 @@ export class NotificationService {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendCourseCompleteNotification(userId: string, courseTitle: string): Promise<any> {
     return this.create({
       userId,
@@ -169,6 +176,7 @@ export class NotificationService {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendStreakNotification(userId: string, streakCount: number): Promise<any> {
     return this.create({
       userId,
@@ -179,6 +187,7 @@ export class NotificationService {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendContestStartNotification(userId: string, contestTitle: string): Promise<any> {
     return this.create({
       userId,
@@ -193,6 +202,7 @@ export class NotificationService {
     userId: string,
     contestTitle: string,
     rank: number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     return this.create({
       userId,
@@ -208,6 +218,7 @@ export class NotificationService {
     testTitle: string,
     score: number,
     passed: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     return this.create({
       userId,
@@ -218,6 +229,7 @@ export class NotificationService {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendLevelUpNotification(userId: string, newLevel: number): Promise<any> {
     return this.create({
       userId,
@@ -228,6 +240,7 @@ export class NotificationService {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendSubscriptionNotification(userId: string, tierName: string): Promise<any> {
     return this.create({
       userId,

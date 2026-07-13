@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
+import { validate } from '../../middleware/validationMiddleware'
+import { bookmarkQuestionSchema, removeBookmarkSchema } from '../../validations/schemas'
 import {
   bookmarkQuestion,
   getBookmarkedQuestions,
@@ -9,7 +11,7 @@ import {
 const router = Router()
 
 router.get('/', authenticate, getBookmarkedQuestions)
-router.post('/', authenticate, bookmarkQuestion)
-router.delete('/:questionId', authenticate, removeBookmark)
+router.post('/', authenticate, validate(bookmarkQuestionSchema), bookmarkQuestion)
+router.delete('/:questionId', authenticate, validate(removeBookmarkSchema), removeBookmark)
 
 export default router

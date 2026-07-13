@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter } from '../../middleware/rateLimiter'
-import { checkUsageLimit } from '../../middleware/subscriptionMiddleware'
+
 import {
   analyzeLearningPath,
   getTutorResponse,
@@ -58,12 +58,7 @@ router.post(
 
 // AI Chat Session Routes
 router.get('/tutor/sessions', authenticate, getChatSessions)
-router.post(
-  '/tutor/sessions',
-  authenticate,
-  validate(createChatSessionSchema),
-  createChatSession
-)
+router.post('/tutor/sessions', authenticate, validate(createChatSessionSchema), createChatSession)
 router.get('/tutor/sessions/:id', authenticate, getChatSessionById)
 router.delete('/tutor/sessions/:id', authenticate, deleteChatSession)
 
@@ -71,7 +66,6 @@ router.post(
   '/generate-test',
   authenticate,
   aiTestRateLimit,
-  checkUsageLimit('aiGenerations'),
   validate(generatePracticeTestSchema),
   generatePracticeTest
 )
@@ -79,7 +73,6 @@ router.post(
   '/generate-weak-area-test',
   authenticate,
   aiTestRateLimit,
-  checkUsageLimit('aiGenerations'),
   validate(generatePracticeTestSchema),
   generateWeakAreaTest
 )

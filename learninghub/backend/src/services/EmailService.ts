@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
-import type { Transporter } from 'nodemailer'
 import logger from '../utils/logger'
+import { config } from '../utils/env'
 
 export interface EmailOptions {
   to: string
@@ -10,7 +10,8 @@ export interface EmailOptions {
 }
 
 export class EmailService {
-  private transporter: Transporter | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private transporter: any = null
   private isConfigured = false
 
   constructor() {
@@ -80,7 +81,7 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, token: string, username?: string): Promise<boolean> {
-    const verificationUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/verify-email?token=${token}`
+    const verificationUrl = `${config.frontendUrl}/verify-email?token=${token}`
     const html = this.templates.verification(username ?? 'User', verificationUrl)
 
     return this.send({
@@ -91,7 +92,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string, username?: string): Promise<boolean> {
-    const resetUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/reset-password?token=${token}`
+    const resetUrl = `${config.frontendUrl}/reset-password?token=${token}`
     const html = this.templates.passwordReset(username ?? 'User', resetUrl)
 
     return this.send({
@@ -102,7 +103,7 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(to: string, username?: string): Promise<boolean> {
-    const dashboardUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/dashboard`
+    const dashboardUrl = `${config.frontendUrl}/dashboard`
     const html = this.templates.welcome(username ?? 'User', dashboardUrl)
 
     return this.send({
@@ -118,7 +119,7 @@ export class EmailService {
     startTime: Date,
     username?: string
   ): Promise<boolean> {
-    const contestUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:5173'}/contests`
+    const contestUrl = `${config.frontendUrl}/contests`
     const html = this.templates.contestNotification(
       username ?? 'User',
       contestTitle,

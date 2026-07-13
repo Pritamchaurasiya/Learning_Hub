@@ -1,31 +1,34 @@
 import { Router } from 'express'
-import { authenticate } from '../../middleware/authMiddleware'
-import { createRateLimiter } from '../../middleware/rateLimiter'
+import { authenticate, optionalAuth } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
+import { createRateLimiter } from '../../middleware/rateLimiter'
+import { submitProblemSchema } from '../../validations/schemas'
 import {
   listProblems,
-  getProblemDetails,
-  submitProblemSolution,
-  getProblemSubmissions,
+  getProblem,
+  submitSolution,
+  getSubmissions,
 } from '../../controllers/problemsController'
-import { submitProblemSchema } from '../../validations/schemas'
 
 const router = Router()
 
-router.get('/', listProblems)
-router.get('/:slug', getProblemDetails)
-router.get('/:id/submissions', authenticate, getProblemSubmissions)
+// Code execution is resource-intensive (sandboxed runtime). Limit per-user to prevent DoS.
+const codeExecutionLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 15,
+  keyPrefix: 'problem-exec',
+  message: 'Too many code submissions. Please wait before submitting again.',
+})
+
+router.get('/', optionalAuth, listProblems)
+router.get('/:slug', optionalAuth, getProblem)
 router.post(
   '/:id/submit',
   authenticate,
-  createRateLimiter({
-    windowMs: 10 * 1000,
-    max: 2,
-    keyPrefix: 'sandbox',
-    message: 'Too many code execution requests. Please wait a few seconds before trying again.',
-  }),
+  codeExecutionLimiter,
   validate(submitProblemSchema),
-  submitProblemSolution
+  submitSolution
 )
+router.get('/:id/submissions', authenticate, getSubmissions)
 
 export default router

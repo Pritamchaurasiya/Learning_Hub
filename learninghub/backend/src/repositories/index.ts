@@ -1,12 +1,12 @@
 import type { PrismaClient } from '@prisma/client'
 import { UserRepository } from './UserRepository'
-import { CourseRepository } from './CourseRepository'
+import { TestRepository } from './TestRepository'
 import { BaseRepository, QueryParams, PaginatedResult } from './BaseRepository'
 
 // Export all repositories
 export * from './BaseRepository'
 export * from './UserRepository'
-export * from './CourseRepository'
+export * from './TestRepository'
 
 // Repository factory for dependency injection
 export class RepositoryFactory {
@@ -19,11 +19,11 @@ export class RepositoryFactory {
     return this.instances.get('userRepository') as UserRepository
   }
 
-  static getCourseRepository(prisma: PrismaClient): CourseRepository {
-    if (!this.instances.has('courseRepository')) {
-      this.instances.set('courseRepository', new CourseRepository(prisma))
+  static getTestRepository(prisma: PrismaClient): TestRepository {
+    if (!this.instances.has('testRepository')) {
+      this.instances.set('testRepository', new TestRepository(prisma))
     }
-    return this.instances.get('courseRepository') as CourseRepository
+    return this.instances.get('testRepository') as TestRepository
   }
 
   static clear(): void {
@@ -35,4 +35,4 @@ export class RepositoryFactory {
 export type { QueryParams, PaginatedResult }
 
 // Default exports for convenience
-export { UserRepository, CourseRepository, BaseRepository }
+export { UserRepository, BaseRepository }

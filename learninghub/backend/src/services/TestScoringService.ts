@@ -2,10 +2,11 @@ import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { AttemptStatus } from '@prisma/client'
 import { normalizeAnswerIds, answersMatch } from '../utils/testsHelper'
-import { topicPerformanceService, QuestionResult } from './TopicPerformanceService'
+import { QuestionResult } from './TopicPerformanceService'
 import { growthEngineService } from './GrowthEngineService'
 import { jobQueueService } from './JobQueueService'
-import { aiTestService } from './AITestService'
+import { conductorClient } from './ml/ConductorClient'
+import { webSocketService } from './WebSocketService'
 
 export class TestScoringService {
   /**
@@ -60,14 +61,16 @@ export class TestScoringService {
           isDuplicate: true,
           result: alreadyCompleted,
           test,
-          correctCount: undefined,
-          incorrectCount: undefined,
+          correctCount: 0,
+          incorrectCount: 0,
+          questionResults: [],
         }
       }
+      throw new Error('Test attempt in unexpected state: record not found')
     }
 
     const timeLimitSeconds = test.timeLimit * 60
-    let actualTimeTaken = typeof timeTaken === 'number' ? timeTaken : 0
+    let actualTimeTaken = typeof timeTaken === 'number' ? Math.max(0, timeTaken) : 0
 
     if (existingResult?.startedAt) {
       const serverTimeTaken = Math.floor((Date.now() - existingResult.startedAt.getTime()) / 1000)
@@ -83,75 +86,76 @@ export class TestScoringService {
     let correctCount = 0
     let incorrectCount = 0
 
-    const questionResults = await Promise.all(test.questions.map(async q => {
-      const correctOptions = q.options.filter(o => o.isCorrect)
-      const userAnswerId = answers[q.id]
-      const submittedIds = normalizeAnswerIds(userAnswerId)
-      const hasAnswer = submittedIds.length > 0 || (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
+    const questionResults = await Promise.all(
+      test.questions.map(async (q: any) => {
+        const correctOptions = q.options.filter((o: any) => o.isCorrect)
+        const userAnswerId = answers[q.id]
+        const submittedIds = normalizeAnswerIds(userAnswerId)
+        const hasAnswer =
+          submittedIds.length > 0 ||
+          (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
 
-      let isCorrect = false
-      let marksObtained = 0
-      let aiFeedback = undefined
+        let isCorrect = false
+        let marksObtained = 0
+        let aiFeedback = undefined
 
-      if (hasAnswer) {
-        if (q.type === 'subjective') {
-          // Send raw string answer to AI Grading Engine
-          const answerText = Array.isArray(userAnswerId) ? userAnswerId[0] : String(userAnswerId ?? '')
-          const grading = await aiTestService.gradeSubjectiveAnswer(q.text, answerText, q.points)
-          marksObtained = grading.score
-          isCorrect = grading.score >= (q.points * 0.5) // Pass if score is 50%+
-          aiFeedback = grading.feedback
-        } else if (correctOptions.length > 0) {
-          if (q.type === 'multiple_select') {
-            isCorrect = answersMatch(
-              submittedIds,
-              correctOptions.map(o => o.id)
-            )
-          } else {
-            isCorrect = submittedIds[0] === correctOptions[0].id
+        if (hasAnswer) {
+          if (q.type === 'SUBJECTIVE') {
+            // Instead of blocking to grade here, we mark as pending and dispatch an AI job later.
+            marksObtained = 0
+            isCorrect = false // Will be updated by async worker
+            aiFeedback = 'Grading in progress by AI worker...'
+          } else if (correctOptions.length > 0) {
+            if (q.type === 'MSQ') {
+              isCorrect = answersMatch(
+                submittedIds,
+                correctOptions.map((o: any) => o.id)
+              )
+            } else {
+              isCorrect = submittedIds[0] === correctOptions[0].id
+            }
+            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
           }
-          marksObtained = isCorrect ? q.points : -test.negativeMarks
         }
-      }
 
-      if (q.type !== 'subjective') {
-        if (isCorrect) {
-          score += q.points
-          correctCount++
+        if (q.type !== 'SUBJECTIVE') {
+          score += marksObtained
+          if (isCorrect) {
+            correctCount++
+          } else if (hasAnswer) {
+            incorrectCount++
+          }
         } else if (hasAnswer) {
-          incorrectCount++
-          if (test.negativeMarks > 0) score -= test.negativeMarks
+          score += marksObtained
+          if (isCorrect) correctCount++
+          else incorrectCount++
         }
-      } else if (hasAnswer) {
-        score += marksObtained
-        if (isCorrect) correctCount++
-        else incorrectCount++
-      }
 
-      return {
-        question_id: q.id,
-        question_text: q.text,
-        question_type: q.type,
-        selected_options: submittedIds.map(id => ({ id })),
-        correct_options: correctOptions.map(o => ({ id: o.id, text: o.text })),
-        is_correct: isCorrect,
-        marks_obtained: marksObtained,
-        explanation: aiFeedback ? aiFeedback : q.explanation,
-        time_spent: 0,
-        is_flagged: false,
-        confidence: confidences ? confidences[q.id] : undefined,
-        topic: q.tags?.[0] ?? 'General',
-      }
-    }))
+        return {
+          question_id: q.id,
+          question_text: q.text,
+          question_type: q.type,
+          selected_options: submittedIds.map(id => ({ id })),
+          correct_options: correctOptions.map((o: any) => ({ id: o.id, text: o.text })),
+          is_correct: isCorrect,
+          marks_obtained: marksObtained,
+          explanation: aiFeedback ?? q.explanation,
+          time_spent: 0,
+          is_flagged: false,
+          confidence: confidences ? confidences[q.id] : undefined,
+          topic: q.tags?.[0] ?? 'General',
+        }
+      })
+    )
 
     if (isOverTime) score = Math.floor(score * 0.75)
     score = Math.max(0, score)
 
-    const totalPossibleScore = test.questions.reduce((acc, q) => acc + q.points, 0)
+    const totalPossibleScore = test.questions.reduce((acc: number, q: any) => acc + q.points, 0)
     const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
     const passed = percentage >= test.passingScore
 
-    const result = await prisma.$transaction(async tx => {
+    const result = await prisma.$transaction(async (tx: any) => {
       let txExistingResult = null
       if (existingResult?.id) {
         txExistingResult = await tx.testResult.findUnique({
@@ -163,8 +167,9 @@ export class TestScoringService {
         return {
           isDuplicate: true,
           result: txExistingResult,
-          correctCount: undefined,
-          incorrectCount: undefined,
+          correctCount: 0,
+          incorrectCount: 0,
+          questionResults: [],
         }
       }
 
@@ -174,13 +179,11 @@ export class TestScoringService {
         percentage,
         passed,
         timeTaken: actualTimeTaken,
-        answers: answers as any,
-        questionResults: questionResults as any,
         completedAt: new Date(),
         status: finalStatus,
       }
 
-      let resultRecord
+      let resultRecord: any
       if (txExistingResult) {
         resultRecord = await tx.testResult.update({
           where: { id: txExistingResult.id },
@@ -192,15 +195,67 @@ export class TestScoringService {
           orderBy: { attemptNumber: 'desc' },
           select: { attemptNumber: true },
         })
-        const attemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
-        resultRecord = await tx.testResult.create({
-          data: { userId, testId, ...submissionData, attemptNumber },
-        })
+        let attemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
+
+        // Retry on unique constraint violation (attemptNumber race condition)
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            resultRecord = await tx.testResult.create({
+              data: { userId, testId, ...submissionData, attemptNumber },
+            })
+            break
+          } catch (error) {
+            const err = error as Error & { code?: string }
+            if (err.code === 'P2002' && attempt < 3) {
+              attemptNumber++
+              continue
+            }
+            throw error
+          }
+        }
       }
 
-      if (passed) {
-        // We now delegate XP handling fully to GrowthEngineService.
-        // We don't do inline XP increments anymore to maintain single responsibility.
+      // Sort questionResults by question_id to prevent PostgreSQL transaction deadlocks,
+      // then batch upsert in chunks to reduce round-trips while maintaining ordering safety.
+      const sortedResults = [...questionResults].sort((a, b) =>
+        a.question_id.localeCompare(b.question_id)
+      )
+      const CHUNK_SIZE = 10
+
+      for (let i = 0; i < sortedResults.length; i += CHUNK_SIZE) {
+        const chunk = sortedResults.slice(i, i + CHUNK_SIZE)
+        await Promise.all(
+          chunk.map(qr =>
+            tx.testAttemptAnswer.upsert({
+              where: {
+                testResultId_questionId: {
+                  testResultId: resultRecord.id,
+                  questionId: qr.question_id,
+                },
+              },
+              update: {
+                selectedOptions: qr.selected_options.map((o: any) => o.id),
+                textAnswer:
+                  qr.question_type === 'SUBJECTIVE' ? String(answers[qr.question_id] ?? '') : null,
+                isCorrect: qr.is_correct,
+                marksObtained: qr.marks_obtained,
+                timeSpent: qr.time_spent,
+                aiFeedback: qr.explanation,
+              },
+              create: {
+                testResultId: resultRecord.id,
+                questionId: qr.question_id,
+                selectedOptions: qr.selected_options.map((o: any) => o.id),
+                textAnswer:
+                  qr.question_type === 'SUBJECTIVE' ? String(answers[qr.question_id] ?? '') : null,
+                isCorrect: qr.is_correct,
+                marksObtained: qr.marks_obtained,
+                timeSpent: qr.time_spent,
+                aiFeedback: qr.explanation,
+              },
+            })
+          )
+        )
       }
 
       return { isDuplicate: false, result: resultRecord }
@@ -208,40 +263,93 @@ export class TestScoringService {
 
     const newResult = result.isDuplicate ? undefined : result.result
     if (newResult) {
+      // Dispatch background jobs for Subjective questions now that the database transaction is fully committed
+
+      for (const qr of questionResults) {
+        if (qr.question_type === 'SUBJECTIVE') {
+          const answerText = String(answers[qr.question_id] ?? '')
+          await jobQueueService
+            .addAIJob({
+              userId,
+              operation: 'GRADE_SUBJECTIVE',
+              params: {
+                testResultId: newResult.id,
+                questionId: qr.question_id,
+                questionText: qr.question_text,
+                answerText,
+                points: test.questions.find((q: any) => q.id === qr.question_id)?.points ?? 0,
+                testId,
+              },
+            })
+            .catch(e => {
+              logger.error('[TestScoringService] Failed to dispatch AI grading job', e as Error)
+            })
+        }
+      }
+
       // Fire-and-forget analytics and growth triggers via background job queues
-      this.handlePostTestEvents(userId, test, newResult.id, questionResults, passed, actualTimeTaken, score).catch(e => {
-        logger.error('[TestScoringService] Post-test job queue dispatch failed', e instanceof Error ? e : new Error(String(e)))
+      this.handlePostTestEvents(
+        userId,
+        test,
+        newResult.id,
+        questionResults,
+        passed,
+        actualTimeTaken,
+        score
+      ).catch(e => {
+        logger.error(
+          '[TestScoringService] Post-test job queue dispatch failed',
+          e instanceof Error ? e : new Error(String(e))
+        )
       })
+
+      // Notify client in real-time that their test expired
+      if (finalStatus === 'TIMEOUT') {
+        try {
+          webSocketService.notifyUser(userId, 'test_timeout', {
+            testId,
+            attemptId: newResult.id,
+            score,
+            percentage,
+          })
+        } catch (err) {
+          logger.error('[TestScoringService] Failed to notify timeout', err as Error)
+        }
+      }
     }
 
-    return { ...result, test, correctCount, incorrectCount }
+    return { ...result, test, correctCount, incorrectCount, questionResults }
   }
 
   private async handlePostTestEvents(
     userId: string,
-    test: any,
+    test: {
+      id: string
+      subjectId?: string | null
+      questions: Array<{ id: string; tags: string[]; points: number; difficulty?: number }>
+    },
     testResultId: string,
-    questionResults: any[],
+    questionResults: Array<{ question_id: string; is_correct: boolean; time_spent?: number }>,
     passed: boolean,
     timeTakenSeconds: number,
     score: number
   ) {
     // 1. Dispatch Analytics Job
     const topicUpdates: QuestionResult[] = questionResults.map(qr => {
-      const q = test.questions.find((q: any) => q.id === qr.question_id)
+      const q = test.questions.find(q => q.id === qr.question_id)
       return {
         questionId: qr.question_id,
         topicName: q?.tags?.[0] ?? 'General',
-        subjectName: test.subjectId,
+        subjectName: test.subjectId ?? undefined,
         isCorrect: qr.is_correct,
-        timeSpentSeconds: qr.time_spent || 0,
+        timeSpentSeconds: qr.time_spent ?? 0,
       }
     })
-    
+
     await jobQueueService.addAnalyticsJob({
       userId,
       testResultId,
-      questionResults: topicUpdates
+      questionResults: topicUpdates,
     })
 
     // 2. Dispatch Growth Jobs
@@ -250,17 +358,17 @@ export class TestScoringService {
     if (userStats === 1) {
       await jobQueueService.addGrowthJob({ userId, action: 'first_test' })
     }
-    
+
     // Base test completed XP
     await jobQueueService.addGrowthJob({ userId, action: 'test_completed' })
-    
+
     // Passing XP
     if (passed) {
       await jobQueueService.addGrowthJob({ userId, action: 'test_passed' })
     }
 
     // Perfect score XP
-    const totalPossibleScore = test.questions.reduce((acc: number, q: any) => acc + q.points, 0)
+    const totalPossibleScore = test.questions.reduce((acc: number, q) => acc + q.points, 0)
     if (score >= totalPossibleScore && totalPossibleScore > 0) {
       await jobQueueService.addGrowthJob({ userId, action: 'perfect_score' })
     }
@@ -270,19 +378,43 @@ export class TestScoringService {
     if (timeTakenMinutes > 0) {
       await this.retryAsync(
         () => growthEngineService.updateDailyGoal(userId, timeTakenMinutes),
-        'updateDailyGoal', userId
+        'updateDailyGoal',
+        userId
       )
     }
 
     // Streaks and Achievements — critical for user retention, must not silently fail
     await this.retryAsync(
       () => growthEngineService.checkAndUpdateStreak(userId),
-      'checkAndUpdateStreak', userId
+      'checkAndUpdateStreak',
+      userId
     )
     await this.retryAsync(
       () => growthEngineService.checkAchievements(userId),
-      'checkAchievements', userId
+      'checkAchievements',
+      userId
     )
+
+    // 4. Anomaly detection via Conductor ML
+    try {
+      const timeVarianceData = questionResults.map(qr => ({
+        questionId: qr.question_id,
+        timeSpentSeconds: qr.time_spent ?? 0,
+        difficulty: test.questions.find(q => q.id === qr.question_id)?.difficulty ?? 0.5,
+      }))
+      const anomaly = await conductorClient.detectTestAnomaly(testResultId, timeVarianceData)
+      if (anomaly && anomaly.isSuspicious) {
+        logger.warn(
+          `[Anomaly] Test result ${testResultId} flagged as suspicious. Confidence: ${anomaly.confidence}`
+        )
+        // If we had a schema column, we'd mark it: await prisma.testResult.update({ where: { id: testResultId }, data: { isFlagged: true }})
+      }
+    } catch (e) {
+      logger.error(
+        '[TestScoringService] Anomaly detection failed',
+        e instanceof Error ? e : new Error(String(e))
+      )
+    }
   }
 
   /**
@@ -290,6 +422,7 @@ export class TestScoringService {
    * Logs structured errors on each failure for observability.
    */
   private async retryAsync(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: () => Promise<any>,
     operationName: string,
     userId: string,

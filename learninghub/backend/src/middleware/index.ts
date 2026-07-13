@@ -12,3 +12,4 @@ export {
 } from './authMiddleware'
 
 export { errorHandler, notFoundHandler } from './errorHandler'
+export { validate, validateUUIDParam } from './validationMiddleware'

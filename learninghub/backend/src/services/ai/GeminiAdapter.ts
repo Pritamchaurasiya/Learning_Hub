@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { IAIAgent, AIProviderOptions, AIGenerationResult, AIMessage } from './AIAgent'
 import logger from '../../utils/logger'
@@ -11,7 +12,7 @@ export class GeminiAdapter implements IAIAgent {
   private defaultModel = 'gemini-1.5-flash'
   private circuitBreaker = new CircuitBreaker('GeminiAPI', {
     failureThreshold: 5,
-    resetTimeout: 30000
+    resetTimeout: 30000,
   })
 
   constructor(apiKey?: string) {
@@ -27,10 +28,7 @@ export class GeminiAdapter implements IAIAgent {
    * Retry wrapper with exponential backoff for transient API failures.
    * Retries on 429 (rate limit), 503 (service unavailable), and network errors.
    */
-  private async withRetry<T>(
-    operation: () => Promise<T>,
-    operationName: string
-  ): Promise<T> {
+  private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
     let lastError: Error | undefined
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -65,7 +63,7 @@ export class GeminiAdapter implements IAIAgent {
           throw lastError
         }
 
-        const delayMs = BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 500
+        const delayMs = BASE_DELAY_MS * Math.pow(2, attempt) + crypto.randomInt(0, 500)
         logger.warn(
           `[GeminiAdapter] ${operationName} attempt ${attempt + 1} failed (${lastError.message}), retrying in ${Math.round(delayMs)}ms`
         )
@@ -73,6 +71,7 @@ export class GeminiAdapter implements IAIAgent {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     throw lastError!
   }
 
@@ -108,7 +107,7 @@ export class GeminiAdapter implements IAIAgent {
   ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const systemMessage = messages.find(m => m.role === 'system')
-      
+
       const model = this.ai.getGenerativeModel({
         model: options?.model ?? this.defaultModel,
         generationConfig: {
@@ -118,13 +117,25 @@ export class GeminiAdapter implements IAIAgent {
         ...(systemMessage && { systemInstruction: systemMessage.content }),
       })
 
-      // Convert generic messages to Gemini format
+      // Convert generic messages to Gemini format and squash consecutive same-role messages
       const history = messages
         .filter(m => m.role !== 'system')
-        .map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }],
-        }))
+        .reduce(
+          (acc, m) => {
+            const mappedRole = m.role === 'assistant' ? 'model' : 'user'
+            if (acc.length > 0 && acc[acc.length - 1].role === mappedRole) {
+              acc[acc.length - 1].parts[0].text += `\n\n${m.content}`
+            } else {
+              acc.push({ role: mappedRole, parts: [{ text: m.content }] })
+            }
+            return acc
+          },
+          [] as { role: string; parts: { text: string }[] }[]
+        )
+
+      if (history.length === 0) {
+        throw new Error('No user messages provided for chat generation')
+      }
 
       // We extract the last message to send, and the rest is history
       const latestMessage = history.pop()?.parts[0].text ?? ''
@@ -157,15 +168,30 @@ export class GeminiAdapter implements IAIAgent {
 
       const history = messages
         .filter(m => m.role !== 'system')
-        .map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }],
-        }))
+        .reduce(
+          (acc, m) => {
+            const mappedRole = m.role === 'assistant' ? 'model' : 'user'
+            if (acc.length > 0 && acc[acc.length - 1].role === mappedRole) {
+              acc[acc.length - 1].parts[0].text += `\n\n${m.content}`
+            } else {
+              acc.push({ role: mappedRole, parts: [{ text: m.content }] })
+            }
+            return acc
+          },
+          [] as { role: string; parts: { text: string }[] }[]
+        )
+
+      if (history.length === 0) {
+        throw new Error('No user messages provided for stream generation')
+      }
 
       const latestMessage = history.pop()?.parts[0].text ?? ''
 
       const chat = model.startChat({ history })
-      const result = await chat.sendMessageStream(latestMessage)
+      const result = await this.withRetry(
+        () => chat.sendMessageStream(latestMessage),
+        'generateChatStream'
+      )
 
       for await (const chunk of result.stream) {
         yield chunk.text()
@@ -203,7 +229,18 @@ export class GeminiAdapter implements IAIAgent {
         cleanText = cleanText.replace(/```/, '').replace(/```$/, '').trim()
       }
 
-      return JSON.parse(cleanText) as T
+      try {
+        return JSON.parse(cleanText) as T
+      } catch (parseError) {
+        // Surface a structured error instead of an uncaught SyntaxError. The retry
+        // logic only handles transient HTTP errors, so a malformed payload must fail
+        // clearly so the caller's fallback (mock) can kick in.
+        throw new Error(
+          `Failed to parse JSON response from AI provider: ${
+            parseError instanceof Error ? parseError.message : String(parseError)
+          }`
+        )
+      }
     }, 'generateJSON')
   }
 }

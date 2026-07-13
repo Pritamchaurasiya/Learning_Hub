@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma, AuditAction, Severity } from '@prisma/client'
 import { Request } from 'express'
+import logger from '../utils/logger'
 
 export interface AuditLogInput {
   action: AuditAction
@@ -43,8 +44,11 @@ export class AuditService {
       })
     } catch (error) {
       // Log to console as fallback - never fail the main operation
-      console.error('Failed to create audit log:', error)
-      console.error('Audit entry:', input)
+      logger.error(
+        'Failed to create audit log',
+        error instanceof Error ? error : new Error(String(error)),
+        { audit: input }
+      )
     }
   }
 

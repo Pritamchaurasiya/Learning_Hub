@@ -9,6 +9,7 @@ async function generateAndSeed(
   count: number,
   examName: string
 ) {
+  // eslint-disable-next-line no-console
   console.log(`Generating ${count} questions for ${topicName} (${examName})...`)
 
   const prompt = `You are an expert exam question designer specializing in ${examName}.
@@ -43,6 +44,7 @@ Respond with ONLY valid JSON (no markdown, no code fences):
 }`
 
   const ai = AIServiceFactory.getAgent()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const parsed = await ai.generateJSON<{ questions: any[] }>(prompt, { model: 'gemini-2.0-flash' })
 
   const subject = await prisma.subject.findUnique({
@@ -51,9 +53,11 @@ Respond with ONLY valid JSON (no markdown, no code fences):
   })
   if (!subject) throw new Error(`Subject ${subjectSlug} not found`)
 
+  // eslint-disable-next-line no-console
   console.log(`Generated ${parsed.questions.length} questions. Saving to database...`)
 
   for (let i = 0; i < parsed.questions.length; i++) {
+    // eslint-disable-next-line security/detect-object-injection
     const q = parsed.questions[i]
     await prisma.pYQ.create({
       data: {
@@ -69,15 +73,17 @@ Respond with ONLY valid JSON (no markdown, no code fences):
         paper: `Mock ${examName} - ${topicName}`,
         question: q.text,
         marks: 4,
-        tags: q.tags || [topicName],
+        tags: q.tags ?? [topicName],
         answer:
-          q.options.find((o: any) => o.id === q.correct_option_id)?.text || q.correct_option_id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          q.options.find((o: any) => o.id === q.correct_option_id)?.text ?? q.correct_option_id,
         explanation: q.explanation,
-        difficulty: q.difficulty || 'MEDIUM',
+        difficulty: q.difficulty ?? 'MEDIUM',
       },
     })
   }
 
+  // eslint-disable-next-line no-console
   console.log(`Successfully saved ${parsed.questions.length} questions for ${topicName}.`)
 }
 
@@ -112,13 +118,13 @@ async function main() {
       },
     })
 
-    const physicsJEE = await prisma.subject.upsert({
+    await prisma.subject.upsert({
       where: { slug: 'jee-physics' },
       update: {},
       create: { examId: jee.id, name: 'Physics', slug: 'jee-physics' },
     })
 
-    const bioNEET = await prisma.subject.upsert({
+    await prisma.subject.upsert({
       where: { slug: 'neet-biology' },
       update: {},
       create: { examId: neet.id, name: 'Biology', slug: 'neet-biology' },
@@ -136,4 +142,4 @@ async function main() {
   }
 }
 
-main()
+void main()

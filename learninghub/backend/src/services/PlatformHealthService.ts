@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '../prismaClient'
-import logger from '../utils/logger'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,9 +32,9 @@ export interface PlatformHealth {
   }
   contentQuality: {
     totalQuestions: number
-    tooHardQuestions: number      // < 30% correct rate
-    tooEasyQuestions: number      // > 95% correct rate
-    lowCompletionTests: number   // Tests with < 50% completion rate
+    tooHardQuestions: number // < 30% correct rate
+    tooEasyQuestions: number // > 95% correct rate
+    lowCompletionTests: number // Tests with < 50% completion rate
     aiGeneratedQuestions: number
     manualQuestions: number
   }
@@ -45,7 +44,6 @@ export interface PlatformHealth {
     newUsersMonth: number
     totalUsers: number
     verifiedUsers: number
-    premiumUsers: number
   }
   systemHealth: {
     databaseStatus: 'healthy' | 'degraded' | 'down'
@@ -90,12 +88,7 @@ export class PlatformHealthService {
     const week = new Date(now - 7 * 24 * 60 * 60 * 1000)
     const month = new Date(now - 30 * 24 * 60 * 60 * 1000)
 
-    const [
-      activeUsers,
-      testEngagement,
-      contentQuality,
-      userGrowth,
-    ] = await Promise.all([
+    const [activeUsers, testEngagement, contentQuality, userGrowth] = await Promise.all([
       this.getActiveUserCounts(hour, day, week, month),
       this.getTestEngagement(day, week),
       this.getContentQuality(),
@@ -116,12 +109,7 @@ export class PlatformHealthService {
   /**
    * Get active user counts at different time windows.
    */
-  private async getActiveUserCounts(
-    hour: Date,
-    day: Date,
-    week: Date,
-    month: Date
-  ) {
+  private async getActiveUserCounts(hour: Date, day: Date, week: Date, month: Date) {
     const [last1h, last24h, last7d, last30d] = await Promise.all([
       prisma.user.count({
         where: { lastActive: { gte: hour }, deletedAt: null },
@@ -137,9 +125,7 @@ export class PlatformHealthService {
       }),
     ])
 
-    const dauMauRatio = last30d > 0
-      ? Math.round((last24h / last30d) * 100)
-      : 0
+    const dauMauRatio = last30d > 0 ? Math.round((last24h / last30d) * 100) : 0
 
     return { last1h, last24h, last7d, last30d, dauMauRatio }
   }
@@ -148,13 +134,17 @@ export class PlatformHealthService {
    * Get test engagement metrics.
    */
   private async getTestEngagement(day: Date, week: Date) {
+    // week query excludes today to avoid double-counting when combined with todayResults
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
     const [todayResults, weekResults, activeTests] = await Promise.all([
       prisma.testResult.findMany({
         where: { status: 'COMPLETED', completedAt: { gte: day } },
         select: { percentage: true, passed: true, timeTaken: true },
       }),
       prisma.testResult.findMany({
-        where: { status: 'COMPLETED', completedAt: { gte: week } },
+        where: { status: 'COMPLETED', completedAt: { gte: week, lt: todayStart } },
         select: { percentage: true, passed: true, timeTaken: true },
       }),
       prisma.testResult.count({
@@ -166,15 +156,18 @@ export class PlatformHealthService {
     const safeWeek = weekResults || []
 
     const allResults = [...safeToday, ...safeWeek]
-    const avgScore = allResults.length > 0
-      ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length)
-      : 0
-    const passRate = allResults.length > 0
-      ? Math.round((allResults.filter(r => r.passed).length / allResults.length) * 100)
-      : 0
-    const avgTime = allResults.length > 0
-      ? Math.round(allResults.reduce((s, r) => s + r.timeTaken, 0) / allResults.length)
-      : 0
+    const avgScore =
+      allResults.length > 0
+        ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length)
+        : 0
+    const passRate =
+      allResults.length > 0
+        ? Math.round((allResults.filter(r => r.passed).length / allResults.length) * 100)
+        : 0
+    const avgTime =
+      allResults.length > 0
+        ? Math.round(allResults.reduce((s, r) => s + r.timeTaken, 0) / allResults.length)
+        : 0
 
     return {
       testsCompletedToday: safeToday.length,
@@ -240,20 +233,12 @@ export class PlatformHealthService {
    * Get user growth metrics.
    */
   private async getUserGrowth(day: Date, week: Date, month: Date) {
-    const [
-      newToday,
-      newWeek,
-      newMonth,
-      total,
-      verified,
-      premium,
-    ] = await Promise.all([
+    const [newToday, newWeek, newMonth, total, verified] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: day }, deletedAt: null } }),
       prisma.user.count({ where: { createdAt: { gte: week }, deletedAt: null } }),
       prisma.user.count({ where: { createdAt: { gte: month }, deletedAt: null } }),
       prisma.user.count({ where: { deletedAt: null } }),
       prisma.user.count({ where: { emailVerified: true, deletedAt: null } }),
-      prisma.subscription.count({ where: { status: { in: ['ACTIVE', 'TRIAL'] } } }),
     ])
 
     return {
@@ -262,7 +247,6 @@ export class PlatformHealthService {
       newUsersMonth: newMonth,
       totalUsers: total,
       verifiedUsers: verified,
-      premiumUsers: premium,
     }
   }
 
@@ -271,7 +255,7 @@ export class PlatformHealthService {
    */
   private async getSystemHealth() {
     const memUsage = process.memoryUsage()
-    
+
     let activeConnections = 0
     let idleConnections = 0
     let waitingRequests = 0
@@ -281,20 +265,19 @@ export class PlatformHealthService {
       // Prisma metrics are available if enabled in schema previewFeatures = ["metrics"]
       // We wrap in try-catch in case metrics are disabled
       const metrics = await prisma.$metrics.json()
-      const poolActive = metrics.counters.find(c => c.key === 'prisma_pool_connections_busy')
-      const poolIdle = metrics.counters.find(c => c.key === 'prisma_pool_connections_idle')
-      const poolWait = metrics.counters.find(c => c.key === 'prisma_client_queries_wait')
+      const poolActive = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_pool_connections_busy')
+      const poolIdle = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_pool_connections_idle')
+      const poolWait = metrics.counters.find((c: { key: string; value: number }) => c.key === 'prisma_client_queries_wait')
 
       activeConnections = poolActive?.value ?? 0
       idleConnections = poolIdle?.value ?? 0
       waitingRequests = poolWait?.value ?? 0
 
       if (waitingRequests > 10) databaseStatus = 'degraded'
-    } catch (e) {
-      // Fallback if metrics fail or are disabled
+    } catch {
       try {
         await prisma.$queryRaw`SELECT 1`
-      } catch (dbErr) {
+      } catch {
         databaseStatus = 'down'
       }
     }
@@ -313,7 +296,6 @@ export class PlatformHealthService {
    * Get users at risk of churning.
    */
   async getChurnRiskUsers(limit: number = 20): Promise<ChurnRiskUser[]> {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
     const users = await prisma.user.findMany({
@@ -335,7 +317,7 @@ export class PlatformHealthService {
       take: limit,
     })
 
-    return users.map(user => {
+    return users.map((user: { id: string; email: string; username: string | null; lastActive: Date; streak: number; _count: { testResults: number } }) => {
       const daysSinceActive = Math.floor(
         (Date.now() - user.lastActive.getTime()) / (24 * 60 * 60 * 1000)
       )

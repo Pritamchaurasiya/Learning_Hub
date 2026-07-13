@@ -1,94 +1,75 @@
 import { Request, Response } from 'express'
 import { ExamContentService } from '../services/ExamContentService'
-import logger from '../utils/logger'
 import {
   sendSuccess,
   sendCreated,
   sendNotFound,
   sendValidationError,
-  sendInternalError,
 } from '../utils/responseHelper'
+import { asyncHandler } from '../utils/errorHandler'
 
 const examContentService = new ExamContentService()
 
 export const examContentController = {
-  getPYQs: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const result = await examContentService.getPYQs(req.query)
-      sendSuccess(res, result.data, undefined, 200, result.meta)
-    } catch (error) {
-      logger.error(
-        '[ExamContent] getPYQs failed',
-        error instanceof Error ? error : new Error(String(error))
-      )
-      sendInternalError(res)
-    }
-  },
+  getPYQs: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const result = await examContentService.getPYQs(req.query)
+    sendSuccess(res, result.data, undefined, 200, result.meta)
+  }),
 
-  getPYQById: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-      if (!id || typeof id !== 'string') {
-        sendValidationError(res, 'Valid PYQ ID is required')
-        return
-      }
-      const pyq = await examContentService.getPYQById(id)
-      if (!pyq) {
-        sendNotFound(res, 'PYQ not found')
-        return
-      }
-      sendSuccess(res, pyq)
-    } catch (error) {
-      logger.error(
-        '[ExamContent] getPYQById failed',
-        error instanceof Error ? error : new Error(String(error)),
-        { pyqId: req.params.id }
-      )
-      sendInternalError(res)
+  getPYQById: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+    if (!id || typeof id !== 'string') {
+      sendValidationError(res, 'Valid PYQ ID is required')
+      return
     }
-  },
+    const pyq = await examContentService.getPYQById(id)
+    if (!pyq) {
+      sendNotFound(res, 'PYQ not found')
+      return
+    }
+    sendSuccess(res, pyq)
+  }),
 
-  createPYQ: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { year, exam, subject, questions } = req.body
-      if (!year || !exam || !subject || !Array.isArray(questions) || questions.length === 0) {
-        sendValidationError(res, 'year, exam, subject, and questions array are required')
-        return
-      }
-      const pyq = await examContentService.createPYQ(req.body)
-      sendCreated(res, pyq)
-    } catch (error) {
-      logger.error(
-        '[ExamContent] createPYQ failed',
-        error instanceof Error ? error : new Error(String(error))
-      )
-      sendInternalError(res)
+  createPYQ: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { year, exam, subject, questions } = req.body
+    if (!year || !exam || !subject || !Array.isArray(questions) || questions.length === 0) {
+      sendValidationError(res, 'year, exam, subject, and questions array are required')
+      return
     }
-  },
+    const pyq = await examContentService.createPYQ(req.body)
+    sendCreated(res, pyq)
+  }),
 
-  getFormulas: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const formulas = await examContentService.getFormulas(req.query)
-      sendSuccess(res, formulas)
-    } catch (error) {
-      logger.error(
-        '[ExamContent] getFormulas failed',
-        error instanceof Error ? error : new Error(String(error))
-      )
-      sendInternalError(res)
-    }
-  },
+  getFormulas: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const formulas = await examContentService.getFormulas(req.query)
+    sendSuccess(res, formulas)
+  }),
 
-  getRevisionNotes: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const notes = await examContentService.getRevisionNotes(req.query)
-      sendSuccess(res, notes)
-    } catch (error) {
-      logger.error(
-        '[ExamContent] getRevisionNotes failed',
-        error instanceof Error ? error : new Error(String(error))
-      )
-      sendInternalError(res)
+  getRevisionNotes: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const notes = await examContentService.getRevisionNotes(req.query)
+    sendSuccess(res, notes)
+  }),
+
+  getCountries: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const countries = await examContentService.getCountries()
+    sendSuccess(res, countries)
+  }),
+
+  getExams: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const exams = await examContentService.getExams({
+      countryId: req.query.countryId as string,
+      search: req.query.search as string,
+    })
+    sendSuccess(res, exams)
+  }),
+
+  getSubjects: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const examId = Array.isArray(req.params.examId) ? req.params.examId[0] : req.params.examId
+    if (!examId || typeof examId !== 'string') {
+      sendValidationError(res, 'examId is required')
+      return
     }
-  },
+    const subjects = await examContentService.getSubjects(examId)
+    sendSuccess(res, subjects)
+  }),
 }

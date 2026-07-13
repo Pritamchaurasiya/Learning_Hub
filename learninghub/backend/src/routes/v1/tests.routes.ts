@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
-import { cacheMiddleware } from '../../middleware/cacheMiddleware'
+import { redisCacheMiddleware as cacheMiddleware } from '../../middleware/redisCacheMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter } from '../../middleware/rateLimiter'
 import {
@@ -16,6 +16,7 @@ import {
 import {
   practiceAnswer,
   getTestQuestions,
+  getNextAdaptiveTestQuestion,
   getTestAnalytics,
   getAttemptHistory,
   getTimeRemaining,
@@ -30,8 +31,14 @@ const testMutationLimiter = createRateLimiter({
   keyPrefix: 'test-mutation',
 })
 
+const testReadLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyPrefix: 'test-read',
+})
+
 // IMPORTANT: Static paths MUST come before parameterized /:id routes
-router.get('/', cacheMiddleware(300), listTests)
+router.get('/', cacheMiddleware(300), testReadLimiter, listTests)
 // Static sub-paths first (before /:id which would shadow them)
 router.get('/attempts', authenticate, getTestAttempts)
 router.get('/attempts/history', authenticate, getAttemptHistory)
@@ -41,10 +48,17 @@ router.get('/my-results', authenticate, getTestAttempts) // alias used by quizSe
 // Parameterized routes after static ones
 router.get('/:id', cacheMiddleware(300), getTestDetails)
 router.get('/:id/questions', authenticate, getTestQuestions)
+router.get('/:id/adaptive-next', authenticate, getNextAdaptiveTestQuestion)
 router.get('/:id/time', authenticate, getTimeRemaining)
 router.post('/:id/start', authenticate, testMutationLimiter, startTest)
 router.post('/:id/autosave', authenticate, testMutationLimiter, autosaveTest)
-router.post('/:id/submit', authenticate, testMutationLimiter, validate(submitTestSchema), submitTest)
+router.post(
+  '/:id/submit',
+  authenticate,
+  testMutationLimiter,
+  validate(submitTestSchema),
+  submitTest
+)
 router.post('/:id/practice/answer', authenticate, testMutationLimiter, practiceAnswer)
 router.get('/:id/result', authenticate, getTestResults)
 

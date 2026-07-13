@@ -18,6 +18,7 @@ declare global {
       requestId?: string
       io?: Server
       usageLimit?: UsageLimitInfo
+      cookies?: Record<string, string>
     }
   }
 }
@@ -32,5 +33,6 @@ declare module 'express-serve-static-core' {
     requestId?: string
     io?: Server
     usageLimit?: UsageLimitInfo
+    cookies?: Record<string, string>
   }
 }

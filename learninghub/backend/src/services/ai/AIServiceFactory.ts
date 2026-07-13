@@ -1,8 +1,9 @@
 import { IAIAgent } from './AIAgent'
 import { GeminiAdapter } from './GeminiAdapter'
+import { MockAIAdapter } from './MockAIAdapter'
 import logger from '../../utils/logger'
 
-export type AIProviderName = 'gemini' | 'openai' | 'anthropic'
+export type AIProviderName = 'gemini' | 'openai' | 'anthropic' | 'mock'
 
 export class AIServiceFactory {
   private static instance: IAIAgent
@@ -30,7 +31,18 @@ export class AIServiceFactory {
 
       switch (this.provider) {
         case 'gemini':
-          this.instance = new GeminiAdapter()
+          try {
+            this.instance = new GeminiAdapter()
+          } catch (e) {
+            logger.warn(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
+              { error: e instanceof Error ? e.message : String(e) }
+            )
+            this.instance = new MockAIAdapter()
+          }
+          break
+        case 'mock':
+          this.instance = new MockAIAdapter()
           break
         // Future extensions:
         // case 'openai':
@@ -43,7 +55,15 @@ export class AIServiceFactory {
           logger.warn(
             `[AIServiceFactory] Unknown provider ${this.provider}, falling back to Gemini`
           )
-          this.instance = new GeminiAdapter()
+          try {
+            this.instance = new GeminiAdapter()
+          } catch (e) {
+            logger.warn(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
+              { error: e instanceof Error ? e.message : String(e) }
+            )
+            this.instance = new MockAIAdapter()
+          }
       }
     }
     return this.instance

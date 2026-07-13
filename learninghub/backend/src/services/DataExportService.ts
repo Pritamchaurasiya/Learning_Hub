@@ -39,7 +39,7 @@ export class DataExportService {
     }
 
     // Scrub sensitive data before export
-    const { password, ...scrubbedUser } = user
+    const { password: _password, ...scrubbedUser } = user
 
     return {
       version: '1.0',
@@ -58,7 +58,7 @@ export class DataExportService {
         streak: scrubbedUser.streak,
         loginCount: scrubbedUser.loginCount,
       },
-      testHistory: scrubbedUser.testResults.map((result) => ({
+      testHistory: scrubbedUser.testResults.map((result: any) => ({
         testId: result.testId,
         testTitle: result.test.title,
         subjectId: result.test.subjectId,
@@ -70,6 +70,7 @@ export class DataExportService {
         startedAt: result.startedAt,
         completedAt: result.completedAt,
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       topicPerformance: scrubbedUser.topicPerformances.map((tp: any) => ({
         topicName: tp.topicName,
         subjectName: tp.subjectName,
@@ -78,12 +79,14 @@ export class DataExportService {
         lastAttemptAt: tp.lastAttemptAt,
         avgTimePerQuestionSeconds: tp.avgTimeSeconds,
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       achievements: scrubbedUser.achievements.map((ach: any) => ({
         achievementId: ach.achievementId,
         name: ach.name,
         description: ach.description,
         unlockedAt: ach.unlockedAt,
       })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       experimentEvents: scrubbedUser.experimentEvents.map((exp: any) => ({
         experimentId: exp.experimentId,
         variant: exp.variant,

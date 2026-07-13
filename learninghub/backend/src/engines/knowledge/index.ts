@@ -1,0 +1,1 @@
+export { KnowledgeGraphService } from './KnowledgeGraphService'

@@ -10,164 +10,114 @@
  *  - Audit log viewer
  */
 
+import crypto from 'crypto'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../prismaClient'
+import { cacheService } from './CacheService'
 
 export class AnalyticsService {
   /**
    * Get comprehensive platform analytics for admin dashboard.
+   * Caches results for 1 hour to prevent DB saturation.
    */
   async getPlatformAnalytics(days: number = 30) {
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    const cacheKey = cacheService.generateKey('analytics', 'platform', days)
+    const ttl = 3600 + crypto.randomInt(0, 300) // Jitter: 1 hr + up to 5 mins
 
-    const [
-      totalUsers,
-      newUsers,
-      activeUsers,
-      totalCourses,
-      totalTests,
-      totalTestAttempts,
-      totalRevenue,
-      subscriptions,
-    ] = await Promise.all([
-      prisma.user.count({ where: { deletedAt: null } }),
-      prisma.user.count({ where: { createdAt: { gte: startDate }, deletedAt: null } }),
-      prisma.user.count({
-        where: {
-          lastActive: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-          deletedAt: null,
-        },
-      }),
-      prisma.course.count({ where: { isPublished: true, deletedAt: null } }),
-      prisma.test.count({ where: { isPublished: true } }),
-      prisma.testResult.count({ where: { status: 'COMPLETED' } }),
-      this.getRevenueMetrics(),
-      prisma.subscription.count({ where: { status: { in: ['ACTIVE', 'TRIAL'] } } }),
-    ])
+    return cacheService.getOrSet(
+      cacheKey,
+      async () => {
+        const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    return {
-      overview: {
-        total_users: totalUsers,
-        new_users_period: newUsers,
-        active_users_24h: activeUsers,
-        total_courses: totalCourses,
-        total_tests: totalTests,
-        total_test_attempts: totalTestAttempts,
-        active_subscriptions: subscriptions,
-        revenue: totalRevenue,
-        estimated_mrr: totalRevenue?.estimated_mrr ?? 0,
-        estimated_revenue: totalRevenue?.estimated_revenue ?? 0,
+        const [totalUsers, newUsers, activeUsers, totalTests, totalTestAttempts] =
+          await Promise.all([
+            prisma.user.count({ where: { deletedAt: null } }),
+            prisma.user.count({ where: { createdAt: { gte: startDate }, deletedAt: null } }),
+            prisma.user.count({
+              where: {
+                lastActive: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+                deletedAt: null,
+              },
+            }),
+            prisma.test.count({ where: { isPublished: true } }),
+            prisma.testResult.count({ where: { status: 'COMPLETED' } }),
+          ])
+
+        return {
+          overview: {
+            total_users: totalUsers,
+            new_users_period: newUsers,
+            active_users_24h: activeUsers,
+            total_tests: totalTests,
+            total_test_attempts: totalTestAttempts,
+          },
+          growth: await this.getUserGrowthTrend(days),
+          engagement: await this.getEngagementMetrics(startDate),
+          top_tests: await this.getTopTests(),
+        }
       },
-      growth: await this.getUserGrowthTrend(days),
-      engagement: await this.getEngagementMetrics(startDate),
-      top_courses: await this.getTopCourses(),
-    }
-  }
-
-  private async getRevenueMetrics() {
-    const [activeSubscriptions, totalSubscriptions] = await Promise.all([
-      prisma.subscription.count({ where: { status: { in: ['ACTIVE', 'TRIAL'] } } }),
-      prisma.subscription.count(),
-    ])
-
-    const subscriptionsWithTiers = await prisma.subscription.findMany({
-      where: { status: { in: ['ACTIVE', 'TRIAL'] } },
-      include: { tier: { select: { price: true, interval: true, currency: true } } },
-    })
-
-    let estimatedMrr = 0
-    let estimatedRevenue = 0
-    for (const sub of subscriptionsWithTiers) {
-      const price = Number(sub.tier.price)
-      if (sub.tier.interval === 'YEARLY') {
-        estimatedMrr += price / 12
-        estimatedRevenue += price
-      } else {
-        estimatedMrr += price
-        estimatedRevenue += price
-      }
-    }
-
-    return {
-      active_subscriptions: activeSubscriptions,
-      total_subscriptions: totalSubscriptions,
-      estimated_mrr: Math.round(estimatedMrr * 100) / 100,
-      estimated_revenue: Math.round(estimatedRevenue * 100) / 100,
-      currency: 'USD',
-    }
+      ttl,
+      true // disableMemoryFallback
+    )
   }
 
   /**
    * Get user growth trend over time.
    */
   private async getUserGrowthTrend(days: number) {
-    const users = await prisma.user.findMany({
-      where: {
-        createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
-        deletedAt: null,
-      },
-      select: { createdAt: true },
-      orderBy: { createdAt: 'asc' },
-    })
-
-    const dailyGrowth: Record<string, number> = {}
-    for (const user of users) {
-      const date = user.createdAt.toISOString().split('T')[0]
-      dailyGrowth[date] = (dailyGrowth[date] ?? 0) + 1
-    }
-
-    return Object.entries(dailyGrowth).map(([date, count]) => ({
-      date,
-      new_users: count,
-    }))
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    // Use raw query for efficient date truncation and grouping (PostgreSQL specific)
+    const growth = await prisma.$queryRaw<{ date: string; new_users: number }[]>`
+      SELECT 
+        TO_CHAR("createdAt", 'YYYY-MM-DD') as date, 
+        COUNT(*)::int as new_users
+      FROM "users"
+      WHERE "createdAt" >= ${startDate} AND "deletedAt" IS NULL
+      GROUP BY TO_CHAR("createdAt", 'YYYY-MM-DD')
+      ORDER BY date ASC
+    `
+    return growth
   }
 
   /**
    * Get engagement metrics.
    */
   private async getEngagementMetrics(startDate: Date) {
-    const [testResults, lessonCompletions] = await Promise.all([
-      prisma.testResult.findMany({
+    const [aggregate, passedCount] = await Promise.all([
+      prisma.testResult.aggregate({
         where: { completedAt: { gte: startDate }, status: 'COMPLETED' },
-        select: { percentage: true, passed: true, completedAt: true },
+        _avg: { percentage: true },
+        _count: { id: true },
       }),
-      prisma.lessonCompletion.count({
-        where: { completedAt: { gte: startDate } },
+      prisma.testResult.count({
+        where: { completedAt: { gte: startDate }, status: 'COMPLETED', passed: true },
       }),
     ])
 
-    const avgTestScore =
-      testResults.length > 0
-        ? Math.round(testResults.reduce((s, r) => s + r.percentage, 0) / testResults.length)
-        : 0
-
-    const passRate =
-      testResults.length > 0
-        ? Math.round((testResults.filter(r => r.passed).length / testResults.length) * 100)
-        : 0
+    const totalCompleted = aggregate._count.id
+    const avgTestScore = aggregate._avg.percentage ? Math.round(aggregate._avg.percentage) : 0
+    const passRate = totalCompleted > 0 ? Math.round((passedCount / totalCompleted) * 100) : 0
 
     return {
-      tests_completed: testResults.length,
+      tests_completed: totalCompleted,
       average_test_score: avgTestScore,
       pass_rate: passRate,
-      lessons_completed: lessonCompletions,
     }
   }
 
   /**
-   * Get top performing courses.
+   * Get top performing tests.
    */
-  private async getTopCourses() {
-    return prisma.course.findMany({
-      where: { isPublished: true, deletedAt: null },
-      orderBy: { studentCount: 'desc' },
+  private async getTopTests() {
+    return prisma.test.findMany({
+      where: { isPublished: true },
+      orderBy: { results: { _count: 'desc' } },
       take: 10,
       select: {
         id: true,
         title: true,
-        studentCount: true,
-        rating: true,
-        reviewCount: true,
-        category: true,
+        difficulty: true,
+        mode: true,
       },
     })
   }
@@ -200,7 +150,7 @@ export class AnalyticsService {
 
     const [logs, total] = await Promise.all([
       prisma.auditLog.findMany({
-        where: where as any,
+        where: where as Prisma.AuditLogWhereInput,
         skip,
         take: limit,
         include: {
@@ -215,11 +165,11 @@ export class AnalyticsService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.auditLog.count({ where: where as any }),
+      prisma.auditLog.count({ where: where as Prisma.AuditLogWhereInput }),
     ])
 
     return {
-      logs: logs.map(log => ({
+      logs: logs.map((log: any) => ({
         id: log.id,
         action: log.action,
         entity_type: log.entityType,
@@ -249,44 +199,54 @@ export class AnalyticsService {
 
   /**
    * Get security events summary.
+   * Caches results for 1 hour to prevent DB saturation.
    */
   async getSecurityEvents(days: number = 7) {
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    const cacheKey = cacheService.generateKey('analytics', 'security', days)
+    const ttl = 3600 + crypto.randomInt(0, 300) // Jitter
 
-    const [failedLogins, roleChanges, deletions, passwordChanges] = await Promise.all([
-      prisma.user.count({
-        where: {
-          failedLogins: { gt: 0 },
-          lastLoginAt: { gte: startDate },
-        },
-      }),
-      prisma.auditLog.count({
-        where: {
-          action: 'ROLE_CHANGE',
-          createdAt: { gte: startDate },
-        },
-      }),
-      prisma.auditLog.count({
-        where: {
-          action: 'DELETE',
-          createdAt: { gte: startDate },
-        },
-      }),
-      prisma.auditLog.count({
-        where: {
-          action: 'PASSWORD_CHANGE',
-          createdAt: { gte: startDate },
-        },
-      }),
-    ])
+    return cacheService.getOrSet(
+      cacheKey,
+      async () => {
+        const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    return {
-      failed_login_attempts: failedLogins,
-      role_changes: roleChanges,
-      account_deletions: deletions,
-      password_changes: passwordChanges,
-      period_days: days,
-    }
+        const [failedLogins, roleChanges, deletions, passwordChanges] = await Promise.all([
+          prisma.user.count({
+            where: {
+              failedLogins: { gt: 0 },
+              lastLoginAt: { gte: startDate },
+            },
+          }),
+          prisma.auditLog.count({
+            where: {
+              action: 'ROLE_CHANGE',
+              createdAt: { gte: startDate },
+            },
+          }),
+          prisma.auditLog.count({
+            where: {
+              action: 'DELETE',
+              createdAt: { gte: startDate },
+            },
+          }),
+          prisma.auditLog.count({
+            where: {
+              action: 'PASSWORD_CHANGE',
+              createdAt: { gte: startDate },
+            },
+          }),
+        ])
+
+        return {
+          failed_login_attempts: failedLogins,
+          role_changes: roleChanges,
+          account_deletions: deletions,
+          password_changes: passwordChanges,
+          period_days: days,
+        }
+      },
+      ttl
+    )
   }
 }
 

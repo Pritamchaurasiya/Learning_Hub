@@ -45,11 +45,10 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
 
       // Override res.json to capture and cache
       const originalJson = res.json.bind(res)
-      res.json = (body: any) => {
+      res.json = (body: unknown) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             cacheService.set(key, JSON.stringify(body), durationInSeconds).catch(() => {
-              // Fallback to NodeCache if Redis fails
               fallbackCache.set(key, body, durationInSeconds)
             })
           } catch {
@@ -70,7 +69,7 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       }
 
       const originalJson = res.json.bind(res)
-      res.json = (body: any) => {
+      res.json = (body: unknown) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           fallbackCache.set(fallbackKey, body, durationInSeconds)
         }
@@ -100,9 +99,14 @@ export async function invalidateCache(pattern: string): Promise<void> {
 export function cacheInvalidation(pattern: string) {
   return async (_req: Request, _res: Response, next: NextFunction) => {
     const originalJson = _res.json.bind(_res)
-    _res.json = (body: any) => {
+    _res.json = (body: unknown) => {
       if (_res.statusCode >= 200 && _res.statusCode < 300) {
-        invalidateCache(pattern).catch(() => {})
+        invalidateCache(pattern).catch(err =>
+          logger.error(
+            '[Cache] Invalidation failed',
+            err instanceof Error ? err : new Error(String(err))
+          )
+        )
       }
       return originalJson(body)
     }

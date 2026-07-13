@@ -1,280 +1,221 @@
 import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
+import { asyncHandler } from '../utils/errorHandler'
+import { sendSuccess, sendNotFound } from '../utils/responseHelper'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
-import logger from '../utils/logger'
-import { Prisma } from '@prisma/client'
 import { cacheService } from '../services/CacheService'
-import {
-  sendSuccess,
-  sendUnauthorized,
-  sendError,
-  sendNotFound,
-  sendInternalError,
-} from '../utils/responseHelper'
+import { Prisma } from '@prisma/client'
+import logger from '../utils/logger'
+import { CodeSandboxService } from '../services/CodeSandboxService'
+import { growthEngineService } from '../services/GrowthEngineService'
+export const listProblems = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { difficulty, search, status } = req.query
+  const { page, limit, skip } = getPaginationParams(req.query)
+  const userId = req.user?.userId
 
-interface ProblemWithCounts {
-  id: string
-  title: string
-  slug?: string | null
-  difficulty?: string | null
-  category?: string | null
-  description?: string | null
-  tags?: string[] | string | null
-  starterCode?: string | null
-  testCases?: string | null
-  points?: number | null
-  _count?: { submissions: number }
-  _acceptedCount?: number
-  userSubmissionStatus?: string | null
-}
+  // Redis Cache Implementation
+  const cacheKey = cacheService.generateKey(
+    'problems',
+    JSON.stringify({ difficulty, search, status, page, limit, userId: userId || 'anonymous' })
+  )
+  const cachedData = await cacheService.get<any>(cacheKey)
 
-function transformProblem(problem: ProblemWithCounts, userId?: string): Record<string, unknown> {
-  const tagsArray = Array.isArray(problem.tags)
-    ? problem.tags.map((t: string, idx: number) => ({ id: String(idx), name: t.trim() }))
-    : typeof problem.tags === 'string'
-      ? problem.tags.split(',').map((t: string, idx: number) => ({
-          id: String(idx),
-          name: t.trim(),
-        }))
-      : []
-
-  let starterCode = []
-  try {
-    if (problem.starterCode) {
-      starterCode = JSON.parse(problem.starterCode)
-    } else {
-      starterCode = [
-        { language: 'python', code: '# Write your solution here\n' },
-        { language: 'javascript', code: '// Write your solution here\n' },
-        { language: 'java', code: '// Write your solution here\npublic class Solution {\n}' },
-      ]
-    }
-  } catch {
-    starterCode = []
+  if (cachedData) {
+    sendSuccess(res, cachedData.data, undefined, 200, cachedData.meta)
+    return
   }
 
-  let examples: { input: string; output: string; explanation?: string }[] = []
-  try {
-    if (problem.testCases) {
-      const parsed = JSON.parse(problem.testCases)
-      if (Array.isArray(parsed)) {
-        examples = parsed.map((tc: { input?: string; output?: string; explanation?: string }) => ({
-          input: tc.input ?? '',
-          output: tc.output ?? '',
-          explanation: tc.explanation,
-        }))
+  const where: Prisma.ProblemWhereInput = { deletedAt: null }
+
+  if (difficulty && difficulty !== 'ALL') {
+    where.difficulty = difficulty as any
+  }
+
+  if (search && typeof search === 'string') {
+    where.OR = [
+      { title: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { category: { contains: search, mode: 'insensitive' } },
+    ]
+  }
+
+  if (status && status !== 'ALL' && userId) {
+    if (status === 'SOLVED') {
+      where.submissions = { some: { userId, status: 'ACCEPTED' } }
+    } else if (status === 'ATTEMPTED') {
+      where.submissions = { some: { userId } }
+    } else if (status === 'UNATTEMPTED') {
+      where.submissions = { none: { userId } }
+    }
+  }
+
+  const [total, problems] = await prisma.$transaction([
+    prisma.problem.count({ where }),
+    prisma.problem.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { points: 'asc' },
+    }),
+  ])
+
+  // Attach user status if authenticated
+  let mappedProblems = problems as any[]
+  if (userId) {
+    const userSubmissions = await prisma.problemSubmission.findMany({
+      where: { userId, problemId: { in: problems.map((p: any) => p.id) } },
+      select: { problemId: true, status: true },
+    })
+
+    mappedProblems = problems.map((p: any) => {
+      const submissionsForProblem = userSubmissions.filter((s: any) => s.problemId === p.id)
+      let user_status = 'UNATTEMPTED'
+      if (submissionsForProblem.some((s: any) => s.status === 'ACCEPTED')) {
+        user_status = 'SOLVED'
+      } else if (submissionsForProblem.length > 0) {
+        user_status = 'ATTEMPTED'
       }
-    }
-  } catch {
-    examples = []
-  }
-
-  const totalSubmissions = problem._count?.submissions ?? 0
-  const acceptedCount = problem._acceptedCount ?? 0
-
-  let user_status: 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED' = 'UNATTEMPTED'
-  if (userId && problem.userSubmissionStatus) {
-    user_status = problem.userSubmissionStatus === 'accepted' ? 'SOLVED' : 'ATTEMPTED'
-  }
-
-  return {
-    id: problem.id,
-    title: problem.title,
-    slug:
-      problem.slug ??
-      problem.title
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, ''),
-    difficulty: (problem.difficulty ?? 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
-    category: problem.category ?? '',
-    description: problem.description ?? '',
-    examples,
-    constraints: [],
-    starter_code: starterCode,
-    acceptance_rate: totalSubmissions > 0 ? (acceptedCount / totalSubmissions) * 100 : 0,
-    submission_count: totalSubmissions,
-    total_submissions: totalSubmissions,
-    solved_count: acceptedCount,
-    user_status,
-    tags: tagsArray,
-    points: problem.points ?? 100,
-  }
-}
-
-export const listProblems = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { difficulty, category } = req.query
-    const { page, limit, skip } = getPaginationParams(req.query)
-    const userId = req.user?.userId
-
-    const filters: Prisma.ProblemWhereInput = {}
-    if (difficulty) filters.difficulty = difficulty as string
-    if (category) filters.category = category as string
-
-    const cacheKey = cacheService.generateKey(
-      'problems_list',
-      JSON.stringify({ filters, page, limit })
-    )
-    const cachedData = await cacheService.get<any>(cacheKey)
-    if (cachedData) {
-      sendSuccess(res, cachedData.data, undefined, 200, cachedData.meta)
-      return
-    }
-
-    const [total, problems] = await Promise.all([
-      prisma.problem.count({ where: filters }),
-      prisma.problem.findMany({
-        where: filters,
-        skip,
-        take: limit,
-        include: {
-          _count: { select: { submissions: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ])
-
-    const transformed = problems.map(p => transformProblem(p, userId))
-    const responseData = createPaginatedResponse(transformed, total, page, limit)
-
-    await cacheService.set(cacheKey, responseData, 300)
-
-    sendSuccess(res, responseData.data, undefined, 200, responseData.meta)
-  } catch (error) {
-    logger.error(
-      '[ProblemsController] listProblems error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
-  }
-}
-
-export const getProblemDetails = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const slugOrId = (req.params.slug ?? req.params.id) as string
-    const userId = req.user?.userId
-
-    const problem = await prisma.problem.findFirst({
-      where: {
-        OR: [{ id: slugOrId }, { slug: slugOrId }],
-      },
-      include: {
-        _count: { select: { submissions: true } },
-      },
+      return { ...p, user_status }
     })
-
-    if (!problem) {
-      sendNotFound(res, 'Problem not found')
-      return
-    }
-
-    const transformed = transformProblem(problem, userId)
-    sendSuccess(res, transformed)
-  } catch (error) {
-    logger.error(
-      '[ProblemsController] getProblemDetails error',
-      error instanceof Error ? error : new Error(String(error)),
-      { slug: req.params.slug ?? req.params.id }
-    )
-    sendInternalError(res)
+  } else {
+    mappedProblems = problems.map((p: any) => ({ ...p, user_status: 'UNATTEMPTED' }))
   }
-}
 
-export const submitProblemSolution = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res)
-      return
+  const paginatedResult = createPaginatedResponse(mappedProblems, total, page, limit)
+
+  await cacheService.set(cacheKey, { data: paginatedResult.data, meta: paginatedResult.meta }, 300) // Cache for 5 mins
+
+  sendSuccess(res, paginatedResult.data, undefined, 200, paginatedResult.meta)
+})
+
+export const getProblem = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const slug = req.params.slug as string
+
+  const cacheKey = cacheService.generateKey('problem', slug)
+  const cachedData = await cacheService.get<any>(cacheKey)
+
+  if (cachedData) {
+    sendSuccess(res, cachedData)
+    return
+  }
+
+  const problem = await prisma.problem.findUnique({
+    where: { slug, deletedAt: null },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      difficulty: true,
+      category: true,
+      tags: true,
+      points: true,
+      starterCode: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
+
+  if (!problem) {
+    sendNotFound(res, 'Problem not found')
+    return
+  }
+
+  await cacheService.set(cacheKey, problem, 600) // Cache for 10 mins
+  sendSuccess(res, problem)
+})
+
+export const submitSolution = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const problemId = req.params.id as string
+  const { code, language } = req.body
+  const userId = req.user!.userId
+
+  const problem = await prisma.problem.findUnique({ where: { id: problemId } })
+  if (!problem) {
+    sendNotFound(res, 'Problem not found')
+    return
+  }
+
+  let testCases = []
+  if (problem.testCases) {
+    try {
+      testCases = JSON.parse(problem.testCases)
+    } catch (e) {
+      logger.error(
+        `Failed to parse test cases for problem ${problemId}`,
+        e instanceof Error ? e : new Error(String(e))
+      )
     }
-    const problemId = req.params.id as string
-    const { code, language } = req.body
+  }
 
-    if (!code || typeof code !== 'string' || code.trim().length === 0) {
-      sendError(res, 'Code submission is required', 400, 'VALIDATION_ERROR')
-      return
-    }
+  if (!Array.isArray(testCases) || testCases.length === 0) {
+    // Graceful fallback if no test cases defined, just run execution and assume passing if no error
+    testCases = [{ input: '', output: '' }]
+  }
 
-    const problem = await prisma.problem.findUnique({
-      where: { id: problemId },
-      select: { id: true, title: true, testCases: true },
-    })
-    if (!problem) {
-      sendNotFound(res, 'Problem not found')
-      return
-    }
+  const executionResult = await CodeSandboxService.execute({
+    code,
+    language,
+    testCases,
+    timeLimit: 5,
+    memoryLimit: 256,
+  })
 
-    const { CodeSandboxService } = await import('../services/CodeSandboxService')
-    const executionResult = await CodeSandboxService.execute({
-      code,
-      language: language ?? 'javascript',
-      testCases: problem.testCases ? JSON.parse(problem.testCases) : [],
-      timeLimit: 2000,
-      memoryLimit: 256 * 1024,
-    })
+  const status =
+    executionResult.status === 'accepted'
+      ? 'ACCEPTED'
+      : executionResult.status === 'wrong_answer'
+        ? 'WRONG_ANSWER'
+        : executionResult.status === 'compilation_error'
+          ? 'COMPILATION_ERROR'
+          : executionResult.status === 'time_limit_exceeded'
+            ? 'TIME_LIMIT_EXCEEDED'
+            : 'RUNTIME_ERROR'
 
-    const submission = await prisma.problemSubmission.create({
+  const executionTime = executionResult.executionTime
+  const memoryUsed = executionResult.memoryUsed
+  const score =
+    status === 'ACCEPTED'
+      ? problem.points
+      : Math.floor(
+          problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
+        )
+
+  const result = await prisma.$transaction(async (tx: any) => {
+    const submission = await tx.problemSubmission.create({
       data: {
-        userId,
         problemId,
+        userId,
         code,
-        language: language ?? 'javascript',
-        status: executionResult.status,
-        executionTime: executionResult.executionTime,
-        memoryUsed: executionResult.memoryUsed,
+        language,
+        status,
+        score,
+        executionTime,
+        memoryUsed,
       },
     })
 
-    if (executionResult.status === 'accepted') {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { xp: { increment: 50 } },
-      })
-
-      if (req.io) {
-        req.io.emit('ranking_update', { userId, xpEarned: 50 })
-      }
+    if (status === 'ACCEPTED') {
+      await growthEngineService.awardXP(userId, 'practice_session', tx)
     }
 
-    sendSuccess(res, {
-      submissionId: submission.id,
-      status: executionResult.status,
-      time: `${executionResult.executionTime}ms`,
-      memory: `${executionResult.memoryUsed}KB`,
-      message: executionResult.message,
-      testCasesPassed: executionResult.testCasesPassed,
-      testCasesTotal: executionResult.testCasesTotal,
-    })
-  } catch (error) {
-    logger.error(
-      '[ProblemsController] submitSolution error',
-      error instanceof Error ? error : new Error(String(error)),
-      { userId: req.user?.userId, problemId: req.params.id }
-    )
-    sendInternalError(res)
-  }
-}
+    return submission
+  })
 
-export const getProblemSubmissions = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res)
-      return
-    }
-    const problemId = req.params.id as string
-    const submissions = await prisma.problemSubmission.findMany({
-      where: { problemId, userId },
-      orderBy: { submittedAt: 'desc' },
-      take: 50,
-    })
-    sendSuccess(res, submissions)
-  } catch (error) {
-    logger.error(
-      '[ProblemsController] getSubmissions error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
-  }
-}
+  await cacheService.deletePattern('problems*')
+  await cacheService.delete(`dsaStats:${userId}`)
+
+  sendSuccess(res, result)
+})
+
+export const getSubmissions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const problemId = req.params.id as string
+  const userId = req.user!.userId
+
+  const submissions = await prisma.problemSubmission.findMany({
+    where: { problemId, userId },
+    orderBy: { submittedAt: 'desc' },
+  })
+
+  sendSuccess(res, submissions)
+})

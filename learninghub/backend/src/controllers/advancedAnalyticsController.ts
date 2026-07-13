@@ -1,26 +1,8 @@
 import { Request, Response } from 'express'
 import { advancedAnalyticsService } from '../services/AdvancedAnalyticsService'
-import {
-  sendSuccess,
-  sendUnauthorized,
-  sendError,
-  sendInternalError,
-} from '../utils/responseHelper'
+import { sendSuccess, sendUnauthorized, sendError } from '../utils/responseHelper'
 import { cacheService } from '../services/CacheService'
-import logger from '../utils/logger'
-
-function requireAdmin(req: Request, res: Response): boolean {
-  if (!req.user?.userId) {
-    sendUnauthorized(res)
-    return false
-  }
-  const role = (req.user as Record<string, unknown>).role as string | undefined
-  if (!role || (role !== 'ADMIN' && role !== 'SUPERADMIN')) {
-    sendError(res, 'Admin access required', 403, 'FORBIDDEN')
-    return false
-  }
-  return true
-}
+import { asyncHandler } from '../utils/errorHandler'
 
 function parseDaysParam(req: Request): number {
   const raw = req.query.days
@@ -38,9 +20,8 @@ function parseLimitParam(req: Request): number {
   return Math.min(parsed, 100)
 }
 
-export async function getDailyActiveUsers(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
+export const getDailyActiveUsers = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const days = parseDaysParam(req)
     const cacheKey = `analytics:dau:${days}`
     const cached = await cacheService.get(cacheKey)
@@ -51,33 +32,19 @@ export async function getDailyActiveUsers(req: Request, res: Response): Promise<
     const data = await advancedAnalyticsService.getDailyActiveUsers(days)
     await cacheService.set(cacheKey, data, 300)
     sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getDailyActiveUsers error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
   }
-}
+)
 
-export async function getEnrollmentTrend(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
+export const getTestAttemptTrend = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const days = parseDaysParam(req)
-    const data = await advancedAnalyticsService.getEnrollmentTrend(days)
+    const data = await advancedAnalyticsService.getTestAttemptTrend(days)
     sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getEnrollmentTrend error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
   }
-}
+)
 
-export async function getCohortRetention(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
+export const getCohortRetention = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const rawWeeks = req.query.weeks
     const weeks =
       typeof rawWeeks === 'string' ? Math.min(Math.max(parseInt(rawWeeks, 10) || 8, 1), 52) : 8
@@ -90,78 +57,41 @@ export async function getCohortRetention(req: Request, res: Response): Promise<v
     const data = await advancedAnalyticsService.getCohortRetention(weeks)
     await cacheService.set(cacheKey, data, 600)
     sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getCohortRetention error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
   }
-}
+)
 
-export async function getLearningPatterns(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
+export const getLearningPatterns = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const data = await advancedAnalyticsService.getLearningPatternsByHour()
     sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getLearningPatterns error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
   }
-}
+)
 
-export async function getCourseCompletionFunnel(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
-    const courseId = req.params.courseId
-    if (!courseId || typeof courseId !== 'string') {
-      sendError(res, 'Valid course ID is required', 400, 'VALIDATION_ERROR')
+export const getTestCompletionFunnel = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const testId = req.params.testId
+    if (!testId || typeof testId !== 'string') {
+      sendError(res, 'Valid test ID is required', 400, 'VALIDATION_ERROR')
       return
     }
-    const data = await advancedAnalyticsService.getCourseCompletionFunnel(courseId)
+    const data = await advancedAnalyticsService.getTestCompletionFunnel(testId)
     sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getCourseCompletionFunnel error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
   }
-}
+)
 
-export async function getTopCourses(req: Request, res: Response): Promise<void> {
-  try {
-    if (!requireAdmin(req, res)) return
-    const limit = parseLimitParam(req)
-    const data = await advancedAnalyticsService.getTopCoursesByEngagement(limit)
-    sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getTopCourses error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
-  }
-}
+export const getTopTests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const limit = parseLimitParam(req)
+  const data = await advancedAnalyticsService.getTopTestsByEngagement(limit)
+  sendSuccess(res, data)
+})
 
-export async function getUserVelocity(req: Request, res: Response): Promise<void> {
-  try {
-    if (!req.user?.userId) {
-      sendUnauthorized(res)
-      return
-    }
-    const userId = req.user.userId
-    const days = parseDaysParam(req)
-    const data = await advancedAnalyticsService.getUserLearningVelocity(userId, days)
-    sendSuccess(res, data)
-  } catch (error) {
-    logger.error(
-      'AdvancedAnalytics getUserVelocity error',
-      error instanceof Error ? error : new Error(String(error))
-    )
-    sendInternalError(res)
+export const getUserVelocity = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  if (!req.user?.userId) {
+    sendUnauthorized(res)
+    return
   }
-}
+  const userId = req.user.userId
+  const days = parseDaysParam(req)
+  const data = await advancedAnalyticsService.getUserLearningVelocity(userId, days)
+  sendSuccess(res, data)
+})

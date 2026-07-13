@@ -22,8 +22,6 @@ export type XPReason =
   | 'test_completed'
   | 'test_passed'
   | 'perfect_score'
-  | 'lesson_completed'
-  | 'course_completed'
   | 'daily_goal_met'
   | 'streak_milestone'
   | 'achievement_unlocked'
@@ -73,12 +71,10 @@ export interface UserStats {
   longestStreak: number
   totalXP: number
   level: number
-  coursesCompleted: number
-  lessonsCompleted: number
   totalQuestionsAnswered: number
   totalCorrectAnswers: number
   overallAccuracy: number
-  topicsmastered: number
+  topicsMastered: number
 }
 
 // ─── XP Configuration ────────────────────────────────────────────────────────
@@ -87,8 +83,6 @@ const XP_REWARDS: Record<XPReason, number> = {
   test_completed: 10,
   test_passed: 25,
   perfect_score: 50,
-  lesson_completed: 5,
-  course_completed: 100,
   daily_goal_met: 15,
   streak_milestone: 30,
   achievement_unlocked: 20,
@@ -106,91 +100,91 @@ const ACHIEVEMENTS: AchievementDefinition[] = [
     name: 'First Step',
     description: 'Complete your first test',
     icon: '🎯',
-    condition: (s) => s.totalTestsCompleted >= 1,
+    condition: s => s.totalTestsCompleted >= 1,
   },
   {
     id: 'ten_tests',
     name: 'Test Warrior',
     description: 'Complete 10 tests',
     icon: '⚔️',
-    condition: (s) => s.totalTestsCompleted >= 10,
+    condition: s => s.totalTestsCompleted >= 10,
   },
   {
     id: 'fifty_tests',
     name: 'Test Master',
     description: 'Complete 50 tests',
     icon: '🏆',
-    condition: (s) => s.totalTestsCompleted >= 50,
+    condition: s => s.totalTestsCompleted >= 50,
   },
   {
     id: 'hundred_tests',
     name: 'Century Champion',
     description: 'Complete 100 tests',
     icon: '💯',
-    condition: (s) => s.totalTestsCompleted >= 100,
+    condition: s => s.totalTestsCompleted >= 100,
   },
   {
     id: 'first_perfect',
     name: 'Flawless Victory',
     description: 'Score 100% on a test',
     icon: '⭐',
-    condition: (s) => s.perfectScores >= 1,
+    condition: s => s.perfectScores >= 1,
   },
   {
     id: 'streak_7',
     name: 'Week Warrior',
     description: 'Maintain a 7-day streak',
     icon: '🔥',
-    condition: (s) => s.longestStreak >= 7,
+    condition: s => s.longestStreak >= 7,
   },
   {
     id: 'streak_30',
     name: 'Monthly Machine',
     description: 'Maintain a 30-day streak',
     icon: '🌟',
-    condition: (s) => s.longestStreak >= 30,
+    condition: s => s.longestStreak >= 30,
   },
   {
     id: 'streak_100',
     name: 'Unstoppable',
     description: 'Maintain a 100-day streak',
     icon: '🚀',
-    condition: (s) => s.longestStreak >= 100,
+    condition: s => s.longestStreak >= 100,
   },
   {
     id: 'accuracy_80',
     name: 'Sharp Shooter',
     description: 'Achieve 80%+ overall accuracy',
     icon: '🎯',
-    condition: (s) => s.overallAccuracy >= 80 && s.totalQuestionsAnswered >= 50,
+    condition: s => s.overallAccuracy >= 80 && s.totalQuestionsAnswered >= 50,
   },
   {
     id: 'level_5',
     name: 'Rising Star',
     description: 'Reach Level 5',
     icon: '✨',
-    condition: (s) => s.level >= 5,
+    condition: s => s.level >= 5,
   },
   {
     id: 'level_10',
     name: 'Knowledge Knight',
     description: 'Reach Level 10',
     icon: '🛡️',
-    condition: (s) => s.level >= 10,
+    condition: s => s.level >= 10,
   },
   {
     id: 'topic_master_5',
     name: 'Multi-Disciplinary',
     description: 'Master 5 different topics',
     icon: '📚',
-    condition: (s) => s.topicsmastered >= 5,
+    condition: s => s.topicsMastered >= 5,
   },
   {
     id: 'thousand_questions',
     name: 'Question Crusher',
     description: 'Answer 1000 questions',
     icon: '💪',
-    condition: (s) => s.totalQuestionsAnswered >= 1000,
+    condition: s => s.totalQuestionsAnswered >= 1000,
   },
 ]
 
@@ -200,49 +194,48 @@ export class GrowthEngineService {
   /**
    * Award XP to a user with automatic level-up check.
    */
-  async awardXP(
-    userId: string,
-    reason: XPReason,
-    txParam?: any
-  ): Promise<XPAwardResult | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async awardXP(userId: string, reason: XPReason, txParam?: any): Promise<XPAwardResult | null> {
     const db = txParam ?? prisma
+    // eslint-disable-next-line security/detect-object-injection
     const amount = XP_REWARDS[reason]
     if (!amount) return null
 
     try {
       // If we are already in a transaction, just use it without nested $transaction
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const performUpdate = async (tx: any) => {
-        const user = await tx.user.findUnique({
+        // Atomically increment XP to prevent lost-update anomalies under concurrent calls
+        const updated = await tx.user.update({
           where: { id: userId },
+          data: { xp: { increment: amount } },
           select: { xp: true, level: true },
         })
 
-        if (!user) {
+        if (!updated) {
           throw new Error('User not found')
         }
 
-        const previousLevel = user.level
-        const newTotalXP = user.xp + amount
+        const previousLevel = updated.level
+        const newTotalXP = updated.xp
         const newLevel = this.calculateLevel(newTotalXP)
         const leveledUp = newLevel > previousLevel
 
-        await tx.user.update({
-          where: { id: userId },
-          data: {
-            xp: newTotalXP,
-            level: newLevel,
-          },
-        })
-
+        // Update level if it changed
         if (leveledUp) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { level: newLevel },
+          })
           logger.info(`[GrowthEngine] User ${userId} leveled up: ${previousLevel} → ${newLevel}`)
         }
 
         const nextLevelXP = this.xpForLevel(newLevel + 1)
         const currentLevelXP = this.xpForLevel(newLevel)
-        const progressToNextLevel = nextLevelXP > currentLevelXP
-          ? Math.round(((newTotalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
-          : 100
+        const progressToNextLevel =
+          nextLevelXP > currentLevelXP
+            ? Math.round(((newTotalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
+            : 100
 
         return {
           xpAwarded: amount,
@@ -261,7 +254,10 @@ export class GrowthEngineService {
         return await db.$transaction(performUpdate, { isolationLevel: 'ReadCommitted' })
       }
     } catch (error) {
-      logger.error('[GrowthEngineService] Failed to award XP', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[GrowthEngineService] Failed to award XP',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return null
     }
   }
@@ -326,19 +322,34 @@ export class GrowthEngineService {
       }
     }
 
-    // Update user
-    await prisma.user.update({
-      where: { id: userId },
+    // Update user with optimistic locking to prevent race conditions
+    // If two concurrent calls read the same streak, only the first update succeeds
+    const updateResult = await prisma.user.updateMany({
+      where: { id: userId, streak: user.streak },
       data: {
         streak: newStreak,
         longestStreak: newLongestStreak,
         lastActive: now,
       },
     })
+    if (updateResult.count === 0) {
+      // Another process already updated the streak — re-read and return current state
+      const refreshed = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { streak: true, longestStreak: true },
+      })
+      return {
+        currentStreak: refreshed?.streak ?? newStreak,
+        longestStreak: refreshed?.longestStreak ?? newLongestStreak,
+        streakMaintained: false,
+        streakBroken: false,
+        milestoneReached: null,
+      }
+    }
 
     // Award XP for streak milestones
     if (milestoneReached) {
-      await this.awardXP(userId, 'streak_milestone', milestoneReached / 7)
+      await this.awardXP(userId, 'streak_milestone')
       logger.info(`[GrowthEngine] Streak milestone ${milestoneReached} for user ${userId}`)
     }
 
@@ -363,7 +374,7 @@ export class GrowthEngineService {
       where: { userId },
       select: { achievementId: true },
     })
-    const existingIds = new Set(existing.map(a => a.achievementId))
+    const existingIds = new Set(existing.map((a: { achievementId: string }) => a.achievementId))
 
     const newlyUnlocked: { id: string; name: string; description: string; icon: string }[] = []
 
@@ -398,7 +409,9 @@ export class GrowthEngineService {
         // Unique constraint violation = already unlocked (race condition safe)
         if (!(error instanceof Error && error.message.includes('Unique constraint'))) {
           const errMsg = error instanceof Error ? error.message : String(error)
-          logger.error(`[GrowthEngine] Achievement check error: achievementId=${achievement.id} userId=${userId} error=${errMsg}`)
+          logger.error(
+            `[GrowthEngine] Achievement check error: achievementId=${achievement.id} userId=${userId} error=${errMsg}`
+          )
         }
       }
     }
@@ -422,9 +435,10 @@ export class GrowthEngineService {
     const currentLevelXP = this.xpForLevel(user.level)
     const nextLevelXP = this.xpForLevel(user.level + 1)
     const xpNeeded = nextLevelXP - user.xp
-    const progressPercent = nextLevelXP > currentLevelXP
-      ? Math.round(((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
-      : 100
+    const progressPercent =
+      nextLevelXP > currentLevelXP
+        ? Math.round(((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)
+        : 100
 
     return {
       level: user.level,
@@ -512,6 +526,7 @@ export class GrowthEngineService {
    * Level 1 starts at 100 XP.
    */
   private calculateLevel(xp: number): number {
+    if (!Number.isFinite(xp) || xp <= 0) return 1
     return Math.max(1, Math.floor(Math.sqrt(xp / 100)))
   }
 
@@ -519,65 +534,56 @@ export class GrowthEngineService {
    * Calculate XP required for a given level.
    */
   private xpForLevel(level: number): number {
+    if (!Number.isFinite(level) || level <= 1) return 100
     return level * level * 100
   }
 
-  private getDateString(date: Date): string {
+  private getDateString(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return ''
+    }
     return date.toISOString().split('T')[0]
   }
 
   /**
-   * Gather all stats needed for achievement evaluation.
+   * Gather all stats needed for achievement evaluation using aggregation queries.
    */
   private async getUserStats(userId: string): Promise<UserStats> {
-    const [user, testResults, lessonCompletions, topicPerformances] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          xp: true,
-          level: true,
-          streak: true,
-          longestStreak: true,
-        },
-      }),
-      prisma.testResult.findMany({
-        where: { userId, status: 'COMPLETED' },
-        select: {
-          passed: true,
-          percentage: true,
-          questionResults: true,
-        },
-      }),
-      prisma.lessonCompletion.count({ where: { userId } }),
-      prisma.topicPerformance.findMany({
-        where: { userId },
-        select: {
-          strengthLevel: true,
-          totalAttempts: true,
-          correctAnswers: true,
-        },
-      }),
-    ])
+    const [user, totalTests, passedTests, perfectScores, questionStats, topicsMastered] =
+      await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            xp: true,
+            level: true,
+            streak: true,
+            longestStreak: true,
+          },
+        }),
+        prisma.testResult.count({
+          where: { userId, status: 'COMPLETED' },
+        }),
+        prisma.testResult.count({
+          where: { userId, status: 'COMPLETED', passed: true },
+        }),
+        prisma.testResult.count({
+          where: { userId, status: 'COMPLETED', percentage: { gte: 100 } },
+        }),
+        prisma.$queryRaw<[{ totalQuestions: bigint; totalCorrect: bigint }]>`
+          SELECT
+            COUNT(*)::bigint AS "totalQuestions",
+            COALESCE(SUM(CASE WHEN taa."isCorrect" = true THEN 1 ELSE 0 END), 0)::bigint AS "totalCorrect"
+          FROM "test_results" tr
+          JOIN "test_attempt_answers" taa ON taa."testResultId" = tr.id
+          WHERE tr."userId" = ${userId} AND tr.status = 'COMPLETED'
+        `.then((rows: Array<{ totalQuestions: bigint; totalCorrect: bigint }>) => rows[0] ?? { totalQuestions: BigInt(0), totalCorrect: BigInt(0) }),
+        prisma.topicPerformance.count({
+          where: { userId, strengthLevel: 'mastered' },
+        }),
+      ])
 
-    const totalTests = testResults.length
-    const passedTests = testResults.filter(r => r.passed).length
-    const perfectScores = testResults.filter(r => r.percentage >= 100).length
-
-    let totalQuestions = 0
-    let totalCorrect = 0
-    for (const r of testResults) {
-      const qr = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
-      totalQuestions += qr.length
-      totalCorrect += qr.filter((q: any) => q.is_correct).length
-    }
-
-    const coursesCompleted = await prisma.userProgress.count({
-      where: { userId, progress: 100 },
-    })
-
-    const topicsMastered = topicPerformances.filter(
-      t => t.strengthLevel === 'mastered'
-    ).length
+    const totalQuestions = Number(questionStats.totalQuestions)
+    const totalCorrect = Number(questionStats.totalCorrect)
 
     return {
       totalTestsCompleted: totalTests,
@@ -587,14 +593,10 @@ export class GrowthEngineService {
       longestStreak: user?.longestStreak ?? 0,
       totalXP: user?.xp ?? 0,
       level: user?.level ?? 1,
-      coursesCompleted,
-      lessonsCompleted: lessonCompletions,
       totalQuestionsAnswered: totalQuestions,
       totalCorrectAnswers: totalCorrect,
-      overallAccuracy: totalQuestions > 0
-        ? Math.round((totalCorrect / totalQuestions) * 100)
-        : 0,
-      topicsmastered: topicsMastered,
+      overallAccuracy: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
+      topicsMastered,
     }
   }
 }

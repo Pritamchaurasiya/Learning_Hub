@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import { readReplicas } from '@prisma/extension-read-replicas'
 import winston from 'winston'
 
 // Type definitions for Prisma event payloads
@@ -109,7 +110,7 @@ const prismaOptions: Prisma.PrismaClientOptions = {
 /**
  * Extended Prisma Client with query logging and metrics
  */
-class ExtendedPrismaClient extends PrismaClient {
+export class ExtendedPrismaClient extends PrismaClient {
   private queryMetrics = {
     total: 0,
     slowQueries: 0,
@@ -160,50 +161,78 @@ class ExtendedPrismaClient extends PrismaClient {
   }
 
   private setupSoftDeleteMiddleware(): void {
-    const modelsWithSoftDelete = ['User', 'Course', 'Module', 'Lesson', 'Problem']
+    const modelsWithSoftDelete = [
+      'User',
+      'Test',
+      'Problem',
+      'Exam',
+      'Subject',
+      'Topic',
+      'CanonicalQuestion',
+    ]
+
+    const injectDeletedAt = (
+      where: Record<string, unknown> | undefined
+    ): Record<string, unknown> => {
+      if (!where) return { deletedAt: null }
+      if (where.deletedAt !== undefined) return where
+
+      const newWhere: Record<string, unknown> = { ...where }
+      if (Array.isArray(newWhere.OR)) {
+        newWhere.OR = newWhere.OR.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+      }
+      if (newWhere.AND) {
+        if (Array.isArray(newWhere.AND)) {
+          newWhere.AND = newWhere.AND.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+        } else {
+          newWhere.AND = injectDeletedAt(newWhere.AND as Record<string, unknown>)
+        }
+      }
+      if (newWhere.NOT) {
+        if (Array.isArray(newWhere.NOT)) {
+          newWhere.NOT = newWhere.NOT.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+        } else {
+          newWhere.NOT = injectDeletedAt(newWhere.NOT as Record<string, unknown>)
+        }
+      }
+
+      if (newWhere.deletedAt === undefined) {
+        newWhere.deletedAt = null
+      }
+
+      return newWhere
+    }
 
     this.$use(async (params, next) => {
       if (params.model && modelsWithSoftDelete.includes(params.model)) {
-        if (params.action === 'findUnique' || params.action === 'findFirst') {
-          // Change to findFirst - you cannot filter by anything except ID / unique with findUnique
-          params.action = 'findFirst'
-          // Add 'deletedAt: null' filter
-          params.args.where = { ...params.args.where, deletedAt: null }
+        if (
+          params.action === 'findUnique' ||
+          params.action === 'findFirst' ||
+          params.action === 'findUniqueOrThrow' ||
+          params.action === 'findFirstOrThrow'
+        ) {
+          // Keep findUnique as findUnique to preserve unique-index fast path
+          // Inject deletedAt: null to exclude soft-deleted rows
+          params.args.where = injectDeletedAt(params.args.where)
         }
-        if (params.action === 'findMany') {
-          // Find many queries
-          if (params.args.where) {
-            if (params.args.where.deletedAt === undefined) {
-              // Exclude deleted records if they have not been explicitly requested
-              params.args.where.deletedAt = null
-            }
-          } else {
-            params.args.where = { deletedAt: null }
-          }
+        if (
+          params.action === 'findMany' ||
+          params.action === 'count' ||
+          params.action === 'aggregate' ||
+          params.action === 'groupBy'
+        ) {
+          params.args.where = injectDeletedAt(params.args.where)
         }
         if (params.action === 'updateMany') {
-          if (params.args.where) {
-            if (params.args.where.deletedAt === undefined) {
-              params.args.where.deletedAt = null
-            }
-          } else {
-            params.args.where = { deletedAt: null }
-          }
+          params.args.where = injectDeletedAt(params.args.where)
         }
         if (params.action === 'delete') {
-          // Delete queries
-          // Change action to an update
           params.action = 'update'
           params.args.data = { deletedAt: new Date() }
         }
         if (params.action === 'deleteMany') {
-          // Delete many queries
           params.action = 'updateMany'
-          if (params.args.data !== undefined) {
-            params.args.data.deletedAt = new Date()
-          } else {
-            params.args.data = { deletedAt: new Date() }
-          }
+          params.args.data = { ...(params.args.data || {}), deletedAt: new Date() }
         }
       }
       return next(params)
@@ -297,12 +326,32 @@ class ExtendedPrismaClient extends PrismaClient {
   }
 }
 
-// Create singleton instance
-export const prisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions)
+// Create base singleton instance
+const basePrisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions)
+
+const replicaUrl = process.env.DATABASE_URL_REPLICA
+let replicaClient: PrismaClient | undefined
+
+if (replicaUrl) {
+  replicaClient = new PrismaClient({
+    datasources: { db: { url: replicaUrl } },
+  })
+}
+
+// Apply Read Replicas extension only when a replica is configured
+export const prisma = replicaClient
+  ? basePrisma.$extends(
+      readReplicas({
+        replicas: [
+          replicaClient as unknown as Parameters<typeof readReplicas>[0]['replicas'][number],
+        ],
+      })
+    )
+  : basePrisma
 
 // Cache instance in development to prevent hot-reload issues
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
+  globalForPrisma.prisma = basePrisma
 }
 
 // Graceful shutdown — database disconnect only (server.ts handles full shutdown)
@@ -315,11 +364,5 @@ process.on('beforeExit', async () => {
 // proper shutdown ordering (HTTP server drain → WebSocket close → DB disconnect).
 // Do NOT add signal handlers here — they would call process.exit(0) before
 // server.ts can gracefully close connections.
-
-process.on('uncaughtException', async error => {
-  dbLogger.error('Uncaught exception, disconnecting database', { error })
-  await prisma.$disconnect()
-  process.exit(1)
-})
 
 export default prisma

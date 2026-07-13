@@ -38,6 +38,7 @@ export class AdvancedAnalyticsService {
   async getDailyActiveUsers(days: number = 30): Promise<TimeSeriesData[]> {
     const safeDays = clampDays(days)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
           DATE("lastActive") as date,
@@ -48,32 +49,39 @@ export class AdvancedAnalyticsService {
         GROUP BY DATE("lastActive")
         ORDER BY date ASC
       `
-      return results.map(r => ({ date: r.date, value: Number(r.value) }))
+      return results.map((r: any) => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getDailyActiveUsers failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getDailyActiveUsers failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
 
   /**
-   * Enrollment trend — new course enrollments per day.
-   * Table: "user_progress" (@@map)
+   * Test Attempt trend — new test attempts per day.
+   * Table: "test_results" (@@map)
    */
-  async getEnrollmentTrend(days: number = 30): Promise<TimeSeriesData[]> {
+  async getTestAttemptTrend(days: number = 30): Promise<TimeSeriesData[]> {
     const safeDays = clampDays(days)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
           DATE("createdAt") as date,
           COUNT(*) as value
-        FROM "user_progress"
+        FROM "test_results"
         WHERE "createdAt" >= NOW() - (make_interval(days => ${safeDays}))
         GROUP BY DATE("createdAt")
         ORDER BY date ASC
       `
-      return results.map(r => ({ date: r.date, value: Number(r.value) }))
+      return results.map((r: any) => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getEnrollmentTrend failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getEnrollmentTrend failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -85,6 +93,7 @@ export class AdvancedAnalyticsService {
   async getTestCompletionTrend(days: number = 30): Promise<TimeSeriesData[]> {
     const safeDays = clampDays(days)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
           DATE("completedAt") as date,
@@ -95,9 +104,12 @@ export class AdvancedAnalyticsService {
         GROUP BY DATE("completedAt")
         ORDER BY date ASC
       `
-      return results.map(r => ({ date: r.date, value: Number(r.value) }))
+      return results.map((r: any) => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getTestCompletionTrend failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getTestCompletionTrend failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -109,6 +121,7 @@ export class AdvancedAnalyticsService {
   async getCohortRetention(weeks: number = 8): Promise<CohortData[]> {
     const safeWeeks = clampWeeks(weeks)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         WITH cohorts AS (
           SELECT 
@@ -138,7 +151,7 @@ export class AdvancedAnalyticsService {
         GROUP BY c.cohort_week
         ORDER BY c.cohort_week DESC
       `
-      return results.map(r => ({
+      return results.map((r: any) => ({
         cohort: r.cohort,
         week0: Number(r.week0),
         week1: Number(r.week1),
@@ -147,7 +160,10 @@ export class AdvancedAnalyticsService {
         week4: Number(r.week4),
       }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getCohortRetention failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getCohortRetention failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -158,6 +174,7 @@ export class AdvancedAnalyticsService {
    */
   async getLearningPatternsByHour(): Promise<{ hour: number; activity: number }[]> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
           EXTRACT(HOUR FROM "lastActive") as hour,
@@ -168,62 +185,66 @@ export class AdvancedAnalyticsService {
         GROUP BY EXTRACT(HOUR FROM "lastActive")
         ORDER BY hour ASC
       `
-      return results.map(r => ({ hour: Number(r.hour), activity: Number(r.activity) }))
+      return results.map((r: any) => ({ hour: Number(r.hour), activity: Number(r.activity) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getLearningPatternsByHour failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getLearningPatternsByHour failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
 
   /**
-   * Course completion funnel — stages of course engagement.
+   * Test completion funnel — stages of test engagement.
    */
-  async getCourseCompletionFunnel(courseId: string) {
-    const [enrolled, started, halfWay, completed] = await Promise.all([
-      prisma.userProgress.count({ where: { courseId } }),
-      prisma.userProgress.count({ where: { courseId, progress: { gt: 0 } } }),
-      prisma.userProgress.count({ where: { courseId, progress: { gte: 50 } } }),
-      prisma.userProgress.count({ where: { courseId, progress: 100 } }),
+  async getTestCompletionFunnel(testId: string) {
+    const [started, passed, failed] = await Promise.all([
+      prisma.testResult.count({ where: { testId } }),
+      prisma.testResult.count({ where: { testId, passed: true } }),
+      prisma.testResult.count({ where: { testId, passed: false, status: 'COMPLETED' } }),
     ])
 
     return {
-      enrolled,
       started,
-      startedRate: enrolled > 0 ? (started / enrolled) * 100 : 0,
-      halfWay,
-      halfWayRate: enrolled > 0 ? (halfWay / enrolled) * 100 : 0,
-      completed,
-      completionRate: enrolled > 0 ? (completed / enrolled) * 100 : 0,
+      passed,
+      failed,
+      passRate: started > 0 ? (passed / started) * 100 : 0,
+      failRate: started > 0 ? (failed / started) * 100 : 0,
     }
   }
 
   /**
-   * Top courses by engagement — ranked by completion rate.
-   * Table: "courses" (@@map), "user_progress" (@@map)
+   * Top tests by engagement — ranked by completion rate.
+   * Table: "tests" (@@map), "test_results" (@@map)
    */
-  async getTopCoursesByEngagement(limit: number = 10) {
+  async getTopTestsByEngagement(limit: number = 10) {
     const safeLimit = clampLimit(limit)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
-          c.id,
-          c.title,
-          COUNT(DISTINCT up."userId") as total_enrollments,
-          AVG(up.progress) as avg_progress,
-          COUNT(DISTINCT CASE WHEN up.progress = 100 THEN up."userId" END) as completions,
-          (COUNT(DISTINCT CASE WHEN up.progress = 100 THEN up."userId" END)::float / 
-           NULLIF(COUNT(DISTINCT up."userId"), 0) * 100) as completion_rate
-        FROM "courses" c
-        LEFT JOIN "user_progress" up ON c.id = up."courseId"
-        WHERE c."isPublished" = true
-          AND c."deletedAt" IS NULL
-        GROUP BY c.id, c.title
-        ORDER BY completion_rate DESC, total_enrollments DESC
+          t.id,
+          t.title,
+          COUNT(DISTINCT tr."userId") as total_attempts,
+          AVG(tr.score) as avg_score,
+          COUNT(DISTINCT CASE WHEN tr.passed = true THEN tr."userId" END) as passers,
+          (COUNT(DISTINCT CASE WHEN tr.passed = true THEN tr."userId" END)::float / 
+           NULLIF(COUNT(DISTINCT tr."userId"), 0) * 100) as pass_rate
+        FROM "tests" t
+        LEFT JOIN "test_results" tr ON t.id = tr."testId"
+        WHERE t."isPublished" = true
+          AND t."deletedAt" IS NULL
+        GROUP BY t.id, t.title
+        ORDER BY pass_rate DESC, total_attempts DESC
         LIMIT ${safeLimit}
       `
       return results
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getTopCoursesByEngagement failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getTopCoursesByEngagement failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }
@@ -235,6 +256,7 @@ export class AdvancedAnalyticsService {
   async getUserLearningVelocity(userId: string, days: number = 30): Promise<TimeSeriesData[]> {
     const safeDays = clampDays(days)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results = await prisma.$queryRaw<any[]>`
         SELECT 
           DATE("createdAt") as date,
@@ -245,9 +267,12 @@ export class AdvancedAnalyticsService {
         GROUP BY DATE("createdAt")
         ORDER BY date ASC
       `
-      return results.map(r => ({ date: r.date, value: Number(r.value) }))
+      return results.map((r: any) => ({ date: r.date, value: Number(r.value) }))
     } catch (error) {
-      logger.error('[AdvancedAnalytics] getUserLearningVelocity failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[AdvancedAnalytics] getUserLearningVelocity failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return []
     }
   }

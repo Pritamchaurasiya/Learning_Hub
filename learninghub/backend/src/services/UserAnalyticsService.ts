@@ -13,7 +13,6 @@
 
 import { prisma } from '../prismaClient'
 import { topicPerformanceService } from './TopicPerformanceService'
-import logger from '../utils/logger'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,12 +29,12 @@ export interface SpeedTrendPoint {
 }
 
 export interface GrowthMetrics {
-  growthScore: number          // 0-100 composite score
-  accuracyDelta: number        // Change vs previous period
-  speedDelta: number           // Change vs previous period
-  consistencyScore: number     // Based on daily activity
-  topicsImproved: number       // Topics that went up in strength
-  topicsDegraded: number       // Topics that went down
+  growthScore: number // 0-100 composite score
+  accuracyDelta: number // Change vs previous period
+  speedDelta: number // Change vs previous period
+  consistencyScore: number // Based on daily activity
+  topicsImproved: number // Topics that went up in strength
+  topicsDegraded: number // Topics that went down
 }
 
 export interface UserDashboardAnalytics {
@@ -66,27 +65,24 @@ export class UserAnalyticsService {
   /**
    * Get comprehensive dashboard analytics for a user.
    */
-  async getDashboardAnalytics(
-    userId: string,
-    days: number = 30
-  ): Promise<UserDashboardAnalytics> {
+  async getDashboardAnalytics(userId: string, days: number = 30): Promise<UserDashboardAnalytics> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    const [
-      summary,
-      accuracyTrend,
-      speedTrend,
-      topicMastery,
-      growth,
-      recentActivity,
-    ] = await Promise.all([
-      this.getSummary(userId, startDate),
-      this.getAccuracyTrend(userId, days),
-      this.getSpeedTrend(userId, days),
-      topicPerformanceService.getTopicMasteryMap(userId),
-      this.getGrowthMetrics(userId, days),
-      this.getRecentActivity(userId, 20),
-    ])
+    const userPref = await prisma.userExamPreference.findUnique({
+      where: { userId },
+      select: { examId: true },
+    })
+    const targetExamId = userPref?.examId ?? undefined
+
+    const [summary, accuracyTrend, speedTrend, topicMastery, growth, recentActivity] =
+      await Promise.all([
+        this.getSummary(userId, startDate, targetExamId),
+        this.getAccuracyTrend(userId, days, targetExamId),
+        this.getSpeedTrend(userId, days, targetExamId),
+        topicPerformanceService.getTopicMasteryMap(userId),
+        this.getGrowthMetrics(userId, days, targetExamId),
+        this.getRecentActivity(userId, 20),
+      ])
 
     return {
       summary,
@@ -101,21 +97,25 @@ export class UserAnalyticsService {
   /**
    * Summary metrics for the period.
    */
-  private async getSummary(userId: string, startDate: Date) {
-    const [results, user] = await Promise.all([
+  private async getSummary(userId: string, startDate: Date, targetExamId?: string) {
+    const baseTestWhere = {
+      userId,
+      status: 'COMPLETED' as const,
+      completedAt: { gte: startDate },
+      ...(targetExamId && {
+        test: { examId: targetExamId },
+      }),
+    }
+
+    const [results, user, totalQuestions, totalCorrect] = await Promise.all([
       prisma.testResult.findMany({
-        where: {
-          userId,
-          status: 'COMPLETED',
-          completedAt: { gte: startDate },
-        },
+        where: baseTestWhere,
         select: {
           percentage: true,
           passed: true,
           timeTaken: true,
           score: true,
           totalPoints: true,
-          questionResults: true,
         },
       }),
       prisma.user.findUnique({
@@ -125,36 +125,33 @@ export class UserAnalyticsService {
           longestStreak: true,
         },
       }),
+      prisma.testAttemptAnswer.count({
+        where: {
+          testResult: baseTestWhere,
+        },
+      }),
+      prisma.testAttemptAnswer.count({
+        where: {
+          isCorrect: true,
+          testResult: baseTestWhere,
+        },
+      }),
     ])
 
     const totalTests = results.length
-    const passedTests = results.filter(r => r.passed).length
-    const avgScore = totalTests > 0
-      ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalTests)
-      : 0
-    const totalTimeSeconds = results.reduce((sum, r) => sum + r.timeTaken, 0)
-
-    // Count total questions answered
-    let totalQuestions = 0
-    let totalCorrect = 0
-    for (const result of results) {
-      const qResults = Array.isArray(result.questionResults)
-        ? result.questionResults as any[]
-        : []
-      totalQuestions += qResults.length
-      totalCorrect += qResults.filter((qr: any) => qr.is_correct).length
-    }
+    const passedTests = results.filter((r: { passed: boolean | null }) => r.passed).length
+    const avgScore =
+      totalTests > 0
+        ? Math.round(results.reduce((sum: number, r: { percentage: number }) => sum + r.percentage, 0) / totalTests)
+        : 0
+    const totalTimeSeconds = results.reduce((sum: number, r: { timeTaken: number }) => sum + r.timeTaken, 0)
 
     return {
       totalTestsCompleted: totalTests,
       totalQuestionsAnswered: totalQuestions,
-      overallAccuracy: totalQuestions > 0
-        ? Math.round((totalCorrect / totalQuestions) * 100)
-        : 0,
+      overallAccuracy: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
       averageScore: avgScore,
-      passRate: totalTests > 0
-        ? Math.round((passedTests / totalTests) * 100)
-        : 0,
+      passRate: totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0,
       totalStudyTimeMinutes: Math.round(totalTimeSeconds / 60),
       currentStreak: user?.streak ?? 0,
       longestStreak: user?.longestStreak ?? 0,
@@ -166,7 +163,8 @@ export class UserAnalyticsService {
    */
   async getAccuracyTrend(
     userId: string,
-    days: number = 30
+    days: number = 30,
+    targetExamId?: string
   ): Promise<AccuracyTrendPoint[]> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
@@ -175,6 +173,9 @@ export class UserAnalyticsService {
         userId,
         status: 'COMPLETED',
         completedAt: { gte: startDate },
+        ...(targetExamId && {
+          test: { examId: targetExamId },
+        }),
       },
       select: {
         percentage: true,
@@ -206,7 +207,8 @@ export class UserAnalyticsService {
    */
   async getSpeedTrend(
     userId: string,
-    days: number = 30
+    days: number = 30,
+    targetExamId?: string
   ): Promise<SpeedTrendPoint[]> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
@@ -215,11 +217,14 @@ export class UserAnalyticsService {
         userId,
         status: 'COMPLETED',
         completedAt: { gte: startDate },
+        ...(targetExamId && {
+          test: { examId: targetExamId },
+        }),
       },
       select: {
         timeTaken: true,
         completedAt: true,
-        questionResults: true,
+        _count: { select: { attemptAnswers: true } },
       },
       orderBy: { completedAt: 'asc' },
     })
@@ -228,18 +233,17 @@ export class UserAnalyticsService {
     for (const r of results) {
       if (!r.completedAt) continue
       const date = r.completedAt.toISOString().split('T')[0]
-      const qResults = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
+      const qCount = r._count.attemptAnswers
       const existing = dailyMap.get(date) ?? { totalTime: 0, totalQuestions: 0 }
       existing.totalTime += r.timeTaken
-      existing.totalQuestions += qResults.length
+      existing.totalQuestions += qCount
       dailyMap.set(date, existing)
     }
 
     return Array.from(dailyMap.entries()).map(([date, stats]) => ({
       date,
-      avgTimePerQuestion: stats.totalQuestions > 0
-        ? Math.round(stats.totalTime / stats.totalQuestions)
-        : 0,
+      avgTimePerQuestion:
+        stats.totalQuestions > 0 ? Math.round(stats.totalTime / stats.totalQuestions) : 0,
       questionsAnswered: stats.totalQuestions,
     }))
   }
@@ -249,7 +253,8 @@ export class UserAnalyticsService {
    */
   async getGrowthMetrics(
     userId: string,
-    days: number = 30
+    days: number = 30,
+    targetExamId?: string
   ): Promise<GrowthMetrics> {
     const now = Date.now()
     const currentStart = new Date(now - days * 24 * 60 * 60 * 1000)
@@ -261,8 +266,16 @@ export class UserAnalyticsService {
           userId,
           status: 'COMPLETED',
           completedAt: { gte: currentStart },
+          ...(targetExamId && {
+            test: { examId: targetExamId },
+          }),
         },
-        select: { percentage: true, timeTaken: true, questionResults: true },
+        select: {
+          percentage: true,
+          timeTaken: true,
+          completedAt: true,
+          _count: { select: { attemptAnswers: true } },
+        },
       }),
       prisma.testResult.findMany({
         where: {
@@ -272,26 +285,34 @@ export class UserAnalyticsService {
             gte: previousStart,
             lt: currentStart,
           },
+          ...(targetExamId && {
+            test: { examId: targetExamId },
+          }),
         },
-        select: { percentage: true, timeTaken: true, questionResults: true },
+        select: {
+          percentage: true,
+          timeTaken: true,
+          completedAt: true,
+          _count: { select: { attemptAnswers: true } },
+        },
       }),
     ])
 
-    const currentAvg = currentResults.length > 0
-      ? currentResults.reduce((s, r) => s + r.percentage, 0) / currentResults.length
-      : 0
-    const previousAvg = previousResults.length > 0
-      ? previousResults.reduce((s, r) => s + r.percentage, 0) / previousResults.length
-      : 0
+    const currentAvg =
+      currentResults.length > 0
+        ? currentResults.reduce((s: any, r: any) => s + r.percentage, 0) / currentResults.length
+        : 0
+    const previousAvg =
+      previousResults.length > 0
+        ? previousResults.reduce((s: any, r: any) => s + r.percentage, 0) / previousResults.length
+        : 0
 
     const currentAvgTime = this.avgTimePerQuestion(currentResults)
     const previousAvgTime = this.avgTimePerQuestion(previousResults)
 
     // Consistency: how many unique days had test activity
     const activeDays = new Set(
-      currentResults
-        .map(r => (r as any).completedAt?.toISOString?.()?.split('T')?.[0])
-        .filter(Boolean)
+      currentResults.map((r: any) => r.completedAt?.toISOString()?.split('T')?.[0]).filter(Boolean)
     ).size
     const consistencyScore = Math.min(100, Math.round((activeDays / days) * 100 * 3))
 
@@ -332,7 +353,7 @@ export class UserAnalyticsService {
       },
     })
 
-    return activities.map(a => ({
+    return activities.map((a: any) => ({
       date: a.createdAt.toISOString(),
       type: a.activityType,
       description: this.formatActivityDescription(a.activityType, a.entityType, a.metadata),
@@ -341,13 +362,14 @@ export class UserAnalyticsService {
 
   // ─── Private Helpers ─────────────────────────────────────────────────────────
 
-  private avgTimePerQuestion(results: { timeTaken: number; questionResults: any }[]): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private avgTimePerQuestion(results: any[]) {
     let totalTime = 0
     let totalQuestions = 0
     for (const r of results) {
-      const qResults = Array.isArray(r.questionResults) ? r.questionResults as any[] : []
+      const qCount = r._count?.attemptAnswers ?? r.attemptAnswers?.length ?? 0
       totalTime += r.timeTaken
-      totalQuestions += qResults.length
+      totalQuestions += qCount
     }
     return totalQuestions > 0 ? totalTime / totalQuestions : 0
   }
@@ -355,6 +377,7 @@ export class UserAnalyticsService {
   private formatActivityDescription(
     type: string,
     entityType: string | null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _metadata: any
   ): string {
     const descriptions: Record<string, string> = {
@@ -377,6 +400,7 @@ export class UserAnalyticsService {
       PROFILE_UPDATE: 'Updated profile',
       SETTINGS_UPDATE: 'Updated settings',
     }
+    // eslint-disable-next-line security/detect-object-injection
     return descriptions[type] ?? `Activity: ${type}`
   }
 }

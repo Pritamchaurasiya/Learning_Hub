@@ -7,16 +7,17 @@
 
 import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
-import { asyncHandler } from '../../middleware/asyncHandler'
+import { validate } from '../../middleware/validationMiddleware'
+import {
+  getMyAnalyticsSchema,
+  getAccuracyTrendSchema,
+  getGrowthMetricsSchema,
+} from '../../validations/schemas'
 import {
   getMyAnalytics,
   getAccuracyTrend,
   getTopicMastery,
   getGrowthMetrics,
-  getRecommendations,
-  getNextTestRecommendation,
-  getImprovementRoadmap,
-  getSpacedRepetition,
   getLevelProgress,
 } from '../../controllers/userAnalyticsController'
 
@@ -28,18 +29,18 @@ router.use(authenticate)
 // ─── User Analytics ──────────────────────────────────────────────────────────
 
 // Comprehensive dashboard analytics
-router.get('/me', asyncHandler(getMyAnalytics))
+router.get('/me', validate(getMyAnalyticsSchema), getMyAnalytics)
 
 // Accuracy trend over time
-router.get('/me/accuracy-trend', asyncHandler(getAccuracyTrend))
+router.get('/me/accuracy-trend', validate(getAccuracyTrendSchema), getAccuracyTrend)
 
 // Topic mastery map (all topics with strength levels)
-router.get('/me/topic-mastery', asyncHandler(getTopicMastery))
+router.get('/me/topic-mastery', getTopicMastery)
 
 // Growth metrics (comparing current vs previous period)
-router.get('/me/growth', asyncHandler(getGrowthMetrics))
+router.get('/me/growth', validate(getGrowthMetricsSchema), getGrowthMetrics)
 
 // Level progress (XP, current level, progress to next)
-router.get('/me/level', asyncHandler(getLevelProgress))
+router.get('/me/level', getLevelProgress)
 
 export default router

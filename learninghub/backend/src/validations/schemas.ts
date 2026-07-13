@@ -48,8 +48,16 @@ export const loginSchema = z.object({
 export const refreshSchema = z.object({
   body: z
     .object({
-      refresh_token: z.string().min(1, 'Refresh token is required').max(512, 'Refresh token too long').optional(),
-      refresh: z.string().min(1, 'Refresh token is required').max(512, 'Refresh token too long').optional(),
+      refresh_token: z
+        .string()
+        .min(1, 'Refresh token is required')
+        .max(512, 'Refresh token too long')
+        .optional(),
+      refresh: z
+        .string()
+        .min(1, 'Refresh token is required')
+        .max(512, 'Refresh token too long')
+        .optional(),
     })
     .refine(data => data.refresh_token ?? data.refresh, {
       message: 'Refresh token is required (provide refresh_token or refresh)',
@@ -199,7 +207,8 @@ export const adminRegisterSchema = z.object({
 
 export const updateProfileSchema = z.object({
   body: z.object({
-    display_name: z.string().min(1).max(100).optional(),
+    username: z.string().min(2).max(50).optional(),
+    email: z.string().trim().toLowerCase().email('Invalid email address').max(255).optional(),
     bio: z.string().max(500).optional(),
     location: z.string().max(100).optional(),
     website: z.string().url().max(200).optional().or(z.literal('')),
@@ -229,6 +238,47 @@ export const resetPasswordSchema = z.object({
       .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
       .regex(/[0-9]/, 'Password must contain at least one number')
       .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+  }),
+})
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z
+      .string()
+      .min(1, 'Current password is required')
+      .max(128, 'Password must not exceed 128 characters'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .max(128, 'Password must not exceed 128 characters')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+  }),
+})
+
+export const setupMfaSchema = z.object({
+  body: z.object({
+    token: z.string().min(6).max(6).optional(),
+  }),
+})
+
+export const verifyMfaEnableSchema = z.object({
+  body: z.object({
+    token: z
+      .string()
+      .min(6, 'MFA token must be at least 6 digits')
+      .max(6, 'MFA token must be at most 6 digits'),
+  }),
+})
+
+export const disableMfaSchema = z.object({
+  body: z.object({
+    token: z
+      .string()
+      .min(6, 'MFA token must be at least 6 digits')
+      .max(6, 'MFA token must be at most 6 digits'),
   }),
 })
 
@@ -332,6 +382,7 @@ export const tutorMessageSchema = z.object({
     message: z.string().min(1, 'Message is required').max(10000),
     session_id: z.string().max(100).optional(),
     course_context: z.string().max(500).optional(),
+    context: z.any().optional(),
   }),
 })
 
@@ -342,12 +393,51 @@ export const createChatSessionSchema = z.object({
 })
 
 export const generatePracticeTestSchema = z.object({
-  body: z.object({
-    course_id: idSchema.optional(),
-    topic_ids: z.array(idSchema).max(20).optional(),
-    num_questions: z.number().int().min(1).max(100).optional(),
-    difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']).optional(),
-  }),
+  body: z
+    .object({
+      course_id: idSchema.optional(),
+      topic_ids: z.array(idSchema).max(20).optional(),
+      num_questions: z.coerce.number().int().min(1).max(100).optional(),
+      topic: z.string().trim().min(1).max(500).optional(),
+      difficulty: z
+        .enum([
+          'BEGINNER',
+          'INTERMEDIATE',
+          'ADVANCED',
+          'EXPERT',
+          'EASY',
+          'MEDIUM',
+          'HARD',
+          'MIXED',
+          'ADAPTIVE',
+          'easy',
+          'medium',
+          'hard',
+          'mixed',
+          'adaptive',
+        ])
+        .optional(),
+      count: z.coerce.number().int().min(1).max(100).optional(),
+      mode: z
+        .enum([
+          'PRACTICE',
+          'MOCK',
+          'TIMED_CHALLENGE',
+          'ADAPTIVE',
+          'practice',
+          'mock',
+          'timed_challenge',
+          'adaptive',
+        ])
+        .optional(),
+      exam_context: z.any().optional(),
+      time_limit: z.coerce.number().int().min(1).optional(),
+      async: z.boolean().optional(),
+    })
+    .transform(body => ({
+      ...body,
+      count: body.count ?? body.num_questions,
+    })),
 })
 
 export const codeReviewSchema = z.object({
@@ -394,5 +484,213 @@ export const userAnalyticsSchema = z.object({
   query: z.object({
     period: z.enum(['7d', '30d', '90d', 'all']).optional(),
     course_id: idSchema.optional(),
+  }),
+})
+
+// ==================== AB TESTING SCHEMAS ====================
+export const trackConversionSchema = z.object({
+  body: z.object({
+    experimentId: z.string().min(1, 'Experiment ID is required').max(100),
+    eventName: z.string().min(1, 'Event name is required').max(100),
+    value: z.number().optional(),
+  }),
+})
+
+export const getExperimentResultsSchema = z.object({
+  params: z.object({
+    id: idSchema,
+  }),
+})
+
+// ==================== ANALYTICS SCHEMAS ====================
+export const getLearningActivitySchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+export const getPerformanceTrendSchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+// ==================== EXAM CONTENT SCHEMAS ====================
+export const createPYQSchema = z.object({
+  body: z.object({
+    year: z
+      .union([z.string(), z.number()])
+      .refine(val => String(val).length >= 2, 'Year is required'),
+    exam: z.string().min(1, 'Exam name is required').max(200),
+    subject: z.string().min(1, 'Subject is required').max(200),
+    questions: z.array(z.record(z.string(), z.any())).min(1, 'At least one question is required'),
+  }),
+})
+
+export const getExamsSchema = z.object({
+  query: z.object({
+    countryId: z.string().optional(),
+  }),
+})
+
+export const getSubjectsSchema = z.object({
+  params: z.object({
+    examId: idSchema,
+  }),
+})
+
+// ==================== BOOKMARK SCHEMAS ====================
+export const bookmarkQuestionSchema = z.object({
+  body: z.object({
+    question_id: z.string().min(1, 'Question ID is required').max(50),
+    notes: z.string().max(1000).optional(),
+  }),
+})
+
+export const removeBookmarkSchema = z.object({
+  params: z.object({
+    questionId: z.string().min(1, 'Question ID is required').max(50),
+  }),
+})
+
+// ==================== RECOMMENDATIONS SCHEMAS ====================
+export const getRecommendationsSchema = z.object({
+  query: z.object({
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 10))
+      .pipe(z.number().int().min(1).max(50)),
+  }),
+})
+
+export const getNextTestRecommendationSchema = z.object({
+  query: z.object({
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 5))
+      .pipe(z.number().int().min(1).max(20)),
+  }),
+})
+
+export const getImprovementRoadmapSchema = z.object({
+  query: z.object({
+    weeks: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 4))
+      .pipe(z.number().int().min(1).max(12)),
+  }),
+})
+
+export const getSpacedRepetitionSchema = z.object({
+  query: z.object({
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 5))
+      .pipe(z.number().int().min(1).max(20)),
+  }),
+})
+
+// ==================== USER ANALYTICS SCHEMAS ====================
+export const getMyAnalyticsSchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+export const getAccuracyTrendSchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+export const getGrowthMetricsSchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+// ==================== ADMIN SCHEMAS ====================
+export const adminUpdateRoleSchema = z.object({
+  body: z.object({
+    role: z.enum(['STUDENT', 'INSTRUCTOR', 'ADMIN', 'SUPERADMIN'], {
+      message: 'Role must be one of: STUDENT, INSTRUCTOR, ADMIN, SUPERADMIN',
+    }),
+  }),
+})
+
+export const adminAnalyticsQuerySchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+export const adminAuditLogQuerySchema = z.object({
+  query: z.object({
+    page: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 1))
+      .pipe(z.number().int().min(1))
+      .optional(),
+    limit: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 20))
+      .pipe(z.number().int().min(1).max(100))
+      .optional(),
+    user_id: z.string().max(50).optional(),
+    action: z.string().max(100).optional(),
+    severity: z.string().max(20).optional(),
+    entity_type: z.string().max(50).optional(),
+    start_date: z.string().optional(),
+    end_date: z.string().optional(),
+  }),
+})
+
+export const adminDauQuerySchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 30))
+      .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+export const adminSecurityEventsSchema = z.object({
+  query: z.object({
+    days: z
+      .string()
+      .optional()
+      .transform(val => (val ? Number(val) : 7))
+      .pipe(z.number().int().min(1).max(365)),
   }),
 })

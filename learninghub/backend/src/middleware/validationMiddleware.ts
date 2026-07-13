@@ -21,8 +21,22 @@ export const validate =
       // Re-assign sanitized data back to req to strip unknown fields
       // and apply type coercions defined in Zod schemas
       if (parsed.body !== undefined) req.body = parsed.body
-      if (parsed.query != null) req.query = parsed.query as Request['query']
-      if (parsed.params != null) req.params = parsed.params as Request['params']
+      if (parsed.query != null) {
+        Object.defineProperty(req, 'query', {
+          value: parsed.query,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        })
+      }
+      if (parsed.params != null) {
+        Object.defineProperty(req, 'params', {
+          value: parsed.params,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        })
+      }
 
       return next()
     } catch (error) {
@@ -33,6 +47,20 @@ export const validate =
         }))
         return sendValidationError(res, 'Validation failed', 'VALIDATION_ERROR', details)
       }
+      console.error('[Validation Error]', error)
       return sendInternalError(res, 'Internal server error during validation')
     }
   }
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+export const validateUUIDParam = (paramName = 'id') => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const val = req.params[paramName]
+    if (typeof val !== 'string' || !uuidRegex.test(val)) {
+      sendValidationError(res, `Invalid UUID format for parameter: ${paramName}`)
+      return
+    }
+    next()
+  }
+}

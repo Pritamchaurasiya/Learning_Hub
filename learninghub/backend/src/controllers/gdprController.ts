@@ -1,78 +1,66 @@
 import { Request, Response } from 'express'
-import { prisma } from '../config/database'
+import { prisma } from '../prismaClient'
 import { sendSuccess, sendError } from '../utils/responseHelper'
+import { asyncHandler } from '../utils/errorHandler'
 
-export async function exportUserData(req: Request, res: Response): Promise<void> {
-  try {
-    const userId = (req.user as any)?.id ?? (req.user as any)?.userId
-    if (!userId) {
-      return sendError(res, 'Unauthorized', 401)
-    }
+export const exportUserData = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        progress: { include: { course: { select: { title: true } } } },
-        testResults: { select: { testId: true, score: true, completedAt: true } },
-        achievements: { select: { name: true, unlockedAt: true } },
-        activityLogs: { select: { activityType: true, createdAt: true }, take: 100 },
-      },
-    })
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      testResults: { select: { testId: true, score: true, completedAt: true } },
+      achievements: { select: { name: true, unlockedAt: true } },
+      activityLogs: { select: { activityType: true, createdAt: true }, take: 100 },
+    },
+  })
 
-    if (!user) {
-      return sendError(res, 'User not found', 404)
-    }
-
-    const exportData = {
-      exportDate: new Date().toISOString(),
-      personalInfo: {
-        email: user.email,
-        username: user.username,
-        createdAt: user.createdAt,
-        lastLoginAt: user.lastLoginAt,
-      },
-      learningData: {
-        totalXP: user.xp,
-        level: user.level,
-        progress: user.progress.map(p => ({
-          course: p.course.title,
-          progress: p.progress,
-          lastActivityAt: p.lastActivityAt,
-        })),
-        testScores: user.testResults.map(t => ({
-          testId: t.testId,
-          score: t.score,
-          completedAt: t.completedAt,
-        })),
-        achievements: user.achievements.map(a => ({
-          name: a.name,
-          unlockedAt: a.unlockedAt,
-        })),
-      },
-      activityHistory: user.activityLogs.map(l => ({
-        activityType: l.activityType,
-        timestamp: l.createdAt,
-      })),
-    }
-
-    res.setHeader('Content-Type', 'application/json')
-    res.setHeader('Content-Disposition', `attachment; filename="user-data-${userId}.json"`)
-    sendSuccess(res, exportData, 'Data exported successfully')
-  } catch (error: any) {
-    sendError(res, error.message, 500)
+  if (!user) {
+    sendError(res, 'User not found', 404)
+    return
   }
-}
 
-export async function deleteUserAccount(req: Request, res: Response): Promise<void> {
-  try {
-    const userId = (req.user as any)?.id ?? (req.user as any)?.userId
-    if (!userId) {
-      return sendError(res, 'Unauthorized', 401)
-    }
+  const exportData = {
+    exportDate: new Date().toISOString(),
+    personalInfo: {
+      email: user.email,
+      username: user.username,
+      createdAt: user.createdAt,
+      lastLoginAt: user.lastLoginAt,
+    },
+    learningData: {
+      totalXP: user.xp,
+      level: user.level,
+      progress: [],
+      testScores: user.testResults.map((t: any) => ({
+        testId: t.testId,
+        score: t.score,
+        completedAt: t.completedAt,
+      })),
+      achievements: user.achievements.map((a: any) => ({
+        name: a.name,
+        unlockedAt: a.unlockedAt,
+      })),
+    },
+    activityHistory: user.activityLogs.map((l: any) => ({
+      activityType: l.activityType,
+      timestamp: l.createdAt,
+    })),
+  }
+
+  res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Content-Disposition', `attachment; filename="user-data-${userId}.json"`)
+  sendSuccess(res, exportData, 'Data exported successfully')
+})
+
+export const deleteUserAccount = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
 
     const { password } = req.body
     if (!password) {
-      return sendError(res, 'Password required for account deletion', 400)
+      sendError(res, 'Password required for account deletion', 400)
+      return
     }
 
     // Verify password
@@ -81,7 +69,8 @@ export async function deleteUserAccount(req: Request, res: Response): Promise<vo
     const isValid = await bcrypt.compare(password, user?.password ?? '')
 
     if (!isValid) {
-      return sendError(res, 'Invalid password', 401)
+      sendError(res, 'Invalid password', 401)
+      return
     }
 
     // Anonymize user data (GDPR compliant)
@@ -96,7 +85,5 @@ export async function deleteUserAccount(req: Request, res: Response): Promise<vo
     })
 
     sendSuccess(res, null, 'Account deleted successfully')
-  } catch (error: any) {
-    sendError(res, error.message, 500)
   }
-}
+)

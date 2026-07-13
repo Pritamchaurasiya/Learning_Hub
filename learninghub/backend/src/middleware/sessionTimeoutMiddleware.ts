@@ -72,10 +72,17 @@ export async function sessionTimeoutMiddleware(
       return
     }
 
-    void prisma.userSession.update({
-      where: { id: session.id },
-      data: { lastUsedAt: now },
-    })
+    prisma.userSession
+      .update({
+        where: { id: session.id },
+        data: { lastUsedAt: now },
+      })
+      .catch((err: any) =>
+        logger.error(
+          'Failed to update session lastUsedAt',
+          err instanceof Error ? err : new Error(String(err))
+        )
+      )
   } catch (error) {
     logger.error(
       'Session timeout middleware error',

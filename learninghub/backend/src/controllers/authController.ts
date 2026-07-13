@@ -1,560 +1,372 @@
 import { Request, Response } from 'express'
-import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { prisma } from '../prismaClient'
-import { generateToken, generateRefreshToken, verifyRefreshToken, hashToken } from '../utils/auth'
+import { generateToken, generateRefreshToken, hashToken } from '../utils/auth'
+import { AuthService } from '../services/AuthService'
 import logger from '../utils/logger'
 import { queryOptimizationService } from '../services/QueryOptimizationService'
 import { cacheService } from '../services/CacheService'
 import { emailService } from '../services/EmailService'
+import { MfaService } from '../services/MfaService'
 import {
   sendSuccess,
   sendCreated,
+  sendError,
   sendUnauthorized,
   sendNotFound,
   sendConflict,
   sendValidationError,
-  sendInternalError,
 } from '../utils/responseHelper'
-import { bcryptConfig } from '../config'
+import { validatePasswordStrength } from '../config'
+import { config } from '../utils/env'
+import { asyncHandler } from '../utils/errorHandler'
+import jwt from 'jsonwebtoken'
 
-const REFRESH_TOKEN_DAYS = 7
-
-const refreshTokenExpiresAt = (): Date =>
-  new Date(Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000)
-
-const storeRefreshToken = (userId: string, token: string) => {
-  const tokenHash = hashToken(token)
-  return prisma.refreshToken.create({
-    data: {
-      userId,
-      token: tokenHash,
-      expiresAt: refreshTokenExpiresAt(),
-    },
+function generateMfaSessionToken(userId: string): string {
+  return jwt.sign({ userId, purpose: 'mfa_login', iat: Date.now() }, config.jwtRefreshSecret, {
+    expiresIn: '5m',
   })
 }
 
-// Extend Express Request for multer file uploads (reserved for future use)
-
-type _MulterFile = {
-  fieldname: string
-  originalname: string
-  encoding: string
-  mimetype: string
-  size: number
-  destination: string
-  filename: string
-  path: string
-  buffer: Buffer
+function verifyMfaSessionToken(token: string): string | null {
+  try {
+    const decoded = jwt.verify(token, config.jwtRefreshSecret) as {
+      userId: string
+      purpose: string
+    }
+    if (decoded.purpose !== 'mfa_login') return null
+    return decoded.userId
+  } catch {
+    return null
+  }
 }
+import { uploadFileToStorage, FileType } from '../services/FileUploadService'
+import {
+  setAuthCookies,
+  clearAuthCookies,
+  getRefreshTokenFromCookie,
+  getAccessTokenFromCookie,
+} from '../utils/cookies'
+
+const authService = new AuthService(prisma as any)
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File
 }
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { email, password, username } = req.body
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+
+  if (!normalizedEmail || !password) {
+    sendValidationError(res, 'Email and password are required')
+    return
+  }
+
+  const validation = validatePasswordStrength(password)
+  if (!validation.valid) {
+    sendValidationError(res, validation.errors.join('; '))
+    return
+  }
+
   try {
-    const { email, password, username } = req.body
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+    const result = await authService.register(
+      { email: normalizedEmail, password, username },
+      req.ip
+    )
 
-    if (!normalizedEmail || !password) {
-      sendValidationError(res, 'Email and password are required')
-      return
-    }
-
-    // Validate password strength (defense in depth — Zod schema also validates at route level)
-    const passwordErrors: string[] = []
-    if (password.length < 8) passwordErrors.push('Password must be at least 8 characters')
-    if (!/[A-Z]/.test(password)) passwordErrors.push('Password must contain an uppercase letter')
-    if (!/[a-z]/.test(password)) passwordErrors.push('Password must contain a lowercase letter')
-    if (!/[0-9]/.test(password)) passwordErrors.push('Password must contain a number')
-    if (!/[^A-Za-z0-9]/.test(password)) passwordErrors.push('Password must contain a special character')
-    if (password.length > 128) passwordErrors.push('Password must not exceed 128 characters')
-    if (passwordErrors.length > 0) {
-      sendValidationError(res, passwordErrors.join('; '))
-      return
-    }
-
-    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } })
-    if (existingUser) {
-      sendConflict(res, 'Email already exists')
-      return
-    }
-
-    const hashedPassword = await bcrypt.hash(password, bcryptConfig.rounds)
-
-    const user = await prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        username,
-        password: hashedPassword,
-        role: 'STUDENT',
-      },
+    setAuthCookies(res, {
+      accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
     })
-
-    const token = generateToken(user.id, user.email, user.role)
-    const refreshToken = generateRefreshToken(user.id, user.email, user.role)
-    await storeRefreshToken(user.id, refreshToken)
 
     sendCreated(
       res,
       {
-        access_token: token,
-        refresh_token: refreshToken,
         user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          xp: user.xp,
-          level: user.level,
-          streak: user.streak,
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          role: result.user.role,
+          xp: result.user.xp,
+          level: result.user.level,
+          streak: result.user.streak,
         },
       },
       'Registration successful'
     )
   } catch (error) {
-    logger.error('Register error', error instanceof Error ? error : new Error(String(error)), {
-      email: req.body.email,
-      ip: req.ip,
-    })
-    sendInternalError(res)
-  }
-}
-
-export const login = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email, password } = req.body
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
-
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
-    if (!user) {
-      sendUnauthorized(res, 'Invalid email or password')
+    const message = error instanceof Error ? error.message : ''
+    if (message === 'Registration failed: Invalid request' || message === 'Email already registered' || message === 'Username already taken') {
+      sendValidationError(res, 'Registration failed. Email or username may be unavailable')
       return
     }
+    if (message.startsWith('Password validation failed')) {
+      sendValidationError(res, message.replace('Password validation failed: ', ''))
+      return
+    }
+    throw error
+  }
+})
 
-    // SECURITY: Check account lockout before attempting password verification
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
-      sendUnauthorized(
+export const login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+
+  try {
+    const result = await authService.login({
+      email: normalizedEmail,
+      password,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    })
+
+    if (result.user.mfaEnabled) {
+      const mfaSessionToken = generateMfaSessionToken(result.user.id)
+      sendSuccess(
         res,
-        `Account temporarily locked. Try again in ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}.`
+        {
+          mfaRequired: true,
+          mfaSessionToken,
+        },
+        'MFA verification required'
       )
       return
     }
 
-    // SECURITY: Always verify password - no bypass allowed in any environment
-    const isValidPassword = await bcrypt.compare(password, user.password)
-    // SECURITY: Never log password validity — only log email (no auth result leakage)
-    logger.info('Login attempt', { email: normalizedEmail })
-
-    if (!isValidPassword) {
-      // SECURITY: Increment failed login counter and lock after threshold
-      const MAX_FAILED_ATTEMPTS = process.env.NODE_ENV === 'production' ? 5 : 100
-      const LOCKOUT_MINUTES = 15
-      const newFailedCount = (user.failedLogins ?? 0) + 1
-      const lockUpdate: { failedLogins: number; lockedUntil?: Date } = {
-        failedLogins: newFailedCount,
-      }
-      if (newFailedCount >= MAX_FAILED_ATTEMPTS) {
-        lockUpdate.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000)
-        logger.warn('Account locked due to multiple failed logins', {
-          email: normalizedEmail,
-          failedAttempts: newFailedCount,
-          lockedUntilMinutes: LOCKOUT_MINUTES,
-        })
-      }
-      await prisma.user.update({ where: { id: user.id }, data: lockUpdate })
-
-      sendUnauthorized(res, 'Invalid email or password')
-      return
-    }
-
-    // Successful login: reset failed attempts, track login metrics
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastActive: new Date(),
-        lastLoginAt: new Date(),
-        loginCount: { increment: 1 },
-        failedLogins: 0,
-        lockedUntil: null,
-      },
+    setAuthCookies(res, {
+      accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
     })
-
-    const token = generateToken(user.id, user.email, user.role)
-    const refreshToken = generateRefreshToken(user.id, user.email, user.role)
-    await storeRefreshToken(user.id, refreshToken)
 
     sendSuccess(
       res,
       {
-        access_token: token,
-        refresh_token: refreshToken,
         user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          xp: user.xp,
-          level: user.level,
-          streak: user.streak,
-          lastActive: user.lastActive,
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          role: result.user.role,
+          xp: result.user.xp,
+          level: result.user.level,
+          streak: result.user.streak,
+          lastActive: result.user.lastActive,
         },
       },
       'Login successful'
     )
   } catch (error) {
-    logger.error('Login error', error instanceof Error ? error : new Error(String(error)), {
-      email: req.body.email,
-      ip: req.ip,
-    })
-    sendInternalError(res)
+    const message = error instanceof Error ? error.message : ''
+    if (message.startsWith('Account locked')) {
+      sendUnauthorized(res, message)
+      return
+    }
+    if (message === 'Invalid credentials' || message === 'Invalid email or password') {
+      sendUnauthorized(res, 'Invalid email or password')
+      return
+    }
+    throw error
   }
-}
+})
 
-export const logout = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const refreshToken = req.body.refresh_token ?? req.body.refresh
-    if (refreshToken) {
-      // Revoke the specific refresh token
-      const tokenHash = hashToken(refreshToken)
-      await prisma.refreshToken.updateMany({
-        where: { token: tokenHash },
-        data: { revokedAt: new Date() },
-      })
-    }
+export const logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const refreshToken = req.body.refresh_token ?? req.body.refresh ?? getRefreshTokenFromCookie(req)
+  const accessToken = req.headers.authorization?.startsWith('Bearer ')
+    ? req.headers.authorization.substring(7)
+    : getAccessTokenFromCookie(req)
+  const userId = req.user?.userId
 
-    // Optionally update user session if using session tracking
-    const userId = req.user?.userId
-    if (userId) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { lastActive: new Date() },
-      })
-    }
+  await authService.logout(userId, refreshToken, req.ip, accessToken)
 
-    sendSuccess(res, null, 'Logged out successfully')
-  } catch (error) {
-    logger.error('Logout error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?.userId,
-      ip: req.ip,
-    })
-    sendInternalError(res)
+  clearAuthCookies(res)
+
+  sendSuccess(res, null, 'Logged out successfully')
+})
+
+export const refresh = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const refreshToken = req.body.refresh_token ?? req.body.refresh ?? getRefreshTokenFromCookie(req)
+  if (!refreshToken) {
+    sendValidationError(res, 'Refresh token is required')
+    return
   }
-}
 
-export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
-    const refreshToken = req.body.refresh_token ?? req.body.refresh
-    if (!refreshToken) {
-      sendValidationError(res, 'Refresh token is required')
-      return
-    }
-
-    const decoded = verifyRefreshToken(refreshToken)
-    if (!decoded?.userId) {
-      sendUnauthorized(res, 'Invalid refresh token')
-      return
-    }
-
-    const tokenHash = hashToken(refreshToken)
-    const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: tokenHash },
-    })
-
-    if (
-      !storedToken ||
-      storedToken.revokedAt ||
-      storedToken.usedAt ||
-      storedToken.expiresAt < new Date()
-    ) {
-      if (storedToken) {
-        await prisma.refreshToken.update({
-          where: { id: storedToken.id },
-          data: { revokedAt: new Date() },
-        })
-      }
-      sendUnauthorized(res, 'Invalid or expired refresh token')
-      return
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: decoded.userId } })
-    if (!user || user.deletedAt) {
-      sendUnauthorized(res, 'User no longer exists')
-      return
-    }
-
-    await prisma.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { usedAt: new Date() },
-    })
-
-    const access_token = generateToken(user.id, user.email, user.role)
-    const new_refresh_token = generateRefreshToken(user.id, user.email, user.role)
-
-    const newTokenHash = hashToken(new_refresh_token)
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        token: newTokenHash,
-        expiresAt: refreshTokenExpiresAt(),
-      },
-    })
-
-    sendSuccess(res, {
-      access_token,
-      refresh_token: new_refresh_token,
-    })
-  } catch (error) {
-    logger.error('Token refresh error', error instanceof Error ? error : new Error(String(error)))
+    const result = await authService.refreshToken(refreshToken)
+    setAuthCookies(res, result)
+    sendSuccess(res, { message: 'Token refreshed' })
+  } catch {
     sendUnauthorized(res, 'Invalid or expired refresh token')
   }
-}
+})
 
-export const me = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
-      return
-    }
+export const me = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
 
-    const [user, bookmarks, achievements, progress] = await Promise.all([
-      prisma.user.findUnique({ where: { id: userId } }),
-      prisma.bookmark.findMany({ where: { userId }, take: 10, orderBy: { createdAt: 'desc' } }),
-      prisma.userAchievement.findMany({
-        where: { userId },
-        take: 20,
-        orderBy: { unlockedAt: 'desc' },
-      }),
-      prisma.userProgress.findMany({
-        where: { userId },
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          course: {
-            select: { id: true, title: true, thumbnail: true },
-          },
-        },
-      }),
-    ])
-
-    if (!user) {
-      sendNotFound(res, 'User not found')
-      return
-    }
-
-    const cacheKey = cacheService.generateKey('user_perf', userId)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let performance = await cacheService.get<any>(cacheKey)
-
-    if (!performance) {
-      performance = {
-        test_stats: {
-          total_tests: 0,
-          average_score: 0,
-          best_score: 0,
-          worst_score: 0,
-        },
-        recent_tests: [] as Array<{
-          title: string
-          mode: string
-          score: number
-          passed: boolean
-          completed_at: Date | null
-        }>,
-      }
-
-      try {
-        performance = await queryOptimizationService.getUserPerformanceSummary(userId)
-        await cacheService.set(cacheKey, performance, 120) // Cache for 2 minutes
-      } catch (error) {
-        logger.warn('Get user profile performance summary unavailable', {
-          userId,
-          error: error instanceof Error ? error.message : String(error),
-        })
-      }
-    }
-
-    const lastActiveKey = cacheService.generateKey('last_active', userId)
-    const lastActiveUpdate = await cacheService.get<number>(lastActiveKey)
-    const now = Date.now()
-    if (!lastActiveUpdate || now - lastActiveUpdate > 300_000) {
-      void prisma.user.update({ where: { id: userId }, data: { lastActive: new Date() } }).catch(() => {})
-      void cacheService.set(lastActiveKey, now, 300)
-    }
-
-    sendSuccess(res, {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        xp: user.xp,
-        level: user.level,
-        streak: user.streak,
-        lastActive: user.lastActive,
-        progress,
-      },
-      performance: performance.test_stats,
-      recent_tests: performance.recent_tests,
-      bookmarks,
-      achievements,
-    })
-  } catch (error) {
-    logger.error(
-      'Get user profile error',
-      error instanceof Error ? error : new Error(String(error)),
-      { userId: req.user?.userId }
-    )
-    sendInternalError(res)
-  }
-}
-
-export const updateProfile = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
-      return
-    }
-    const { username, email, bio, location, website } = req.body
-
-    // Check if email is already taken by another user
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined
-    if (normalizedEmail) {
-      const existingUser = await prisma.user.findFirst({
-        where: { email: normalizedEmail, NOT: { id: userId } },
-      })
-      if (existingUser) {
-        sendConflict(res, 'Email is already in use')
-        return
-      }
-    }
-
-    const updatedUser = await prisma.user.update({
+  const [user, achievements, bookmarks] = await Promise.all([
+    prisma.user.findUnique({
       where: { id: userId },
-      data: {
-        ...(username && { username }),
-        ...(normalizedEmail && {
-          email: normalizedEmail,
-          emailVerified: false, // Require re-verification when email changes
-        }),
-        ...(bio !== undefined && { bio }),
-        ...(location !== undefined && { location }),
-        ...(website !== undefined && { website }),
-        updatedAt: new Date(),
-      },
       select: {
         id: true,
         email: true,
         username: true,
-        avatar: true,
-        bio: true,
-        location: true,
-        website: true,
         role: true,
         xp: true,
         level: true,
         streak: true,
         lastActive: true,
+        emailVerified: true,
+        examPreference: {
+          include: {
+            exam: { select: { id: true, name: true, slug: true } },
+            country: { select: { id: true, name: true, code: true } },
+            subjects: { select: { id: true, name: true } },
+          },
+        },
       },
-    })
+    }),
+    prisma.userAchievement.findMany({
+      where: { userId },
+      take: 20,
+      orderBy: { unlockedAt: 'desc' },
+    }),
+    Promise.resolve(
+      prisma.questionBookmark.findMany({
+        where: { userId },
+        take: 50,
+        orderBy: { createdAt: 'desc' },
+        include: { question: { select: { id: true, text: true, type: true } } },
+      })
+    )
+      .catch(() => [])
+      .then(res => res || []),
+  ])
 
+  if (!user) {
+    sendNotFound(res, 'User not found')
+    return
+  }
+
+  const cacheKey = cacheService.generateKey('user_perf', userId)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let performance = await cacheService.get<any>(cacheKey)
+
+  if (!performance) {
+    performance = {
+      test_stats: {
+        total_tests: 0,
+        average_score: 0,
+        best_score: 0,
+        worst_score: 0,
+      },
+      recent_tests: [],
+    }
+
+    try {
+      performance = await queryOptimizationService.getUserPerformanceSummary(userId)
+      await cacheService.set(cacheKey, performance, 120)
+    } catch (error) {
+      logger.warn('Get user profile performance summary unavailable', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  const lastActiveKey = cacheService.generateKey('last_active', userId)
+  const lastActiveUpdate = await cacheService.get<number>(lastActiveKey)
+  const now = Date.now()
+  if (!lastActiveUpdate || now - lastActiveUpdate > 300_000) {
+    void prisma.user
+      .update({ where: { id: userId }, data: { lastActive: new Date() } })
+      .catch((err: any) => {
+        logger.warn('Failed to update lastActive', {
+          error: err instanceof Error ? err.message : String(err),
+        })
+      })
+    void cacheService.set(lastActiveKey, now, 300)
+  }
+
+  sendSuccess(res, {
+    user: {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      xp: user.xp,
+      level: user.level,
+      streak: user.streak,
+      lastActive: user.lastActive,
+      emailVerified: user.emailVerified,
+      examPreference: user.examPreference,
+    },
+    performance: performance.test_stats,
+    recent_tests: performance.recent_tests,
+    bookmarks,
+    achievements,
+  })
+})
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const { username, email, bio, location, website } = req.body
+
+  try {
+    const updatedUser = await authService.updateProfile(
+      userId,
+      { username, email, bio, location, website },
+      req.ip
+    )
     sendSuccess(res, { user: updatedUser }, 'Profile updated successfully')
   } catch (error) {
-    logger.error(
-      'Update profile error',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-        email: req.body.email,
-      }
-    )
-    sendInternalError(res)
+    if (error instanceof Error && error.message === 'Email is already in use') {
+      sendConflict(res, 'Email is already in use')
+      return
+    }
+    if (error instanceof Error && error.message === 'Invalid email format') {
+      sendValidationError(res, 'Invalid email format')
+      return
+    }
+    throw error
   }
-}
+})
 
-export const changePassword = async (req: Request, res: Response): Promise<void> => {
+export const changePassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const { currentPassword, newPassword } = req.body
+
+  if (!currentPassword || !newPassword) {
+    sendValidationError(res, 'Current password and new password are required')
+    return
+  }
+
   try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
-      return
-    }
-    const { currentPassword, newPassword } = req.body
-
-    if (!currentPassword || !newPassword) {
-      sendValidationError(res, 'Current password and new password are required')
-      return
-    }
-
-    // Validate new password complexity
-    if (
-      newPassword.length < 8 ||
-      !/[A-Z]/.test(newPassword) ||
-      !/[a-z]/.test(newPassword) ||
-      !/[0-9]/.test(newPassword) ||
-      !/[^A-Za-z0-9]/.test(newPassword)
-    ) {
-      sendValidationError(
-        res,
-        'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
-      )
-      return
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    if (!user) {
+    await authService.changePassword(userId, currentPassword, newPassword, req.ip)
+    sendSuccess(res, null, 'Password changed successfully')
+  } catch (error) {
+    if (error instanceof Error && error.message === 'User not found') {
       sendNotFound(res, 'User not found')
       return
     }
-
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password)
-    if (!isValidPassword) {
+    if (error instanceof Error && error.message === 'Current password is incorrect') {
       sendUnauthorized(res, 'Current password is incorrect')
       return
     }
-
-    const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userId },
-        data: { password: hashedPassword },
-      }),
-      prisma.refreshToken.updateMany({
-        where: { userId },
-        data: { revokedAt: new Date() },
-      }),
-    ])
-
-    sendSuccess(res, null, 'Password changed successfully')
-  } catch (error) {
-    logger.error(
-      'Change password error',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-      }
-    )
-    sendInternalError(res)
-  }
-}
-
-export const uploadAvatar = async (req: RequestWithFile, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
+    if (error instanceof Error && error.message.includes('Password validation failed')) {
+      sendValidationError(res, error.message.replace('Password validation failed: ', ''))
       return
     }
+    throw error
+  }
+})
 
-    // Support both multipart (req.file) and base64 (req.body.avatar)
+export const uploadAvatar = asyncHandler(
+  async (req: RequestWithFile, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+
     let avatarPath: string
 
     if (req.file) {
-      // Multer uploaded file
-      avatarPath = `/avatars/${req.file.filename}`
+      avatarPath = await uploadFileToStorage(req.file, FileType.AVATAR)
     } else if (req.body.avatar && typeof req.body.avatar === 'string') {
       const avatar = req.body.avatar.trim()
       const isDataUrl = avatar.startsWith('data:image/')
@@ -581,302 +393,333 @@ export const uploadAvatar = async (req: RequestWithFile, res: Response): Promise
     })
 
     sendSuccess(res, { user: updatedUser }, 'Avatar uploaded successfully')
-  } catch (error) {
-    logger.error('Upload avatar error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?.userId,
-    })
-    sendInternalError(res)
   }
-}
+)
 
-/**
- * Delete user account (soft delete)
- */
-export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+export const deleteAccount = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+
   try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
-      return
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        deletedAt: new Date(),
-        email: `deleted_${userId}@deleted.local`,
-        username: null,
-      },
-    })
-
-    await prisma.refreshToken.deleteMany({
-      where: { userId },
-    })
-
-    await prisma.userSession.updateMany({
-      where: { userId },
-      data: { isRevoked: true, revokedAt: new Date(), revokedReason: 'account_deleted' },
-    })
-
-    logger.audit('ACCOUNT_DELETION', userId, { reason: 'user_requested' })
-
+    await authService.deleteAccount(userId, req.ip)
     sendSuccess(res, null, 'Account deleted successfully')
   } catch (error) {
-    logger.error(
-      'Delete account error',
-      error instanceof Error ? error : new Error(String(error)),
-      { userId: req.user?.userId }
-    )
-    sendInternalError(res)
+    throw error
   }
-}
+})
 
-export const sendVerificationEmail = async (req: Request, res: Response): Promise<void> => {
+export const sendVerificationEmail = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+
+    try {
+      await authService.sendVerificationEmail(userId)
+      sendSuccess(res, null, 'Verification email sent')
+    } catch (error) {
+      if (error instanceof Error && error.message === 'User not found') {
+        sendNotFound(res, 'User not found')
+        return
+      }
+      if (error instanceof Error && error.message === 'Email already verified') {
+        sendValidationError(res, 'Email already verified')
+        return
+      }
+      throw error
+    }
+  }
+)
+
+export const verifyEmail = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const rawToken = req.params.token as string
+
   try {
-    const userId = req.user?.userId
-    if (!userId) {
-      sendUnauthorized(res, 'Authentication required')
-      return
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    if (!user) {
-      sendNotFound(res, 'User not found')
-      return
-    }
-
-    if (user.emailVerified) {
-      sendValidationError(res, 'Email already verified')
-      return
-    }
-
-    const rawToken = crypto.randomBytes(32).toString('hex')
-    const token = hashToken(rawToken)
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-
-    await prisma.verificationToken.upsert({
-      where: { userId },
-      update: { token, expiresAt },
-      create: {
-        userId,
-        token,
-        expiresAt,
-      },
-    })
-
-    await emailService.sendVerificationEmail(user.email, rawToken, user.username ?? undefined)
-
-    sendSuccess(res, null, 'Verification email sent')
+    await authService.verifyEmail(rawToken)
+    sendSuccess(res, null, 'Email verified successfully')
   } catch (error) {
-    logger.error(
-      'Send verification email error',
-      error instanceof Error ? error : new Error(String(error)),
-      { userId: req.user?.userId }
-    )
-    sendInternalError(res)
-  }
-}
-
-export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const rawToken = req.params.token as string
-    const hashedToken = hashToken(rawToken)
-
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token: hashedToken },
-    })
-
-    if (!verificationToken || verificationToken.expiresAt < new Date()) {
+    if (error instanceof Error && error.message === 'Invalid or expired verification token') {
       sendValidationError(res, 'Invalid or expired verification token')
       return
     }
-
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: verificationToken.userId },
-        data: {
-          emailVerified: true,
-          emailVerifiedAt: new Date(),
-        },
-      }),
-      prisma.verificationToken.delete({
-        where: { token: hashedToken },
-      }),
-    ])
-
-    sendSuccess(res, null, 'Email verified successfully')
-  } catch (error) {
-    logger.error('Verify email error', error instanceof Error ? error : new Error(String(error)), {
-      token: req.params.token,
-    })
-    sendInternalError(res)
+    throw error
   }
-}
+})
 
-export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email } = req.body
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+export const forgotPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
-    if (!normalizedEmail) {
-      sendValidationError(res, 'Email is required')
-      return
-    }
-
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
-    if (!user) {
-      sendSuccess(
-        res,
-        null,
-        'If an account exists with that email, a password reset link has been sent'
-      )
-      return
-    }
-
-    const rawToken = crypto.randomBytes(32).toString('hex')
-    const token = hashToken(rawToken)
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
-
-    await prisma.passwordResetToken.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt,
-      },
-    })
-
-    await emailService.sendPasswordResetEmail(user.email, rawToken, user.username ?? undefined)
-
-    sendSuccess(
-      res,
-      null,
-      'If an account exists with that email, a password reset link has been sent'
-    )
-  } catch (error) {
-    logger.error(
-      'Forgot password error',
-      error instanceof Error ? error : new Error(String(error)),
-      { email: req.body.email }
-    )
-    sendInternalError(res)
+  if (!normalizedEmail) {
+    sendValidationError(res, 'Email is required')
+    return
   }
-}
 
-export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  await authService.forgotPassword(normalizedEmail)
+
+  sendSuccess(
+    res,
+    null,
+    'If an account exists with that email, a password reset link has been sent'
+  )
+})
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { token, newPassword } = req.body
+
+  if (!token || !newPassword) {
+    sendValidationError(res, 'Token and new password are required')
+    return
+  }
+
   try {
-    const { token, newPassword } = req.body
-
-    if (!token || !newPassword) {
-      sendValidationError(res, 'Token and new password are required')
+    await authService.resetPassword(token, newPassword, req.ip)
+    sendSuccess(res, null, 'Password reset successfully')
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Password validation failed')) {
+      sendValidationError(res, error.message.replace('Password validation failed: ', ''))
       return
     }
-
-    if (
-      newPassword.length < 8 ||
-      !/[A-Z]/.test(newPassword) ||
-      !/[a-z]/.test(newPassword) ||
-      !/[0-9]/.test(newPassword) ||
-      !/[^A-Za-z0-9]/.test(newPassword)
-    ) {
-      sendValidationError(
-        res,
-        'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
-      )
-      return
-    }
-
-    // Hash the token before lookup (security fix - tokens stored hashed in DB)
-    const hashedToken = hashToken(token)
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token: hashedToken },
-      include: { user: true },
-    })
-
-    if (!resetToken || resetToken.expiresAt < new Date() || resetToken.usedAt) {
+    if (error instanceof Error && error.message === 'Invalid or expired reset token') {
       sendValidationError(res, 'Invalid or expired reset token')
       return
     }
+    throw error
+  }
+})
 
-    const hashedPassword = await bcrypt.hash(newPassword, bcryptConfig.rounds)
+export const exportUserData = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
 
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: resetToken.userId },
-        data: {
-          password: hashedPassword,
-          failedLogins: 0,
-          lockedUntil: null,
+  const userData = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      achievements: true,
+      testResults: { include: { test: true } },
+    },
+  })
+
+  if (!userData) {
+    sendNotFound(res, 'User not found')
+    return
+  }
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    user: {
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      role: userData.role,
+      createdAt: userData.createdAt,
+    },
+    achievements: userData.achievements,
+    testResults: userData.testResults.map((tr: any) => ({
+      testId: tr.testId,
+      testTitle: tr.test.title,
+      score: tr.score,
+      completedAt: tr.completedAt,
+      passed: tr.passed,
+    })),
+  }
+
+  res.setHeader('Content-disposition', 'attachment; filename=my-learninghub-data.json')
+  res.setHeader('Content-type', 'application/json')
+  res.end(JSON.stringify(exportData, null, 2))
+})
+
+export const getPreferences = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+
+  const preference = await prisma.userExamPreference.findUnique({
+    where: { userId },
+    include: {
+      exam: true,
+      country: true,
+      subjects: true,
+    },
+  })
+  sendSuccess(res, preference)
+})
+
+export const updatePreferences = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+
+    const { countryId, examId, subjectIds, difficulty, dailyGoal } = req.body
+    const formattedSubjectIds = Array.isArray(subjectIds) ? subjectIds : []
+
+    const preference = await prisma.userExamPreference.upsert({
+      where: { userId },
+      update: {
+        countryId: countryId ?? null,
+        examId: examId ?? null,
+        subjectIds: formattedSubjectIds,
+        difficulty: difficulty ?? 'MEDIUM',
+        dailyGoal: dailyGoal ?? 10,
+        subjects: {
+          set: formattedSubjectIds.map((id: string) => ({ id })),
         },
-      }),
-      // Invalidate ALL pending reset tokens for this user (prevent token reuse)
-      prisma.passwordResetToken.deleteMany({
-        where: { userId: resetToken.userId },
-      }),
-      prisma.refreshToken.deleteMany({
-        where: { userId: resetToken.userId },
-      }),
-    ])
-
-    sendSuccess(res, null, 'Password reset successfully')
-  } catch (error) {
-    logger.error(
-      'Reset password error',
-      error instanceof Error ? error : new Error(String(error)),
-      { token: req.body.token }
-    )
-    sendInternalError(res)
-  }
-}
-
-export const exportUserData = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.userId
-    if (!userId) return sendUnauthorized(res, 'User not authenticated')
-
-    const userData = await prisma.user.findUnique({
-      where: { id: userId },
+      },
+      create: {
+        userId,
+        countryId: countryId ?? null,
+        examId: examId ?? null,
+        subjectIds: formattedSubjectIds,
+        difficulty: difficulty ?? 'MEDIUM',
+        dailyGoal: dailyGoal ?? 10,
+        subjects: {
+          connect: formattedSubjectIds.map((id: string) => ({ id })),
+        },
+      },
       include: {
-        progress: { include: { course: true } },
-        achievements: true,
-        certificates: true,
+        exam: true,
+        country: true,
+        subjects: true,
       },
     })
 
-    if (!userData) return sendNotFound(res, 'User not found')
-
-    const exportData = {
-      exportedAt: new Date().toISOString(),
-      user: {
-        id: userData.id,
-        email: userData.email,
-        username: userData.username,
-        role: userData.role,
-        createdAt: userData.createdAt,
-      },
-      progress: userData.progress,
-      achievements: userData.achievements,
-      certificates: userData.certificates,
-      enrollments: userData.progress.map(e => ({
-        courseId: e.courseId,
-        courseTitle: e.course.title,
-        enrolledAt: e.createdAt,
-        progress: e.progress,
-      })),
-    }
-
-    res.setHeader('Content-disposition', 'attachment; filename=my-learninghub-data.json')
-    res.setHeader('Content-type', 'application/json')
-    res.write(JSON.stringify(exportData, null, 2), function () {
-      res.end()
-    })
-  } catch (error) {
-    logger.error(
-      'Error exporting user data',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        userId: req.user?.userId,
-      }
-    )
-    sendInternalError(res, 'Failed to export user data')
+    sendSuccess(res, preference, 'Preferences synchronized successfully')
   }
-}
+)
+
+export const setupMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    sendNotFound(res, 'User not found')
+    return
+  }
+  if (user.mfaEnabled) {
+    sendConflict(res, 'MFA is already enabled on this account')
+    return
+  }
+  const result = await MfaService.generateSecret(userId, user.email)
+  sendSuccess(res, result, 'MFA secret generated successfully')
+})
+
+export const verifyAndEnableMfa = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const { token } = req.body
+    if (!token) {
+      sendValidationError(res, 'MFA token is required')
+      return
+    }
+    const verified = await MfaService.verifyAndEnable(userId, token)
+    if (!verified) {
+      sendUnauthorized(res, 'Invalid verification code')
+      return
+    }
+    sendSuccess(res, null, 'MFA enabled successfully')
+  }
+)
+
+export const disableMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const { token } = req.body
+  if (!token) {
+    sendValidationError(res, 'MFA token is required to disable MFA')
+    return
+  }
+  const valid = await MfaService.validateToken(userId, token)
+  if (!valid) {
+    sendUnauthorized(res, 'Invalid MFA token')
+    return
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: { mfaEnabled: false, mfaSecret: null },
+  })
+  sendSuccess(res, null, 'MFA disabled successfully')
+})
+
+export const listSessions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const sessions = await prisma.userSession.findMany({
+    where: { userId, isRevoked: false, expiresAt: { gt: new Date() } },
+    select: {
+      id: true,
+      userAgent: true,
+      ipAddress: true,
+      deviceName: true,
+      deviceType: true,
+      createdAt: true,
+      lastUsedAt: true,
+      expiresAt: true,
+    },
+    orderBy: { lastUsedAt: 'desc' },
+  })
+  sendSuccess(res, sessions)
+})
+
+export const revokeSession = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const id = req.params.id as string
+  const session = await prisma.userSession.findFirst({ where: { id, userId } })
+  if (!session) {
+    sendNotFound(res, 'Session not found')
+    return
+  }
+  await prisma.userSession.update({
+    where: { id },
+    data: { isRevoked: true, revokedAt: new Date() },
+  })
+  sendSuccess(res, null, 'Session revoked')
+})
+
+export const verifyMfaLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { mfaSessionToken, token } = req.body
+  if (!mfaSessionToken || !token) {
+    sendValidationError(res, 'MFA session token and MFA token are required')
+    return
+  }
+
+  const userId = verifyMfaSessionToken(mfaSessionToken)
+  if (!userId) {
+    sendUnauthorized(res, 'Invalid or expired MFA session')
+    return
+  }
+
+  // Rate limit: max 5 MFA attempts per minute per user
+  const mfaAttemptKey = `mfa_attempts:${userId}`
+  const attempts = await cacheService.incrementWithExpiry(mfaAttemptKey, 1, 60_000)
+  if (attempts > 5) {
+    sendError(res, 'Too many MFA attempts. Try again later.', 429, 'MFA_RATE_LIMITED')
+    return
+  }
+
+  const isValid = await MfaService.validateToken(userId, token)
+  if (!isValid) {
+    sendUnauthorized(res, 'Invalid MFA token')
+    return
+  }
+
+  // Clear rate limit on success
+  await cacheService.expire(mfaAttemptKey, 0)
+
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    sendNotFound(res, 'User not found')
+    return
+  }
+
+  const accessToken = generateToken(user.id, user.email, user.role)
+  const newRefreshToken = generateRefreshToken(user.id, user.email, user.role)
+
+  setAuthCookies(res, { accessToken, refreshToken: newRefreshToken })
+
+  sendSuccess(
+    res,
+    {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        xp: user.xp,
+        level: user.level,
+        streak: user.streak,
+        lastActive: user.lastActive,
+      },
+    },
+    'MFA verified successfully'
+  )
+})

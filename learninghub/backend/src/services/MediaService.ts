@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename */
 import multer from 'multer'
 import path from 'path'
 import crypto from 'crypto'

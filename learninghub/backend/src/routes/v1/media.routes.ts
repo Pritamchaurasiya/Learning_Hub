@@ -1,11 +1,8 @@
 import { Router } from 'express'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { authenticate, authorize } from '../../middleware/authMiddleware'
 import { mediaService } from '../../services/MediaService'
-import {
-  uploadAvatar,
-  uploadCourseThumbnail,
-  uploadGenericMedia,
-} from '../../controllers/mediaController'
+import { uploadAvatar, uploadGenericMedia } from '../../controllers/mediaController'
 import { createRateLimiter } from '../../middleware/rateLimiter'
 
 const router = Router()
@@ -22,14 +19,6 @@ router.use(uploadRateLimit)
 
 // User avatar upload
 router.post('/avatar', mediaService.single('file'), uploadAvatar)
-
-// Course thumbnail (Admin/Instructor only)
-router.post(
-  '/course-thumbnail',
-  authorize('ADMIN', 'INSTRUCTOR'),
-  mediaService.single('file'),
-  uploadCourseThumbnail
-)
 
 // Generic media upload
 router.post('/generic', mediaService.single('file'), uploadGenericMedia)

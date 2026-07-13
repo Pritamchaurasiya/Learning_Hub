@@ -1,14 +1,24 @@
+import crypto from 'crypto'
 import { Request, Response, NextFunction } from 'express'
 import { verifyAccessToken } from '../utils/auth'
 import { prisma } from '../config'
+import { sessionConfig } from '../config/security'
 import { sendError } from '../utils/responseHelper'
 import { cacheService } from '../services/CacheService'
 import logger from '../utils/logger'
+import { getAccessTokenFromCookie } from '../utils/cookies'
 
 type UserAccountStatus = {
   id: string
   deletedAt: Date | null
   lockedUntil: Date | null
+}
+
+export interface DecodedTokenWithIat {
+  userId: string
+  email: string
+  role: string
+  iat?: number
 }
 
 const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountStatus | null> => {
@@ -22,7 +32,7 @@ const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountSt
     })) as UserAccountStatus | null
 
     if (user) {
-      await cacheService.set(cacheKey, user, 60) // 1 minute TTL
+      await cacheService.set(cacheKey, user, 60)
     }
   }
 
@@ -40,18 +50,30 @@ export const authenticate = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization
+    const cookieToken = getAccessTokenFromCookie(req)
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : cookieToken
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!token) {
       sendError(res, 'Authentication required', 401, 'NO_TOKEN')
       return
     }
 
-    const token = authHeader.substring(7)
-
     try {
-      const decoded = verifyAccessToken(token)
+      const decoded = verifyAccessToken(token) as DecodedTokenWithIat
 
-      // Cache user lookup to avoid DB hit on every request
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+      const isBlacklisted = await cacheService.get(`bl:token:${hashedToken}`)
+      if (isBlacklisted) {
+        sendError(res, 'Token has been revoked', 401, 'TOKEN_REVOKED')
+        return
+      }
+
+      const userLogoutAllTime = await cacheService.get<number>(`bl:user:${decoded.userId}`)
+      if (userLogoutAllTime && decoded.iat && decoded.iat * 1000 < userLogoutAllTime) {
+        sendError(res, 'Session revoked globally', 401, 'TOKEN_REVOKED')
+        return
+      }
+
       const user = await getCachedUserAccountStatus(decoded.userId)
 
       if (!user) {
@@ -60,12 +82,12 @@ export const authenticate = async (
       }
 
       if (!isAccountActive(user)) {
-        if (user.deletedAt) {
-          sendError(res, 'Account has been deactivated', 401, 'ACCOUNT_DEACTIVATED')
-          return
-        }
-
-        sendError(res, 'Account is temporarily locked', 401, 'ACCOUNT_LOCKED')
+        sendError(
+          res,
+          user.deletedAt ? 'Account has been deactivated' : 'Account is temporarily locked',
+          401,
+          user.deletedAt ? 'ACCOUNT_DEACTIVATED' : 'ACCOUNT_LOCKED'
+        )
         return
       }
 
@@ -75,9 +97,56 @@ export const authenticate = async (
         role: decoded.role,
       }
 
+      const sessionId = req.headers['x-session-id'] as string | undefined
+      if (sessionId) {
+        const session = await prisma.userSession.findFirst({
+          where: {
+            userId: decoded.userId,
+            sessionToken: sessionId,
+            isRevoked: false,
+            expiresAt: { gt: new Date() },
+          },
+          select: { id: true, lastUsedAt: true, createdAt: true },
+        })
+
+        if (!session) {
+          sendError(res, 'Session expired or invalid', 401, 'SESSION_EXPIRED')
+          return
+        }
+
+        const now = Date.now()
+        const idleMs = now - session.lastUsedAt.getTime()
+        if (idleMs > sessionConfig.idleTimeoutMinutes * 60 * 1000) {
+          await prisma.userSession.update({
+            where: { id: session.id },
+            data: { isRevoked: true, revokedAt: new Date(now) },
+          })
+          sendError(res, 'Session expired due to inactivity', 401, 'SESSION_IDLE_TIMEOUT')
+          return
+        }
+
+        const sessionAgeMs = now - session.createdAt.getTime()
+        if (sessionAgeMs > sessionConfig.absoluteTimeoutMinutes * 60 * 1000) {
+          await prisma.userSession.update({
+            where: { id: session.id },
+            data: { isRevoked: true, revokedAt: new Date(now) },
+          })
+          sendError(res, 'Session expired', 401, 'SESSION_ABSOLUTE_TIMEOUT')
+          return
+        }
+
+        prisma.userSession
+          .update({ where: { id: session.id }, data: { lastUsedAt: new Date(now) } })
+          .catch((err: any) =>
+            logger.error(
+              'Failed to update session lastUsedAt',
+              err instanceof Error ? err : new Error(String(err))
+            )
+          )
+      }
+
       next()
     } catch (error) {
-      // jwt.verify throws TokenExpiredError (name='TokenExpiredError') when token is expired
       if (
         error instanceof Error &&
         (error.name === 'TokenExpiredError' || error.message === 'Token expired')
@@ -103,24 +172,19 @@ export const optionalAuth = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization
+    const cookieToken = getAccessTokenFromCookie(req)
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : cookieToken
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!token) {
       next()
       return
     }
 
-    const token = authHeader.substring(7)
-
     try {
       const decoded = verifyAccessToken(token)
       const user = await getCachedUserAccountStatus(decoded.userId)
-
       if (user && isAccountActive(user)) {
-        req.user = {
-          userId: decoded.userId,
-          email: decoded.email,
-          role: decoded.role,
-        }
+        req.user = { userId: decoded.userId, email: decoded.email, role: decoded.role }
       }
     } catch {
       // Invalid token is OK for optional auth
@@ -143,7 +207,7 @@ export const authorize = (...allowedRoles: string[]) => {
       return
     }
 
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.role)) {
       sendError(res, 'Insufficient permissions', 403, 'FORBIDDEN')
       return
     }
@@ -156,41 +220,4 @@ export const authorizeAdmin = authorize('ADMIN', 'SUPERADMIN')
 export const authorizeInstructor = authorize('INSTRUCTOR', 'ADMIN', 'SUPERADMIN')
 export const authorizeSuperAdmin = authorize('SUPERADMIN')
 
-export const requestId = (req: Request, res: Response, next: NextFunction): void => {
-  const requestId =
-    (req.headers['x-request-id'] as string) ||
-    `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
-
-  req.requestId = requestId
-  res.setHeader('X-Request-ID', requestId)
-
-  next()
-}
-
-export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
-  const start = Date.now()
-
-  res.on('finish', () => {
-    const duration = Date.now() - start
-    const logData = {
-      method: req.method,
-      path: req.path,
-      statusCode: res.statusCode,
-      duration,
-      userId: req.user?.userId,
-      requestId: req.requestId,
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
-    }
-
-    if (res.statusCode >= 500) {
-      logger.error('Request completed with error', new Error(`HTTP ${res.statusCode}`), logData)
-    } else if (res.statusCode >= 400) {
-      logger.warn('Request completed with client error', logData)
-    } else {
-      logger.info('Request completed', logData)
-    }
-  })
-
-  next()
-}
+export { requestId, requestLogger } from './requestLogger'

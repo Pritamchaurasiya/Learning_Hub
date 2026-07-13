@@ -10,7 +10,12 @@ export interface EmailJobData {
 }
 
 export interface TemplateEmailJobData {
-  type: 'verification' | 'passwordReset' | 'welcome' | 'contestNotification' | 'subscriptionConfirmation'
+  type:
+    | 'verification'
+    | 'passwordReset'
+    | 'welcome'
+    | 'contestNotification'
+    | 'subscriptionConfirmation'
   to: string
   templateData: Record<string, unknown>
 }
@@ -22,7 +27,7 @@ class EmailQueueService {
   private isInitialized = false
 
   constructor() {
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== 'test' && process.env.REDIS_ENABLED === 'true') {
       this.initialize()
     }
   }
@@ -41,7 +46,7 @@ class EmailQueueService {
         },
       })
 
-      this.queue.process(async (job) => {
+      void this.queue.process(async job => {
         const data = job.data
         switch (data.type) {
           case 'send':
@@ -82,7 +87,7 @@ class EmailQueueService {
         }
       })
 
-      this.queue.on('completed', (job) => {
+      this.queue.on('completed', job => {
         logger.debug(`[EmailQueue] Job ${job.id} completed: ${job.data.type}`)
       })
 
@@ -102,25 +107,37 @@ class EmailQueueService {
 
   async enqueue(job: EmailJob): Promise<void> {
     if (!this.queue || !this.isInitialized) {
-      await emailService.sendInline(job.type === 'send' ? job.options : {
-        to: job.to,
-        subject: 'LearningHub Notification',
-        html: '',
-      })
+      await emailService.sendInline(
+        job.type === 'send'
+          ? job.options
+          : {
+              to: job.to,
+              subject: 'LearningHub Notification',
+              html: '',
+            }
+      )
       return
     }
 
     try {
       await this.queue.add(job)
     } catch (error) {
-      logger.error('[EmailQueue] Failed to enqueue email job, sending inline', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[EmailQueue] Failed to enqueue email job, sending inline',
+        error instanceof Error ? error : new Error(String(error))
+      )
       if (job.type === 'send') {
         await emailService.sendInline(job.options)
       }
     }
   }
 
-  async getQueueStats(): Promise<{ waiting: number; active: number; completed: number; failed: number } | null> {
+  async getQueueStats(): Promise<{
+    waiting: number
+    active: number
+    completed: number
+    failed: number
+  } | null> {
     if (!this.queue) return null
 
     const [waiting, active, completed, failed] = await Promise.all([

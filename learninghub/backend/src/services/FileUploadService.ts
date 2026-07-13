@@ -1,6 +1,5 @@
 import multer from 'multer'
 import path from 'path'
-import fs from 'fs'
 import crypto from 'crypto'
 import logger from '../utils/logger'
 
@@ -47,34 +46,21 @@ const FILE_CONFIGS: Record<FileType, FileUploadConfig> = {
   },
 }
 
-function ensureDirectoryExists(dir: string): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
-}
-
-function generateFileName(originalName: string): string {
+export function generateFileKey(fileType: FileType, originalName: string): string {
+  // eslint-disable-next-line security/detect-object-injection
+  const config = FILE_CONFIGS[fileType]
   const ext = path.extname(originalName)
   const uniqueId = crypto.randomBytes(16).toString('hex')
   const timestamp = Date.now()
-  return `${timestamp}-${uniqueId}${ext}`
+  return `${config.destination}/${timestamp}-${uniqueId}${ext}`
 }
 
-function createStorage(fileType: FileType): multer.StorageEngine {
-  const config = FILE_CONFIGS[fileType]
-  ensureDirectoryExists(config.destination)
-
-  return multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, config.destination)
-    },
-    filename: (_req, file, cb) => {
-      cb(null, generateFileName(file.originalname))
-    },
-  })
+function createStorage(_fileType: FileType): multer.StorageEngine {
+  return multer.memoryStorage()
 }
 
 function createFileFilter(fileType: FileType): multer.Options['fileFilter'] {
+  // eslint-disable-next-line security/detect-object-injection
   const config = FILE_CONFIGS[fileType]
 
   return (_req, file, cb) => {
@@ -87,6 +73,7 @@ function createFileFilter(fileType: FileType): multer.Options['fileFilter'] {
 }
 
 export function createUpload(fileType: FileType): multer.Multer {
+  // eslint-disable-next-line security/detect-object-injection
   const config = FILE_CONFIGS[fileType]
   const storage = createStorage(fileType)
   const fileFilter = createFileFilter(fileType)
@@ -109,36 +96,32 @@ export interface UploadedFile {
   url: string
 }
 
-export function processUploadedFile(file: Express.Multer.File, _fileType: FileType): UploadedFile {
-  const baseUrl = process.env.BASE_URL ?? 'http://localhost:5000'
-  const relativePath = path.relative(process.cwd(), file.path)
+import { storageProvider } from './storage/StorageFactory'
 
-  return {
-    filename: file.filename,
-    originalname: file.originalname,
-    path: relativePath,
-    size: file.size,
-    mimetype: file.mimetype,
-    url: `${baseUrl}/${relativePath.replace(/\\/g, '/')}`,
-  }
+export async function uploadFileToStorage(
+  file: Express.Multer.File,
+  fileType: FileType
+): Promise<string> {
+  const key = generateFileKey(fileType, file.originalname)
+  return storageProvider.uploadFile(key, file.buffer, file.mimetype)
 }
 
-export async function deleteFile(filePath: string): Promise<boolean> {
+export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath)
-
-    if (fs.existsSync(absolutePath)) {
-      fs.unlinkSync(absolutePath)
-      logger.info(`[FileUpload] Deleted file: ${absolutePath}`)
-      return true
+    // Note: S3 deleteFile expects the key, not the full URL.
+    // If it's a relative URL like /uploads/avatars/123.jpg, we can extract the key.
+    // For now, let's pass the raw fileUrl. S3StorageProvider and LocalDiskProvider should parse it.
+    let key = fileUrl
+    if (key.startsWith('/')) {
+      key = key.substring(1)
     }
 
-    return false
+    return await storageProvider.deleteFile(key)
   } catch (error) {
     logger.error(
       '[FileUpload] Failed to delete file',
       error instanceof Error ? error : new Error(String(error)),
-      { filePath }
+      { fileUrl }
     )
     return false
   }
@@ -151,7 +134,7 @@ export const uploadCourseThumbnail = createUpload(FileType.COURSE_THUMBNAIL).sin
 
 export default {
   createUpload,
-  processUploadedFile,
+  uploadFileToStorage,
   deleteFile,
   FileType,
 }
