@@ -9,8 +9,6 @@ import 'sync_service.dart';
 
 /// Course progress data
 class CourseProgress {
-// ... (omitting unchanged lines for brevity but ensuring imports are correct)
-
   final String courseId;
   final double progress;
   final int completedLessons;

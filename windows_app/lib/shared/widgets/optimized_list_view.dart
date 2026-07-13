@@ -17,7 +17,7 @@ class OptimizedListView<T> extends StatelessWidget {
   final bool shrinkWrap;
   final Axis scrollDirection;
   final double? itemExtent;
-  final int? cacheExtent;
+  final double? cacheExtent;
   final bool addAutomaticKeepAlives;
   final bool addRepaintBoundaries;
   final bool addSemanticIndexes;

@@ -88,6 +88,15 @@ class SubmissionViewSet(mixins.CreateModelMixin,
     def _evaluate_submission(self, submission):
         """
         Evaluate submission asynchronously using Celery.
+        Handles broker failures gracefully.
         """
         from .tasks import evaluate_submission_task
-        evaluate_submission_task.delay(submission.id)
+        from celery.exceptions import CeleryError
+        try:
+            evaluate_submission_task.delay(submission.id)
+        except CeleryError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("Failed to enqueue submission evaluation: %s", e)
+            # Submission is saved but won't be auto-evaluated.
+            # A periodic task or webhook can pick up pending evaluations.

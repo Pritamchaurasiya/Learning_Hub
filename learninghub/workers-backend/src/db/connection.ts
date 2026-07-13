@@ -12,13 +12,17 @@ export interface DbResult<T> {
   rowCount: number | null
 }
 
-export async function createDBClient(env: Env): Promise<Client> {
+export async function createDbClient(env: Env): Promise<Client> {
   const client = new Client(env.DATABASE_URL)
   await client.connect()
   return client
 }
 
-export async function query<T = unknown>(client: Client, sql: string, params?: unknown[]): Promise<T[]> {
+export async function query<T = unknown>(
+  client: Client,
+  sql: string,
+  params?: unknown[]
+): Promise<T[]> {
   const result = await client.query(sql, params)
   return result.rows as T[]
 }
@@ -32,17 +36,11 @@ export async function queryOne<T = unknown>(
   return (result.rows[0] as T) || null
 }
 
-export function withClient<T>(
-  env: Env,
-  fn: (client: Client) => Promise<T>
-): Promise<T> {
+export function withClient<T>(env: Env, fn: (client: Client) => Promise<T>): Promise<T> {
   return withDb(env, fn)
 }
 
-export async function withDb<T>(
-  env: Env,
-  fn: (client: Client) => Promise<T>
-): Promise<T> {
+export async function withDb<T>(env: Env, fn: (client: Client) => Promise<T>): Promise<T> {
   const client = new Client(env.DATABASE_URL)
   try {
     await client.connect()

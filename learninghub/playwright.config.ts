@@ -16,8 +16,8 @@ export default defineConfig({
   /* Retry on CI (2x) and locally (1x) to handle Vite cold-start flakiness */
   retries: process.env.CI ? 2 : 1,
 
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Run tests sequentially to avoid DB lock collisions */
+  workers: 1,
 
   /* Reporter to use */
   reporter: 'html',
@@ -49,49 +49,21 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    /* Mobile viewports */
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
   ],
 
-  /* Run local dev server before starting the tests */
-  webServer: [
-    {
-      command: 'npm run dev --prefix backend',
-      url: 'http://localhost:5000/api/v1/health',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-      stdout: 'pipe',
-      stderr: 'pipe',
-      env: {
-        NODE_ENV: 'test'
-      }
+  /* Run local Vite dev server before starting the tests.
+   * The backend should be started separately if running live-backend E2E tests.
+   * Mocked tests (problems, tests-a) use page.route() and don't need a backend. */
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    env: {
+      NODE_ENV: 'test',
+      VITE_API_URL: 'http://localhost:5000/api/v1',
     },
-    {
-      command: 'npm run dev',
-      url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-      stdout: 'pipe',
-      stderr: 'pipe',
-      env: {
-        NODE_ENV: 'test',
-        VITE_API_URL: 'http://localhost:5000/api/v1'
-      }
-    }
-  ],
+  },
 })

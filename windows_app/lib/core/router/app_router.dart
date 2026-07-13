@@ -34,7 +34,16 @@ import '../../features/mentorship/mentorship_screen.dart';
 import '../../features/cart/cart_screen.dart';
 import '../../features/gamification/screens/leaderboard_screen.dart';
 import '../../features/learning_path/learning_path_screen.dart';
+import '../../shared/widgets/error_boundary.dart';
 import '../../shared/widgets/main_scaffold.dart';
+
+Widget _withErrorBoundary(Widget child) {
+  return ErrorBoundary(child: child);
+}
+
+Widget Function(BuildContext, GoRouterState) _wrapRoute(WidgetBuilder builder) {
+  return (context, state) => _withErrorBoundary(builder(context));
+}
 
 /// Navigation shell key for bottom navigation
 final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -99,14 +108,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        builder: _wrapRoute((context) => const SplashScreen()),
       ),
 
       // Onboarding Screen
       GoRoute(
         path: '/onboarding',
         name: 'onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        builder: _wrapRoute((context) => const OnboardingScreen()),
       ),
 
       // ... (existing routes)
@@ -115,17 +124,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: _wrapRoute((context) => const LoginScreen()),
       ),
       GoRoute(
         path: '/signup',
         name: 'signup',
-        builder: (context, state) => const SignupScreen(),
+        builder: _wrapRoute((context) => const SignupScreen()),
       ),
       GoRoute(
         path: '/forgot-password',
         name: 'forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
+        builder: _wrapRoute((context) => const ForgotPasswordScreen()),
       ),
 
       // Main App with Bottom Navigation Shell
@@ -137,8 +146,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/',
             name: 'home',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HomeScreenV2(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: _withErrorBoundary(const HomeScreenV2()),
             ),
           ),
 
@@ -146,8 +155,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/search',
             name: 'search',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SearchScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: _withErrorBoundary(const SearchScreen()),
             ),
           ),
 
@@ -155,8 +164,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/library',
             name: 'library',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: LibraryScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: _withErrorBoundary(const LibraryScreen()),
             ),
           ),
 
@@ -164,8 +173,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/profile',
             name: 'profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfileScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: _withErrorBoundary(const ProfileScreen()),
             ),
           ),
         ],
@@ -175,17 +184,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/leaderboard',
         name: 'leaderboard',
-        builder: (context, state) => const LeaderboardScreen(),
+        builder: _wrapRoute((context) => const LeaderboardScreen()),
       ),
 
       // Course Detail (Full Screen)
       GoRoute(
         path: '/course/:courseId',
         name: 'course-detail',
-        builder: (context, state) {
-          final courseId = state.pathParameters['courseId'] ?? '';
-          return CourseDetailScreen(courseId: courseId);
-        },
+        builder: (context, state) => _withErrorBoundary(
+          CourseDetailScreen(
+            courseId: state.pathParameters['courseId'] ?? '',
+          ),
+        ),
         routes: [
           // Lesson Player (Nested under course)
           GoRoute(
@@ -194,10 +204,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final courseId = state.pathParameters['courseId'] ?? '';
               final lessonId = state.pathParameters['lessonId'] ?? '';
-              return LessonPlayerScreen(
+              return _withErrorBoundary(LessonPlayerScreen(
                 courseId: courseId,
                 lessonId: lessonId,
-              );
+              ));
             },
           ),
 
@@ -208,10 +218,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final courseId = state.pathParameters['courseId'] ?? '';
               final quizId = state.pathParameters['quizId'] ?? '';
-              return QuizScreen(
+              return _withErrorBoundary(QuizScreen(
                 courseId: courseId,
                 quizId: quizId,
-              );
+              ));
             },
           ),
         ],
@@ -221,122 +231,126 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ai-tutor',
         name: 'ai-tutor',
-        builder: (context, state) {
-          final lessonId = state.uri.queryParameters['lessonId'];
-          return AiTutorScreen(lessonId: lessonId);
-        },
+        builder: (context, state) => _withErrorBoundary(
+          AiTutorScreen(
+            lessonId: state.uri.queryParameters['lessonId'],
+          ),
+        ),
       ),
 
       // Live Class
       GoRoute(
         path: '/live/:classId',
         name: 'live-class',
-        builder: (context, state) {
-          final classId = state.pathParameters['classId'] ?? '';
-          return LiveClassScreen(classId: classId);
-        },
+        builder: (context, state) => _withErrorBoundary(
+          LiveClassScreen(
+            classId: state.pathParameters['classId'] ?? '',
+          ),
+        ),
       ),
 
       // Settings
       GoRoute(
         path: '/settings',
         name: 'settings',
-        builder: (context, state) => const SettingsScreen(),
+        builder: _wrapRoute((context) => const SettingsScreen()),
       ),
 
       // Certificates
       GoRoute(
         path: '/certificates',
         name: 'certificates',
-        builder: (context, state) => const CertificatesScreen(),
+        builder: _wrapRoute((context) => const CertificatesScreen()),
       ),
 
       // Notifications
       GoRoute(
         path: '/notifications',
         name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        builder: _wrapRoute((context) => const NotificationsScreen()),
       ),
 
       // Study Planner
       GoRoute(
         path: '/study-planner',
         name: 'study-planner',
-        builder: (context, state) => const StudyPlannerScreen(),
+        builder: _wrapRoute((context) => const StudyPlannerScreen()),
       ),
 
       // Bookmarks
       GoRoute(
         path: '/bookmarks',
         name: 'bookmarks',
-        builder: (context, state) => const BookmarksScreen(),
+        builder: _wrapRoute((context) => const BookmarksScreen()),
       ),
 
       // Downloads
       GoRoute(
         path: '/downloads',
         name: 'downloads',
-        builder: (context, state) => const DownloadsScreen(),
+        builder: _wrapRoute((context) => const DownloadsScreen()),
       ),
 
       // Discussions
       GoRoute(
         path: '/discussions/:courseId',
         name: 'discussions',
-        builder: (context, state) {
-          final courseId = state.pathParameters['courseId'] ?? '';
-          return DiscussionsScreen(courseId: courseId);
-        },
+        builder: (context, state) => _withErrorBoundary(
+          DiscussionsScreen(
+            courseId: state.pathParameters['courseId'] ?? '',
+          ),
+        ),
       ),
 
       // Achievements
       GoRoute(
         path: '/achievements',
         name: 'achievements',
-        builder: (context, state) => const AchievementsScreen(),
+        builder: _wrapRoute((context) => const AchievementsScreen()),
       ),
 
       // Mentorship
       GoRoute(
         path: '/mentorship',
         name: 'mentorship',
-        builder: (context, state) => const MentorshipScreen(),
+        builder: _wrapRoute((context) => const MentorshipScreen()),
       ),
 
       // Analytics
       GoRoute(
         path: '/analytics',
         name: 'analytics',
-        builder: (context, state) => const AnalyticsScreen(),
+        builder: _wrapRoute((context) => const AnalyticsScreen()),
       ),
 
       // Admin Dashboard
       GoRoute(
         path: '/admin',
         name: 'admin',
-        builder: (context, state) => const AdminScreen(),
+        builder: _wrapRoute((context) => const AdminScreen()),
       ),
 
       // Peer Reviews
       GoRoute(
         path: '/peer-reviews',
         name: 'peer-reviews',
-        builder: (context, state) => const PeerReviewScreen(),
+        builder: _wrapRoute((context) => const PeerReviewScreen()),
       ),
 
       // Learning Path
       GoRoute(
         path: '/learning-path',
         name: 'learning-path',
-        builder: (context, state) => const LearningPathListScreen(),
+        builder: _wrapRoute((context) => const LearningPathListScreen()),
         routes: [
           GoRoute(
             path: ':pathId',
             name: 'learning-path-detail',
-            builder: (context, state) {
-              final pathId = state.pathParameters['pathId'] ?? '';
-              return LearningPathDetailScreen(pathId: pathId);
-            },
+            builder: (context, state) => _withErrorBoundary(
+              LearningPathDetailScreen(
+                pathId: state.pathParameters['pathId'] ?? '',
+              ),
+            ),
           ),
         ],
       ),
@@ -345,7 +359,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/cart',
         name: 'cart',
-        builder: (context, state) => const CartScreen(),
+        builder: _wrapRoute((context) => const CartScreen()),
       ),
     ],
 

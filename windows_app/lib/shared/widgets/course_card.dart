@@ -26,29 +26,32 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    switch (style) {
-      case CourseCardStyle.vertical:
-        return _VerticalCard(
+    final card = switch (style) {
+      CourseCardStyle.vertical => _VerticalCard(
           course: course,
           onTap: onTap,
           showProgress: showProgress,
           progress: progress,
-        );
-      case CourseCardStyle.horizontal:
-        return _HorizontalCard(
+        ),
+      CourseCardStyle.horizontal => _HorizontalCard(
           course: course,
           onTap: onTap,
           showProgress: showProgress,
           progress: progress,
-        );
-      case CourseCardStyle.compact:
-        return _CompactCard(
+        ),
+      CourseCardStyle.compact => _CompactCard(
           course: course,
           onTap: onTap,
           showProgress: showProgress,
           progress: progress,
-        );
-    }
+        ),
+    };
+    return Semantics(
+      label: '${course.title}, ${course.level.name} level, ${course.category}',
+      hint: 'Open course details',
+      button: true,
+      child: card,
+    );
   }
 }
 

@@ -58,7 +58,7 @@ jobs:
         coverage report
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
 
@@ -172,7 +172,7 @@ jobs:
         flutter build web --release
 
     - name: Upload Flutter build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: flutter-web-build
         path: my_flutter_app/build/web/
@@ -235,14 +235,14 @@ jobs:
 
     steps:
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@0.28.0
       with:
         image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:latest
         format: 'sarif'
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
 
@@ -391,7 +391,7 @@ jobs:
         locust -f load_tests/locustfile.py --headless --users 100 --spawn-rate 10 --run-time 60s --host https://staging.learninghub.com --html performance-report.html
 
     - name: Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-report
         path: performance-report.html

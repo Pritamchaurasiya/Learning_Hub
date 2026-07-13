@@ -129,30 +129,25 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2>
       title: AppLocalizations.of(context)!.appTitle,
       color: theme.primaryColor,
       child: Scaffold(
-        extendBodyBehindAppBar: true,
         body: DefaultTabController(
           length: 3,
           child: NestedScrollView(
             headerSliverBuilder:
                 (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
-                SliverOverlapAbsorber(
-                  handle:
-                      NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                  sliver: SliverAppBar(
-                    title: Text(AppLocalizations.of(context)!.appTitle),
-                    pinned: true,
-                    floating: true,
-                    snap: true,
-                    forceElevated: innerBoxIsScrolled,
-                    bottom: TabBar(
-                      controller: _tabController,
-                      tabs: const [
-                        Tab(text: 'Home'),
-                        Tab(text: 'Discover'),
-                        Tab(text: 'Live'),
-                      ],
-                    ),
+                SliverAppBar(
+                  title: Text(AppLocalizations.of(context)!.appTitle),
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  forceElevated: innerBoxIsScrolled,
+                  bottom: TabBar(
+                    controller: _tabController,
+                    tabs: const [
+                      Tab(text: 'Home'),
+                      Tab(text: 'Discover'),
+                      Tab(text: 'Live'),
+                    ],
                   ),
                 ),
               ];

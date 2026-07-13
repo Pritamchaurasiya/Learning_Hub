@@ -236,7 +236,7 @@ class LazyImageGrid extends StatelessWidget {
   final int crossAxisCount;
   final double spacing;
   final double aspectRatio;
-  final Function(String url, int index)? onImageTap;
+  final void Function(String url, int index)? onImageTap;
 
   const LazyImageGrid({
     super.key,

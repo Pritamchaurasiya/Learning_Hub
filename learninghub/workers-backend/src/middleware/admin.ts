@@ -9,7 +9,7 @@ import { Env } from '../types'
 export async function requireAdmin(request: Request, env: Env): Promise<Response | null> {
   const authHeader = request.headers.get('Authorization')
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return createErrorResponse('Unauthorized - Admin access required', 401)
   }
 
@@ -37,7 +37,7 @@ export async function requireAdmin(request: Request, env: Env): Promise<Response
 export async function isAdmin(request: Request, env: Env): Promise<boolean> {
   const authHeader = request.headers.get('Authorization')
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return false
   }
 

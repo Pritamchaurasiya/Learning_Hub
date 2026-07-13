@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import { logger } from '../utils/logger'
+import { PASSING_SCORE } from '../constants'
 import { createJSONResponse, createErrorResponse } from '../utils/helpers'
-import { withDb, queryOne } from '../db/connection'
+import { withDb } from '../db/connection'
 import { requireUser } from '../utils/authHelper'
 import { Env } from '../types'
 
@@ -40,7 +42,8 @@ export async function handleTests(request: Request, env: Env): Promise<Response>
   if (attemptsMatch && method === 'GET') return handleGetAttempts(request, env, attemptsMatch[1])
 
   const attemptDetailMatch = path.match(/^\/tests\/attempts\/([^/]+)$/)
-  if (attemptDetailMatch && method === 'GET') return handleGetAttemptDetail(request, env, attemptDetailMatch[1])
+  if (attemptDetailMatch && method === 'GET')
+    return handleGetAttemptDetail(request, env, attemptDetailMatch[1])
 
   const testIdMatch = path.match(/^\/tests\/([^/]+)$/)
   if (testIdMatch && method === 'GET') return handleGetTest(request, env, testIdMatch[1])
@@ -53,7 +56,7 @@ async function handleStartTest(request: Request, env: Env, testId: string): Prom
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const testResult = await client.query(
         `SELECT id, title, time_limit_minutes, total_questions FROM tests WHERE id = $1`,
         [testId]
@@ -84,7 +87,7 @@ async function handleStartTest(request: Request, env: Env, testId: string): Prom
       })
     })
   } catch (error) {
-    console.error('Start test error:', error)
+    logger.error('Start test error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -98,7 +101,7 @@ async function handleAutosave(request: Request, env: Env, testId: string): Promi
     const { answers } = body
     if (!answers) return createErrorResponse('Answers required', 400)
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const existingAttempt = await client.query(
         `SELECT id FROM test_attempts WHERE user_id = $1 AND test_id = $2 AND status = 'in_progress'`,
         [user.userId, testId]
@@ -114,7 +117,7 @@ async function handleAutosave(request: Request, env: Env, testId: string): Promi
       return createJSONResponse({ status: 'success', data: { saved: true } })
     })
   } catch (error) {
-    console.error('Autosave error:', error)
+    logger.error('Autosave error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -124,7 +127,7 @@ async function handleGetAllAttempts(request: Request, env: Env): Promise<Respons
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const [results, xpResult] = await Promise.all([
         client.query(
           `SELECT ta.id, ta.test_id, t.title as test_title, ta.status,
@@ -146,7 +149,7 @@ async function handleGetAllAttempts(request: Request, env: Env): Promise<Respons
       })
     })
   } catch (error) {
-    console.error('Get all attempts error:', error)
+    logger.error('Get all attempts error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -156,24 +159,27 @@ async function handleListTests(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
     const courseId = url.searchParams.get('courseId')
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       let query = `SELECT t.*, c.title as course_title FROM tests t LEFT JOIN courses c ON t.course_id = c.id WHERE 1=1`
       const params: unknown[] = []
-      if (courseId) { query += ' AND t.course_id = $1'; params.push(courseId) }
+      if (courseId) {
+        query += ' AND t.course_id = $1'
+        params.push(courseId)
+      }
       query += ' ORDER BY t.created_at DESC'
 
       const result = await client.query(query, params)
       return createJSONResponse({ tests: result.rows })
     })
   } catch (error) {
-    console.error('List tests error:', error)
+    logger.error('List tests error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
 async function handleGetTest(request: Request, env: Env, testId: string): Promise<Response> {
   try {
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const testResult = await client.query(
         `SELECT t.*, c.title as course_title FROM tests t LEFT JOIN courses c ON t.course_id = c.id WHERE t.id = $1`,
         [testId]
@@ -202,7 +208,7 @@ async function handleGetTest(request: Request, env: Env, testId: string): Promis
       return createJSONResponse({ test })
     })
   } catch (error) {
-    console.error('Get test error:', error)
+    logger.error('Get test error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -214,31 +220,43 @@ async function handleSubmitTest(request: Request, env: Env, testId: string): Pro
 
     const body = await request.json()
     const parsed = submitSchema.safeParse(body)
-    if (!parsed.success) return createErrorResponse('Invalid input: ' + parsed.error.message)
+    if (!parsed.success) return createErrorResponse(`Invalid input: ${parsed.error.message}`)
 
     const { answers, attempt_id: attemptId, timeTaken } = parsed.data
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const questionsResult = await client.query(
         `SELECT id, correct_answer, points FROM questions WHERE test_id = $1`,
         [testId]
       )
-      if (questionsResult.rows.length === 0) return createErrorResponse('Test has no questions', 400)
+      if (questionsResult.rows.length === 0)
+        return createErrorResponse('Test has no questions', 400)
 
       let score = 0
       let totalPossible = 0
-      const answerDetails: Array<{ questionId: string; correct: boolean; userAnswer: string | null; correctAnswer: string }> = []
+      const answerDetails: Array<{
+        questionId: string
+        correct: boolean
+        userAnswer: string | null
+        correctAnswer: string
+      }> = []
 
       for (const q of questionsResult.rows) {
         totalPossible += q.points
         const userAns = answers[q.id]
-        const isCorrect = userAns && userAns.toString().toLowerCase() === q.correct_answer.toString().toLowerCase()
+        const isCorrect =
+          userAns && userAns.toString().toLowerCase() === q.correct_answer.toString().toLowerCase()
         if (isCorrect) score += q.points
-        answerDetails.push({ questionId: q.id, correct: isCorrect, userAnswer: userAns || null, correctAnswer: q.correct_answer })
+        answerDetails.push({
+          questionId: q.id,
+          correct: isCorrect,
+          userAnswer: userAns || null,
+          correctAnswer: q.correct_answer,
+        })
       }
 
       const percentage = totalPossible > 0 ? Math.round((score / totalPossible) * 100) : 0
-      const passed = percentage >= 60
+      const passed = percentage >= PASSING_SCORE
       const xpEarned = Math.floor(score / 10)
 
       if (attemptId) {
@@ -246,7 +264,17 @@ async function handleSubmitTest(request: Request, env: Env, testId: string): Pro
           `UPDATE test_attempts SET status = 'submitted', score = $1, total_marks = $2, percentage = $3,
            passed = $4, time_taken_seconds = $5, xp_earned = $6, answers = $7, submitted_at = NOW()
            WHERE id = $8 AND user_id = $9`,
-          [score, totalPossible, percentage, passed, timeTaken || 0, xpEarned, JSON.stringify(answerDetails), attemptId, user.userId]
+          [
+            score,
+            totalPossible,
+            percentage,
+            passed,
+            timeTaken || 0,
+            xpEarned,
+            JSON.stringify(answerDetails),
+            attemptId,
+            user.userId,
+          ]
         )
       } else {
         const existingResult = await client.query(
@@ -271,8 +299,12 @@ async function handleSubmitTest(request: Request, env: Env, testId: string): Pro
       return createJSONResponse({
         status: 'success',
         data: {
-          score, totalPossible, percentage, passed,
-          time_taken: timeTaken || 0, xpEarned,
+          score,
+          totalPossible,
+          percentage,
+          passed,
+          time_taken: timeTaken || 0,
+          xpEarned,
           correct_count: answerDetails.filter(a => a.correct).length,
           incorrect_count: answerDetails.filter(a => !a.correct).length,
           answers: answerDetails,
@@ -281,7 +313,7 @@ async function handleSubmitTest(request: Request, env: Env, testId: string): Pro
       })
     })
   } catch (error) {
-    console.error('Submit test error:', error)
+    logger.error('Submit test error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -291,7 +323,7 @@ async function handleGetResult(request: Request, env: Env, testId: string): Prom
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT ta.*, t.title as test_title, t.time_limit_minutes
          FROM test_attempts ta JOIN tests t ON ta.test_id = t.id
@@ -303,17 +335,21 @@ async function handleGetResult(request: Request, env: Env, testId: string): Prom
       return createJSONResponse({ status: 'success', data: result.rows[0] })
     })
   } catch (error) {
-    console.error('Get result error:', error)
+    logger.error('Get result error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
-async function handleGetAttemptDetail(request: Request, env: Env, attemptId: string): Promise<Response> {
+async function handleGetAttemptDetail(
+  request: Request,
+  env: Env,
+  attemptId: string
+): Promise<Response> {
   try {
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT ta.*, t.title as test_title FROM test_attempts ta JOIN tests t ON ta.test_id = t.id
          WHERE ta.id = $1 AND ta.user_id = $2`,
@@ -323,7 +359,7 @@ async function handleGetAttemptDetail(request: Request, env: Env, attemptId: str
       return createJSONResponse({ status: 'success', data: result.rows[0] })
     })
   } catch (error) {
-    console.error('Get attempt detail error:', error)
+    logger.error('Get attempt detail error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -333,7 +369,7 @@ async function handleGetResults(request: Request, env: Env, testId: string): Pro
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT tr.*, t.title as test_title, t.total_questions
          FROM test_results tr JOIN tests t ON tr.test_id = t.id
@@ -353,7 +389,7 @@ async function handleGetResults(request: Request, env: Env, testId: string): Pro
       return createJSONResponse({ result: response })
     })
   } catch (error) {
-    console.error('Get results error:', error)
+    logger.error('Get results error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -363,7 +399,7 @@ async function handleGetAttempts(request: Request, env: Env, testId: string): Pr
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const attemptsResult = await client.query(
         `SELECT tr.id, tr.score, tr.completed_at as "completedAt", tr.time_taken as "timeTaken",
                 tr.passed, tr.xp_earned as "xpEarned", tr.attempts
@@ -374,7 +410,7 @@ async function handleGetAttempts(request: Request, env: Env, testId: string): Pr
       return createJSONResponse({ status: 'success', data: attemptsResult.rows })
     })
   } catch (error) {
-    console.error('Get attempts error:', error)
+    logger.error('Get attempts error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -384,7 +420,7 @@ async function handleGetMyResults(request: Request, env: Env): Promise<Response>
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const [results, xpResult] = await Promise.all([
         client.query(
           `SELECT tr.id, tr.test_id as "testId", t.title as "testTitle",
@@ -406,7 +442,7 @@ async function handleGetMyResults(request: Request, env: Env): Promise<Response>
       })
     })
   } catch (error) {
-    console.error('Get my results error:', error)
+    logger.error('Get my results error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }

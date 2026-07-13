@@ -273,10 +273,14 @@ class EnrollmentService:
 
     @staticmethod
     def get_user_enrollments(user) -> QuerySet:
-        """Get enrollments for a user."""
+        """Get enrollments for a user with optimized queries."""
         return Enrollment.objects.filter(user=user).select_related(
-            "course", "course__instructor", "course__category"
-        )
+            "course",
+            "course__instructor",
+            "course__category"
+        ).prefetch_related(
+            "course__modules"
+        ).order_by('-created_at')
 
 
     @staticmethod

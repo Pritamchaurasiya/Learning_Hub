@@ -1,7 +1,6 @@
 import { jwtVerify } from 'jose'
 import { Env, UserContext } from '../types'
 import { logger } from '../utils/logger'
-import { Errors } from './error'
 
 export { UserContext as JWTPayload }
 
@@ -21,7 +20,7 @@ export function createAuthMiddleware(env: Env) {
   ): Promise<{ user: UserContext | null; error: Response | null }> => {
     const authHeader = request.headers.get('Authorization')
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       logger.debug('Missing or invalid Authorization header')
       return {
         user: null,
@@ -83,27 +82,6 @@ export function createAuthMiddleware(env: Env) {
     }
   }
 }
-
-export function requireAuth(authMiddleware: ReturnType<typeof createAuthMiddleware>) {
-  return async (
-    request: Request,
-    handler: (user: UserContext) => Promise<Response>
-  ): Promise<Response> => {
-    const { user, error } = await authMiddleware(request)
-    if (error) return error
-    if (!user) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: 'UNAUTHORIZED', message: 'User not authenticated' },
-        }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-    return handler(user)
-  }
-}
-
 /**
  * Check if user has required role
  */

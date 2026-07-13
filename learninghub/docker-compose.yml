@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-learninghub}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-learninghub_secret}
@@ -19,6 +20,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
       - '6379:6379'
     healthcheck:
@@ -31,16 +33,33 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
+      # Database Configuration
       - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
+      - DIRECT_URL=${DIRECT_URL:-postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}}
+      # Redis Configuration
       - REDIS_ENABLED=true
       - REDIS_URL=redis://redis:6379
-      - PORT=8000
+      # Server Configuration (changed from 8000 to 5000 to match code default and .env.development)
+      - PORT=5000
       - NODE_ENV=production
+      # JWT Configuration
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-${JWT_SECRET:-your-super-secret-jwt-key}}
+      # CORS & Frontend Configuration
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000,http://127.0.0.1:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      # CSRF Configuration (use a strong 64+ char hex string in production)
+      - CSRF_SECRET=${CSRF_SECRET:-change-me-generate-a-secure-csrf-secret-at-least-32-chars-long-please-replace-me}
+      # Admin Configuration
+      - ADMIN_SECRET=${ADMIN_SECRET:-change-me-generate-a-secure-admin-secret-at-least-16-chars}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@learninghub.com}
+      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-change-me-secure-password-123}
+      # External APIs
       - GEMINI_API_KEY=${GEMINI_API_KEY:-mock-key}
     ports:
-      - '8000:8000'
+      - '5000:5000'
     depends_on:
       db:
         condition: service_healthy
@@ -53,6 +72,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - '3000:80'
     depends_on:
@@ -60,4 +80,3 @@ services:
 
 volumes:
   postgres_data:
-

@@ -3,7 +3,7 @@ import logging
 from celery import shared_task
 from django.utils import timezone
 
-from .models import UserSubscription
+from .models import UserSubscription, SubscriptionPlan
 from .services import SubscriptionManager
 
 logger = logging.getLogger(__name__)
@@ -73,8 +73,31 @@ def convert_expired_trials():
         sub.status = 'expired'
         sub.save(update_fields=['status'])
         converted += 1
-        # TODO: Send email prompting user to subscribe
-        # TODO: Downgrade user's feature access
+        
+        # 1. Downgrade user's feature access by assigning the Free plan
+        free_plan = SubscriptionPlan.objects.filter(code='free').first()
+        if free_plan:
+            UserSubscription.objects.create(
+                user=sub.user,
+                plan=free_plan,
+                status='active',
+                current_period_start=now,
+                current_period_end=now + timezone.timedelta(days=3650) # Active for 10 years
+            )
+            
+        # 2. Send email prompting user to subscribe
+        try:
+            from django.conf import settings
+            from django.core.mail import send_mail
+            send_mail(
+                subject='Your trial has expired',
+                message='Your free trial has ended. You have been placed on the Free plan. To regain access to premium features, please subscribe to a premium plan.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[sub.user.email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send trial expiry email to {sub.user.email}: {e}")
 
     logger.info(f"Converted {converted} expired trials")
     return {'converted': converted}

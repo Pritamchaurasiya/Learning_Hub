@@ -73,13 +73,13 @@ class BaseWebSocketConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         """Handle connection."""
         self.user = self.scope.get("user")
+        self.groups: Set[str] = set()
         
         if not self.user or not self.user.is_authenticated:
             await self.close()
             return
         
         self.user_id = str(self.user.id)
-        self.groups: Set[str] = set()
         
         await self.accept()
         

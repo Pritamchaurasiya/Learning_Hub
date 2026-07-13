@@ -46,6 +46,9 @@ class TutorService:
         """
         Build prompt using RAG retrieval.
         """
+        if not question or not question.strip():
+            return "Please provide a valid question."
+
         from apps.ai_engine.vector_service import VectorService
         
         # 1. Retrieve relevant chunks
@@ -56,7 +59,13 @@ class TutorService:
         if not chunks:
              context_text = "No specific context found in knowledge base."
         else:
-             context_text = "\n\n".join([c.chunk_text for c in chunks])
+             seen = set()
+             unique_chunks = []
+             for c in chunks:
+                 if c.chunk_text not in seen:
+                     seen.add(c.chunk_text)
+                     unique_chunks.append(c)
+             context_text = "\n\n".join([c.chunk_text for c in unique_chunks])
 
         return f"""
             You are an expert Research Scientist Tutor.
@@ -81,6 +90,12 @@ class TutorService:
         import hashlib
         from django.core.cache import cache
         from apps.security.content_filter import ContentFilter
+
+        if not question or not question.strip():
+            return "Please provide a valid question."
+
+        if len(question) > 8000:
+            return "Question too long. Please shorten your question."
 
         # Phase 54: ML Cybersecurity - Pre-LLM Content Filtering
         is_malicious, reason = ContentFilter.detect_prompt_injection(question)
@@ -152,6 +167,10 @@ class TutorService:
         Ask the AI tutor a question and stream the response (Generator).
         """
         from apps.security.content_filter import ContentFilter
+
+        if not question or not question.strip():
+            yield "Please provide a valid question."
+            return
 
         # Phase 54: ML Cybersecurity - Pre-LLM Content Filtering
         is_malicious, reason = ContentFilter.detect_prompt_injection(question)

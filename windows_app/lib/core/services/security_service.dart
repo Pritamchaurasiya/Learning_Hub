@@ -188,52 +188,31 @@ class SecurityService {
     return digest.toString();
   }
 
-  /// Comprehensive input sanitization to prevent XSS and injection attacks
-  /// FIXED: Enhanced sanitization with additional security measures
+  /// Comprehensive input sanitization to prevent XSS
+  /// Preserves legitimate content while removing dangerous patterns
   String sanitizeInput(String input) {
-    if (input.isEmpty) {
-      return input;
-    }
+    if (input.isEmpty) return input;
 
-    // Remove null bytes and control characters
-    var sanitized =
-        input.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
+    var sanitized = input.replaceAll(
+      RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'),
+      '',
+    );
 
-    // Remove HTML tags and scripts
-    sanitized =
-        sanitized.replaceAll(RegExp(r'<[^>]*>', caseSensitive: false), '');
-
-    // Remove javascript: and data: protocols
     sanitized = sanitized.replaceAll(
-        RegExp(r'(javascript|data|vbscript):', caseSensitive: false), '');
+      RegExp(r'<script[^>]*>.*?</script>', caseSensitive: false, dotAll: true),
+      '',
+    );
 
-    // Remove event handlers (e.g., onclick, onmouseover)
     sanitized = sanitized.replaceAll(
-        RegExp(r'on\w+\s*=\s*["\x27][^"\x27>]*["\x27]', caseSensitive: false),
-        '');
+      RegExp(r'(javascript|data|vbscript):', caseSensitive: false),
+      '',
+    );
 
-    // Remove dangerous SQL patterns (enhanced protection)
     sanitized = sanitized.replaceAll(
-        RegExp(
-            r'(\b(union|select|insert|delete|update|drop|create|alter|exec|execute|script|eval|function|constructor)\b)',
-            caseSensitive: false),
-        '');
+      RegExp(r'on\w+\s*=\s*["\x27][^"\x27>]*["\x27]', caseSensitive: false),
+      '',
+    );
 
-    // Remove quotes and escape sequences that could be used for injection
-    sanitized = sanitized
-        .replaceAll('"', '')
-        .replaceAll("'", '')
-        .replaceAll('\\', '')
-        .replaceAll('`', '');
-
-    // Remove potential path traversal attempts
-    sanitized = sanitized.replaceAll(RegExp(r'\.\./'), '');
-
-    // Remove potential command injection patterns
-    sanitized = sanitized.replaceAll(
-        RegExp(r'([;&|`$(){}])', caseSensitive: false), '');
-
-    // Limit length to prevent buffer overflow attacks
     if (sanitized.length > 1000) {
       sanitized = sanitized.substring(0, 1000);
     }

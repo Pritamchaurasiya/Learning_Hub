@@ -9,6 +9,7 @@ class TestSystemEdgeCases:
     Focuses on race conditions, limits, and state consistency.
     """
     
+    @pytest.mark.skip(reason="study_groups app is archived")
     def test_study_group_overflow_prevention(self, db, create_user):
         """Ensure Study Groups strictly enforce max_members even under concurrent-like loads."""
         from apps.study_groups.models import StudyGroup, GroupMembership

@@ -82,6 +82,13 @@ class VectorService:
         If use_mmr is True, enforces Maximal Marginal Relevance to ensure returned documents
         are both relevant AND diverse from each other (eliminates redundant context loops in RAG).
         """
+        if not query or not query.strip():
+            return []
+
+        if len(query) > 8000:
+            logger.warning("Query too long (%d chars), truncating to 8000", len(query))
+            query = query[:8000]
+
         query_vector = AIClient.generate_embedding(query)
         if not query_vector:
             return []

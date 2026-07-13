@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
@@ -46,6 +47,8 @@ class SearchFilters {
 class SearchState {
   final List<Course> results;
   final bool isLoading;
+  final bool hasMore;
+  final int currentPage;
   final List<String> recentSearches;
   final List<String> suggestions;
   final SearchFilters filters;
@@ -54,6 +57,8 @@ class SearchState {
     required this.results,
     required this.filters,
     this.isLoading = false,
+    this.hasMore = true,
+    this.currentPage = 0,
     this.recentSearches = const [],
     this.suggestions = const [],
   });
@@ -62,6 +67,8 @@ class SearchState {
     List<Course>? results,
     SearchFilters? filters,
     bool? isLoading,
+    bool? hasMore,
+    int? currentPage,
     List<String>? recentSearches,
     List<String>? suggestions,
   }) {
@@ -69,6 +76,8 @@ class SearchState {
       results: results ?? this.results,
       filters: filters ?? this.filters,
       isLoading: isLoading ?? this.isLoading,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
       recentSearches: recentSearches ?? this.recentSearches,
       suggestions: suggestions ?? this.suggestions,
     );
@@ -81,15 +90,18 @@ class SearchNotifier extends Notifier<SearchState> {
   final _courseService = CourseService.instance;
   final _searchSubject = PublishSubject<String>();
 
+  static const int _pageSize = 20;
+  List<Course> _allCourses = [];
+
   @override
   SearchState build() {
     _loadHistory();
 
-    // Debounce search input
     _searchSubject
         .debounceTime(const Duration(milliseconds: 300))
         .listen((query) {
-      _performSearch(query);
+      _allCourses = [];
+      _performSearch(query, refresh: true);
     });
 
     return const SearchState(
@@ -126,49 +138,56 @@ class SearchNotifier extends Notifier<SearchState> {
         sortBy: sortBy,
       ),
     );
-    // Re-run search with new filters
-    _performSearch(state.filters.query);
+    _allCourses = [];
+    unawaited(_performSearch(state.filters.query, refresh: true));
   }
 
-  Future<void> _performSearch(String query) async {
+  Future<void> loadMore() async {
+    if (state.isLoading || !state.hasMore) return;
+    unawaited(_performSearch(state.filters.query, refresh: false));
+  }
+
+  Future<void> _performSearch(String query, {bool refresh = false}) async {
     if (query.isEmpty &&
         state.filters.category == 'All' &&
         state.filters.level == 'All') {
-      state = state.copyWith(results: [], isLoading: false);
+      state = state.copyWith(results: [], isLoading: false, currentPage: 0);
       return;
     }
 
     state = state.copyWith(isLoading: true);
 
     try {
-      // Fetch all courses to search through
-      // In a real app with pagination, this would be an API search call
-      // But preserving specific 'SearchService' client-side logic as requested
-      final allCourses = await _courseService.getCourses();
+      if (_allCourses.isEmpty) {
+        _allCourses = await _courseService.getCourses();
+      }
 
       final results = _searchService.searchCourses(
-        allCourses,
+        _allCourses,
         query,
         filter: SearchFilter(
           category:
               state.filters.category == 'All' ? null : state.filters.category,
           difficulty: state.filters.level == 'All' ? null : state.filters.level,
           minRating: state.filters.minRating,
-          // Map other filters as needed
         ),
         sortBy: _mapSortOption(state.filters.sortBy),
       );
 
-      // Extract Course items from SearchResult
       final courseResults = results.map((r) => r.item).toList();
+      final totalCount = courseResults.length;
+      final startIndex = refresh ? 0 : (state.currentPage * _pageSize);
+      final endIndex = (startIndex + _pageSize).clamp(0, totalCount);
+      final pageResults = courseResults.sublist(startIndex, endIndex);
 
       state = state.copyWith(
-        results: courseResults,
+        results: refresh ? pageResults : [...state.results, ...pageResults],
         isLoading: false,
+        hasMore: endIndex < totalCount,
+        currentPage: refresh ? 1 : state.currentPage + 1,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, results: []);
-      // Handle error cleanly
     }
   }
 
@@ -182,10 +201,6 @@ class SearchNotifier extends Notifier<SearchState> {
         return SearchSortBy.rating;
       case 'Newest':
         return SearchSortBy.newest;
-      case 'Duration':
-        return SearchSortBy.duration;
-      case 'Title':
-        return SearchSortBy.title;
       default:
         return SearchSortBy.relevance;
     }
@@ -196,9 +211,7 @@ class SearchNotifier extends Notifier<SearchState> {
     state = state.copyWith(recentSearches: []);
   }
 
-  /// Get search suggestions
   List<String> getSuggestions(String query) {
-    // Adapter for UI consuming List<String>
     return _searchService.getSuggestions(query).map((s) => s.text).toList();
   }
 }

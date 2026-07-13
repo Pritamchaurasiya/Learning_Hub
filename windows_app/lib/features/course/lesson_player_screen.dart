@@ -79,7 +79,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
         // We use the new endpoint
         try {
           await ApiClient.instance.post<Map<String, dynamic>>(
-            '/api/v1/courses/${widget.courseId}/update-progress/',
+            '/courses/${widget.courseId}/update-progress/',
             data: {'lesson_id': widget.lessonId, 'seconds': position},
           );
         } catch (_) {
@@ -96,10 +96,10 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen>
       final apiClient = ApiClient.instance; // Use singleton
 
       // Assuming courseId is slug. If it's ID, backend needs to handle or we need slug.
-      // We Post to /api/v1/courses/{slug}/complete-lesson/
+      // We Post to /courses/{slug}/complete-lesson/
 
       await apiClient.post<Map<String, dynamic>>(
-        '/api/v1/courses/${widget.courseId}/complete-lesson/',
+        '/courses/${widget.courseId}/complete-lesson/',
         data: {'lesson_id': widget.lessonId},
       );
 

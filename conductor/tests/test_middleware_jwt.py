@@ -34,7 +34,7 @@ class TestJWTAuthMiddleware:
     async def test_get_user_from_valid_token(self, valid_token, user):
         """Test that a valid JWT successfully hydrates the correct User."""
         fetched_user = await get_user_from_token(valid_token)
-        assert fetched_user.id == user.id
+        assert str(fetched_user.id) == str(user.id)
         assert fetched_user.is_authenticated
 
     async def test_get_user_from_invalid_token(self):
@@ -59,7 +59,7 @@ class TestJWTAuthMiddleware:
         }
         
         injected_user = await middleware(scope_with_token, None, None)
-        assert injected_user.id == user.id
+        assert str(injected_user.id) == str(user.id)
         
         # Scenario 2: No token provided
         scope_no_token = {

@@ -68,7 +68,7 @@ class DiscussionThreadViewSet(viewsets.ModelViewSet):
     def summarize(self, request, pk=None):
         """Generate AI summary for the thread."""
         thread = self.get_object()
-        replies = thread.replies.all().order_by('created_at')
+        replies = thread.replies.select_related('author').all().order_by('created_at')
         
         if not replies.exists():
             return Response(

@@ -25,6 +25,12 @@ class RAGService:
         Uses keyword search with optional vector search fallback.
         Cached for 1 hour to reduce DB load.
         """
+        if not query or not query.strip():
+            return "No relevant context found. Please provide a valid query."
+
+        if len(query) > 8000:
+            return "Query too long. Please shorten your question."
+
         # Cache Key Generation
         query_hash = hashlib.md5(query.lower().encode()).hexdigest()
         cache_key = f"rag_context:{query_hash}:{limit}"

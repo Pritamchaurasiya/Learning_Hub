@@ -88,6 +88,15 @@ class SmartNotification(BaseModel):
     # Delivery
     is_sent = models.BooleanField(default=False)
     delivery_channel = models.CharField(max_length=20, default='in_app')  # in_app, push, email
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        SENT = "SENT", "Sent"
+        FAILED = "FAILED", "Failed"
+
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    retry_count = models.PositiveSmallIntegerField(default=0)
+    error_message = models.TextField(blank=True, default="")
     
     class Meta:
         db_table = 'smart_notifications'

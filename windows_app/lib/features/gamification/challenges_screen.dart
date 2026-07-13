@@ -132,7 +132,7 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
 
       // Load challenges
       final challengesResponse =
-          await apiClient.get<Map<String, dynamic>>('/api/v1/ai/challenges/');
+          await apiClient.get<Map<String, dynamic>>('/ai/challenges/');
       final challengesData = challengesResponse.data;
       if (challengesData != null && challengesData['status'] == 'success') {
         final List<dynamic> data =
@@ -144,7 +144,7 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
 
       // Load stats
       final statsResponse = await apiClient
-          .get<Map<String, dynamic>>('/api/v1/ai/challenges/stats/');
+          .get<Map<String, dynamic>>('/ai/challenges/stats/');
       final statsData = statsResponse.data;
       if (statsData != null && statsData['status'] == 'success') {
         _stats = (statsData['data'] as Map<String, dynamic>?) ?? {};
@@ -162,7 +162,7 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
     try {
       final apiClient = ApiClient.instance;
       await apiClient.post<Map<String, dynamic>>(
-          '/api/v1/ai/challenges/${challenge.id}/join/');
+          '/ai/challenges/${challenge.id}/join/');
 
       if (mounted) {
         AppFeedback.showSuccess(context, 'Joined "${challenge.title}"! 🎯');

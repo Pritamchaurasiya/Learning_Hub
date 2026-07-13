@@ -42,6 +42,11 @@ class Category(BaseModel):
         db_table = "categories"
         ordering = ["order", "name"]
         verbose_name_plural = "Categories"
+        indexes = [
+            models.Index(fields=["is_active", "order"], name='idx_category_active'),  # Active categories
+            models.Index(fields=["parent", "order"], name='idx_category_parent'),  # Subcategories
+            models.Index(fields=["slug"], name='idx_category_slug'),  # Slug lookup
+        ]
 
     def __str__(self):
         return self.name
@@ -136,13 +141,9 @@ class Course(BaseModel):
             models.Index(fields=["instructor"]),
             models.Index(fields=["is_published", "avg_rating"]), 
             models.Index(fields=["is_published", "created_at"]), 
-        ] + (
-            # Full-text search index (requires django.contrib.postgres)
-            [GinIndex(
-                fields=["title", "description"],
-                name="course_text_search_idx",
-            )] if GinIndex else []
-        )
+        ]
+        # Note: Full-text search GIN indexes removed temporarily
+        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
 
     def __str__(self):
         return self.title
@@ -177,7 +178,11 @@ class Module(BaseModel):
         ordering = ["order"]
         indexes = [
             models.Index(fields=["course", "order"]),
+            models.Index(fields=["course", "-created_at"], name='idx_module_recent'),  # Recent modules
+            models.Index(fields=["title"], name='idx_module_title'),  # Title search
         ]
+        # Note: Full-text search GIN index removed temporarily
+        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
@@ -210,7 +215,13 @@ class Lesson(BaseModel):
         unique_together = ["module", "slug"]
         indexes = [
             models.Index(fields=["module", "order"]),
+            models.Index(fields=["content_type"], name='idx_lesson_type'),  # Filter by content type
+            models.Index(fields=["is_preview"], name='idx_lesson_preview'),  # Preview lessons
+            models.Index(fields=["is_pro_only"], name='idx_lesson_pro'),  # Pro content filtering
+            models.Index(fields=["title"], name='idx_lesson_title'),  # Title search
         ]
+        # Note: Full-text search GIN index removed temporarily
+        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
 
     def __str__(self):
         return self.title
@@ -270,6 +281,9 @@ class Review(BaseModel):
         indexes = [
             models.Index(fields=["is_approved", "created_at"]),
             models.Index(fields=["rating"], name="idx_review_rating"),
+            models.Index(fields=["course", "-created_at"], name="idx_review_course"),  # Recent course reviews
+            models.Index(fields=["user", "-created_at"], name="idx_review_user"),  # User review history
+            models.Index(fields=["course", "-rating"], name="idx_review_course_rating"),  # Top-rated reviews
         ]
         constraints = [
             models.CheckConstraint(
@@ -297,6 +311,11 @@ class Certificate(BaseModel):
         db_table = "certificates"
         unique_together = ["user", "course"]
         ordering = ["-issued_at"]
+        indexes = [
+            models.Index(fields=["user", "-issued_at"], name="idx_cert_user"),
+            models.Index(fields=["course", "-issued_at"], name="idx_cert_course"),
+            models.Index(fields=["certificate_code"], name="idx_cert_code"),
+        ]
 
     def __str__(self):
         return f"Certificate for {self.user.username} - {self.course.title}"
@@ -360,6 +379,11 @@ class LessonCompletion(BaseModel):
     class Meta:
         db_table = "lesson_completions"
         unique_together = ["user", "lesson"]
+        indexes = [
+            models.Index(fields=["user", "-completed_at"], name="idx_lessoncomp_user"),  # User completion history
+            models.Index(fields=["lesson", "-completed_at"], name="idx_lessoncomp_lesson"),  # Lesson completions
+            models.Index(fields=["-completed_at"], name="idx_lessoncomp_recent"),  # Recent completions
+        ]
         
     def __str__(self):
         return f"{self.user.email} - {self.lesson.title}"

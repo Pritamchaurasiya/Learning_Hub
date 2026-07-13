@@ -59,40 +59,35 @@ class CacheManager {
 
   CacheManager();
 
-  // In-memory LRU cache
   final Map<String, CacheEntry<dynamic>> _memoryCache = {};
   final List<String> _lruKeys = [];
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-  // Stats
   int _hits = 0;
   int _misses = 0;
 
-  // Config
-  static const int _maxMemoryEntries = 100;
+  static const int _maxMemoryEntries = 200;
+  static const int _maxMemoryBytes = 50 * 1024 * 1024;
   static const String _diskCachePrefix = 'cache_';
   static const Duration _defaultTtl = Duration(hours: 1);
 
-  /// Get value from cache (memory first, then disk)
+  int _currentMemoryBytes = 0;
+
   Future<T?> get<T>(
     String key, {
     T Function(dynamic)? decoder,
   }) async {
-    // Check memory cache first
     if (_memoryCache.containsKey(key)) {
       final entry = _memoryCache[key]!;
       if (!entry.isExpired) {
         _hits++;
         _updateLru(key);
         return entry.data as T;
-      } else {
-        // Remove expired entry
-        _memoryCache.remove(key);
-        _lruKeys.remove(key);
       }
+      _memoryCache.remove(key);
+      _lruKeys.remove(key);
     }
 
-    // Check disk cache (Secure Storage)
     try {
       final jsonString =
           await _secureStorage.read(key: '$_diskCachePrefix$key');
@@ -106,16 +101,12 @@ class CacheManager {
 
         if (!entry.isExpired) {
           _hits++;
-          // Promote to memory cache
           _setMemory(key, entry);
           return entry.data;
-        } else {
-          // Remove expired disk entry
-          await _secureStorage.delete(key: '$_diskCachePrefix$key');
         }
+        await _secureStorage.delete(key: '$_diskCachePrefix$key');
       }
     } catch (_) {
-      // Log error securely without exposing sensitive information
       if (kDebugMode) {
         debugPrint('Cache read error');
       }
@@ -125,7 +116,6 @@ class CacheManager {
     return null;
   }
 
-  /// Set value in cache
   Future<void> set<T>(
     String key,
     T value, {
@@ -139,17 +129,19 @@ class CacheManager {
       ttl: ttl ?? _defaultTtl,
     );
 
-    // Store in memory
     _setMemory(key, entry);
 
-    // Store on disk if requested
     if (persistToDisk) {
       try {
         final json = entry.toJson(encoder ?? (d) => d);
-        await _secureStorage.write(
-            key: '$_diskCachePrefix$key', value: jsonEncode(json));
+        final jsonStr = jsonEncode(json);
+        if (jsonStr.length < 100000) {
+          await _secureStorage.write(
+            key: '$_diskCachePrefix$key',
+            value: jsonStr,
+          );
+        }
       } catch (_) {
-        // Log error securely without exposing sensitive information
         if (kDebugMode) {
           debugPrint('Cache write error');
         }
@@ -157,50 +149,74 @@ class CacheManager {
     }
   }
 
-  /// Set entry in memory cache with LRU eviction
   void _setMemory(String key, CacheEntry<dynamic> entry) {
-    // Evict if at capacity
-    while (_memoryCache.length >= _maxMemoryEntries && _lruKeys.isNotEmpty) {
+    while ((_memoryCache.length >= _maxMemoryEntries ||
+            _currentMemoryBytes >= _maxMemoryBytes) &&
+        _lruKeys.isNotEmpty) {
       final evictKey = _lruKeys.removeAt(0);
-      _memoryCache.remove(evictKey);
+      final removed = _memoryCache.remove(evictKey);
+      if (removed != null) {
+        try {
+          _currentMemoryBytes -= jsonEncode(removed.data).length * 2;
+        } catch (_) {
+          _currentMemoryBytes = _currentMemoryBytes > 1024
+              ? _currentMemoryBytes - 1024
+              : 0;
+        }
+      }
     }
 
     _memoryCache[key] = entry;
     _updateLru(key);
+    try {
+      _currentMemoryBytes += jsonEncode(entry.data).length * 2;
+    } catch (_) {
+      _currentMemoryBytes += 1024;
+    }
   }
 
-  /// Update LRU order
   void _updateLru(String key) {
     _lruKeys.remove(key);
     _lruKeys.add(key);
   }
 
-  /// Remove entry from cache
   Future<void> remove(String key) async {
-    _memoryCache.remove(key);
+    final removed = _memoryCache.remove(key);
+    if (removed != null) {
+      try {
+        _currentMemoryBytes -= jsonEncode(removed.data).length * 2;
+      } catch (_) {
+        _currentMemoryBytes =
+            (_currentMemoryBytes - 1024).clamp(0, _currentMemoryBytes);
+      }
+    }
     _lruKeys.remove(key);
 
     try {
       await _secureStorage.delete(key: '$_diskCachePrefix$key');
     } catch (_) {
-      // Log error securely without exposing sensitive information
       if (kDebugMode) {
         debugPrint('Cache remove error');
       }
     }
   }
 
-  /// Clear all cache entries matching pattern
   Future<void> clearPattern(String pattern) async {
-    // Clear memory cache
     final keysToRemove =
         _memoryCache.keys.where((k) => k.contains(pattern)).toList();
     for (final key in keysToRemove) {
-      _memoryCache.remove(key);
+      final removed = _memoryCache.remove(key);
+      if (removed != null) {
+        try {
+          _currentMemoryBytes -= jsonEncode(removed.data).length * 2;
+        } catch (_) {
+          _currentMemoryBytes =
+              (_currentMemoryBytes - 1024).clamp(0, _currentMemoryBytes);
+        }
+      }
       _lruKeys.remove(key);
     }
 
-    // Clear disk cache
     try {
       final allData = await _secureStorage.readAll();
       for (final key in allData.keys) {
@@ -209,17 +225,16 @@ class CacheManager {
         }
       }
     } catch (_) {
-      // Log error securely without exposing sensitive information
       if (kDebugMode) {
         debugPrint('Cache clear pattern error');
       }
     }
   }
 
-  /// Clear all cache
   Future<void> clearAll() async {
     _memoryCache.clear();
     _lruKeys.clear();
+    _currentMemoryBytes = 0;
     _hits = 0;
     _misses = 0;
 
@@ -231,14 +246,12 @@ class CacheManager {
         }
       }
     } catch (_) {
-      // Log error securely without exposing sensitive information
       if (kDebugMode) {
         debugPrint('Cache clear all error');
       }
     }
   }
 
-  /// Get or fetch with caching
   Future<T> getOrFetch<T>(
     String key,
     Future<T> Function() fetcher, {
@@ -259,7 +272,6 @@ class CacheManager {
     return value;
   }
 
-  /// Prefetch and cache data
   Future<void> prefetch<T>(
     String key,
     Future<T> Function() fetcher, {
@@ -270,35 +282,19 @@ class CacheManager {
       final value = await fetcher();
       await set(key, value, ttl: ttl, encoder: encoder);
     } catch (_) {
-      // Log error securely without exposing sensitive information
       if (kDebugMode) {
         debugPrint('Prefetch error');
       }
     }
   }
 
-  /// Get cache statistics
   CacheStats get stats => CacheStats(
         hits: _hits,
         misses: _misses,
         entries: _memoryCache.length,
-        memoryBytes: _estimateMemoryUsage(),
+        memoryBytes: _currentMemoryBytes,
       );
 
-  int _estimateMemoryUsage() {
-    // Rough estimate based on JSON serialization
-    int bytes = 0;
-    for (final entry in _memoryCache.entries) {
-      try {
-        bytes += jsonEncode(entry.value.data).length * 2; // UTF-16
-      } catch (_) {
-        bytes += 1024; // Default estimate
-      }
-    }
-    return bytes;
-  }
-
-  /// Check if key exists and is valid
   Future<bool> has(String key) async {
     if (_memoryCache.containsKey(key) && !_memoryCache[key]!.isExpired) {
       return true;

@@ -90,6 +90,11 @@ class Question(models.Model):
             models.Index(fields=['is_ai_generated', 'is_deleted']),
             models.Index(fields=['is_verified', 'is_deleted']),
             models.Index(fields=['ai_generation_id']),
+            # Additional indexes for performance
+            models.Index(fields=['created_by', '-created_at'], name='idx_question_creator'),  # Creator history
+            models.Index(fields=['topic', 'difficulty', 'is_deleted'], name='idx_question_topic_diff'),  # Topic + difficulty
+            models.Index(fields=['-usage_count'], name='idx_question_usage'),  # Popular questions
+            models.Index(fields=['verified_by', '-created_at'], name='idx_question_verified'),  # Verification tracking
         ]
 
     def __str__(self):
@@ -195,6 +200,11 @@ class Test(models.Model):
             models.Index(fields=['difficulty', 'is_published']),
             models.Index(fields=['is_featured', 'is_published']),
             models.Index(fields=['is_ai_generated', 'is_published']),
+            # Additional indexes
+            models.Index(fields=['created_by', '-created_at'], name='idx_test_creator'),  # Creator history
+            models.Index(fields=['-attempt_count'], name='idx_test_attempts'),  # Popular tests
+            models.Index(fields=['exam', 'difficulty', 'is_published'], name='idx_test_exam_diff'),  # Exam + difficulty
+            models.Index(fields=['-published_at'], name='idx_test_published'),  # Recently published
         ]
 
     def __str__(self):
@@ -300,6 +310,12 @@ class TestAttempt(models.Model):
             models.Index(fields=['status', 'started_at']),
             models.Index(fields=['user', 'test']),
             models.Index(fields=['session_token']),
+            # Additional indexes
+            models.Index(fields=['user', '-started_at'], name='idx_attempt_user_recent'),  # User attempt history
+            models.Index(fields=['test', '-score'], name='idx_attempt_test_score'),  # Test leaderboard
+            models.Index(fields=['user', 'passed', '-submitted_at'], name='idx_attempt_user_passed'),  # Passed attempts
+            models.Index(fields=['-percentage'], name='idx_attempt_percentage'),  # Top performers
+            models.Index(fields=['status', '-last_activity_at'], name='idx_attempt_activity'),  # Active sessions
         ]
 
     def __str__(self):
@@ -369,6 +385,10 @@ class AttemptAnswer(models.Model):
             models.Index(fields=['attempt', 'is_flagged']),
             models.Index(fields=['attempt', 'is_bookmarked']),
             models.Index(fields=['question']),
+            # Additional indexes
+            models.Index(fields=['attempt', '-time_spent_seconds'], name='idx_answer_time'),  # Time analysis
+            models.Index(fields=['question', 'is_correct'], name='idx_answer_question_correct'),  # Question analytics
+            models.Index(fields=['attempt', 'answered_at'], name='idx_answer_attempt_time'),  # Answer chronology
         ]
 
     def __str__(self):

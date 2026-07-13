@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.11% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/18</span>
+                <span class='fraction'>0/17</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.25% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -102,18 +102,18 @@
 <a name='L37'></a><a href='#L37'>37</a>
 <a name='L38'></a><a href='#L38'>38</a>
 <a name='L39'></a><a href='#L39'>39</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -138,20 +138,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">54x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { PrismaClient } from '@prisma/client'
-import { UserRepository } from './UserRepository'
-import { CourseRepository } from './CourseRepository'
-import { BaseRepository, QueryParams, PaginatedResult } from './BaseRepository'
+<span class="cstat-no" title="statement not covered" >import { U</span>serRepository } from './UserRepository'
+<span class="cstat-no" title="statement not covered" >import { TestRepository } from './TestRepository'</span>
+<span class="cstat-no" title="statement not covered" >import { B</span>aseRepository, QueryParams, PaginatedResult } from './BaseRepository'
 &nbsp;
 // Export all repositories
-export * from './BaseRepository'
-export * from './UserRepository'
-export * from './CourseRepository'
+<span class="cstat-no" title="statement not covered" >export * from './BaseRepository'</span>
+<span class="cstat-no" title="statement not covered" >export * from './UserRepository'</span>
+<span class="cstat-no" title="statement not covered" >export * from './TestRepository'</span>
 &nbsp;
 // Repository factory for dependency injection
-export class RepositoryFactory {
-  private static instances: Map&lt;string, unknown&gt; = new Map()
+<span class="cstat-no" title="statement not covered" >export class R</span>epositoryFactory {
+  private static instances: Map&lt;string, unknown&gt; = <span class="cstat-no" title="statement not covered" >new Map()</span>
 &nbsp;
 <span class="fstat-no" title="function not covered" >  static </span>getUserRepository(prisma: PrismaClient): UserRepository {
 <span class="cstat-no" title="statement not covered" >    if (!this.instances.has('userRepository')) {</span>
@@ -160,11 +160,11 @@ export class RepositoryFactory {
 <span class="cstat-no" title="statement not covered" >    return this.instances.get('userRepository') as UserRepository</span>
   }
 &nbsp;
-<span class="fstat-no" title="function not covered" >  static </span>getCourseRepository(prisma: PrismaClient): CourseRepository {
-<span class="cstat-no" title="statement not covered" >    if (!this.instances.has('courseRepository')) {</span>
-<span class="cstat-no" title="statement not covered" >      this.instances.set('courseRepository', new CourseRepository(prisma))</span>
+<span class="fstat-no" title="function not covered" >  static </span>getTestRepository(prisma: PrismaClient): TestRepository {
+<span class="cstat-no" title="statement not covered" >    if (!this.instances.has('testRepository')) {</span>
+<span class="cstat-no" title="statement not covered" >      this.instances.set('testRepository', new TestRepository(prisma))</span>
     }
-<span class="cstat-no" title="statement not covered" >    return this.instances.get('courseRepository') as CourseRepository</span>
+<span class="cstat-no" title="statement not covered" >    return this.instances.get('testRepository') as TestRepository</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  static </span>clear(): void {
@@ -176,7 +176,7 @@ export class RepositoryFactory {
 export type { QueryParams, PaginatedResult }
 &nbsp;
 // Default exports for convenience
-export { UserRepository, CourseRepository, <span class="fstat-no" title="function not covered" >BaseRepository </span>}
+export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >UserRepository,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >BaseRepository </span>}</span></span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -184,7 +184,7 @@ export { UserRepository, CourseRepository, <span class="fstat-no" title="functio
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-12T12:22:31.515Z
+                at 2026-07-10T16:47:25.155Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

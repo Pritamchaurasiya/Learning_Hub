@@ -1,6 +1,17 @@
 import { SignJWT } from 'jose'
+import bcrypt from 'bcryptjs'
 import { Env } from '../types'
-import { getSecurityHeaders, getCORSHeaders, hashPassword, verifyPassword } from './security'
+import { getSecurityHeaders, getCORSHeaders } from './security'
+
+const SALT_ROUNDS = 12
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS)
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash)
+}
 
 export async function generateJWT(payload: object, env: Env): Promise<string> {
   const secret = new TextEncoder().encode(env.JWT_SECRET)
@@ -69,7 +80,7 @@ export function createSuccessResponse<T>(
     data,
   }
 
-  if (meta && meta.total !== undefined) {
+  if (meta?.total !== undefined) {
     const { page = 1, limit = 10, total } = meta
     response.meta = {
       pagination: {

@@ -19,6 +19,10 @@ class UserXP(BaseModel):
     class Meta:
         indexes = [
             models.Index(fields=['-total_xp']),  # Efficient DB leaderboard fallback
+            models.Index(fields=['-total_xp', 'user'], name='idx_userxp_leaderboard'),  # Leaderboard with user lookup
+            models.Index(fields=['-weekly_xp'], name='idx_userxp_weekly'),  # Weekly leaderboard
+            models.Index(fields=['level', '-total_xp'], name='idx_userxp_level_xp'),  # Level-based leaderboard
+            models.Index(fields=['last_activity_date'], name='idx_userxp_activity'),  # Activity tracking
         ]
 
     def add_xp(self, amount):
@@ -44,6 +48,13 @@ class Streak(BaseModel):
     current_streak = models.PositiveIntegerField(default=0)
     longest_streak = models.PositiveIntegerField(default=0)
     last_activity_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['-current_streak'], name='idx_streak_current'),  # Current streak leaderboard
+            models.Index(fields=['-longest_streak'], name='idx_streak_longest'),  # All-time streak leaderboard
+            models.Index(fields=['last_activity_date'], name='idx_streak_activity'),  # Activity tracking
+        ]
 
     def update_streak(self):
         """Update streak based on current activity."""
@@ -83,6 +94,12 @@ class Badge(BaseModel):
     criteria_type = models.CharField(max_length=50, help_text="Type of action required (e.g., 'courses_completed')")
     criteria_value = models.PositiveIntegerField(help_text="Count required to earn")
     xp_reward = models.PositiveIntegerField(default=50)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['criteria_type'], name='idx_badge_criteria'),  # Filter by badge type
+            models.Index(fields=['-xp_reward'], name='idx_badge_xp'),  # Sort by XP reward
+        ]
     
     # We might need a ManyToMany with User through a UserBadge model to track earned badges, 
     # but for now let's just define the Badge model itself as requested by conftest.
@@ -128,6 +145,11 @@ class Guild(BaseModel):
     
     class Meta:
         ordering = ['-total_xp']
+        indexes = [
+            models.Index(fields=['-total_xp'], name='idx_guild_xp'),  # Guild leaderboard
+            models.Index(fields=['-level', '-total_xp'], name='idx_guild_level'),  # Guild ranking by level
+            models.Index(fields=['leader'], name='idx_guild_leader'),  # Find guilds by leader
+        ]
 
     def __str__(self):
         return f"{self.name} (Lvl {self.level})"
@@ -150,6 +172,11 @@ class GuildMembership(BaseModel):
     
     class Meta:
         unique_together = ['guild', 'user']
+        indexes = [
+            models.Index(fields=['guild', '-contribution_xp'], name='idx_guildmember_contrib'),  # Top contributors
+            models.Index(fields=['user', '-created_at'], name='idx_guildmember_user'),  # User membership history
+            models.Index(fields=['role'], name='idx_guildmember_role'),  # Filter by role
+        ]
 
     def __str__(self):
         return f"{self.user.username} in {self.guild.name}"

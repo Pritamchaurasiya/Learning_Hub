@@ -29,7 +29,7 @@ class NotificationServiceTests(TestCase):
         self.assertEqual(Notification.objects.count(), 1)
         notification = Notification.objects.first()
         self.assertEqual(notification.title, "Test Title")
-        self.assertEqual(notification.user, self.user)
+        self.assertEqual(str(notification.user_id), str(self.user.id))
 
     @patch('apps.notifications.tasks.send_email_async.delay')
     def test_create_notification_with_email(self, mock_send_task):

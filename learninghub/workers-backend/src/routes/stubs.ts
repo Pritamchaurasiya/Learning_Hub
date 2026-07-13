@@ -13,7 +13,7 @@ export async function handleNotifications(request: Request, env: Env): Promise<R
   if (method === 'GET') {
     const unreadOnly = url.searchParams.get('unread') === 'true'
 
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const query = unreadOnly
         ? `SELECT * FROM notifications WHERE user_id = $1 AND read = false ORDER BY created_at DESC LIMIT 50`
         : `SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`
@@ -32,8 +32,11 @@ export async function handleNotifications(request: Request, env: Env): Promise<R
       metadata: n.metadata ? JSON.parse(n.metadata) : undefined,
     }))
 
-    const unreadCount = await withDb(env, async (client) => {
-      const r = await client.query('SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND read = false', [user.userId])
+    const _unreadCount = await withDb(env, async client => {
+      const r = await client.query(
+        'SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND read = false',
+        [user.userId]
+      )
       return parseInt(r.rows[0].count, 10)
     })
 
@@ -41,7 +44,7 @@ export async function handleNotifications(request: Request, env: Env): Promise<R
   }
 
   if (method === 'POST' && url.pathname.endsWith('/mark-all-read')) {
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query('UPDATE notifications SET read = true WHERE user_id = $1', [user.userId])
     })
     return createJSONResponse(createSuccessResponse({ success: true }))
@@ -53,15 +56,21 @@ export async function handleNotifications(request: Request, env: Env): Promise<R
     const id = pathParts[1]
 
     if (method === 'POST' && pathParts[2] === 'read') {
-      await withDb(env, async (client) => {
-        await client.query('UPDATE notifications SET read = true WHERE id = $1 AND user_id = $2', [id, user.userId])
+      await withDb(env, async client => {
+        await client.query('UPDATE notifications SET read = true WHERE id = $1 AND user_id = $2', [
+          id,
+          user.userId,
+        ])
       })
       return createJSONResponse(createSuccessResponse({ success: true }))
     }
 
     if (method === 'DELETE') {
-      await withDb(env, async (client) => {
-        await client.query('DELETE FROM notifications WHERE id = $1 AND user_id = $2', [id, user.userId])
+      await withDb(env, async client => {
+        await client.query('DELETE FROM notifications WHERE id = $1 AND user_id = $2', [
+          id,
+          user.userId,
+        ])
       })
       return createJSONResponse(createSuccessResponse({ success: true }))
     }
@@ -78,7 +87,7 @@ export async function handleCertificates(request: Request, env: Env): Promise<Re
   const method = request.method
 
   if (method === 'GET' && url.pathname === '/certificates/my-certificates') {
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         'SELECT * FROM certificates WHERE user_id = $1 ORDER BY issued_at DESC',
         [user.userId]
@@ -101,7 +110,7 @@ export async function handleCertificates(request: Request, env: Env): Promise<Re
 
   if (method === 'GET' && url.pathname.match(/^\/certificates\/([^/]+)$/)) {
     const code = url.pathname.split('/')[2]
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query('SELECT * FROM certificates WHERE code = $1', [code])
       return r.rows
     })
@@ -111,17 +120,19 @@ export async function handleCertificates(request: Request, env: Env): Promise<Re
     }
 
     const c = rows[0]
-    return createJSONResponse(createSuccessResponse({
-      id: c.id,
-      courseName: c.course_name,
-      userName: c.user_name,
-      issuedAt: c.issued_at,
-      code: c.code,
-    }))
+    return createJSONResponse(
+      createSuccessResponse({
+        id: c.id,
+        courseName: c.course_name,
+        userName: c.user_name,
+        issuedAt: c.issued_at,
+        code: c.code,
+      })
+    )
   }
 
   if (method === 'POST' && url.pathname === '/certificates/generate') {
-    const body = await request.json() as any
+    const body = (await request.json()) as any
     const { courseId, courseName } = body
 
     if (!courseId || !courseName) {
@@ -130,7 +141,7 @@ export async function handleCertificates(request: Request, env: Env): Promise<Re
 
     const code = `CERT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query(
         `INSERT INTO certificates (user_id, course_id, course_name, code, issued_at)
          VALUES ($1, $2, $3, $4, NOW())
@@ -176,12 +187,12 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ')
+      query += ` WHERE ${conditions.join(' AND ')}`
     }
 
     query += ' ORDER BY d.pinned DESC, d.created_at DESC LIMIT 50'
 
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(query, params)
       return r.rows
     })
@@ -204,7 +215,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 
   if (method === 'GET' && path.match(/^\/discussions\/threads\/([^/]+)$/)) {
     const id = path.split('/')[3]
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT d.*, u.name as author_name, u.avatar_url as author_avatar
          FROM discussions d JOIN users u ON u.id = d.user_id WHERE d.id = $1`,
@@ -214,27 +225,29 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
     })
     if (rows.length === 0) return createJSONResponse(createSuccessResponse(null))
     const d = rows[0]
-    return createJSONResponse(createSuccessResponse({
-      id: d.id,
-      title: d.title,
-      content: d.content,
-      courseId: d.course_id,
-      author: { id: d.user_id, name: d.author_name, avatar: d.author_avatar },
-      pinned: d.pinned || false,
-      resolved: d.resolved || false,
-      createdAt: d.created_at,
-      tags: d.tags || [],
-    }))
+    return createJSONResponse(
+      createSuccessResponse({
+        id: d.id,
+        title: d.title,
+        content: d.content,
+        courseId: d.course_id,
+        author: { id: d.user_id, name: d.author_name, avatar: d.author_avatar },
+        pinned: d.pinned || false,
+        resolved: d.resolved || false,
+        createdAt: d.created_at,
+        tags: d.tags || [],
+      })
+    )
   }
 
   if (method === 'POST' && path === '/discussions/threads') {
-    const body = await request.json() as any
+    const body = (await request.json()) as any
     const { title, content, courseId, tags } = body
     if (!title || !content) {
       return createJSONResponse({ success: false, error: 'title and content required' }, 400)
     }
 
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query(
         `INSERT INTO discussions (user_id, title, content, course_id, tags, created_at)
          VALUES ($1, $2, $3, $4, $5, NOW())`,
@@ -247,7 +260,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 
   if (method === 'POST' && path.match(/^\/discussions\/threads\/([^/]+)\/vote$/)) {
     const id = path.split('/')[3]
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query(
         `INSERT INTO discussion_votes (thread_id, user_id, created_at) VALUES ($1, $2, NOW())
          ON CONFLICT DO NOTHING`,
@@ -259,7 +272,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
   }
 
   if (method === 'POST' && path.match(/^\/discussions\/threads\/([^/]+)\/pin$/)) {
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       const id = path.split('/')[3]
       await client.query('UPDATE discussions SET pinned = NOT pinned WHERE id = $1', [id])
     })
@@ -267,7 +280,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
   }
 
   if (method === 'POST' && path.match(/^\/discussions\/threads\/([^/]+)\/resolve$/)) {
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       const id = path.split('/')[3]
       await client.query('UPDATE discussions SET resolved = true WHERE id = $1', [id])
     })
@@ -276,7 +289,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 
   if (method === 'GET' && path.match(/^\/discussions\/threads\/([^/]+)\/replies$/)) {
     const threadId = path.split('/')[3]
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT r.*, u.name as author_name, u.avatar_url as author_avatar
          FROM discussion_replies r JOIN users u ON u.id = r.user_id
@@ -297,11 +310,11 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 
   if (method === 'POST' && path.match(/^\/discussions\/threads\/([^/]+)\/replies$/)) {
     const threadId = path.split('/')[3]
-    const body = await request.json() as any
+    const body = (await request.json()) as any
     const { content } = body
     if (!content) return createJSONResponse({ success: false, error: 'content required' }, 400)
 
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query(
         `INSERT INTO discussion_replies (thread_id, user_id, content, created_at) VALUES ($1, $2, $3, NOW())`,
         [threadId, user.userId, content]
@@ -312,7 +325,7 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 
   if (method === 'GET' && path === '/discussions/trending') {
     const limit = parseInt(url.searchParams.get('limit') || '10', 10)
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT d.*, u.name as author_name,
           (SELECT COUNT(*) FROM discussion_replies r WHERE r.thread_id = d.id) as reply_count
@@ -323,16 +336,23 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
       )
       return r.rows
     })
-    return createJSONResponse(createSuccessResponse(rows.map((d: any) => ({
-      id: d.id, title: d.title, content: d.content,
-      author: { id: d.user_id, name: d.author_name },
-      replyCount: parseInt(d.reply_count, 10), createdAt: d.created_at,
-    }))))
+    return createJSONResponse(
+      createSuccessResponse(
+        rows.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          content: d.content,
+          author: { id: d.user_id, name: d.author_name },
+          replyCount: parseInt(d.reply_count, 10),
+          createdAt: d.created_at,
+        }))
+      )
+    )
   }
 
   if (method === 'GET' && path === '/discussions/threads/search') {
     const q = url.searchParams.get('q') || ''
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT d.*, u.name as author_name FROM discussions d JOIN users u ON u.id = d.user_id
          WHERE d.title ILIKE $1 OR d.content ILIKE $1 ORDER BY d.created_at DESC LIMIT 20`,
@@ -355,36 +375,50 @@ export async function handleLearningPaths(request: Request, env: Env): Promise<R
   const path = url.pathname
 
   if (method === 'GET' && (path === '/learning-paths' || path === '/learning-paths/')) {
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query('SELECT * FROM learning_paths ORDER BY title ASC')
       return r.rows
     })
-    return createJSONResponse(createSuccessResponse(rows.map((lp: any) => ({
-      id: lp.id, title: lp.title, description: lp.description,
-      courseCount: lp.course_count, estimatedHours: lp.estimated_hours,
-      level: lp.level, thumbnail: lp.thumbnail,
-    }))))
+    return createJSONResponse(
+      createSuccessResponse(
+        rows.map((lp: any) => ({
+          id: lp.id,
+          title: lp.title,
+          description: lp.description,
+          courseCount: lp.course_count,
+          estimatedHours: lp.estimated_hours,
+          level: lp.level,
+          thumbnail: lp.thumbnail,
+        }))
+      )
+    )
   }
 
   if (method === 'GET' && path.match(/^\/learning-paths\/([^/]+)\/?$/)) {
     const id = path.split('/')[2]
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query('SELECT * FROM learning_paths WHERE id = $1', [id])
       return r.rows
     })
     if (rows.length === 0) return createJSONResponse(createSuccessResponse(null))
     const lp = rows[0]
-    return createJSONResponse(createSuccessResponse({
-      id: lp.id, title: lp.title, description: lp.description,
-      courseCount: lp.course_count, estimatedHours: lp.estimated_hours,
-      level: lp.level, thumbnail: lp.thumbnail,
-      courses: lp.courses || [],
-    }))
+    return createJSONResponse(
+      createSuccessResponse({
+        id: lp.id,
+        title: lp.title,
+        description: lp.description,
+        courseCount: lp.course_count,
+        estimatedHours: lp.estimated_hours,
+        level: lp.level,
+        thumbnail: lp.thumbnail,
+        courses: lp.courses || [],
+      })
+    )
   }
 
   if (method === 'POST' && path.match(/^\/learning-paths\/([^/]+)\/enroll\/?$/)) {
     const id = path.split('/')[2]
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query(
         `INSERT INTO learning_path_enrollments (user_id, path_id, enrolled_at)
          VALUES ($1, $2, NOW()) ON CONFLICT DO NOTHING`,
@@ -395,7 +429,7 @@ export async function handleLearningPaths(request: Request, env: Env): Promise<R
   }
 
   if (method === 'GET' && path === '/learning-paths/my-progress') {
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT lpe.*, lp.title, lp.description, lp.course_count
          FROM learning_path_enrollments lpe
@@ -423,7 +457,7 @@ export async function handleSearch(request: Request, env: Env): Promise<Response
     const results: any[] = []
 
     if (type === 'all' || type === 'courses') {
-      const rows = await withDb(env, async (client) => {
+      const rows = await withDb(env, async client => {
         const r = await client.query(
           `SELECT id, title, description, level, thumbnail, 'course' as type FROM courses
            WHERE title ILIKE $1 OR description ILIKE $1
@@ -440,18 +474,17 @@ export async function handleSearch(request: Request, env: Env): Promise<Response
 
   if (method === 'GET' && url.pathname === '/search/suggestions') {
     const q = url.searchParams.get('q') || ''
-    const rows = await withDb(env, async (client) => {
-      const r = await client.query(
-        `SELECT title FROM courses WHERE title ILIKE $1 LIMIT 5`,
-        [`%${q}%`]
-      )
+    const rows = await withDb(env, async client => {
+      const r = await client.query(`SELECT title FROM courses WHERE title ILIKE $1 LIMIT 5`, [
+        `%${q}%`,
+      ])
       return r.rows
     })
     return createJSONResponse(createSuccessResponse(rows.map((r: any) => r.title)))
   }
 
   if (method === 'GET' && url.pathname === '/search/trending') {
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT id, title, enrolled_count FROM courses ORDER BY enrolled_count DESC LIMIT 10`
       )
@@ -471,7 +504,7 @@ export async function handleLeaderboard(request: Request, env: Env): Promise<Res
     const user = await requireUser(request, env)
     if (user instanceof Response) return user
 
-    const rows = await withDb(env, async (client) => {
+    const rows = await withDb(env, async client => {
       const r = await client.query(
         `SELECT u.id, u.name, u.avatar_url, COALESCE(ug.xp, 0) as xp,
           RANK() OVER (ORDER BY COALESCE(ug.xp, 0) DESC) as rank
@@ -487,10 +520,15 @@ export async function handleLeaderboard(request: Request, env: Env): Promise<Res
       return createJSONResponse(createSuccessResponse(null))
     }
     const row = rows[0]
-    return createJSONResponse(createSuccessResponse({
-      userId: row.id, name: row.name, avatar: row.avatar_url,
-      xp: parseInt(row.xp, 10), rank: parseInt(row.rank, 10),
-    }))
+    return createJSONResponse(
+      createSuccessResponse({
+        userId: row.id,
+        name: row.name,
+        avatar: row.avatar_url,
+        xp: parseInt(row.xp, 10),
+        rank: parseInt(row.rank, 10),
+      })
+    )
   }
 
   return createJSONResponse(createSuccessResponse([]))
@@ -511,14 +549,16 @@ export async function handleMedia(request: Request, env: Env): Promise<Response>
     const buffer = await file.arrayBuffer()
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
 
-    await withDb(env, async (client) => {
+    await withDb(env, async client => {
       await client.query('UPDATE users SET avatar_url = $1 WHERE id = $2', [
         `data:${file.type};base64,${base64}`,
         user.userId,
       ])
     })
 
-    return createJSONResponse(createSuccessResponse({ url: `data:${file.type};base64,${base64.substring(0, 50)}...` }))
+    return createJSONResponse(
+      createSuccessResponse({ url: `data:${file.type};base64,${base64.substring(0, 50)}...` })
+    )
   }
 
   return createJSONResponse({ success: false, error: 'Not found' }, 404)

@@ -119,6 +119,9 @@ class SemanticSearch:
 
     def search(self, query: str, top_k: int = 5) -> List[Tuple[str, float]]:
         """Search for relevant documents."""
+        if not query or not query.strip():
+            return []
+
         try:
             query_embedding = AIClient.generate_embedding(query)
         except Exception as e:
@@ -142,12 +145,17 @@ class RAGPipeline:
 
     def retrieve_context(self, query: str) -> str:
         """Retrieve relevant context for query (Hybrid: Vector + Graph)."""
+        if not query or not query.strip():
+            return ""
+
         # 1. Vector Search
         results = self.search.search(query, self.context_window)
         
         context_parts = []
+        seen_content = set()
         for content, score in results:
-            if score > 0.3:
+            if score > 0.3 and content not in seen_content:
+                seen_content.add(content)
                 context_parts.append(f"[Document Source]: {content}")
         
         # 2. Graph Search (Entity Extraction Heuristic)
@@ -171,6 +179,9 @@ class RAGPipeline:
 
     def augmented_prompt(self, query: str) -> str:
         """Create augmented prompt with retrieved context."""
+        if not query or not query.strip():
+            return ""
+
         context = self.retrieve_context(query)
         
         if context:
@@ -186,6 +197,9 @@ Answer:"""
 
     def generate(self, query: str) -> str:
         """Generate response using Gemini with RAG."""
+        if not query or not query.strip():
+            return "Please provide a valid query."
+
         prompt = self.augmented_prompt(query)
         
         try:

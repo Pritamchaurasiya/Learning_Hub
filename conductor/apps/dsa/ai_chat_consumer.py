@@ -1,4 +1,5 @@
 import json
+import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Submission
 from apps.ai_engine.ai_client import AIClient
@@ -54,9 +55,9 @@ class AIChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_submission_context(self, submission_id):
         try:
-            submission = Submission.objects.select_related('problem').get(id=submission_id)
+            submission = Submission.objects.select_related('problem', 'user').get(id=submission_id)
             # Security verification: Ensure request user owns the submission
-            if submission.user != self.scope['user']:
+            if submission.user.id != self.scope['user'].id:
                 return None
             return {
                 'problem_title': submission.problem.title,
@@ -80,12 +81,9 @@ Previous AI Critic Feedback:
 The student is asking a follow-up question.
 Provide a helpful, precise, and encouraging response. Keep it concise.
 """
-        # Call the centralized AI Client
-        # Note: We run this in a sync_to_async wrapper if the client implementation was sync,
-        # but since we made it synchronous wrapper around an async-capable library or used a sync client,
-        # we can wrap it. The AIClient.generate_dsa_chat_response is synchronous (blocking),
-        # so we MUST wrap it to avoid blocking the asyncio loop.
-        response = await database_sync_to_async(AIClient.generate_dsa_chat_response)(
+        # Call the centralized AI Client in a thread to avoid blocking the event loop
+        response = await asyncio.to_thread(
+            AIClient.generate_dsa_chat_response,
             context_prompt=context_prompt,
             user_question=user_question
         )

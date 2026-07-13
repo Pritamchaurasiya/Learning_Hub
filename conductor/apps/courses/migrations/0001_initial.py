@@ -3,6 +3,7 @@
 import django.db.models.deletion
 import uuid
 from django.db import migrations, models
+from django.contrib.postgres.operations import BtreeGinExtension, TrigramExtension
 
 
 class Migration(migrations.Migration):
@@ -13,6 +14,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        BtreeGinExtension(),
+        TrigramExtension(),
         migrations.CreateModel(
             name='CareerTrack',
             fields=[

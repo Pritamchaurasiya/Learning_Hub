@@ -12,65 +12,63 @@ import 'core/services/ai_tutor_service.dart';
 import 'package:learning_hub/core/utils/window_manager.dart';
 import 'core/services/app_lifecycle_observer.dart';
 
-import 'package:learning_hub/core/config/url_strategy.dart'; // Web Path Routing
+import 'package:learning_hub/core/config/url_strategy.dart';
 
 void main() async {
-  configureUrlStrategy(); // Remove # from URLs on Web
+  configureUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Sentry for production monitoring
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = const String.fromEnvironment('SENTRY_DSN');
-      options.tracesSampleRate = 1.0;
-      options.profilesSampleRate = 1.0;
-      options.environment = kReleaseMode ? 'production' : 'development';
-      options.attachScreenshot = true;
-      options.attachViewHierarchy = true;
-      options.enableAutoPerformanceTracing = true;
-    },
-    appRunner: () async {
-      // Initialize Hive for local storage
-      await Hive.initFlutter();
-      await Hive.openBox<dynamic>('gamification');
-
-      // Initialize dependency injection
-      await initDependencies();
-
-      // Initialize AI Service
-      await AiTutorService.instance.initialize();
-
-      // Setup BLoC observer for debugging (only in debug mode)
-      if (kDebugMode) {
-        Bloc.observer = AppBlocObserver();
-      }
-
-      // Configure logging level
-      if (kReleaseMode) {
-        AppLogger.disable();
-      }
-
-      // Register lifecycle observer for session tracking
-      AppLifecycleObserver.instance.register();
-
-      AppLogger.info('LearningHub app starting...');
-
-      _setupErrorWidget();
-
-      runApp(
-        DefaultAssetBundle(
-          bundle: SentryAssetBundle(),
-          child: const ProviderScope(child: LearningHubApp()),
-        ),
-      );
-
-      // Initialize window manager (conditional import handles web/desktop)
-      await initializeWindowManager();
-    },
-  );
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+  if (sentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 0.1;
+        options.profilesSampleRate = 0.1;
+        options.environment = kReleaseMode ? 'production' : 'development';
+        options.attachScreenshot = false;
+        options.attachViewHierarchy = true;
+        options.enableAutoPerformanceTracing = true;
+      },
+      appRunner: _runApp,
+    );
+  } else {
+    await _runApp();
+  }
 }
 
-// Global error handling is now managed by Sentry, but we keep the builder for fallback UI
+Future<void> _runApp() async {
+  await Hive.initFlutter();
+  await Hive.openBox<dynamic>('gamification');
+
+  await initDependencies();
+
+  await AiTutorService.instance.initialize();
+
+  if (kDebugMode) {
+    Bloc.observer = AppBlocObserver();
+  }
+
+  if (kReleaseMode) {
+    AppLogger.disable();
+  }
+
+  AppLifecycleObserver.instance.register();
+
+  AppLogger.info('LearningHub app starting...');
+
+  _setupErrorWidget();
+
+  runApp(
+    DefaultAssetBundle(
+      bundle: SentryAssetBundle(),
+      child: const ProviderScope(child: LearningHubApp()),
+    ),
+  );
+
+  await initializeWindowManager();
+}
+
 void _setupErrorWidget() {
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Material(

@@ -65,7 +65,7 @@ const pwaConfig = VitePWA({
         },
       },
       {
-        urlPattern: /.*\/auth\/me|.*\/courses\/|.*\/gamification\/.*/i,
+        urlPattern: /.*\/(?:courses|gamification|content)\/.*/i,
         handler: 'NetworkFirst',
         options: {
           cacheName: 'api-cache',
@@ -94,6 +94,15 @@ export default defineConfig({
         brotliSize: true,
         filename: 'dist/stats.html',
       }),
+    {
+      name: 'health-endpoint',
+      configureServer(server) {
+        server.middlewares.use('/_health', (_req, res) => {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ status: 'ok', version: '1.0.0' }))
+        })
+      },
+    },
   ].filter(Boolean),
   test: {
     globals: true,
@@ -133,18 +142,37 @@ export default defineConfig({
             if (id.includes('highlight.js')) return 'highlight'
             if (id.includes('marked') || id.includes('dompurify')) return 'markdown'
             if (id.includes('recharts')) return 'charts'
-            
+            if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-export'
+            if (id.includes('@sentry')) return 'sentry'
+
             // Code editor - only load on DSA pages (378KB)
             if (id.includes('codemirror') || id.includes('@uiw/react-codemirror')) return 'editor'
-            
+
             // Core libraries
             if (id.includes('/node_modules/zustand/')) return 'store'
-            if (id.includes('/node_modules/react-router-dom/') || id.includes('/node_modules/react-router/')) return 'router'
-            if (id.includes('/node_modules/@tanstack/react-query/') || id.includes('/node_modules/@tanstack/query-core/')) return 'query'
-            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/scheduler/')) return 'react-core'
+            if (
+              id.includes('/node_modules/react-router-dom/') ||
+              id.includes('/node_modules/react-router/')
+            )
+              return 'router'
+            if (
+              id.includes('/node_modules/@tanstack/react-query/') ||
+              id.includes('/node_modules/@tanstack/query-core/')
+            )
+              return 'query'
+            if (
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/scheduler/')
+            )
+              return 'react-core'
             if (id.includes('/node_modules/socket.io-client/')) return 'socket'
-            if (id.includes('/node_modules/i18next/') || id.includes('/node_modules/react-i18next/')) return 'i18n'
-            
+            if (
+              id.includes('/node_modules/i18next/') ||
+              id.includes('/node_modules/react-i18next/')
+            )
+              return 'i18n'
+
             // Everything else
             return 'vendor'
           }
@@ -161,5 +189,8 @@ export default defineConfig({
   server: {
     port: 3000,
     cors: true,
+    watch: {
+      ignored: ['**/backend/**', '**/dist/**', '**/coverage/**'],
+    },
   },
 })

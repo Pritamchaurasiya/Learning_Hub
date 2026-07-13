@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">31.57% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>6/19</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">31.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>6/19</span>
             </div>
         
             
@@ -115,21 +115,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -139,21 +139,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -163,21 +163,21 @@
  * Custom error classes for consistent error handling
  */
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class A</span>uthenticationError extends Error {
+export class AuthenticationError extends Error {
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Authentication failed')</span> {
 <span class="cstat-no" title="statement not covered" >    super(message)</span>
 <span class="cstat-no" title="statement not covered" >    this.name = 'AuthenticationError'</span>
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class A</span>uthorizationError extends Error {
+export class AuthorizationError extends Error {
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Authorization failed')</span> {
 <span class="cstat-no" title="statement not covered" >    super(message)</span>
 <span class="cstat-no" title="statement not covered" >    this.name = 'AuthorizationError'</span>
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class V</span>alidationError extends Error {
+export class ValidationError extends Error {
   public details?: unknown
 &nbsp;
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Validation failed',</span> details?: unknown) {
@@ -187,21 +187,21 @@
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class N</span>otFoundError extends Error {
+export class NotFoundError extends Error {
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Resource not found')</span> {
 <span class="cstat-no" title="statement not covered" >    super(message)</span>
 <span class="cstat-no" title="statement not covered" >    this.name = 'NotFoundError'</span>
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class C</span>onflictError extends Error {
+export class ConflictError extends Error {
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Resource already exists')</span> {
 <span class="cstat-no" title="statement not covered" >    super(message)</span>
 <span class="cstat-no" title="statement not covered" >    this.name = 'ConflictError'</span>
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class R</span>ateLimitError extends Error {
+export class RateLimitError extends Error {
 <span class="fstat-no" title="function not covered" >  constructor(m</span>essage: string = <span class="branch-0 cbranch-no" title="branch not covered" >'Too many requests')</span> {
 <span class="cstat-no" title="statement not covered" >    super(message)</span>
 <span class="cstat-no" title="statement not covered" >    this.name = 'RateLimitError'</span>
@@ -214,7 +214,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-12T12:22:30.727Z
+                at 2026-07-10T16:47:23.813Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

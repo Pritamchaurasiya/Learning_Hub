@@ -92,7 +92,6 @@ export function detectIntent(text) {
 
   const normalized = normalize(text);
   const words = normalized.split(/\s+/);
-  const wordCount = words.length || 1;
   const results = [];
 
   for (const [intentKey, config] of Object.entries(INTENT_PATTERNS)) {

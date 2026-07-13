@@ -68,7 +68,7 @@ class TestNotificationModel:
         
         notifications = list(Notification.objects.filter(user=user))
         # Most recent should be first
-        assert notifications[0].id == n2.id
+        assert str(notifications[0].id) == str(n2.id)
 
     def test_notification_with_data(self, user):
         """Test notification with extra data."""

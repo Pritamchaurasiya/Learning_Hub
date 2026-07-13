@@ -417,16 +417,16 @@ class NotificationService:
     def _schedule_notification(cls, user, notification_type: NotificationType,
                                 data: Dict, channels: List, scheduled_for) -> bool:
         """Schedule a notification for later delivery."""
-        from apps.notifications.models import Notification
+        from apps.notifications.models import SmartNotification
         
-        Notification.objects.create(
+        SmartNotification.objects.create(
             user=user,
             title=cls.TEMPLATES.get(notification_type, {}).get('title', 'Notification'),
-            message=cls.TEMPLATES.get(notification_type, {}).get('body', '').format(**data),
+            body=cls.TEMPLATES.get(notification_type, {}).get('body', '').format(**data),
             notification_type=notification_type.value,
             data=data,
             scheduled_for=scheduled_for,
-            is_sent=False
+            status=SmartNotification.Status.PENDING,
         )
         
         logger.info(f"Scheduled notification for {user.id} at {scheduled_for}")

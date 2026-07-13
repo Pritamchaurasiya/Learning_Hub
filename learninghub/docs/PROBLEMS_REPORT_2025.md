@@ -13,13 +13,14 @@
 **Files Affected:** 40 files
 
 **Top Offenders:**
-| File | Count | Issue |
-|------|-------|-------|
-| `src/utils/api-new.ts` | 13 | API response types missing |
-| `src/services/homeService.ts` | 7 | Data transformation untyped |
-| `src/hooks/useAdminAuth.ts` | 5 | Auth state untyped |
-| `src/services/analyticsGA4Service.ts` | 5 | Analytics events untyped |
-| `src/components/AdminRoute.tsx` | 4 | Route props untyped |
+
+| File                                  | Count | Issue                       |
+| ------------------------------------- | ----- | --------------------------- |
+| `src/utils/api-new.ts`                | 13    | API response types missing  |
+| `src/services/homeService.ts`         | 7     | Data transformation untyped |
+| `src/hooks/useAdminAuth.ts`           | 5     | Auth state untyped          |
+| `src/services/analyticsGA4Service.ts` | 5     | Analytics events untyped    |
+| `src/components/AdminRoute.tsx`       | 4     | Route props untyped         |
 
 ### 2. Backend TypeScript Errors - 37 Errors
 

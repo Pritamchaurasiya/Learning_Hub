@@ -1,5 +1,12 @@
-import { z } from 'zod'
-import { createJSONResponse, createErrorResponse, generateUUID } from '../utils/helpers'
+import { logger } from '../utils/logger'
+import {
+  COURSE_COMPLETION_XP,
+  ACHIEVEMENT_TITLE,
+  ACHIEVEMENT_DESCRIPTION,
+  ACHIEVEMENT_ICON,
+  ACHIEVEMENT_POINTS,
+} from '../constants'
+import { createJSONResponse, createErrorResponse } from '../utils/helpers'
 import { withDb, queryOne } from '../db/connection'
 import { requireUser } from '../utils/authHelper'
 import { Env } from '../types'
@@ -18,7 +25,8 @@ export async function handleCourses(request: Request, env: Env): Promise<Respons
   if (path === '/courses/my-courses' && method === 'GET') return handleMyCourses(request, env)
 
   const progressMatch = path.match(/^\/courses\/([^/]+)\/progress$/)
-  if (progressMatch && method === 'POST') return handleUpdateProgress(request, env, progressMatch[1])
+  if (progressMatch && method === 'POST')
+    return handleUpdateProgress(request, env, progressMatch[1])
 
   const courseIdMatch = path.match(/^\/courses\/([^/]+)$/)
   if (courseIdMatch && method === 'GET') return handleGetCourse(request, env, courseIdMatch[1])
@@ -38,34 +46,58 @@ async function handleListCourses(request: Request, env: Env): Promise<Response> 
     const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')))
     const offset = (page - 1) * limit
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const conditions: string[] = []
       const params: unknown[] = []
       let idx = 1
 
       if (search?.trim()) {
         const pattern = `%${search.trim()}%`
-        conditions.push(`(c.title ILIKE $${idx} OR c.description ILIKE $${idx} OR c.category ILIKE $${idx} OR c.instructor_name ILIKE $${idx})`)
+        conditions.push(
+          `(c.title ILIKE $${idx} OR c.description ILIKE $${idx} OR c.category ILIKE $${idx} OR c.instructor_name ILIKE $${idx})`
+        )
         params.push(pattern)
         idx++
       }
-      if (difficulty) { conditions.push(`c.difficulty = $${idx}`); params.push(difficulty); idx++ }
-      if (category) { conditions.push(`c.category = $${idx}`); params.push(category); idx++ }
-      if (phase) { conditions.push(`c.phase = $${idx}`); params.push(phase); idx++ }
+      if (difficulty) {
+        conditions.push(`c.difficulty = $${idx}`)
+        params.push(difficulty)
+        idx++
+      }
+      if (category) {
+        conditions.push(`c.category = $${idx}`)
+        params.push(category)
+        idx++
+      }
+      if (phase) {
+        conditions.push(`c.phase = $${idx}`)
+        params.push(phase)
+        idx++
+      }
 
-      const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
+      const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-      let countQuery = `SELECT COUNT(DISTINCT c.id) as total FROM courses c ${where}`
+      const countQuery = `SELECT COUNT(DISTINCT c.id) as total FROM courses c ${where}`
       const countResult = await client.query(countQuery, params)
       const total = parseInt(countResult.rows[0].total)
 
       let orderBy = 'ORDER BY c.phase, c.created_at DESC'
       switch (sort) {
-        case 'rating': orderBy = 'ORDER BY c.rating DESC NULLS LAST'; break
-        case 'newest': orderBy = 'ORDER BY c.created_at DESC'; break
-        case 'price_low': orderBy = 'ORDER BY c.price ASC NULLS LAST'; break
-        case 'price_high': orderBy = 'ORDER BY c.price DESC NULLS LAST'; break
-        case 'popularity': orderBy = 'ORDER BY enrolled_count DESC'; break
+        case 'rating':
+          orderBy = 'ORDER BY c.rating DESC NULLS LAST'
+          break
+        case 'newest':
+          orderBy = 'ORDER BY c.created_at DESC'
+          break
+        case 'price_low':
+          orderBy = 'ORDER BY c.price ASC NULLS LAST'
+          break
+        case 'price_high':
+          orderBy = 'ORDER BY c.price DESC NULLS LAST'
+          break
+        case 'popularity':
+          orderBy = 'ORDER BY enrolled_count DESC'
+          break
       }
 
       const query = `
@@ -93,20 +125,23 @@ async function handleListCourses(request: Request, env: Env): Promise<Response> 
       })
     })
   } catch (error) {
-    console.error('List courses error:', error)
+    logger.error('List courses error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
 async function handleGetCourse(request: Request, env: Env, courseId: string): Promise<Response> {
   try {
-    return await withDb(env, async (client) => {
-      const courseResult = await client.query(`
+    return await withDb(env, async client => {
+      const courseResult = await client.query(
+        `
         SELECT c.*, 
           (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id) as enrolled_count,
           (SELECT COUNT(*) FROM tests WHERE course_id = c.id) as test_count
         FROM courses c WHERE c.id = $1
-      `, [courseId])
+      `,
+        [courseId]
+      )
 
       if (courseResult.rows.length === 0) {
         return createErrorResponse('Course not found', 404)
@@ -134,7 +169,7 @@ async function handleGetCourse(request: Request, env: Env, courseId: string): Pr
       return createJSONResponse({ course })
     })
   } catch (error) {
-    console.error('Get course error:', error)
+    logger.error('Get course error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -148,11 +183,19 @@ async function handleEnroll(request: Request, env: Env): Promise<Response> {
     const { courseId } = body
     if (!courseId) return createErrorResponse('courseId required', 400)
 
-    return await withDb(env, async (client) => {
-      const course = await queryOne<{ id: string }>(client, 'SELECT id FROM courses WHERE id = $1', [courseId])
+    return await withDb(env, async client => {
+      const course = await queryOne<{ id: string }>(
+        client,
+        'SELECT id FROM courses WHERE id = $1',
+        [courseId]
+      )
       if (!course) return createErrorResponse('Course not found', 404)
 
-      const existing = await queryOne<{ id: string }>(client, 'SELECT id FROM enrollments WHERE user_id = $1 AND course_id = $2', [user.userId, courseId])
+      const existing = await queryOne<{ id: string }>(
+        client,
+        'SELECT id FROM enrollments WHERE user_id = $1 AND course_id = $2',
+        [user.userId, courseId]
+      )
       if (existing) return createErrorResponse('Already enrolled', 409)
 
       const enrollment = await queryOne(
@@ -164,7 +207,7 @@ async function handleEnroll(request: Request, env: Env): Promise<Response> {
       return createJSONResponse({ enrollment, message: 'Enrolled successfully' }, 201)
     })
   } catch (error) {
-    console.error('Enroll error:', error)
+    logger.error('Enroll error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -174,24 +217,31 @@ async function handleMyCourses(request: Request, env: Env): Promise<Response> {
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
-      const result = await client.query(`
+    return await withDb(env, async client => {
+      const result = await client.query(
+        `
         SELECT c.*, e.progress, e.completed, e.enrolled_at, e.completed_at
         FROM courses c
         INNER JOIN enrollments e ON c.id = e.course_id
         WHERE e.user_id = $1
         ORDER BY e.enrolled_at DESC
-      `, [user.userId])
+      `,
+        [user.userId]
+      )
 
       return createJSONResponse({ courses: result.rows })
     })
   } catch (error) {
-    console.error('My courses error:', error)
+    logger.error('My courses error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }
 
-async function handleUpdateProgress(request: Request, env: Env, courseId: string): Promise<Response> {
+async function handleUpdateProgress(
+  request: Request,
+  env: Env,
+  courseId: string
+): Promise<Response> {
   try {
     const { user, error } = await requireUser(request, env)
     if (error) return error
@@ -203,15 +253,18 @@ async function handleUpdateProgress(request: Request, env: Env, courseId: string
       return createErrorResponse('Invalid progress value (0-100)')
     }
 
-    return await withDb(env, async (client) => {
-      const updateResult = await client.query(`
+    return await withDb(env, async client => {
+      const updateResult = await client.query(
+        `
         UPDATE enrollments 
         SET progress = $1, 
             completed = CASE WHEN $1 >= 100 THEN TRUE ELSE completed END,
             completed_at = CASE WHEN $1 >= 100 AND completed = FALSE THEN CURRENT_TIMESTAMP ELSE completed_at END
         WHERE user_id = $2 AND course_id = $3
         RETURNING *
-      `, [progress, user.userId, courseId])
+      `,
+        [progress, user.userId, courseId]
+      )
 
       if (updateResult.rows.length === 0) {
         return createErrorResponse('Enrollment not found', 404)
@@ -219,9 +272,13 @@ async function handleUpdateProgress(request: Request, env: Env, courseId: string
 
       const enrollment = updateResult.rows[0]
       if (enrollment.completed && enrollment.progress >= 100) {
-        await client.query('UPDATE users SET xp = xp + 100 WHERE id = $1', [user.userId])
+        await client.query('UPDATE users SET xp = xp + $1 WHERE id = $2', [
+          COURSE_COMPLETION_XP,
+          user.userId,
+        ])
 
-        const achievementExists = await queryOne<{ id: string }>(client,
+        const achievementExists = await queryOne<{ id: string }>(
+          client,
           `SELECT id FROM achievements WHERE user_id = $1 AND achievement_type = 'course_complete' AND metadata->>'course_id' = $2`,
           [user.userId, courseId]
         )
@@ -229,8 +286,14 @@ async function handleUpdateProgress(request: Request, env: Env, courseId: string
         if (!achievementExists) {
           await client.query(
             `INSERT INTO achievements (user_id, achievement_type, title, description, icon, points)
-             VALUES ($1, 'course_complete', 'Course Completed!', 'Completed a course', 'trophy', 100)`,
-            [user.userId]
+             VALUES ($1, 'course_complete', $2, $3, $4, $5)`,
+            [
+              user.userId,
+              ACHIEVEMENT_TITLE,
+              ACHIEVEMENT_DESCRIPTION,
+              ACHIEVEMENT_ICON,
+              ACHIEVEMENT_POINTS,
+            ]
           )
         }
       }
@@ -238,7 +301,7 @@ async function handleUpdateProgress(request: Request, env: Env, courseId: string
       return createJSONResponse({ enrollment: updateResult.rows[0], message: 'Progress updated' })
     })
   } catch (error) {
-    console.error('Update progress error:', error)
+    logger.error('Update progress error:', error)
     return createErrorResponse('Internal server error', 500)
   }
 }

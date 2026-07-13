@@ -123,22 +123,23 @@ MIDDLEWARE = [
     "apps.core.security_middleware.RequestLoggingMiddleware",
     "apps.core.security_middleware.SQLInjectionDetectionMiddleware",
     "apps.core.security_middleware.IPAnomalyDetectionMiddleware",
-    "apps.core.security_middleware.JWTBlacklistMiddleware",
     # Resilience
     "apps.core.middleware.SelfHealingMiddleware",
     # Phase 10: Input Sanitization & CORS Hardening
     "apps.core.middleware.InputSanitizationMiddleware",
     "apps.core.middleware.CORSHardeningMiddleware",
-    "apps.core.audit_middleware.AuditMiddleware",
-    "apps.core.rate_limit_service.RateLimitMiddleware",
-    # Django Core
-    "csp.middleware.CSPMiddleware",
+    # Django Core (standard ordering)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Auth-dependent middleware must come AFTER AuthenticationMiddleware
+    "apps.core.security_middleware.JWTBlacklistMiddleware",
+    "apps.core.audit_middleware.AuditMiddleware",
+    "apps.core.rate_limit_service.RateLimitMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
     "axes.middleware.AxesMiddleware",
 ]
@@ -310,7 +311,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": os.getenv("JWT_SECRET_KEY", SECRET_KEY),
+    "SIGNING_KEY": os.getenv("JWT_SECRET_KEY") or SECRET_KEY + "_jwt",
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
@@ -589,7 +590,6 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 
 
 # Browser Protections
-SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 

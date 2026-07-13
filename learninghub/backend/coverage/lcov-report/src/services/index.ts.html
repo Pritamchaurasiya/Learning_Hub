@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/18</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
@@ -84,14 +84,7 @@
 <a name='L19'></a><a href='#L19'>19</a>
 <a name='L20'></a><a href='#L20'>20</a>
 <a name='L21'></a><a href='#L21'>21</a>
-<a name='L22'></a><a href='#L22'>22</a>
-<a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L22'></a><a href='#L22'>22</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -100,21 +93,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -125,25 +111,18 @@
 <span class="cstat-no" title="statement not covered" >export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >C</span>acheService,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >c</span>acheService </span>} from './CacheService'</span>
 &nbsp;
 // Audit service
-<span class="cstat-no" title="statement not covered" >export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >A</span>uditService,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >A</span>uditLogInput </span>} from './AuditService'</span>
+<span class="cstat-no" title="statement not covered" >export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >A</span>uditService </span>} from './AuditService'</span>
+export type { AuditLogInput } from './AuditService'
 &nbsp;
 // Auth service
-<span class="cstat-no" title="statement not covered" >export {</span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  AuthService,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  RegisterInput,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  LoginInput,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  TokenPayload,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  AuthTokens,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  LoginResult,</span></span>
+<span class="cstat-no" title="statement not covered" >export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >A</span>uthService </span>} from './AuthService'</span>
+export type {
+  RegisterInput,
+  LoginInput,
+  TokenPayload,
+  AuthTokens,
+  LoginResult,
 } from './AuthService'
-&nbsp;
-// Course service
-<span class="cstat-no" title="statement not covered" >export {</span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  CourseService,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  EnrollInput,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  UpdateProgressInput,</span></span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  CourseWithProgress,</span></span>
-} from './CourseService'
 &nbsp;
 // Re-export from individual services as they're created
 // export * from './UserService';
@@ -154,7 +133,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-12T12:22:30.727Z
+                at 2026-07-10T16:47:23.813Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

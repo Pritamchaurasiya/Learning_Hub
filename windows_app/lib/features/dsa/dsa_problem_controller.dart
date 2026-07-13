@@ -51,7 +51,7 @@ class DsaProblemController extends StateNotifier<DsaProblemDetailState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _apiClient
-          .get<Map<String, dynamic>>('/api/v1/dsa/problems/$slug/');
+          .get<Map<String, dynamic>>('/dsa/problems/$slug/');
       if (response.success && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         state = state.copyWith(
@@ -75,7 +75,7 @@ class DsaProblemController extends StateNotifier<DsaProblemDetailState> {
 
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
-        '/api/v1/dsa/submissions/',
+        '/dsa/submissions/',
         data: {
           'problem': state.problem!.slug,
           'code': code,

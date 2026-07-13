@@ -195,7 +195,7 @@ class LeaderboardView(APIView):
     )
     def get(self, request):
         period = request.query_params.get('period', 'all')
-        limit = min(int(request.query_params.get('limit', 50)), 100)
+        limit = max(1, min(int(request.query_params.get('limit', 50)), 100))
 
         try:
             leaderboard = GamificationService.get_leaderboard(limit=limit, period=period)

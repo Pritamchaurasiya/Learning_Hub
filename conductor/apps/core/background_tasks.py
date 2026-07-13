@@ -316,29 +316,23 @@ def process_scheduled_notifications():
     
     Schedule: Every 5 minutes
     """
-    from apps.notifications.models import Notification
-    from apps.notifications.services import NotificationService
+    from apps.notifications.models import SmartNotification
     
     now = timezone.now()
+    MAX_RETRIES = 3
     
     # Get pending scheduled notifications
-    pending = Notification.objects.filter(
+    pending = SmartNotification.objects.filter(
+        status=SmartNotification.Status.PENDING,
         scheduled_for__lte=now,
-        is_sent=False
+        retry_count__lt=MAX_RETRIES,
     )
     
     count = 0
     for notification in pending:
+        from apps.notifications.smart_notifications import SmartNotificationService
         try:
-            NotificationService.send_notification(
-                user=notification.user,
-                title=notification.title,
-                message=notification.message,
-                notification_type=notification.notification_type
-            )
-            notification.is_sent = True
-            notification.sent_at = now
-            notification.save(update_fields=['is_sent', 'sent_at'])
+            SmartNotificationService._send_notification(notification)
             count += 1
         except Exception as e:
             logger.error("Failed to send notification %s: %s", notification.id, e)

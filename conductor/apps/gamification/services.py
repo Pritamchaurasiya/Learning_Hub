@@ -202,11 +202,11 @@ class GamificationService:
         with transaction.atomic():
             streak, _ = Streak.objects.select_for_update().get_or_create(user=user)
             
-            if streak.last_activity_date == today:
+            if streak.last_activity_date and streak.last_activity_date == today:
                 # Already logged activity today
                 return streak
 
-            if streak.last_activity_date == today - timedelta(days=1):
+            if streak.last_activity_date and streak.last_activity_date == today - timedelta(days=1):
                 # Consecutive day — extend streak
                 streak.current_streak += 1
             else:
@@ -315,14 +315,15 @@ class GamificationService:
         if not top_data:
             return []
             
-        # Hydrate with User details (Bulk Fetch)
-        user_ids = [int(entry['user_id']) for entry in top_data]
-        users = User.objects.filter(id__in=user_ids).in_bulk()
+        # Hydrate with User details (Bulk Fetch - handles UUID or int PKs)
+        from uuid import UUID
+        user_ids_raw = [entry['user_id'] for entry in top_data]
+        users = User.objects.filter(id__in=user_ids_raw).in_bulk()
         
         leaderboard = []
         for entry in top_data:
-            uid = int(entry['user_id'])
-            user = users.get(uid)
+            uid_raw = entry['user_id']
+            user = users.get(UUID(uid_raw)) if len(uid_raw) == 36 and '-' in uid_raw else users.get(uid_raw)
             if user:
                 # Get Level approximation or fetch? 
                 # For speed, approx level from score or fetch UserXP if crucial
@@ -331,7 +332,7 @@ class GamificationService:
                 
                 leaderboard.append({
                     "rank": entry['rank'],
-                    "user_id": str(uid),
+                    "user_id": str(uid_raw),
                     "username": user.username,
                     "display_name": getattr(user, 'display_name', user.username),
                     "total_xp": entry['score'], # or weekly_xp if period='weekly', Redis stores correct score

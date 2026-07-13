@@ -39,11 +39,7 @@ try {
     if ($deployOutput -match "(https://[\w\-\.]+\.workers\.dev)") {
         $workersUrl = $matches[1]
         Write-Host "✅ Backend deployed to: $workersUrl" -ForegroundColor Green
-        
-        # Save URL for frontend
-        $envContent = "VITE_API_URL=$workersUrl/api`nVITE_APP_URL=https://learninghub.app"
-        Set-Content -Path "..\.env.production" -Value $envContent
-        Write-Host "✅ Updated frontend .env.production" -ForegroundColor Green
+        # NOTE: .env.production is NOT written here — CI/CD should set env vars, not runtime scripts
     } else {
         Write-Host "⚠️  Deployed but couldn't extract URL from output" -ForegroundColor Yellow
         Write-Host $deployOutput -ForegroundColor Gray
@@ -88,6 +84,4 @@ Write-Host "================================" -ForegroundColor Green
 Write-Host "`nNext steps:" -ForegroundColor White
 Write-Host "1. Deploy the dist/ folder to your hosting (Vercel, Netlify, etc.)" -ForegroundColor Cyan
 Write-Host "2. Test the live application" -ForegroundColor Cyan
-Write-Host "`nDemo accounts:" -ForegroundColor White
-Write-Host "  Admin: admin@learninghub.com / admin123" -ForegroundColor Gray
-Write-Host "  Student: student@learninghub.com / student123" -ForegroundColor Gray
+Write-Host "⚠️  Update external secret store with credentials, do not hardcode" -ForegroundColor Yellow

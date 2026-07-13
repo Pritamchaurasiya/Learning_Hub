@@ -1,4 +1,3 @@
-import { Entity } from '@neondatabase/serverless'
 import { createJSONResponse, createErrorResponse } from '../utils/helpers'
 import { withDb, queryOne } from '../db/connection'
 import { requireUser } from '../utils/authHelper'
@@ -31,7 +30,7 @@ async function handleListBookmarks(request: Request, env: Env): Promise<Response
     const url = new URL(request.url)
     const type = url.searchParams.get('type')
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const query = type
         ? `SELECT b.id, b.item_id, b.item_type, b.created_at,
                   CASE WHEN b.item_type = 'course' THEN (SELECT title FROM courses WHERE id = b.item_id)
@@ -64,11 +63,21 @@ async function handleAddBookmark(request: Request, env: Env): Promise<Response> 
     const { item_id, item_type } = body
 
     if (!item_id || !item_type) return createErrorResponse('item_id and item_type required', 400)
-    if (!['course', 'test'].includes(item_type)) return createErrorResponse('item_type must be course or test', 400)
+    if (!['course', 'test'].includes(item_type))
+      return createErrorResponse('item_type must be course or test', 400)
 
-    return await withDb(env, async (client) => {
-      const existing = await queryOne<{ id: string }>(client, 'SELECT id FROM bookmarks WHERE user_id = $1 AND item_id = $2', [user.userId, item_id])
-      if (existing) return createJSONResponse({ status: 'success', data: existing, message: 'Already bookmarked' })
+    return await withDb(env, async client => {
+      const existing = await queryOne<{ id: string }>(
+        client,
+        'SELECT id FROM bookmarks WHERE user_id = $1 AND item_id = $2',
+        [user.userId, item_id]
+      )
+      if (existing)
+        return createJSONResponse({
+          status: 'success',
+          data: existing,
+          message: 'Already bookmarked',
+        })
 
       const result = await queryOne(
         client,
@@ -84,13 +93,20 @@ async function handleAddBookmark(request: Request, env: Env): Promise<Response> 
   }
 }
 
-async function handleRemoveBookmark(request: Request, env: Env, bookmarkId: string): Promise<Response> {
+async function handleRemoveBookmark(
+  request: Request,
+  env: Env,
+  bookmarkId: string
+): Promise<Response> {
   try {
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
-      await client.query('DELETE FROM bookmarks WHERE id = $1 AND user_id = $2', [bookmarkId, user.userId])
+    return await withDb(env, async client => {
+      await client.query('DELETE FROM bookmarks WHERE id = $1 AND user_id = $2', [
+        bookmarkId,
+        user.userId,
+      ])
       return createJSONResponse({ status: 'success', message: 'Bookmark removed' })
     })
   } catch (error) {
@@ -104,9 +120,16 @@ async function handleCheckBookmark(request: Request, env: Env, itemId: string): 
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
-      const result = await queryOne<{ id: string; item_type: string }>(client, 'SELECT id, item_type FROM bookmarks WHERE user_id = $1 AND item_id = $2', [user.userId, itemId])
-      return createJSONResponse({ status: 'success', data: { bookmarked: !!result, bookmark: result } })
+    return await withDb(env, async client => {
+      const result = await queryOne<{ id: string; item_type: string }>(
+        client,
+        'SELECT id, item_type FROM bookmarks WHERE user_id = $1 AND item_id = $2',
+        [user.userId, itemId]
+      )
+      return createJSONResponse({
+        status: 'success',
+        data: { bookmarked: !!result, bookmark: result },
+      })
     })
   } catch (error) {
     console.error('Check bookmark error:', error)

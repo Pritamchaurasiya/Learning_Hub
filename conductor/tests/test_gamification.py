@@ -54,7 +54,7 @@ class TestUserXPModel:
 
     def test_xp_creation(self, user_xp, user):
         """Test XP record is created correctly."""
-        assert user_xp.user == user
+        assert str(user_xp.user.id) == str(user.id)
         assert user_xp.total_xp == 0
         assert user_xp.level == 1
 
@@ -117,7 +117,7 @@ class TestStreakModel:
 
     def test_streak_creation(self, streak, user):
         """Test streak is created correctly."""
-        assert streak.user == user
+        assert str(streak.user.id) == str(user.id)
         assert streak.current_streak == 0
         assert streak.longest_streak == 0
 
@@ -174,7 +174,7 @@ class TestGamificationService:
         assert "xp" in stats
         assert "streak" in stats
         assert "badges" in stats
-        assert stats["xp"].user == user
+        assert str(stats["xp"].user.id) == str(user.id)
 
     def test_award_xp(self, user):
         """Test awarding XP to user."""

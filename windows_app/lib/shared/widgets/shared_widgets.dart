@@ -10,6 +10,7 @@ export 'connectivity_banner.dart';
 export 'course_card.dart';
 export 'daily_goals_widget.dart';
 export 'empty_state_view.dart';
+export 'error_boundary.dart';
 export 'error_view.dart';
 export 'home_skeleton.dart';
 export 'loading_overlay.dart';

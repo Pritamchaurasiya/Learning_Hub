@@ -1,6 +1,6 @@
 import { createJSONResponse, createErrorResponse } from '../utils/helpers'
 import { verifyToken } from '../middleware/auth'
-import { fetchWithTimeout, TIMEOUTS, TimeoutError } from '../utils/timeout'
+import { fetchWithTimeout, TIMEOUTS } from '../utils/timeout'
 import { Env } from '../types'
 
 export async function handleAI(request: Request, env: Env): Promise<Response> {
@@ -51,7 +51,7 @@ export async function handleAI(request: Request, env: Env): Promise<Response> {
 async function handleAnalyze(request: Request, env: Env, apiKey: string): Promise<Response> {
   try {
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return createErrorResponse('Unauthorized', 401)
     }
 
@@ -63,7 +63,7 @@ async function handleAnalyze(request: Request, env: Env, apiKey: string): Promis
     }
 
     const body = await request.json()
-    const { quizTitle, score, totalPossible, incorrectAnswers, topics } = body
+    const { quizTitle, score, totalPossible, incorrectAnswers: _incorrectAnswers, topics } = body
 
     // Build prompt for analysis
     const prompt = `As an AI tutor, analyze this quiz performance and provide constructive feedback:
@@ -102,7 +102,7 @@ Keep it concise (3-4 sentences) and motivating.`
 async function handleRecommend(request: Request, env: Env, apiKey: string): Promise<Response> {
   try {
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return createErrorResponse('Unauthorized', 401)
     }
 
@@ -193,7 +193,7 @@ async function callHuggingFace(prompt: string, apiKey: string): Promise<string |
     if (!response.ok) {
       // If model is loading or rate limited, return null
       if (response.status === 503 || response.status === 429) {
-        console.log('Hugging Face API temporarily unavailable')
+        console.warn('Hugging Face API temporarily unavailable')
         return null
       }
       throw new Error(`HTTP ${response.status}`)

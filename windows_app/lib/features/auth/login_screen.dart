@@ -210,39 +210,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
 
                     // Remember me & Forgot password
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Checkbox(
-                                value: _rememberMe,
-                                onChanged: (value) {
+                    Semantics(
+                      label: 'Login options',
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Semantics(
+                                label: 'Remember me',
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberMe = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
                                   setState(() {
-                                    _rememberMe = value ?? false;
+                                    _rememberMe = !_rememberMe;
                                   });
                                 },
+                                child: Text(
+                                  'Remember me',
+                                  style: theme.textTheme.bodySmall,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Remember me',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                        TextButton(
-                          onPressed: () => context.push('/forgot-password'),
-                          child: const Text('Forgot Password?'),
-                        ),
-                      ],
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () => context.push('/forgot-password'),
+                            child: const Text('Forgot Password?'),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),

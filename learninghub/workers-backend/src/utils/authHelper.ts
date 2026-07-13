@@ -1,13 +1,10 @@
-import { verifyToken, requireAuth } from '../middleware/auth'
+import { verifyToken } from '../middleware/auth'
 import { createErrorResponse } from './helpers'
 import { Env, UserContext } from '../types'
 
-export async function getUserFromRequest(
-  request: Request,
-  env: Env
-): Promise<UserContext | null> {
+export async function getUserFromRequest(request: Request, env: Env): Promise<UserContext | null> {
   const authHeader = request.headers.get('Authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null
+  if (!authHeader?.startsWith('Bearer ')) return null
 
   const token = authHeader.substring(7)
   return verifyToken(token, env.JWT_SECRET)
@@ -31,5 +28,3 @@ export function requireRole(user: UserContext, ...roles: string[]): boolean {
 export function adminOnly(user: UserContext): boolean {
   return user.role === 'admin' || user.role === 'superadmin'
 }
-
-export { requireAuth }

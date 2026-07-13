@@ -1,7 +1,0 @@
-﻿Computing fixes in windows_app...
-Applying fixes...
-
-lib\main.dart
-  prefer_single_quotes - 1 fix
-
-1 fix made in 1 file.

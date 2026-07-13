@@ -101,7 +101,8 @@ class SmartNotificationService:
             data=data or {},
             action_url=action_url,
             image_url=image_url,
-            scheduled_for=scheduled_for
+            scheduled_for=scheduled_for,
+            status=SmartNotification.Status.PENDING,
         )
         
         logger.info(f"Created notification {notification.id} for user {user.id}")
@@ -171,6 +172,7 @@ class SmartNotificationService:
     def _send_notification(cls, notification: SmartNotification):
         """
         Send notification through appropriate channel.
+        Marks as SENT on success, FAILED (after max retries) on error.
         """
         try:
             # WebSocket for real-time in-app
@@ -182,10 +184,15 @@ class SmartNotificationService:
             
             notification.is_sent = True
             notification.sent_at = timezone.now()
-            notification.save(update_fields=['is_sent', 'sent_at'])
+            notification.status = SmartNotification.Status.SENT
+            notification.save(update_fields=['is_sent', 'sent_at', 'status', 'updated_at'])
             
         except Exception as e:
             logger.error(f"Failed to send notification {notification.id}: {e}")
+            notification.retry_count += 1
+            notification.error_message = str(e)[:500]
+            notification.status = SmartNotification.Status.FAILED
+            notification.save(update_fields=['retry_count', 'error_message', 'status', 'updated_at'])
     
     @staticmethod
     def _send_websocket(notification: SmartNotification):
@@ -215,9 +222,39 @@ class SmartNotificationService:
     
     @staticmethod
     def _send_push(notification: SmartNotification):
-        """Send push notification (placeholder for FCM/APNS integration)."""
-        # TODO: Integrate with Firebase Cloud Messaging or APNS
-        logger.info(f"Push notification queued for {notification.user.id}: {notification.title}")
+        """Send push notification via Firebase Cloud Messaging."""
+        try:
+            import firebase_admin
+            from firebase_admin import messaging
+            
+            # Assume user has fcm_token in their preferences or related model
+            preferences = getattr(notification.user, 'preferences', {}) or {}
+            fcm_token = preferences.get('fcm_token', None)
+            
+            if not fcm_token:
+                logger.info(f"No FCM token for user {notification.user.id}, skipping push.")
+                return
+
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=notification.title,
+                    body=notification.body,
+                    image=notification.image_url if notification.image_url else None
+                ),
+                data={
+                    'type': notification.notification_type,
+                    'action_url': notification.action_url,
+                    'notification_id': str(notification.id)
+                },
+                token=fcm_token,
+            )
+            response = messaging.send(message)
+            logger.info(f"Successfully sent FCM message: {response}")
+        except ImportError:
+            logger.warning("firebase_admin not installed. Mocking push notification dispatch.")
+            logger.info(f"Mock push queued for {notification.user.id}: {notification.title}")
+        except Exception as e:
+            logger.error(f"FCM Push failed for {notification.user.id}: {e}")
     
     @staticmethod
     def _should_send_push(user) -> bool:
@@ -471,10 +508,12 @@ def process_scheduled_notifications():
     Should run every minute.
     """
     now = timezone.now()
+    MAX_RETRIES = 3
     
     pending = SmartNotification.objects.filter(
         is_sent=False,
-        scheduled_for__lte=now
+        scheduled_for__lte=now,
+        retry_count__lt=MAX_RETRIES,
     )
     
     for notification in pending:

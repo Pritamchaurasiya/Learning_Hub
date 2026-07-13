@@ -36,7 +36,7 @@ class _AnalyticsDashboardScreenState
 
       // Load analytics
       final analyticsResponse =
-          await apiClient.get<Map<String, dynamic>>('/api/v1/ai/analytics/');
+          await apiClient.get<Map<String, dynamic>>('/ai/analytics/');
       final analyticsData = analyticsResponse.data;
       if (analyticsData != null && analyticsData['status'] == 'success') {
         _analytics = Map<String, dynamic>.from(analyticsData['data'] as Map);
@@ -44,7 +44,7 @@ class _AnalyticsDashboardScreenState
 
       // Load heatmap
       final heatmapResponse = await apiClient
-          .get<Map<String, dynamic>>('/api/v1/ai/analytics/heatmap/');
+          .get<Map<String, dynamic>>('/ai/analytics/heatmap/');
       final heatmapData = heatmapResponse.data;
       if (heatmapData != null && heatmapData['status'] == 'success') {
         _heatmapData = Map<String, int>.from(heatmapData['data'] as Map);

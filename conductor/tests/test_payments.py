@@ -113,7 +113,7 @@ class TestCouponModel:
         """Test coupon can be associated with courses."""
         coupon.courses.add(course)
         
-        assert course in coupon.courses.all()
+        assert str(course.id) in [str(c.id) for c in coupon.courses.all()]
 
 
 # ==============================================================================
@@ -165,7 +165,7 @@ class TestPaymentModel:
         
         payments = list(Payment.objects.filter(user=user))
         # Most recent should be first
-        assert payments[0].id == p2.id
+        assert str(payments[0].id) == str(p2.id)
 
     def test_payment_with_coupon(self, payment, coupon):
         """Test payment with coupon discount."""

@@ -38,7 +38,7 @@ class SkeletonCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -176,7 +176,7 @@ class LoadingOverlay extends StatelessWidget {
         if (isLoading)
           Container(
             color: backgroundColor ??
-                Colors.black.withOpacity(0.5),
+                Colors.black.withValues(alpha: 0.5),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -299,7 +299,7 @@ class _LoadingDotsState extends State<LoadingDots>
               height: widget.size,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: color.withOpacity(scale.clamp(0.3, 1.0)),
+                color: color.withValues(alpha: scale.clamp(0.3, 1.0)),
                 shape: BoxShape.circle,
               ),
             );
@@ -363,7 +363,7 @@ class _PulsingLoadingIndicatorState extends State<PulsingLoadingIndicator>
           width: widget.size,
           height: widget.size,
           decoration: BoxDecoration(
-            color: color.withOpacity(1 - _animation.value * 0.5),
+            color: color.withValues(alpha: 1 - _animation.value * 0.5),
             shape: BoxShape.circle,
           ),
           child: Center(

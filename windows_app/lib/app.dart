@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/ui/desktop_shortcuts.dart';
+import 'dart:async';
 import 'core/services/websocket_service.dart';
 
 /// Main LearningHub Application Widget
@@ -28,8 +29,8 @@ class _LearningHubAppState extends ConsumerState<LearningHubApp> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      // Pre-cache critical local assets
-      precacheImage(const AssetImage('assets/icons/app_icon.png'), context);
+      precacheImage(const AssetImage('assets/icons/app_icon.png'), context)
+          .catchError((_) {});
       _initialized = true;
     }
   }
@@ -90,15 +91,18 @@ class _WebSocketListener extends StatefulWidget {
 }
 
 class _WebSocketListenerState extends State<_WebSocketListener> {
+  StreamSubscription<Map<String, dynamic>>? _wsSubscription;
+
   @override
   void initState() {
     super.initState();
-    // Lazy connect if we have a token (mocking check for now)
-    // In real app, AuthProvider triggers this.
-    // Lazy connect if we have a token (mocking check for now)
-    // In real app, AuthProvider triggers this.
-    // webSocketService is a singleton from the imported file
-    webSocketService.events.listen(_handleEvent);
+    _wsSubscription = webSocketService.events.listen(_handleEvent);
+  }
+
+  @override
+  void dispose() {
+    _wsSubscription?.cancel();
+    super.dispose();
   }
 
   void _handleEvent(Map<String, dynamic> event) {

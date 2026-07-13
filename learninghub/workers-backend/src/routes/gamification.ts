@@ -10,18 +10,22 @@ export async function handleGamification(request: Request, env: Env): Promise<Re
 
   if (method === 'OPTIONS') return new Response(null, { status: 204 })
 
-  if (path === '/gamification/achievements' && method === 'GET') return handleGetAchievements(request, env)
-  if (path === '/gamification/my-achievements' && method === 'GET') return handleGetMyAchievements(request, env)
-  if (path === '/gamification/leaderboard' && method === 'GET') return handleGetLeaderboard(request, env)
+  if (path === '/gamification/achievements' && method === 'GET')
+    return handleGetAchievements(request, env)
+  if (path === '/gamification/my-achievements' && method === 'GET')
+    return handleGetMyAchievements(request, env)
+  if (path === '/gamification/leaderboard' && method === 'GET')
+    return handleGetLeaderboard(request, env)
   if (path === '/gamification/streak' && method === 'GET') return handleGetStreak(request, env)
-  if (path === '/gamification/xp-history' && method === 'GET') return handleGetXpHistory(request, env)
+  if (path === '/gamification/xp-history' && method === 'GET')
+    return handleGetXpHistory(request, env)
 
   return createErrorResponse('Not found', 404)
 }
 
 async function handleGetAchievements(request: Request, env: Env): Promise<Response> {
   try {
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT id, name, description, icon, xp_reward, category, criteria
          FROM achievements ORDER BY xp_reward ASC`
@@ -38,7 +42,7 @@ async function handleGetMyAchievements(request: Request, env: Env): Promise<Resp
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT ua.id, ua.achievement_id, ua.earned_at, a.name, a.description, a.icon, a.xp_reward, a.category
          FROM user_achievements ua JOIN achievements a ON ua.achievement_id = a.id
@@ -59,7 +63,7 @@ async function handleGetLeaderboard(request: Request, env: Env): Promise<Respons
     const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20')))
     const timeframe = url.searchParams.get('timeframe') || 'all'
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       let query: string
       if (timeframe === 'weekly') {
         query = `SELECT u.id, u.username, u.xp, u.level, u.streak, u.avatar_url,
@@ -91,7 +95,7 @@ async function handleGetStreak(request: Request, env: Env): Promise<Response> {
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT streak, last_active,
                 CASE WHEN last_active = CURRENT_DATE THEN true ELSE false END as active_today
@@ -129,7 +133,7 @@ async function handleGetXpHistory(request: Request, env: Env): Promise<Response>
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    return await withDb(env, async (client) => {
+    return await withDb(env, async client => {
       const result = await client.query(
         `SELECT ta.submitted_at as date, ta.xp_earned, t.title as source, 'test_completion' as type
          FROM test_attempts ta JOIN tests t ON ta.test_id = t.id

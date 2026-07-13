@@ -114,7 +114,7 @@ class TestCourseServiceQueries:
         enrollments = CourseService.get_user_enrollments(user)
         
         assert len(enrollments) == 1
-        assert enrollments[0].course == course
+        assert str(enrollments[0].course.id) == str(course.id)
 
     def test_get_featured_courses(self, course, instructor, category):
         """Test getting featured courses."""
@@ -123,4 +123,4 @@ class TestCourseServiceQueries:
         
         featured = CourseService.get_featured_courses()
         
-        assert course in featured
+        assert str(course.id) in [str(c.id) for c in featured]

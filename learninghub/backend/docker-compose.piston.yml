@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston
+    ports:
+      - '2000:2000'
+    environment:
+      - PISTON_RUN_TIMEOUT=10000
+      - PISTON_COMPILE_TIMEOUT=10000
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    restart: unless-stopped

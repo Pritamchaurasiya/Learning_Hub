@@ -22,6 +22,15 @@ try:
 except KeyError:
     raise ImproperlyConfigured("SECRET_KEY environment variable is missing and must be set in production.")
 
+# Require separate JWT_SECRET_KEY in production
+try:
+    JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
+except KeyError:
+    raise ImproperlyConfigured(
+        "JWT_SECRET_KEY environment variable is missing and must be set in production. "
+        "Do NOT reuse your SECRET_KEY for JWT signing."
+    )
+
 # Security Headers
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -125,6 +134,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Override JWT signing key with production-only secret
+SIMPLE_JWT['SIGNING_KEY'] = JWT_SECRET_KEY
 
 # Security Admin Email
 ADMINS = [

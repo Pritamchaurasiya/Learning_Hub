@@ -29,11 +29,11 @@ jobs:
 
       - name: Run Bandit (Security Scan)
         run: |
-          bandit -r apps/ -c pyproject.toml || true  # Non-blocking for now
+          bandit -r apps/ -c pyproject.toml
 
       - name: Run Safety (Dependency Check)
         run: |
-          safety check --continue-on-error
+          safety check
 
       - name: Lint with Flake8
         run: |

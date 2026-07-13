@@ -108,7 +108,7 @@ class TestFeedbackModel:
         
         feedbacks = list(Feedback.objects.filter(user=user))
         # Most recent should be first
-        assert feedbacks[0].id == f2.id
+        assert str(feedbacks[0].id) == str(f2.id)
 
     def test_feedback_urgency_score(self, user):
         """Test urgency score default and update."""

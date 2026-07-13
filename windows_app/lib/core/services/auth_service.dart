@@ -1,85 +1,36 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:uuid/uuid.dart';
-import 'package:flutter/foundation.dart'; // For kIsWeb and debugPrint
-import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 class AuthService {
-  static const String _tokenKey = 'auth_token';
-  static const String _userIdKey = 'user_id';
-  static const String _emailKey = 'user_email';
 
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-
-  // Helper method for secure web compatibility
-  Future<void> _safeWrite(String key, String value) async {
-    try {
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(key, value);
-      } else {
-        await _secureStorage.write(key: key, value: value);
-      }
-    } catch (e) {
-      debugPrint('Storage write error: $e');
-      // Fallback: Continue without persistence if storage fails (prevents Auth Block)
-    }
-  }
-
-  Future<String?> _safeRead(String key) async {
-    try {
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        return prefs.getString(key);
-      } else {
-        return await _secureStorage.read(key: key);
-      }
-    } catch (e) {
-      debugPrint('Storage read error: $e');
-      return null;
-    }
-  }
-
-  Future<void> _safeDelete(String key) async {
-    try {
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove(key);
-      } else {
-        await _secureStorage.delete(key: key);
-      }
-    } catch (e) {
-      debugPrint('Storage delete error: $e');
-    }
-  }
+  final ApiClient _client = ApiClient.instance;
 
   Future<AuthResult> signIn(String email, String password) async {
     try {
-      // Simulate API call delay
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      final response = await _client.post<Map<String, dynamic>>(
+        '/auth/login/',
+        data: {'email': email, 'password': password},
+      );
 
-      // Mock validation
-      if (email.isEmpty || password.isEmpty) {
-        return AuthResult.failure('Email and password are required');
+      if (response.success && response.data != null) {
+        final payload = response.data!;
+        final data = payload.containsKey('data')
+            ? payload['data'] as Map<String, dynamic>
+            : payload;
+
+        await _client.setTokens(
+          accessToken: (data['accessToken'] ?? data['access_token']) as String,
+          refreshToken: (data['refreshToken'] ?? data['refresh_token']) as String,
+        );
+
+        return AuthResult.success(AuthData(
+          token: (data['accessToken'] ?? data['access_token']) as String,
+          userId: ((data['user'] as Map<String, dynamic>?)?['id'] ?? data['user_id']) as String,
+          email: email,
+        ));
       }
 
-      if (!email.contains('@')) {
-        return AuthResult.failure('Invalid email format');
-      }
-
-      if (password.length < 8) {
-        return AuthResult.failure('Password must be at least 8 characters');
-      }
-
-      // Mock successful authentication
-      final token = const Uuid().v4();
-      final userId = 'user_${email.hashCode}';
-
-      await _safeWrite(_tokenKey, token);
-      await _safeWrite(_userIdKey, userId);
-      await _safeWrite(_emailKey, email);
-
-      return AuthResult.success(
-          AuthData(token: token, userId: userId, email: email));
+      return AuthResult.failure(
+          response.message ?? 'Authentication failed');
     } catch (e) {
       return AuthResult.failure('Authentication failed: $e');
     }
@@ -87,29 +38,22 @@ class AuthService {
 
   Future<AuthResult> signUp(String email, String password, String name) async {
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      final response = await _client.post<Map<String, dynamic>>(
+        '/auth/register/',
+        data: {
+          'email': email,
+          'password': password,
+          'name': name,
+          'username': email.split('@')[0],
+        },
+      );
 
-      if (email.isEmpty || password.isEmpty || name.isEmpty) {
-        return AuthResult.failure('All fields are required');
+      if (response.success) {
+        return signIn(email, password);
       }
 
-      if (!email.contains('@')) {
-        return AuthResult.failure('Invalid email format');
-      }
-
-      if (password.length < 8) {
-        return AuthResult.failure('Password must be at least 8 characters');
-      }
-
-      final token = const Uuid().v4();
-      final userId = 'user_${email.hashCode}';
-
-      await _safeWrite(_tokenKey, token);
-      await _safeWrite(_userIdKey, userId);
-      await _safeWrite(_emailKey, email);
-
-      return AuthResult.success(
-          AuthData(token: token, userId: userId, email: email));
+      return AuthResult.failure(
+          response.message ?? 'Registration failed');
     } catch (e) {
       return AuthResult.failure('Sign up failed: $e');
     }
@@ -117,31 +61,36 @@ class AuthService {
 
   Future<AuthResult> signOut() async {
     try {
-      await _safeDelete(_tokenKey);
-      await _safeDelete(_userIdKey);
-      await _safeDelete(_emailKey);
-
-      return AuthResult.success(AuthData(token: '', userId: '', email: ''));
-    } catch (e) {
-      return AuthResult.failure('Sign out failed: $e');
+      final refreshToken = await _client.getRefreshToken();
+      if (refreshToken != null) {
+        await _client.post<dynamic>(
+          '/auth/logout/',
+          data: {'refresh_token': refreshToken},
+        );
+      }
+    } catch (_) {
+      // Best-effort logout
     }
+
+    await _client.clearTokens();
+    return AuthResult.success(AuthData(token: '', userId: '', email: ''));
   }
 
   Future<bool> isAuthenticated() async {
-    final token = await _safeRead(_tokenKey);
-    return token != null && token.isNotEmpty;
+    return await _client.hasToken;
   }
 
   Future<String?> getCurrentUserEmail() async {
-    return _safeRead(_emailKey);
+    // Email is not stored separately; we'd need to decode the JWT or fetch profile
+    return null;
   }
 
   Future<String?> getCurrentUserId() async {
-    return _safeRead(_userIdKey);
+    return null;
   }
 
   Future<String?> getCurrentToken() async {
-    return _safeRead(_tokenKey);
+    return await _client.getAccessToken();
   }
 }
 

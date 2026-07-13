@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/providers/search_provider.dart';
 import 'package:learning_hub/core/utils/debouncer.dart';
 import 'package:learning_hub/core/utils/responsive.dart';
-import 'package:learning_hub/data/models/course_model.dart';
 import 'package:learning_hub/shared/widgets/course_card.dart';
 import 'package:learning_hub/shared/widgets/empty_state_view.dart';
 
@@ -273,34 +272,48 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
           ),
 
-          // Results Grid/List
+          // Results Grid/List with pagination
           Expanded(
-            child: state.isLoading
+            child: state.isLoading && state.results.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : state.filters.query.isEmpty && state.filters.category == 'All'
                     ? _buildDiscoverView(theme, state.recentSearches, notifier)
                     : state.results.isEmpty
                         ? EmptyStateView.noSearchResults()
-                        : isDesktop
-                            ? _buildDesktopGrid(state.results)
-                            : _buildMobileList(state.results),
+                        : NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              if (notification is ScrollEndNotification &&
+                                  notification.metrics.pixels >=
+                                      notification.metrics.maxScrollExtent - 200) {
+                                notifier.loadMore();
+                              }
+                              return false;
+                            },
+                            child: isDesktop
+                                ? _buildDesktopGrid(state)
+                                : _buildMobileList(state),
+                          ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopGrid(List<Course> results) {
+  Widget _buildDesktopGrid(SearchState state) {
+    final results = state.results;
     return GridView.builder(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: Responsive.gridColumns(context),
         childAspectRatio: 0.75,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: results.length,
+      itemCount: results.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index >= results.length) {
+          return const Center(child: CircularProgressIndicator());
+        }
         final course = results[index];
         return CourseCard(
           course: course,
@@ -310,11 +323,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildMobileList(List<Course> results) {
+  Widget _buildMobileList(SearchState state) {
+    final results = state.results;
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      itemCount: results.length,
+      itemCount: results.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index >= results.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
         final course = results[index];
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),

@@ -20,6 +20,9 @@ export default [
         location: 'readonly',
         localStorage: 'readonly',
         crypto: 'readonly',
+        performance: 'readonly',
+        AbortController: 'readonly',
+        btoa: 'readonly',
       },
     },
     rules: {

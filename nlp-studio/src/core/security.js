@@ -22,7 +22,7 @@ const ENTITY_MAP = {
 };
 
 /** Regex matching all characters that need HTML entity escaping */
-const ENTITY_REGEX = /[&<>"'\/`]/g;
+const ENTITY_REGEX = /[&<>"'/`]/g;
 
 /**
  * Escapes HTML entities to prevent XSS in rendered content.

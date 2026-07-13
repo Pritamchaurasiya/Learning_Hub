@@ -1,3 +1,4 @@
+// NOTE: This is an optional edge deployment. Primary backend is Express at learninghub/backend/.
 import { handleAuth } from './routes/auth'
 import { handleCourses } from './routes/courses'
 import { handleTests } from './routes/tests'
@@ -31,26 +32,33 @@ const ALLOWED_ORIGINS = [
 ]
 
 function getCorsHeaders(requestOrigin: string | null): Record<string, string> {
-  const origin = requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)
-    ? requestOrigin
-    : ALLOWED_ORIGINS[0]
+  const origin =
+    requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0]
 
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID, X-CSRF-Token, X-Session-ID',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, X-Request-ID, X-CSRF-Token, X-Session-ID',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
   }
+}
+
+export function normalizeApiPath(path: string): string {
+  const prefix = '/api/v1'
+  if (path === prefix) return '/'
+  if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length)
+  return path
 }
 
 async function getHealthStatus(env: Env): Promise<Record<string, unknown>> {
   const checks: Record<string, boolean> = {}
 
   try {
-    const client = createDbClient(env)
-    await (await client).query('SELECT 1')
-    ;(await client).end()
+    const pool = await createDbClient(env)
+    await pool.query('SELECT 1')
+    await pool.end()
     checks.database = true
   } catch {
     checks.database = false
@@ -69,7 +77,7 @@ async function getHealthStatus(env: Env): Promise<Record<string, unknown>> {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
     const path = url.pathname
     const requestOrigin = request.headers.get('Origin')
@@ -108,7 +116,10 @@ export default {
         const response = createJSONResponse({ csrfToken })
         // Set CSRF token as a cookie too
         const cookieSecure = env.ENVIRONMENT === 'production' ? '; Secure' : ''
-        response.headers.set('Set-Cookie', `csrf-token=${csrfToken}; path=/; SameSite=Lax${cookieSecure}`)
+        response.headers.set(
+          'Set-Cookie',
+          `csrf-token=${csrfToken}; path=/; SameSite=Lax${cookieSecure}`
+        )
         return response
       }
 
@@ -125,7 +136,7 @@ export default {
       } else if (path.startsWith('/bookmarks') || path.startsWith('/users/bookmarks')) {
         const newUrl = new URL(request.url)
         newUrl.pathname = path.startsWith('/users/bookmarks')
-          ? '/bookmarks' + path.substring(16)
+          ? `/bookmarks${path.substring(16)}`
           : path
         const newRequest = new Request(newUrl.toString(), request)
         response = await handleBookmarks(newRequest, env)
@@ -149,10 +160,7 @@ export default {
         response = await handleMedia(request, env)
       } else if (path === '/health' || path === '/') {
         const healthStatus = await getHealthStatus(env)
-        response = createJSONResponse(
-          healthStatus,
-          healthStatus.status === 'ok' ? 200 : 503
-        )
+        response = createJSONResponse(healthStatus, healthStatus.status === 'ok' ? 200 : 503)
       } else if (path === '/seed-demo-data' && request.method === 'POST') {
         try {
           const { seedDemoData, demoCredentials } = await import('./utils/demoData')

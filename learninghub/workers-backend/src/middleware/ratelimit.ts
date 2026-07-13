@@ -20,7 +20,6 @@ export async function rateLimit(
   const key = `rate_limit:${type}:${clientId}`
 
   const now = Math.floor(Date.now() / 1000)
-  const windowStart = now - config.window
 
   try {
     // Get current count from KV

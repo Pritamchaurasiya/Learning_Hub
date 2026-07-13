@@ -2,6 +2,11 @@ from django.db import models
 from django.conf import settings
 from apps.core.models import BaseModel
 
+try:
+    from django.contrib.postgres.indexes import GinIndex
+except ImportError:
+    GinIndex = None  # Not available without PostgreSQL
+
 
 class DiscussionThread(BaseModel):
     """Discussion thread for course Q&A."""
@@ -29,7 +34,15 @@ class DiscussionThread(BaseModel):
         indexes = [
             models.Index(fields=['course', '-created_at']),
             models.Index(fields=['author', '-created_at']),
+            # Performance indexes
+            models.Index(fields=['is_pinned', '-created_at'], name='idx_thread_pinned'),  # Pinned threads
+            models.Index(fields=['is_resolved', '-created_at'], name='idx_thread_resolved'),  # Filter by resolved
+            models.Index(fields=['-like_count'], name='idx_thread_likes'),  # Popular threads
+            models.Index(fields=['-views'], name='idx_thread_views'),  # Most viewed
+            models.Index(fields=['course', 'is_resolved', '-created_at'], name='idx_thread_course_status'),  # Course + status
         ]
+        # Note: Full-text search GIN index removed temporarily
+        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
     
     def __str__(self):
         return f"{self.title} - {self.author.email}"
@@ -68,6 +81,11 @@ class DiscussionReply(BaseModel):
         ordering = ['-is_accepted_answer', 'created_at']
         indexes = [
             models.Index(fields=['thread', '-created_at']),
+            # Performance indexes
+            models.Index(fields=['author', '-created_at'], name='idx_reply_author'),  # User replies
+            models.Index(fields=['thread', 'is_accepted_answer'], name='idx_reply_accepted'),  # Accepted answers
+            models.Index(fields=['parent', 'created_at'], name='idx_reply_nested'),  # Nested replies
+            models.Index(fields=['-like_count'], name='idx_reply_likes'),  # Popular replies
         ]
     
     def __str__(self):
@@ -88,6 +106,11 @@ class ThreadTag(BaseModel):
         related_name='tags',
         blank=True
     )
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['name'], name='idx_tag_name'),  # Tag lookup
+        ]
     
     def __str__(self):
         return self.name

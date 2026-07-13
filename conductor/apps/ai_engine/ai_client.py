@@ -29,6 +29,7 @@ class AIClient:
     MIME_JSON = "application/json"
 
     _client: Optional[genai.Client] = None
+    _api_key: Optional[str] = None
     circuit_breaker_key = "ai_circuit_breaker:status"
     failure_count_key = "ai_circuit_breaker:errors"
     failure_threshold = 3
@@ -36,9 +37,10 @@ class AIClient:
     @classmethod
     def get_client(cls) -> Optional[genai.Client]:
         if cls._client is None:
-            api_key = os.getenv("GEMINI_API_KEY")
-            if api_key:
-                cls._client = genai.Client(api_key=api_key)
+            if cls._api_key is None:
+                cls._api_key = os.getenv("GEMINI_API_KEY")
+            if cls._api_key:
+                cls._client = genai.Client(api_key=cls._api_key)
             else:
                 logger.warning("WARNING: GEMINI_API_KEY not found in environment.")
         return cls._client
