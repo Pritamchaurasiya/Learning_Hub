@@ -125,13 +125,16 @@ export const errorHandler = (
 ): void => {
   let statusCode = 500
   let message = 'Internal server error'
-  let errors: Array<{ field: string; message: string }> | undefined
+  let code: string | undefined
+  let details: unknown
 
   const requestId = req.requestId
 
   if (err instanceof AppError) {
     statusCode = err.statusCode
     message = err.isOperational ? err.message : 'Internal Server Error'
+    code = err.code
+    details = err.details
     if (err.statusCode >= 500) {
       logger.error('AppError', err, { code: err.code, requestId, details: err.details })
       sentryCaptureException(err, { code: err.code, requestId, details: err.details })
@@ -141,61 +144,74 @@ export const errorHandler = (
   } else if (err instanceof ZodError) {
     statusCode = 400
     message = 'Validation failed'
-    errors = err.issues.map(issue => ({ field: issue.path.join('.'), message: issue.message }))
-    logger.warn(`ZodError: ${message} requestId=${requestId ?? 'unknown'}`, { errors, requestId })
+    code = ErrorCode.VALIDATION_ERROR
+    details = err.issues.map(issue => ({ field: issue.path.join('.'), message: issue.message }))
+    logger.warn(`ZodError: ${message} requestId=${requestId ?? 'unknown'}`, { details, requestId })
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     const { statusCode: sc, message: msg } = handlePrismaError(err)
     statusCode = sc
     message = msg
+    code = ErrorCode.DATABASE_ERROR
     logger.error(`PrismaError [${err.code}]: ${message}`, err, { requestId })
     sentryCaptureException(err, { requestId, prismaCode: err.code })
   } else if (err instanceof Prisma.PrismaClientValidationError) {
     statusCode = 400
     message = 'Invalid request data'
+    code = ErrorCode.VALIDATION_ERROR
     logger.warn(`PrismaValidationError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
     statusCode = 500
     message = 'Internal Server Error'
+    code = ErrorCode.DATABASE_ERROR
     logger.error('PrismaUnknownError', err, { requestId })
     sentryCaptureException(err, { requestId })
   } else if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
     statusCode = 401
     message = err.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid token'
+    code = err.name === 'TokenExpiredError' ? ErrorCode.TOKEN_EXPIRED : ErrorCode.INVALID_TOKEN
     logger.warn(`JWT Error: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof SyntaxError && 'body' in err) {
     statusCode = 400
     message = 'Invalid JSON in request body'
+    code = ErrorCode.INVALID_INPUT
     logger.warn(`SyntaxError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof AuthenticationError) {
     statusCode = 401
     message = err.message
+    code = ErrorCode.UNAUTHORIZED
     logger.warn(`AuthenticationError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof AuthorizationError) {
     statusCode = 403
     message = err.message
+    code = ErrorCode.FORBIDDEN
     logger.warn(`AuthorizationError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof ValidationError) {
     statusCode = 400
     message = err.message
+    code = ErrorCode.VALIDATION_ERROR
     if (err.details) {
-      errors = Array.isArray(err.details)
+      details = Array.isArray(err.details)
         ? (err.details as Array<{ field: string; message: string }>)
-        : undefined
+        : err.details
     }
     logger.warn(`ValidationError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof NotFoundError) {
     statusCode = 404
     message = err.message
+    code = ErrorCode.NOT_FOUND
     logger.warn(`NotFoundError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof ConflictError) {
     statusCode = 409
     message = err.message
+    code = ErrorCode.CONFLICT
     logger.warn(`ConflictError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof RateLimitError) {
     statusCode = 429
     message = err.message
+    code = ErrorCode.RATE_LIMITED
     logger.warn(`RateLimitError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else {
+    code = ErrorCode.INTERNAL_ERROR
     logger.error('Unhandled Error', err, { requestId })
     sentryCaptureException(err, { requestId })
   }
@@ -204,13 +220,17 @@ export const errorHandler = (
     logger.error(`[ErrorHandler] ${statusCode} - ${message}`, err)
   }
 
-  res.status(statusCode).json({
+  const responsePayload: Record<string, unknown> = {
     status: 'error',
     message,
-    ...(requestId && { requestId }),
-    ...(errors && { errors }),
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  })
+  }
+
+  if (code) responsePayload.code = code
+  if (requestId) responsePayload.requestId = requestId
+  if (details) responsePayload.details = details
+  if (process.env.NODE_ENV === 'development' && err.stack) responsePayload.stack = err.stack
+
+  res.status(statusCode).json(responsePayload)
 }
 
 function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {
