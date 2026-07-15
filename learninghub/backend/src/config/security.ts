@@ -138,6 +138,7 @@ export const helmetConfig = {
       // 'unsafe-inline' is ONLY allowed in development for HMR.
       scriptSrc: [
         "'self'",
+        'https://*.googletagmanager.com',
         ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
@@ -149,6 +150,7 @@ export const helmetConfig = {
         'https:',
         'ws:',
         'wss:',
+        'https://*.google-analytics.com',
         ...(process.env.NODE_ENV === 'development'
           ? ['http://localhost:*', 'ws://localhost:*']
           : []),
@@ -157,6 +159,8 @@ export const helmetConfig = {
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'"],
       ...(process.env.NODE_ENV === 'production' ? { upgradeInsecureRequests: [] } : {}),
     },
   },

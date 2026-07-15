@@ -99,7 +99,6 @@ export const sanitizeInput = (input: string): string => {
     .slice(0, 10_000)
     .replace(/javascript:/gi, '')
     .replace(/on\w+\s*=/gi, '')
-    .replace(/\beval\s*\(/gi, '')
 }
 
 export const validateEmail = (email: string): boolean => {

@@ -52,6 +52,7 @@ describe('ErrorHandler Middleware', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Validation failed',
+        code: 'VALIDATION_ERROR',
       })
     })
 
@@ -67,6 +68,7 @@ describe('ErrorHandler Middleware', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Resource not found',
+        code: 'NOT_FOUND',
       })
     })
 
@@ -82,6 +84,7 @@ describe('ErrorHandler Middleware', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'error',
         message: 'Internal Server Error',
+        code: 'INTERNAL_ERROR',
       })
     })
 
