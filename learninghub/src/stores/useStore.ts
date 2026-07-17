@@ -19,6 +19,11 @@ export const useStore = create<AppState>()(
     {
       name: 'learninghub-storage',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated()
+        }
+      },
       partialize: state => ({
         theme: state.theme,
         recentSearches: state.recentSearches,
