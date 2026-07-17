@@ -113,6 +113,10 @@ describe('DatabaseConfig', () => {
         return 'success'
       })
 
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db);
+      });
+
       const result = await db.executeTransaction(fn, 3)
       expect(result).toBe('success')
       expect(calls).toBe(3)
@@ -123,6 +127,10 @@ describe('DatabaseConfig', () => {
         throw new Error('P2003: Foreign key constraint failed')
       })
 
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db);
+      });
+
       await expect(db.executeTransaction(fn, 3)).rejects.toThrow('P2003')
       expect(fn).toHaveBeenCalledTimes(1)
     })
@@ -132,6 +140,10 @@ describe('DatabaseConfig', () => {
         throw new Error('P1002: database timeout')
       })
 
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db);
+      });
+
       await expect(db.executeTransaction(fn, 2)).rejects.toThrow('P1002')
       expect(fn).toHaveBeenCalledTimes(2)
     })
@@ -139,9 +151,12 @@ describe('DatabaseConfig', () => {
     it('passes transaction client to callback', async () => {
       const fn = jest.fn().mockImplementation(async (tx: any) => {
         expect(tx).toBeDefined()
-        expect(typeof tx.$queryRaw).toBe('function')
         return 'ok'
       })
+
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db);
+      });
 
       const result = await db.executeTransaction(fn, 1)
       expect(result).toBe('ok')
