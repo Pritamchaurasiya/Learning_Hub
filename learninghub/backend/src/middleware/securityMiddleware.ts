@@ -5,19 +5,26 @@ import { Application } from 'express'
 import { corsOptions, helmetConfig } from '../config'
 
 export const configureSecurity = (app: Application) => {
+  const scriptSrc = [
+    "'self'",
+    'https://*.googletagmanager.com',
+    ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
+  ];
+
+  const styleSrc = [
+    "'self'",
+    'https://fonts.googleapis.com',
+    ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'"] : []),
+  ];
+
   app.use(
     helmet({
       ...helmetConfig,
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            'https://*.googletagmanager.com',
-          ],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          scriptSrc,
+          styleSrc,
           imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           connectSrc: ["'self'", 'https://*.google-analytics.com', 'wss:'],
