@@ -22,6 +22,9 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', '**/mockData'],
     },
+    env: {
+      VITE_API_URL: 'http://localhost:3000',
+    },
   },
   resolve: {
     alias: {
