@@ -103,14 +103,28 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    let originalTransaction: any
+
+    beforeEach(() => {
+      originalTransaction = db.$transaction
+    })
+
+    afterEach(() => {
+      db.$transaction = originalTransaction
+    })
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn().mockImplementation(async () => {
         calls++
         if (calls < 3) {
           throw new Error('P1002: database timeout')
         }
         return 'success'
+      })
+
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db)
       })
 
       const result = await db.executeTransaction(fn, 3)
@@ -119,8 +133,12 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws immediately on non-retryable errors', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn().mockImplementation(async () => {
         throw new Error('P2003: Foreign key constraint failed')
+      })
+
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db)
       })
 
       await expect(db.executeTransaction(fn, 3)).rejects.toThrow('P2003')
@@ -128,8 +146,12 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws after exhausting retries on persistent retryable error', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn().mockImplementation(async () => {
         throw new Error('P1002: database timeout')
+      })
+
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        return cb(db)
       })
 
       await expect(db.executeTransaction(fn, 2)).rejects.toThrow('P1002')
@@ -141,6 +163,15 @@ describe('DatabaseConfig', () => {
         expect(tx).toBeDefined()
         expect(typeof tx.$queryRaw).toBe('function')
         return 'ok'
+      })
+
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        // Build a mock tx that includes $queryRaw to satisfy the test condition without hitting a real DB
+        const mockTx = {
+            ...db,
+            $queryRaw: jest.fn()
+        };
+        return cb(mockTx)
       })
 
       const result = await db.executeTransaction(fn, 1)
