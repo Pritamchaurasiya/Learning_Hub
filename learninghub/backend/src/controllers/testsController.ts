@@ -66,12 +66,7 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
     const query = search.trim()
     const matchingIds = await prisma.$queryRaw<{ id: string }[]>`
       SELECT id FROM "tests"
-      WHERE search_vector IS NOT NULL
-        AND search_vector @@ plainto_tsquery('english', ${query})
-      UNION
-      SELECT id FROM "tests"
-      WHERE search_vector IS NULL
-        AND (title ILIKE ${`%${query}%`} OR description ILIKE ${`%${query}%`})
+      WHERE search_vector @@ plainto_tsquery('english', ${query})
     `
     if (matchingIds.length === 0) {
       filters.id = { in: [] }
