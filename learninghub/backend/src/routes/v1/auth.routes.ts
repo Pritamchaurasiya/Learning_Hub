@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { strictLimiter } from '../../middleware/rateLimiter'
+import { mfaRateLimit } from '../../config/security'
 import {
   register,
   login,
@@ -72,8 +73,8 @@ router.delete('/sessions/:id', authenticate, revokeSession)
 
 // MFA routes
 router.post('/mfa/setup', authenticate, setupMfa)
-router.post('/mfa/verify-enable', authenticate, validate(verifyMfaEnableSchema), verifyAndEnableMfa)
+router.post('/mfa/verify-enable', authenticate, mfaRateLimit, validate(verifyMfaEnableSchema), verifyAndEnableMfa)
 router.post('/mfa/disable', authenticate, validate(disableMfaSchema), disableMfa)
-router.post('/mfa/verify-login', strictLimiter, validate(verifyMfaSchema), verifyMfaLogin)
+router.post('/mfa/verify-login', mfaRateLimit, validate(verifyMfaSchema), verifyMfaLogin)
 
 export default router

@@ -105,10 +105,10 @@ model Test {
   createdAt     DateTime                 @default(now())
   updatedAt     DateTime                 @updatedAt
   deletedAt     DateTime?
+  search_vector Unsupported("tsvector")?
   questions     Question[]
   results       TestResult[]
   exam          Exam?                    @relation(fields: [examId], references: [id], onDelete: SetNull)
-  search_vector Unsupported("tsvector")?
 
   @@index([examId, isPublished], map: "idx_test_exam_published")
   @@index([isPublished, mode, difficulty, createdAt(sort: Desc)], map: "idx_test_discover")
