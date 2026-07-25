@@ -70,9 +70,7 @@ export class UserRepository extends BaseRepository<User, CreateUserInput, Update
       where: { id, deletedAt: null },
       include: includeRelations
         ? {
-            progress: true,
             achievements: true,
-            bookmarks: true,
             sessions: { where: { isRevoked: false } },
           }
         : undefined,

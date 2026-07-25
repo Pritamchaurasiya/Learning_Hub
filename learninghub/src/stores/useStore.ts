@@ -92,6 +92,11 @@ export const useStore = create<AppState>()(
               },
       }),
       skipHydration: true,
+      onRehydrateStorage: () => state => {
+        if (state) {
+          state.setHydrated()
+        }
+      },
     }
   )
 )

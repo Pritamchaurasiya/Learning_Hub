@@ -109,16 +109,18 @@ export function createRateLimiter(config: RateLimiterConfig) {
     let resetTime = new Date(Date.now() + windowMs)
     let isRedisUsed = false
 
-    try {
-      const incrementResult = await cacheService.incrementWithExpiry(key, 1, windowMs)
-      if (incrementResult > 0) {
-        current = incrementResult
-        isRedisUsed = true
+    if (process.env.REDIS_ENABLED === 'true' || process.env.NODE_ENV === 'production') {
+      try {
+        const incrementResult = await cacheService.incrementWithExpiry(key, 1, windowMs)
+        if (incrementResult > 0) {
+          current = incrementResult
+          isRedisUsed = true
+        }
+      } catch (err) {
+        logger.warn('[RateLimiter] Redis unavailable, falling back to In-Memory', {
+          error: err instanceof Error ? err.message : String(err),
+        })
       }
-    } catch (err) {
-      logger.warn('[RateLimiter] Redis unavailable, falling back to In-Memory', {
-        error: err instanceof Error ? err.message : String(err),
-      })
     }
 
     if (!isRedisUsed) {
