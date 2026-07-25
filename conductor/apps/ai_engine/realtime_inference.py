@@ -386,7 +386,7 @@ class RealTimeInferencePipeline:
             logger.error(f"Batch inference error for {model_name}: {e}")
             return [{"error": str(e)} for _ in batch_inputs]
     
-    def _prepare_batch_data(self, batch_inputs: List[Dict[str, Any]], model_name: str) -> Dict[str, np.ndarray]:
+    def _prepare_batch_data(self, batch_inputs: List[Dict[str, Any]], model_name: str) -> Dict[str, Any]:
         """Prepare batch data for inference."""
         # This is model-specific preprocessing
         # Example implementation for text embedding model

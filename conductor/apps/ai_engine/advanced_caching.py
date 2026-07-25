@@ -1,3 +1,4 @@
+import numpy as np
 # Advanced Caching Strategies for ML Features
 """Multi-level caching with Redis, memory, and intelligent invalidation"""
 
@@ -601,22 +602,22 @@ class MLModelCache:
         key = f"ml_prediction:{model_name}:{input_hash}"
         return await self.cache_manager.set(key, prediction, ttl=300)
     
-    async def get_user_embedding(self, user_id: int) -> Optional[np.ndarray]:
+    async def get_user_embedding(self, user_id: int) -> Optional[Any]:
         """Get cached user embedding."""
         key = f"user_embedding:{user_id}"
         return await self.cache_manager.get(key)
     
-    async def set_user_embedding(self, user_id: int, embedding: np.ndarray) -> bool:
+    async def set_user_embedding(self, user_id: int, embedding: Any) -> bool:
         """Cache user embedding."""
         key = f"user_embedding:{user_id}"
         return await self.cache_manager.set(key, embedding, ttl=7200)
     
-    async def get_content_embedding(self, content_id: str, content_type: str) -> Optional[np.ndarray]:
+    async def get_content_embedding(self, content_id: str, content_type: str) -> Optional[Any]:
         """Get cached content embedding."""
         key = f"content_embedding:{content_type}:{content_id}"
         return await self.cache_manager.get(key)
     
-    async def set_content_embedding(self, content_id: str, content_type: str, embedding: np.ndarray) -> bool:
+    async def set_content_embedding(self, content_id: str, content_type: str, embedding: Any) -> bool:
         """Cache content embedding."""
         key = f"content_embedding:{content_type}:{content_id}"
         return await self.cache_manager.set(key, embedding, ttl=86400)
