@@ -103,6 +103,13 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        const mockTx = { ...db, $queryRaw: jest.fn() }
+        return cb(mockTx)
+      })
+    })
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
       const fn = jest.fn().mockImplementation(() => {
