@@ -91,8 +91,13 @@ export async function csrfProtection(
 
     const [tokenSessionId, tokenExpiresAt, tokenHmac] = parts
 
-    // Verify session ID matches (timing-safe)
-    if (!crypto.timingSafeEqual(Buffer.from(tokenSessionId), Buffer.from(sessionId))) {
+    const tokenSessionBuf = Buffer.from(tokenSessionId)
+    const sessionBuf = Buffer.from(sessionId)
+
+    if (
+      tokenSessionBuf.length !== sessionBuf.length ||
+      !crypto.timingSafeEqual(tokenSessionBuf, sessionBuf)
+    ) {
       sendError(res, 'CSRF token does not match session', 403, 'CSRF_SESSION_MISMATCH')
       return
     }
