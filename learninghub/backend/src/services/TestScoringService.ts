@@ -101,13 +101,15 @@ export class TestScoringService {
         let isCorrect = false
         let marksObtained = 0
         let aiFeedback = undefined
+        let isPendingSubjective = false
 
         if (hasAnswer) {
           if (q.type === 'SUBJECTIVE') {
             // Instead of blocking to grade here, we mark as pending and dispatch an AI job later.
             marksObtained = 0
-            isCorrect = false // Will be updated by async worker
+            isCorrect = null // Will be updated by async worker - use null to indicate "pending"
             aiFeedback = 'Grading in progress by AI worker...'
+            isPendingSubjective = true
           } else if (correctOptions.length > 0) {
             if (q.type === 'MSQ') {
               isCorrect = answersMatch(
@@ -128,7 +130,8 @@ export class TestScoringService {
           } else if (hasAnswer) {
             incorrectCount++
           }
-        } else if (hasAnswer) {
+        } else if (hasAnswer && !isPendingSubjective) {
+          // Only count if already graded (not pending)
           score += marksObtained
           if (isCorrect) correctCount++
           else incorrectCount++
@@ -139,7 +142,7 @@ export class TestScoringService {
           ? (qConfidence.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH')
           : 'MEDIUM'
         const cbmMultiplier = hasAnswer
-          ? IRTScoringEngine.calculateCBMMultiplier(isCorrect, confidenceEnum)
+          ? IRTScoringEngine.calculateCBMMultiplier(isCorrect ?? false, confidenceEnum)
           : 1.0
         const qTimeSpent =
           timesSpent && typeof timesSpent[q.id] === 'number' ? Math.max(0, timesSpent[q.id]) : 0
@@ -158,6 +161,7 @@ export class TestScoringService {
           is_flagged: false,
           confidence: qConfidence,
           topic: q.tags?.[0] ?? 'General',
+          is_pending: isPendingSubjective, // New field to indicate subjective question awaiting AI grading
         }
       })
     )

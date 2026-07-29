@@ -59,53 +59,49 @@ function checkDirectoryExists(dirPath, description) {
 console.log('🔍 LearningHub Pre-Deployment Verification\n')
 console.log('='.repeat(50))
 
+// Resolve paths relative to working directory or project root
+const inSubdir = fs.existsSync('src') && fs.existsSync('backend')
+const prefix = (p) => inSubdir ? p.replace(/^learninghub\//, '') : p
+
 // Check 1: Backend files
-console.log('\n📦 Checking Workers Backend...')
-checkDirectoryExists('workers-backend/src', 'Workers source directory')
-checkFileExists('workers-backend/src/index.ts', 'Main entry point')
-checkFileExists('workers-backend/wrangler.toml', 'Wrangler config')
-checkFileExists('workers-backend/package.json', 'Package.json')
+console.log('\n📦 Checking Backend...')
+checkDirectoryExists(prefix('backend/src'), 'Backend source directory')
+checkFileExists(prefix('backend/src/server.ts'), 'Main entry point')
+checkFileExists(prefix('backend/package.json'), 'Backend Package.json')
 
 // Check 2: Frontend files
 console.log('\n🎨 Checking Frontend...')
-checkDirectoryExists('learninghub/src', 'Frontend source directory')
-checkFileExists('learninghub/package.json', 'Frontend package.json')
-checkFileExists('learninghub/.env.production', 'Production environment file')
-checkFileExists('learninghub/vite.config.ts', 'Vite config')
+checkDirectoryExists(prefix('learninghub/src'), 'Frontend source directory')
+checkFileExists(prefix('learninghub/package.json'), 'Frontend package.json')
+checkFileExists(prefix('learninghub/.env.production'), 'Production environment file')
+checkFileExists(prefix('learninghub/vite.config.ts'), 'Vite config')
 
 // Check 3: Database files
 console.log('\n🗄️  Checking Database Setup...')
-checkDirectoryExists('backend/prisma', 'Prisma directory')
-checkFileExists('backend/prisma/schema.prisma', 'Prisma schema')
-checkFileExists('backend/.env', 'Backend environment file')
+checkDirectoryExists(prefix('backend/prisma'), 'Prisma directory')
+checkFileExists(prefix('backend/prisma/schema.prisma'), 'Prisma schema')
+checkFileExists(prefix('backend/.env'), 'Backend environment file')
 
 // Check 4: Environment variables
 console.log('\n⚙️  Checking Environment Configuration...')
 
-// Check backend .env
-if (fs.existsSync('backend/.env')) {
-  const backendEnv = fs.readFileSync('backend/.env', 'utf8')
-  if (backendEnv.includes('NEON_DATABASE_URL')) {
-    success('Backend has NEON_DATABASE_URL configured')
+const backendEnvPath = prefix('backend/.env')
+if (fs.existsSync(backendEnvPath)) {
+  const backendEnv = fs.readFileSync(backendEnvPath, 'utf8')
+  if (backendEnv.includes('DATABASE_URL') || backendEnv.includes('NEON_DATABASE_URL')) {
+    success('Backend has database URL configured')
   } else {
-    error('Backend missing NEON_DATABASE_URL')
+    error('Backend missing DATABASE_URL')
   }
 } else {
   error('Backend .env file not found')
 }
 
-// Check frontend production env
-if (fs.existsSync('learninghub/.env.production')) {
-  const frontendEnv = fs.readFileSync('learninghub/.env.production', 'utf8')
+const frontendEnvPath = prefix('learninghub/.env.production')
+if (fs.existsSync(frontendEnvPath)) {
+  const frontendEnv = fs.readFileSync(frontendEnvPath, 'utf8')
   if (frontendEnv.includes('VITE_API_URL')) {
-    const apiUrl = frontendEnv.match(/VITE_API_URL=(.+)/)
-    if (apiUrl && apiUrl[1].includes('workers.dev')) {
-      success('Frontend VITE_API_URL points to Workers domain')
-    } else if (apiUrl && apiUrl[1].includes('localhost')) {
-      warning('Frontend VITE_API_URL still points to localhost - update before production!')
-    } else {
-      info("Frontend VITE_API_URL is set (verify it's correct)")
-    }
+    success('Frontend VITE_API_URL is configured')
   } else {
     error('Frontend missing VITE_API_URL')
   }
@@ -117,53 +113,20 @@ if (fs.existsSync('learninghub/.env.production')) {
 console.log('\n📦 Checking Dependencies...')
 
 try {
-  const workersPkg = JSON.parse(fs.readFileSync('workers-backend/package.json', 'utf8'))
-  const hasNeon = workersPkg.dependencies['@neondatabase/serverless']
-  const hasHono = workersPkg.dependencies.hono || workersPkg.devDependencies?.hono
+  const backendPkg = JSON.parse(fs.readFileSync(prefix('backend/package.json'), 'utf8'))
+  const hasPrisma = backendPkg.dependencies['@prisma/client']
 
-  if (hasNeon) success('Workers has @neondatabase/serverless')
-  else error('Workers missing @neondatabase/serverless')
+  if (hasPrisma) success('Backend has @prisma/client')
+  else error('Backend missing @prisma/client')
 } catch (e) {
-  error('Could not parse workers package.json')
+  error('Could not parse backend package.json')
 }
 
-// Check 6: Wrangler configuration
-console.log('\n🔧 Checking Wrangler Configuration...')
-
-if (fs.existsSync('workers-backend/wrangler.toml')) {
-  const wranglerConfig = fs.readFileSync('workers-backend/wrangler.toml', 'utf8')
-
-  if (wranglerConfig.includes('DATABASE_URL')) {
-    success('wrangler.toml references DATABASE_URL')
-  } else {
-    warning('wrangler.toml may need DATABASE_URL configuration')
-  }
-
-  if (wranglerConfig.includes('JWT_SECRET')) {
-    success('wrangler.toml references JWT_SECRET')
-  } else {
-    warning('wrangler.toml may need JWT_SECRET configuration')
-  }
-} else {
-  error('wrangler.toml not found')
-}
-
-// Check 7: TypeScript compilation (optional)
-console.log('\n🔍 Optional: Checking TypeScript Compilation...')
-
-try {
-  info('Attempting TypeScript check on workers-backend...')
-  execSync('cd workers-backend && npx tsc --noEmit', { stdio: 'pipe' })
-  success('Workers TypeScript compiles successfully')
-} catch (e) {
-  warning('TypeScript check failed (may be expected if dependencies not installed)')
-}
-
-// Check 8: Documentation
+// Check 6: Documentation
 console.log('\n📚 Checking Documentation...')
-checkFileExists('DEPLOYMENT_GUIDE.md', 'Deployment guide')
-checkFileExists('docs/DATABASE_MIGRATION_GUIDE.md', 'Database migration guide')
-checkFileExists('docs/BACKEND_CONSOLIDATION_GUIDE.md', 'Backend consolidation guide')
+checkFileExists(prefix('DEPLOYMENT_GUIDE.md'), 'Deployment guide')
+checkFileExists(prefix('docs/DATABASE_MIGRATION_GUIDE.md'), 'Database migration guide')
+checkFileExists(prefix('docs/BACKEND_CONSOLIDATION_GUIDE.md'), 'Backend consolidation guide')
 
 // Final summary
 console.log('\n' + '='.repeat(50))

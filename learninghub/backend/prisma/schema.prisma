@@ -186,6 +186,7 @@ model TestResult {
   attemptAnswers TestAttemptAnswer[]
 
   @@unique([userId, testId, attemptNumber])
+  @@unique([userId, testId, status], map: "idx_result_user_test_status_unique")
   @@index([userId, testId, status], map: "idx_result_user_test_status")
   @@index([userId, status, completedAt(sort: Desc)], map: "idx_result_user_status_completed")
   @@index([status, completedAt(sort: Desc)], map: "idx_result_status_completed")
@@ -194,6 +195,7 @@ model TestResult {
   @@index([testId, status], map: "idx_result_test_status")
   @@index([userId, testId], map: "idx_result_user_test")
   @@index([percentage], map: "idx_result_percentage")
+  @@index([userId, completedAt(sort: Desc)], map: "idx_result_user_completed_at")
   @@map("test_results")
 }
 
