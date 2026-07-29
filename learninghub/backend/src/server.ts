@@ -15,6 +15,7 @@ initSentry()
 import routes from './routes'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 import { requestId, requestLogger } from './middleware/requestLogger'
+import { metricsMiddleware } from './middleware/metricsMiddleware'
 import { sanitizeMiddleware } from './middleware/sanitizeMiddleware'
 import { csrfProtection, generateCsrfTokenForSession } from './middleware/csrfMiddleware'
 import { sendError, sendSuccess } from './utils/responseHelper'
@@ -85,6 +86,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 app.use(requestId)
 app.use(requestLogger)
+app.use(metricsMiddleware)
 
 configureSecurity(app)
 app.use(compression())
