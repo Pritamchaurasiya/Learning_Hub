@@ -162,19 +162,24 @@ export default {
         const healthStatus = await getHealthStatus(env)
         response = createJSONResponse(healthStatus, healthStatus.status === 'ok' ? 200 : 503)
       } else if (path === '/seed-demo-data' && request.method === 'POST') {
-        try {
-          const { seedDemoData, demoCredentials } = await import('./utils/demoData')
-          await seedDemoData(env)
-          response = createJSONResponse({
-            success: true,
-            message: 'Demo data seeded successfully',
-            credentials: demoCredentials,
-          })
-        } catch (error) {
-          logger.error('Demo data seeding failed', error as Error)
-          response = createErrorResponse('Failed to seed demo data', 500, 'SEED_ERROR', {
-            details: (error as Error).message,
-          })
+        // SECURITY: Only allow demo data seeding in development environment
+        if (env.ENVIRONMENT !== 'development') {
+          response = createErrorResponse('Demo data seeding only allowed in development', 403, 'FORBIDDEN')
+        } else {
+          try {
+            const { seedDemoData, demoCredentials } = await import('./utils/demoData')
+            await seedDemoData(env)
+            response = createJSONResponse({
+              success: true,
+              message: 'Demo data seeded successfully',
+              credentials: demoCredentials,
+            })
+          } catch (error) {
+            logger.error('Demo data seeding failed', error as Error)
+            response = createErrorResponse('Failed to seed demo data', 500, 'SEED_ERROR', {
+              details: (error as Error).message,
+            })
+          }
         }
       } else {
         const stub = getStubResponse(path)

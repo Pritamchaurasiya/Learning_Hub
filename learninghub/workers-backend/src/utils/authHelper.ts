@@ -10,10 +10,14 @@ export async function getUserFromRequest(request: Request, env: Env): Promise<Us
   return verifyToken(token, env.JWT_SECRET)
 }
 
+export type RequireUserResult =
+  | { user: UserContext; error: null }
+  | { user: null; error: Response }
+
 export async function requireUser(
   request: Request,
   env: Env
-): Promise<{ user: UserContext; error: null } | { user: null; error: Response }> {
+): Promise<RequireUserResult> {
   const user = await getUserFromRequest(request, env)
   if (!user) {
     return { user: null, error: createErrorResponse('Unauthorized', 401) }

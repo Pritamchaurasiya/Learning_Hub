@@ -59,7 +59,7 @@ async function handleAddBookmark(request: Request, env: Env): Promise<Response> 
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { item_id, item_type } = body
 
     if (!item_id || !item_type) return createErrorResponse('item_id and item_type required', 400)

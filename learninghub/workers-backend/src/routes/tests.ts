@@ -97,7 +97,7 @@ async function handleAutosave(request: Request, env: Env, testId: string): Promi
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { answers } = body
     if (!answers) return createErrorResponse('Answers required', 400)
 
@@ -245,7 +245,8 @@ async function handleSubmitTest(request: Request, env: Env, testId: string): Pro
         totalPossible += q.points
         const userAns = answers[q.id]
         const isCorrect =
-          userAns && userAns.toString().toLowerCase() === q.correct_answer.toString().toLowerCase()
+          Boolean(userAns) &&
+          String(userAns).toLowerCase() === String(q.correct_answer).toLowerCase()
         if (isCorrect) score += q.points
         answerDetails.push({
           questionId: q.id,

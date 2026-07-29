@@ -4,8 +4,8 @@ import { withDb } from '../db/connection'
 import { Env } from '../types'
 
 export async function handleNotifications(request: Request, env: Env): Promise<Response> {
-  const user = await requireUser(request, env)
-  if (user instanceof Response) return user
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
 
   const url = new URL(request.url)
   const method = request.method
@@ -80,8 +80,8 @@ export async function handleNotifications(request: Request, env: Env): Promise<R
 }
 
 export async function handleCertificates(request: Request, env: Env): Promise<Response> {
-  const user = await requireUser(request, env)
-  if (user instanceof Response) return user
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
 
   const url = new URL(request.url)
   const method = request.method
@@ -157,8 +157,8 @@ export async function handleCertificates(request: Request, env: Env): Promise<Re
 }
 
 export async function handleDiscussions(request: Request, env: Env): Promise<Response> {
-  const user = await requireUser(request, env)
-  if (user instanceof Response) return user
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
 
   const url = new URL(request.url)
   const method = request.method
@@ -367,8 +367,8 @@ export async function handleDiscussions(request: Request, env: Env): Promise<Res
 }
 
 export async function handleLearningPaths(request: Request, env: Env): Promise<Response> {
-  const user = await requireUser(request, env)
-  if (user instanceof Response) return user
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
 
   const url = new URL(request.url)
   const method = request.method
@@ -501,8 +501,8 @@ export async function handleLeaderboard(request: Request, env: Env): Promise<Res
   const method = request.method
 
   if (method === 'GET' && url.pathname === '/leaderboard/me') {
-    const user = await requireUser(request, env)
-    if (user instanceof Response) return user
+    const { user, error } = await requireUser(request, env)
+    if (error) return error
 
     const rows = await withDb(env, async client => {
       const r = await client.query(
@@ -535,8 +535,8 @@ export async function handleLeaderboard(request: Request, env: Env): Promise<Res
 }
 
 export async function handleMedia(request: Request, env: Env): Promise<Response> {
-  const user = await requireUser(request, env)
-  if (user instanceof Response) return user
+  const { user, error } = await requireUser(request, env)
+  if (error) return error
 
   const url = new URL(request.url)
   if (url.pathname === '/media/avatar' && request.method === 'POST') {

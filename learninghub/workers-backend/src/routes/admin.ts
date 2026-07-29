@@ -143,7 +143,7 @@ const ALLOWED_COURSE_COLUMNS = new Set([
 
 async function handleUpdateUser(request: Request, env: Env, userId: string): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as Record<string, any>
     const updates: Record<string, unknown> = {}
 
     for (const key of Object.keys(body)) {
@@ -205,7 +205,7 @@ async function handleDeleteUser(request: Request, env: Env, userId: string): Pro
 
 async function handleCreateCourse(request: Request, env: Env): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as any
 
     return await withDb(env, async client => {
       const result = await client.query(
@@ -247,7 +247,7 @@ async function handleCreateCourse(request: Request, env: Env): Promise<Response>
 
 async function handleUpdateCourse(request: Request, env: Env, courseId: string): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as Record<string, any>
     const updates: Record<string, unknown> = {}
 
     for (const key of Object.keys(body)) {
@@ -395,7 +395,7 @@ async function handleDashboard(request: Request, env: Env): Promise<Response> {
 
 async function handleAdminRegister(request: Request, env: Env): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { email, password, username } = body
 
     if (!email || !password || !username) {

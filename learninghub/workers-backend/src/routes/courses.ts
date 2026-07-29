@@ -179,7 +179,7 @@ async function handleEnroll(request: Request, env: Env): Promise<Response> {
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { courseId } = body
     if (!courseId) return createErrorResponse('courseId required', 400)
 
@@ -246,7 +246,7 @@ async function handleUpdateProgress(
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { progress } = body
 
     if (typeof progress !== 'number' || progress < 0 || progress > 100) {

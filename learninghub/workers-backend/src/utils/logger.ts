@@ -76,8 +76,9 @@ class Logger {
     this.output(this.createLogEntry('warn', message, context))
   }
 
-  error(message: string, error?: Error, context?: Record<string, unknown>): void {
-    this.output(this.createLogEntry('error', message, context, error))
+  error(message: string, error?: unknown, context?: Record<string, unknown>): void {
+    const errObj = error instanceof Error ? error : error ? new Error(String(error)) : undefined
+    this.output(this.createLogEntry('error', message, context, errObj))
   }
 
   debug(message: string, context?: Record<string, unknown>): void {

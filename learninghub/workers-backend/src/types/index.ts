@@ -21,7 +21,7 @@ export interface Env {
   // Environment secrets
   JWT_SECRET: string
   JWT_EXPIRES_IN?: string
-  DATABASE_URL?: string
+  DATABASE_URL: string
   HUGGINGFACE_API_KEY?: string
   ENVIRONMENT?: string
 
@@ -61,7 +61,7 @@ export interface ApiResponse<T = unknown> {
 export interface UserContext {
   userId: string
   email: string
-  role: 'student' | 'instructor' | 'admin'
+  role: 'student' | 'instructor' | 'admin' | 'superadmin' | 'moderator'
   iat: number
   exp: number
 }

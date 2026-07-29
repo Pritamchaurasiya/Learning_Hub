@@ -202,7 +202,7 @@ async function handleGetMe(request: Request, env: Env): Promise<Response> {
 
 async function handleRefresh(request: Request, env: Env): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as any
     const token = body.token ?? body.refresh_token
     if (!token) return createErrorResponse('Token required', 400)
 
@@ -272,7 +272,7 @@ async function handleUpdateProfile(request: Request, env: Env): Promise<Response
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { username, bio, location, website } = body
 
     return await withDb(env, async client => {
@@ -309,7 +309,7 @@ async function handleChangePassword(request: Request, env: Env): Promise<Respons
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { currentPassword, newPassword } = body
 
     if (!currentPassword || !newPassword) {
@@ -349,7 +349,7 @@ async function handleUploadAvatar(request: Request, env: Env): Promise<Response>
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { avatar_url } = body
     if (!avatar_url) return createErrorResponse('avatar_url required', 400)
 
@@ -372,7 +372,7 @@ async function handleDeleteAccount(request: Request, env: Env): Promise<Response
     const { user, error } = await requireUser(request, env)
     if (error) return error
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { password } = body
     if (!password) return createErrorResponse('Password required to delete account', 400)
 

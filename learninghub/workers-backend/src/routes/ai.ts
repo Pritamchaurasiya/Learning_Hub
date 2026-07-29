@@ -62,7 +62,7 @@ async function handleAnalyze(request: Request, env: Env, apiKey: string): Promis
       return createErrorResponse('Invalid token', 401)
     }
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { quizTitle, score, totalPossible, incorrectAnswers: _incorrectAnswers, topics } = body
 
     // Build prompt for analysis
@@ -113,7 +113,7 @@ async function handleRecommend(request: Request, env: Env, apiKey: string): Prom
       return createErrorResponse('Invalid token', 401)
     }
 
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { completedCourses, interests, skillLevel } = body
 
     const prompt = `As a learning advisor, recommend 3-5 courses based on:
@@ -141,7 +141,7 @@ Suggest specific next courses to take. Format as a simple list.`
 
 async function handleSummarize(request: Request, env: Env, apiKey: string): Promise<Response> {
   try {
-    const body = await request.json()
+    const body = (await request.json()) as any
     const { content, maxLength = 100 } = body
 
     if (!content || content.length < 50) {
