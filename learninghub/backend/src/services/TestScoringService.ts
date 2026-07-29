@@ -98,7 +98,7 @@ export class TestScoringService {
           submittedIds.length > 0 ||
           (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
 
-        let isCorrect = false
+        let isCorrect: boolean | null = false
         let marksObtained = 0
         let aiFeedback = undefined
         let isPendingSubjective = false

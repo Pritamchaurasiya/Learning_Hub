@@ -643,10 +643,10 @@ const TestsAPage = memo(() => {
     void recoverTestQuestions()
   }, [
     test.isActive,
-    test.quizInfo?.testId,
-    test.quizInfo?.testTitle,
-    test.quizInfo?.totalQuestions,
-    test.quizInfo?.timeLimit,
+    test.testInfo?.testId,
+    test.testInfo?.testTitle,
+    test.testInfo?.totalQuestions,
+    test.testInfo?.timeLimit,
     test.attempt?.attemptId,
     test.questions.length,
     setTestQuestions,
