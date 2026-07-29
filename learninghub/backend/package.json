@@ -16,6 +16,7 @@
     "db:push": "prisma db push",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:audit": "node scripts/db-audit.cjs",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "node scripts/setup-neon-db.js"

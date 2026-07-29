@@ -99,7 +99,7 @@ const features = [
 
 export function FeaturesGrid() {
   return (
-    <section className="py-20 lg:py-32 bg-white">
+    <section className="py-20 lg:py-32 bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -109,13 +109,13 @@ export function FeaturesGrid() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-semibold mb-4">
             Powerful Learning Tools
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Everything You Need to <span className="text-blue-600">Ace Your Exam</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             From practice questions to detailed analytics, we provide all the tools you need for
             effective exam preparation.
           </p>
@@ -131,7 +131,7 @@ export function FeaturesGrid() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              className="group bg-gray-50 rounded-2xl p-6 hover:bg-white hover:shadow-xl transition-all duration-300 border border-gray-100"
+              className="group bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-6 hover:bg-white dark:hover:bg-gray-800 hover:shadow-xl dark:hover:shadow-gray-900/20 transition-all duration-300 border border-gray-100 dark:border-gray-700"
             >
               {/* Icon */}
               <div
@@ -141,17 +141,22 @@ export function FeaturesGrid() {
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 transition-colors">
                 {feature.title}
               </h3>
 
               {/* Description */}
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">{feature.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                {feature.description}
+              </p>
 
               {/* Benefits */}
               <ul className="space-y-2">
                 {feature.benefits.map(benefit => (
-                  <li key={benefit} className="flex items-center gap-2 text-xs text-gray-500">
+                  <li
+                    key={benefit}
+                    className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+                  >
                     <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                     <span>{benefit}</span>
                   </li>
@@ -176,11 +181,11 @@ export function FeaturesGrid() {
             { icon: TrendingUp, value: '98%', label: 'Success Rate' },
           ].map(stat => (
             <div key={stat.label} className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                 <stat.icon className="w-6 h-6 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-sm text-gray-500">{stat.label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
             </div>
           ))}
         </motion.div>

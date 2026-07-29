@@ -67,12 +67,60 @@ const Header = memo(() => {
         e.preventDefault()
         const activeTag = document.activeElement?.tagName
         if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
+        // On desktop, focus the existing search input instead of opening mobile overlay
+        if (window.innerWidth >= 768) {
+          const searchInput = document.querySelector(
+            'header input[aria-label="Search courses"]'
+          ) as HTMLInputElement | null
+          if (searchInput) {
+            searchInput.focus()
+            return
+          }
+        }
         setMobileSearchOpen(true)
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+
+  // Escape key handler and focus trap for mobile search overlay
+  useEffect(() => {
+    if (!mobileSearchOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setMobileSearchOpen(false)
+        setSearchInput('')
+      }
+      // Trap focus inside the search overlay
+      if (e.key === 'Tab') {
+        const overlay = document.querySelector('[aria-label="Mobile Search"]') as HTMLElement | null
+        if (!overlay) return
+        const focusable = overlay.querySelectorAll<HTMLElement>('input, button')
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault()
+            last.focus()
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    // Focus the input when overlay opens
+    mobileSearchInputRef.current?.focus()
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mobileSearchOpen])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,7 +168,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
+          className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -155,7 +203,7 @@ const Header = memo(() => {
             className="input-field pl-10 pr-16 text-sm w-full bg-gray-50/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 focus:bg-white dark:focus:bg-gray-900 transition-all"
           />
           <kbd
-            className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600"
             aria-hidden="true"
           >
             Ctrl+K
@@ -181,12 +229,12 @@ const Header = memo(() => {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
+                  ref={mobileSearchInputRef}
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
                   placeholder="Search courses..."
                   aria-label="Search courses"
                   className="input-field pl-10 text-sm w-full"
-                  autoFocus
                 />
               </div>
             </form>

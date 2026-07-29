@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, memo } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Brain, Trophy, Target, Zap, Sparkles, AlertCircle, Flame } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import { ProgressBar } from '../components/ui/ProgressBar'
 import { Skeleton } from '../components/ui/Skeleton'
 import AnimatedPage from '../components/AnimatedPage'
 import { AITestGeneratorModal } from '../components/AITestGeneratorModal'
+import type { TestQuestion } from '../services/testsAService'
 
 interface DashboardStats {
   testsAttempted: number
@@ -51,9 +52,6 @@ const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate()
   const auth = useStore(state => state.auth)
   const progress = useStore(state => state.progress)
-  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [dashboardError, setDashboardError] = useState<string | null>(null)
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
 
   const startTestAttempt = useStore(state => state.startTestAttempt)
@@ -61,7 +59,7 @@ const Dashboard = memo(function Dashboard() {
 
   const handleTestGenerated = useCallback(
     (testData: {
-      questions: any[]
+      questions: TestQuestion[]
       testId: string
       testTitle: string
       totalQuestions: number
@@ -89,6 +87,55 @@ const Dashboard = memo(function Dashboard() {
     [startTestAttempt, setTestQuestions, navigate]
   )
 
+  const {
+    data: dashboardData,
+    isLoading,
+    error: dashboardError,
+  } = useQuery<DashboardStats | null>({
+    queryKey: ['dashboard-stats'],
+    queryFn: async ({ signal }) => {
+      if (!auth.isAuthenticated) return null
+      const [profileRes, testsRes] = await Promise.all([
+        fetchApi('/auth/me', { signal }),
+        fetchApi('/tests/attempts', { signal }),
+      ])
+
+      const profile = (profileRes?.data?.user ?? profileRes?.user ?? profileRes) as
+        Record<string, unknown> | undefined
+      const testsData = (testsRes?.data?.data ?? testsRes?.data ?? testsRes) as
+        Record<string, unknown> | undefined
+      const testResults = (
+        Array.isArray(testsData?.results) ? testsData.results : []
+      ) as TestAttemptRecord[]
+
+      const completedTests = testResults.filter(t => t.status === 'COMPLETED')
+      const passedTests = completedTests.filter(t => t.passed)
+
+      const recentTestsList = completedTests
+        .sort(
+          (a, b) => new Date(b.completedAt ?? 0).getTime() - new Date(a.completedAt ?? 0).getTime()
+        )
+        .slice(0, 5)
+        .map(t => ({
+          id: t.id,
+          title: t.test?.title ?? 'Practice Test',
+          score: t.score ?? 0,
+          passed: t.passed ?? false,
+        }))
+
+      return {
+        testsAttempted: completedTests.length,
+        testsPassed: passedTests.length,
+        totalXp: (profile?.xp as number) ?? 0,
+        currentStreak: (profile?.streak as number) ?? 0,
+        level: (profile?.level as number) ?? 1,
+        recentTests: recentTestsList,
+      }
+    },
+    enabled: auth.isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  })
+
   const { data: recommendations } = useQuery({
     queryKey: ['dashboard-recommendations'],
     queryFn: async () => {
@@ -99,79 +146,16 @@ const Dashboard = memo(function Dashboard() {
     staleTime: 5 * 60 * 1000,
   })
 
-  const loadDashboard = useCallback(
-    async (signal?: AbortSignal) => {
-      if (!auth.isAuthenticated) return
-      try {
-        setLoading(true)
-        const [profileRes, testsRes] = await Promise.all([
-          fetchApi('/auth/me', { signal }),
-          fetchApi('/tests/attempts', { signal }),
-        ])
+  if (isLoading) return <DashboardSkeleton />
 
-        const profile = (profileRes?.data?.user ?? profileRes?.user ?? profileRes) as
-          Record<string, unknown> | undefined
-        const testsData = (testsRes?.data?.data ?? testsRes?.data ?? testsRes) as
-          Record<string, unknown> | undefined
-        const testResults = (
-          Array.isArray(testsData?.results) ? testsData.results : []
-        ) as TestAttemptRecord[]
-
-        const completedTests = testResults.filter(t => t.status === 'COMPLETED')
-        const passedTests = completedTests.filter(t => t.passed)
-
-        const recentTestsList = completedTests
-          .sort(
-            (a, b) =>
-              new Date(b.completedAt ?? 0).getTime() - new Date(a.completedAt ?? 0).getTime()
-          )
-          .slice(0, 5)
-          .map(t => ({
-            id: t.id,
-            title: t.test?.title ?? 'Practice Test',
-            score: t.score ?? 0,
-            passed: t.passed ?? false,
-          }))
-
-        if (signal?.aborted) return
-
-        setDashboardData({
-          testsAttempted: completedTests.length,
-          testsPassed: passedTests.length,
-          totalXp: (profile?.xp as number) ?? 0,
-          currentStreak: (profile?.streak as number) ?? 0,
-          level: (profile?.level as number) ?? 1,
-          recentTests: recentTestsList,
-        })
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        if (signal?.aborted) return
-        if (import.meta.env.DEV) console.error('Dashboard load error:', err)
-        setDashboardError('Could not load latest dashboard data. Showing cached data.')
-        setDashboardData({
-          testsAttempted: 0,
-          testsPassed: 0,
-          totalXp: progress.xp ?? 0,
-          currentStreak: progress.streak ?? 0,
-          level: progress.level ?? 1,
-          recentTests: [],
-        })
-      } finally {
-        if (!signal?.aborted) setLoading(false)
-      }
-    },
-    [auth.isAuthenticated, progress.xp, progress.streak, progress.level]
-  )
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    loadDashboard(abortController.signal).catch(() => {})
-    return () => abortController.abort()
-  }, [loadDashboard])
-
-  if (loading) return <DashboardSkeleton />
-
-  const stats = dashboardData
+  const stats = dashboardData ?? {
+    testsAttempted: 0,
+    testsPassed: 0,
+    totalXp: progress.xp ?? 0,
+    currentStreak: progress.streak ?? 0,
+    level: progress.level ?? 1,
+    recentTests: [],
+  }
   const xpForNextLevel = (stats?.level ?? 1) * 100
   const xpProgress = (((stats?.totalXp ?? 0) % xpForNextLevel) / xpForNextLevel) * 100
   const passRate =
@@ -201,16 +185,23 @@ const Dashboard = memo(function Dashboard() {
       </div>
 
       {dashboardError && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {dashboardError}
+        <div
+          className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300"
+          role="alert"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+          {dashboardError.message || 'Could not load latest dashboard data. Showing cached data.'}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/10 border border-blue-100/50 dark:border-blue-800/30 hover:border-blue-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl">
+        <Card
+          className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/10 border border-blue-100/50 dark:border-blue-800/30 hover:border-blue-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl"
+          role="article"
+          aria-label={`${stats.testsAttempted} tests attempted`}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-125 group-hover:rotate-12">
-            <Brain className="w-24 h-24 text-blue-600 dark:text-blue-400" />
+            <Brain className="w-24 h-24 text-blue-600 dark:text-blue-400" aria-hidden="true" />
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -224,9 +215,13 @@ const Dashboard = memo(function Dashboard() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10 border border-green-100/50 dark:border-green-800/30 hover:border-green-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl">
+        <Card
+          className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10 border border-green-100/50 dark:border-green-800/30 hover:border-green-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl"
+          role="article"
+          aria-label={`${stats.testsPassed} tests passed`}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-125 group-hover:-rotate-12">
-            <Target className="w-24 h-24 text-green-600 dark:text-green-400" />
+            <Target className="w-24 h-24 text-green-600 dark:text-green-400" aria-hidden="true" />
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -240,9 +235,13 @@ const Dashboard = memo(function Dashboard() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-800 dark:to-orange-900/10 border border-orange-100/50 dark:border-orange-800/30 hover:border-orange-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl">
+        <Card
+          className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-800 dark:to-orange-900/10 border border-orange-100/50 dark:border-orange-800/30 hover:border-orange-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl"
+          role="article"
+          aria-label={`${stats.totalXp} total XP earned`}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-125 group-hover:rotate-12">
-            <Trophy className="w-24 h-24 text-orange-600 dark:text-orange-400" />
+            <Trophy className="w-24 h-24 text-orange-600 dark:text-orange-400" aria-hidden="true" />
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -256,9 +255,13 @@ const Dashboard = memo(function Dashboard() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800 dark:to-purple-900/10 border border-purple-100/50 dark:border-purple-800/30 hover:border-purple-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl">
+        <Card
+          className="p-6 group relative overflow-hidden bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800 dark:to-purple-900/10 border border-purple-100/50 dark:border-purple-800/30 hover:border-purple-500/50 hover:shadow-xl transition-all cursor-pointer backdrop-blur-xl"
+          role="article"
+          aria-label={`${stats.currentStreak} day learning streak`}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-125 group-hover:-rotate-12">
-            <Flame className="w-24 h-24 text-purple-600 dark:text-purple-400" />
+            <Flame className="w-24 h-24 text-purple-600 dark:text-purple-400" aria-hidden="true" />
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">

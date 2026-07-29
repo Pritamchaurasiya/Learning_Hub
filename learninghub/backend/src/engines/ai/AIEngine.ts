@@ -57,11 +57,11 @@ export class AIEngine {
     // Fetch user topic mastery if available
     let knownMastery = currentMastery
     try {
-      const userMastery = await prisma.userTopicMastery.findFirst({
+      const userMastery = await prisma.topicPerformance.findFirst({
         where: { userId, topicName: { contains: targetSkill, mode: 'insensitive' } },
       })
       if (userMastery) {
-        knownMastery = userMastery.masteryScore
+        knownMastery = userMastery.accuracy
       }
     } catch (err) {
       logger.warn(

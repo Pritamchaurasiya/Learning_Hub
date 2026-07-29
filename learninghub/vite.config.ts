@@ -173,6 +173,21 @@ export default defineConfig({
             )
               return 'i18n'
 
+            // Additional library splits for better caching
+            if (id.includes('/node_modules/fuse.js/')) return 'search'
+            if (
+              id.includes('/node_modules/react-virtuoso/') ||
+              id.includes('/node_modules/@tanstack/react-virtual/')
+            )
+              return 'virtualization'
+            if (id.includes('/node_modules/react-helmet-async/')) return 'seo'
+            if (
+              id.includes('/node_modules/class-variance-authority/') ||
+              id.includes('/node_modules/clsx/') ||
+              id.includes('/node_modules/tailwind-merge/')
+            )
+              return 'styling-utils'
+
             // Everything else
             return 'vendor'
           }
@@ -189,6 +204,24 @@ export default defineConfig({
   server: {
     port: 3000,
     cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
     watch: {
       ignored: ['**/backend/**', '**/dist/**', '**/coverage/**'],
     },

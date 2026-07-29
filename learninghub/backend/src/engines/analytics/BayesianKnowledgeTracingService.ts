@@ -64,12 +64,11 @@ export class BayesianKnowledgeTracingService {
       const topic = await db.topic.findUnique({ where: { id: topicId } })
       if (!topic) return
 
-      const mastery = await db.userTopicMastery.findUnique({
+      const mastery = await db.topicPerformance.findUnique({
         where: { userId_topicId: { userId, topicId } },
       })
 
-      // We store the probability in 'accuracy' (0-100 mapped to 0-1) for simplicity if no specific probability field exists.
-      // Wait, let's check schema for UserTopicMastery: it has `accuracy` (Float) and `strengthLevel` (String).
+      // We store the probability in 'accuracy' (0-100 mapped to 0-1)
       const currentProb = mastery ? mastery.accuracy / 100 : DEFAULT_BKT_PARAMS.pInit
 
       const nextProb = this.calculateNextProbability(currentProb, isCorrect, DEFAULT_BKT_PARAMS)
@@ -79,17 +78,17 @@ export class BayesianKnowledgeTracingService {
       const strengthLevel = this.determineStrengthLevel(nextProb, totalAttempts)
 
       if (mastery) {
-        await db.userTopicMastery.update({
+        await db.topicPerformance.update({
           where: { id: mastery.id },
           data: {
             accuracy: nextAccuracy,
             totalAttempts,
             strengthLevel,
-            lastTestedAt: new Date(),
+            lastAttemptAt: new Date(),
           },
         })
       } else {
-        await db.userTopicMastery.create({
+        await db.topicPerformance.create({
           data: {
             userId,
             topicId,
@@ -97,7 +96,7 @@ export class BayesianKnowledgeTracingService {
             accuracy: nextAccuracy,
             totalAttempts,
             strengthLevel,
-            lastTestedAt: new Date(),
+            lastAttemptAt: new Date(),
           },
         })
       }

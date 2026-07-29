@@ -15,7 +15,10 @@ const defaultQuizState = {
   lastSavedAt: null,
 }
 
-export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, get) => ({
+export const createQuizSlice: StateCreator<AppState & QuizSlice, [], [], QuizSlice> = (
+  set,
+  get
+) => ({
   quiz: defaultQuizState,
   quizStartAttempt: (quizId, quizTitle, totalQuestions, timeLimit) => {
     const attempt = {
@@ -81,8 +84,10 @@ export const createQuizSlice: StateCreator<AppState, [], [], QuizSlice> = (set, 
   updateQuizTimer: timeRemaining => {
     set(state => ({ quiz: { ...state.quiz, timeRemaining: Math.max(0, timeRemaining) } }))
   },
-  setQuizQuestions: (questions, quizInfo) => {
-    set(state => ({ quiz: { ...state.quiz, questions, quizInfo, currentQuestionIndex: 0 } }))
+  setQuizQuestions: (questions: any[], quizInfo: any) => {
+    set(state => ({
+      quiz: { ...state.quiz, questions: questions as any[], quizInfo, currentQuestionIndex: 0 },
+    }))
   },
   submitQuiz: async () => {
     const state = get()

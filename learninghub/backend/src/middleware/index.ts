@@ -13,3 +13,6 @@ export {
 
 export { errorHandler, notFoundHandler } from './errorHandler'
 export { validate, validateUUIDParam } from './validationMiddleware'
+export { anomalyDetection, trackFailedAuth, clearFailedAuth } from './anomalyDetection'
+export { requestSigning } from './requestSigning'
+export { cspNonce, getNonce } from './cspNonce'

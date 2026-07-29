@@ -51,7 +51,7 @@ const benefits = [
 
 export function BenefitsSection() {
   return (
-    <section className="py-20 lg:py-32 bg-white">
+    <section className="py-20 lg:py-32 bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -61,13 +61,13 @@ export function BenefitsSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm font-semibold mb-4">
             Benefits for Everyone
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Built for <span className="text-blue-600">Students, Parents & Teachers</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             LearningHub is designed to support every stakeholder in the exam preparation journey.
           </p>
         </motion.div>
@@ -82,7 +82,7 @@ export function BenefitsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.15 }}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              className={`${benefit.bgColor} rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-all`}
+              className={`${benefit.bgColor} dark:bg-gray-800/50 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-gray-900/20 transition-all`}
             >
               {/* Icon */}
               <div
@@ -92,15 +92,19 @@ export function BenefitsSection() {
               </div>
 
               {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">{benefit.title}</h3>
-              <p className="text-sm text-gray-500 mb-6">{benefit.audience}</p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {benefit.title}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{benefit.audience}</p>
 
               {/* Benefits List */}
               <ul className="space-y-4">
                 {benefit.items.map(item => (
                   <li key={item} className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm leading-relaxed">{item}</span>
+                    <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                      {item}
+                    </span>
                   </li>
                 ))}
               </ul>

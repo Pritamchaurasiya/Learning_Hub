@@ -19,6 +19,7 @@ import AnimatedPage from '../components/AnimatedPage'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
+import { ErrorState } from '../components/ui/ErrorState'
 import { studyPlannerService, type CreateTaskRequest } from '../services/studyPlannerService'
 import { studyGoalsService } from '../services/studyGoalsService'
 import { useStore } from '../stores/useStore'
@@ -29,7 +30,13 @@ export default function StudyPlannerPage() {
   const queryClient = useQueryClient()
 
   // Goals Query
-  const { data: goals = [], isLoading: isGoalsLoading } = useQuery({
+  const {
+    data: goals = [],
+    isLoading: isGoalsLoading,
+    isError: isGoalsError,
+    error: goalsError,
+    refetch: refetchGoals,
+  } = useQuery({
     queryKey: ['study', 'goals'],
     queryFn: () => studyGoalsService.getGoals().then(res => res.data),
     staleTime: 5 * 60 * 1000,
@@ -37,7 +44,13 @@ export default function StudyPlannerPage() {
   })
 
   // Tasks Query
-  const { data: tasks = [], isLoading: isTasksLoading } = useQuery({
+  const {
+    data: tasks = [],
+    isLoading: isTasksLoading,
+    isError: isTasksError,
+    error: tasksError,
+    refetch: refetchTasks,
+  } = useQuery({
     queryKey: ['study', 'tasks', filter],
     queryFn: async () => {
       let res
@@ -207,6 +220,13 @@ export default function StudyPlannerPage() {
                     <Skeleton className="h-3 w-full rounded-full" />
                   </div>
                 ))
+              ) : isGoalsError ? (
+                <ErrorState
+                  title="Failed to Load Goals"
+                  message={goalsError?.message ?? 'Could not load your goals.'}
+                  onRetry={() => void refetchGoals()}
+                  showHome={false}
+                />
               ) : goals.length > 0 ? (
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 goals.map((goal: any) => (
@@ -276,6 +296,15 @@ export default function StudyPlannerPage() {
                 // eslint-disable-next-line react/no-array-index-key
                 <Skeleton key={i} className="h-32 w-full rounded-3xl" />
               ))
+            ) : isTasksError ? (
+              <Card className="p-12 text-center border-none shadow-sm bg-white dark:bg-gray-900/50 rounded-3xl">
+                <ErrorState
+                  title="Failed to Load Tasks"
+                  message={tasksError?.message ?? 'Could not load your tasks.'}
+                  onRetry={() => void refetchTasks()}
+                  showHome={false}
+                />
+              </Card>
             ) : tasks.length === 0 ? (
               <Card className="p-20 text-center border-none shadow-sm bg-white dark:bg-gray-900/50 rounded-3xl">
                 <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">

@@ -67,48 +67,30 @@ export class TestEngineService {
       try {
         const txResult = await prisma.$transaction(
           async (tx: Prisma.TransactionClient) => {
-            // Find or create a practice test result for this user/test
-            let practiceResult: any = await tx.testResult.findFirst({
-              where: { userId: req.userId, testId: req.testId, status: 'IN_PROGRESS' },
-              orderBy: { attemptNumber: 'desc' },
+            // ATOMIC: Use upsert to find or create practice test result
+            // This eliminates the race condition between findFirst and create
+            // Using unique constraint [userId, testId, status] on TestResult
+            const practiceResult = await tx.testResult.upsert({
+              where: {
+                userId_testId_status: {
+                  userId: req.userId,
+                  testId: req.testId,
+                  status: 'IN_PROGRESS',
+                },
+              },
+              create: {
+                userId: req.userId,
+                testId: req.testId,
+                score: 0,
+                totalPoints: 0,
+                percentage: 0,
+                passed: false,
+                timeTaken: 0,
+                status: 'IN_PROGRESS',
+                attemptNumber: 1,
+              },
+              update: {}, // No update needed if already exists
             })
-
-            if (!practiceResult) {
-              // Get next attempt number
-              const maxAttempt = await tx.testResult.findFirst({
-                where: { userId: req.userId, testId: req.testId },
-                orderBy: { attemptNumber: 'desc' },
-                select: { attemptNumber: true },
-              })
-              let nextAttemptNumber = (maxAttempt?.attemptNumber ?? 0) + 1
-
-              // Retry on unique constraint violation (attemptNumber race condition)
-              for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                  practiceResult = await tx.testResult.create({
-                    data: {
-                      userId: req.userId,
-                      testId: req.testId,
-                      score: 0,
-                      totalPoints: 0,
-                      percentage: 0,
-                      passed: false,
-                      timeTaken: 0,
-                      status: 'IN_PROGRESS',
-                      attemptNumber: nextAttemptNumber,
-                    },
-                  })
-                  break
-                } catch (error) {
-                  const err = error as Error & { code?: string }
-                  if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
-                    nextAttemptNumber++
-                    continue
-                  }
-                  throw error
-                }
-              }
-            }
 
             // 1. Upsert TestAttemptAnswer with incremental score update
             const submittedIds = req.selectedOptionId

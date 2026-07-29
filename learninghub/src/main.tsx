@@ -23,8 +23,13 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
 
 // Rehydrate Zustand persisted state
 void (async () => {
-  await useStore.persist.rehydrate()
-  await useStore.getState().setHydrated()
+  try {
+    await useStore.persist.rehydrate()
+  } catch (err) {
+    console.error('[Hydration] Failed to rehydrate persisted state:', err)
+  } finally {
+    useStore.getState().setHydrated()
+  }
 })()
 
 // Create React Query client with optimized defaults
@@ -51,18 +56,7 @@ const queryClient = new QueryClient({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const reportErrorToMonitoring = (error: Error, context?: Record<string, any>) => {
   if (import.meta.env.PROD) {
-    // Simulate Sentry integration
-    console.error('[Monitoring] Error captured:', {
-      message: error.message,
-      stack: error.stack,
-      context,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    })
-
-    // Would send to monitoring service:
-    // Sentry.captureException(error, { extra: context })
+    Sentry.captureException(error, { extra: context })
   } else {
     console.error('[Error]', error.message, context ?? '')
   }

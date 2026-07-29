@@ -7,6 +7,7 @@ import { growthEngineService } from './GrowthEngineService'
 import { jobQueueService } from './JobQueueService'
 import { conductorClient } from './ml/ConductorClient'
 import { webSocketService } from './WebSocketService'
+import { IRTScoringEngine } from './IRTScoringEngine'
 
 export class TestScoringService {
   /**
@@ -19,6 +20,7 @@ export class TestScoringService {
     timeTaken,
     attemptId,
     confidences,
+    timesSpent,
   }: {
     userId: string
     testId: string
@@ -26,6 +28,7 @@ export class TestScoringService {
     timeTaken?: number
     attemptId?: string
     confidences?: Record<string, string>
+    timesSpent?: Record<string, number>
   }) {
     const test = await prisma.test.findUnique({
       where: { id: testId },
@@ -131,6 +134,16 @@ export class TestScoringService {
           else incorrectCount++
         }
 
+        const qConfidence = confidences ? confidences[q.id] : undefined
+        const confidenceEnum = qConfidence
+          ? (qConfidence.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH')
+          : 'MEDIUM'
+        const cbmMultiplier = hasAnswer
+          ? IRTScoringEngine.calculateCBMMultiplier(isCorrect, confidenceEnum)
+          : 1.0
+        const qTimeSpent =
+          timesSpent && typeof timesSpent[q.id] === 'number' ? Math.max(0, timesSpent[q.id]) : 0
+
         return {
           question_id: q.id,
           question_text: q.text,
@@ -139,10 +152,11 @@ export class TestScoringService {
           correct_options: correctOptions.map((o: any) => ({ id: o.id, text: o.text })),
           is_correct: isCorrect,
           marks_obtained: marksObtained,
+          cbm_multiplier: cbmMultiplier,
           explanation: aiFeedback ?? q.explanation,
-          time_spent: 0,
+          time_spent: qTimeSpent,
           is_flagged: false,
-          confidence: confidences ? confidences[q.id] : undefined,
+          confidence: qConfidence,
           topic: q.tags?.[0] ?? 'General',
         }
       })

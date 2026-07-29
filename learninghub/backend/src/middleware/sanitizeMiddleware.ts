@@ -44,23 +44,14 @@ const sanitizeObject = (obj: unknown, path = ''): unknown => {
   return obj
 }
 
-const replaceObjectContents = (
-  target: Record<string, unknown>,
-  source: Record<string, unknown>
-) => {
-  for (const key of Object.keys(target)) {
-    delete target[key]
-  }
-  Object.assign(target, source)
-}
-
 export const sanitizeMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.body) req.body = sanitizeObject(req.body) as Record<string, unknown>
   if (req.query && typeof req.query === 'object') {
-    replaceObjectContents(
-      req.query as Record<string, unknown>,
-      sanitizeObject(req.query) as Record<string, unknown>
-    )
+    const sanitizedQuery = sanitizeObject(req.query) as Record<string, unknown>
+    for (const key of Object.keys(req.query)) {
+      delete (req.query as Record<string, unknown>)[key]
+    }
+    Object.assign(req.query, sanitizedQuery)
   }
   if (req.params) req.params = sanitizeObject(req.params) as Record<string, string>
   next()

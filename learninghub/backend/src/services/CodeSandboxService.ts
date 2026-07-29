@@ -26,7 +26,12 @@ interface ExecutionRequest {
 
 interface ExecutionResult {
   status:
-    'accepted' | 'wrong_answer' | 'compilation_error' | 'runtime_error' | 'time_limit_exceeded'
+    | 'accepted'
+    | 'wrong_answer'
+    | 'compilation_error'
+    | 'runtime_error'
+    | 'time_limit_exceeded'
+    | 'memory_limit_exceeded'
   executionTime: number
   memoryUsed: number
   message: string
@@ -138,6 +143,20 @@ export class CodeSandboxService {
 
       totalExecutionTime += result.executionTime
       maxMemory = Math.max(maxMemory, result.memoryUsed)
+
+      // Validate memory usage against request limit (if memory limit provided in MB or Bytes)
+      const memoryLimitBytes =
+        req.memoryLimit > 1000 ? req.memoryLimit : req.memoryLimit * 1024 * 1024
+      if (req.memoryLimit > 0 && maxMemory > memoryLimitBytes) {
+        return {
+          status: 'memory_limit_exceeded',
+          executionTime: totalExecutionTime,
+          memoryUsed: maxMemory,
+          message: `Memory limit exceeded on test case ${i + 1}`,
+          testCasesPassed: passed,
+          testCasesTotal: req.testCases.length,
+        }
+      }
 
       if (CodeSandboxService.compareOutput(result.output, tc.output)) {
         passed++

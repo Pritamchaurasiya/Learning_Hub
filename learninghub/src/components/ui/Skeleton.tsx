@@ -1,226 +1,195 @@
-import { memo, type HTMLAttributes } from 'react'
+import { memo, HTMLAttributes } from 'react'
 
 interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   className?: string
-  ariaLabel?: string
+  variant?: 'text' | 'circular' | 'rectangular'
+  width?: string | number
+  height?: string | number
+  lines?: number
+  viewMode?: 'grid' | 'list'
 }
 
 export const Skeleton = memo(
-  ({ className = '', ariaLabel = 'Loading...', ...props }: SkeletonProps) => {
+  ({ className = '', variant = 'text', width, height, lines = 1, ...props }: SkeletonProps) => {
+    const baseClass =
+      'animate-pulse bg-gray-200 dark:bg-gray-700/60 rounded-md overflow-hidden relative'
+
+    const getStyle = () => {
+      const style: React.CSSProperties = {}
+      if (width) style.width = width
+      if (height) style.height = height
+      return style
+    }
+
+    if (variant === 'circular') {
+      return (
+        <div
+          {...props}
+          className={`${baseClass} rounded-full ${className}`}
+          style={{ width: width || '40px', height: height || '40px', ...getStyle() }}
+          aria-hidden="true"
+        />
+      )
+    }
+
+    if (variant === 'rectangular') {
+      return (
+        <div
+          {...props}
+          className={`${baseClass} rounded-xl ${className}`}
+          style={{ width: width || '100%', height: height || '100px', ...getStyle() }}
+          aria-hidden="true"
+        />
+      )
+    }
+
+    if (lines > 1) {
+      return (
+        <div
+          {...props}
+          className={`space-y-3 ${className}`}
+          style={{ width: width || '100%' }}
+          aria-hidden="true"
+        >
+          {Array.from({ length: lines }).map((_, i) => (
+            <div
+              key={i}
+              className={`${baseClass} rounded h-4 w-full`}
+              style={{ width: i === lines - 1 ? '75%' : '100%' }}
+            />
+          ))}
+        </div>
+      )
+    }
+
     return (
       <div
-        className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded-md ${className}`}
-        role="status"
-        aria-label={ariaLabel}
-        aria-live="polite"
         {...props}
+        className={`${baseClass} rounded h-4 ${className}`}
+        style={getStyle()}
+        aria-hidden="true"
       />
     )
   }
 )
 
-export const CourseCardSkeleton = memo(({ viewMode = 'grid' }: { viewMode?: 'grid' | 'list' }) => {
-  if (viewMode === 'list') {
-    return (
-      <div className="card p-5 flex flex-col sm:flex-row gap-6 items-center border border-gray-100 dark:border-gray-800">
-        <div className="hidden sm:flex items-start justify-between mb-4 h-full pt-1">
-          <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
-        </div>
-        <div className="flex flex-col flex-1 w-full justify-center">
-          <Skeleton className="h-5 w-1/3 mb-2" />
-          <Skeleton className="h-4 w-full mb-1.5" />
-          <Skeleton className="h-4 w-2/3 mb-4" />
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-6 w-20 rounded-lg" />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+Skeleton.displayName = 'Skeleton'
 
-  return (
-    <div className="card p-5 space-y-4">
-      <div className="flex justify-between">
-        <Skeleton className="w-10 h-10 rounded-lg" />
-        <Skeleton className="w-6 h-6 rounded-full" />
-      </div>
-      <Skeleton className="h-6 w-3/4" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-      </div>
-      <div className="flex justify-between items-center pt-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-5 w-20 rounded-full" />
-      </div>
+export const StatCardSkeleton = memo(({ className = '', ...props }: SkeletonProps) => (
+  <div
+    {...props}
+    className={`p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60 shadow-sm space-y-4 ${className}`}
+  >
+    <div className="flex items-center justify-between">
+      <Skeleton width="40%" height={16} />
+      <Skeleton variant="circular" width={40} height={40} />
     </div>
-  )
-})
+    <Skeleton width="60%" height={32} />
+    <Skeleton width="80%" height={14} />
+  </div>
+))
+StatCardSkeleton.displayName = 'StatCardSkeleton'
 
-export const StatCardSkeleton = memo(() => {
-  return (
-    <div className="card p-6 flex items-center gap-4">
-      <Skeleton className="w-12 h-12 rounded-xl" />
-      <div className="space-y-2 flex-1">
-        <Skeleton className="h-6 w-12" />
-        <Skeleton className="h-4 w-24" />
-      </div>
+export const CourseCardSkeleton = memo(({ className = '', ...props }: SkeletonProps) => (
+  <div
+    {...props}
+    className={`rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60 overflow-hidden shadow-sm space-y-4 p-4 ${className}`}
+  >
+    <Skeleton variant="rectangular" height={160} />
+    <Skeleton width="75%" height={20} />
+    <Skeleton lines={2} />
+    <div className="flex items-center justify-between pt-2">
+      <Skeleton width="30%" height={16} />
+      <Skeleton width="25%" height={28} className="rounded-lg" />
     </div>
-  )
-})
+  </div>
+))
+CourseCardSkeleton.displayName = 'CourseCardSkeleton'
 
-export const TableSkeleton = memo(({ rows = 5 }: { rows?: number }) => {
-  return (
-    <div className="space-y-3">
-      <div className="flex gap-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-        <Skeleton className="h-5 w-1/4" />
-        <Skeleton className="h-5 w-1/4" />
-        <Skeleton className="h-5 w-1/4" />
-        <Skeleton className="h-5 w-1/4" />
-      </div>
+export const TableSkeleton = memo(
+  ({ rows = 5, className = '', ...props }: SkeletonProps & { rows?: number }) => (
+    <div {...props} className={`space-y-3 ${className}`}>
       {Array.from({ length: rows }).map((_, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="flex gap-4 py-3">
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
-        </div>
-      ))}
-    </div>
-  )
-})
-
-export const FormSkeleton = memo(({ fields = 4 }: { fields?: number }) => {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: fields }).map((_, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="space-y-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      ))}
-      <Skeleton className="h-10 w-32" />
-    </div>
-  )
-})
-
-export const ProfileSkeleton = memo(() => {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-20 h-20 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    </div>
-  )
-})
-
-export const ListSkeleton = memo(({ items = 5 }: { items?: number }) => {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: items }).map((_, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="flex items-center gap-3 p-3">
-          <Skeleton className="w-10 h-10 rounded-lg" />
+        <div
+          key={i}
+          className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+        >
+          <Skeleton variant="circular" width={36} height={36} />
           <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-3 w-1/2" />
+            <Skeleton width="40%" height={16} />
+            <Skeleton width="25%" height={12} />
           </div>
-          <Skeleton className="w-16 h-8" />
+          <Skeleton width={80} height={24} className="rounded-lg" />
         </div>
       ))}
     </div>
   )
-})
+)
+TableSkeleton.displayName = 'TableSkeleton'
 
-export const PageSkeleton = memo(() => {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <Skeleton className="h-8 w-1/3" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-      <Skeleton className="h-64 w-full" />
-    </div>
-  )
-})
-
-export const DashboardSkeleton = memo(() => {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={i} className="card p-5 space-y-3">
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-3 w-1/3" />
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Skeleton className="h-64 w-full rounded-2xl" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
-      </div>
-    </div>
-  )
-})
-
-export const QuizSkeleton = memo(() => {
-  return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      <Skeleton className="h-6 w-1/3" />
-      <Skeleton className="h-4 w-2/3" />
-      <div className="card p-6 space-y-4">
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-5/6" />
-        <div className="space-y-3 pt-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Skeleton key={i} className="h-12 w-full rounded-xl" />
-          ))}
+export const FormSkeleton = memo(
+  ({ fields = 4, className = '', ...props }: SkeletonProps & { fields?: number }) => (
+    <div {...props} className={`space-y-4 ${className}`}>
+      {Array.from({ length: fields }).map((_, i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton width="30%" height={16} />
+          <Skeleton variant="rectangular" height={40} className="h-10" />
         </div>
-      </div>
-      <div className="flex justify-between">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-      </div>
+      ))}
+      <Skeleton variant="rectangular" height={44} className="h-10 rounded-xl mt-4" />
     </div>
   )
-})
+)
+FormSkeleton.displayName = 'FormSkeleton'
 
-export const ContestSkeleton = memo(() => {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-1/4" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="card p-5 space-y-3">
-          <Skeleton className="h-5 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
-          <div className="flex items-center gap-4 pt-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-8 w-24 ml-auto" />
-          </div>
+export const ProfileSkeleton = memo(({ className = '', ...props }: SkeletonProps) => (
+  <div
+    {...props}
+    className={`grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60 ${className}`}
+  >
+    <div className="flex items-center gap-4">
+      <Skeleton variant="circular" width={64} height={64} className="rounded-full" />
+      <div className="space-y-2 flex-1">
+        <Skeleton width="60%" height={22} />
+        <Skeleton width="80%" height={14} />
+      </div>
+    </div>
+    <div className="md:col-span-2 space-y-4">
+      <Skeleton width="100%" height={20} />
+      <Skeleton lines={3} />
+    </div>
+  </div>
+))
+ProfileSkeleton.displayName = 'ProfileSkeleton'
+
+export const ListSkeleton = memo(
+  ({ items = 5, className = '', ...props }: SkeletonProps & { items?: number }) => (
+    <div {...props} className={`space-y-3 ${className}`}>
+      {Array.from({ length: items }).map((_, i) => (
+        <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 space-y-2">
+          <Skeleton width="60%" height={16} />
+          <Skeleton width="40%" height={12} />
         </div>
       ))}
     </div>
   )
-})
+)
+ListSkeleton.displayName = 'ListSkeleton'
+
+export const PageSkeleton = memo(({ className = '', ...props }: SkeletonProps) => (
+  <div {...props} className={`space-y-8 p-6 max-w-7xl mx-auto ${className}`}>
+    <div className="space-y-2">
+      <Skeleton width="35%" height={32} />
+      <Skeleton width="55%" height={16} />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <StatCardSkeleton />
+      <StatCardSkeleton />
+      <StatCardSkeleton />
+    </div>
+    <TableSkeleton rows={4} />
+  </div>
+))
+PageSkeleton.displayName = 'PageSkeleton'
+
+export default Skeleton

@@ -21,6 +21,7 @@ import { useDebounce } from '../hooks/useDebounce'
 import { courseService } from '../services/courseService'
 import { CourseCard } from '../components/ui/CourseCard'
 import { CourseCardSkeleton } from '../components/ui/Skeleton'
+import { ErrorState } from '../components/ui/ErrorState'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { aiTutorService } from '../services/aiTutorService'
@@ -63,16 +64,26 @@ const SearchPage = React.memo(function SearchPage() {
     if (!q || q.length < 3) return
     setIsAiLoading(true)
     setAiAnswer(null)
-    const res = await aiTutorService.explainConcept(q)
-    if (res.status === 'success') {
-      setAiAnswer(res.data.explanation)
-    } else {
-      setAiAnswer("Sorry, I couldn't generate an answer right now. Please try again later.")
+    try {
+      const res = await aiTutorService.explainConcept(q)
+      if (res.status === 'success') {
+        setAiAnswer(res.data.explanation)
+      } else {
+        setAiAnswer("Sorry, I couldn't generate an answer right now. Please try again later.")
+      }
+    } catch {
+      setAiAnswer('An error occurred while generating the answer. Please try again.')
+    } finally {
+      setIsAiLoading(false)
     }
-    setIsAiLoading(false)
   }, [])
 
-  const { data: apiCourses = [], isLoading } = useQuery({
+  const {
+    data: apiCourses = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['search', debouncedQuery, difficultyFilter, phaseFilter, durationFilter, sortBy],
     queryFn: async () => {
       const params: Record<string, string> = {}
@@ -441,6 +452,14 @@ const SearchPage = React.memo(function SearchPage() {
             <CourseCardSkeleton key={i} viewMode={viewMode} />
           ))}
         </div>
+      ) : isError ? (
+        <Card className="p-12 border-none shadow-xl bg-white dark:bg-gray-900 rounded-[2.5rem]">
+          <ErrorState
+            title="Search Failed"
+            message="Something went wrong while searching courses. Please try again."
+            onRetry={() => void refetch()}
+          />
+        </Card>
       ) : deferredFilteredCourses.length > 0 ? (
         <div
           className={

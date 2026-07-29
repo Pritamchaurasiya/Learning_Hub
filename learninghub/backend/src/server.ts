@@ -37,6 +37,7 @@ import { startStaleSessionJob, stopStaleSessionJob } from './jobs/staleSessionJo
 import { configureSecurity } from './middleware/securityMiddleware'
 import { globalLimiter, stopMemoryStoreCleanup } from './middleware/rateLimiter'
 import { stopUserRateLimitCleanup } from './middleware/userRateLimit'
+import { anomalyDetection } from './middleware/anomalyDetection'
 import { setupWebSockets } from './websockets'
 import { notificationService } from './services/NotificationService'
 import { webSocketService } from './services/WebSocketService'
@@ -106,11 +107,31 @@ app.get('/api/v1/csrf-token', csrfRateLimit, async (req: Request, res: Response)
   sendSuccess(res, { csrfToken: token })
 })
 
+app.get('/api/v1/health', async (_req: Request, res: Response) => {
+  const start = Date.now()
+  let dbHealthy = false
+  let dbLatency = 0
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    dbLatency = Date.now() - start
+    dbHealthy = true
+  } catch {
+    dbLatency = Date.now() - start
+  }
+  sendSuccess(res, {
+    status: 'ok',
+    version: '1.0.0',
+    uptime: process.uptime(),
+    database: { healthy: dbHealthy, latency: dbLatency },
+  })
+})
+
 app.use('/api/v1/auth', authRateLimit)
 app.use('/api/v1/admin', adminRateLimit)
 app.use('/api/v1/auth/mfa', mfaRateLimit)
 app.use('/api/v1/auth/verify-mfa', mfaRateLimit)
 
+app.use('/api/v1', anomalyDetection)
 app.use('/api/v1', routes)
 
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
@@ -131,10 +152,7 @@ async function warmup(): Promise<void> {
     await cacheService.warm([
       {
         key: cacheService.generateKey('courses', 'list', 'all'),
-        factory: async () => {
-          await import('./routes')
-          return { status: 'warmed' }
-        },
+        factory: async () => ({ status: 'warmed' }),
         ttl: 300,
       },
     ])

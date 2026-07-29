@@ -35,13 +35,25 @@ export class AdaptiveTestEngine {
     return pDeriv ** 2 / denom
   }
 
+  /**
+   * Get the optimal difficulty (b parameter) for a given theta.
+   * For 2PL model (c=0), Fisher Information is maximized when b = theta.
+   * For 3PL model (c>0), maximum is near b = theta + ln((1-c)/c)/a.
+   * We use the 2PL approximation since c=0.0 in our current setup.
+   */
+  private getOptimalDifficultyForTheta(theta: number): number {
+    // For 2PL model with a=1.0, c=0.0: Fisher info is maximized when b = theta
+    // Map IRT b back to our 0-1 difficulty scale: difficulty = b/6 + 0.5
+    return theta / 6 + 0.5
+  }
+
   public async getNextAdaptiveQuestion(
     userId: string,
     topicId: string,
     answeredQuestionIds: string[]
   ): Promise<QuestionWithOptions | null> {
     try {
-      const mastery = await prisma.userTopicMastery.findUnique({
+      const mastery = await prisma.topicPerformance.findUnique({
         where: { userId_topicId: { userId, topicId } },
         select: { accuracy: true },
       })
@@ -49,33 +61,51 @@ export class AdaptiveTestEngine {
       const rawProb = mastery ? Math.max(0.01, Math.min(0.99, mastery.accuracy)) : 0.5
       const theta = (rawProb - 0.5) * 6
 
-      const candidateQuestions = await prisma.question.findMany({
+      // OPTIMIZATION: Calculate target difficulty and fetch only questions near that difficulty
+      // This pushes filtering to SQL instead of fetching 50 questions and sorting in JS
+      const targetDifficulty = this.getOptimalDifficultyForTheta(theta)
+      const difficultyWindow = 0.2 // ±0.2 around target
+
+      // First try: Get questions near optimal difficulty
+      let candidateQuestions: any[] = await prisma.question.findMany({
         where: {
           topicId,
           id: answeredQuestionIds.length > 0 ? { notIn: answeredQuestionIds } : undefined,
+          difficulty: {
+            gte: targetDifficulty - difficultyWindow,
+            lte: targetDifficulty + difficultyWindow,
+          },
         },
-        take: 50,
+        take: 15, // Much smaller than 50 since we pre-filter by difficulty
         include: {
           options: {
             select: { id: true, text: true, isCorrect: true },
           },
         },
+        orderBy: { difficulty: 'asc' },
       })
+
+      // Fallback: If no questions in window, expand search
+      if (candidateQuestions.length === 0) {
+        candidateQuestions = await prisma.question.findMany({
+          where: {
+            topicId,
+            id: answeredQuestionIds.length > 0 ? { notIn: answeredQuestionIds } : undefined,
+          },
+          take: 25,
+          include: {
+            options: {
+              select: { id: true, text: true, isCorrect: true },
+            },
+          },
+        })
+      }
 
       if (candidateQuestions.length === 0) return null
 
-      let bestQuestion = candidateQuestions[0]
-      let maxInformation = -Infinity
-
-      for (const q of candidateQuestions) {
-        const b = this.mapDifficultyToIRT(q.difficulty)
-        const info = this.calculateFisherInformation(theta, { a: 1.0, b, c: 0.0 })
-
-        if (info > maxInformation) {
-          maxInformation = info
-          bestQuestion = q
-        }
-      }
+      // Sort by Fisher Information in JS (now on much smaller set)
+      const sorted = this.sortQuestionsByInformation<any>(candidateQuestions, theta)
+      const bestQuestion = sorted[0]
 
       return {
         id: bestQuestion.id,
@@ -110,7 +140,7 @@ export class AdaptiveTestEngine {
   public async estimateUserAbility(userId: string, topicId?: string | null): Promise<number> {
     try {
       if (topicId) {
-        const mastery = await prisma.userTopicMastery.findUnique({
+        const mastery = await prisma.topicPerformance.findUnique({
           where: { userId_topicId: { userId, topicId } },
           select: { accuracy: true },
         })
@@ -149,14 +179,16 @@ export class AdaptiveTestEngine {
     theta: number
   ): T[] {
     return [...questions].sort((a, b) => {
+      const diffA = typeof a.difficulty === 'number' ? a.difficulty : 0.5
+      const diffB = typeof b.difficulty === 'number' ? b.difficulty : 0.5
       const infoA = this.calculateFisherInformation(theta, {
         a: 1.0,
-        b: this.mapDifficultyToIRT(a.difficulty),
+        b: this.mapDifficultyToIRT(diffA),
         c: 0.0,
       })
       const infoB = this.calculateFisherInformation(theta, {
         a: 1.0,
-        b: this.mapDifficultyToIRT(b.difficulty),
+        b: this.mapDifficultyToIRT(diffB),
         c: 0.0,
       })
       return infoB - infoA

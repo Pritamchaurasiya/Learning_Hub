@@ -262,16 +262,23 @@ const AuthPage = memo(function AuthPage() {
                   placeholder="you@example.com"
                   autoComplete="email"
                   className={fieldClass('email')}
+                  aria-invalid={!!fieldErrors.email}
+                  aria-describedby={fieldErrors.email ? 'auth-email-error' : undefined}
+                  aria-errormessage={fieldErrors.email ? 'auth-email-error' : undefined}
                 />
                 {fieldErrors.email && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    <AlertCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
                   </div>
                 )}
               </div>
               {fieldErrors.email && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
-                  <AlertCircle className="h-3 w-3" />
+                <p
+                  id="auth-email-error"
+                  className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                  role="alert"
+                >
+                  <AlertCircle className="h-3 w-3" aria-hidden="true" />
                   {fieldErrors.email}
                 </p>
               )}
@@ -299,6 +306,9 @@ const AuthPage = memo(function AuthPage() {
                   placeholder={isLogin ? 'Enter your password' : 'Min 8 characters'}
                   autoComplete={isLogin ? 'current-password' : 'new-password'}
                   className={passwordFieldClass('password')}
+                  aria-invalid={!!fieldErrors.password}
+                  aria-describedby={fieldErrors.password ? 'auth-password-error' : undefined}
+                  aria-errormessage={fieldErrors.password ? 'auth-password-error' : undefined}
                 />
                 <button
                   type="button"
@@ -310,8 +320,12 @@ const AuthPage = memo(function AuthPage() {
                 </button>
               </div>
               {fieldErrors.password && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
-                  <AlertCircle className="h-3 w-3" />
+                <p
+                  id="auth-password-error"
+                  className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                  role="alert"
+                >
+                  <AlertCircle className="h-3 w-3" aria-hidden="true" />
                   {fieldErrors.password}
                 </p>
               )}
@@ -387,11 +401,22 @@ const AuthPage = memo(function AuthPage() {
                         ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
                         : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
                     }`}
+                    aria-invalid={!!fieldErrors.confirmPassword}
+                    aria-describedby={
+                      fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
+                    }
+                    aria-errormessage={
+                      fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
+                    }
                   />
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1" role="alert">
-                    <AlertCircle className="h-3 w-3" />
+                  <p
+                    id="auth-confirm-password-error"
+                    className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                    role="alert"
+                  >
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
                     {fieldErrors.confirmPassword}
                   </p>
                 )}

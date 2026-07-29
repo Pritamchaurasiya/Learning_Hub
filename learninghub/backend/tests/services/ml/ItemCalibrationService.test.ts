@@ -33,7 +33,7 @@ describe('ItemCalibrationService Suite', () => {
   })
 
   it('should skip questions with fewer than 5 answers', async () => {
-    mockPrisma.question.findMany = jest.fn().mockResolvedValue([{ id: 'q-1', difficulty: 0.5 }])
+    mockPrisma.question.findMany = jest.fn().mockResolvedValue([{ id: 'q-1', difficulty: 0.5, _count: { TestAttemptAnswer: 2 } }])
     mockPrisma.testAttemptAnswer.findMany = jest
       .fn()
       .mockResolvedValue([{ isCorrect: true }, { isCorrect: false }]) // only 2 answers
@@ -47,7 +47,7 @@ describe('ItemCalibrationService Suite', () => {
   })
 
   it('should calibrate item using Conductor ML pipeline when available', async () => {
-    mockPrisma.question.findMany = jest.fn().mockResolvedValue([{ id: 'q-ml', difficulty: 0.5 }])
+    mockPrisma.question.findMany = jest.fn().mockResolvedValue([{ id: 'q-ml', difficulty: 0.5, _count: { TestAttemptAnswer: 5 } }])
     mockPrisma.testAttemptAnswer.findMany = jest
       .fn()
       .mockResolvedValue([
@@ -86,7 +86,7 @@ describe('ItemCalibrationService Suite', () => {
   it('should fallback to heuristics when Conductor returns null or invalid difficulty', async () => {
     mockPrisma.question.findMany = jest
       .fn()
-      .mockResolvedValue([{ id: 'q-heuristics', difficulty: 0.5 }])
+      .mockResolvedValue([{ id: 'q-heuristics', difficulty: 0.5, _count: { TestAttemptAnswer: 5 } }])
     mockPrisma.testAttemptAnswer.findMany = jest.fn().mockResolvedValue([
       { isCorrect: true },
       { isCorrect: true },
@@ -113,7 +113,7 @@ describe('ItemCalibrationService Suite', () => {
   it('should not update database if difficulty shift is <= 0.02', async () => {
     mockPrisma.question.findMany = jest
       .fn()
-      .mockResolvedValue([{ id: 'q-small-shift', difficulty: 0.5 }])
+      .mockResolvedValue([{ id: 'q-small-shift', difficulty: 0.5, _count: { TestAttemptAnswer: 5 } }])
     mockPrisma.testAttemptAnswer.findMany = jest.fn().mockResolvedValue([
       { isCorrect: true },
       { isCorrect: true },

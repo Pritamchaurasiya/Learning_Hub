@@ -21,7 +21,6 @@ import {
   History,
   MessageSquare,
   Bot,
-  ScrollText,
   ChevronDown,
   Zap,
 } from 'lucide-react'
@@ -39,7 +38,7 @@ export default function Sidebar() {
   const setSidebarOpen = useStore(s => s.setSidebarOpen)
   const progress = useStore(s => s.progress)
   const auth = useStore(s => s.auth)
-  const isDesktop = useBreakpoint('lg')
+  const isDesktop = useBreakpoint('md') // Change to md (<768px) for mobile sidebar
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -102,7 +101,6 @@ export default function Sidebar() {
         { to: '/achievements', icon: Award, label: 'Achievements' },
         { to: '/profile', icon: User, label: 'Profile' },
         { to: '/settings', icon: Settings, label: 'Settings' },
-        { to: '/certificates', icon: ScrollText, label: 'Certificates' },
       ],
     },
   ]
@@ -132,7 +130,7 @@ export default function Sidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden"
             onClick={() => setSidebarOpen(false)}
             role="button"
             aria-label="Close sidebar"
@@ -145,9 +143,17 @@ export default function Sidebar() {
         initial={false}
         animate={isDesktop || sidebarOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden lg:shadow-none lg:translate-x-0"
+        className="fixed md:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden md:shadow-none md:translate-x-0"
         aria-label="Main navigation"
         role="navigation"
+        drag={isDesktop ? false : 'x'}
+        dragConstraints={{ left: -100, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={(_e, { offset, velocity }) => {
+          if (offset.x < -50 || velocity.x < -500) {
+            setSidebarOpen(false)
+          }
+        }}
       >
         {/* Sidebar header */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-gray-200/40 dark:border-white/10 shrink-0">
@@ -168,7 +174,7 @@ export default function Sidebar() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors"
+            className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />

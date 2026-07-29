@@ -13,6 +13,8 @@ import {
   Plus,
   MessageSquare,
   Loader2,
+  StopCircle,
+  RotateCcw,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SEO } from '../components/SEO'
@@ -61,8 +63,11 @@ export default function AITutorPage() {
   const [input, setInput] = useState('')
   const [showHistory, setShowHistory] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch Chat History (Sessions List)
   const { data: sessions = [], isLoading: isSessionsLoading } = useQuery({
@@ -165,129 +170,179 @@ export default function AITutorPage() {
     },
   })
 
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
   // Send Message using Fetch API for Streaming support
-  const handleSendMessage = async () => {
-    if (!input.trim() || isStreaming || !currentSessionId) return
+  const handleSendMessage = useCallback(
+    async (retryMessage?: string) => {
+      const messageToSend = retryMessage || input.trim()
+      if (!messageToSend || isStreaming || !currentSessionId) return
 
-    const userMessageContent = input.trim()
-    setInput('')
+      if (!retryMessage) {
+        setInput('')
+        // Reset textarea height
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
+        }
+      }
+      setLastFailedMessage(null)
 
-    // Optimistically add the user message
-    const userMessage: AIChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: userMessageContent,
-      createdAt: new Date().toISOString(),
-    }
-
-    // Add a placeholder assistant message that will be updated
-    const assistantMessageId = `msg-${Date.now() + 1}`
-    const initialAssistantMessage: AIChatMessage = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    }
-
-    queryClient.setQueryData(
-      ['aiTutor', 'session', currentSessionId],
-      (old: AIChatMessage[] = []) => [...old, userMessage, initialAssistantMessage]
-    )
-
-    scrollToBottom()
-    setIsStreaming(true)
-
-    try {
-      const csrfToken = getCsrfToken()
-      const sessionId = getSessionId()
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+      // Optimistically add the user message
+      const userMessage: AIChatMessage = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: messageToSend,
+        createdAt: new Date().toISOString(),
       }
 
-      if (csrfToken) headers['x-csrf-token'] = csrfToken
-      if (sessionId) headers['x-session-id'] = sessionId
+      // Add a placeholder assistant message that will be updated
+      const assistantMessageId = `msg-${Date.now() + 1}`
+      const initialAssistantMessage: AIChatMessage = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        createdAt: new Date().toISOString(),
+      }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/tutor/stream`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          message: userMessageContent,
-          session_id: currentSessionId,
-        }),
-        credentials: 'include',
-      })
+      queryClient.setQueryData(
+        ['aiTutor', 'session', currentSessionId],
+        (old: AIChatMessage[] = []) => [...old, userMessage, initialAssistantMessage]
+      )
 
-      if (!response.body) throw new Error('No readable stream')
+      scrollToBottom()
+      setIsStreaming(true)
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let fullResponse = ''
-      let buffer = ''
+      // Create abort controller for this stream
+      const controller = new AbortController()
+      abortControllerRef.current = controller
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+      try {
+        const csrfToken = getCsrfToken()
+        const sessionId = getSessionId()
 
-        buffer += decoder.decode(value, { stream: true })
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
 
-        // Process complete events separated by \n\n
-        let eventEndIndex
-        while ((eventEndIndex = buffer.indexOf('\n\n')) >= 0) {
-          const event = buffer.substring(0, eventEndIndex)
-          buffer = buffer.substring(eventEndIndex + 2)
+        if (csrfToken) headers['x-csrf-token'] = csrfToken
+        if (sessionId) headers['x-session-id'] = sessionId
 
-          const lines = event.split('\n')
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const dataStr = line.replace('data: ', '').trim()
-              if (dataStr === '[DONE]') break
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/tutor/stream`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            message: messageToSend,
+            session_id: currentSessionId,
+          }),
+          credentials: 'include',
+          signal: controller.signal,
+        })
 
-              try {
-                const data = JSON.parse(dataStr)
-                if (data.text) {
-                  fullResponse += data.text
-                  // Update the UI with streamed text
-                  queryClient.setQueryData(
-                    ['aiTutor', 'session', currentSessionId],
-                    (old: AIChatMessage[] = []) => {
-                      const newMessages = [...old]
-                      const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
-                      if (targetIdx !== -1) {
-                        // eslint-disable-next-line security/detect-object-injection
-                        newMessages[targetIdx] = {
+        if (!response.body) throw new Error('No readable stream')
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let fullResponse = ''
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+
+          // Process complete events separated by \n\n
+          let eventEndIndex
+          while ((eventEndIndex = buffer.indexOf('\n\n')) >= 0) {
+            const event = buffer.substring(0, eventEndIndex)
+            buffer = buffer.substring(eventEndIndex + 2)
+
+            const lines = event.split('\n')
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const dataStr = line.replace('data: ', '').trim()
+                if (dataStr === '[DONE]') break
+
+                try {
+                  const data = JSON.parse(dataStr)
+                  if (data.text) {
+                    fullResponse += data.text
+                    // Update the UI with streamed text
+                    queryClient.setQueryData(
+                      ['aiTutor', 'session', currentSessionId],
+                      (old: AIChatMessage[] = []) => {
+                        const newMessages = [...old]
+                        const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
+                        if (targetIdx !== -1) {
                           // eslint-disable-next-line security/detect-object-injection
-                          ...newMessages[targetIdx],
-                          content: fullResponse,
+                          newMessages[targetIdx] = {
+                            // eslint-disable-next-line security/detect-object-injection
+                            ...newMessages[targetIdx],
+                            content: fullResponse,
+                          }
                         }
+                        return newMessages
                       }
-                      return newMessages
-                    }
-                  )
-                  // Auto-scroll as text comes in
-                  messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+                    )
+                    // Auto-scroll as text comes in
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+                  }
+                  if (data.error) {
+                    throw new Error(data.error)
+                  }
+                } catch (parseError) {
+                  // Only throw if it's a real error, not a JSON parse of partial chunk
+                  if (
+                    parseError instanceof Error &&
+                    parseError.message !== 'Unexpected end of JSON input'
+                  ) {
+                    // eslint-disable-next-line no-console
+                    if (import.meta.env.DEV)
+                      console.warn('[AITutor] SSE parse issue:', parseError.message)
+                  }
                 }
-              } catch {
-                // Ignore partial JSON chunks
               }
             }
           }
         }
+      } catch (error) {
+        // Don't show error toast for intentional abort
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          // Stream was intentionally stopped by user
+          return
+        }
+        setLastFailedMessage(messageToSend)
+        addToast({ message: 'Failed to stream response from AI Tutor.', type: 'error' })
+        // Remove placeholder message on error
+        queryClient.setQueryData(
+          ['aiTutor', 'session', currentSessionId],
+          (old: AIChatMessage[] = []) => old.filter(m => m.id !== assistantMessageId)
+        )
+      } finally {
+        abortControllerRef.current = null
+        setIsStreaming(false)
+        scrollToBottom()
       }
+    },
+    [input, isStreaming, currentSessionId, queryClient, addToast, scrollToBottom]
+  )
 
-      // We could optionally persist this message to the backend session state here
-    } catch {
-      addToast({ message: 'Failed to stream response from AI Tutor.', type: 'error' })
-      // Remove placeholder message on error
-      queryClient.setQueryData(
-        ['aiTutor', 'session', currentSessionId],
-        (old: AIChatMessage[] = []) => old.filter(m => m.id !== assistantMessageId)
-      )
-    } finally {
-      setIsStreaming(false)
-      scrollToBottom()
+  // Stop streaming handler
+  const handleStopStreaming = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
     }
-  }
+  }, [])
+
+  // Retry last failed message
+  const handleRetry = useCallback(() => {
+    if (lastFailedMessage) {
+      void handleSendMessage(lastFailedMessage)
+    }
+  }, [lastFailedMessage, handleSendMessage])
 
   const [hasAttemptedCreate, setHasAttemptedCreate] = useState(false)
 
@@ -311,10 +366,6 @@ export default function AITutorPage() {
     hasAttemptedCreate,
   ])
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
   useEffect(() => {
     scrollToBottom()
   }, [messages.length, scrollToBottom])
@@ -334,12 +385,21 @@ export default function AITutorPage() {
     [isDesktop]
   )
 
-  // Replaced with handleSendMessage method above.
+  // Replaced with handleSendMessage callback above.
 
   const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteSessionMutation.mutate(sessionId)
   }
+
+  // Clean up abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [])
 
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -559,10 +619,45 @@ export default function AITutorPage() {
                     </motion.div>
                   ))}
                   {isStreaming && (
-                    <div className="absolute bottom-6 right-8 p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-lg border border-gray-100 dark:border-gray-700 z-20 flex gap-2">
-                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce shadow-sm" />
-                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce delay-150 shadow-sm" />
-                      <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce delay-300 shadow-sm" />
+                    <div className="flex items-center justify-center gap-4 py-2 relative z-20">
+                      <div className="flex items-center gap-2 p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-lg border border-gray-100 dark:border-gray-700">
+                        <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce shadow-sm" />
+                        <div
+                          className="w-2 h-2 bg-primary-500 rounded-full animate-bounce shadow-sm"
+                          style={{ animationDelay: '150ms' }}
+                        />
+                        <div
+                          className="w-2 h-2 bg-primary-500 rounded-full animate-bounce shadow-sm"
+                          style={{ animationDelay: '300ms' }}
+                        />
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">
+                          Generating
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleStopStreaming}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        aria-label="Stop generating"
+                      >
+                        <StopCircle className="w-4 h-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Stop
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                  {lastFailedMessage && !isStreaming && (
+                    <div className="flex items-center justify-center py-2 relative z-20">
+                      <button
+                        onClick={handleRetry}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        aria-label="Retry last message"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Retry
+                        </span>
+                      </button>
                     </div>
                   )}
                 </>
@@ -602,6 +697,7 @@ export default function AITutorPage() {
             <div className="p-6 md:p-8 pt-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md relative z-20">
               <div className="relative group">
                 <textarea
+                  ref={textareaRef}
                   rows={1}
                   value={input}
                   onChange={e => {
@@ -613,8 +709,6 @@ export default function AITutorPage() {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
                       void handleSendMessage()
-                      const target = e.target as HTMLTextAreaElement
-                      target.style.height = 'auto'
                     }
                   }}
                   placeholder="Ask your tutor anything engineering..."
@@ -623,7 +717,7 @@ export default function AITutorPage() {
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   <button
-                    onClick={handleSendMessage}
+                    onClick={() => void handleSendMessage()}
                     disabled={!input.trim() || isStreaming || isMessagesLoading}
                     aria-label="Send message"
                     className="w-14 h-14 bg-primary-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-primary-500/30 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all duration-300"

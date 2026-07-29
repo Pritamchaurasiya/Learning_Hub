@@ -21,6 +21,7 @@ import { Card } from '../components/ui/Card'
 import { Skeleton, StatCardSkeleton } from '../components/ui/Skeleton'
 import WidgetBoundary from '../components/ui/WidgetBoundary'
 import { analyticsService } from '../services/analyticsService'
+import { CognitiveRadarChart, SpacedRepetitionWidget } from '../components/analytics'
 
 interface StatCardProps {
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
@@ -102,6 +103,12 @@ export default function AnalyticsPage() {
     queryKey: ['analytics', 'tests'],
     queryFn: () => analyticsService.getTestAnalytics().then(res => res.data),
     staleTime: 10 * 60 * 1000,
+  })
+
+  const { data: spacedRepetitionData } = useQuery({
+    queryKey: ['analytics', 'spacedRepetition'],
+    queryFn: () => analyticsService.getSpacedRepetitionSchedule().then(res => res.data),
+    staleTime: 5 * 60 * 1000,
   })
 
   const dayCount = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365
@@ -321,6 +328,19 @@ export default function AnalyticsPage() {
               </div>
             )}
           </Card>
+        </WidgetBoundary>
+      </div>
+
+      {/* Cognitive Mastery & Spaced Repetition Engine */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <WidgetBoundary widgetName="Cognitive Profile Radar">
+          <Card className="p-8 border-none shadow-xl bg-white dark:bg-gray-900 h-full">
+            <CognitiveRadarChart />
+          </Card>
+        </WidgetBoundary>
+
+        <WidgetBoundary widgetName="Spaced Repetition Flashcards">
+          <SpacedRepetitionWidget items={spacedRepetitionData} />
         </WidgetBoundary>
       </div>
 

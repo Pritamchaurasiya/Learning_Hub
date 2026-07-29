@@ -101,6 +101,12 @@ export const submitTestSchema = z.object({
       }),
     timeTaken: z.number().nonnegative('Time taken must be non-negative').optional(),
     attempt_id: z.string().max(50, 'Attempt ID must not exceed 50 characters').optional(),
+    confidences: z
+      .record(z.string().max(50), z.enum(['LOW', 'MEDIUM', 'HIGH', 'low', 'medium', 'high']))
+      .optional(),
+    timesSpent: z
+      .record(z.string().max(50), z.number().nonnegative('Time spent must be non-negative'))
+      .optional(),
   }),
 })
 

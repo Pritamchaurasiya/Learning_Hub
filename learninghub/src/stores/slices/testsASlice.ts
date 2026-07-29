@@ -20,12 +20,16 @@ const initialTestsAState: TestsAState = {
   lastAutosavedAt: null,
 }
 
-export const createTestsASlice: StateCreator<AppState, [], [], TestsASlice> = (set, get) => ({
+export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], TestsASlice> = (
+  set,
+  get
+) => ({
   testsA: initialTestsAState,
 
   startTestAttempt: (testId, testTitle, totalQuestions, timeLimit) => {
-    set(() => ({
+    set(state => ({
       testsA: {
+        ...state.testsA,
         ...initialTestsAState,
         isActive: true,
         timeRemaining: timeLimit * 60,
@@ -247,7 +251,7 @@ export const createTestsASlice: StateCreator<AppState, [], [], TestsASlice> = (s
       },
     }))
   },
-  setLastAutosavedAt: timestamp => {
+  setLastAutosavedAt: (timestamp: number | string) => {
     set(state => ({
       testsA: {
         ...state.testsA,

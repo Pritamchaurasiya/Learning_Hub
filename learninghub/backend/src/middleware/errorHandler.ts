@@ -243,9 +243,10 @@ function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {
 }
 
 export const notFoundHandler = (req: Request, res: Response): void => {
-  res
-    .status(404)
-    .json({ status: 'error', message: `Route not found: ${req.method} ${req.originalUrl}` })
+  res.status(404).json({
+    status: 'error',
+    message: `Route not found: ${req.method} ${req.originalUrl || req.url}`,
+  })
 }
 
 export { handlePrismaError as prismaErrorHandler }

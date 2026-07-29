@@ -85,16 +85,15 @@ describe('TestEngineService', () => {
 
     it('should submit correct answer and return feedback', async () => {
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
-      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
-      ;(mockPrisma.testResult.create as jest.Mock).mockResolvedValue({
+      ;(mockPrisma.testResult.upsert as jest.Mock).mockResolvedValue({
         id: 'result-1',
         userId: mockRequest.userId,
         testId: mockRequest.testId,
         score: 0,
-        answers: {},
-        questionResults: [],
         attemptNumber: 1,
       })
+      ;(mockPrisma.testAttemptAnswer.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.topicPerformance.upsert as jest.Mock).mockResolvedValue({})
@@ -112,16 +111,15 @@ describe('TestEngineService', () => {
       const wrongRequest = { ...mockRequest, selectedOptionId: 'option-wrong' }
 
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
-      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
-      ;(mockPrisma.testResult.create as jest.Mock).mockResolvedValue({
+      ;(mockPrisma.testResult.upsert as jest.Mock).mockResolvedValue({
         id: 'result-1',
         userId: mockRequest.userId,
         testId: mockRequest.testId,
         score: 0,
-        answers: {},
-        questionResults: [],
         attemptNumber: 1,
       })
+      ;(mockPrisma.testAttemptAnswer.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.topicPerformance.upsert as jest.Mock).mockResolvedValue({})
@@ -154,18 +152,18 @@ describe('TestEngineService', () => {
     })
 
     it('should update existing practice result', async () => {
-      const existingResult = {
+      ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
+      ;(mockPrisma.testResult.upsert as jest.Mock).mockResolvedValue({
         id: 'result-1',
         userId: mockRequest.userId,
         testId: mockRequest.testId,
         score: 10,
-        answers: { 'question-0': 'option-0' },
-        questionResults: [{ question_id: 'question-0', is_correct: true, marks_obtained: 10 }],
         attemptNumber: 1,
-      }
-
-      ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
-      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(existingResult)
+      })
+      ;(mockPrisma.testAttemptAnswer.findUnique as jest.Mock).mockResolvedValue({
+        marksObtained: 0,
+      })
+      ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.topicPerformance.upsert as jest.Mock).mockResolvedValue({})
@@ -178,7 +176,6 @@ describe('TestEngineService', () => {
           where: { id: 'result-1' },
           data: expect.objectContaining({
             score: { increment: 10 },
-            totalPoints: { increment: 10 },
           }),
         })
       )
@@ -186,37 +183,45 @@ describe('TestEngineService', () => {
 
     it('should retry on unique constraint violation (attemptNumber race condition)', async () => {
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
-      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.topicPerformance.upsert as jest.Mock).mockResolvedValue({})
+      ;(mockPrisma.testAttemptAnswer.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
+      ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
 
-      // First create fails with P2002, second succeeds
+      // First upsert fails with P2002, second succeeds
       const prismaError = new Error('P2002: Unique constraint violation') as any
       prismaError.code = 'P2002'
 
-      const createMock = jest.fn()
+      const upsertMock = jest.fn()
         .mockRejectedValueOnce(prismaError)
         .mockResolvedValueOnce({
           id: 'result-1',
           userId: mockRequest.userId,
           testId: mockRequest.testId,
           score: 0,
-          answers: {},
-          questionResults: [],
           attemptNumber: 1,
         })
 
-      ;(mockPrisma.testResult.create as jest.Mock) = createMock
+      ;(mockPrisma.testResult.upsert as jest.Mock) = upsertMock
 
       const result = await service.submitPracticeAnswer(mockRequest)
 
       expect(result.isCorrect).toBe(true)
-      expect(createMock).toHaveBeenCalledTimes(2)
+      expect(upsertMock).toHaveBeenCalledTimes(2)
     })
 
     it('should update topic performance', async () => {
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(mockQuestion)
-      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.testResult.upsert as jest.Mock).mockResolvedValue({
+        id: 'result-1',
+        userId: mockRequest.userId,
+        testId: mockRequest.testId,
+        score: 0,
+        attemptNumber: 1,
+      })
+      ;(mockPrisma.testAttemptAnswer.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.testResult.create as jest.Mock).mockResolvedValue({
         id: 'result-1',
         userId: mockRequest.userId,

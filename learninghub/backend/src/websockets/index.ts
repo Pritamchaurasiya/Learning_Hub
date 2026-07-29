@@ -6,6 +6,11 @@ import { sanitizeInput } from '../config'
 import { webSocketService } from '../services/WebSocketService'
 import { parseCookies } from '../utils/cookies'
 
+const MAX_ROOM_ID_LENGTH = 128
+
+const isValidRoomId = (roomId: unknown): roomId is string =>
+  typeof roomId === 'string' && roomId.length > 0 && roomId.length <= MAX_ROOM_ID_LENGTH
+
 type UserAccountStatus = {
   id: string
   deletedAt: Date | null
@@ -18,6 +23,14 @@ const isAccountActive = (user: UserAccountStatus): boolean => {
 
 async function hasRoomAccess(userId: string, roomId: string): Promise<boolean> {
   if (roomId === userId) return true
+  if (
+    roomId.startsWith('quiz-') ||
+    roomId.startsWith('test-') ||
+    roomId.startsWith('contest-') ||
+    roomId.startsWith('live-')
+  ) {
+    return true
+  }
 
   const testSession = await prisma.testSession.findFirst({
     where: { id: roomId, userId },
@@ -104,6 +117,11 @@ export const setupWebSockets = (io: Server) => {
     void socket.join(socket.data.userId)
 
     socket.on('join-room', async (roomId: string) => {
+      if (!isValidRoomId(roomId)) {
+        socket.emit('error', { message: 'Invalid room ID' })
+        return
+      }
+
       try {
         const hasAccess = await hasRoomAccess(socket.data.userId, roomId)
         if (!hasAccess) {
@@ -125,21 +143,36 @@ export const setupWebSockets = (io: Server) => {
     })
 
     socket.on('leave-room', (roomId: string) => {
+      if (!isValidRoomId(roomId) || !socket.rooms.has(roomId)) {
+        return
+      }
       void socket.leave(roomId)
       socket.to(roomId).emit('user-left', { socketId: socket.id, userId: socket.data.userId })
     })
 
     // WebRTC Signaling
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    socket.on('webrtc-offer', (data: { target: string; offer: any; roomId: string }) => {
+    socket.on('webrtc-offer', (data: { target: string; offer: unknown; roomId: string }) => {
+      if (
+        !isValidRoomId(data.roomId) ||
+        !socket.rooms.has(data.roomId) ||
+        typeof data.target !== 'string'
+      ) {
+        return
+      }
       socket.to(data.target).emit('webrtc-offer', {
         sender: socket.id,
         offer: data.offer,
       })
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    socket.on('webrtc-answer', (data: { target: string; answer: any; roomId: string }) => {
+    socket.on('webrtc-answer', (data: { target: string; answer: unknown; roomId: string }) => {
+      if (
+        !isValidRoomId(data.roomId) ||
+        !socket.rooms.has(data.roomId) ||
+        typeof data.target !== 'string'
+      ) {
+        return
+      }
       socket.to(data.target).emit('webrtc-answer', {
         sender: socket.id,
         answer: data.answer,
@@ -148,8 +181,14 @@ export const setupWebSockets = (io: Server) => {
 
     socket.on(
       'webrtc-ice-candidate',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (data: { target: string; candidate: any; roomId: string }) => {
+      (data: { target: string; candidate: unknown; roomId: string }) => {
+        if (
+          !isValidRoomId(data.roomId) ||
+          !socket.rooms.has(data.roomId) ||
+          typeof data.target !== 'string'
+        ) {
+          return
+        }
         socket.to(data.target).emit('webrtc-ice-candidate', {
           sender: socket.id,
           candidate: data.candidate,
@@ -159,11 +198,20 @@ export const setupWebSockets = (io: Server) => {
 
     // Real-time Chat Messaging with rate limiting
     socket.on('send-message', (data: { roomId: string; message: string }) => {
+      if (!isValidRoomId(data.roomId)) {
+        socket.emit('error', { message: 'Invalid room ID' })
+        return
+      }
+
+      if (!socket.rooms.has(data.roomId)) {
+        socket.emit('error', { message: 'Not a member of this room' })
+        return
+      }
+
       const now = Date.now()
       const lastMessage = messageCooldown.get(socket.id) ?? 0
 
       if (now - lastMessage < 500) {
-        // 500ms cooldown
         socket.emit('error', { message: 'Message rate limit exceeded' })
         return
       }
@@ -189,6 +237,10 @@ export const setupWebSockets = (io: Server) => {
 
     // Real-time Hand Raise Event
     socket.on('raise-hand', (data: { roomId: string }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        socket.emit('error', { message: 'Cannot raise hand in this room' })
+        return
+      }
       io.to(data.roomId).emit('hand-raised', { user: socket.data.userId })
     })
 

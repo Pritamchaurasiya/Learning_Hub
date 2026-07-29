@@ -85,6 +85,7 @@ export interface TestResult {
   correct_count: number
   incorrect_count: number
   unanswered_count: number
+  is_mock?: boolean
   question_results: Array<{
     question_id: string
     question_text: string
@@ -384,7 +385,7 @@ export const testsAService = {
     })) as Promise<{ status: string; data: { saved: boolean } }>,
 
   // Batch autosave: send ALL current answers at once (used by periodic autosave)
-  batchAutosave: (testId: string, answers: Record<string, string>, attemptId?: string) =>
+  batchAutosave: (testId: string, answers: Record<string, string | string[]>, attemptId?: string) =>
     fetchApi(`/tests/${testId}/autosave`, {
       method: 'POST',
       body: JSON.stringify({ answers, attempt_id: attemptId }),
@@ -396,7 +397,7 @@ export const testsAService = {
   // Submit test
   submitTest: (
     testId: string,
-    answers: Record<string, string>,
+    answers: Record<string, string | string[]>,
     timeTaken: number,
     attemptId: string,
     confidences?: Record<string, string>

@@ -18,6 +18,7 @@ import {
 import { validatePasswordStrength } from '../config'
 import { config } from '../utils/env'
 import { asyncHandler } from '../utils/errorHandler'
+import { trackFailedAuth, clearFailedAuth } from '../middleware/anomalyDetection'
 import jwt from 'jsonwebtoken'
 
 function generateMfaSessionToken(userId: string): string {
@@ -141,6 +142,9 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
       refreshToken: result.tokens.refreshToken,
     })
 
+    const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
+    void clearFailedAuth(clientIp)
+
     sendSuccess(
       res,
       {
@@ -164,6 +168,8 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
       return
     }
     if (message === 'Invalid credentials' || message === 'Invalid email or password') {
+      const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
+      void trackFailedAuth(clientIp)
       sendUnauthorized(res, 'Invalid email or password')
       return
     }

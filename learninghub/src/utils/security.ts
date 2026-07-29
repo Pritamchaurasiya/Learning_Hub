@@ -1,15 +1,27 @@
+import DOMPurify from 'dompurify'
+
 const STORAGE_KEY_PREFIX = 'lh_'
 
 export function sanitizeHtml(input: string): string {
   if (!input) return ''
-  return input
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[^>]*>[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[^>]*>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim()
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: [
+      'b',
+      'i',
+      'em',
+      'strong',
+      'a',
+      'p',
+      'br',
+      'ul',
+      'ol',
+      'li',
+      'code',
+      'pre',
+      'blockquote',
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+  })
 }
 
 export function escapeHtml(input: string): string {

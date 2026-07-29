@@ -425,8 +425,8 @@ export const getTestAttempts = asyncHandler(async (req: Request, res: Response):
           timeLimit: true,
           passingScore: true,
           totalMarks: true,
-          questions: {
-            select: { id: true },
+          _count: {
+            select: { questions: true },
           },
         },
       },
@@ -705,7 +705,7 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
 export const submitTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
   const testId = req.params.id as string
-  const { answers, timeTaken, attempt_id, confidences } = req.body
+  const { answers, timeTaken, attempt_id, confidences, timesSpent } = req.body
 
   if (!answers || typeof answers !== 'object' || Object.keys(answers).length === 0) {
     sendValidationError(res, 'Answers are required and must contain at least one answer')
@@ -721,6 +721,7 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
         timeTaken,
         attemptId: attempt_id,
         confidences,
+        timesSpent,
       })
 
     const counts = countQuestionResults(questionResults, test.questions.length)

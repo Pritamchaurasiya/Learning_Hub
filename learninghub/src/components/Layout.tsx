@@ -53,11 +53,11 @@ export default function Layout({ children }: LayoutProps) {
 
         <main
           id="main-content"
-          className="flex-1 overflow-y-auto px-3 sm:px-5 md:px-7 lg:px-9 py-4 sm:py-5 md:py-7 lg:py-9 pb-[88px] lg:pb-9 custom-scrollbar relative"
+          className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10 py-5 sm:py-6 md:py-8 lg:py-10 custom-scrollbar relative transition-all duration-300 ease-in-out"
           role="main"
           tabIndex={-1}
         >
-          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full">
+          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full pb-[88px] lg:pb-9 transition-all duration-300">
             <ErrorBoundary>
               <Suspense fallback={<LoadingScreen />}>
                 {children}

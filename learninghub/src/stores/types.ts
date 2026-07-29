@@ -5,7 +5,7 @@ import type { TestQuestion, TestResult } from '../services/testsAService'
 export type { User, UserProgress, Theme, Achievement, Toast, LoadingState, Notification }
 export type { TestQuestion, TestResult }
 
-// Quiz Types
+// Quiz Types (Legacy - deprecated, use TestQuestion instead)
 export interface QuizQuestion {
   id: string
   text: string
@@ -42,11 +42,54 @@ export interface QuizState {
   answers: Record<string, string | number>
   flaggedQuestions: string[]
   timeRemaining: number
-  questions: QuizQuestion[]
-  quizInfo: QuizInfo | null
+  questions: QuizQuestion[] | TestQuestion[] | any[]
+  quizInfo: QuizInfo | TestInfo | any
   currentQuestionIndex: number
   isSubmitting: boolean
   lastSavedAt: string | null
+}
+
+// ─── Unified Test Types (New) ────────────────────────────────────────────────
+
+export type TestMode =
+  'legacy' | 'tests-a' | 'quiz' | 'mock' | 'adaptive' | 'subjective' | 'sectional'
+
+export interface TestInfo {
+  testId: string
+  testTitle: string
+  totalQuestions: number
+  timeLimit: number
+}
+
+export interface TestAttemptState {
+  attemptId: string
+  testId: string
+  testTitle: string
+  status: 'in_progress' | 'completed' | 'abandoned' | 'expired'
+  startedAt: string
+  totalQuestions: number
+  answeredQuestions: number
+}
+
+export interface UnifiedTestState {
+  mode: TestMode
+  isActive: boolean
+  isLoading: boolean
+  error: string | null
+  currentQuestionIndex: number
+  questions: TestQuestion[]
+  answers: Record<string, string | string[]>
+  confidences: Record<string, string>
+  flaggedQuestions: string[]
+  timeRemaining: number
+  testInfo: TestInfo | null
+  attempt: TestAttemptState | null
+  results: TestResult | null
+  isSubmitting: boolean
+  lastAutosavedAt: string | null
+  // Legacy compatibility
+  currentAttempt: TestAttemptState | null
+  quizInfo: TestInfo | null
 }
 
 // Slice Interfaces
@@ -143,6 +186,7 @@ export interface ProgressSlice {
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => void
 }
 
+// Legacy Quiz Slice (Deprecated - use TestSlice instead)
 export interface QuizSlice {
   quiz: QuizState
   quizStartAttempt: (
@@ -156,14 +200,14 @@ export interface QuizSlice {
   quizUnflagQuestion: (questionId: string) => void
   quizNavigateToQuestion: (index: number) => void
   updateQuizTimer: (timeRemaining: number) => void
-  setQuizQuestions: (questions: QuizQuestion[], quizInfo: QuizInfo) => void
+  setQuizQuestions: (questions: any[], quizInfo: any) => void
   submitQuiz: () => Promise<{ success: boolean; score: number }>
   resetQuizState: () => void
   clearQuiz: () => void
   abandonQuiz: () => void
 }
 
-// Tests A+ Slice
+// Tests A+ Slice (Deprecated - use TestSlice instead)
 export interface TestsASlice {
   testsA: TestsAState
   startTestAttempt: (
@@ -172,8 +216,8 @@ export interface TestsASlice {
     totalQuestions: number,
     timeLimit: number
   ) => void
-  answerQuestion: (questionId: string, optionId: string) => void
-  setConfidence: (questionId: string, confidence: 'LOW' | 'MEDIUM' | 'HIGH') => void
+  answerQuestion: (questionId: string, answerValue: string | string[]) => void
+  setConfidence: (questionId: string, confidence: string) => void
   flagQuestion: (questionId: string) => void
   unflagQuestion: (questionId: string) => void
   navigateToQuestion: (index: number) => void
@@ -189,25 +233,26 @@ export interface TestsASlice {
   resetTestState: () => void
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
-  setLastAutosavedAt: (timestamp: number) => void
+  setLastAutosavedAt: (timestamp: number | string) => void
   updateSubjectiveGrade: (payload: {
     questionId: string
     marksObtained: number
     isCorrect: boolean
-    aiFeedback: string
-    newTotalScore: number
+    aiFeedback?: string
+    newTotalScore?: number
     percentage: number
     passed: boolean
   }) => void
 }
 
-// Tests A+ State
+// Tests A+ State (Deprecated)
 export interface TestsAState {
+  mode?: TestMode
   isActive: boolean
   currentQuestionIndex: number
   questions: TestQuestion[]
-  answers: Record<string, string>
-  confidences: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'>
+  answers: Record<string, any>
+  confidences: Record<string, string>
   flaggedQuestions: string[]
   timeRemaining: number
   testInfo: TestInfo | null
@@ -216,14 +261,72 @@ export interface TestsAState {
   error: string | null
   results: TestResult | null
   isSubmitting: boolean
-  lastAutosavedAt: number | null
+  lastAutosavedAt: number | string | null
+  attempt?: TestAttemptState | null
+  currentAttempt?: TestAttemptState | null
+  quizInfo?: TestInfo | null
 }
 
-export interface TestInfo {
-  testId: string
-  testTitle: string
-  totalQuestions: number
-  timeLimit: number
+// New Unified Test Slice
+export interface TestSlice {
+  test: UnifiedTestState
+  testsA: TestsAState
+  startTest: (
+    mode: TestMode,
+    testId: string,
+    testTitle: string,
+    totalQuestions: number,
+    timeLimit: number
+  ) => void
+  answerQuestion: (questionId: string, answerValue: string | string[]) => void
+  setConfidence: (questionId: string, confidence: string) => void
+  flagQuestion: (questionId: string) => void
+  unflagQuestion: (questionId: string) => void
+  navigateToQuestion: (index: number) => void
+  updateTestTimer: (timeRemaining: number) => void
+  setTestQuestions: (
+    questions: TestQuestion[],
+    testInfo: TestInfo,
+    attemptId: string,
+    initialAnswers?: Record<string, string>,
+    timeRemaining?: number
+  ) => void
+  submitTest: () => Promise<{ success: boolean; score: number }>
+  resetTestState: () => void
+  abandonTest: () => void
+  setTestResults: (results: TestResult) => void
+  setLastAutosavedAt: (timestamp: number | string) => void
+  updateSubjectiveGrade: (payload: {
+    questionId: string
+    marksObtained: number
+    isCorrect: boolean
+    aiFeedback?: string
+    percentage: number
+    passed: boolean
+  }) => void
+  // Legacy compatibility methods (deprecated)
+  quizStartAttempt: (
+    quizId: string,
+    quizTitle: string,
+    totalQuestions: number,
+    timeLimit: number
+  ) => void
+  quizAnswerQuestion: (questionId: string, answerValue: string) => void
+  quizFlagQuestion: (questionId: string) => void
+  quizUnflagQuestion: (questionId: string) => void
+  quizNavigateToQuestion: (index: number) => void
+  updateQuizTimer: (timeRemaining: number) => void
+  setQuizQuestions: (questions: any[], quizInfo: any) => void
+  submitQuiz: () => Promise<{ success: boolean; score: number }>
+  resetQuizState: () => void
+  clearQuiz: () => void
+  abandonQuiz: () => void
+  startTestAttempt: (
+    testId: string,
+    testTitle: string,
+    totalQuestions: number,
+    timeLimit: number
+  ) => void
 }
 
-export type AppState = AuthSlice & UISlice & ProgressSlice & QuizSlice & TestsASlice
+export type AppState = AuthSlice & UISlice & ProgressSlice & QuizSlice & TestsASlice & TestSlice

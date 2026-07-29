@@ -29,7 +29,7 @@ export default function MobileNav() {
     >
       <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/30 shadow-[0_-4px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-4px_30px_rgb(0,0,0,0.3)]" />
 
-      <div className="relative flex items-center justify-around gap-0.5 px-1 py-1 h-[68px]">
+      <div className="relative flex items-center justify-around gap-0.5 px-1 py-1 h-[68px] overflow-hidden">
         {visibleItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -71,7 +71,7 @@ export default function MobileNav() {
 
                 <span
                   className={cn(
-                    'text-[10px] font-semibold tracking-tight transition-all duration-300 relative z-10',
+                    'text-[10px] font-semibold tracking-tight transition-all duration-300 relative z-10 whitespace-nowrap overflow-hidden text-ellipsis',
                     isActive ? 'font-bold opacity-100' : 'opacity-70'
                   )}
                 >

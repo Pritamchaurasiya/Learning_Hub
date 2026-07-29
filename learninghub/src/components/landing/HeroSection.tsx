@@ -114,15 +114,17 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
           >
             <div className="relative">
               {/* Main Card */}
-              <div className="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 transform rotate-2 hover:rotate-0 transition-transform duration-500">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <BookOpen className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Physics - Mechanics</p>
-                      <p className="text-sm text-gray-500">JEE Main 2023</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        Physics - Mechanics
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">JEE Main 2023</p>
                     </div>
                   </div>
                   <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
@@ -130,7 +132,7 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                   </span>
                 </div>
 
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   A particle moves in a circular path of radius R. If the speed increases...
                 </p>
 
@@ -141,17 +143,17 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                       key={i}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         i === 1
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-blue-300'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
                       }`}
                     >
-                      <span className="font-medium text-gray-700">{option}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{option}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Award className="w-4 h-4" />
                     <span>+4 marks</span>
                   </div>
@@ -166,15 +168,15 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4"
+                className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">85%</p>
-                    <p className="text-sm text-gray-500">Your Accuracy</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">85%</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Your Accuracy</p>
                   </div>
                 </div>
               </motion.div>
@@ -184,7 +186,7 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
-                className="absolute -top-4 -right-4 bg-white rounded-xl shadow-xl p-4"
+                className="absolute -top-4 -right-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex">
@@ -192,14 +194,14 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                       <div
                         key={day}
                         className={`w-3 h-8 mx-0.5 rounded-sm ${
-                          day <= 5 ? 'bg-orange-500' : 'bg-gray-200'
+                          day <= 5 ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'
                         }`}
                       />
                     ))}
                   </div>
                   <div className="ml-2">
-                    <p className="text-lg font-bold text-gray-900">5 Day</p>
-                    <p className="text-xs text-gray-500">Streak 🔥</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">5 Day</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Streak 🔥</p>
                   </div>
                 </div>
               </motion.div>

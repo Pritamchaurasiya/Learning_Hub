@@ -3,7 +3,7 @@ import { AreaSnapshotType, Prisma } from '@prisma/client'
 import logger from '../../utils/logger'
 import { cacheService } from '../../services/CacheService'
 
-function computeMasteryScore(
+function _computeMasteryScore(
   accuracy: number,
   totalAttempts: number,
   avgTimeSeconds: number,
@@ -20,13 +20,13 @@ function computeMasteryScore(
   return Math.round(Math.min(100, Math.max(0, masteryScore)) * 100) / 100
 }
 
-function computeRecencyScore(lastAttemptAt: Date | null): number {
+function _computeRecencyScore(lastAttemptAt: Date | null): number {
   if (!lastAttemptAt) return 0
   const daysSince = (Date.now() - lastAttemptAt.getTime()) / (24 * 60 * 60 * 1000)
   return Math.max(0, Math.round((1 - Math.min(daysSince, 30) / 30) * 100))
 }
 
-function computeConsistencyScore(correctAnswers: number, totalAttempts: number): number {
+function _computeConsistencyScore(correctAnswers: number, totalAttempts: number): number {
   if (totalAttempts === 0) return 0
   const accuracy = correctAnswers / totalAttempts
   const variance = totalAttempts < 3 ? 50 : 0
@@ -73,35 +73,22 @@ export class MasteryAnalyticsService {
           try {
             await prisma.$transaction(
               async (tx: any) => {
-                const existing = await tx.userTopicMastery.findUnique({
+                const existing = await tx.topicPerformance.findUnique({
                   where: { userId_topicId: { userId, topicId } },
                 })
 
                 const prevTotal = existing?.totalAttempts ?? 0
                 const newTotal = prevTotal + 1
                 const newCorrect = (existing?.correctAnswers ?? 0) + (r.isCorrect ? 1 : 0)
-                const newAccuracy =
-                  newTotal > 0 ? Math.round((newCorrect / newTotal) * 100 * 100) / 100 : 0
                 const avgTime =
                   newTotal > 0
                     ? ((existing?.avgTimeSeconds ?? 0) * prevTotal + r.timeSpentSeconds) / newTotal
                     : 0
 
-                const recencyScore = computeRecencyScore(r.completedAt)
-                const consistencyScore = computeConsistencyScore(newCorrect, newTotal)
-
                 // BKT Math: probability derived from accuracy or initialized
                 const currentProb = existing ? existing.accuracy / 100 : 0.1 // pInit
                 const nextProb = bktService.calculateNextProbability(currentProb, r.isCorrect)
                 const nextAccuracy = nextProb * 100
-
-                const masteryScore = computeMasteryScore(
-                  nextAccuracy,
-                  newTotal,
-                  avgTime,
-                  consistencyScore,
-                  recencyScore
-                )
 
                 let strengthLevel = 'developing'
                 if (newTotal < 3) strengthLevel = 'developing'
@@ -112,47 +99,37 @@ export class MasteryAnalyticsService {
                 else strengthLevel = 'weak'
 
                 if (existing) {
-                  await tx.userTopicMastery.update({
+                  await tx.topicPerformance.update({
                     where: { id: existing.id },
                     data: {
                       totalAttempts: newTotal,
                       correctAnswers: newCorrect,
                       accuracy: nextAccuracy, // Storing BKT prob as accuracy
                       avgTimeSeconds: Math.round(avgTime * 100) / 100,
-                      consistencyScore,
-                      recencyScore,
-                      masteryScore,
-                      difficultyAdjustedAccuracy: newAccuracy, // Storing flat accuracy here
                       strengthLevel,
                       lastAttemptAt: r.completedAt,
-                      subjectId: r.subjectId ?? existing.subjectId,
                       subjectName: r.subjectName ?? existing.subjectName,
                     },
                   })
                 } else {
-                  await tx.userTopicMastery.create({
+                  await tx.topicPerformance.create({
                     data: {
                       userId,
                       topicId,
                       topicName: r.topicName ?? 'General',
-                      subjectId: r.subjectId,
                       subjectName: r.subjectName,
-                      masteryScore,
                       accuracy: nextAccuracy,
                       totalAttempts: newTotal,
                       correctAnswers: newCorrect,
                       avgTimeSeconds: Math.round(avgTime * 100) / 100,
-                      consistencyScore,
-                      recencyScore,
-                      difficultyAdjustedAccuracy: newAccuracy,
                       strengthLevel,
                       lastAttemptAt: r.completedAt,
                     },
                   })
                 }
 
-                const prevMasteryScore = existing?.masteryScore ?? 0
-                const masteryDelta = masteryScore - prevMasteryScore
+                const prevMasteryScore = existing?.accuracy ?? 0
+                const masteryDelta = nextAccuracy - prevMasteryScore
 
                 // Dispatch ML jobs in the background (post-transaction or floating promise)
                 void jobQueueService.addAIJob({
@@ -160,7 +137,7 @@ export class MasteryAnalyticsService {
                   operation: 'KNOWLEDGE_GRAPH',
                   params: {
                     topicName: r.topicName ?? 'unknown',
-                    masteryScore,
+                    masteryScore: nextAccuracy,
                     masteryDelta,
                   },
                 })
@@ -385,7 +362,7 @@ export class MasteryAnalyticsService {
 
   async captureWeakStrongSnapshots(userId: string): Promise<void> {
     try {
-      const mastery = await prisma.userTopicMastery.findMany({
+      const mastery = await prisma.topicPerformance.findMany({
         where: { userId },
         orderBy: { accuracy: 'asc' },
       })

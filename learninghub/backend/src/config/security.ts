@@ -298,10 +298,20 @@ export const validatePasswordStrength = (
 
 // Sanitize input to prevent injection attacks
 // NOTE: SQL injection is handled by Prisma's parameterized queries.
-// This sanitizer focuses on XSS and control character removal only.
+// XSS prevention relies on: (1) CSP headers in securityMiddleware,
+// (2) removal of event handlers (on\w+=) and javascript: protocol,
+// (3) frontend rendering escaping, and (4) skipping sanitization
+// for code/content fields where HTML entities are legitimate.
+//
+// This function is a defense-in-depth measure, NOT the primary protection against XSS.
+// HTML entity removal (hex &#x... and decimal &#... patterns) is intentional — while
+// these could be used for obfuscation, stripping them prevents encoded payloads from
+// reaching template engines. Fields that legitimately contain HTML entities (code blocks,
+// math formulas, etc.) should be excluded via SKIP_FIELDS in sanitizeMiddleware.ts.
+// Input length is capped at 1MB via .slice() to prevent memory exhaustion.
 export const sanitizeInput = (input: string): string => {
   return input
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control characters (preserve tab/newline)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control chars (keep tab/newline)
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
     .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities

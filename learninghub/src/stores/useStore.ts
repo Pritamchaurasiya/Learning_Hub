@@ -5,6 +5,7 @@ import { createUISlice } from './slices/uiSlice'
 import { createProgressSlice } from './slices/progressSlice'
 import { createQuizSlice } from './slices/quizSlice'
 import { createTestsASlice } from './slices/testsASlice'
+import { createTestSlice } from './slices/testSlice'
 import type { AppState } from './types'
 
 export const useStore = create<AppState>()(
@@ -15,6 +16,7 @@ export const useStore = create<AppState>()(
       ...createProgressSlice(...a),
       ...createQuizSlice(...a),
       ...createTestsASlice(...a),
+      ...createTestSlice(...a),
     }),
     {
       name: 'learninghub-storage',
@@ -39,45 +41,32 @@ export const useStore = create<AppState>()(
           streak: state.progress.streak,
         },
         achievements: state.achievements,
-        // Persist active quiz state for recovery
-        quiz:
-          state.quiz.currentAttempt?.status === 'in_progress'
-            ? state.quiz
-            : {
-                currentAttempt: null,
-                answers: {},
-                flaggedQuestions: [],
-                timeRemaining: 0,
-                questions: [],
-                quizInfo: null,
-                currentQuestionIndex: 0,
-                isSubmitting: false,
-                lastSavedAt: null,
-              },
-        // Persist Tests A+ state for recovery (compact — essential fields only)
-        testsA:
-          state.testsA.isActive && state.testsA.attemptId
+        // Persist unified test state for recovery
+        test:
+          state.test.isActive && state.test.attempt?.attemptId
             ? {
-                isActive: state.testsA.isActive,
-                currentQuestionIndex: state.testsA.currentQuestionIndex,
+                mode: state.test.mode,
+                isActive: state.test.isActive,
+                currentQuestionIndex: state.test.currentQuestionIndex,
                 questions: [], // Excluded from localStorage to prevent QuotaExceededError
-                answers: state.testsA.answers,
-                confidences: state.testsA.confidences,
-                flaggedQuestions: state.testsA.flaggedQuestions,
-                timeRemaining: state.testsA.timeRemaining,
-                testInfo: state.testsA.testInfo
+                answers: state.test.answers,
+                confidences: state.test.confidences,
+                flaggedQuestions: state.test.flaggedQuestions,
+                timeRemaining: state.test.timeRemaining,
+                testInfo: state.test.testInfo
                   ? {
-                      testId: state.testsA.testInfo.testId,
-                      testTitle: state.testsA.testInfo.testTitle,
-                      totalQuestions: state.testsA.testInfo.totalQuestions,
-                      timeLimit: state.testsA.testInfo.timeLimit,
+                      testId: state.test.testInfo.testId,
+                      testTitle: state.test.testInfo.testTitle,
+                      totalQuestions: state.test.testInfo.totalQuestions,
+                      timeLimit: state.test.testInfo.timeLimit,
                     }
                   : null,
-                attemptId: state.testsA.attemptId,
-                isSubmitting: state.testsA.isSubmitting,
-                lastAutosavedAt: state.testsA.lastAutosavedAt,
+                attempt: state.test.attempt,
+                isSubmitting: state.test.isSubmitting,
+                lastAutosavedAt: state.test.lastAutosavedAt,
               }
             : {
+                mode: 'tests-a',
                 isActive: false,
                 currentQuestionIndex: 0,
                 questions: [],
@@ -86,7 +75,7 @@ export const useStore = create<AppState>()(
                 flaggedQuestions: [],
                 timeRemaining: 0,
                 testInfo: null,
-                attemptId: null,
+                attempt: null,
                 isSubmitting: false,
                 lastAutosavedAt: null,
               },

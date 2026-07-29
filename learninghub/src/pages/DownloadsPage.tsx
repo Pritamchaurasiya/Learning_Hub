@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import {
   Trash2,
   Play,
@@ -7,20 +7,16 @@ import {
   CheckCircle,
   X,
   Download as DownloadIcon,
-  AlertCircle,
-  RefreshCw,
 } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { ErrorState } from '../components/ui/ErrorState'
 import AnimatedPage from '../components/AnimatedPage'
-import {
-  downloadService,
-  type Download as DownloadType,
-  type DownloadStats,
-} from '../services/downloadService'
+import { downloadService } from '../services/downloadService'
 
-const storageTotal = 32 // GB (could be fetched from user settings)
+const storageTotal = 32
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 MB'
@@ -31,45 +27,86 @@ function formatBytes(bytes: number): string {
 }
 
 export default function DownloadsPage() {
-  const [downloads, setDownloads] = useState<DownloadType[]>([])
-  const [stats, setStats] = useState<DownloadStats | null>(null)
   const [filter, setFilter] = useState<'all' | 'downloading' | 'completed'>('all')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const fetchDownloads = useCallback(async (signal?: AbortSignal) => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const {
+    data: downloads = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['downloads'],
+    queryFn: async () => {
+      const res = await downloadService.getDownloads()
+      return res.data
+    },
+    staleTime: 30 * 1000,
+  })
 
-      const [downloadsRes, statsRes] = await Promise.all([
-        downloadService.getDownloads({ signal }),
-        downloadService.getStats({ signal }),
-      ])
+  const { data: stats } = useQuery({
+    queryKey: ['download-stats'],
+    queryFn: async () => {
+      const res = await downloadService.getStats()
+      return res.data
+    },
+    staleTime: 60 * 1000,
+  })
 
-      if (!signal?.aborted) {
-        setDownloads(downloadsRes.data)
-        setStats(statsRes.data)
+  const pauseMutation = useMutation({
+    mutationFn: (id: string) => downloadService.pauseDownload(id),
+    onMutate: async id => {
+      await queryClient.cancelQueries({ queryKey: ['downloads'] })
+      const previous = queryClient.getQueryData(['downloads'])
+      queryClient.setQueryData(['downloads'], (old: typeof downloads) =>
+        old.map(d => (d.id === id ? { ...d, status: 'paused' as const } : d))
+      )
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['downloads'], context.previous)
       }
-    } catch (err) {
-      if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        setError(err instanceof Error ? err.message : 'Failed to load downloads')
-        if (import.meta.env.DEV) {
-          console.error('[DownloadsPage] Error fetching downloads:', err)
-        }
-      }
-    } finally {
-      if (!signal?.aborted) {
-        setIsLoading(false)
-      }
-    }
-  }, [])
+    },
+  })
 
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetchDownloads(controller.signal)
-    return () => controller.abort()
-  }, [fetchDownloads])
+  const resumeMutation = useMutation({
+    mutationFn: (id: string) => downloadService.resumeDownload(id),
+    onMutate: async id => {
+      await queryClient.cancelQueries({ queryKey: ['downloads'] })
+      const previous = queryClient.getQueryData(['downloads'])
+      queryClient.setQueryData(['downloads'], (old: typeof downloads) =>
+        old.map(d => (d.id === id ? { ...d, status: 'downloading' as const } : d))
+      )
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['downloads'], context.previous)
+      }
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => downloadService.deleteDownload(id),
+    onMutate: async id => {
+      await queryClient.cancelQueries({ queryKey: ['downloads'] })
+      const previous = queryClient.getQueryData(['downloads'])
+      queryClient.setQueryData(['downloads'], (old: typeof downloads) =>
+        old.filter(d => d.id !== id)
+      )
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['downloads'], context.previous)
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['download-stats'] })
+    },
+  })
 
   const filteredDownloads = downloads.filter(download => {
     if (filter === 'all') return true
@@ -78,71 +115,6 @@ export default function DownloadsPage() {
     if (filter === 'completed') return download.status === 'completed'
     return true
   })
-
-  const pauseDownload = async (id: string) => {
-    try {
-      await downloadService.pauseDownload(id)
-      setDownloads(prev => prev.map(d => (d.id === id ? { ...d, status: 'paused' } : d)))
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to pause download:', err)
-      }
-    }
-  }
-
-  const resumeDownload = async (id: string) => {
-    try {
-      await downloadService.resumeDownload(id)
-      setDownloads(prev => prev.map(d => (d.id === id ? { ...d, status: 'downloading' } : d)))
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to resume download:', err)
-      }
-    }
-  }
-
-  const cancelDownload = async (id: string) => {
-    try {
-      await downloadService.deleteDownload(id)
-      setDownloads(prev => prev.filter(d => d.id !== id))
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to cancel download:', err)
-      }
-    }
-  }
-
-  const deleteDownload = async (id: string) => {
-    try {
-      await downloadService.deleteDownload(id)
-      setDownloads(prev => prev.filter(d => d.id !== id))
-      // Refresh stats
-      const statsRes = await downloadService.getStats()
-      setStats(statsRes.data)
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Failed to delete download:', err)
-      }
-    }
-  }
-
-  const retryDownload = async (id: string) => {
-    setDownloads(prev =>
-      prev.map(d =>
-        d.id === id ? { ...d, status: 'downloading' as const, progress_percent: 0 } : d
-      )
-    )
-    try {
-      await downloadService.resumeDownload(id)
-    } catch (err) {
-      setDownloads(prev =>
-        prev.map(d => (d.id === id ? { ...d, status: 'failed' as const, progress_percent: 0 } : d))
-      )
-      if (import.meta.env.DEV) {
-        console.error('[DownloadsPage] Retry failed:', err)
-      }
-    }
-  }
   const storageUsedMB = stats?.total_size_mb ?? 0
   const storageUsedGB = storageUsedMB / 1024
   const storagePercentage = (storageUsedGB / storageTotal) * 100
@@ -176,23 +148,13 @@ export default function DownloadsPage() {
       </div>
 
       {/* Error State */}
-      {error && (
-        <Card className="p-6 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/10">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500" />
-            <div className="flex-1">
-              <p className="text-red-700 dark:text-red-400">{error}</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<RefreshCw className="w-4 h-4" />}
-              onClick={() => fetchDownloads()}
-            >
-              Retry
-            </Button>
-          </div>
-        </Card>
+      {isError && (
+        <ErrorState
+          title="Failed to load downloads"
+          message={error?.message ?? 'Could not load downloads.'}
+          error={error}
+          onRetry={() => void refetch()}
+        />
       )}
 
       {/* Storage Info */}
@@ -295,7 +257,7 @@ export default function DownloadsPage() {
                           variant="ghost"
                           size="sm"
                           leftIcon={<Pause className="w-4 h-4" />}
-                          onClick={() => pauseDownload(download.id)}
+                          onClick={() => pauseMutation.mutate(download.id)}
                         />
                       )}
                       {download.status === 'paused' && (
@@ -303,14 +265,14 @@ export default function DownloadsPage() {
                           variant="ghost"
                           size="sm"
                           leftIcon={<Play className="w-4 h-4" />}
-                          onClick={() => resumeDownload(download.id)}
+                          onClick={() => resumeMutation.mutate(download.id)}
                         />
                       )}
                       {download.status === 'failed' && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => retryDownload(download.id)}
+                          onClick={() => resumeMutation.mutate(download.id)}
                         >
                           Retry
                         </Button>
@@ -320,7 +282,7 @@ export default function DownloadsPage() {
                           variant="ghost"
                           size="sm"
                           leftIcon={<X className="w-4 h-4" />}
-                          onClick={() => cancelDownload(download.id)}
+                          onClick={() => deleteMutation.mutate(download.id)}
                         />
                       )}
                       {download.status === 'completed' && (
@@ -328,7 +290,7 @@ export default function DownloadsPage() {
                           variant="ghost"
                           size="sm"
                           leftIcon={<Trash2 className="w-4 h-4" />}
-                          onClick={() => deleteDownload(download.id)}
+                          onClick={() => deleteMutation.mutate(download.id)}
                         />
                       )}
                     </div>

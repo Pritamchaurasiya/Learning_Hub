@@ -1,14 +1,40 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { WifiOff, RefreshCw, Clock, BookOpen } from 'lucide-react'
+import { WifiOff, RefreshCw, Clock, BookOpen, Database, CheckCircle2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
+import { offlineSyncService, PendingSyncItem } from '../services/offlineSyncService'
 
 const OfflinePage = memo(() => {
-  const handleRetry = () => {
-    window.location.reload()
+  const [isOnline, setIsOnline] = useState(offlineSyncService.isOnline())
+  const [pendingItems, setPendingItems] = useState<PendingSyncItem[]>([])
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  useEffect(() => {
+    const loadItems = () => {
+      void offlineSyncService.getPendingItems().then(setPendingItems)
+    }
+
+    loadItems()
+    const unsubscribe = offlineSyncService.subscribe(onlineStatus => {
+      setIsOnline(onlineStatus)
+      loadItems()
+    })
+
+    return unsubscribe
+  }, [])
+
+  const handleRetry = async () => {
+    if (navigator.onLine) {
+      setIsSyncing(true)
+      await offlineSyncService.flushQueue()
+      setIsSyncing(false)
+      window.location.reload()
+    } else {
+      window.location.reload()
+    }
   }
 
   // Get cached courses from localStorage (if any)
@@ -52,9 +78,13 @@ const OfflinePage = memo(() => {
           transition={{ delay: 0.2 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Button onClick={handleRetry} className="py-4 px-8 rounded-2xl font-bold shadow-xl">
-            <RefreshCw className="w-5 h-5 mr-2" />
-            Retry Connection
+          <Button
+            onClick={handleRetry}
+            disabled={isSyncing}
+            className="py-4 px-8 rounded-2xl font-bold shadow-xl"
+          >
+            <RefreshCw className={`w-5 h-5 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing Queue...' : 'Retry Connection'}
           </Button>
           <Button
             variant="outline"
@@ -102,6 +132,52 @@ const OfflinePage = memo(() => {
           </motion.div>
         )}
 
+        {/* Pending Sync Queue Section */}
+        {pendingItems.length > 0 && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.25 }}
+            className="mt-8 p-6 bg-primary-50/50 dark:bg-primary-950/20 rounded-[1.75rem] border border-primary-100 dark:border-primary-900/40 text-left"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                <span className="text-xs font-black uppercase tracking-widest text-primary-700 dark:text-primary-300">
+                  Offline Sync Queue ({pendingItems.length})
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                {isOnline ? 'Online - Auto Syncing' : 'Waiting for connection'}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {pendingItems.slice(0, 3).map(item => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                      {item.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-gray-400">
+                    {new Date(item.createdAt).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+              {pendingItems.length > 3 && (
+                <p className="text-[10px] font-bold text-center text-gray-400 uppercase tracking-widest pt-1">
+                  + {pendingItems.length - 3} more items pending sync
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Tips for offline use */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -111,7 +187,7 @@ const OfflinePage = memo(() => {
         >
           <p className="text-sm text-amber-800 dark:text-amber-400">
             <strong>Tip:</strong> Bookmark courses and lessons to access them offline. Your progress
-            is saved locally and will sync when you reconnect.
+            is saved locally in IndexedDB and will auto-sync when you reconnect.
           </p>
         </motion.div>
       </Card>

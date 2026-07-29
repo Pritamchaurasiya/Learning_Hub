@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Video, Clock, Users, Calendar, Play, ArrowRight } from 'lucide-react'
-import { liveClassService, LiveSession } from '../services/liveClassService'
+import { useQuery } from '@tanstack/react-query'
+import { liveClassService } from '../services/liveClassService'
 import { SEO } from '../components/SEO'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -11,24 +11,21 @@ import { EmptyState } from '../components/ui/EmptyState'
 import AnimatedPage from '../components/AnimatedPage'
 
 export default function LiveClassPage() {
-  const [sessions, setSessions] = useState<LiveSession[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        setError(null)
-        const response = await liveClassService.getUpcomingSessions()
-        setSessions(response?.data ?? [])
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch live sessions'))
-      } finally {
-        setLoading(false)
-      }
-    }
-    void fetch()
-  }, [])
+  const {
+    data: sessions = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['live-sessions'],
+    queryFn: async () => {
+      const response = await liveClassService.getUpcomingSessions()
+      return response?.data ?? []
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000,
+  })
 
   const statusColors: Record<string, string> = {
     live: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -52,22 +49,18 @@ export default function LiveClassPage() {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
               <Skeleton key={i} className="h-48" />
             ))}
           </div>
-        ) : error ? (
+        ) : isError ? (
           <ErrorState
             title="Failed to load live sessions"
-            message={error.message}
+            message={error?.message ?? 'Could not load live sessions.'}
             error={error}
-            onRetry={() => {
-              setLoading(true)
-              setError(null)
-              setSessions([])
-            }}
+            onRetry={() => void refetch()}
           />
         ) : sessions.length === 0 ? (
           <EmptyState

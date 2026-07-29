@@ -59,18 +59,17 @@ function QuizPage() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Global Quiz State (persists during active session)
-
-  const flaggedQuestions = useStore(state => state.quiz.flaggedQuestions)
+  // Global Test State (persists during active session) - using new unified test slice
+  const flaggedQuestions = useStore(state => state.test.flaggedQuestions)
   const flagQuestion = useStore(state => state.flagQuestion)
   const unflagQuestion = useStore(state => state.unflagQuestion)
-  const quiz = useStore(state => state.quiz)
+  const test = useStore(state => state.test)
   const answerQuestion = useStore(state => state.answerQuestion)
   const navigateToQuestion = useStore(state => state.navigateToQuestion)
-  const updateQuizTimer = useStore(state => state.updateQuizTimer)
-  const clearQuiz = useStore(state => state.clearQuiz)
+  const updateTestTimer = useStore(state => state.updateTestTimer)
+  const clearQuiz = useStore(state => state.resetTestState)
 
-  const { answers, timeRemaining, currentQuestionIndex } = quiz
+  const { answers, timeRemaining, currentQuestionIndex } = test
 
   const loadActiveQuiz = useCallback(async () => {
     if (!quizId) return
@@ -78,15 +77,35 @@ function QuizPage() {
       setIsLoadingSession(true)
       setSessionError(null)
       const res = await quizService.startAttempt(quizId)
-      const sessionData = res.data
       const infoRes = await quizService.getQuiz(quizId)
+      const sessionData = res.data
       setQuizInfo(infoRes.data.quiz)
       setQuestions(sessionData.questions)
       setAttemptId(sessionData.attempt_id)
 
-      if (quiz.timeRemaining === 0 && quiz.currentAttempt?.quizId !== quizId) {
-        updateQuizTimer(infoRes.data.quiz.time_limit * 60)
+      const testInfo = {
+        testId: quizId,
+        testTitle: infoRes.data.quiz.title,
+        totalQuestions: infoRes.data.quiz.total_questions,
+        timeLimit: infoRes.data.quiz.time_limit,
       }
+      if (test.timeRemaining === 0 && test.attempt?.testId !== quizId) {
+        updateTestTimer(infoRes.data.quiz.time_limit * 60)
+      }
+      // Start the test in the unified slice
+      useStore
+        .getState()
+        .startTest(
+          'quiz',
+          quizId,
+          infoRes.data.quiz.title,
+          infoRes.data.quiz.total_questions,
+          infoRes.data.quiz.time_limit
+        )
+      // Then set the questions
+      useStore
+        .getState()
+        .setTestQuestions(sessionData.questions as any, testInfo, sessionData.attempt_id ?? '')
     } catch (err) {
       setSessionError(
         err instanceof Error ? err.message : 'System unavailable. Could not generate quiz session.'
@@ -95,7 +114,7 @@ function QuizPage() {
     } finally {
       setIsLoadingSession(false)
     }
-  }, [quizId, quiz.timeRemaining, quiz.currentAttempt?.quizId, updateQuizTimer])
+  }, [quizId, test.timeRemaining, test.attempt?.testId, updateTestTimer])
 
   useEffect(() => {
     if (quizId) void loadActiveQuiz()
@@ -130,8 +149,8 @@ function QuizPage() {
 
   const timerCallback = useCallback(() => {
     useStore.setState(state => {
-      if (state.quiz.timeRemaining > 0) {
-        return { quiz: { ...state.quiz, timeRemaining: state.quiz.timeRemaining - 1 } }
+      if (state.test.timeRemaining > 0) {
+        return { test: { ...state.test, timeRemaining: state.test.timeRemaining - 1 } }
       }
       return state
     })

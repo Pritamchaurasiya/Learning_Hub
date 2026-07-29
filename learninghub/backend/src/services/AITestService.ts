@@ -19,7 +19,7 @@ import logger from '../utils/logger'
 import { AIServiceFactory } from './ai/AIServiceFactory'
 import { topicPerformanceService } from './TopicPerformanceService'
 
-import { TokenTrimmer } from '../utils/TokenTrimmer'
+import { TokenTrimmer, sanitizeInput } from '../utils/TokenTrimmer'
 import { withTimeout } from '../utils/timeout'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -99,6 +99,7 @@ export interface TestGenerationResult {
   ai_powered: boolean
   model: string
   cached: boolean
+  is_mock?: boolean
 }
 
 // ─── Prompt Templates ────────────────────────────────────────────────────────
@@ -278,9 +279,7 @@ export class AITestService {
 
     try {
       // 1. Sanitize user input to prevent prompt injection
-      const safeTopic = TokenTrimmer.escapeXML(
-        TokenTrimmer.sanitize(TokenTrimmer.trimToMaxTokens(req.topic, 100))
-      )
+      const safeTopic = sanitizeInput(req.topic, 100)
 
       // 2. Check for an existing high-quality test to save AI quota
       if (!req.examContext && req.mode === 'PRACTICE' && req.difficulty !== 'ADAPTIVE') {
@@ -321,6 +320,7 @@ export class AITestService {
             ai_powered: true,
             model: 'gemini-2.0-flash',
             cached: true,
+            is_mock: false,
           }
         }
       }
@@ -426,6 +426,78 @@ export class AITestService {
         bloom_level: 'understand',
         tags: [req.topic, 'mock'],
       }))
+
+      // Persist mock test with clear marker
+      const test = await prisma.test.create({
+        data: {
+          title: `MOCK: AI Practice: ${req.topic}`,
+          description: `AI-generated practice test on ${req.topic} (${req.difficulty} difficulty) - MOCK FALLBACK`,
+          timeLimit,
+          mode: req.mode,
+          difficulty: req.difficulty === 'ADAPTIVE' ? 'MIXED' : req.difficulty,
+          isAiGenerated: false,
+          isPublished: true,
+          totalMarks: questions.length * 10,
+          passingScore: 60,
+          questions: {
+            create: questions.map((q, idx) => {
+              let resolvedBloom: BloomLevel = BloomLevel.UNDERSTAND
+              const validBlooms = Object.values(BloomLevel)
+              const inputBloom = (q.bloom_level ?? '').toUpperCase() as BloomLevel
+              if (validBlooms.includes(inputBloom)) {
+                resolvedBloom = inputBloom
+              }
+
+              return {
+                text: q.text,
+                type: 'MCQ',
+                difficulty: this.difficultyToIRT(q.difficulty),
+                bloomLevel: resolvedBloom,
+                explanation: q.explanation,
+                tags: q.tags ?? [req.topic, 'mock'],
+                isAiGenerated: false,
+                points: 10,
+                order: idx + 1,
+                options: {
+                  create: q.options.map((opt: { id: string; text: string }, optIdx: number) => ({
+                    text: opt.text,
+                    isCorrect: opt.id === q.correct_option_id,
+                    explanation: opt.id === q.correct_option_id ? q.explanation : null,
+                    order: optIdx,
+                  })),
+                },
+              }
+            }),
+          },
+        },
+        include: {
+          questions: {
+            include: {
+              options: true,
+            },
+          },
+        },
+      })
+
+      return {
+        testId: test.id,
+        title: test.title,
+        questionCount: questions.length,
+        timeLimit,
+        questions: test.questions.map((q: any) => ({
+          text: q.text,
+          options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
+          correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
+          explanation: q.explanation ?? '',
+          difficulty: q.difficulty.toString(),
+          bloom_level: q.bloomLevel,
+          tags: q.tags,
+        })),
+        ai_powered: false,
+        model: 'mock',
+        cached: false,
+        is_mock: true, // Explicit flag for frontend
+      }
     }
 
     // Persist test to database
@@ -505,6 +577,7 @@ export class AITestService {
       ai_powered: !isMock,
       model: isMock ? 'mock' : 'gemini-2.0-flash',
       cached: false,
+      is_mock: isMock,
     }
   }
 
@@ -688,8 +761,8 @@ export class AITestService {
   async gradeSubjectiveAnswer(questionText: string, answerText: string, maxPoints: number) {
     try {
       // 1. Sanitize and trim token usage for safety
-      const safeQuestion = TokenTrimmer.sanitize(TokenTrimmer.trimToMaxTokens(questionText, 500))
-      const safeAnswer = TokenTrimmer.sanitize(TokenTrimmer.trimToMaxTokens(answerText, 2000))
+      const safeQuestion = sanitizeInput(questionText, 2000)
+      const safeAnswer = sanitizeInput(answerText, 4000)
 
       const prompt = PROMPT_TEMPLATES.subjective_grading(safeQuestion, safeAnswer, maxPoints)
       const agent = AIServiceFactory.getAgent()

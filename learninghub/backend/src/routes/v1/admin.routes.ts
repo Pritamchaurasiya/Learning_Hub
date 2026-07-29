@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { authenticate, authorizeAdmin } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter, mfaLimiter } from '../../middleware/rateLimiter'
+import { requestSigning } from '../../middleware/requestSigning'
 import {
   getDashboardStats,
   getUsers,
@@ -62,11 +63,19 @@ router.put(
   '/users/:id/role',
   authenticate,
   authorizeAdmin,
+  requestSigning,
   validateUUIDParam('id'),
   validate(adminUpdateRoleSchema),
   updateUserRole
 )
-router.delete('/users/:id', authenticate, authorizeAdmin, validateUUIDParam('id'), deleteUser)
+router.delete(
+  '/users/:id',
+  authenticate,
+  authorizeAdmin,
+  requestSigning,
+  validateUUIDParam('id'),
+  deleteUser
+)
 router.get(
   '/analytics',
   authenticate,
@@ -104,6 +113,7 @@ router.post(
   '/users/:id/export',
   authenticate,
   authorizeAdmin,
+  requestSigning,
   validateUUIDParam('id'),
   triggerDataExport
 )

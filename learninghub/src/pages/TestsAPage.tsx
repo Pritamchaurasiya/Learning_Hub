@@ -41,11 +41,11 @@ interface QuestionCardProps {
   question: TestQuestion
   currentIndex: number
   totalQuestions: number
-  selectedAnswer: string | null
+  selectedAnswer: string | string[] | null
   isFlagged: boolean
   onAnswer: (optionId: string) => void
-  onConfidenceChange: (confidence: 'LOW' | 'MEDIUM' | 'HIGH') => void
-  confidence: 'LOW' | 'MEDIUM' | 'HIGH' | undefined
+  onConfidenceChange: (confidence: string) => void
+  confidence: string | undefined
   onFlag: () => void
   onUnflag: () => void
 }
@@ -530,15 +530,17 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
 const TestsAPage = memo(() => {
   const { testId } = useParams<{ testId: string }>()
   const navigate = useNavigate()
-  const testsA = useStore(state => state.testsA)
-  const startTestAttempt = useStore(state => state.startTestAttempt)
+  const test = useStore(state => state.test)
+  const startTest = useStore(state => state.startTest)
   const answerQuestion = useStore(state => state.answerQuestion)
+  const setConfidence = useStore(state => state.setConfidence)
   const flagQuestion = useStore(state => state.flagQuestion)
   const unflagQuestion = useStore(state => state.unflagQuestion)
   const navigateToQuestion = useStore(state => state.navigateToQuestion)
   const setTestQuestions = useStore(state => state.setTestQuestions)
   const submitTest = useStore(state => state.submitTest)
   const resetTestState = useStore(state => state.resetTestState)
+  const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
 
   const [tests, setTests] = useState<TestA[]>([])
   const [loading, setLoading] = useState(true)
@@ -552,14 +554,13 @@ const TestsAPage = memo(() => {
   const addToast = useStore(state => state.addToast)
 
   const { on } = useWebSocket()
-  const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
 
   // Listen for real-time grading updates from the backend
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const unsubscribe = on('subjective_grade_completed', (data: any) => {
       // Only process if it matches the current active result
-      if (testsA.results && testsA.results.attempt_id === data.testResultId) {
+      if (test.results && test.results.attempt_id === data.testResultId) {
         updateSubjectiveGrade(data)
         addToast({
           message: 'AI grading completed for subjective answer!',
@@ -568,7 +569,7 @@ const TestsAPage = memo(() => {
       }
     })
     return unsubscribe
-  }, [on, testsA.results, updateSubjectiveGrade, addToast])
+  }, [on, test.results, updateSubjectiveGrade, addToast])
 
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
 
@@ -588,21 +589,21 @@ const TestsAPage = memo(() => {
       }
     }
 
-    if (!testId && !testsA.isActive) {
+    if (!testId && !test.isActive) {
       void loadAccessAndTests()
     } else {
       setHasAccess(true)
     }
-  }, [filter, testId, testsA.isActive])
+  }, [filter, testId, test.isActive])
 
   // Recover missing questions for active tests (e.g. after page reload)
   useEffect(() => {
     const recoverTestQuestions = async () => {
-      if (testsA.isActive && testsA.testInfo?.testId && testsA.questions.length === 0) {
+      if (test.isActive && test.testInfo?.testId && test.questions.length === 0) {
         setLoading(true)
         try {
           // startTest on the backend automatically resumes if IN_PROGRESS
-          const response = await testsAService.startTest(testsA.testInfo.testId)
+          const response = await testsAService.startTest(test.testInfo.testId)
           if (response.status === 'success' && response.data.questions) {
             setTestQuestions(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -617,12 +618,12 @@ const TestsAPage = memo(() => {
                 marks: q.points ?? 1,
               })),
               {
-                testId: testsA.testInfo.testId,
-                testTitle: testsA.testInfo.testTitle,
-                totalQuestions: testsA.testInfo.totalQuestions,
-                timeLimit: response.data.time_limit ?? testsA.testInfo.timeLimit,
+                testId: test.testInfo.testId,
+                testTitle: test.testInfo.testTitle,
+                totalQuestions: test.testInfo.totalQuestions,
+                timeLimit: response.data.time_limit ?? test.testInfo.timeLimit,
               },
-              response.data.attempt_id ?? testsA.attemptId ?? '',
+              response.data.attempt_id ?? test.attempt?.attemptId ?? '',
               response.data.answers ?? {},
               response.data.time_remaining_seconds
             )
@@ -641,19 +642,19 @@ const TestsAPage = memo(() => {
 
     void recoverTestQuestions()
   }, [
-    testsA.isActive,
-    testsA.testInfo?.testId,
-    testsA.testInfo?.testTitle,
-    testsA.testInfo?.totalQuestions,
-    testsA.testInfo?.timeLimit,
-    testsA.attemptId,
-    testsA.questions.length,
+    test.isActive,
+    test.quizInfo?.testId,
+    test.quizInfo?.testTitle,
+    test.quizInfo?.totalQuestions,
+    test.quizInfo?.timeLimit,
+    test.attempt?.attemptId,
+    test.questions.length,
     setTestQuestions,
     resetTestState,
   ])
 
   const handleStartTest = useCallback(
-    async (test: TestA) => {
+    async (testItem: TestA) => {
       if (!hasAccess) {
         addToast({
           message:
@@ -666,9 +667,15 @@ const TestsAPage = memo(() => {
 
       try {
         setError(null)
-        startTestAttempt(test.id, test.title, test.question_count, test.time_limit_minutes)
+        startTest(
+          'tests-a',
+          testItem.id,
+          testItem.title,
+          testItem.question_count,
+          testItem.time_limit_minutes
+        )
 
-        const response = await testsAService.startTest(test.id)
+        const response = await testsAService.startTest(testItem.id)
         if (response.status === 'success') {
           const data = response.data
           setTestQuestions(
@@ -684,14 +691,14 @@ const TestsAPage = memo(() => {
               marks: q.points ?? 1,
             })),
             {
-              testId: test.id,
-              testTitle: test.title,
+              testId: testItem.id,
+              testTitle: testItem.title,
               totalQuestions: data.questions?.length ?? 0,
-              timeLimit: data.time_limit ?? test.time_limit_minutes,
+              timeLimit: data.time_limit ?? testItem.time_limit_minutes,
             },
             data.attempt_id ?? ''
           )
-          navigate(`/tests-a/${test.id}`)
+          navigate(`/tests-a/${testItem.id}`)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to start test')
@@ -699,7 +706,7 @@ const TestsAPage = memo(() => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [startTestAttempt, setTestQuestions, navigate, resetTestState]
+    [startTest, setTestQuestions, navigate, resetTestState]
   )
 
   const handleTestGenerated = useCallback(
@@ -711,7 +718,8 @@ const TestsAPage = memo(() => {
       timeLimit: number
       attemptId: string
     }) => {
-      startTestAttempt(
+      startTest(
+        'tests-a',
         testData.testId,
         testData.testTitle,
         testData.totalQuestions,
@@ -730,7 +738,7 @@ const TestsAPage = memo(() => {
       setIsAIModalOpen(false)
       navigate(`/tests-a/${testData.testId}`)
     },
-    [startTestAttempt, setTestQuestions, navigate]
+    [startTest, setTestQuestions, navigate]
   )
 
   const handleSubmit = useCallback(async () => {
@@ -751,14 +759,14 @@ const TestsAPage = memo(() => {
   }, [submitTest, isSubmitting])
 
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>()
-  const isActiveRef = useRef(testsA.isActive)
-  const isSubmittingRef = useRef(testsA.isSubmitting)
+  const isActiveRef = useRef(test.isActive)
+  const isSubmittingRef = useRef(test.isSubmitting)
 
-  isActiveRef.current = testsA.isActive
-  isSubmittingRef.current = testsA.isSubmitting
+  isActiveRef.current = test.isActive
+  isSubmittingRef.current = test.isSubmitting
 
   useEffect(() => {
-    if (!testsA.isActive || testsA.isSubmitting) {
+    if (!test.isActive || test.isSubmitting) {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = undefined
@@ -770,12 +778,12 @@ const TestsAPage = memo(() => {
 
     timerRef.current = setInterval(() => {
       useStore.setState(state => {
-        if (state.testsA.timeRemaining > 1) {
+        if (state.test.timeRemaining > 1) {
           return {
-            testsA: { ...state.testsA, timeRemaining: state.testsA.timeRemaining - 1 },
+            test: { ...state.test, timeRemaining: state.test.timeRemaining - 1 },
           }
         }
-        return { testsA: { ...state.testsA, timeRemaining: 0 } }
+        return { test: { ...state.test, timeRemaining: 0 } }
       })
     }, 1000)
 
@@ -785,25 +793,25 @@ const TestsAPage = memo(() => {
         timerRef.current = undefined
       }
     }
-  }, [testsA.isActive, testsA.isSubmitting])
+  }, [test.isActive, test.isSubmitting])
 
   // Periodic autosave every 30 seconds during active test
   useEffect(() => {
-    if (!testsA.isActive || testsA.isSubmitting || !testsA.attemptId) {
+    if (!test.isActive || test.isSubmitting || !test.attempt?.attemptId) {
       return
     }
 
     const autosaveInterval = setInterval(async () => {
       try {
-        const answers = testsA.answers || {}
-        if (testsA.testInfo?.testId) {
+        const answers = test.answers || {}
+        if (test.testInfo?.testId) {
           await testsAService.batchAutosave(
-            testsA.testInfo.testId,
+            test.testInfo.testId,
             answers,
-            testsA.attemptId || undefined
+            test.attempt?.attemptId || undefined
           )
           useStore.setState(state => ({
-            testsA: { ...state.testsA, lastAutosavedAt: Date.now() },
+            test: { ...state.test, lastAutosavedAt: new Date().toISOString() },
           }))
         }
       } catch (err) {
@@ -813,24 +821,24 @@ const TestsAPage = memo(() => {
 
     return () => clearInterval(autosaveInterval)
   }, [
-    testsA.isActive,
-    testsA.isSubmitting,
-    testsA.attemptId,
-    testsA.testInfo?.testId,
-    testsA.answers,
+    test.isActive,
+    test.isSubmitting,
+    test.attempt?.attemptId,
+    test.testInfo?.testId,
+    test.answers,
   ])
 
   useEffect(() => {
     if (
-      testsA.timeRemaining === 0 &&
-      testsA.isActive &&
-      !testsA.isSubmitting &&
+      test.timeRemaining === 0 &&
+      test.isActive &&
+      !test.isSubmitting &&
       !submitAttempted.current
     ) {
       submitAttempted.current = true
       void handleSubmit()
     }
-  }, [testsA.timeRemaining, testsA.isActive, testsA.isSubmitting, handleSubmit])
+  }, [test.timeRemaining, test.isActive, test.isSubmitting, handleSubmit])
 
   const filteredTests = useMemo(
     () =>
@@ -859,7 +867,7 @@ const TestsAPage = memo(() => {
     )
   }
 
-  if (error && !testsA.isActive && tests.length === 0) {
+  if (error && !test.isActive && tests.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -884,39 +892,39 @@ const TestsAPage = memo(() => {
     )
   }
 
-  if (testsA.isActive && testsA.questions.length > 0) {
-    const currentQuestion = testsA.questions[testsA.currentQuestionIndex]
-    const selectedAnswer = testsA.answers[currentQuestion?.id] ?? null
-    const isFlagged = testsA.flaggedQuestions.includes(currentQuestion?.id)
+  if (test.isActive && test.questions.length > 0) {
+    const currentQuestion = test.questions[test.currentQuestionIndex]
+    const selectedAnswer = test.answers[currentQuestion?.id] ?? null
+    const isFlagged = test.flaggedQuestions.includes(currentQuestion?.id)
 
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <SEO title={`Tests A+ - ${testsA.testInfo?.testTitle ?? 'Test'}`} />
+        <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
 
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                {testsA.testInfo?.testTitle}
+                {test.testInfo?.testTitle}
               </h1>
               <div className="flex items-center gap-4">
                 <div
                   className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                    testsA.timeRemaining < 300
+                    test.timeRemaining < 300
                       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                   }`}
                 >
                   <Timer className="w-4 h-4" />
                   <span className="font-mono font-medium">
-                    {Math.floor(testsA.timeRemaining / 60)}:
-                    {String(testsA.timeRemaining % 60).padStart(2, '0')}
+                    {Math.floor(test.timeRemaining / 60)}:
+                    {String(test.timeRemaining % 60).padStart(2, '0')}
                   </span>
                 </div>
-                {testsA.lastAutosavedAt && (
+                {test.lastAutosavedAt && (
                   <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-green-500" />
-                    Saved {new Date(testsA.lastAutosavedAt).toLocaleTimeString()}
+                    Saved {new Date(test.lastAutosavedAt).toLocaleTimeString()}
                   </div>
                 )}
                 <Button onClick={handleSubmit} variant="primary" size="sm" disabled={isSubmitting}>
@@ -927,7 +935,7 @@ const TestsAPage = memo(() => {
 
             <div className="mt-4">
               <ProgressBar
-                progress={((testsA.currentQuestionIndex + 1) / testsA.questions.length) * 100}
+                progress={((test.currentQuestionIndex + 1) / test.questions.length) * 100}
                 className="h-2"
               />
             </div>
@@ -936,15 +944,15 @@ const TestsAPage = memo(() => {
 
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex flex-nowrap gap-1 sm:gap-2 mb-6 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
-            {testsA.questions.map((q, index) => {
-              const isAnswered = testsA.answers[q.id] !== undefined
-              const isCurrentFlagged = testsA.flaggedQuestions.includes(q.id)
+            {test.questions.map((q, index) => {
+              const isAnswered = test.answers[q.id] !== undefined
+              const isCurrentFlagged = test.flaggedQuestions.includes(q.id)
               return (
                 <button
                   key={q.id}
                   onClick={() => navigateToQuestion(index)}
                   className={`w-10 h-10 rounded-lg font-medium text-sm transition-colors ${
-                    index === testsA.currentQuestionIndex
+                    index === test.currentQuestionIndex
                       ? 'bg-blue-500 text-white'
                       : isAnswered
                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -961,7 +969,7 @@ const TestsAPage = memo(() => {
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={testsA.currentQuestionIndex}
+              key={test.currentQuestionIndex}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -969,15 +977,13 @@ const TestsAPage = memo(() => {
             >
               <QuestionCard
                 question={currentQuestion}
-                currentIndex={testsA.currentQuestionIndex}
-                totalQuestions={testsA.questions.length}
+                currentIndex={test.currentQuestionIndex}
+                totalQuestions={test.questions.length}
                 selectedAnswer={selectedAnswer}
-                confidence={testsA.confidences[currentQuestion.id]}
+                confidence={test.confidences[currentQuestion.id]}
                 isFlagged={isFlagged}
                 onAnswer={optionId => answerQuestion(currentQuestion.id, optionId)}
-                onConfidenceChange={level =>
-                  useStore.getState().setConfidence(currentQuestion.id, level)
-                }
+                onConfidenceChange={level => setConfidence(currentQuestion.id, level)}
                 onFlag={() => flagQuestion(currentQuestion.id)}
                 onUnflag={() => unflagQuestion(currentQuestion.id)}
               />
@@ -986,8 +992,8 @@ const TestsAPage = memo(() => {
 
           <div className="flex items-center justify-between mt-8">
             <Button
-              onClick={() => navigateToQuestion(testsA.currentQuestionIndex - 1)}
-              disabled={testsA.currentQuestionIndex === 0}
+              onClick={() => navigateToQuestion(test.currentQuestionIndex - 1)}
+              disabled={test.currentQuestionIndex === 0}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -995,8 +1001,8 @@ const TestsAPage = memo(() => {
               Previous Question
             </Button>
             <Button
-              onClick={() => navigateToQuestion(testsA.currentQuestionIndex + 1)}
-              disabled={testsA.currentQuestionIndex === testsA.questions.length - 1}
+              onClick={() => navigateToQuestion(test.currentQuestionIndex + 1)}
+              disabled={test.currentQuestionIndex === test.questions.length - 1}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -1009,19 +1015,19 @@ const TestsAPage = memo(() => {
     )
   }
 
-  if (testsA.results) {
+  if (test.results) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <SEO title="Tests A+ - Results" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ResultsView
-            result={testsA.results}
+            result={test.results}
             onRetry={() => {
               resetTestState()
               submitAttempted.current = false
-              if (testsA.testInfo) {
-                const test = tests.find(t => t.id === testsA.testInfo?.testId)
-                if (test) void handleStartTest(test)
+              if (test.testInfo) {
+                const testItem = tests.find(t => t.id === test.testInfo?.testId)
+                if (testItem) void handleStartTest(testItem)
               }
             }}
             onBack={() => {

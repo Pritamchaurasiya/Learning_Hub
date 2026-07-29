@@ -282,6 +282,7 @@ function App() {
                   </LazyRoute>
                 }
               />
+              <Route path="/certificates" element={<Navigate to="/achievements" replace />} />
               <Route path="/quiz" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz/:quizId" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz-history" element={<Navigate to="/tests-a-history" replace />} />

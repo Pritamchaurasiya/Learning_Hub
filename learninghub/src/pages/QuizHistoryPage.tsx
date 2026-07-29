@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { ErrorState } from '../components/ui/ErrorState'
 import {
   Brain,
   Trophy,
@@ -17,7 +19,6 @@ import {
   TrendingUp,
   Search,
   Award,
-  AlertCircle,
 } from 'lucide-react'
 import { quizService, type QuizAttempt } from '../services/quizService'
 
@@ -31,13 +32,30 @@ export default function QuizHistoryPage() {
   useDocumentTitle('Quiz History')
   const navigate = useNavigate()
 
-  const [history, setHistory] = useState<QuizHistoryItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'passed' | 'failed'>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Calculate statistics
+  const {
+    data: history = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['quiz-history'],
+    queryFn: async () => {
+      const res = await quizService.getAttempts()
+      const attempts = res.data ?? []
+      return attempts.map(attempt => ({
+        ...attempt,
+        quiz_title: 'Unknown Quiz',
+        course_title: 'Unknown Course',
+        total_questions: attempt.answers?.length ?? 0,
+      })) as QuizHistoryItem[]
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
   const stats = {
     totalAttempts: history.length,
     passedCount: history.filter(h => h.passed).length,
@@ -49,7 +67,6 @@ export default function QuizHistoryPage() {
     bestScore: history.length > 0 ? Math.max(...history.map(h => h.score)) : 0,
   }
 
-  // Filter history
   const filteredHistory = history.filter(item => {
     const matchesFilter =
       filter === 'all' ||
@@ -63,45 +80,6 @@ export default function QuizHistoryPage() {
 
     return matchesFilter && matchesSearch
   })
-
-  const loadQuizHistory = async (signal?: AbortSignal) => {
-    const controller = new AbortController()
-    const activeSignal = signal ?? controller.signal
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const res = await quizService.getAttempts(undefined, activeSignal)
-      if (activeSignal.aborted) return
-      const attempts = res.data ?? []
-
-      if (attempts.length === 0) {
-        setHistory([])
-      } else {
-        const historyItems: QuizHistoryItem[] = attempts.map(attempt => ({
-          ...attempt,
-          quiz_title: 'Unknown Quiz',
-          course_title: 'Unknown Course',
-          total_questions: attempt.answers?.length ?? 0,
-        }))
-        setHistory(historyItems)
-      }
-    } catch (err) {
-      if (activeSignal.aborted) return
-      setError('Failed to load quiz history')
-      if (import.meta.env.DEV) {
-        console.error('[QuizHistoryPage] loadQuizHistory error:', err)
-      }
-    } finally {
-      if (!activeSignal.aborted) setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const controller = new AbortController()
-    void loadQuizHistory(controller.signal)
-    return () => controller.abort()
-  }, [])
 
   const handleRetakeQuiz = (quizId: string) => {
     navigate(`/quiz/${quizId}`)
@@ -143,13 +121,16 @@ export default function QuizHistoryPage() {
     )
   }
 
-  if (error) {
+  if (isError) {
     return (
       <AnimatedPage>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-          <p className="text-gray-500 mb-4">{error}</p>
-          <Button onClick={() => loadQuizHistory()}>Try Again</Button>
+          <ErrorState
+            title="Failed to load quiz history"
+            message={error?.message ?? 'Could not load quiz history.'}
+            error={error}
+            onRetry={() => void refetch()}
+          />
         </div>
       </AnimatedPage>
     )

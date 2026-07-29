@@ -17,7 +17,7 @@ export class RecommendationEngine {
     const existingWindowDays = options?.existingWindowDays ?? 7
 
     try {
-      const weakTopics = await prisma.userTopicMastery.findMany({
+      const weakTopics = await prisma.topicPerformance.findMany({
         where: {
           userId,
           strengthLevel: { in: ['weak', 'developing'] },
@@ -107,7 +107,7 @@ export class RecommendationEngine {
     durationDays: number = 30
   ): Promise<LearningPlan> {
     try {
-      const weakTopics = await prisma.userTopicMastery.findMany({
+      const weakTopics = await prisma.topicPerformance.findMany({
         where: {
           userId,
           strengthLevel: { in: ['weak', 'developing'] },

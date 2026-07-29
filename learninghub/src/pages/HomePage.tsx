@@ -18,7 +18,7 @@ const HomePage = memo(function HomePage() {
   const handleSelectExam = (examId: string) => navigate(`/search?q=${encodeURIComponent(examId)}`)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <SEO
         title="LearningHub - Master Your Exam with India's Best Practice Platform"
         description="Practice chapter-wise previous year questions for JEE, NEET, BITSAT & more. Get detailed solutions, smart analytics, and ace your competitive exam."

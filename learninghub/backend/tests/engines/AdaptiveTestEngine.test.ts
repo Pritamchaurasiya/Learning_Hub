@@ -78,21 +78,21 @@ describe('AdaptiveTestEngine Suite', () => {
   })
 
   describe('estimateUserAbility', () => {
-    it('should estimate theta based on userTopicMastery when topicId is provided', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockResolvedValue({
+    it('should estimate theta based on topicPerformance when topicId is provided', async () => {
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue({
         accuracy: 0.8, // 80% accuracy -> rawprob 0.8 -> (0.8 - 0.5)*6 = 1.8
       })
 
       const theta = await engine.estimateUserAbility('user-1', 'topic-1')
       expect(theta).toBeCloseTo(1.8, 2)
-      expect(mockPrisma.userTopicMastery.findUnique).toHaveBeenCalledWith({
+      expect(mockPrisma.topicPerformance.findUnique).toHaveBeenCalledWith({
         where: { userId_topicId: { userId: 'user-1', topicId: 'topic-1' } },
         select: { accuracy: true },
       })
     })
 
     it('should fallback to overall test result average when topic mastery is not found', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.testResult.aggregate as jest.Mock).mockResolvedValue({
         _avg: { percentage: 70 }, // 70% -> 0.7 -> (0.7 - 0.5)*6 = 1.2
       })
@@ -102,7 +102,7 @@ describe('AdaptiveTestEngine Suite', () => {
     })
 
     it('should return 0.0 default ability when no stats are found', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.testResult.aggregate as jest.Mock).mockResolvedValue({
         _avg: { percentage: null },
       })
@@ -161,7 +161,7 @@ describe('AdaptiveTestEngine Suite', () => {
     ]
 
     it('should select best question based on information and exclude answered IDs', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockResolvedValue({
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue({
         accuracy: 0.8, // high ability -> theta = 1.8 -> closer to q-2 (difficulty 0.8 -> logit 1.8!)
       })
       ;(mockPrisma.question.findMany as jest.Mock).mockResolvedValue(mockQuestions)
@@ -172,18 +172,23 @@ describe('AdaptiveTestEngine Suite', () => {
         where: {
           topicId: 'topic-1',
           id: { notIn: ['q-answered'] },
+          difficulty: {
+            gte: expect.any(Number),
+            lte: expect.any(Number),
+          },
         },
-        take: 50,
+        take: 15,
         include: {
           options: {
             select: { id: true, text: true, isCorrect: true },
           },
         },
+        orderBy: { difficulty: 'asc' },
       })
     })
 
     it('should return null if no candidate questions exist', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockResolvedValue(null)
       ;(mockPrisma.question.findMany as jest.Mock).mockResolvedValue([])
 
       const best = await engine.getNextAdaptiveQuestion('user-1', 'topic-1', [])
@@ -191,7 +196,7 @@ describe('AdaptiveTestEngine Suite', () => {
     })
 
     it('should handle errors gracefully and return null', async () => {
-      ;(mockPrisma.userTopicMastery.findUnique as jest.Mock).mockRejectedValue(
+      ;(mockPrisma.topicPerformance.findUnique as jest.Mock).mockRejectedValue(
         new Error('Query error')
       )
 

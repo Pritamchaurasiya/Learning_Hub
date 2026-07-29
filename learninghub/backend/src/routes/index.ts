@@ -21,6 +21,9 @@ import { searchService, SearchParams } from '../services/SearchService'
 import { courseService } from '../services/CourseService'
 import { sendSuccess } from '../utils/responseHelper'
 import { createRateLimiter } from '../middleware/rateLimiter'
+import coursesRoutes from './v1/courses.routes'
+import jobsRoutes from './jobs'
+import metricsRoutes from './metrics'
 
 const router = Router()
 
@@ -46,6 +49,9 @@ router.use('/user-analytics', userAnalyticsRoutes)
 router.use('/recommendations', recommendationsRoutes)
 router.use('/ab-testing', abTestingRoutes)
 router.use('/problems', problemsRoutes)
+router.use('/courses', coursesRoutes)
+router.use('/jobs', jobsRoutes)
+router.use('/prometheus', metricsRoutes)
 
 // Search routes
 router.get(

@@ -37,7 +37,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -47,13 +47,13 @@ export function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-sm font-semibold mb-4">
             Simple 4-Step Process
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             How <span className="text-blue-600">LearningHub</span> Works
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Start your exam preparation journey in minutes. Our intuitive platform makes learning
             effective and engaging.
           </p>
@@ -62,7 +62,7 @@ export function HowItWorks() {
         {/* Steps */}
         <div className="relative">
           {/* Connection Line (Desktop) */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2" />
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2" />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
@@ -75,7 +75,7 @@ export function HowItWorks() {
                 className="relative"
               >
                 {/* Card */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow relative z-10">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg dark:shadow-gray-900/20 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow relative z-10">
                   {/* Number Badge */}
                   <div
                     className={`w-14 h-14 ${step.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}
@@ -84,13 +84,17 @@ export function HowItWorks() {
                   </div>
 
                   {/* Step Number */}
-                  <span className="absolute -top-3 -right-3 w-10 h-10 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center font-bold text-gray-400">
+                  <span className="absolute -top-3 -right-3 w-10 h-10 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-full flex items-center justify-center font-bold text-gray-400 dark:text-gray-500">
                     {step.number}
                   </span>
 
                   {/* Content */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
 
                 {/* Arrow (Desktop) */}
@@ -126,7 +130,7 @@ export function HowItWorks() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center mt-16"
         >
-          <p className="text-gray-600 mb-4">Ready to start your preparation?</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Ready to start your preparation?</p>
           <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg">
             Get Started Now →
           </button>

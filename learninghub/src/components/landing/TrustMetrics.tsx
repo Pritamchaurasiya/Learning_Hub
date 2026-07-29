@@ -69,7 +69,7 @@ const testimonials = [
 
 export function TrustMetrics() {
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <section className="py-20 lg:py-32 bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -177,7 +177,7 @@ export function TrustMetrics() {
           <p className="text-gray-400 mb-6 text-sm uppercase tracking-wider">
             Trusted by students from
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 text-gray-500">
+          <div className="flex flex-wrap justify-center items-center gap-8 text-gray-500 dark:text-gray-400">
             {['IITs', 'AIIMS', 'NITs', 'BITS', 'Top Medical Colleges', 'IISc'].map(institute => (
               <span
                 key={institute}

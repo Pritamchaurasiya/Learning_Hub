@@ -90,26 +90,43 @@ export const getTutorResponseStream = asyncHandler(
         }
       : undefined
 
+    // Set up SSE headers
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no', // Disable nginx buffering if proxied
     })
+
+    // AbortController for client disconnect detection
+    const abortController = new AbortController()
+    const onClose = () => {
+      abortController.abort()
+      logger.debug('[AIController] Client disconnected from SSE stream')
+    }
+    req.on('close', onClose)
 
     try {
       const stream = aiLearningService.getTutorResponseStream(
         userId,
         sanitizedMessage,
         tutorContext,
-        req.body.session_id
+        req.body.session_id,
+        abortController.signal
       )
 
       for await (const chunk of stream) {
+        if (abortController.signal.aborted) break
         res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`)
-        if (res.flushHeaders) res.flushHeaders()
+        // Flush for compression middleware compatibility
+        if (typeof (res as any).flush === 'function') {
+          ;(res as any).flush()
+        }
       }
 
-      res.write('data: [DONE]\n\n')
+      if (!abortController.signal.aborted) {
+        res.write('data: [DONE]\n\n')
+      }
       res.end()
     } catch (error) {
       logger.error(
@@ -122,6 +139,8 @@ export const getTutorResponseStream = asyncHandler(
         res.write(`data: ${JSON.stringify({ error: 'Internal server error' })}\n\n`)
         res.end()
       }
+    } finally {
+      req.off('close', onClose)
     }
   }
 )

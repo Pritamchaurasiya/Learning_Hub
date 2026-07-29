@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react'
+import * as Sentry from '@sentry/react'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Card } from './ui/Card'
@@ -7,26 +8,18 @@ import { Card } from './ui/Card'
 // MONITORING INTEGRATION
 // ============================================
 // In production, this would send to Sentry/DataDog/NewRelic
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const reportError = (error: Error, errorInfo?: ErrorInfo, context?: Record<string, any>) => {
-  if (import.meta.env.PROD) {
-    // Simulate Sentry integration
-    console.error('[Monitoring] Error captured:', {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo?.componentStack,
-      context,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    })
 
-    // Would send to monitoring service:
-    // Sentry.withScope((scope) => {
-    //   scope.setExtras(context || {})
-    //   scope.setTag('errorId', context?.errorId)
-    //   Sentry.captureException(error)
-    // })
+export const reportError = (
+  error: Error,
+  _errorInfo?: ErrorInfo,
+  context?: Record<string, any>
+) => {
+  if (import.meta.env.PROD) {
+    Sentry.withScope(scope => {
+      scope.setExtras(context || {})
+      scope.setTag('errorId', context?.errorId)
+      Sentry.captureException(error)
+    })
   }
 }
 
