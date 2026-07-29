@@ -86,7 +86,7 @@ export const submitTestSchema = z.object({
       .record(
         z.string().max(50, 'Answer key must not exceed 50 characters'),
         z.union([
-          z.string().max(50, 'Answer must not exceed 50 characters'),
+          z.string().max(10000, 'Subjective answer must not exceed 10000 characters'),
           z.array(z.string().max(50, 'Answer must not exceed 50 characters')),
         ])
       )

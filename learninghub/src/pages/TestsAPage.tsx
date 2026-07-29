@@ -258,6 +258,7 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
   const correctCount = result.correct_count ?? 0
   const incorrectCount = result.incorrect_count ?? 0
   const timeTaken = result.time_taken ?? 0
+  const isMock = result.is_mock ?? false
 
   // Calculate topic-wise breakdown
   const topicBreakdown = useMemo(() => {
@@ -290,6 +291,19 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto space-y-8"
     >
+      {/* Mock Test Indicator */}
+      {isMock && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+            <AlertTriangle className="w-5 h-5" />
+            <span className="font-medium">
+              <strong>Mock Test:</strong> This test was generated using fallback questions because the AI service was unavailable. 
+              Scores and analytics may not reflect actual performance.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Top Results Card */}
       <Card className="text-center p-8">
         <div className="relative w-40 h-40 mx-auto mb-6">
