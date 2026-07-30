@@ -10,6 +10,7 @@ export interface DashboardStats {
   longest_streak: number
   xp_points: number
   level: number
+  total_tests: number
   rank?: string
   topic_performance?: Array<{
     topic: string
