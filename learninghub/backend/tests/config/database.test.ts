@@ -103,9 +103,16 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      // Stub the real $transaction to prevent connecting to DB
+      db.$transaction = jest.fn();
+    });
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      // Setup the transaction mock to throw 2 times, then succeed
+      ;(db.$transaction as jest.Mock).mockImplementation(async () => {
         calls++
         if (calls < 3) {
           throw new Error('P1002: database timeout')
@@ -119,24 +126,30 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws immediately on non-retryable errors', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      ;(db.$transaction as jest.Mock).mockImplementation(async () => {
         throw new Error('P2003: Foreign key constraint failed')
       })
 
       await expect(db.executeTransaction(fn, 3)).rejects.toThrow('P2003')
-      expect(fn).toHaveBeenCalledTimes(1)
+      expect(db.$transaction).toHaveBeenCalledTimes(1)
     })
 
     it('throws after exhausting retries on persistent retryable error', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      ;(db.$transaction as jest.Mock).mockImplementation(async () => {
         throw new Error('P1002: database timeout')
       })
 
       await expect(db.executeTransaction(fn, 2)).rejects.toThrow('P1002')
-      expect(fn).toHaveBeenCalledTimes(2)
+      expect(db.$transaction).toHaveBeenCalledTimes(2)
     })
 
     it('passes transaction client to callback', async () => {
+      // Override $transaction to just run the function and pass a fake transaction object for testing
+      const fakeTx = { $queryRaw: jest.fn() };
+      (db.$transaction as jest.Mock).mockImplementation(async (callback) => await callback(fakeTx));
+
       const fn = jest.fn().mockImplementation(async (tx: any) => {
         expect(tx).toBeDefined()
         expect(typeof tx.$queryRaw).toBe('function')

@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
+import { analyticsService } from '../services/analyticsService'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Skeleton } from '../components/ui/Skeleton'
@@ -95,13 +96,12 @@ const Dashboard = memo(function Dashboard() {
     queryKey: ['dashboard-stats'],
     queryFn: async ({ signal }) => {
       if (!auth.isAuthenticated) return null
-      const [profileRes, testsRes] = await Promise.all([
-        fetchApi('/auth/me', { signal }),
+      const [dashboardRes, testsRes] = await Promise.all([
+        analyticsService.getDashboardStats(),
         fetchApi('/tests/attempts', { signal }),
       ])
 
-      const profile = (profileRes?.data?.user ?? profileRes?.user ?? profileRes) as
-        Record<string, unknown> | undefined
+      const dashStats = dashboardRes.data
       const testsData = (testsRes?.data?.data ?? testsRes?.data ?? testsRes) as
         Record<string, unknown> | undefined
       const testResults = (
@@ -109,7 +109,6 @@ const Dashboard = memo(function Dashboard() {
       ) as TestAttemptRecord[]
 
       const completedTests = testResults.filter(t => t.status === 'COMPLETED')
-      const passedTests = completedTests.filter(t => t.passed)
 
       const recentTestsList = completedTests
         .sort(
@@ -124,11 +123,11 @@ const Dashboard = memo(function Dashboard() {
         }))
 
       return {
-        testsAttempted: completedTests.length,
-        testsPassed: passedTests.length,
-        totalXp: (profile?.xp as number) ?? 0,
-        currentStreak: (profile?.streak as number) ?? 0,
-        level: (profile?.level as number) ?? 1,
+        testsAttempted: dashStats.total_tests ?? completedTests.length,
+        testsPassed: dashStats.completed_courses ?? 0,
+        totalXp: dashStats.xp_points ?? 0,
+        currentStreak: dashStats.current_streak ?? 0,
+        level: dashStats.level ?? 1,
         recentTests: recentTestsList,
       }
     },
