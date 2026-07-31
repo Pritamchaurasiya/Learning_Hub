@@ -1,9 +1,8 @@
 import { IAIAgent } from './AIAgent'
 import { GeminiAdapter } from './GeminiAdapter'
-import { MockAIAdapter } from './MockAIAdapter'
 import logger from '../../utils/logger'
 
-export type AIProviderName = 'gemini' | 'openai' | 'anthropic' | 'mock'
+export type AIProviderName = 'gemini' | 'openai' | 'anthropic'
 
 export class AIServiceFactory {
   private static instance: IAIAgent
@@ -34,15 +33,11 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
+            logger.error(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter: ${e instanceof Error ? e.message : String(e)}`
             )
-            this.instance = new MockAIAdapter()
+            throw e
           }
-          break
-        case 'mock':
-          this.instance = new MockAIAdapter()
           break
         // Future extensions:
         // case 'openai':
@@ -58,11 +53,10 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
+            logger.error(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter: ${e instanceof Error ? e.message : String(e)}`
             )
-            this.instance = new MockAIAdapter()
+            throw e
           }
       }
     }
