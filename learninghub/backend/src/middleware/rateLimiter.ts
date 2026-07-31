@@ -93,7 +93,7 @@ export function createRateLimiter(config: RateLimiterConfig) {
   const { windowMs, max, keyPrefix = 'rl', message } = config
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    if (process.env.RATE_LIMIT_ENABLED === 'false' || process.env.NODE_ENV === 'test') {
+    if (process.env.RATE_LIMIT_ENABLED === 'false' || (process.env.NODE_ENV === 'test' && process.env.RATE_LIMIT_ENABLED !== 'true')) {
       next()
       return
     }
