@@ -45,6 +45,11 @@ describe('DatabaseConfig', () => {
   let db: TestableExtendedPrismaClient
 
   beforeEach(() => {
+    jest.spyOn(TestableExtendedPrismaClient.prototype, '$transaction').mockImplementation(async (fn) => {
+      // call the function simulating what prisma does
+      // actually we should probably just return fn({ $queryRaw: jest.fn() })
+      return fn({ $queryRaw: jest.fn() });
+    });
     db = new TestableExtendedPrismaClient()
   })
 
