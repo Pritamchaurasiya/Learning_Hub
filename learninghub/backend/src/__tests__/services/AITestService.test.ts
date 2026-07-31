@@ -140,7 +140,7 @@ describe('AITestService', () => {
       expect(result.feedback).toBe('Failed to grade via AI. Needs manual review.')
     })
 
-    it('should fallback to mock mode if AI generates invalid or zero questions', async () => {
+    it('should throw an error if AI generates invalid or zero questions after retries', async () => {
       // Arrange
       const req = {
         userId: 'user-123',
@@ -153,32 +153,9 @@ describe('AITestService', () => {
       mockGenerateJSON.mockResolvedValue({
         questions: [], // Invalid/empty
       })
-      ;(prisma.test.create as jest.Mock).mockResolvedValue({
-        id: 'test-mock',
-        title: 'Mock Test',
-        questions: [
-          {
-            text: '[MOCK] Sample Question 1 for topic: Machine Learning',
-            difficulty: 0.2,
-            bloomLevel: 'UNDERSTAND',
-            explanation:
-              'This is a mock explanation because the AI service is currently unavailable.',
-            tags: ['Machine Learning', 'mock'],
-            options: [
-              { id: 'a', text: 'Option A (Correct)' },
-              { id: 'b', text: 'Option B' },
-            ],
-          },
-        ],
-      })
 
-      // Act
-      const result = await aiTestService.generateTest(req)
-
-      // Assert
-      expect(result.ai_powered).toBe(false)
-      expect(result.model).toBe('mock')
-      expect(result.questions[0].text).toContain('[MOCK]')
+      // Act & Assert
+      await expect(aiTestService.generateTest(req)).rejects.toThrow('Failed to generate valid test after 3 attempts')
     })
 
     it('should retry and succeed if AI generates invalid schema first but succeeds on second try', async () => {
@@ -240,7 +217,7 @@ describe('AITestService', () => {
       expect(result.ai_powered).toBe(true)
     })
 
-    it('should fallback to mock mode if AI repeatedly fails schema validation', async () => {
+    it('should throw an error if AI repeatedly fails schema validation', async () => {
       // Arrange
       const req = {
         userId: 'user-123',
@@ -255,31 +232,10 @@ describe('AITestService', () => {
         malformed: 'data',
         no_questions_here: true,
       })
-      ;(prisma.test.create as jest.Mock).mockResolvedValue({
-        id: 'test-mock',
-        title: 'Mock Test',
-        questions: [
-          {
-            text: '[MOCK] Sample Question 1 for topic: Machine Learning',
-            difficulty: 0.3,
-            explanation: 'mock exp',
-            options: [
-              { id: 'a', text: 'Option A (Correct)', isCorrect: true },
-              { id: 'b', text: 'Option B', isCorrect: false },
-              { id: 'c', text: 'Option C', isCorrect: false },
-              { id: 'd', text: 'Option D', isCorrect: false },
-            ],
-          },
-        ],
-      })
 
-      // Act
-      const result = await aiTestService.generateTest(req)
-
-      // Assert
+      // Act & Assert
+      await expect(aiTestService.generateTest(req)).rejects.toThrow('Failed to generate valid test after 3 attempts')
       expect(mockGenerateJSON).toHaveBeenCalledTimes(3) // initial + 2 retries
-      expect(result.ai_powered).toBe(false)
-      expect(result.model).toBe('mock')
     })
 
     it('should generate an adaptive test based on user level', async () => {

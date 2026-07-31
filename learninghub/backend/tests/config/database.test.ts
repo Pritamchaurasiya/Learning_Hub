@@ -103,6 +103,11 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      // Mock db.$transaction to just execute the callback
+      db.$transaction = jest.fn().mockImplementation((fn: any) => fn(db));
+    });
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
       const fn = jest.fn().mockImplementation(() => {
