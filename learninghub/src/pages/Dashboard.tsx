@@ -6,29 +6,22 @@ import { useQuery } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
+import { analyticsService } from '../services/analyticsService'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Skeleton } from '../components/ui/Skeleton'
 import AnimatedPage from '../components/AnimatedPage'
 import { AITestGeneratorModal } from '../components/AITestGeneratorModal'
 import type { TestQuestion } from '../services/testsAService'
+import type { DashboardStats as OriginalDashboardStats } from '../services/analyticsService'
 
-interface DashboardStats {
+type DashboardStats = OriginalDashboardStats & {
   testsAttempted: number
   testsPassed: number
   totalXp: number
   currentStreak: number
   level: number
   recentTests: Array<{ id: string; title: string; score: number; passed: boolean }>
-}
-
-interface TestAttemptRecord {
-  id: string
-  status?: string
-  completedAt?: string
-  score?: number
-  passed?: boolean
-  test?: { title?: string }
 }
 
 function DashboardSkeleton() {
@@ -93,44 +86,21 @@ const Dashboard = memo(function Dashboard() {
     error: dashboardError,
   } = useQuery<DashboardStats | null>({
     queryKey: ['dashboard-stats'],
-    queryFn: async ({ signal }) => {
+    queryFn: async () => {
       if (!auth.isAuthenticated) return null
-      const [profileRes, testsRes] = await Promise.all([
-        fetchApi('/auth/me', { signal }),
-        fetchApi('/tests/attempts', { signal }),
-      ])
+      const res = await analyticsService.getDashboardStats()
 
-      const profile = (profileRes?.data?.user ?? profileRes?.user ?? profileRes) as
-        Record<string, unknown> | undefined
-      const testsData = (testsRes?.data?.data ?? testsRes?.data ?? testsRes) as
-        Record<string, unknown> | undefined
-      const testResults = (
-        Array.isArray(testsData?.results) ? testsData.results : []
-      ) as TestAttemptRecord[]
-
-      const completedTests = testResults.filter(t => t.status === 'COMPLETED')
-      const passedTests = completedTests.filter(t => t.passed)
-
-      const recentTestsList = completedTests
-        .sort(
-          (a, b) => new Date(b.completedAt ?? 0).getTime() - new Date(a.completedAt ?? 0).getTime()
-        )
-        .slice(0, 5)
-        .map(t => ({
-          id: t.id,
-          title: t.test?.title ?? 'Practice Test',
-          score: t.score ?? 0,
-          passed: t.passed ?? false,
-        }))
+      const stats = res.data || (res as any)
 
       return {
-        testsAttempted: completedTests.length,
-        testsPassed: passedTests.length,
-        totalXp: (profile?.xp as number) ?? 0,
-        currentStreak: (profile?.streak as number) ?? 0,
-        level: (profile?.level as number) ?? 1,
-        recentTests: recentTestsList,
-      }
+        ...stats,
+        testsAttempted: (stats as any).testsAttempted || 0,
+        testsPassed: (stats as any).testsPassed || 0,
+        totalXp: (stats as any).totalXp || (stats as any).xp_points || 0,
+        currentStreak: (stats as any).currentStreak || (stats as any).current_streak || 0,
+        level: (stats as any).level || 1,
+        recentTests: (stats as any).recentTests || [],
+      } as DashboardStats
     },
     enabled: auth.isAuthenticated,
     staleTime: 2 * 60 * 1000,
