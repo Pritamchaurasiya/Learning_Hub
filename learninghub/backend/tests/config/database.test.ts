@@ -103,9 +103,16 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      db.$transaction = jest.fn().mockImplementation(async (fn) => {
+        const mockTx = { ...db, $queryRaw: jest.fn() };
+        return await fn(mockTx);
+      });
+    });
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn().mockImplementation(async () => {
         calls++
         if (calls < 3) {
           throw new Error('P1002: database timeout')
