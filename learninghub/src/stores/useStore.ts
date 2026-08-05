@@ -80,7 +80,14 @@ export const useStore = create<AppState>()(
                 lastAutosavedAt: null,
               },
       }),
-      skipHydration: true,
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('[Hydration] Failed to rehydrate persisted state:', error)
+        }
+        if (state) {
+          state.setHydrated()
+        }
+      },
     }
   )
 )
