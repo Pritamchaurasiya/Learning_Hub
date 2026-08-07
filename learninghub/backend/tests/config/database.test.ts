@@ -103,6 +103,19 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      // Mock $transaction to simply call the provided function directly,
+      // avoiding the real database connection attempt.
+      jest.spyOn(db, '$transaction').mockImplementation(async (fn: any) => {
+        const mockTx = { ...db, $queryRaw: jest.fn() }
+        return fn(mockTx)
+      })
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
       const fn = jest.fn().mockImplementation(() => {

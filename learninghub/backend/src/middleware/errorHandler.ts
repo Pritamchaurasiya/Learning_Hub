@@ -204,13 +204,42 @@ export const errorHandler = (
     logger.error(`[ErrorHandler] ${statusCode} - ${message}`, err)
   }
 
-  res.status(statusCode).json({
+  const payload: any = {
     status: 'error',
     message,
-    ...(requestId && { requestId }),
-    ...(errors && { errors }),
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  })
+  }
+
+  if (err instanceof AppError && err.code) {
+    payload.code = err.code
+  } else if (err instanceof AuthenticationError) {
+    payload.code = 'UNAUTHORIZED'
+  } else if (err instanceof AuthorizationError) {
+    payload.code = 'FORBIDDEN'
+  } else if (err instanceof ValidationError) {
+    payload.code = 'VALIDATION_ERROR'
+  } else if (err instanceof NotFoundError) {
+    payload.code = 'NOT_FOUND'
+  } else if (err instanceof ConflictError) {
+    payload.code = 'CONFLICT'
+  } else if (err instanceof RateLimitError) {
+    payload.code = 'RATE_LIMIT_EXCEEDED'
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+     payload.code = 'DATABASE_ERROR'
+  } else if (err instanceof ZodError) {
+     payload.code = 'VALIDATION_ERROR'
+  } else if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+     payload.code = 'INVALID_TOKEN'
+  } else if (err instanceof SyntaxError && 'body' in err) {
+     payload.code = 'INVALID_INPUT'
+  } else if ((err as any).code) {
+      payload.code = (err as any).code
+  }
+
+  if (requestId) payload.requestId = requestId
+  if (errors) payload.errors = errors
+  if (process.env.NODE_ENV === 'development') payload.stack = err.stack
+
+  res.status(statusCode).json(payload)
 }
 
 function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {

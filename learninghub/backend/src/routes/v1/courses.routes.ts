@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { courseService } from '../../services/CourseService'
 import { authenticate } from '../../middleware/authMiddleware'
 import { asyncHandler } from '../../utils/errorHandler'
-import { sendSuccess } from '../../utils/responseHelper'
+import { sendSuccess, sendError } from '../../utils/responseHelper'
 
 const router = Router()
 
@@ -23,7 +23,7 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const { courseId } = req.body
     if (!courseId) {
-      res.status(400).json({ status: 'error', message: 'courseId is required' })
+      sendError(res, 'courseId is required', 400)
       return
     }
     const result = await courseService.enroll(req.user?.userId, courseId)
@@ -38,7 +38,7 @@ router.get(
     const id = req.params.id as string
     const course = await courseService.getCourse(id)
     if (!course) {
-      res.status(404).json({ status: 'error', message: 'Course not found' })
+      sendError(res, 'Course not found', 404)
       return
     }
     sendSuccess(res, course)
