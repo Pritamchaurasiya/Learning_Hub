@@ -140,8 +140,8 @@ export const helmetConfig = {
         "'self'",
         ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
       ],
-      scriptSrcAttr: ["'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      scriptSrcAttr: [],
+      styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       connectSrc: [

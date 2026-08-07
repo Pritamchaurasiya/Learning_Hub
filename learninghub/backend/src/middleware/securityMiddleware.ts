@@ -17,7 +17,7 @@ export const configureSecurity = (app: Application) => {
             ...(isDev ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
             'https://*.googletagmanager.com',
           ],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          styleSrc: ["'self'", 'https://fonts.googleapis.com'],
           imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           connectSrc: ["'self'", 'https://*.google-analytics.com', 'wss:'],

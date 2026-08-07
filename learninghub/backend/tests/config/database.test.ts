@@ -103,9 +103,20 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    let originalTransaction: any
+
+    beforeEach(() => {
+      originalTransaction = db.$transaction
+    })
+
+    afterEach(() => {
+      db.$transaction = originalTransaction
+    })
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      db.$transaction = jest.fn().mockImplementation(async () => {
         calls++
         if (calls < 3) {
           throw new Error('P1002: database timeout')
@@ -119,21 +130,23 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws immediately on non-retryable errors', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      db.$transaction = jest.fn().mockImplementation(async () => {
         throw new Error('P2003: Foreign key constraint failed')
       })
 
       await expect(db.executeTransaction(fn, 3)).rejects.toThrow('P2003')
-      expect(fn).toHaveBeenCalledTimes(1)
+      expect(db.$transaction).toHaveBeenCalledTimes(1)
     })
 
     it('throws after exhausting retries on persistent retryable error', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      const fn = jest.fn()
+      db.$transaction = jest.fn().mockImplementation(async () => {
         throw new Error('P1002: database timeout')
       })
 
       await expect(db.executeTransaction(fn, 2)).rejects.toThrow('P1002')
-      expect(fn).toHaveBeenCalledTimes(2)
+      expect(db.$transaction).toHaveBeenCalledTimes(2)
     })
 
     it('passes transaction client to callback', async () => {
@@ -141,6 +154,10 @@ describe('DatabaseConfig', () => {
         expect(tx).toBeDefined()
         expect(typeof tx.$queryRaw).toBe('function')
         return 'ok'
+      })
+      db.$transaction = jest.fn().mockImplementation(async (callback) => {
+          const mockTx = { $queryRaw: jest.fn() }
+          return callback(mockTx)
       })
 
       const result = await db.executeTransaction(fn, 1)
