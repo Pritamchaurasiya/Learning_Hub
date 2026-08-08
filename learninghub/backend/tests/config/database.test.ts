@@ -29,6 +29,10 @@ jest.mock('../../src/utils/logger', () => ({
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    // Mock $transaction to avoid needing a real DB connection for unit tests
+    this.$transaction = jest.fn().mockImplementation(async (fn) => {
+      return await fn(this)
+    })
   }
 
   // Expose internals for testing

@@ -34,16 +34,15 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
-            )
-            this.instance = new MockAIAdapter()
+            logger.error(`[AIServiceFactory] Failed to initialize GeminiAdapter. Mock fallback is strictly prohibited in production. ${e instanceof Error ? e.message : String(e)}`)
+            throw new Error('AI Service initialization failed. Mock fallbacks are prohibited.')
           }
           break
         case 'mock':
-          this.instance = new MockAIAdapter()
-          break
+          logger.error(
+            `[AIServiceFactory] Mock provider is strictly prohibited in production.`
+          )
+          throw new Error('AI Service initialization failed. Mock fallbacks are prohibited.')
         // Future extensions:
         // case 'openai':
         //   this.instance = new OpenAIAdapter();
@@ -58,11 +57,8 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
-            )
-            this.instance = new MockAIAdapter()
+            logger.error(`[AIServiceFactory] Failed to initialize GeminiAdapter. Mock fallback is strictly prohibited in production. ${e instanceof Error ? e.message : String(e)}`)
+            throw new Error('AI Service initialization failed. Mock fallbacks are prohibited.')
           }
       }
     }

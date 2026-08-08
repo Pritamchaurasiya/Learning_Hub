@@ -66,6 +66,9 @@ const getConnectionPoolConfig = () => {
 const buildDatabaseUrl = (): string => {
   const baseUrl = process.env.DATABASE_URL
   if (!baseUrl) {
+    if (process.env.NODE_ENV === 'test') {
+      return 'postgresql://test:test@localhost:5432/test'
+    }
     throw new Error('DATABASE_URL environment variable is required')
   }
 
