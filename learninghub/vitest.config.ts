@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
+    env: { VITE_API_URL: "http://localhost:5000/api/v1" },
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
