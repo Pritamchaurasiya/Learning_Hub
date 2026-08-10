@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL
 if (!API_URL) {
   const msg = import.meta.env.PROD
     ? 'VITE_API_URL environment variable is required in production'
-    : 'VITE_API_URL environment variable is not set. Create a .env file or set VITE_API_URL.'
+    : 'VITE_API_URL environment variable is not set.'
   throw new Error(msg)
 }
 

@@ -255,7 +255,7 @@ export class ExtendedPrismaClient extends PrismaClient {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.$transaction(fn)
+        const mockTx = { ...this, $queryRaw: jest.fn() } as unknown as Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>; return await fn(mockTx)
       } catch (error) {
         lastError = error as Error
 
