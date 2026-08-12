@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
+    env: {
+      VITE_API_URL: "http://localhost:5000",
+    },
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
