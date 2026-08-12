@@ -10,7 +10,7 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 drf-spectacular==0.27.1
 django-cors-headers==4.3.1
-django-filter==23.5
+django-filter==24.3
 django-extensions==3.2.3
 django-prometheus==2.3.1
 
@@ -42,7 +42,7 @@ mypy==1.8.0
 flake8==7.0.0
 black==24.1.1
 bandit==1.7.6
-django-axes>=6.3.0  # Brute Force Protection
+django-axes==6.5.0
 
 # Background Tasks
 celery>=5.3.0
