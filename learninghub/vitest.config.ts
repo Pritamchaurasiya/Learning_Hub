@@ -5,6 +5,16 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
+    env: {
+      VITE_API_URL: 'http://localhost:8000/api/v1',
+      VITE_WS_URL: 'http://localhost:8000',
+      VITE_ENABLE_MOCK_API: 'true',
+    },
+    env: {
+      VITE_API_URL: 'http://localhost:8000/api/v1',
+      VITE_WS_URL: 'http://localhost:8000',
+      VITE_ENABLE_MOCK_API: 'true',
+    },
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
