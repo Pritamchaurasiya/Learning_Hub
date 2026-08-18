@@ -72,7 +72,7 @@ export const initCsrfToken = async (forceRefresh = false): Promise<void> => {
       if (csrfToken) setCsrfToken(csrfToken)
     }
   } catch {
-    // silently ignore
+    // CSRF initialization is best-effort; mutating requests will fail safely if required.
   }
 }
 
@@ -94,12 +94,7 @@ const isRateLimited = (): boolean => {
 
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return ''
-  return input
-    .trim()
-    .slice(0, 10_000)
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .replace(/\beval\s*\(/gi, '')
+  return input.trim().slice(0, 10_000).replace(/javascript:/gi, '').replace(/on\w+\s*=/gi, '').replace(/\beval\s*\(/gi, '')
 }
 
 export const validateEmail = (email: string): boolean => {
@@ -149,7 +144,6 @@ const refreshAccessToken = async (): Promise<void> => {
     })
 
     if (!response.ok) throw new Error('Token refresh failed')
-
     window.dispatchEvent(new CustomEvent('auth:token-refreshed'))
   })().finally(() => {
     tokenRefreshPromise = null
@@ -171,31 +165,17 @@ export interface ApiResponse<T = unknown> {
   meta?: Record<string, unknown>
 }
 
-async function executeWithTimeout(
-  fullUrl: string,
-  options: RequestInit,
-  headers: Headers
-): Promise<Response> {
+async function executeWithTimeout(fullUrl: string, options: RequestInit, headers: Headers): Promise<Response> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-
-  // Chain caller's signal if provided, so timeout still applies
   const callerSignal = options.signal
   if (callerSignal) {
-    if (callerSignal.aborted) {
-      controller.abort()
-    } else {
-      callerSignal.addEventListener('abort', () => controller.abort(), { once: true })
-    }
+    if (callerSignal.aborted) controller.abort()
+    else callerSignal.addEventListener('abort', () => controller.abort(), { once: true })
   }
 
   try {
-    return await fetch(fullUrl, {
-      ...options,
-      headers,
-      credentials: 'include',
-      signal: controller.signal,
-    })
+    return await fetch(fullUrl, { ...options, headers, credentials: 'include', signal: controller.signal })
   } finally {
     clearTimeout(timeoutId)
   }
@@ -204,20 +184,17 @@ async function executeWithTimeout(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}): Promise<any> => {
   const responseType = options.responseType ?? 'json'
-  const normalizedEndpoint =
-    endpoint.endsWith('/') && endpoint.length > 1 ? endpoint.slice(0, -1) : endpoint
+  const normalizedEndpoint = endpoint.endsWith('/') && endpoint.length > 1 ? endpoint.slice(0, -1) : endpoint
   const fullUrl = `${API_URL}${normalizedEndpoint}`
   const method = (options.method ?? 'GET').toUpperCase()
 
   if (responseType === 'json' && method === 'GET' && !options.bypassCache) {
     const cachedData = getCachedData(fullUrl, options)
     if (cachedData !== null) return cachedData
-
     if (!options.signal) {
       const inFlight = getInFlightRequest(fullUrl, options)
       if (inFlight !== null) return inFlight
     }
-
     if (!navigator.onLine) {
       const offlineData = getOfflineFallback(fullUrl, options)
       if (offlineData !== null) return offlineData
@@ -231,78 +208,34 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
   headers.set('X-Session-ID', getSessionId())
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const csrfToken = getCsrfToken()
-    if (!csrfToken) await initCsrfToken(false)
+    if (!getCsrfToken()) await initCsrfToken(false)
     const finalToken = getCsrfToken()
     if (finalToken) headers.set('X-CSRF-Token', finalToken)
   }
 
   const executeRequest = async (): Promise<unknown> => {
     let lastError: Error | null = null
-
     for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
       try {
         const response = await executeWithTimeout(fullUrl, options, headers)
-
         if (response.ok) {
           if (responseType === 'blob') return response.blob()
           const data = await response.json()
-          if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache)
-            setCachedData(fullUrl, data, options)
+          if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache) setCachedData(fullUrl, data, options)
           return data
         }
 
         if (!RETRY_CONFIG.retryableStatuses.includes(response.status)) {
-          return handleNonRetryable(
-            response,
-            fullUrl,
-            options,
-            responseType,
-            method,
-            normalizedEndpoint
-          )
+          return handleNonRetryable(response, fullUrl, options, responseType, method, normalizedEndpoint)
         }
-
-        if (import.meta.env.DEV) {
-          console.warn(
-            `[API] Retryable ${response.status}, attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`
-          )
-        }
-        if (attempt < RETRY_CONFIG.maxRetries) {
-          await sleep(getDelay(attempt))
-        } else {
-          return handleNonRetryable(
-            response,
-            fullUrl,
-            options,
-            responseType,
-            method,
-            normalizedEndpoint
-          )
-        }
+        if (attempt < RETRY_CONFIG.maxRetries) await sleep(getDelay(attempt))
+        else return handleNonRetryable(response, fullUrl, options, responseType, method, normalizedEndpoint)
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
-
-        if (
-          lastError.name === 'AbortError' ||
-          lastError.message.includes('AbortError') ||
-          lastError.message.includes('Aborted')
-        ) {
-          throw lastError
-        }
-
-        if (import.meta.env.DEV) {
-          console.warn(
-            `[API] Network error, attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
-            lastError
-          )
-        }
-        if (attempt < RETRY_CONFIG.maxRetries) {
-          await sleep(getDelay(attempt))
-        }
+        if (lastError.name === 'AbortError' || lastError.message.includes('Aborted')) throw lastError
+        if (attempt < RETRY_CONFIG.maxRetries) await sleep(getDelay(attempt))
       }
     }
-
     if (lastError) throw lastError
     throw new Error('Network error. Please check your connection.')
   }
@@ -310,7 +243,6 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
   if (responseType === 'json' && method === 'GET' && !options.signal && !options.bypassCache) {
     return trackInFlightRequest(fullUrl, options, executeRequest())
   }
-
   return executeRequest()
 }
 
@@ -322,59 +254,39 @@ async function handleNonRetryable(
   method: string,
   normalizedEndpoint: string
 ) {
-  if (response.status === 401) {
-    const isAuthEndpoint =
-      normalizedEndpoint.includes('/auth/login') ||
-      normalizedEndpoint.includes('/auth/register') ||
-      normalizedEndpoint.includes('/auth/refresh')
+  const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout', '/auth/me'].some(path => normalizedEndpoint.includes(path))
 
-    if (!isAuthEndpoint) {
-      try {
-        await refreshAccessToken()
-        const headers = new Headers(options.headers ?? {})
-        if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
-        headers.set('X-Session-ID', getSessionId())
-        const csrfToken = getCsrfToken()
-        if (csrfToken) headers.set('X-CSRF-Token', csrfToken)
-
-        const retryResponse = await fetch(fullUrl, { ...options, headers, credentials: 'include' })
-
-        if (retryResponse.ok) {
-          if (responseType === 'blob') return retryResponse.blob()
-          const data = await retryResponse.json()
-          if (method === 'GET' && isCacheable(fullUrl, options))
-            setCachedData(fullUrl, data, options)
-          return data
-        }
-        response = retryResponse
-      } catch {
-        window.dispatchEvent(
-          new CustomEvent('auth:session-expired', { detail: { reason: 'token-refresh-failed' } })
-        )
-        throw new Error('Session expired. Please log in again.')
+  if (response.status === 401 && !isAuthEndpoint) {
+    try {
+      await refreshAccessToken()
+      const headers = new Headers(options.headers ?? {})
+      if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
+      headers.set('X-Session-ID', getSessionId())
+      const csrfToken = getCsrfToken()
+      if (csrfToken) headers.set('X-CSRF-Token', csrfToken)
+      const retryResponse = await fetch(fullUrl, { ...options, headers, credentials: 'include' })
+      if (retryResponse.ok) {
+        if (responseType === 'blob') return retryResponse.blob()
+        const data = await retryResponse.json()
+        if (method === 'GET' && isCacheable(fullUrl, options)) setCachedData(fullUrl, data, options)
+        return data
       }
+      response = retryResponse
+    } catch {
+      window.dispatchEvent(new CustomEvent('auth:session-expired', { detail: { reason: 'token-refresh-failed' } }))
+      throw new Error('Session expired. Please log in again.')
     }
   }
 
   const errorData = await response.json().catch(() => ({}))
-  const errorMessage =
-    errorData.message ?? errorData.detail ?? 'An error occurred. Please try again.'
+  const errorMessage = errorData.message ?? errorData.detail ?? 'An error occurred. Please try again.'
 
   if (response.status === 401) {
-    if (
-      !normalizedEndpoint.includes('/auth/login') &&
-      !normalizedEndpoint.includes('/auth/register')
-    ) {
-      throw new Error('Unauthorized')
-    }
+    if (!normalizedEndpoint.includes('/auth/login') && !normalizedEndpoint.includes('/auth/register')) throw new Error('Unauthorized')
     throw new Error(errorMessage)
-  } else if (response.status === 403) {
-    throw new Error(errorMessage ?? 'Access denied')
-  } else if (response.status === 404) {
-    throw new Error('Resource not found')
-  } else if (response.status >= 500) {
-    throw new Error('Server error. Please try again later.')
   }
-
+  if (response.status === 403) throw new Error(errorMessage || 'Access denied')
+  if (response.status === 404) throw new Error('Resource not found')
+  if (response.status >= 500) throw new Error('Server error. Please try again later.')
   throw new Error(errorMessage)
 }

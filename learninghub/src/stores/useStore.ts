@@ -21,16 +21,18 @@ export const useStore = create<AppState>()(
     {
       name: 'learninghub-storage',
       storage: createJSONStorage(() => localStorage),
+      // Authentication is cookie-backed by the backend. Persisting only the
+      // last-known user caused stale sessions to appear authenticated after a
+      // refresh before /auth/me could verify the browser session.
       partialize: state => ({
         theme: state.theme,
         recentSearches: state.recentSearches,
         dailyGoal: state.dailyGoal,
         hasSeenOnboarding: state.hasSeenOnboarding,
         settings: state.settings,
-        // Persist Auth State
         auth: {
-          isAuthenticated: state.auth.isAuthenticated,
-          user: state.auth.user,
+          isAuthenticated: false,
+          user: null,
         },
         progress: {
           completedCourses: state.progress.completedCourses,

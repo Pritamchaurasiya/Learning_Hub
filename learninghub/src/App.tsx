@@ -1,4 +1,4 @@
-import { useEffect, Suspense, lazy, ReactNode } from 'react'
+import { useEffect, useRef, Suspense, lazy, ReactNode } from 'react'
 import { Routes, Route, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom'
 import { useStore } from './stores/useStore'
 import Layout from './components/Layout'
@@ -48,7 +48,6 @@ const DownloadsPage = lazy(() => import('./pages/DownloadsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const DiscussionsPage = lazy(() => import('./pages/DiscussionsPage'))
 const AITutorPage = lazy(() => import('./pages/AITutorPage'))
-
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
 const AdminABTestingPage = lazy(() => import('./pages/AdminABTestingPage'))
@@ -63,10 +62,7 @@ function ProtectedLayout() {
   const auth = useStore(state => state.auth)
   const location = useLocation()
 
-  if (!auth.isHydrated) {
-    return <LoadingScreen fullScreen={true} />
-  }
-
+  if (!auth.isHydrated) return <LoadingScreen fullScreen={true} />
   if (!auth.isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />
   }
@@ -100,73 +96,57 @@ function App() {
   const addToast = useStore(s => s.addToast)
   const location = useLocation()
   const navigate = useNavigate()
+  const authVerificationStarted = useRef(false)
 
-  // Activate real-time WebSocket notifications when authenticated
   useNotificationConnection()
 
-  // Clear React Query cache when user logs out to prevent stale data
+  // The backend owns authentication through HttpOnly cookies. After Zustand
+  // hydration, always verify the current browser session exactly once. This
+  // prevents stale local state from granting access and also restores a valid
+  // session after a full page refresh without exposing tokens to JavaScript.
   useEffect(() => {
-    if (!auth.isAuthenticated && auth.isHydrated) {
-      queryClient.clear()
-    }
+    if (!auth.isHydrated || authVerificationStarted.current) return
+    authVerificationStarted.current = true
+    void fetchMe()
+  }, [auth.isHydrated, fetchMe])
+
+  useEffect(() => {
+    if (!auth.isAuthenticated && auth.isHydrated) queryClient.clear()
   }, [auth.isAuthenticated, auth.isHydrated, queryClient])
 
-  // Listen for session-expired events from api.ts
   useEffect(() => {
     const handleSessionExpired = () => {
-      // Clear all cached queries to prevent stale user data after logout
       queryClient.clear()
       void logout()
       addToast({ message: 'Session expired. Please log in again.', type: 'warning' })
       navigate('/auth', { replace: true })
     }
     window.addEventListener('auth:session-expired', handleSessionExpired)
-    return () => {
-      window.removeEventListener('auth:session-expired', handleSessionExpired)
-    }
+    return () => window.removeEventListener('auth:session-expired', handleSessionExpired)
   }, [logout, addToast, navigate, queryClient])
 
   useEffect(() => {
-    if (auth.isAuthenticated && !auth.user) {
-      fetchMe().catch(() => {
-        // fetchMe already handles errors internally — this catch prevents
-        // unhandled promise rejections from the re-throw in authSlice
-      })
-    }
-  }, [auth.isAuthenticated, auth.user, fetchMe])
-
-  // Initialize Google Analytics 4 on app load
-  useEffect(() => {
     try {
       const consent = localStorage.getItem('cookieConsent')
-      if (consent === 'accepted') {
-        initializeGA4()
-      }
+      if (consent === 'accepted') initializeGA4()
     } catch {
-      if (import.meta.env.DEV) {
-        console.warn('[App] GA4 initialization skipped')
-      }
+      if (import.meta.env.DEV) console.warn('[App] GA4 initialization skipped')
     }
   }, [])
 
-  // Track page views on route changes
   useEffect(() => {
     try {
       const consent = localStorage.getItem('cookieConsent')
-      if (consent === 'accepted') {
-        trackPageView(location.pathname + location.search)
-      }
+      if (consent === 'accepted') trackPageView(location.pathname + location.search)
     } catch {
-      // silently ignore GA4 errors
+      // Analytics must never affect navigation.
     }
   }, [location.pathname, location.search])
 
   useEffect(() => {
-    if (theme.mode === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else if (theme.mode === 'light') {
-      document.documentElement.classList.remove('dark')
-    } else {
+    if (theme.mode === 'dark') document.documentElement.classList.add('dark')
+    else if (theme.mode === 'light') document.documentElement.classList.remove('dark')
+    else {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       document.documentElement.classList.toggle('dark', prefersDark)
     }
@@ -178,300 +158,54 @@ function App() {
         <ScrollRestoration />
         <Suspense fallback={<LoadingScreen fullScreen={true} />}>
           <Routes>
-            <Route
-              path="/auth"
-              element={
-                <PublicRoute>
-                  <AuthPage />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={
-                <PublicRoute>
-                  <LazyRoute sectionName="Forgot Password">
-                    <ForgotPasswordPage />
-                  </LazyRoute>
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <HomePage />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/pricing"
-              element={
-                <PublicRoute>
-                  <LazyRoute sectionName="Pricing">
-                    <PricingPage />
-                  </LazyRoute>
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/offline"
-              element={
-                <LazyRoute sectionName="Offline">
-                  <OfflinePage />
-                </LazyRoute>
-              }
-            />
-            <Route
-              path="/terms"
-              element={
-                <LazyRoute sectionName="Terms of Service">
-                  <TermsPage />
-                </LazyRoute>
-              }
-            />
-            <Route
-              path="/privacy"
-              element={
-                <LazyRoute sectionName="Privacy Policy">
-                  <PrivacyPage />
-                </LazyRoute>
-              }
-            />
+            <Route path="/auth" element={<PublicRoute><AuthPage /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><LazyRoute sectionName="Forgot Password"><ForgotPasswordPage /></LazyRoute></PublicRoute>} />
+            <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
+            <Route path="/pricing" element={<PublicRoute><LazyRoute sectionName="Pricing"><PricingPage /></LazyRoute></PublicRoute>} />
+            <Route path="/offline" element={<LazyRoute sectionName="Offline"><OfflinePage /></LazyRoute>} />
+            <Route path="/terms" element={<LazyRoute sectionName="Terms of Service"><TermsPage /></LazyRoute>} />
+            <Route path="/privacy" element={<LazyRoute sectionName="Privacy Policy"><PrivacyPage /></LazyRoute>} />
 
             <Route element={<ProtectedLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route
-                path="/search"
-                element={
-                  <LazyRoute sectionName="Search">
-                    <SearchPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/bookmarks"
-                element={
-                  <LazyRoute sectionName="Bookmarks">
-                    <BookmarksPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/achievements"
-                element={
-                  <LazyRoute sectionName="Achievements">
-                    <AchievementsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/problems"
-                element={
-                  <LazyRoute sectionName="Problems">
-                    <ProblemsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/problem/:slug"
-                element={
-                  <LazyRoute sectionName="Problem Workspace">
-                    <ProblemWorkspacePage />
-                  </LazyRoute>
-                }
-              />
+              <Route path="/search" element={<LazyRoute sectionName="Search"><SearchPage /></LazyRoute>} />
+              <Route path="/bookmarks" element={<LazyRoute sectionName="Bookmarks"><BookmarksPage /></LazyRoute>} />
+              <Route path="/achievements" element={<LazyRoute sectionName="Achievements"><AchievementsPage /></LazyRoute>} />
+              <Route path="/problems" element={<LazyRoute sectionName="Problems"><ProblemsPage /></LazyRoute>} />
+              <Route path="/problem/:slug" element={<LazyRoute sectionName="Problem Workspace"><ProblemWorkspacePage /></LazyRoute>} />
               <Route path="/certificates" element={<Navigate to="/achievements" replace />} />
               <Route path="/quiz" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz/:quizId" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz-history" element={<Navigate to="/tests-a-history" replace />} />
               <Route path="/tests-a" element={<TestsAPage />} />
               <Route path="/tests-a/:testId" element={<TestsAPage />} />
-              <Route
-                path="/tests-a-history"
-                element={
-                  <LazyRoute sectionName="Test History">
-                    <TestsAHistoryPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <LazyRoute sectionName="Settings">
-                    <SettingsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/contest"
-                element={
-                  <LazyRoute sectionName="Contest">
-                    <ContestPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/library"
-                element={
-                  <LazyRoute sectionName="Library">
-                    <LibraryPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/live-class"
-                element={
-                  <LazyRoute sectionName="Live Classes">
-                    <LiveClassPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <LazyRoute sectionName="Notifications">
-                    <NotificationsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/analytics"
-                element={
-                  <LazyRoute sectionName="Analytics">
-                    <AnalyticsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/downloads"
-                element={
-                  <LazyRoute sectionName="Downloads">
-                    <DownloadsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/leaderboard"
-                element={
-                  <LazyRoute sectionName="Leaderboard">
-                    <LeaderboardPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/discussions"
-                element={
-                  <LazyRoute sectionName="Discussions">
-                    <DiscussionsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/ai-tutor"
-                element={
-                  <LazyRoute sectionName="AI Tutor">
-                    <AITutorPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/study-planner"
-                element={
-                  <LazyRoute sectionName="Study Planner">
-                    <StudyPlannerPage />
-                  </LazyRoute>
-                }
-              />
+              <Route path="/tests-a-history" element={<LazyRoute sectionName="Test History"><TestsAHistoryPage /></LazyRoute>} />
+              <Route path="/settings" element={<LazyRoute sectionName="Settings"><SettingsPage /></LazyRoute>} />
+              <Route path="/contest" element={<LazyRoute sectionName="Contest"><ContestPage /></LazyRoute>} />
+              <Route path="/library" element={<LazyRoute sectionName="Library"><LibraryPage /></LazyRoute>} />
+              <Route path="/live-class" element={<LazyRoute sectionName="Live Classes"><LiveClassPage /></LazyRoute>} />
+              <Route path="/notifications" element={<LazyRoute sectionName="Notifications"><NotificationsPage /></LazyRoute>} />
+              <Route path="/analytics" element={<LazyRoute sectionName="Analytics"><AnalyticsPage /></LazyRoute>} />
+              <Route path="/downloads" element={<LazyRoute sectionName="Downloads"><DownloadsPage /></LazyRoute>} />
+              <Route path="/leaderboard" element={<LazyRoute sectionName="Leaderboard"><LeaderboardPage /></LazyRoute>} />
+              <Route path="/discussions" element={<LazyRoute sectionName="Discussions"><DiscussionsPage /></LazyRoute>} />
+              <Route path="/ai-tutor" element={<LazyRoute sectionName="AI Tutor"><AITutorPage /></LazyRoute>} />
+              <Route path="/study-planner" element={<LazyRoute sectionName="Study Planner"><StudyPlannerPage /></LazyRoute>} />
             </Route>
 
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <Layout />
-                </AdminRoute>
-              }
-            >
-              <Route
-                index
-                element={
-                  <LazyRoute sectionName="Admin Dashboard">
-                    <AdminPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="users"
-                element={
-                  <LazyRoute sectionName="Admin Users">
-                    <AdminUsersPage />
-                  </LazyRoute>
-                }
-              />
-
-              <Route
-                path="ai-lab"
-                element={
-                  <LazyRoute sectionName="AI Lab">
-                    <AdminAILabPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="analytics"
-                element={
-                  <LazyRoute sectionName="Admin Analytics">
-                    <AdminAnalyticsPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="ab-testing"
-                element={
-                  <LazyRoute sectionName="A/B Testing">
-                    <AdminABTestingPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="security"
-                element={
-                  <LazyRoute sectionName="Admin Security">
-                    <AdminSecurityPage />
-                  </LazyRoute>
-                }
-              />
+            <Route path="/admin" element={<AdminRoute><Layout /></AdminRoute>}>
+              <Route index element={<LazyRoute sectionName="Admin Dashboard"><AdminPage /></LazyRoute>} />
+              <Route path="users" element={<LazyRoute sectionName="Admin Users"><AdminUsersPage /></LazyRoute>} />
+              <Route path="ai-lab" element={<LazyRoute sectionName="AI Lab"><AdminAILabPage /></LazyRoute>} />
+              <Route path="analytics" element={<LazyRoute sectionName="Admin Analytics"><AdminAnalyticsPage /></LazyRoute>} />
+              <Route path="ab-testing" element={<LazyRoute sectionName="A/B Testing"><AdminABTestingPage /></LazyRoute>} />
+              <Route path="security" element={<LazyRoute sectionName="Admin Security"><AdminSecurityPage /></LazyRoute>} />
             </Route>
-            <Route
-              path="/monitoring"
-              element={
-                <AdminRoute>
-                  <Layout />
-                </AdminRoute>
-              }
-            >
-              <Route
-                index
-                element={
-                  <LazyRoute sectionName="System Monitoring">
-                    <MonitoringPage />
-                  </LazyRoute>
-                }
-              />
+            <Route path="/monitoring" element={<AdminRoute><Layout /></AdminRoute>}>
+              <Route index element={<LazyRoute sectionName="System Monitoring"><MonitoringPage /></LazyRoute>} />
             </Route>
-
-            <Route
-              path="*"
-              element={
-                <Layout>
-                  <LazyRoute sectionName="Not Found">
-                    <NotFoundPage />
-                  </LazyRoute>
-                </Layout>
-              }
-            />
+            <Route path="*" element={<Layout><LazyRoute sectionName="Not Found"><NotFoundPage /></LazyRoute></Layout>} />
           </Routes>
         </Suspense>
         <OnboardingWizard />
