@@ -29,6 +29,14 @@ jest.mock('../../src/utils/logger', () => ({
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    // Mock $transaction to intercept calls without a real DB connection
+    this.$transaction = jest.fn().mockImplementation(async (fn: any) => {
+      // Mock tx object representing Prisma Client during transaction
+      const mockTx = {
+        $queryRaw: jest.fn(),
+      }
+      return await fn(mockTx)
+    }) as any
   }
 
   // Expose internals for testing

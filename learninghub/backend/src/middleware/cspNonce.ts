@@ -15,7 +15,8 @@ export const cspNonce = (_req: Request, res: Response, next: NextFunction): void
   _req.nonce = nonce
 
   const scriptSrc = `'self' 'nonce-${nonce}'`
-  const styleSrc = "'self' 'unsafe-inline' https://fonts.googleapis.com"
+  const isDev = process.env.NODE_ENV === 'development'
+  const styleSrc = `'self' ${isDev ? "'unsafe-inline' " : ""}https://fonts.googleapis.com`
 
   res.setHeader(
     'Content-Security-Policy',

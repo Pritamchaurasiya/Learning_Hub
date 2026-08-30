@@ -8,6 +8,7 @@
 
 import { setItem, getItem, removeItem, keys } from '../utils/storage'
 import { logger } from '../utils/logger'
+import { SecureStorage } from '../utils/security'
 
 export interface PendingSyncItem {
   id: string
@@ -119,11 +120,12 @@ class OfflineSyncService {
 
       for (const item of items) {
         try {
+          const token = await SecureStorage.getItem('token')
           const response = await fetch(item.endpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
+              Authorization: `Bearer ${token ?? ''}`,
             },
             body: JSON.stringify(item.payload),
           })
