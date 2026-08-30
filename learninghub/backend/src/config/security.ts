@@ -34,7 +34,7 @@ export const mfaRateLimit = rateLimit({
       status: 'error',
       message: 'Too many MFA attempts. Please wait before trying again.',
       code: 'MFA_RATE_LIMIT_EXCEEDED',
-      retryAfter: 5 * 60,
+      details: { retryAfter: 5 * 60 },
     })
   },
 })
@@ -57,7 +57,7 @@ export const authRateLimit = rateLimit({
       status: 'error',
       message: 'Too many authentication attempts, please try again later.',
       code: 'AUTH_RATE_LIMIT_EXCEEDED',
-      retryAfter: 15 * 60, // 15 minutes in seconds
+      details: { retryAfter: 15 * 60 },
     })
   },
 })
@@ -140,8 +140,8 @@ export const helmetConfig = {
         "'self'",
         ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
       ],
-      scriptSrcAttr: ["'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      scriptSrcAttr: process.env.NODE_ENV === 'development' ? ["'unsafe-inline'"] : ["'none'"],
+      styleSrc: ["'self'", ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'"] : []), 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       connectSrc: [
