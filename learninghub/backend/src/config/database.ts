@@ -255,7 +255,7 @@ export class ExtendedPrismaClient extends PrismaClient {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.$transaction(fn)
+        return await fn(this as any)
       } catch (error) {
         lastError = error as Error
 

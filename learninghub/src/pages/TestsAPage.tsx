@@ -297,8 +297,9 @@ const ResultsView = memo(({ result, onRetry, onBack }: ResultsViewProps) => {
           <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
             <AlertTriangle className="w-5 h-5" />
             <span className="font-medium">
-              <strong>Mock Test:</strong> This test was generated using fallback questions because the AI service was unavailable. 
-              Scores and analytics may not reflect actual performance.
+              <strong>Mock Test:</strong> This test was generated using fallback questions because
+              the AI service was unavailable. Scores and analytics may not reflect actual
+              performance.
             </span>
           </div>
         </div>
