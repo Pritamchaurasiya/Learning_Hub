@@ -12,6 +12,9 @@ export default defineConfig({
     exclude: ['backend/**', 'dist/**', 'node_modules/**'],
     css: true,
     pool: 'forks',
+    env: {
+      VITE_API_URL: 'http://localhost:5000/api/v1'
+    },
     poolOptions: {
       forks: {
         singleFork: true,
