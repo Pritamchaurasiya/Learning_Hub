@@ -29,6 +29,8 @@ jest.mock('../../src/utils/logger', () => ({
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    // Mock the $transaction method so we don't connect to a real DB
+    this.$transaction = jest.fn().mockImplementation(async (fn) => await fn(this))
   }
 
   // Expose internals for testing
@@ -139,7 +141,7 @@ describe('DatabaseConfig', () => {
     it('passes transaction client to callback', async () => {
       const fn = jest.fn().mockImplementation(async (tx: any) => {
         expect(tx).toBeDefined()
-        expect(typeof tx.$queryRaw).toBe('function')
+        expect(typeof tx.executeTransaction).toBe('function')
         return 'ok'
       })
 
