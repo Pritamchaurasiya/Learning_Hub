@@ -34,14 +34,14 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
-            )
-            this.instance = new MockAIAdapter()
+            logger.error(`[AIServiceFactory] Failed to initialize GeminiAdapter: ${e instanceof Error ? e.message : String(e)}`)
+            throw new Error(`AI Service strictly requires real implementation. Mock is prohibited. Error: ${e instanceof Error ? e.message : String(e)}`)
           }
           break
         case 'mock':
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error('Mock AI Adapter is strictly prohibited in production.')
+          }
           this.instance = new MockAIAdapter()
           break
         // Future extensions:
@@ -58,11 +58,8 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
-              { error: e instanceof Error ? e.message : String(e) }
-            )
-            this.instance = new MockAIAdapter()
+            logger.error(`[AIServiceFactory] Failed to initialize GeminiAdapter: ${e instanceof Error ? e.message : String(e)}`)
+            throw new Error(`AI Service strictly requires real implementation. Mock is prohibited. Error: ${e instanceof Error ? e.message : String(e)}`)
           }
       }
     }
