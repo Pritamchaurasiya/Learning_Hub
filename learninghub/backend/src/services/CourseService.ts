@@ -152,7 +152,22 @@ export const courseService = {
       return { enrollment_id: existing.id, status: 'enrolled', message: 'Already enrolled' }
     }
 
-    return { enrollment_id: '', status: 'enrolled', message: 'Access granted' }
+    const test = await prisma.test.findUnique({ where: { id: courseId } })
+    if (!test) throw new Error('Course not found')
+
+    const newEnrollment = await prisma.testResult.create({
+      data: {
+        userId,
+        testId: courseId,
+        score: 0,
+        totalPoints: Math.round(test.totalMarks) || 0,
+        percentage: 0,
+        passed: false,
+        timeTaken: 0,
+      }
+    })
+
+    return { enrollment_id: newEnrollment.id, status: 'enrolled', message: 'Access granted' }
   },
 
   async getProgress(userId: string | undefined, courseId: string) {
@@ -180,6 +195,19 @@ export const courseService = {
     if (!userId) {
       throw new Error('Authentication required')
     }
+
+    const firstEnrollment = await prisma.testResult.findFirst({
+      where: { userId, testId: courseId },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    if (firstEnrollment) {
+      await prisma.testResult.update({
+        where: { id: firstEnrollment.id },
+        data: { score: progress, percentage: progress, passed: progress >= 100 }
+      })
+    }
+
     return { enrollment: { progress } }
   },
 }
