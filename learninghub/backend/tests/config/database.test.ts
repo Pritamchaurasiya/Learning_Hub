@@ -103,6 +103,14 @@ describe('DatabaseConfig', () => {
   })
 
   describe('executeTransaction', () => {
+    beforeEach(() => {
+      // Mock $transaction to immediately execute the callback with the db instance
+      db.$transaction = jest.fn().mockImplementation(async (cb) => {
+        const mockTx = { ...db, $queryRaw: jest.fn() };
+        return await cb(mockTx);
+      }) as any;
+    })
+
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
       const fn = jest.fn().mockImplementation(() => {
