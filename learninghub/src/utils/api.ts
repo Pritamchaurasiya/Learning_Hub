@@ -46,10 +46,10 @@ export const getCsrfToken = (): string | null => {
 }
 
 export const getSessionId = (): string => {
-  let sessionId = localStorage.getItem('sessionId')
+  let sessionId = sessionStorage.getItem('sessionId')
   if (!sessionId) {
     sessionId = crypto.randomUUID()
-    localStorage.setItem('sessionId', sessionId)
+    sessionStorage.setItem('sessionId', sessionId)
   }
   return sessionId
 }
