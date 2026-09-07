@@ -81,8 +81,20 @@ export const useStore = create<AppState>()(
               },
       }),
       skipHydration: true,
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (error) {
+            console.error('[Hydration] Failed to rehydrate persisted state:', error)
+          } else if (state) {
+            state.setHydrated()
+          }
+        }
+      },
     }
   )
 )
+
+// Rehydrate immediately
+void useStore.persist.rehydrate()
 
 export type { AppState }
