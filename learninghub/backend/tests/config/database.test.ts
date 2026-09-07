@@ -1,13 +1,4 @@
-/**
- * Database Configuration — Unit Tests
- *
- * Tests cover:
- * - executeTransaction retry behavior (deadlock/P2002 retry vs non-retryable)
- * - Soft-delete middleware behavior (findUnique, findFirst, findMany, *OrThrow variants)
- * - Read-replica conditional extension
- */
 import { PrismaClient } from '@prisma/client'
-import { ExtendedPrismaClient } from '../../src/config/database'
 
 // We use the real Prisma Client constructor but replace internals with mocks
 jest.mock('../../src/prismaClient', () => ({
@@ -25,10 +16,21 @@ jest.mock('../../src/utils/logger', () => ({
   },
 }))
 
+// Import after mocks
+import { ExtendedPrismaClient } from '../../src/config/database'
+
 // Isolate the ExtendedPrismaClient class for direct testing
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    // Mock the actual $transaction method to bypass Prisma's real DB connection attempt
+    this.$transaction = jest.fn(async (fn: any) => {
+        const mockTx = {
+            ...this,
+            $queryRaw: jest.fn()
+        };
+        return fn(mockTx);
+    }) as any;
   }
 
   // Expose internals for testing
@@ -105,7 +107,9 @@ describe('DatabaseConfig', () => {
   describe('executeTransaction', () => {
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
-      const fn = jest.fn().mockImplementation(() => {
+
+      // Override the mock to throw errors on first two calls
+      ;(db.$transaction as jest.Mock).mockImplementation(async (fn: any) => {
         calls++
         if (calls < 3) {
           throw new Error('P1002: database timeout')
@@ -113,27 +117,30 @@ describe('DatabaseConfig', () => {
         return 'success'
       })
 
+      const fn = jest.fn()
       const result = await db.executeTransaction(fn, 3)
       expect(result).toBe('success')
       expect(calls).toBe(3)
     })
 
     it('throws immediately on non-retryable errors', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      ;(db.$transaction as jest.Mock).mockImplementation(async (fn: any) => {
         throw new Error('P2003: Foreign key constraint failed')
       })
 
+      const fn = jest.fn()
       await expect(db.executeTransaction(fn, 3)).rejects.toThrow('P2003')
-      expect(fn).toHaveBeenCalledTimes(1)
+      expect(db.$transaction).toHaveBeenCalledTimes(1)
     })
 
     it('throws after exhausting retries on persistent retryable error', async () => {
-      const fn = jest.fn().mockImplementation(() => {
+      ;(db.$transaction as jest.Mock).mockImplementation(async (fn: any) => {
         throw new Error('P1002: database timeout')
       })
 
+      const fn = jest.fn()
       await expect(db.executeTransaction(fn, 2)).rejects.toThrow('P1002')
-      expect(fn).toHaveBeenCalledTimes(2)
+      expect(db.$transaction).toHaveBeenCalledTimes(2)
     })
 
     it('passes transaction client to callback', async () => {
