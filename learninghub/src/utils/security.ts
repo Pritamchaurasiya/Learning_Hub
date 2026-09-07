@@ -90,13 +90,13 @@ export const apiRateLimiter = new RateLimiter(10, 60000)
 
 const STORAGE_SALT_KEY = 'lh_salt_v2'
 
+// Store the salt in memory as well to remove all localStorage dependencies for token logic
+let memorySalt: Uint8Array | null = null
+
 function getOrCreateSalt(): Uint8Array {
-  const stored = localStorage.getItem(STORAGE_SALT_KEY)
-  if (stored) {
-    return Uint8Array.from(atob(stored), c => c.charCodeAt(0))
-  }
+  if (memorySalt) return memorySalt
   const salt = crypto.getRandomValues(new Uint8Array(16))
-  localStorage.setItem(STORAGE_SALT_KEY, btoa(String.fromCharCode(...salt)))
+  memorySalt = salt
   return salt
 }
 
@@ -130,6 +130,9 @@ function getKey(): Promise<CryptoKey> {
   return encryptionKeyPromise
 }
 
+// Use in-memory storage to prevent XSS-based token theft from localStorage
+const memoryStorage = new Map<string, string>()
+
 export class SecureStorage {
   static async setItem(key: string, value: string): Promise<void> {
     const k = await getKey()
@@ -139,11 +142,11 @@ export class SecureStorage {
     const combined = new Uint8Array(iv.length + encrypted.byteLength)
     combined.set(iv)
     combined.set(new Uint8Array(encrypted), iv.length)
-    localStorage.setItem(STORAGE_KEY_PREFIX + key, btoa(String.fromCharCode(...combined)))
+    memoryStorage.set(STORAGE_KEY_PREFIX + key, btoa(String.fromCharCode(...combined)))
   }
 
   static async getItem(key: string): Promise<string | null> {
-    const stored = localStorage.getItem(STORAGE_KEY_PREFIX + key)
+    const stored = memoryStorage.get(STORAGE_KEY_PREFIX + key)
     if (!stored) return null
     const k = await getKey()
     const combined = Uint8Array.from(atob(stored), c => c.charCodeAt(0))
@@ -154,12 +157,16 @@ export class SecureStorage {
   }
 
   static removeItem(key: string): void {
-    localStorage.removeItem(STORAGE_KEY_PREFIX + key)
+    memoryStorage.delete(STORAGE_KEY_PREFIX + key)
   }
 
   static clear(): void {
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(STORAGE_KEY_PREFIX))
-      .forEach(k => localStorage.removeItem(k))
+    const keysToDelete: string[] = []
+    memoryStorage.forEach((_, k) => {
+      if (k.startsWith(STORAGE_KEY_PREFIX)) {
+        keysToDelete.push(k)
+      }
+    })
+    keysToDelete.forEach(k => memoryStorage.delete(k))
   }
 }
