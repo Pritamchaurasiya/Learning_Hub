@@ -29,6 +29,7 @@ jest.mock('../../src/utils/logger', () => ({
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    this.$transaction = jest.fn().mockImplementation(async (fn) => await fn(this as any))
   }
 
   // Expose internals for testing

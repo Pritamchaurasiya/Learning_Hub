@@ -64,7 +64,12 @@ const getConnectionPoolConfig = () => {
  * Build database URL with connection pool parameters
  */
 const buildDatabaseUrl = (): string => {
-  const baseUrl = process.env.DATABASE_URL
+  let baseUrl = process.env.DATABASE_URL
+
+  if (process.env.NODE_ENV === 'test') {
+    baseUrl = baseUrl || 'postgresql://postgres:postgres@localhost:5432/learninghub_test'
+  }
+
   if (!baseUrl) {
     throw new Error('DATABASE_URL environment variable is required')
   }
