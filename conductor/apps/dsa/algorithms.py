@@ -31,17 +31,29 @@ class SortingAlgorithms:
     @staticmethod
     def quick_sort(arr: List[int]) -> List[int]:
         """
-        QuickSort implementation.
+        QuickSort implementation (In-place).
         Time: O(n log n) average, O(n²) worst
-        Space: O(log n)
+        Space: O(log n) auxiliary
         """
-        if len(arr) <= 1:
-            return arr
-        pivot = arr[len(arr) // 2]
-        left = [x for x in arr if x < pivot]
-        middle = [x for x in arr if x == pivot]
-        right = [x for x in arr if x > pivot]
-        return SortingAlgorithms.quick_sort(left) + middle + SortingAlgorithms.quick_sort(right)
+        def _quick_sort_inplace(items: List[int], low: int, high: int):
+            if low < high:
+                pivot_idx = _partition(items, low, high)
+                _quick_sort_inplace(items, low, pivot_idx - 1)
+                _quick_sort_inplace(items, pivot_idx + 1, high)
+
+        def _partition(items: List[int], low: int, high: int) -> int:
+            pivot = items[high]
+            i = low - 1
+            for j in range(low, high):
+                if items[j] <= pivot:
+                    i += 1
+                    items[i], items[j] = items[j], items[i]
+            items[i + 1], items[high] = items[high], items[i + 1]
+            return i + 1
+
+        result = list(arr)
+        _quick_sort_inplace(result, 0, len(result) - 1)
+        return result
     
     @staticmethod
     def merge_sort(arr: List[int]) -> List[int]:
