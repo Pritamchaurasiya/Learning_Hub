@@ -46,9 +46,9 @@ describe('Button Component', () => {
   })
 
   it('renders loading state correctly', () => {
-    render(<Button isLoading>Loading</Button>)
+    const { container } = render(<Button isLoading>Loading</Button>)
     expect(screen.getByText('Loading')).toBeInTheDocument()
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument()
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument()
   })
 
   it('applies fullWidth class when prop is true', () => {
