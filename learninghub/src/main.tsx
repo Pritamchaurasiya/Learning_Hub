@@ -21,16 +21,6 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   })
 }
 
-// Rehydrate Zustand persisted state
-void (async () => {
-  try {
-    await useStore.persist.rehydrate()
-  } catch (err) {
-    console.error('[Hydration] Failed to rehydrate persisted state:', err)
-  } finally {
-    useStore.getState().setHydrated()
-  }
-})()
 
 // Create React Query client with optimized defaults
 const queryClient = new QueryClient({

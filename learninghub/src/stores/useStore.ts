@@ -80,7 +80,7 @@ export const useStore = create<AppState>()(
                 lastAutosavedAt: null,
               },
       }),
-      skipHydration: true,
+      onRehydrateStorage: () => (state) => { if (state) state.setHydrated() },
     }
   )
 )
