@@ -106,7 +106,7 @@ export const getImprovementRoadmap = asyncHandler(async (req: Request, res: Resp
   const weeks = Math.min(Math.max(parseInt(req.query.weeks as string) || 4, 1), 12)
   const roadmap = await recommendationService.getImprovementRoadmap(userId, weeks)
 
-  res.json({ status: 'success', data: roadmap })
+  sendSuccess(res, roadmap)
 })
 
 /**
