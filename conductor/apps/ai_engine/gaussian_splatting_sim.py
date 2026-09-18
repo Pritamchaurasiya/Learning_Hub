@@ -7,7 +7,7 @@ Position (XYZ), Covariance (Scale/Rotation), Opacity (Alpha), and Spherical Harm
 import math
 import random
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
