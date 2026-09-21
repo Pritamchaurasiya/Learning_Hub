@@ -246,7 +246,10 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
 
         if (response.ok) {
           if (responseType === 'blob') return response.blob()
-          const data = await response.json()
+          let data = await response.json()
+          if (data && typeof data === 'object' && 'status' in data && 'data' in data && data.data !== undefined) {
+            data = data.data
+          }
           if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache)
             setCachedData(fullUrl, data, options)
           return data
@@ -341,7 +344,10 @@ async function handleNonRetryable(
 
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
-          const data = await retryResponse.json()
+          let data = await retryResponse.json()
+          if (data && typeof data === 'object' && 'status' in data && 'data' in data && data.data !== undefined) {
+            data = data.data
+          }
           if (method === 'GET' && isCacheable(fullUrl, options))
             setCachedData(fullUrl, data, options)
           return data

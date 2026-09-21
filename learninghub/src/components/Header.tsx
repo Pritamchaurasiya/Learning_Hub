@@ -17,34 +17,22 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
-import { useShallow } from 'zustand/react/shallow'
 import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 
 const Header = memo(() => {
   const navigate = useNavigate()
-  const {
-    theme,
-    toggleDarkMode,
-    progress,
-    setSidebarOpen,
-    dailyGoal,
-    isAuthenticated,
-    authUser,
-    logout,
-  } = useStore(
-    useShallow(s => ({
-      theme: s.theme,
-      toggleDarkMode: s.toggleDarkMode,
-      progress: s.progress,
-      setSidebarOpen: s.setSidebarOpen,
-      dailyGoal: s.dailyGoal,
-      isAuthenticated: s.auth.isAuthenticated,
-      authUser: s.auth.user,
-      logout: s.logout,
-    }))
-  )
+
+  const theme = useStore(s => s.theme)
+  const toggleDarkMode = useStore(s => s.toggleDarkMode)
+  const progress = useStore(s => s.progress)
+  const setSidebarOpen = useStore(s => s.setSidebarOpen)
+  const dailyGoal = useStore(s => s.dailyGoal)
+  const isAuthenticated = useStore(s => s.auth.isAuthenticated)
+  const authUser = useStore(s => s.auth.user)
+  const logout = useStore(s => s.logout)
+
   const [searchInput, setSearchInput] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
