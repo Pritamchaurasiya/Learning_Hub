@@ -298,7 +298,6 @@ export default function AITutorPage() {
                     parseError instanceof Error &&
                     parseError.message !== 'Unexpected end of JSON input'
                   ) {
-                    // eslint-disable-next-line no-console
                     if (import.meta.env.DEV)
                       console.warn('[AITutor] SSE parse issue:', parseError.message)
                   }
