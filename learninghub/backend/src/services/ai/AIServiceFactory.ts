@@ -34,14 +34,18 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
+            logger.error(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter:`,
               { error: e instanceof Error ? e.message : String(e) }
             )
-            this.instance = new MockAIAdapter()
+            throw new Error('AI Service initialization failed. Check credentials.')
           }
           break
         case 'mock':
+          // In production, we don't want mock behavior if explicitly configured for mock
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error('Mock AI Adapter cannot be used in production environments.')
+          }
           this.instance = new MockAIAdapter()
           break
         // Future extensions:
@@ -58,11 +62,11 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
-            logger.warn(
-              `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
+            logger.error(
+              `[AIServiceFactory] Failed to initialize GeminiAdapter:`,
               { error: e instanceof Error ? e.message : String(e) }
             )
-            this.instance = new MockAIAdapter()
+            throw new Error('AI Service initialization failed. Check credentials.')
           }
       }
     }
