@@ -408,96 +408,10 @@ export class AITestService {
         }
       }
     } catch (error) {
-      logger.warn('[AITestService] AI service unavailable or failed — generating mock questions', {
+      logger.error('[AITestService] AI service unavailable or failed. Cannot generate questions.', {
         error: error instanceof Error ? error.message : String(error),
       })
-      isMock = true
-      questions = Array.from({ length: questionCount }).map((_, i) => ({
-        text: `[MOCK] Sample Question ${i + 1} for topic: ${req.topic}`,
-        options: [
-          { id: 'a', text: 'Option A (Correct)' },
-          { id: 'b', text: 'Option B' },
-          { id: 'c', text: 'Option C' },
-          { id: 'd', text: 'Option D' },
-        ],
-        correct_option_id: 'a',
-        explanation: 'This is a mock explanation because the AI service is currently unavailable.',
-        difficulty: req.difficulty,
-        bloom_level: 'understand',
-        tags: [req.topic, 'mock'],
-      }))
-
-      // Persist mock test with clear marker
-      const test = await prisma.test.create({
-        data: {
-          title: `MOCK: AI Practice: ${req.topic}`,
-          description: `AI-generated practice test on ${req.topic} (${req.difficulty} difficulty) - MOCK FALLBACK`,
-          timeLimit,
-          mode: req.mode,
-          difficulty: req.difficulty === 'ADAPTIVE' ? 'MIXED' : req.difficulty,
-          isAiGenerated: false,
-          isPublished: true,
-          totalMarks: questions.length * 10,
-          passingScore: 60,
-          questions: {
-            create: questions.map((q, idx) => {
-              let resolvedBloom: BloomLevel = BloomLevel.UNDERSTAND
-              const validBlooms = Object.values(BloomLevel)
-              const inputBloom = (q.bloom_level ?? '').toUpperCase() as BloomLevel
-              if (validBlooms.includes(inputBloom)) {
-                resolvedBloom = inputBloom
-              }
-
-              return {
-                text: q.text,
-                type: 'MCQ',
-                difficulty: this.difficultyToIRT(q.difficulty),
-                bloomLevel: resolvedBloom,
-                explanation: q.explanation,
-                tags: q.tags ?? [req.topic, 'mock'],
-                isAiGenerated: false,
-                points: 10,
-                order: idx + 1,
-                options: {
-                  create: q.options.map((opt: { id: string; text: string }, optIdx: number) => ({
-                    text: opt.text,
-                    isCorrect: opt.id === q.correct_option_id,
-                    explanation: opt.id === q.correct_option_id ? q.explanation : null,
-                    order: optIdx,
-                  })),
-                },
-              }
-            }),
-          },
-        },
-        include: {
-          questions: {
-            include: {
-              options: true,
-            },
-          },
-        },
-      })
-
-      return {
-        testId: test.id,
-        title: test.title,
-        questionCount: questions.length,
-        timeLimit,
-        questions: test.questions.map((q: any) => ({
-          text: q.text,
-          options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
-          correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
-          explanation: q.explanation ?? '',
-          difficulty: q.difficulty.toString(),
-          bloom_level: q.bloomLevel,
-          tags: q.tags,
-        })),
-        ai_powered: false,
-        model: 'mock',
-        cached: false,
-        is_mock: true, // Explicit flag for frontend
-      }
+      throw new Error('AI test generation failed. Please try again later.')
     }
 
     // Persist test to database

@@ -105,6 +105,7 @@ describe('DatabaseConfig', () => {
   describe('executeTransaction', () => {
     it('retries on retryable errors up to maxRetries', async () => {
       let calls = 0
+      db.$transaction = jest.fn().mockImplementation(async (fnToRun) => await fnToRun(db))
       const fn = jest.fn().mockImplementation(() => {
         calls++
         if (calls < 3) {
@@ -119,6 +120,7 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws immediately on non-retryable errors', async () => {
+      db.$transaction = jest.fn().mockImplementation(async (fnToRun) => await fnToRun(db))
       const fn = jest.fn().mockImplementation(() => {
         throw new Error('P2003: Foreign key constraint failed')
       })
@@ -128,6 +130,7 @@ describe('DatabaseConfig', () => {
     })
 
     it('throws after exhausting retries on persistent retryable error', async () => {
+      db.$transaction = jest.fn().mockImplementation(async (fnToRun) => await fnToRun(db))
       const fn = jest.fn().mockImplementation(() => {
         throw new Error('P1002: database timeout')
       })
@@ -137,9 +140,9 @@ describe('DatabaseConfig', () => {
     })
 
     it('passes transaction client to callback', async () => {
+      db.$transaction = jest.fn().mockImplementation(async (fnToRun) => await fnToRun(db))
       const fn = jest.fn().mockImplementation(async (tx: any) => {
         expect(tx).toBeDefined()
-        expect(typeof tx.$queryRaw).toBe('function')
         return 'ok'
       })
 

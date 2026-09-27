@@ -43,16 +43,11 @@ describe('subscriptionService', () => {
       expect(result).toEqual(mockTiers)
     })
 
-    it('should return fallback tiers when API fails', async () => {
+    it('should throw an error when API fails', async () => {
       const { fetchApi } = await import('../utils/api')
       vi.mocked(fetchApi).mockRejectedValue(new Error('API error'))
 
-      const result = await subscriptionService.getTiers()
-
-      expect(result).toHaveLength(3)
-      expect(result[0]).toMatchObject({ id: 'free', name: 'Free', price: 0 })
-      expect(result[1]).toMatchObject({ id: 'pro', name: 'Pro', price: 19, isPopular: true })
-      expect(result[2]).toMatchObject({ id: 'tests-a-plus', name: 'Tests A+ Elite', price: 49 })
+      await expect(subscriptionService.getTiers()).rejects.toThrow('API error')
     })
   })
 
@@ -91,13 +86,11 @@ describe('subscriptionService', () => {
       expect(result).toBeNull()
     })
 
-    it('should return null when API fails', async () => {
+    it('should handle API errors and throw', async () => {
       const { fetchApi } = await import('../utils/api')
       vi.mocked(fetchApi).mockRejectedValue(new Error('API error'))
 
-      const result = await subscriptionService.getMySubscription()
-
-      expect(result).toBeNull()
+      await expect(subscriptionService.getMySubscription()).rejects.toThrow('API error')
     })
   })
 
@@ -118,16 +111,14 @@ describe('subscriptionService', () => {
       expect(result).toBe('https://checkout.stripe.com/session-123')
     })
 
-    it('should return mock checkoutUrl when Stripe is not configured', async () => {
+    it('should throw error when checkoutUrl is not returned', async () => {
       const { fetchApi } = await import('../utils/api')
       vi.mocked(fetchApi).mockResolvedValue({
         status: 'success',
         data: {},
       })
 
-      const result = await subscriptionService.createCheckoutSession('pro')
-
-      expect(result).toMatch(/^\/payment-success\?session_id=mock_\d+$/)
+      await expect(subscriptionService.createCheckoutSession('pro')).rejects.toThrow('Failed to create checkout session')
     })
 
     it('should handle API errors', async () => {
