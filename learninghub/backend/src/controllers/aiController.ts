@@ -5,6 +5,7 @@ import type { TutorContext } from '../services/ai/AILearningService'
 import { asyncHandler } from '../utils/errorHandler'
 import { sendSuccess, sendValidationError, sendInternalError } from '../utils/responseHelper'
 import logger from '../utils/logger'
+import { multiAgentCouncilService } from '../services/ai/MultiAgentCouncilService'
 
 // ─── Controllers ─────────────────────────────────────────────────────────────
 
@@ -156,6 +157,10 @@ export const generatePracticeTest = asyncHandler(
       difficulty = 'MEDIUM',
       count = 10,
       mode = 'PRACTICE',
+      ai_mode,
+      aiMode,
+      question_source,
+      questionSource,
       exam_context,
       time_limit,
     } = req.body
@@ -177,12 +182,29 @@ export const generatePracticeTest = asyncHandler(
       ? (rawDifficulty as (typeof validDifficulties)[number])
       : 'MEDIUM'
 
+    // Accept both snake_case and camelCase for AI mode
+    const resolvedAIMode = (ai_mode ?? aiMode ?? 'AI_OPTIONAL').toString().toUpperCase()
+    const validAIModes = ['NO_AI', 'AI_OPTIONAL', 'AI_REQUIRED', 'HYBRID'] as const
+    const finalAIMode = (validAIModes as readonly string[]).includes(resolvedAIMode)
+      ? (resolvedAIMode as (typeof validAIModes)[number])
+      : 'AI_OPTIONAL'
+
+    const resolvedQuestionSource = (question_source ?? questionSource ?? 'AI_GENERATED')
+      .toString()
+      .toUpperCase()
+    const validSources = ['MANUAL', 'DATABASE', 'IMPORT', 'AI_GENERATED', 'HYBRID'] as const
+    const finalQuestionSource = (validSources as readonly string[]).includes(resolvedQuestionSource)
+      ? (resolvedQuestionSource as (typeof validSources)[number])
+      : 'AI_GENERATED'
+
     const params = {
       userId,
       topic: topic.trim().substring(0, 500),
       difficulty: resolvedDifficulty,
       count: Math.min(Math.max(parseInt(String(count), 10) || 10, 5), 50),
       mode: resolvedMode,
+      aiMode: finalAIMode,
+      questionSource: finalQuestionSource,
       examContext: exam_context,
       timeLimit: time_limit,
     }
@@ -203,9 +225,33 @@ export const generatePracticeTest = asyncHandler(
       return
     }
 
-    const result = await aiTestService.generateTest(params)
-
-    sendSuccess(res, result)
+    try {
+      const result = await aiTestService.generateTest(params)
+      sendSuccess(res, result)
+    } catch (err) {
+      // If AI fails AND mode allows fallback, try question bank
+      if (params.aiMode === 'AI_OPTIONAL' || params.aiMode === 'HYBRID' || params.aiMode === 'NO_AI') {
+        logger.warn('[AIController] AI generation failed, falling back to question bank', {
+          aiMode: params.aiMode,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        try {
+          const fallbackResult = await aiTestService.generateTest({
+            ...params,
+            aiMode: 'NO_AI', // force NO_AI fallback path
+          })
+          sendSuccess(res, fallbackResult)
+          return
+        } catch (fallbackErr) {
+          logger.error(
+            '[AIController] Fallback also failed',
+            fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr))
+          )
+        }
+      }
+      // Re-throw to be handled by error middleware
+      throw err
+    }
   }
 )
 
@@ -330,3 +376,62 @@ export const deleteChatSession = asyncHandler(
     sendSuccess(res, { success: true })
   }
 )
+
+/**
+ * POST /api/v1/ai/council/consult
+ */
+export const consultCouncil = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const { query, codeSnippet, language, problemTitle, problemDescription, studentLevel } = req.body
+
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      sendValidationError(res, 'Query is required')
+      return
+    }
+
+    const result = await multiAgentCouncilService.consultCouncil({
+      userId,
+      query: query.trim(),
+      codeSnippet: typeof codeSnippet === 'string' ? codeSnippet : undefined,
+      language: typeof language === 'string' ? language : undefined,
+      problemTitle: typeof problemTitle === 'string' ? problemTitle : undefined,
+      problemDescription: typeof problemDescription === 'string' ? problemDescription : undefined,
+      studentLevel: studentLevel || 'intermediate',
+    })
+
+    sendSuccess(res, result)
+  }
+)
+
+/**
+ * POST /api/v1/ai/council/specialist
+ */
+export const consultSpecialist = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const { role, query, codeSnippet, language, problemTitle, studentLevel } = req.body
+
+    if (!role || !['socratic_guide', 'code_reviewer', 'motivational_coach'].includes(role)) {
+      sendValidationError(res, 'Valid specialist role is required')
+      return
+    }
+
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      sendValidationError(res, 'Query is required')
+      return
+    }
+
+    const result = await multiAgentCouncilService.consultSpecialist(role, {
+      userId,
+      query: query.trim(),
+      codeSnippet: typeof codeSnippet === 'string' ? codeSnippet : undefined,
+      language: typeof language === 'string' ? language : undefined,
+      problemTitle: typeof problemTitle === 'string' ? problemTitle : undefined,
+      studentLevel: studentLevel || 'intermediate',
+    })
+
+    sendSuccess(res, result)
+  }
+)
+

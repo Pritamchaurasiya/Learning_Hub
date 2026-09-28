@@ -15,6 +15,8 @@ import {
   createChatSession,
   deleteChatSession,
   reviewCodeSubmission,
+  consultCouncil,
+  consultSpecialist,
 } from '../../controllers/aiController'
 import {
   analyzeLearningPathSchema,
@@ -23,6 +25,7 @@ import {
   generatePracticeTestSchema,
   codeReviewSchema,
 } from '../../validations/schemas'
+import { ebooksController } from '../../controllers/ebooksController'
 
 const router = Router()
 
@@ -83,6 +86,24 @@ router.post(
   aiRateLimit,
   validate(codeReviewSchema),
   reviewCodeSubmission
+)
+
+// Multi-Agent Collaborative Council
+router.post('/council/consult', authenticate, aiRateLimit, consultCouncil)
+router.post('/council/specialist', authenticate, aiRateLimit, consultSpecialist)
+
+// AI Ebook Smart Reading Companion
+router.post(
+  '/ebook/summarize-chapter',
+  authenticate,
+  aiRateLimit,
+  ebooksController.summarizeChapterAI
+)
+router.post(
+  '/ebook/explain-paragraph',
+  authenticate,
+  aiRateLimit,
+  ebooksController.explainParagraphAI
 )
 
 export default router

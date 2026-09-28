@@ -27,7 +27,9 @@ async function hasRoomAccess(userId: string, roomId: string): Promise<boolean> {
     roomId.startsWith('quiz-') ||
     roomId.startsWith('test-') ||
     roomId.startsWith('contest-') ||
-    roomId.startsWith('live-')
+    roomId.startsWith('live-') ||
+    roomId.startsWith('collab-') ||
+    roomId.startsWith('dsa-')
   ) {
     return true
   }
@@ -109,7 +111,42 @@ export const setupWebSockets = (io: Server) => {
     }
   }, 10000).unref() // Sweep every 10s
 
+  // Connection rate limiting - max 50 connections per IP per minute
+  const connectionCounts = new Map<string, { count: number; windowStart: number }>()
+  const MAX_CONNECTIONS_PER_IP = 50
+  const CONNECTION_WINDOW_MS = 60_000
+
+  // Cleanup connection counts periodically
+  setInterval(() => {
+    const now = Date.now()
+    for (const [ip, data] of connectionCounts.entries()) {
+      if (now - data.windowStart > CONNECTION_WINDOW_MS) {
+        connectionCounts.delete(ip)
+      }
+    }
+  }, 60000).unref()
+
   io.on('connection', socket => {
+    // Check connection rate limit
+    const clientIp = socket.handshake.address || 'unknown'
+    const now = Date.now()
+    const connData = connectionCounts.get(clientIp)
+
+    if (!connData || now - connData.windowStart > CONNECTION_WINDOW_MS) {
+      connectionCounts.set(clientIp, { count: 1, windowStart: now })
+    } else {
+      connData.count++
+      if (connData.count > MAX_CONNECTIONS_PER_IP) {
+        logger.warn('WebSocket connection rate limit exceeded', {
+          ip: clientIp,
+          count: connData.count,
+        })
+        socket.emit('error', { message: 'Connection rate limit exceeded. Please try again later.' })
+        socket.disconnect(true)
+        return
+      }
+    }
+
     logger.info('User connected', { socketId: socket.id, userId: socket.data.userId })
     webSocketService.registerSocket(socket)
 
@@ -243,6 +280,68 @@ export const setupWebSockets = (io: Server) => {
       }
       io.to(data.roomId).emit('hand-raised', { user: socket.data.userId })
     })
+
+    // ── Live Collaborative DSA Pair Programming (Milestone 2) ───────────
+    socket.on(
+      'collab-code-change',
+      (data: { roomId: string; code: string; language?: string; version?: number }) => {
+        if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+          return
+        }
+        if (typeof data.code !== 'string' || data.code.length > 50000) {
+          socket.emit('error', { message: 'Code payload exceeded maximum size' })
+          return
+        }
+        socket.to(data.roomId).emit('collab-code-update', {
+          senderSocketId: socket.id,
+          senderUserId: socket.data.userId,
+          code: data.code,
+          language: data.language,
+          version: data.version ?? Date.now(),
+          timestamp: Date.now(),
+        })
+      }
+    )
+
+    socket.on('collab-cursor-move', (data: { roomId: string; line: number; ch: number }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        return
+      }
+      socket.to(data.roomId).emit('collab-cursor-update', {
+        senderSocketId: socket.id,
+        senderUserId: socket.data.userId,
+        line: Number(data.line) || 0,
+        ch: Number(data.ch) || 0,
+      })
+    })
+
+    socket.on('collab-run-tests', (data: { roomId: string }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        return
+      }
+      socket.to(data.roomId).emit('collab-peer-running-tests', {
+        senderSocketId: socket.id,
+        senderUserId: socket.data.userId,
+      })
+    })
+
+    socket.on(
+      'collab-test-results',
+      (data: { roomId: string; output: string; status?: 'passed' | 'failed' | 'error' }) => {
+        if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+          return
+        }
+        if (typeof data.output !== 'string' || data.output.length > 20000) {
+          return
+        }
+        socket.to(data.roomId).emit('collab-test-results-shared', {
+          senderSocketId: socket.id,
+          senderUserId: socket.data.userId,
+          output: data.output,
+          status: data.status || 'passed',
+        })
+      }
+    )
 
     socket.on('disconnecting', () => {
       // socket.rooms is a Set containing all rooms the socket is currently in

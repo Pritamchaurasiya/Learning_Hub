@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Send,
@@ -15,7 +15,18 @@ import {
   Loader2,
   StopCircle,
   RotateCcw,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Copy,
+  Check,
+  Download,
+  Sparkles,
+  Code2,
+  Users,
 } from 'lucide-react'
+import { AICouncilModal } from '../components/AICouncilModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SEO } from '../components/SEO'
 import AnimatedPage from '../components/AnimatedPage'
@@ -24,10 +35,11 @@ import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
 import { aiTutorService, type AIChatMessage, type AIChatSession } from '../services/aiTutorService'
 import { useStore } from '../stores/useStore'
+import { useSpeechVoice } from '../hooks/useSpeechVoice'
 
 import { renderMarkdown } from '../utils/markdown'
 import { useBreakpoint } from '../hooks/useMediaQuery'
-import { getCsrfToken, getSessionId } from '../utils/api'
+import { getCsrfToken, getSessionId, getAccessToken } from '../utils/api'
 
 const quickActions = [
   {
@@ -51,10 +63,33 @@ const quickActions = [
     color: 'text-amber-500',
     bg: 'bg-amber-50 dark:bg-amber-900/20',
   },
+  {
+    icon: Code,
+    label: 'DSA & Complexity',
+    prompt: 'Explain Dynamic Programming state transitions and space optimization with an example.',
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+  },
+  {
+    icon: BookOpen,
+    label: 'System Design',
+    prompt: 'Explain how distributed caching and Redis Pub/Sub work at enterprise scale.',
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+  },
+  {
+    icon: Lightbulb,
+    label: 'Exam Prep & Strategy',
+    prompt:
+      'What is the most effective way to revise high-yield formulas and solve timed mock tests?',
+    color: 'text-rose-500',
+    bg: 'bg-rose-50 dark:bg-rose-900/20',
+  },
 ]
 
 export default function AITutorPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const addToast = useStore(state => state.addToast)
   const isDesktop = useBreakpoint('lg')
@@ -63,11 +98,108 @@ export default function AITutorPage() {
   const [input, setInput] = useState('')
   const [showHistory, setShowHistory] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [isSocraticMode, setIsSocraticMode] = useState(false)
+  const [isCouncilModalOpen, setIsCouncilModalOpen] = useState(false)
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null)
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  const extractCodeBlock = (content: string): { code: string; language: string } | null => {
+    const startIdx = content.indexOf('```')
+    if (startIdx === -1) return null
+    const afterStart = content.slice(startIdx + 3)
+    const endIdx = afterStart.indexOf('```')
+    if (endIdx === -1) return null
+
+    const firstLineEnd = afterStart.indexOf('\n')
+    if (firstLineEnd !== -1 && firstLineEnd < endIdx) {
+      const language = afterStart.slice(0, firstLineEnd).trim().toLowerCase() || 'python'
+      const code = afterStart.slice(firstLineEnd + 1, endIdx).trim()
+      return { language, code }
+    }
+    const code = afterStart.slice(0, endIdx).trim()
+    return { language: 'python', code }
+  }
+
+  const handleOpenInWorkspace = useCallback(
+    (codeSnippet: string, language: string) => {
+      navigate('/problems', {
+        state: {
+          initialCode: codeSnippet,
+          language:
+            language === 'js' || language === 'javascript'
+              ? 'javascript'
+              : language === 'cpp'
+                ? 'cpp'
+                : 'python',
+        },
+      })
+      addToast({ message: 'Code copied to Problem Workspace', type: 'info' })
+    },
+    [navigate, addToast]
+  )
+
+  const handleExportSession = useCallback(
+    (
+      currentMessages: Array<{ id: string; role: string; content: string; createdAt: string }>,
+      sessionList: AIChatSession[],
+      activeSessionId: string | null
+    ) => {
+      if (currentMessages.length === 0) return
+      const title = sessionList.find(s => s.id === activeSessionId)?.title || 'AI Tutor Session'
+      let mdContent = `# ${title}\n\n*Exported from LearningHub AI Tutor on ${new Date().toLocaleString()}*\n\n---\n\n`
+      currentMessages.forEach(msg => {
+        const roleLabel = msg.role === 'assistant' ? '🤖 AI Tutor' : '👤 User'
+        mdContent += `### ${roleLabel} (${new Date(msg.createdAt).toLocaleTimeString()})\n\n${msg.content}\n\n---\n\n`
+      })
+
+      const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${title.replace(/[^a-zA-Z0-9_-]/g, '_')}_${new Date().toISOString().slice(0, 10)}.md`
+      a.click()
+      URL.revokeObjectURL(url)
+      addToast({ message: 'Conversation exported as Markdown', type: 'success' })
+    },
+    [addToast]
+  )
+
+  const { isListening, speakingMessageId, toggleListening, speak, stopSpeaking } = useSpeechVoice({
+    onTranscript: transcript => {
+      setInput(prev => (prev ? `${prev} ${transcript}` : transcript))
+      if (textareaRef.current) {
+        textareaRef.current.focus()
+      }
+    },
+    onError: err => {
+      addToast({ message: `Voice: ${err}`, type: 'error' })
+    },
+  })
+
+  const handleCopyMessage = useCallback(
+    (id: string, text: string) => {
+      void navigator.clipboard.writeText(text)
+      setCopiedMessageId(id)
+      setTimeout(() => setCopiedMessageId(null), 2000)
+      addToast({ message: 'Message copied to clipboard', type: 'success' })
+    },
+    [addToast]
+  )
+
+  // Auto-populate initialPrompt from navigation state (e.g. from Knowledge Graph or Study Planner)
+  useEffect(() => {
+    const promptState = (location.state as { initialPrompt?: string })?.initialPrompt
+    if (promptState && promptState.trim()) {
+      setInput(promptState)
+      setTimeout(() => {
+        textareaRef.current?.focus()
+      }, 100)
+    }
+  }, [location.state])
 
   // Fetch Chat History (Sessions List)
   const { data: sessions = [], isLoading: isSessionsLoading } = useQuery({
@@ -171,7 +303,9 @@ export default function AITutorPage() {
   })
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [])
 
   // Send Message using Fetch API for Streaming support
@@ -221,20 +355,27 @@ export default function AITutorPage() {
       try {
         const csrfToken = getCsrfToken()
         const sessionId = getSessionId()
+        const token = await getAccessToken()
 
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         }
 
+        if (token) headers['Authorization'] = `Bearer ${token}`
         if (csrfToken) headers['x-csrf-token'] = csrfToken
         if (sessionId) headers['x-session-id'] = sessionId
+
+        const formattedPayload = isSocraticMode
+          ? `[Socratic Hint Mode: Please guide me by asking probing questions and explaining core intuition step-by-step rather than immediately giving the full final solution.] ${messageToSend}`
+          : messageToSend
 
         const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/tutor/stream`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            message: messageToSend,
+            message: formattedPayload,
             session_id: currentSessionId,
+            socratic_mode: isSocraticMode,
           }),
           credentials: 'include',
           signal: controller.signal,
@@ -298,7 +439,6 @@ export default function AITutorPage() {
                     parseError instanceof Error &&
                     parseError.message !== 'Unexpected end of JSON input'
                   ) {
-                    // eslint-disable-next-line no-console
                     if (import.meta.env.DEV)
                       console.warn('[AITutor] SSE parse issue:', parseError.message)
                   }
@@ -313,8 +453,36 @@ export default function AITutorPage() {
           // Stream was intentionally stopped by user
           return
         }
+
+        // Fallback to standard HTTP JSON endpoint if streaming encounters an error
+        try {
+          const fallbackRes = await aiTutorService.sendMessage({
+            message: messageToSend,
+            session_id: currentSessionId,
+          })
+
+          if (fallbackRes.data?.message) {
+            queryClient.setQueryData(
+              ['aiTutor', 'session', currentSessionId],
+              (old: AIChatMessage[] = []) => {
+                const newMessages = [...old]
+                const targetIdx = newMessages.findIndex(m => m.id === assistantMessageId)
+                if (targetIdx !== -1) {
+                  newMessages[targetIdx] = fallbackRes.data.message
+                } else {
+                  newMessages.push(fallbackRes.data.message)
+                }
+                return newMessages
+              }
+            )
+            return
+          }
+        } catch {
+          // Both stream and fallback failed
+        }
+
         setLastFailedMessage(messageToSend)
-        addToast({ message: 'Failed to stream response from AI Tutor.', type: 'error' })
+        addToast({ message: 'Failed to get response from AI Tutor.', type: 'error' })
         // Remove placeholder message on error
         queryClient.setQueryData(
           ['aiTutor', 'session', currentSessionId],
@@ -543,15 +711,58 @@ export default function AITutorPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSocraticMode(!isSocraticMode)
+                    addToast({
+                      message: !isSocraticMode
+                        ? 'Socratic Mode ON: AI will guide you with questions'
+                        : 'Socratic Mode OFF: Standard explanations',
+                      type: 'info',
+                    })
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${
+                    isSocraticMode
+                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 ring-1 ring-amber-500/30'
+                      : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700'
+                  }`}
+                  title="Toggle Socratic tutoring style"
+                >
+                  <Sparkles
+                    className={`w-3.5 h-3.5 ${isSocraticMode ? 'text-amber-500 animate-spin' : 'text-gray-400'}`}
+                  />
+                  <span className="hidden sm:inline">Socratic</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCouncilModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30 ring-1 ring-purple-500/20"
+                  title="Consult 3-Agent Collaborative Council"
+                >
+                  <Users className="w-3.5 h-3.5 text-purple-500" />
+                  <span className="hidden sm:inline">AI Council</span>
+                </button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/learning-path')}
+                  onClick={() => handleExportSession(messages, sessions, currentSessionId)}
+                  disabled={messages.length === 0}
+                  className="rounded-xl font-black uppercase tracking-widest text-[10px] border-2"
+                  title="Export conversation as Markdown"
+                >
+                  <Download className="w-4 h-4 mr-1.5" />
+                  <span className="hidden md:inline">Export</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/study-planner')}
                   className="rounded-xl font-black uppercase tracking-widest text-[10px] border-2"
                 >
-                  <BookOpen className="w-4 h-4 mr-2" />{' '}
-                  <span className="hidden sm:inline">Reference</span>
+                  <BookOpen className="w-4 h-4 mr-1.5" />{' '}
+                  <span className="hidden sm:inline">Study Planner</span>
                 </Button>
               </div>
             </div>
@@ -598,13 +809,79 @@ export default function AITutorPage() {
                           }`}
                         >
                           {message.role === 'assistant' ? (
-                            <div
-                              className="prose-custom prose-sm max-w-none prose-headings:font-black prose-a:text-primary-500"
-                              // eslint-disable-next-line react/no-danger
-                              dangerouslySetInnerHTML={{
-                                __html: renderMarkdown(message.content),
-                              }}
-                            />
+                            <div>
+                              <div
+                                className="prose-custom prose-sm max-w-none prose-headings:font-black prose-a:text-primary-500"
+                                // eslint-disable-next-line react/no-danger
+                                dangerouslySetInnerHTML={{
+                                  __html: renderMarkdown(message.content),
+                                }}
+                              />
+                              {message.id !== 'welcome' && (
+                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (speakingMessageId === message.id) {
+                                        stopSpeaking()
+                                      } else {
+                                        speak(message.content, message.id)
+                                      }
+                                    }}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                                      speakingMessageId === message.id
+                                        ? 'bg-primary-500/20 text-primary-600 dark:text-primary-400 ring-1 ring-primary-500'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                                    }`}
+                                    title={
+                                      speakingMessageId === message.id
+                                        ? 'Stop reading'
+                                        : 'Read aloud'
+                                    }
+                                  >
+                                    {speakingMessageId === message.id ? (
+                                      <VolumeX className="w-3.5 h-3.5 text-primary-500 animate-pulse" />
+                                    ) : (
+                                      <Volume2 className="w-3.5 h-3.5" />
+                                    )}
+                                    <span className="text-[10px]">
+                                      {speakingMessageId === message.id ? 'Stop' : 'Listen'}
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyMessage(message.id, message.content)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all"
+                                    title="Copy message"
+                                  >
+                                    {copiedMessageId === message.id ? (
+                                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                    ) : (
+                                      <Copy className="w-3.5 h-3.5" />
+                                    )}
+                                    <span className="text-[10px]">
+                                      {copiedMessageId === message.id ? 'Copied' : 'Copy'}
+                                    </span>
+                                  </button>
+                                  {extractCodeBlock(message.content) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const extracted = extractCodeBlock(message.content)
+                                        if (extracted) {
+                                          handleOpenInWorkspace(extracted.code, extracted.language)
+                                        }
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all"
+                                      title="Open code in Problem Workspace"
+                                    >
+                                      <Code2 className="w-3.5 h-3.5 text-primary-500" />
+                                      <span className="text-[10px]">Open in IDE</span>
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           ) : (
                             <p className="font-medium text-lg">{message.content}</p>
                           )}
@@ -668,7 +945,7 @@ export default function AITutorPage() {
             {/* Empty State / Quick Actions */}
             {messages.length <= 1 && !isStreaming && !isMessagesLoading && (
               <div className="px-6 md:px-8 pb-6 relative z-20">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {quickActions.map((action, i) => (
                     <button
                       // eslint-disable-next-line react/no-array-index-key
@@ -693,6 +970,30 @@ export default function AITutorPage() {
               </div>
             )}
 
+            {/* Quick Follow-up Chips when in active conversation */}
+            {messages.length > 1 && !isStreaming && (
+              <div className="px-6 md:px-8 pb-2 flex flex-wrap gap-2 relative z-20">
+                {[
+                  'Give an example',
+                  'What is the time complexity?',
+                  'Provide step-by-step proof',
+                  'Write unit tests for this',
+                ].map(chip => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => {
+                      setInput(chip)
+                      textareaRef.current?.focus()
+                    }}
+                    className="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-950/40 hover:text-primary-600 dark:hover:text-primary-400 border border-gray-200 dark:border-gray-700 transition-colors text-gray-600 dark:text-gray-300 font-medium"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="p-6 md:p-8 pt-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md relative z-20">
               <div className="relative group">
@@ -711,21 +1012,39 @@ export default function AITutorPage() {
                       void handleSendMessage()
                     }
                   }}
-                  placeholder="Ask your tutor anything engineering..."
-                  className="w-full pl-8 pr-20 py-6 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary-500/30 focus:bg-white dark:focus:bg-gray-900 rounded-[2.5rem] text-base resize-none outline-none shadow-inner transition-all scrollbar-none font-medium placeholder:text-gray-400"
+                  placeholder={
+                    isListening
+                      ? 'Listening to your voice... Speak now.'
+                      : 'Ask your tutor anything engineering or speak your question...'
+                  }
+                  className="w-full pl-8 pr-32 py-6 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary-500/30 focus:bg-white dark:focus:bg-gray-900 rounded-[2.5rem] text-base resize-none outline-none shadow-inner transition-all scrollbar-none font-medium placeholder:text-gray-400"
                   disabled={isStreaming || isMessagesLoading}
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={isStreaming || isMessagesLoading}
+                    aria-label={isListening ? 'Stop listening' : 'Start voice recording'}
+                    title={isListening ? 'Stop listening' : 'Voice input'}
+                    className={`w-12 h-12 rounded-[1.2rem] flex items-center justify-center transition-all duration-300 ${
+                      isListening
+                        ? 'bg-rose-500 text-white animate-pulse shadow-lg shadow-rose-500/40 ring-4 ring-rose-500/20'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
                   <button
                     onClick={() => void handleSendMessage()}
                     disabled={!input.trim() || isStreaming || isMessagesLoading}
                     aria-label="Send message"
-                    className="w-14 h-14 bg-primary-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-primary-500/30 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all duration-300"
+                    className="w-12 h-12 bg-primary-600 text-white rounded-[1.2rem] flex items-center justify-center shadow-xl shadow-primary-500/30 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all duration-300"
                   >
                     {isStreaming ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <Send className="w-6 h-6 ml-1" />
+                      <Send className="w-5 h-5 ml-0.5" />
                     )}
                   </button>
                 </div>
@@ -737,6 +1056,12 @@ export default function AITutorPage() {
           </Card>
         </div>
       </div>
+
+      <AICouncilModal
+        isOpen={isCouncilModalOpen}
+        onClose={() => setIsCouncilModalOpen(false)}
+        initialQuery={input}
+      />
     </AnimatedPage>
   )
 }
