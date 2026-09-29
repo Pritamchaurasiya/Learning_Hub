@@ -1,0 +1,72 @@
+# LEARNINGHUB STUDENT UPDATES HUB — STRATEGIC ROADMAP
+
+> **Product Vision:** The Definitive, Trusted Information Command Center for Higher Education & Competitive Aspirants  
+> **Horizon:** 2026 – 2027  
+
+---
+
+## 1. PHASED IMPLEMENTATION TIMELINE
+
+```mermaid
+gantt
+    title LearningHub Updates Hub Delivery Roadmap
+    dateFormat  YYYY-MM-DD
+    section Phase 1: Foundation
+    Source Registry & Data Model            :done, p1_1, 2026-09-01, 2026-09-10
+    Student Updates Web Page & Feed         :done, p1_2, 2026-09-11, 2026-09-20
+    Search & Category Filtering             :done, p1_3, 2026-09-21, 2026-09-28
+    section Phase 2: Official Integration
+    MGKVP / AKTU Ingestion Parsers          :done, p2_1, 2026-09-29, 2026-09-29
+    Change Detection & Hashing Engine       :done, p2_2, 2026-09-29, 2026-09-29
+    Admin Moderation & Approval Workflow    :done, p2_3, 2026-09-29, 2026-09-29
+    section Phase 3: Notifications & Reminders
+    Channels WebSocket & Push Integration   :active, p3_1, 2026-10-01, 2026-10-15
+    Deadline Reminder Scheduler (7d/3d/1d/0d):p3_2, 2026-10-10, 2026-10-25
+    Anti-Noise Capping & Quiet Hours        :p3_3, 2026-10-20, 2026-10-30
+    section Phase 4: Personalization & Watchers
+    Follow University / Course / Exam Engine:p4_1, 2026-11-08, 2026-11-20
+    Result Watcher & Roll Number Alert      :p4_2, 2026-11-15, 2026-11-28
+    section Phase 5: Cross-Feature Ecosystem
+    Test A+ Assessment Deep Linking         :p5_1, 2026-12-01, 2026-12-15
+    Ebook Chapter & Flashcard Suggestions   :p5_2, 2026-12-10, 2026-12-24
+    Study Planner Calendar Synchronization  :p5_3, 2026-12-20, 2027-01-05
+    section Phase 6: Nationwide Scale
+    Multi-State Universities (UP, Delhi, MH):p6_1, 2027-01-10, 2027-02-28
+    National Exam Boards (SSC, UPSC, NTA)   :p6_2, 2027-02-01, 2027-03-31
+```
+
+---
+
+## 2. DETAILED PHASE GOALS
+
+### Phase 1: Foundation (Delivered in V1.0)
+- Core `apps.updates` Django models (`UpdateSource`, `StudentUpdate`, `UpdateBookmark`, `UpdateReminder`, `UpdateCrossLink`).
+- Clean Architecture `services.py` and `selectors.py`.
+- Modern, clean, responsive React page (`/updates`) with search, categories, and urgent alert tiers.
+- Source transparency badges (Level 1 to Level 5).
+
+### Phase 2: Official Indian Universities & State Bodies (SHIPPED & VERIFIED)
+- ✅ Deep crawlers for MGKVP, AKTU, University of Lucknow, University of Allahabad, and BHU.
+- ✅ SSRF-safe `SourceCrawler` with per-domain timeout and polite rate-limiting.
+- ✅ SHA-256 change detection engine with automatic diff generation and `UpdateVersion` tracking.
+- ✅ Admin Moderation & Approval Workflow: Bulk actions (`approve_and_publish`, `mark_as_urgent`, `reject_and_flag`), Django admin triggers, and REST API moderation endpoint (`/api/v1/updates/<id>/moderate/`).
+- ✅ 100% test coverage with 30 passing pytest suites.
+
+### Phase 3: Multi-Channel Notifications & Anti-Noise Engine
+- Real-time in-app WebSocket toasts and notification center badge count updates.
+- Web & Mobile push notification integration (FCM) with quiet hours enforcement (10 PM – 7 AM).
+- Customizable user deadline reminders: 7 days, 3 days, 1 day, and morning of deadline.
+
+### Phase 4: Personalization & Result Watchers
+- Instant follow buttons for University, College, Course, Semester, Exam Type, and Target Exams.
+- "Result Watch": Students input University + Course + Semester; system sends high-priority notification the moment official results are published.
+
+### Phase 5: LearningHub Cross-Feature Unification
+- Automatic mapping of notice topics to **Test A+** assessment tests, **Ebook** chapters, and **Courses**.
+- "Prepare Now" contextual action button on exam notices.
+- Direct sync of examination dates and submission deadlines into **Study Planner** and calendar export (iCal / Google Calendar).
+
+### Phase 6: National Scale & College Notice Dashboards
+- Ingestion of statutory exam bodies: SSC, UPSC, NTA (JEE/NEET/CUET), IBPS, State PSCs.
+- Verified College Notice Dashboards allowing college principals and HODs to post authenticated departmental circulars.
+- Anonymized analytics on notice read rates and student engagement.
