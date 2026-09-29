@@ -3,6 +3,7 @@ Canonical Data Models for LearningHub Student Updates Hub.
 """
 import uuid
 import hashlib
+import datetime
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -46,6 +47,22 @@ def gen_bookmark_id() -> str:
 
 def gen_reminder_id() -> str:
     return generate_id('rem', 8)
+
+
+def gen_pref_id() -> str:
+    return generate_id('pref', 8)
+
+
+def gen_queued_id() -> str:
+    return generate_id('qnotif', 8)
+
+
+def gen_audit_id() -> str:
+    return generate_id('naud', 8)
+
+
+def gen_watcher_id() -> str:
+    return generate_id('watch', 8)
 
 
 class UpdateSource(models.Model):
@@ -420,3 +437,240 @@ class UpdateFetchLog(models.Model):
 
     def __str__(self):
         return f"Fetch {self.source.name} [{self.status_code}] at {self.created_at}"
+
+
+class UpdateNotificationPreference(models.Model):
+    """
+    User-specific notification settings: quiet hours, rate limits, and topic filters.
+    """
+    id = models.CharField(primary_key=True, max_length=64, default=gen_pref_id)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='update_preferences'
+    )
+    quiet_hours_enabled = models.BooleanField(default=True)
+    quiet_hours_start = models.TimeField(default=datetime.time(22, 0))  # 10:00 PM
+    quiet_hours_end = models.TimeField(default=datetime.time(7, 0))    # 07:00 AM
+    max_daily_push = models.IntegerField(default=3)
+    allow_exam_forms = models.BooleanField(default=True)
+    allow_results = models.BooleanField(default=True)
+    allow_timetables = models.BooleanField(default=True)
+    allow_scholarships = models.BooleanField(default=True)
+    allow_admit_cards = models.BooleanField(default=True)
+    allow_academic = models.BooleanField(default=True)
+    digest_mode = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'lh_update_notification_preferences'
+
+    def __str__(self):
+        return f"Preferences for {self.user.email} (Quiet: {self.quiet_hours_enabled})"
+
+    def is_in_quiet_hours(self, current_time: datetime.time = None) -> bool:
+        if not self.quiet_hours_enabled:
+            return False
+        if current_time is None:
+            current_time = timezone.localtime().time()
+
+        start = self.quiet_hours_start
+        end = self.quiet_hours_end
+
+        if start <= end:
+            return start <= current_time <= end
+        else:
+            # Crosses midnight (e.g. 22:00 -> 07:00)
+            return current_time >= start or current_time <= end
+
+    def is_category_allowed(self, category: str, sub_category: str = "") -> bool:
+        cat_upper = (category or "").upper()
+        sub_upper = (sub_category or "").upper()
+
+        if "RESULT" in sub_upper or "RESULT" in cat_upper:
+            return self.allow_results
+        if "EXAM_FORM" in sub_upper or "FORM" in sub_upper:
+            return self.allow_exam_forms
+        if "TIMETABLE" in sub_upper or "DATE_SHEET" in sub_upper or "DATESHEET" in sub_upper:
+            return self.allow_timetables
+        if "ADMIT_CARD" in sub_upper or "HALL_TICKET" in sub_upper:
+            return self.allow_admit_cards
+        if "SCHOLARSHIP" in cat_upper:
+            return self.allow_scholarships
+        return self.allow_academic
+
+    def evaluate_delivery(self, update, today_delivered_count: int = 0, current_time: datetime.time = None) -> dict:
+        """
+        Anti-noise and priority taxonomy evaluation:
+        - LEVEL 1 (URGENT / Result): Bypasses quiet hours and frequency caps.
+        - LEVEL 2 / 3: Subject to category opt-in, quiet hours queuing, and daily caps.
+        """
+        is_urgent = update.importance == 'URGENT' or "RESULT" in (getattr(update, 'sub_category', '') or '').upper()
+        if is_urgent:
+            return {
+                'allowed': True,
+                'channel': 'IMMEDIATE',
+                'reason': 'Urgent emergency notice overrides quiet hours & rate caps',
+                'bypass_quiet_hours': True
+            }
+
+        # Check category filtering
+        if not self.is_category_allowed(update.category, getattr(update, 'sub_category', '')):
+            return {
+                'allowed': False,
+                'channel': 'SUPPRESSED',
+                'reason': 'Category muted in user preferences',
+                'bypass_quiet_hours': False
+            }
+
+        # Check digest mode
+        if self.digest_mode:
+            return {
+                'allowed': True,
+                'channel': 'DIGEST_ONLY',
+                'reason': 'User opted into morning digest bundle',
+                'bypass_quiet_hours': False
+            }
+
+        # Check quiet hours
+        if self.is_in_quiet_hours(current_time):
+            return {
+                'allowed': True,
+                'channel': 'QUEUED_QUIET_HOURS',
+                'reason': 'Queued for morning release (quiet hours active)',
+                'bypass_quiet_hours': False
+            }
+
+        # Check daily push limit
+        if today_delivered_count >= self.max_daily_push:
+            return {
+                'allowed': False,
+                'channel': 'SUPPRESSED',
+                'reason': f'Daily push notification cap of {self.max_daily_push} reached',
+                'bypass_quiet_hours': False
+            }
+
+        return {
+            'allowed': True,
+            'channel': 'IMMEDIATE',
+            'reason': 'Allowed for immediate delivery',
+            'bypass_quiet_hours': False
+        }
+
+
+class QueuedUpdateNotification(models.Model):
+    """
+    Notifications deferred due to quiet hours or digest bundling.
+    """
+    QUEUE_REASONS = (
+        ('QUIET_HOURS', 'Deferred During Quiet Hours'),
+        ('DIGEST', 'Queued for Daily Digest'),
+        ('RATE_LIMIT', 'Deferred due to Daily Cap'),
+    )
+
+    id = models.CharField(primary_key=True, max_length=64, default=gen_queued_id)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='queued_update_notifications'
+    )
+    update = models.ForeignKey(
+        StudentUpdate,
+        on_delete=models.CASCADE,
+        related_name='queued_notifications'
+    )
+    queue_reason = models.CharField(max_length=32, choices=QUEUE_REASONS, default='QUIET_HOURS')
+    scheduled_for = models.DateTimeField(db_index=True)
+    is_dispatched = models.BooleanField(default=False, db_index=True)
+    dispatched_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lh_queued_update_notifications'
+        ordering = ['scheduled_for']
+        indexes = [
+            models.Index(fields=['is_dispatched', 'scheduled_for']),
+        ]
+
+    def __str__(self):
+        return f"Queued {self.update.id} for {self.user.email} at {self.scheduled_for}"
+
+
+class UpdateNotificationAudit(models.Model):
+    """
+    Observability audit log for all updates notification decisions.
+    """
+    id = models.CharField(primary_key=True, max_length=64, default=gen_audit_id)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='update_notification_audits'
+    )
+    update = models.ForeignKey(
+        StudentUpdate,
+        on_delete=models.CASCADE,
+        related_name='notification_audits'
+    )
+    channel = models.CharField(max_length=32, default='IN_APP')
+    decision = models.CharField(max_length=32)  # IMMEDIATE, QUEUED_QUIET_HOURS, DIGEST_ONLY, SUPPRESSED
+    reason = models.CharField(max_length=255)
+    delivered_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'lh_update_notification_audits'
+        ordering = ['-delivered_at']
+        indexes = [
+            models.Index(fields=['user', '-delivered_at']),
+        ]
+
+    def __str__(self):
+        return f"Audit {self.decision} for {self.user.email} -> {self.update.id}"
+
+
+class ResultWatcher(models.Model):
+    """
+    Automated university result tracker: students register institution, course, semester,
+    and optional roll number. The system monitors crawled notices and notifies immediately
+    upon official publication.
+    """
+    STATUS_CHOICES = (
+        ('ACTIVE', 'Active Tracking'),
+        ('RESULT_DECLARED', 'Result Declared'),
+        ('CANCELLED', 'Cancelled'),
+    )
+
+    id = models.CharField(primary_key=True, max_length=64, default=gen_watcher_id)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='result_watchers'
+    )
+    institution = models.CharField(max_length=255, db_index=True)
+    course = models.CharField(max_length=255, db_index=True)
+    semester = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    roll_number = models.CharField(max_length=64, blank=True, default='')
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='ACTIVE', db_index=True)
+    matched_update = models.ForeignKey(
+        StudentUpdate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='matched_watchers'
+    )
+    result_url = models.URLField(max_length=1000, blank=True, default='')
+    notified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'lh_result_watchers'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'institution']),
+            models.Index(fields=['user', 'status']),
+        ]
+
+    def __str__(self):
+        return f"Watch {self.course} ({self.semester}) @ {self.institution} for {self.user.email}"
+

@@ -20,11 +20,11 @@ gantt
     Change Detection & Hashing Engine       :done, p2_2, 2026-09-29, 2026-09-29
     Admin Moderation & Approval Workflow    :done, p2_3, 2026-09-29, 2026-09-29
     section Phase 3: Notifications & Reminders
-    Channels WebSocket & Push Integration   :active, p3_1, 2026-10-01, 2026-10-15
-    Deadline Reminder Scheduler (7d/3d/1d/0d):p3_2, 2026-10-10, 2026-10-25
-    Anti-Noise Capping & Quiet Hours        :p3_3, 2026-10-20, 2026-10-30
+    Channels WebSocket & Push Integration   :done, p3_1, 2026-10-01, 2026-10-15
+    Deadline Reminder Scheduler (7d/3d/1d/0d):done, p3_2, 2026-10-10, 2026-10-25
+    Anti-Noise Capping & Quiet Hours        :done, p3_3, 2026-10-20, 2026-10-30
     section Phase 4: Personalization & Watchers
-    Follow University / Course / Exam Engine:p4_1, 2026-11-08, 2026-11-20
+    Follow University / Course / Exam Engine:active, p4_1, 2026-11-08, 2026-11-20
     Result Watcher & Roll Number Alert      :p4_2, 2026-11-15, 2026-11-28
     section Phase 5: Cross-Feature Ecosystem
     Test A+ Assessment Deep Linking         :p5_1, 2026-12-01, 2026-12-15
@@ -52,10 +52,13 @@ gantt
 - ✅ Admin Moderation & Approval Workflow: Bulk actions (`approve_and_publish`, `mark_as_urgent`, `reject_and_flag`), Django admin triggers, and REST API moderation endpoint (`/api/v1/updates/<id>/moderate/`).
 - ✅ 100% test coverage with 30 passing pytest suites.
 
-### Phase 3: Multi-Channel Notifications & Anti-Noise Engine
-- Real-time in-app WebSocket toasts and notification center badge count updates.
-- Web & Mobile push notification integration (FCM) with quiet hours enforcement (10 PM – 7 AM).
-- Customizable user deadline reminders: 7 days, 3 days, 1 day, and morning of deadline.
+### Phase 3: Multi-Channel Notifications & Anti-Noise Engine (SHIPPED & VERIFIED)
+- ✅ Real-time in-app WebSocket toasts via Django Channels (`NotificationConsumer`) and notification center badge count sync.
+- ✅ Multi-tier Anti-Noise engine with Quiet Hours enforcement (10:00 PM – 07:00 AM) and emergency override for `URGENT` circulars.
+- ✅ Rolling daily push frequency capping (`max_daily_push`) and category-based granular opt-ins.
+- ✅ Deferred delivery buffer with `QueuedUpdateNotification` and automated morning release scheduler (`release_queued_notifications`).
+- ✅ End-to-end delivery audit trail with `UpdateNotificationAudit` telemetry.
+- ✅ Full REST API suite (`/api/v1/updates/preferences/`, `/notifications/queued/`, `/notifications/audits/`, `/broadcast/`).
 
 ### Phase 4: Personalization & Result Watchers
 - Instant follow buttons for University, College, Course, Semester, Exam Type, and Target Exams.

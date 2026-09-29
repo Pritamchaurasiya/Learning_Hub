@@ -78,6 +78,25 @@ def dispatch_deadline_reminders():
             reminder.save(update_fields=['is_dispatched', 'dispatched_at'])
             dispatched_ids.append(reminder.id)
 
+            # Record transactional inbox notification if social app is available
+            try:
+                from apps.social.models import Notification
+                deadline_str = reminder.update.deadline.strftime("%d %b %Y, %I:%M %p") if reminder.update.deadline else "Soon"
+                Notification.objects.create(
+                    user=reminder.user,
+                    type='REMINDER',
+                    title=f"Deadline Approaching: {reminder.update.title[:60]}",
+                    message=f"Official deadline is {deadline_str}. Tap to review details.",
+                    action_url=f"/updates/{reminder.update.id}",
+                    metadata={
+                        'update_id': reminder.update.id,
+                        'reminder_id': reminder.id,
+                        'reminder_type': reminder.reminder_type,
+                    }
+                )
+            except Exception:
+                pass
+
             # Broadcast via WebSocket if channel layer is available
             if channel_layer:
                 try:
@@ -111,3 +130,22 @@ def dispatch_deadline_reminders():
 
 # Backward compatibility alias
 dispatch_scheduled_reminders = dispatch_deadline_reminders
+
+
+@shared_task(name="apps.updates.tasks.dispatch_update_notification_task")
+def dispatch_update_notification_task(update_id: str, force_immediate: bool = False):
+    """
+    Background worker task to evaluate and broadcast notifications for a published notice.
+    """
+    logger.info(f"Triggering background notification dispatch for update {update_id}")
+    return StudentUpdateService.dispatch_update_notification(update_id, force_immediate=force_immediate)
+
+
+@shared_task(name="apps.updates.tasks.flush_queued_notifications_task")
+def flush_queued_notifications_task():
+    """
+    Morning release periodic task: flushes quiet-hours deferred notifications.
+    """
+    logger.info("Executing scheduled flush of quiet-hours queued notifications...")
+    return StudentUpdateService.release_queued_notifications()
+

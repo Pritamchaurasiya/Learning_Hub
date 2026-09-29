@@ -13,6 +13,9 @@ from .models import (
     UpdateBookmark,
     UpdateReminder,
     UpdateFetchLog,
+    UpdateNotificationPreference,
+    QueuedUpdateNotification,
+    UpdateNotificationAudit,
 )
 
 
@@ -112,3 +115,24 @@ class UpdateSubscriptionAdmin(admin.ModelAdmin):
 class UpdateFetchLogAdmin(admin.ModelAdmin):
     list_display = ('source', 'status_code', 'latency_ms', 'change_detected', 'created_at')
     list_filter = ('status_code', 'change_detected')
+
+
+@admin.register(UpdateNotificationPreference)
+class UpdateNotificationPreferenceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'quiet_hours_enabled', 'quiet_hours_start', 'quiet_hours_end', 'max_daily_push', 'digest_mode')
+    list_filter = ('quiet_hours_enabled', 'digest_mode')
+    search_fields = ('user__email',)
+
+
+@admin.register(QueuedUpdateNotification)
+class QueuedUpdateNotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'update', 'queue_reason', 'scheduled_for', 'is_dispatched')
+    list_filter = ('queue_reason', 'is_dispatched')
+    search_fields = ('user__email', 'update__title')
+
+
+@admin.register(UpdateNotificationAudit)
+class UpdateNotificationAuditAdmin(admin.ModelAdmin):
+    list_display = ('user', 'update', 'channel', 'decision', 'delivered_at')
+    list_filter = ('channel', 'decision')
+    search_fields = ('user__email', 'update__title')

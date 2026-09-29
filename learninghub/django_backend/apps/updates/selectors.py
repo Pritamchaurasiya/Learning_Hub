@@ -11,6 +11,10 @@ from .models import (
     UpdateBookmark,
     UpdateReminder,
     UpdateSubscription,
+    UpdateNotificationPreference,
+    QueuedUpdateNotification,
+    UpdateNotificationAudit,
+    ResultWatcher,
 )
 
 
@@ -170,3 +174,60 @@ def get_updates_statistics() -> Dict[str, Any]:
         'active_deadlines': active_deadlines_count,
         'tracked_sources': tracked_sources_count,
     }
+
+
+def get_user_notification_preferences(user) -> UpdateNotificationPreference:
+    """
+    Retrieves or lazily initializes the user's notification preferences with sensible defaults.
+    """
+    pref, _ = UpdateNotificationPreference.objects.get_or_create(user=user)
+    return pref
+
+
+def get_user_today_delivered_count(user) -> int:
+    """
+    Returns count of push / loud notifications delivered to the user today.
+    """
+    today = timezone.now().date()
+    return UpdateNotificationAudit.objects.filter(
+        user=user,
+        delivered_at__date=today,
+        decision='IMMEDIATE'
+    ).count()
+
+
+def list_queued_notifications(user=None, is_dispatched: bool = False) -> QuerySet[QueuedUpdateNotification]:
+    """
+    Queries deferred notifications awaiting morning dispatch or digest delivery.
+    """
+    qs = QueuedUpdateNotification.objects.filter(is_dispatched=is_dispatched)
+    if user:
+        qs = qs.filter(user=user)
+    return qs.select_related('update', 'user').order_by('scheduled_for')
+
+
+def list_user_result_watchers(user) -> QuerySet[ResultWatcher]:
+    """
+    Returns all active and resolved result watches registered by the user.
+    """
+    return ResultWatcher.objects.filter(user=user).select_related('matched_update').order_by('-created_at')
+
+
+def get_result_watcher_detail(user, watcher_id: str) -> Optional[ResultWatcher]:
+    """
+    Retrieves a specific result watcher owned by the user.
+    """
+    return ResultWatcher.objects.filter(user=user, id=watcher_id).select_related('matched_update').first()
+
+
+def find_active_watchers_for_update(update: StudentUpdate) -> QuerySet[ResultWatcher]:
+    """
+    Finds active result watchers whose institution and course match the incoming update.
+    """
+    qs = ResultWatcher.objects.filter(status='ACTIVE')
+    if update.institution:
+        qs = qs.filter(Q(institution__icontains=update.institution) | Q(institution__iexact=update.institution))
+    if update.course:
+        qs = qs.filter(Q(course__icontains=update.course) | Q(course__iexact=update.course))
+    return qs.select_related('user')
+

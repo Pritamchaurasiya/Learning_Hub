@@ -7,7 +7,16 @@ from rest_framework import status
 from django.core.exceptions import ValidationError
 
 from apps.core.responses import success_response, error_response
-from .models import StudentUpdate, UpdateBookmark, UpdateReminder, UpdateSubscription
+from .models import (
+    StudentUpdate,
+    UpdateBookmark,
+    UpdateReminder,
+    UpdateSubscription,
+    UpdateNotificationPreference,
+    QueuedUpdateNotification,
+    UpdateNotificationAudit,
+    ResultWatcher,
+)
 from .serializers import (
     StudentUpdateListSerializer,
     StudentUpdateDetailSerializer,
@@ -18,6 +27,10 @@ from .serializers import (
     CreateBookmarkInputSerializer,
     CreateReminderInputSerializer,
     FollowTargetInputSerializer,
+    UpdateNotificationPreferenceSerializer,
+    QueuedUpdateNotificationSerializer,
+    ResultWatcherSerializer,
+    CreateResultWatcherInputSerializer,
 )
 from .selectors import (
     list_student_updates,
@@ -29,6 +42,8 @@ from .selectors import (
     list_user_subscriptions,
     list_sources,
     get_updates_statistics,
+    list_user_result_watchers,
+    get_result_watcher_detail,
 )
 from .services import StudentUpdateService
 
@@ -502,4 +517,199 @@ class TriggerSourceCrawlView(APIView):
                 data={"sources_crawled": len(results), "details": results},
                 message=f"Crawl completed across {len(results)} active sources."
             )
+
+
+class UpdateNotificationPreferencesView(APIView):
+    """
+    Manages user notification preferences, quiet hours, daily push caps, and topic mutes.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        pref = StudentUpdateService.get_or_create_user_preferences(request.user)
+        serializer = UpdateNotificationPreferenceSerializer(pref)
+        return success_response(data=serializer.data)
+
+    def put(self, request):
+        return self.patch(request)
+
+    def patch(self, request):
+        pref = StudentUpdateService.get_or_create_user_preferences(request.user)
+        serializer = UpdateNotificationPreferenceSerializer(pref, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return success_response(
+                data=serializer.data,
+                message="Notification preferences updated successfully."
+            )
+        return error_response(
+            message="Invalid preferences data.",
+            errors=serializer.errors,
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class QueuedNotificationsListView(APIView):
+    """
+    Returns pending notifications deferred during quiet hours or digest bundling.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queued = QueuedUpdateNotification.objects.filter(
+            user=request.user,
+            is_dispatched=False
+        ).select_related('update').order_by('scheduled_for')
+        serializer = QueuedUpdateNotificationSerializer(queued, many=True)
+        return success_response(data=serializer.data, meta={"count": len(serializer.data)})
+
+
+class UpdateNotificationAuditsView(APIView):
+    """
+    Returns observability audit logs of notification delivery decisions for the current student.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        audits = UpdateNotificationAudit.objects.filter(
+            user=request.user
+        ).select_related('update').order_by('-delivered_at')[:50]
+        data = [
+            {
+                "id": a.id,
+                "update_id": a.update_id,
+                "update_title": a.update.title,
+                "channel": a.channel,
+                "decision": a.decision,
+                "reason": a.reason,
+                "delivered_at": a.delivered_at,
+            }
+            for a in audits
+        ]
+        return success_response(data=data, meta={"count": len(data)})
+
+
+class BroadcastNoticeView(APIView):
+    """
+    Staff-only endpoint to trigger real-time multi-channel notification broadcast
+    with anti-noise filtering for an official update.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, update_id: str):
+        if not (request.user.is_staff or request.user.is_superuser):
+            return error_response(
+                message="Administrative privileges required to broadcast notifications.",
+                status_code=status.HTTP_403_FORBIDDEN
+            )
+
+        update = StudentUpdate.objects.filter(id=update_id).first()
+        if not update:
+            return error_response(
+                message=f"Student update with ID '{update_id}' not found.",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        force_immediate = bool(request.data.get('force_immediate', False))
+        res = StudentUpdateService.dispatch_update_notification(update, force_immediate=force_immediate)
+        return success_response(
+            data=res,
+            message="Broadcast completed with anti-noise evaluation."
+        )
+
+
+class AutoScheduleDeadlineRemindersView(APIView):
+    """
+    One-click setup that automatically registers 4-stage deadline reminders
+    (7d, 3d, 1d, 0d) for a specific update.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, update_id: str):
+        update = StudentUpdate.objects.filter(id=update_id).first()
+        if not update:
+            return error_response(
+                message=f"Student update with ID '{update_id}' not found.",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        if not update.deadline:
+            return error_response(
+                message="This update does not have an active deadline to schedule reminders for.",
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+        standard_tiers = ['7_DAYS_BEFORE', '3_DAYS_BEFORE', '1_DAY_BEFORE', 'DAY_OF']
+        try:
+            created_reminders = StudentUpdateService.schedule_deadline_reminders(
+                user=request.user,
+                update_id=update.id,
+                reminder_types=standard_tiers
+            )
+            serializer = UpdateReminderSerializer(created_reminders, many=True)
+            return success_response(
+                data=serializer.data,
+                message=f"Successfully scheduled {len(created_reminders)} automated deadline reminders.",
+                status_code=status.HTTP_201_CREATED
+            )
+        except ValidationError as e:
+            return error_response(str(e.message if hasattr(e, 'message') else e), status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class ResultWatcherListView(APIView):
+    """
+    Lists user's registered Result Watchers or creates a new automated tracking watcher.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        watchers = list_user_result_watchers(request.user)
+        serializer = ResultWatcherSerializer(watchers, many=True)
+        return success_response(data=serializer.data, meta={"count": len(serializer.data)})
+
+    def post(self, request):
+        serializer = CreateResultWatcherInputSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(
+                message="Invalid input payload.",
+                errors=serializer.errors,
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            watcher = StudentUpdateService.create_result_watcher(
+                user=request.user,
+                institution=serializer.validated_data["institution"],
+                course=serializer.validated_data["course"],
+                semester=serializer.validated_data.get("semester", ""),
+                roll_number=serializer.validated_data.get("roll_number", ""),
+            )
+            return success_response(
+                data=ResultWatcherSerializer(watcher).data,
+                message=f"Result Watcher activated for {watcher.course} ({watcher.semester or 'All'}) @ {watcher.institution}.",
+                status_code=status.HTTP_201_CREATED
+            )
+        except ValidationError as e:
+            return error_response(str(e.message if hasattr(e, 'message') else e), status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class ResultWatcherDetailView(APIView):
+    """
+    Retrieves or cancels an active Result Watcher.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, watcher_id: str):
+        watcher = get_result_watcher_detail(request.user, watcher_id)
+        if not watcher:
+            return error_response("Result Watcher not found.", status_code=status.HTTP_404_NOT_FOUND)
+        return success_response(data=ResultWatcherSerializer(watcher).data)
+
+    def delete(self, request, watcher_id: str):
+        deleted = StudentUpdateService.cancel_result_watcher(request.user, watcher_id)
+        if not deleted:
+            return error_response("Result Watcher not found or already cancelled.", status_code=status.HTTP_404_NOT_FOUND)
+        return success_response(message="Result Watcher successfully cancelled.")
+
+
 

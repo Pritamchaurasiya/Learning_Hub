@@ -12,6 +12,10 @@ from .models import (
     UpdateSubscription,
     UpdateBookmark,
     UpdateReminder,
+    UpdateNotificationPreference,
+    QueuedUpdateNotification,
+    UpdateNotificationAudit,
+    ResultWatcher,
 )
 
 
@@ -250,3 +254,82 @@ class CreateReminderInputSerializer(serializers.Serializer):
 class FollowTargetInputSerializer(serializers.Serializer):
     target_type = serializers.ChoiceField(choices=UpdateSubscription.TARGET_TYPES)
     target_value = serializers.CharField(required=True, max_length=255)
+
+
+class BulkCreateRemindersInputSerializer(serializers.Serializer):
+    update_id = serializers.CharField(required=True)
+    reminder_types = serializers.ListField(
+        child=serializers.ChoiceField(choices=UpdateReminder.REMINDER_TYPES),
+        allow_empty=False,
+        required=True
+    )
+
+
+class UpdateNotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UpdateNotificationPreference
+        fields = [
+            'id',
+            'quiet_hours_enabled',
+            'quiet_hours_start',
+            'quiet_hours_end',
+            'max_daily_push',
+            'allow_exam_forms',
+            'allow_results',
+            'allow_timetables',
+            'allow_scholarships',
+            'allow_admit_cards',
+            'allow_academic',
+            'digest_mode',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class QueuedUpdateNotificationSerializer(serializers.ModelSerializer):
+    update_title = serializers.CharField(source='update.title', read_only=True)
+    update_id = serializers.CharField(source='update.id', read_only=True)
+
+    class Meta:
+        model = QueuedUpdateNotification
+        fields = [
+            'id',
+            'update_id',
+            'update_title',
+            'queue_reason',
+            'scheduled_for',
+            'is_dispatched',
+            'dispatched_at',
+            'created_at',
+        ]
+
+
+class ResultWatcherSerializer(serializers.ModelSerializer):
+    matched_update_title = serializers.CharField(source='matched_update.title', read_only=True, default='')
+
+    class Meta:
+        model = ResultWatcher
+        fields = [
+            'id',
+            'institution',
+            'course',
+            'semester',
+            'roll_number',
+            'status',
+            'matched_update',
+            'matched_update_title',
+            'result_url',
+            'notified_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'status', 'matched_update', 'matched_update_title', 'result_url', 'notified_at', 'created_at', 'updated_at']
+
+
+class CreateResultWatcherInputSerializer(serializers.Serializer):
+    institution = serializers.CharField(required=True, max_length=255)
+    course = serializers.CharField(required=True, max_length=255)
+    semester = serializers.CharField(required=False, allow_blank=True, default='', max_length=64)
+    roll_number = serializers.CharField(required=False, allow_blank=True, default='', max_length=64)
+
