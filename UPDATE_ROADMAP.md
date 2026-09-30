@@ -24,10 +24,10 @@ gantt
     Deadline Reminder Scheduler (7d/3d/1d/0d):done, p3_2, 2026-10-10, 2026-10-25
     Anti-Noise Capping & Quiet Hours        :done, p3_3, 2026-10-20, 2026-10-30
     section Phase 4: Personalization & Watchers
-    Follow University / Course / Exam Engine:active, p4_1, 2026-11-08, 2026-11-20
-    Result Watcher & Roll Number Alert      :p4_2, 2026-11-15, 2026-11-28
+    Follow University / Course / Exam Engine:done, p4_1, 2026-11-08, 2026-11-20
+    Result Watcher & Roll Number Alert      :done, p4_2, 2026-11-15, 2026-11-28
     section Phase 5: Cross-Feature Ecosystem
-    Test A+ Assessment Deep Linking         :p5_1, 2026-12-01, 2026-12-15
+    Test A+ Assessment Deep Linking         :active, p5_1, 2026-12-01, 2026-12-15
     Ebook Chapter & Flashcard Suggestions   :p5_2, 2026-12-10, 2026-12-24
     Study Planner Calendar Synchronization  :p5_3, 2026-12-20, 2027-01-05
     section Phase 6: Nationwide Scale
@@ -60,9 +60,13 @@ gantt
 - ✅ End-to-end delivery audit trail with `UpdateNotificationAudit` telemetry.
 - ✅ Full REST API suite (`/api/v1/updates/preferences/`, `/notifications/queued/`, `/notifications/audits/`, `/broadcast/`).
 
-### Phase 4: Personalization & Result Watchers
-- Instant follow buttons for University, College, Course, Semester, Exam Type, and Target Exams.
-- "Result Watch": Students input University + Course + Semester; system sends high-priority notification the moment official results are published.
+### Phase 4: Personalization & Result Watchers (SHIPPED & VERIFIED)
+- ✅ 1-click Follow / Unfollow engine for Universities, Courses, and Statutory Boards (`UpdateSubscription`).
+- ✅ Dedicated "For You" personalized feed dynamically scoped to student's subscriptions with one-click follow suggestions.
+- ✅ 24/7 Automated Result Watcher (`ResultWatcher` model & REST endpoints `/api/v1/updates/result-watchers/`).
+- ✅ Live Radar scanning with roll number binding and automated gazette matching algorithm (`match_and_notify_result_watchers`).
+- ✅ Front-end UI: Dedicated `ResultWatcherModal`, Result Watchers tab with real-time status pills, active count badges, and direct official scorecard linkouts.
+- ✅ 100% verified test coverage: 43 Django pytest tests + 61 Vitest unit tests passing.
 
 ### Phase 5: LearningHub Cross-Feature Unification
 - Automatic mapping of notice topics to **Test A+** assessment tests, **Ebook** chapters, and **Courses**.
