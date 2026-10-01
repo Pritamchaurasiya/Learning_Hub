@@ -9,6 +9,7 @@ vi.mock('../../services/updatesService', () => ({
   updatesService: {
     saveBookmark: vi.fn(),
     removeBookmark: vi.fn(),
+    logEngagement: vi.fn(),
   },
 }));
 
