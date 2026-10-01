@@ -79,9 +79,10 @@ describe('API Integration Tests', () => {
 
   describe('Token Refresh', () => {
     it('should refresh token on 401', async () => {
-      const { setAccessToken, setRefreshToken } = await import('./api')
+      const { setAccessToken, setRefreshToken, setCsrfToken } = await import('./api')
       await setAccessToken('old-token')
       await setRefreshToken('old-refresh')
+      setCsrfToken('mock-csrf-token')
 
       const unauthorizedResponse = new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

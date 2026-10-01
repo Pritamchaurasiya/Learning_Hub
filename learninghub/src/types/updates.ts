@@ -98,6 +98,7 @@ export interface StudentUpdate {
   has_attachments?: boolean;
   attachments?: UpdateAttachment[];
   cross_links?: UpdateCrossLink[];
+  related_links?: Array<{ title: string; url: string; label?: string }>;
   versions?: UpdateVersion[];
   is_bookmarked?: boolean;
   user_reminders?: Array<{

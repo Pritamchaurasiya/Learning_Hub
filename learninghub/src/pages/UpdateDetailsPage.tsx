@@ -16,11 +16,12 @@ import {
   Building2,
   CheckCircle2,
   Share2,
+  BarChart2,
 } from 'lucide-react';
 import { updatesService } from '../services/updatesService';
 import { UpdateCrossFeaturesWidget } from '../components/updates/UpdateCrossFeaturesWidget';
 import { UpdateReminderModal } from '../components/updates/UpdateReminderModal';
-import type { StudentUpdate } from '../types/updates';
+import type { StudentUpdate, UpdateAnalyticsData } from '../types/updates';
 
 export const UpdateDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
