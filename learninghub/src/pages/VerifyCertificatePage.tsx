@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,22 +16,29 @@ import {
   User,
   BookOpen,
   Hash,
+  Upload,
+  Layers,
 } from 'lucide-react'
 import { SEO } from '../components/SEO'
 import AnimatedPage from '../components/AnimatedPage'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { certificateService } from '../services/certificateService'
+import { verifiableCredentialService } from '../services/verifiableCredentialService'
+import { W3CVerificationAuditCard } from '../components/credentials/W3CVerificationAuditCard'
+import type { CredentialVerificationResult } from '../types/credentials'
 import { useStore } from '../stores/useStore'
 
 export default function VerifyCertificatePage() {
   const { code: routeCode } = useParams<{ code?: string }>()
   const navigate = useNavigate()
   const addToast = useStore(state => state.addToast)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [inputCode, setInputCode] = useState(routeCode || '')
   const [activeCode, setActiveCode] = useState(routeCode || '')
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [uploadedCredential, setUploadedCredential] = useState<any | null>(null)
 
   useEffect(() => {
     if (routeCode) {
@@ -40,25 +47,69 @@ export default function VerifyCertificatePage() {
     }
   }, [routeCode])
 
+  // Legacy Certificate Query
   const {
     data: verificationData,
-    isLoading,
-    isError,
-    error,
+    isLoading: isCertLoading,
   } = useQuery({
     queryKey: ['verifyCertificate', activeCode],
     queryFn: async () => {
       if (!activeCode.trim()) return null
-      const res = await certificateService.verifyCertificate(activeCode.trim())
-      return res.data
+      try {
+        const res = await certificateService.verifyCertificate(activeCode.trim())
+        return res.data
+      } catch {
+        return null
+      }
     },
     enabled: Boolean(activeCode.trim()),
-    retry: 1,
+    retry: 0,
   })
+
+  // W3C DID Verifiable Credential Query
+  const {
+    data: w3cVerificationData,
+    isLoading: isW3cLoading,
+  } = useQuery<CredentialVerificationResult | null>({
+    queryKey: ['verifyW3CCredential', activeCode, uploadedCredential],
+    queryFn: async () => {
+      if (uploadedCredential) {
+        try {
+          const res = await verifiableCredentialService.verifyCredential(uploadedCredential)
+          return res.data
+        } catch {
+          return null
+        }
+      }
+      if (!activeCode.trim()) return null
+      // Check if it matches UUID, DID, or raw JSON format
+      try {
+        const res = await verifiableCredentialService.verifyCredential(activeCode.trim())
+        if (res?.data?.valid || res?.data?.auditReport?.signatureValid) {
+          return res.data
+        }
+      } catch {
+        // Fallback to legacy
+      }
+      return null
+    },
+    enabled: Boolean(activeCode.trim() || uploadedCredential),
+    retry: 0,
+  })
+
+  const isLoading = Boolean(activeCode.trim()) && isCertLoading && isW3cLoading
+  const isW3C = Boolean(w3cVerificationData && (w3cVerificationData.valid || uploadedCredential))
+  const isLegacyValid = Boolean(verificationData && verificationData.valid)
+  const isFailed =
+    Boolean(activeCode.trim()) &&
+    !isLoading &&
+    !isW3C &&
+    (!verificationData || !verificationData.valid)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (!inputCode.trim()) return
+    setUploadedCredential(null)
     setActiveCode(inputCode.trim())
     navigate(`/verify-certificate/${encodeURIComponent(inputCode.trim())}`, { replace: true })
   }
@@ -76,11 +127,29 @@ export default function VerifyCertificatePage() {
     addToast({ message: 'Verification link copied to clipboard', type: 'success' })
   }
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = event => {
+      try {
+        const json = JSON.parse(event.target?.result as string)
+        setUploadedCredential(json)
+        setActiveCode(json.id || file.name)
+        addToast({ message: 'W3C Credential file loaded for verification', type: 'success' })
+      } catch {
+        addToast({ message: 'Invalid JSON credential file format', type: 'error' })
+      }
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <AnimatedPage>
       <SEO
         title="Verify Certificate | LearningHub Credential Registry"
-        description="Publicly verify the authenticity, cryptographic signature, and issuance details of LearningHub certifications."
+        description="Publicly verify the authenticity, cryptographic signature, and issuance details of LearningHub certifications and W3C Verifiable Credentials."
       />
 
       <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors">
@@ -96,12 +165,12 @@ export default function VerifyCertificatePage() {
             </h1>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Verify the authenticity and integrity of LearningHub certificates, verified on-chain
-              with cryptographic SHA-256 signatures.
+              with cryptographic SHA-256 signatures and W3C Decentralized Identifiers (DID).
             </p>
           </div>
 
-          {/* Search Bar Card */}
-          <Card className="p-4 sm:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/80 dark:border-gray-800 shadow-xl rounded-3xl">
+          {/* Search Bar & Upload Card */}
+          <Card className="p-4 sm:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/80 dark:border-gray-800 shadow-xl rounded-3xl space-y-4">
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -109,7 +178,7 @@ export default function VerifyCertificatePage() {
                   type="text"
                   value={inputCode}
                   onChange={e => setInputCode(e.target.value)}
-                  placeholder="Enter Certificate Code (e.g., LH-CERT-2026-DSA-001)..."
+                  placeholder="Enter Certificate Code (e.g., LH-CERT-2026-DSA-001 or urn:uuid:...)..."
                   className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 rounded-2xl text-sm sm:text-base text-gray-900 dark:text-white outline-none transition-all"
                 />
               </div>
@@ -122,6 +191,31 @@ export default function VerifyCertificatePage() {
                 {isLoading ? 'Verifying...' : 'Verify Credential'}
               </Button>
             </form>
+
+            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800 text-xs text-muted-foreground gap-3">
+              <span className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-primary-500" />
+                Supports Legacy Codes, W3C DID Credentials, and CAT Percentile proofs
+              </span>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".json,application/json,application/ld+json"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline font-semibold"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Upload .json Credential
+                </button>
+              </div>
+            </div>
           </Card>
 
           {/* Result Presentation */}
@@ -141,7 +235,7 @@ export default function VerifyCertificatePage() {
               </motion.div>
             )}
 
-            {!isLoading && isError && (
+            {isFailed && (
               <motion.div
                 key="error"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -156,29 +250,41 @@ export default function VerifyCertificatePage() {
                     Certificate Verification Failed
                   </h2>
                   <p className="text-sm text-rose-700 dark:text-rose-300 max-w-md mx-auto">
-                    {(error as Error)?.message ||
-                      'The specified certificate code could not be verified in the registry. Please double check the ID.'}
+                    The specified certificate code or credential could not be verified in the registry. Please double check the ID.
                   </p>
                 </Card>
               </motion.div>
             )}
 
-            {!isLoading && verificationData && verificationData.valid && (
+            {/* W3C DID Cryptographic Credential Audit View */}
+            {!isLoading && isW3C && w3cVerificationData && (
               <motion.div
-                key="success"
+                key="w3c-success"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <W3CVerificationAuditCard
+                  result={w3cVerificationData}
+                  rawCredential={uploadedCredential}
+                />
+              </motion.div>
+            )}
+
+            {/* Legacy Certificate View */}
+            {!isLoading && !isW3C && isLegacyValid && verificationData && (
+              <motion.div
+                key="legacy-success"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="space-y-6"
               >
-                {/* Official Certificate Card */}
                 <Card className="relative overflow-hidden p-6 sm:p-10 bg-gradient-to-br from-white via-white to-amber-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-amber-950/20 border-2 border-emerald-500/30 shadow-2xl rounded-3xl">
-                  {/* Decorative Watermark Seal */}
                   <div className="absolute top-4 right-4 sm:top-8 sm:right-8 opacity-10 dark:opacity-15 pointer-events-none">
                     <Award className="w-48 h-48 text-emerald-600 dark:text-emerald-400" />
                   </div>
 
-                  {/* Verification Banner */}
                   <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-gray-100 dark:border-gray-800">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
@@ -224,7 +330,6 @@ export default function VerifyCertificatePage() {
                     </div>
                   </div>
 
-                  {/* Detailed Certificate Info Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
                     <div className="space-y-1.5">
                       <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -284,7 +389,6 @@ export default function VerifyCertificatePage() {
                     </div>
                   </div>
 
-                  {/* Cryptographic Ledger Proof Section */}
                   <div className="p-4 sm:p-5 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200/80 dark:border-gray-700/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">

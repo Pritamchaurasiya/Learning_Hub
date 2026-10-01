@@ -24,6 +24,7 @@ import liveSessionsRoutes from './v1/liveSessions.routes'
 import mentorsRoutes from './v1/mentors.routes'
 import subscriptionsRoutes from './v1/subscriptions.routes'
 import certificatesRoutes from './v1/certificates.routes'
+import credentialsRoutes from './v1/credentials.routes'
 import contestsRoutes from './v1/contests.routes'
 import cartRoutes from './v1/cart.routes'
 import downloadsRoutes from './v1/downloads.routes'
@@ -101,6 +102,7 @@ router.use('/live-sessions', liveSessionsRoutes)
 router.use('/mentors', mentorsRoutes)
 router.use('/subscriptions', subscriptionsRoutes)
 router.use('/certificates', certificatesRoutes)
+router.use('/credentials', credentialsRoutes)
 router.use('/contests', contestsRoutes)
 router.use('/commerce/cart', cartRoutes)
 router.use('/cart', (req, res) => {
