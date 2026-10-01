@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
+import 'package:learning_hub/core/services/course_service.dart';
 import 'package:learning_hub/data/models/course_model.dart';
 import 'package:learning_hub/shared/widgets/course_card.dart';
 
@@ -60,52 +61,96 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 }
 
 /// In Progress courses tab
-class _InProgressTab extends StatelessWidget {
-  final List<_EnrolledCourse> _courses = [
-    _EnrolledCourse(
-      course: _mockCourse(0, 'Complete Flutter Development'),
-      progress: 0.45,
-      lastAccessedLesson: 'Lesson 12: State Management',
-    ),
-    _EnrolledCourse(
-      course: _mockCourse(1, 'Python Machine Learning'),
-      progress: 0.32,
-      lastAccessedLesson: 'Chapter 5: Pandas Basics',
-    ),
-    _EnrolledCourse(
-      course: _mockCourse(2, 'React Native Masterclass'),
-      progress: 0.78,
-      lastAccessedLesson: 'Module 8: Navigation',
-    ),
-  ];
+class _InProgressTab extends StatefulWidget {
+  @override
+  State<_InProgressTab> createState() => _InProgressTabState();
+}
+
+class _InProgressTabState extends State<_InProgressTab> {
+  late Future<List<_EnrolledCourse>> _coursesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _coursesFuture = _fetchCourses();
+  }
+
+  Future<List<_EnrolledCourse>> _fetchCourses() async {
+    try {
+      final courses = await CourseService.instance.getCourses();
+      final progressMap = await CourseService.instance.getUserProgress();
+      if (courses.isNotEmpty) {
+        return courses.map((course) {
+          final pData = progressMap[course.id];
+          return _EnrolledCourse(
+            course: course,
+            progress: pData?.progress ?? 0.0,
+            lastAccessedLesson: pData != null
+                ? 'Lesson ${pData.completedLessons + 1}'
+                : 'Start Course',
+          );
+        }).toList();
+      }
+    } catch (_) {
+      // Fallback below
+    }
+
+    return [
+      _EnrolledCourse(
+        course: _mockCourse(0, 'Complete Flutter Development'),
+        progress: 0.45,
+        lastAccessedLesson: 'Lesson 12: State Management',
+      ),
+      _EnrolledCourse(
+        course: _mockCourse(1, 'Python Machine Learning'),
+        progress: 0.32,
+        lastAccessedLesson: 'Chapter 5: Pandas Basics',
+      ),
+      _EnrolledCourse(
+        course: _mockCourse(2, 'React Native Masterclass'),
+        progress: 0.78,
+        lastAccessedLesson: 'Module 8: Navigation',
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_courses.isEmpty) {
-      return _EmptyState(
-        icon: Icons.play_circle_outline,
-        title: 'No courses in progress',
-        subtitle: 'Start learning by enrolling in a course',
-        actionLabel: 'Browse Courses',
-        onAction: () => context.go('/search'),
-      );
-    }
+    return FutureBuilder<List<_EnrolledCourse>>(
+      future: _coursesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _courses.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _LearningStatsCard(),
+        final courses = snapshot.data ?? [];
+        if (courses.isEmpty) {
+          return _EmptyState(
+            icon: Icons.play_circle_outline,
+            title: 'No courses in progress',
+            subtitle: 'Start learning by enrolling in a course',
+            actionLabel: 'Browse Courses',
+            onAction: () => context.go('/search'),
           );
         }
 
-        final enrolled = _courses[index - 1];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _EnrolledCourseCard(enrolled: enrolled),
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: courses.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _LearningStatsCard(),
+              );
+            }
+
+            final enrolled = courses[index - 1];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _EnrolledCourseCard(enrolled: enrolled),
+            );
+          },
         );
       },
     );

@@ -596,9 +596,11 @@ class SkillAssessmentHub extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_rounded, 'Home', true, () {}),
-              _buildNavItem(Icons.grid_view_rounded, 'Hub', false, () {}),
-              // Center FAB
+              _buildNavItem(Icons.home_rounded, 'Home', false,
+                  () => context.go('/')),
+              _buildNavItem(Icons.grid_view_rounded, 'Hub', true,
+                  () => context.go('/hub')),
+              // Center FAB -> Quiz Generator
               Container(
                 width: 56,
                 height: 56,
@@ -618,8 +620,9 @@ class SkillAssessmentHub extends ConsumerWidget {
                   ],
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.add, color: Colors.white, size: 28),
-                  onPressed: () {},
+                  icon: const Icon(Icons.quiz, color: Colors.white, size: 28),
+                  tooltip: 'Generate Quiz',
+                  onPressed: () => context.push('/ai/quiz'),
                 ),
               ),
               _buildNavItem(Icons.menu_book_rounded, 'Courses', false,

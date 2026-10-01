@@ -8,15 +8,17 @@ A full-stack learning management platform with AI-powered tutoring, interactive 
 | ---------- | ------------------------------------------------------- |
 | Frontend   | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion |
 | State      | Zustand, TanStack Query                                 |
-| Backend    | Express 4, TypeScript, Prisma 6, PostgreSQL             |
-| Real-time  | Socket.io (WebSocket), Redis adapter                    |
-| Queues     | Bull (Redis-backed job queue)                           |
-| AI         | Gemini API (AI tutor, test generation)                  |
-| Auth       | JWT (access + refresh tokens), bcryptjs                 |
-| Payments   | Stripe                                                  |
-| Monitoring | Sentry                                                  |
-| Testing    | Jest (backend), Vitest + Playwright (frontend/e2e)      |
-| Infra      | Docker, docker-compose                                  |
+| Backend    | Node.js (Express 4 + TypeScript + Prisma 6 + PostgreSQL) AND Django REST Framework (Python) — both serve canonical contracts |
+| Real-time  | Socket.io (Node) / Django Channels — WebSockets         |
+| Queues     | Bull (Node, Redis-backed)                               |
+| AI         | Google Gemini API (AI tutor, test generation) — NO_AI fallback |
+| Auth       | JWT (access + refresh tokens), bcryptjs, Django SimpleJWT |
+| Payments   | Stripe (planned)                                        |
+| Monitoring | Sentry (errors), Prometheus + Grafana (metrics)        |
+| Testing    | Jest (Node), pytest (Django), Vitest + Playwright (FE) |
+| Infra      | Docker, docker-compose, Kubernetes (EKS/GKE)           |
+
+> **Note:** The platform is in active migration from Node/Express/Prisma to Django REST Framework. Both backends currently run in parallel and conform to canonical API contracts. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §9 for migration plan.
 
 ## Project Structure
 
@@ -215,3 +217,21 @@ Before deploying to production:
 - **Rate limiting**: Redis-backed with automatic in-memory fallback; circuit breaker prevents cascade failures
 - **Full-text search**: PostgreSQL `pg_trgm` extension with GIN indexes for ILIKE queries on 20+ models; courses also get a `tsvector` column for weighted ranking
 - **Error handling**: Centralized `errorHandler` middleware; service layer uses typed `AppError` classes via `errorFactory`
+
+## Documentation
+
+📚 **All documentation is now consolidated in [`docs/`](docs/)**:
+
+- **[docs/README.md](docs/README.md)** — Documentation index (all 42 files, canonical vs historical)
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — System architecture + canonical port table (§8)
+- **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** — Production deployment guide
+- **[docs/DEPLOYMENT_RUNBOOK.md](docs/DEPLOYMENT_RUNBOOK.md)** — Deploy + rollback runbook
+- **[docs/MONITORING.md](docs/MONITORING.md)** — Observability guide
+- **[docs/SECRETS_MANAGEMENT.md](docs/SECRETS_MANAGEMENT.md)** — Secrets policy
+- **[docs/PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md)** — Pre-launch checklist
+- **[docs/CANONICAL_*.md](docs/)** — API contracts for each domain (7 active + 2 planned + 2 guides = 11 total)
+- **[docs/PERFORMANCE_OPTIMIZATION.md](docs/PERFORMANCE_OPTIMIZATION.md)** — Performance rules
+- **[docs/ANTI_CHEAT_TIMER.md](docs/ANTI_CHEAT_TIMER.md)** — Anti-cheat patterns
+- **[docs/MASTER_PROMPT_CANONICAL_V2.md](docs/MASTER_PROMPT_CANONICAL_V2.md)** — Canonical orchestrator prompt
+- **[docs/DEEP_PLANNING_BLUEPRINT.md](docs/DEEP_PLANNING_BLUEPRINT.md)** — Planning WBS + wave template + gate
+- **[docs/MIGRATION_PARITY_REPORT.md](docs/MIGRATION_PARITY_REPORT.md)** — Node↔Django parity matrix

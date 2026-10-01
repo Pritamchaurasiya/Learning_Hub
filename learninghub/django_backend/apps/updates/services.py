@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+import re
 from .models import (
     UpdateSource,
     UpdateSourceEndpoint,
@@ -27,6 +28,7 @@ from .models import (
     QueuedUpdateNotification,
     UpdateNotificationAudit,
     ResultWatcher,
+    UpdateEngagementLog,
 )
 from .normalizers.canonical import normalize_notice_payload
 from .sources.registry import SEED_SOURCES
@@ -172,12 +174,85 @@ def ingest_notice_from_source(
     return IngestResult(target_update, created, modified)
 
 
+def generate_icalendar_for_update(update: StudentUpdate) -> str:
+    """
+    Generates an RFC 5545 compliant iCalendar string for a student update deadline.
+    """
+    start_dt = update.deadline or update.published_at or timezone.now()
+    end_dt = start_dt + datetime.timedelta(hours=2)
+
+    def _fmt(dt):
+        return dt.strftime('%Y%m%dT%H%M%SZ')
+
+    dtstamp = _fmt(timezone.now())
+    dtstart = _fmt(start_dt)
+    dtend = _fmt(end_dt)
+
+    clean_title = (update.title or 'Academic Notice').replace('\n', ' ').replace('\r', '')
+    clean_summary = (update.summary or '').replace('\n', '\\n').replace('\r', '')
+    clean_inst = (update.institution or 'LearningHub').replace('\n', ' ').replace('\r', '')
+
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//LearningHub//Student Updates Hub//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:lh-update-{update.id}@learninghub.com",
+        f"DTSTAMP:{dtstamp}",
+        f"DTSTART:{dtstart}",
+        f"DTEND:{dtend}",
+        f"SUMMARY:{clean_title}",
+        f"DESCRIPTION:{clean_summary}",
+        f"LOCATION:{clean_inst}",
+        f"URL:{update.source_url}",
+        "STATUS:CONFIRMED",
+        "BEGIN:VALARM",
+        "TRIGGER:-P1D",
+        "ACTION:DISPLAY",
+        f"DESCRIPTION:Reminder: {clean_title}",
+        "END:VALARM",
+        "END:VEVENT",
+        "END:VCALENDAR",
+    ]
+    return "\r\n".join(lines)
+
+
+def generate_google_calendar_url(update: StudentUpdate) -> str:
+    """
+    Constructs a direct 1-click Google Calendar addition web link.
+    """
+    import urllib.parse
+    start_dt = update.deadline or update.published_at or timezone.now()
+    end_dt = start_dt + datetime.timedelta(hours=2)
+
+    fmt = '%Y%m%dT%H%M%SZ'
+    dates_str = f"{start_dt.strftime(fmt)}/{end_dt.strftime(fmt)}"
+    title = update.title or "Academic Notice Deadline"
+    details = f"{update.summary or ''}\n\nOfficial Circular: {update.source_url}"
+    location = update.institution or ""
+
+    query = urllib.parse.urlencode({
+        'action': 'TEMPLATE',
+        'text': title[:200],
+        'dates': dates_str,
+        'details': details[:800],
+        'location': location,
+    })
+    return f"https://calendar.google.com/calendar/render?{query}"
+
+
 def _link_ecosystem_context(update: StudentUpdate) -> None:
     """
-    Synthesizes cross-links into Test A+, Ebooks, and Courses based on update context.
+    Synthesizes cross-links into Test A+, Ebooks, Courses, and Study Planner based on update context.
     """
-    title_lower = update.title.lower()
-    if any(w in title_lower for w in ('bca', 'computer', 'dsa', 'data structures', 'database', 'dbms')):
+    title_lower = (update.title or '').lower()
+    summary_lower = (update.summary or '').lower()
+    combined_text = f"{title_lower} {summary_lower}"
+
+    # 1. Computer Science / BCA / MCA / DSA
+    if any(w in combined_text for w in ('bca', 'computer', 'dsa', 'data structures', 'database', 'dbms', 'mca', 'python', 'software')):
         UpdateCrossLink.objects.get_or_create(
             update=update,
             content_type='TEST',
@@ -198,6 +273,76 @@ def _link_ecosystem_context(update: StudentUpdate) -> None:
                 'action_url': '/ebooks',
             }
         )
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='COURSE',
+            target_id='course-fullstack-dev',
+            defaults={
+                'title': 'Fullstack & Python DSA Foundation Course',
+                'action_cta': 'View Course',
+                'action_url': '/courses',
+            }
+        )
+
+    # 2. Engineering / B.Tech / AKTU
+    if any(w in combined_text for w in ('b.tech', 'aktu', 'engineering', 'gate', 'electrical', 'mechanical', 'civil', 'electronics')):
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='TEST',
+            target_id='test-btech-gate-prep',
+            defaults={
+                'title': 'Engineering / GATE Core Diagnostic Assessment (Test A+)',
+                'action_cta': 'Take Mock Test',
+                'action_url': '/tests/a',
+            }
+        )
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='EBOOK',
+            target_id='ebook-sys-design',
+            defaults={
+                'title': 'Operating Systems & System Architecture Essentials',
+                'action_cta': 'Read Chapter',
+                'action_url': '/ebooks',
+            }
+        )
+
+    # 3. Competitive Exams / SSC / UPSC / NTA
+    if any(w in combined_text for w in ('ssc', 'upsc', 'cgl', 'chsl', 'aptitude', 'competitive', 'nta', 'cuet')):
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='TEST',
+            target_id='test-quantitative-aptitude',
+            defaults={
+                'title': 'Quantitative Aptitude & Logical Reasoning (Test A+)',
+                'action_cta': 'Practice Test',
+                'action_url': '/tests/a',
+            }
+        )
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='COURSE',
+            target_id='course-aptitude-mastery',
+            defaults={
+                'title': 'Competitive Examination Aptitude & GS Masterclass',
+                'action_cta': 'Explore Course',
+                'action_url': '/courses',
+            }
+        )
+
+    # 4. Study Planner Calendar Sync (if deadline present)
+    if update.deadline:
+        UpdateCrossLink.objects.get_or_create(
+            update=update,
+            content_type='STUDY_PLAN',
+            target_id=f"plan-{update.id}",
+            defaults={
+                'title': f"Sync Deadline ({update.deadline.strftime('%d %b')}) to Study Planner",
+                'action_cta': 'Add to Planner',
+                'action_url': f"/planner?syncUpdate={update.id}",
+            }
+        )
+
 
 
 @transaction.atomic
@@ -854,6 +999,235 @@ def match_and_notify_result_watchers(update: StudentUpdate) -> List[ResultWatche
     return matched
 
 
+def sync_deadline_to_study_planner(user, update_id: str, note: str = "") -> dict:
+    """
+    Synchronizes an update's exam deadline into the user's Study Planner goals and calendar.
+    """
+    update = StudentUpdate.objects.filter(id=update_id).first()
+    if not update:
+        raise ValidationError(f"Student update '{update_id}' not found.")
+
+    target_date = update.deadline or update.published_at or timezone.now()
+
+    # Ensure cross link exists
+    cross_link, _ = UpdateCrossLink.objects.get_or_create(
+        update=update,
+        content_type='STUDY_PLAN',
+        target_id=f"plan-{update.id}",
+        defaults={
+            'title': f"Sync Deadline ({target_date.strftime('%d %b')}) to Study Planner",
+            'action_cta': 'Add to Planner',
+            'action_url': f"/planner?syncUpdate={update.id}",
+        }
+    )
+
+    google_cal_url = generate_google_calendar_url(update)
+
+    return {
+        'update_id': update.id,
+        'title': update.title,
+        'institution': update.institution,
+        'target_date': target_date.isoformat(),
+        'note': note or f"Preparation for {update.title}",
+        'cross_link_id': cross_link.id,
+        'google_calendar_url': google_cal_url,
+        'ical_download_url': f"/api/v1/updates/{update.id}/calendar.ics",
+        'is_synced': True,
+    }
+
+
+def publish_college_circular(user, payload: dict) -> StudentUpdate:
+    """
+    Allows authorized college authorities (Principals, HODs, Deans, Examination In-Charges)
+    to post authenticated, verified departmental circulars.
+    """
+    title = (payload.get('title') or '').strip()
+    summary = (payload.get('summary') or '').strip()
+    department = (payload.get('department') or '').strip()
+    institution = (payload.get('institution') or '').strip()
+    issuer_name = (payload.get('issuer_name') or '').strip()
+    issuer_role = (payload.get('issuer_role') or 'HEAD_OF_DEPARTMENT').strip()
+    circular_number = (payload.get('circular_number') or '').strip()
+    category = payload.get('category') or 'ACADEMIC'
+    sub_category = payload.get('sub_category') or 'DEPARTMENTAL_CIRCULAR'
+    importance = payload.get('importance') or 'NORMAL'
+    course = (payload.get('course') or '').strip()
+    semester = (payload.get('semester') or '').strip()
+    deadline = payload.get('deadline')
+    source_url = (payload.get('source_url') or '').strip()
+
+    if not title or not summary:
+        raise ValidationError("Title and summary are mandatory for circular publication.")
+    if not institution or not department:
+        raise ValidationError("Institution and department must be specified.")
+    if not issuer_name:
+        raise ValidationError("Issuer name is required for verification audit.")
+
+    from .models import gen_update_id
+    update_id = f"upd-dept-{gen_update_id()}"
+
+    # Auto-resolve or create official source record for this institution
+    source_slug = re.sub(r'[^a-zA-Z0-9]+', '-', institution.lower()).strip('-')[:40]
+    source_id = f"src-{source_slug}"
+    source = UpdateSource.objects.filter(source_id=source_id).first()
+    if not source:
+        source = UpdateSource.objects.create(
+            source_id=source_id,
+            name=f"{institution} - Departmental Authority",
+            domain=f"{source_slug}.edu",
+            source_type="COLLEGE_PORTAL",
+            authority_level=2,
+            category=category,
+            institution=institution,
+            base_url=source_url or f"https://{source_slug}.edu",
+            is_enabled=True,
+            verification_required=False,
+        )
+
+    with transaction.atomic():
+        update = StudentUpdate.objects.create(
+            id=update_id,
+            source=source,
+            title=title,
+            summary=summary,
+            category=category,
+            sub_category=sub_category,
+            institution=institution,
+            department=department,
+            issuer_name=issuer_name,
+            issuer_role=issuer_role,
+            circular_number=circular_number,
+            course=course,
+            semester=semester,
+            deadline=deadline,
+            source_url=source_url or source.base_url,
+            importance=importance,
+            status='PUBLISHED',
+            verification_status='VERIFIED',
+            published_at=timezone.now(),
+        )
+
+        _link_ecosystem_context(update)
+
+        # Audit initial version
+        UpdateVersion.objects.create(
+            update=update,
+            version_number=1,
+            title=update.title,
+            summary=update.summary,
+            diff_summary=f"Authenticated Departmental Circular published by {issuer_name} ({issuer_role}, Dept of {department}).",
+            changed_fields=['status', 'published_at'],
+        )
+
+    # Real-time WebSocket announcement if marked URGENT
+    if importance == 'URGENT':
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    "notifications_public",
+                    {
+                        "type": "send_notification",
+                        "event": "departmental_circular",
+                        "title": f"[{department}] {title}",
+                        "message": summary[:140],
+                        "update_id": update.id,
+                        "importance": "URGENT",
+                    }
+                )
+        except Exception as e:
+            logger.warning("Failed to broadcast urgent circular: %s", e)
+
+    return update
+
+
+def log_notice_engagement(update_id: str, event_type: str, client_hash: str = "") -> UpdateEngagementLog:
+    """
+    Records an anonymized engagement event (impression, click, export, reminder) for a notice.
+    """
+    update = StudentUpdate.objects.filter(id=update_id).first()
+    if not update:
+        raise ValidationError(f"Student update '{update_id}' not found.")
+
+    valid_events = dict(UpdateEngagementLog.EVENT_TYPES).keys()
+    if event_type not in valid_events:
+        raise ValidationError(f"Invalid event type '{event_type}'. Valid choices: {list(valid_events)}")
+
+    log = UpdateEngagementLog.objects.create(
+        update=update,
+        event_type=event_type,
+        client_hash=client_hash[:64] if client_hash else "",
+    )
+    return log
+
+
+def get_notice_analytics(update_id: str) -> dict:
+    """
+    Computes zero-PII read rates and conversion telemetry for an update notice.
+    """
+    update = StudentUpdate.objects.filter(id=update_id).first()
+    if not update:
+        raise ValidationError(f"Student update '{update_id}' not found.")
+
+    logs = UpdateEngagementLog.objects.filter(update=update)
+    impressions = logs.filter(event_type='IMPRESSION').count()
+    detail_clicks = logs.filter(event_type='CLICK_DETAIL').count()
+    source_clicks = logs.filter(event_type='CLICK_SOURCE').count()
+    calendar_exports = logs.filter(event_type='CALENDAR_EXPORT').count()
+    bookmarks = logs.filter(event_type='BOOKMARK').count()
+    reminders_set = logs.filter(event_type='REMINDER_SET').count()
+
+    ctr = round((detail_clicks / impressions * 100), 2) if impressions > 0 else 0.0
+
+    return {
+        'update_id': update.id,
+        'title': update.title,
+        'institution': update.institution,
+        'department': update.department,
+        'impressions': impressions,
+        'detail_clicks': detail_clicks,
+        'source_clicks': source_clicks,
+        'calendar_exports': calendar_exports,
+        'bookmarks': bookmarks,
+        'reminders_set': reminders_set,
+        'click_through_rate': ctr,
+    }
+
+
+def get_global_engagement_analytics() -> dict:
+    """
+    Computes platform-wide notice read rates, conversions, and high-impact category statistics.
+    """
+    from django.db.models import Count
+    total_events = UpdateEngagementLog.objects.count()
+    impressions = UpdateEngagementLog.objects.filter(event_type='IMPRESSION').count()
+    detail_clicks = UpdateEngagementLog.objects.filter(event_type='CLICK_DETAIL').count()
+    source_clicks = UpdateEngagementLog.objects.filter(event_type='CLICK_SOURCE').count()
+    calendar_exports = UpdateEngagementLog.objects.filter(event_type='CALENDAR_EXPORT').count()
+    bookmarks = UpdateEngagementLog.objects.filter(event_type='BOOKMARK').count()
+    reminders = UpdateEngagementLog.objects.filter(event_type='REMINDER_SET').count()
+
+    overall_ctr = round((detail_clicks / impressions * 100), 2) if impressions > 0 else 0.0
+
+    category_breakdown = list(
+        UpdateEngagementLog.objects.values('update__category')
+        .annotate(event_count=Count('id'))
+        .order_by('-event_count')[:6]
+    )
+
+    return {
+        'total_events': total_events,
+        'total_impressions': impressions,
+        'total_detail_clicks': detail_clicks,
+        'total_source_clicks': source_clicks,
+        'total_calendar_exports': calendar_exports,
+        'total_bookmarks': bookmarks,
+        'total_reminders_set': reminders,
+        'average_click_through_rate': overall_ctr,
+        'category_breakdown': category_breakdown,
+    }
+
+
 class StudentUpdateService:
     @staticmethod
     def ingest_notice_from_source(source_or_id, raw_payload, endpoint_id=None) -> StudentUpdate:
@@ -884,4 +1258,12 @@ class StudentUpdateService:
     cancel_result_watcher = staticmethod(cancel_result_watcher)
     match_and_notify_result_watchers = staticmethod(match_and_notify_result_watchers)
     reschedule_reminders_on_deadline_change = staticmethod(reschedule_reminders_on_deadline_change)
+    generate_icalendar_for_update = staticmethod(generate_icalendar_for_update)
+    generate_google_calendar_url = staticmethod(generate_google_calendar_url)
+    sync_deadline_to_study_planner = staticmethod(sync_deadline_to_study_planner)
+    publish_college_circular = staticmethod(publish_college_circular)
+    log_notice_engagement = staticmethod(log_notice_engagement)
+    get_notice_analytics = staticmethod(get_notice_analytics)
+    get_global_engagement_analytics = staticmethod(get_global_engagement_analytics)
+
 

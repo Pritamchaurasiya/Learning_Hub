@@ -10,12 +10,14 @@ interface RawCourse {
   student_count?: number
   studentCount?: number
   duration?: string | number
+  timeLimit?: number
   difficulty?: string
   thumbnail?: string | null
   instructorId?: string
   instructor_id?: string
   instructorName?: string
   instructor_name?: string
+  instructor?: unknown
   price?: number | null
   originalPrice?: number | null
   original_price?: number | null
@@ -89,26 +91,58 @@ export interface HomeData {
   recommendations: FeaturedCourse[]
 }
 
-// Helper to transform raw course from backend
+// Helper to transform raw course from backend with robust shape normalization
 function mapToFeaturedCourse(course: RawCourse): FeaturedCourse {
+  const instructor =
+    typeof course.instructor === 'object' && course.instructor !== null
+      ? (course.instructor as {
+          id?: string
+          display_name?: string
+          name?: string
+          avatar?: string | null
+        })
+      : null
+
+  const rawDifficulty = String(course.difficulty ?? '').toLowerCase()
+  const validLevel = (
+    ['beginner', 'intermediate', 'advanced'].includes(rawDifficulty)
+      ? rawDifficulty
+      : rawDifficulty === 'easy'
+        ? 'beginner'
+        : rawDifficulty === 'medium'
+          ? 'intermediate'
+          : rawDifficulty === 'hard'
+            ? 'advanced'
+            : 'beginner'
+  ) as 'beginner' | 'intermediate' | 'advanced'
+
+  const durationStr = course.duration
+    ? String(course.duration)
+    : course.timeLimit
+      ? `${course.timeLimit} mins`
+      : ''
+
   return {
     id: course.id,
     title: course.title,
     description: course.description ?? '',
     thumbnail: course.thumbnail ?? null,
     instructor: {
-      id: course.instructorId ?? 'system',
-      display_name: course.instructorName ?? 'Instructor',
-      avatar: null,
+      id: instructor?.id ?? course.instructorId ?? course.instructor_id ?? 'system',
+      display_name:
+        instructor?.display_name ??
+        instructor?.name ??
+        course.instructorName ??
+        course.instructor_name ??
+        'Instructor',
+      avatar: instructor?.avatar ?? null,
     },
     price: course.price ?? 0,
-    original_price: course.originalPrice ?? null,
+    original_price: course.originalPrice ?? (course.original_price as number | null) ?? null,
     rating: course.rating ?? 0,
-    student_count: course.student_count ?? 0,
-    duration: String(course.duration ?? ''),
-    level: (['beginner', 'intermediate', 'advanced'].includes(String(course.difficulty ?? ''))
-      ? course.difficulty
-      : 'beginner') as 'beginner' | 'intermediate' | 'advanced',
+    student_count: course.student_count ?? course.studentCount ?? 0,
+    duration: durationStr,
+    level: validLevel,
   }
 }
 

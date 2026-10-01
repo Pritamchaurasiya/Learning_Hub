@@ -171,7 +171,7 @@ class ApiClient {
 
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.learninghub.app/api/v1',
+    defaultValue: 'http://localhost:5000/api/v1',
   );
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';

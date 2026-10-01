@@ -78,27 +78,26 @@ export const mentorService = {
     if (filters?.expertise) params.append('expertise', filters.expertise)
     if (filters?.available !== undefined) params.append('available', String(filters.available))
     const query = params.toString() ? `?${params.toString()}` : ''
-    return fetchApi(`/tutors/list/${query}`)
+    return fetchApi(`/mentors${query}`)
   },
 
   getMentor: async (id: string): Promise<SingleMentorResponse> => {
-    return fetchApi(`/tutors/list/${id}/`)
+    return fetchApi(`/mentors/${id}`)
   },
 
   getMySessions: async (): Promise<SessionsResponse> => {
-    // Uses the generic list view since get_queryset filters by user
-    return fetchApi('/tutors/bookings/')
+    return fetchApi('/mentors/sessions/my-sessions')
   },
 
   bookSession: async (data: BookSessionRequest): Promise<SingleSessionResponse> => {
-    return fetchApi('/tutors/bookings/', {
+    return fetchApi('/mentors/book', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   },
 
   cancelSession: async (id: string, reason?: string): Promise<SingleSessionResponse> => {
-    return fetchApi(`/tutors/bookings/${id}/cancel/`, {
+    return fetchApi(`/mentors/sessions/${id}/cancel`, {
       method: 'POST',
       body: JSON.stringify({ reason: reason ?? 'User requested cancellation' }),
     })
@@ -107,11 +106,9 @@ export const mentorService = {
   getAvailability: async (
     mentorId: string
   ): Promise<{ status: string; data: { day: string; slots: string[] }[] }> => {
-    // Try to fetch from backend availability endpoint
     try {
-      return await fetchApi(`/tutors/list/${mentorId}/availability/`)
+      return await fetchApi(`/mentors/${mentorId}/availability`)
     } catch {
-      // Backend availability not implemented - return empty availability
       return { status: 'success', data: [] }
     }
   },

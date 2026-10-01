@@ -18,6 +18,7 @@ const initialTestsAState: TestsAState = {
   results: null,
   isSubmitting: false,
   lastAutosavedAt: null,
+  autosaveStatus: 'saved',
 }
 
 export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], TestsASlice> = (
@@ -44,11 +45,13 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
     set(state => {
       const updatedAnswers = { ...state.testsA.answers, [questionId]: optionId }
       // Backup answers to localStorage for crash recovery
-      try {
-        const backupKey = `lh_test_answers_${state.testsA.attemptId}`
-        localStorage.setItem(backupKey, JSON.stringify(updatedAnswers))
-      } catch {
-        // Storage full or unavailable — non-critical
+      if (typeof window !== 'undefined') {
+        try {
+          const backupKey = `lh_testsA_answers_${state.testsA.attemptId}`
+          localStorage.setItem(backupKey, JSON.stringify(updatedAnswers))
+        } catch {
+          // Storage full or unavailable — non-critical
+        }
       }
       return {
         testsA: {
@@ -113,16 +116,18 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
   setTestQuestions: (questions, testInfo, attemptId, initialAnswers = {}, timeRemaining) => {
     // Merge any localStorage-backed answers with server-provided answers
     let mergedAnswers = { ...initialAnswers }
-    try {
-      const backupKey = `lh_test_answers_${attemptId}`
-      const backup = localStorage.getItem(backupKey)
-      if (backup) {
-        const parsed = JSON.parse(backup) as Record<string, string>
-        // Backup wins for keys not already in server answers (server is fresher)
-        mergedAnswers = { ...parsed, ...initialAnswers }
+    if (typeof window !== 'undefined') {
+      try {
+        const backupKey = `lh_testsA_answers_${attemptId}`
+        const backup = localStorage.getItem(backupKey)
+        if (backup) {
+          const parsed = JSON.parse(backup) as Record<string, string>
+          // Backup wins for keys not already in server answers (server is fresher)
+          mergedAnswers = { ...parsed, ...initialAnswers }
+        }
+      } catch {
+        // Ignore parse errors
       }
-    } catch {
-      // Ignore parse errors
     }
 
     set(state => ({
@@ -168,10 +173,12 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
       const resultData = response.data
       if (response.status === 'success' || resultData.score !== undefined) {
         // Clean up localStorage backup on successful submission
-        try {
-          localStorage.removeItem(`lh_test_answers_${attemptId}`)
-        } catch {
-          // non-critical
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem(`lh_testsA_answers_${attemptId}`)
+          } catch {
+            // non-critical
+          }
         }
         set(state => ({
           testsA: {
@@ -213,9 +220,9 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
   resetTestState: () => {
     // Clean up any localStorage backup
     const state = get()
-    if (state.testsA.attemptId) {
+    if (state.testsA.attemptId && typeof window !== 'undefined') {
       try {
-        localStorage.removeItem(`lh_test_answers_${state.testsA.attemptId}`)
+        localStorage.removeItem(`lh_testsA_answers_${state.testsA.attemptId}`)
       } catch {
         // non-critical
       }
@@ -225,9 +232,9 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
 
   abandonTest: () => {
     const state = get()
-    if (state.testsA.attemptId) {
+    if (state.testsA.attemptId && typeof window !== 'undefined') {
       try {
-        localStorage.removeItem(`lh_test_answers_${state.testsA.attemptId}`)
+        localStorage.removeItem(`lh_testsA_answers_${state.testsA.attemptId}`)
       } catch {
         // non-critical
       }
@@ -256,6 +263,14 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
       testsA: {
         ...state.testsA,
         lastAutosavedAt: timestamp,
+      },
+    }))
+  },
+  setAutosaveStatus: (status: 'saved' | 'saving' | 'retrying' | 'offline' | 'recovered') => {
+    set(state => ({
+      testsA: {
+        ...state.testsA,
+        autosaveStatus: status,
       },
     }))
   },

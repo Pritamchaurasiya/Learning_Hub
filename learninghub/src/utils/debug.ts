@@ -31,8 +31,7 @@ export function createDebugLogger(context: string) {
 
   return {
     log: (message: string, data?: unknown) => {
-      // eslint-disable-next-line no-console
-      console.log(formatMessage(message), data)
+      console.warn(formatMessage(message), data)
     },
     error: (message: string, error: unknown) => {
       console.error(formatMessage(message), error)

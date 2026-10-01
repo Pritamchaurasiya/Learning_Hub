@@ -1,9 +1,9 @@
 import type { User } from '../types/user'
 import type { UserProgress, Theme, Achievement, Toast, LoadingState, Notification } from '../types'
-import type { TestQuestion, TestResult } from '../services/testsAService'
+import type { TestQuestion, TestResult, TestSection } from '../services/testsAService'
 
 export type { User, UserProgress, Theme, Achievement, Toast, LoadingState, Notification }
-export type { TestQuestion, TestResult }
+export type { TestQuestion, TestResult, TestSection }
 
 // Quiz Types (Legacy - deprecated, use TestQuestion instead)
 export interface QuizQuestion {
@@ -42,8 +42,8 @@ export interface QuizState {
   answers: Record<string, string | number>
   flaggedQuestions: string[]
   timeRemaining: number
-  questions: QuizQuestion[] | TestQuestion[] | any[]
-  quizInfo: QuizInfo | TestInfo | any
+  questions: QuizQuestion[] | TestQuestion[]
+  quizInfo: QuizInfo | TestInfo | null
   currentQuestionIndex: number
   isSubmitting: boolean
   lastSavedAt: string | null
@@ -59,6 +59,7 @@ export interface TestInfo {
   testTitle: string
   totalQuestions: number
   timeLimit: number
+  sections?: TestSection[]
 }
 
 export interface TestAttemptState {
@@ -87,6 +88,20 @@ export interface UnifiedTestState {
   results: TestResult | null
   isSubmitting: boolean
   lastAutosavedAt: string | null
+  autosaveStatus?: 'saved' | 'saving' | 'retrying' | 'offline' | 'recovered' | 'idle' | 'error'
+  sections: TestSection[]
+  activeSectionId: string | null
+  lockedSectionIds?: string[]
+  sectionTimeRemaining?: Record<string, number>
+  // Assessment modes state
+  assessmentMode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice'
+  adaptiveTheta: number
+  adaptiveSem: number
+  isOfflineMode: boolean
+  pendingSyncCount: number
+  isContestMode: boolean
+  proctorViolations: number
+  practiceFeedback: Record<string, { isCorrect: boolean; explanation: string; points: number }>
   // Legacy compatibility
   currentAttempt: TestAttemptState | null
   quizInfo: TestInfo | null
@@ -183,28 +198,9 @@ export interface ProgressSlice {
   markNotificationAsRead: (id: string) => void
   markAllNotificationsAsRead: () => void
   clearNotifications: () => void
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => void
-}
-
-// Legacy Quiz Slice (Deprecated - use TestSlice instead)
-export interface QuizSlice {
-  quiz: QuizState
-  quizStartAttempt: (
-    quizId: string,
-    quizTitle: string,
-    totalQuestions: number,
-    timeLimit: number
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'createdAt'> & { id?: string; createdAt?: string }
   ) => void
-  quizAnswerQuestion: (questionId: string, answerValue: string) => void
-  quizFlagQuestion: (questionId: string) => void
-  quizUnflagQuestion: (questionId: string) => void
-  quizNavigateToQuestion: (index: number) => void
-  updateQuizTimer: (timeRemaining: number) => void
-  setQuizQuestions: (questions: any[], quizInfo: any) => void
-  submitQuiz: () => Promise<{ success: boolean; score: number }>
-  resetQuizState: () => void
-  clearQuiz: () => void
-  abandonQuiz: () => void
 }
 
 // Tests A+ Slice (Deprecated - use TestSlice instead)
@@ -234,6 +230,7 @@ export interface TestsASlice {
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
   setLastAutosavedAt: (timestamp: number | string) => void
+  setAutosaveStatus: (status: 'saved' | 'saving' | 'retrying' | 'offline' | 'recovered') => void
   updateSubjectiveGrade: (payload: {
     questionId: string
     marksObtained: number
@@ -251,7 +248,7 @@ export interface TestsAState {
   isActive: boolean
   currentQuestionIndex: number
   questions: TestQuestion[]
-  answers: Record<string, any>
+  answers: Record<string, string | string[]>
   confidences: Record<string, string>
   flaggedQuestions: string[]
   timeRemaining: number
@@ -262,6 +259,7 @@ export interface TestsAState {
   results: TestResult | null
   isSubmitting: boolean
   lastAutosavedAt: number | string | null
+  autosaveStatus?: 'saved' | 'saving' | 'retrying' | 'offline' | 'recovered'
   attempt?: TestAttemptState | null
   currentAttempt?: TestAttemptState | null
   quizInfo?: TestInfo | null
@@ -283,13 +281,15 @@ export interface TestSlice {
   flagQuestion: (questionId: string) => void
   unflagQuestion: (questionId: string) => void
   navigateToQuestion: (index: number) => void
+  setActiveSection: (sectionId: string | null) => void
   updateTestTimer: (timeRemaining: number) => void
   setTestQuestions: (
     questions: TestQuestion[],
     testInfo: TestInfo,
     attemptId: string,
     initialAnswers?: Record<string, string>,
-    timeRemaining?: number
+    timeRemaining?: number,
+    sections?: TestSection[]
   ) => void
   submitTest: () => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
@@ -304,6 +304,19 @@ export interface TestSlice {
     percentage: number
     passed: boolean
   }) => void
+  setAssessmentMode: (
+    mode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice'
+  ) => void
+  setAdaptiveMetrics: (theta: number, sem: number) => void
+  stepAdaptiveQuestion: (nextQuestion: TestQuestion) => void
+  recordProctorViolation: () => void
+  setPendingSyncCount: (count: number) => void
+  setPracticeFeedback: (
+    questionId: string,
+    feedback: { isCorrect: boolean; explanation: string; points: number }
+  ) => void
+  lockSection: (sectionId: string) => void
+  updateSectionTimer: (sectionId: string, timeRemaining: number) => void
   // Legacy compatibility methods (deprecated)
   quizStartAttempt: (
     quizId: string,
@@ -316,7 +329,10 @@ export interface TestSlice {
   quizUnflagQuestion: (questionId: string) => void
   quizNavigateToQuestion: (index: number) => void
   updateQuizTimer: (timeRemaining: number) => void
-  setQuizQuestions: (questions: any[], quizInfo: any) => void
+  setQuizQuestions: (
+    questions: QuizQuestion[] | TestQuestion[],
+    quizInfo: QuizInfo | TestInfo
+  ) => void
   submitQuiz: () => Promise<{ success: boolean; score: number }>
   resetQuizState: () => void
   clearQuiz: () => void
@@ -329,4 +345,4 @@ export interface TestSlice {
   ) => void
 }
 
-export type AppState = AuthSlice & UISlice & ProgressSlice & QuizSlice & TestsASlice & TestSlice
+export type AppState = AuthSlice & UISlice & ProgressSlice & TestsASlice & TestSlice

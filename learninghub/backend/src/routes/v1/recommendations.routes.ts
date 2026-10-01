@@ -19,6 +19,7 @@ import {
   getNextTestRecommendation,
   getImprovementRoadmap,
   getSpacedRepetition,
+  getKnowledgeGraph,
 } from '../../controllers/userAnalyticsController'
 
 const router = Router()
@@ -28,6 +29,9 @@ router.use(authenticate)
 
 // Study recommendations (prioritized topic suggestions)
 router.get('/', validate(getRecommendationsSchema), getRecommendations)
+
+// Concept knowledge graph (prerequisite DAG and user mastery)
+router.get('/knowledge-graph', getKnowledgeGraph)
 
 // Next test recommendation (best tests for weak areas)
 router.get('/next-test', validate(getNextTestRecommendationSchema), getNextTestRecommendation)

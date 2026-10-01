@@ -408,6 +408,61 @@ describe('AITestService', () => {
       expect(promptArg).toContain('<exam_name>JEE Advanced</exam_name>')
       expect(promptArg).toContain('<exam_pattern>"Multiple Correct Options"</exam_pattern>')
     })
+
+    it('should never expose correct_option_id or explanation to clients before test submission', async () => {
+      const req = {
+        userId: 'user-safe',
+        topic: 'Operating Systems',
+        difficulty: 'HARD' as const,
+        count: 1,
+        mode: 'MOCK' as const,
+      }
+
+      mockGenerateJSON.mockResolvedValue({
+        questions: [
+          {
+            text: 'What is deadlock?',
+            options: [
+              { id: 'a', text: 'Resource starvation' },
+              { id: 'b', text: 'Circular wait for resources' },
+            ],
+            correct_option_id: 'b',
+            explanation:
+              'Deadlock requires mutual exclusion, hold and wait, no preemption, and circular wait.',
+            difficulty: 'HARD',
+            bloom_level: 'analyze',
+          },
+        ],
+      })
+      ;(prisma.test.create as jest.Mock).mockResolvedValue({
+        id: 'test-safe-1',
+        title: 'Operating Systems Practice',
+        questions: [
+          {
+            id: 'q-safe-1',
+            text: 'What is deadlock?',
+            difficulty: 3.0,
+            bloomLevel: 'ANALYZE',
+            explanation:
+              'Deadlock requires mutual exclusion, hold and wait, no preemption, and circular wait.',
+            tags: ['Operating Systems'],
+            points: 10,
+            options: [
+              { id: 'a', text: 'Resource starvation', isCorrect: false, order: 0 },
+              { id: 'b', text: 'Circular wait for resources', isCorrect: true, order: 1 },
+            ],
+          },
+        ],
+      })
+
+      const result = await aiTestService.generateTest(req)
+
+      expect(result.questions).toHaveLength(1)
+      const q = result.questions[0] as any
+      expect(q.correct_option_id).toBeUndefined()
+      expect(q.explanation).toBeUndefined()
+      expect(q.options.every((o: any) => o.isCorrect === undefined)).toBe(true)
+    })
   })
 
   describe('gradeSubjectiveAnswer', () => {

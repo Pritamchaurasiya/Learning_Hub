@@ -13,6 +13,8 @@ from apps.updates.parsers.ddu_parser import DDUNoticeParser
 from apps.updates.parsers.nta_parser import NTANoticeParser
 from apps.updates.parsers.aktu_parser import AKTUNoticeParser
 from apps.updates.parsers.alld_univ_parser import AllahabadUnivNoticeParser
+from apps.updates.parsers.ssc_parser import SSCNoticeParser
+from apps.updates.parsers.upsc_parser import UPSCNoticeParser
 from apps.updates.crawler import SourceCrawler
 from apps.updates.models import (
     UpdateSource,
@@ -221,6 +223,63 @@ class TestDedicatedParsers:
         assert n2["category"] == "ADMISSION"
         assert n2["sub_category"] == "CUTOFF_LIST"
         assert n2["deadline_str"] == "10-10-2026"
+
+    def test_ssc_notice_parser(self):
+        html_fixture = """
+        <div class="card-body">
+            <div class="notice-row">
+                <span class="date">01-10-2026</span>
+                <a href="/portal/cgl_2026_notification.pdf">Notice for Combined Graduate Level Examination (CGL) 2026 closing date 28-10-2026</a>
+            </div>
+            <div class="notice-row">
+                <span class="date">29-09-2026</span>
+                <a href="/portal/chsl_tier2_result.pdf">Combined Higher Secondary (10+2) Level Examination (CHSL) Tier-II Results Declared</a>
+            </div>
+        </div>
+        """
+        parser = SSCNoticeParser()
+        notices = parser.parse(html_fixture, base_url="https://ssc.gov.in")
+        assert len(notices) == 2
+
+        n1 = notices[0]
+        assert "CGL" in n1["title"]
+        assert n1["exam"] == "SSC CGL"
+        assert n1["deadline_str"] == "28-10-2026"
+        assert len(n1["attachments"]) == 1
+        assert n1["attachments"][0]["file_url"] == "https://ssc.gov.in/portal/cgl_2026_notification.pdf"
+
+        n2 = notices[1]
+        assert "CHSL" in n2["title"]
+        assert n2["exam"] == "SSC CHSL"
+        assert n2["sub_category"] == "RESULT"
+
+    def test_upsc_notice_parser(self):
+        html_fixture = """
+        <table class="views-table">
+            <tr>
+                <td>01-10-2026</td>
+                <td><a href="/exams/civil_services_prelims_2026.pdf">Civil Services (Preliminary) Examination 2026 last date 25-10-2026</a></td>
+            </tr>
+            <tr>
+                <td>28-09-2026</td>
+                <td><a href="/exams/nda_ii_2026_admit_card.pdf">National Defence Academy (NDA) & NA Examination (II) 2026 Admit Card</a></td>
+            </tr>
+        </table>
+        """
+        parser = UPSCNoticeParser()
+        notices = parser.parse(html_fixture, base_url="https://upsc.gov.in")
+        assert len(notices) == 2
+
+        n1 = notices[0]
+        assert "Civil Services" in n1["title"]
+        assert n1["exam"] == "Civil Services (CSE)"
+        assert n1["deadline_str"] == "25-10-2026"
+        assert n1["institution"] == "Union Public Service Commission (UPSC)"
+
+        n2 = notices[1]
+        assert "NDA" in n2["title"]
+        assert n2["exam"] == "NDA & NA"
+        assert n2["sub_category"] == "ADMIT_CARD"
 
 
 

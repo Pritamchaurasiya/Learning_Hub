@@ -1,11 +1,12 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import jwt from 'jsonwebtoken'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { asyncHandler } from '../utils/errorHandler'
 import { generateToken, generateRefreshToken, hashToken } from '../utils/auth'
-import { bcryptConfig } from '../config'
+import { bcryptConfig, jwtConfig } from '../config'
 import type { UserRole } from '@prisma/client'
 import { MfaService } from '../services/MfaService'
 import {
@@ -16,6 +17,7 @@ import {
   sendForbidden,
   sendConflict,
   sendValidationError,
+  sendNotFound,
 } from '../utils/responseHelper'
 import { setAuthCookies } from '../utils/cookies'
 
@@ -109,9 +111,15 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response): Prom
 
   if (user.mfaEnabled) {
     logger.info('Admin login requires MFA', { adminId: user.id, email: user.email })
+    const mfaSessionToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role, type: 'admin_mfa' },
+      jwtConfig.accessSecret,
+      { expiresIn: '5m' }
+    )
     sendSuccess(res, {
       mfaRequired: true,
       userId: user.id,
+      mfaSessionToken,
     })
     return
   }
@@ -134,16 +142,47 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response): Prom
   })
 })
 
-export const verifyMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { userId, token } = req.body as { userId: string; token: string }
+export const setupAdminMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    sendNotFound(res, 'Admin user not found')
+    return
+  }
+  const result = await MfaService.generateSecret(userId, user.email)
+  sendSuccess(res, result, 'MFA secret generated successfully')
+})
 
-  if (!userId || !token) {
+export const disableAdminMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const { token } = req.body
+  if (!token) {
+    sendValidationError(res, 'MFA token is required to disable MFA')
+    return
+  }
+  const valid = await MfaService.validateToken(userId, token)
+  if (!valid) {
+    sendUnauthorized(res, 'Invalid MFA token')
+    return
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: { mfaEnabled: false, mfaSecret: null },
+  })
+  sendSuccess(res, null, 'MFA disabled successfully')
+})
+
+export const verifyMfa = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const targetUserId = (req.body?.userId as string | undefined) || req.user?.userId
+  const token = req.body?.token as string | undefined
+
+  if (!targetUserId || !token) {
     sendValidationError(res, 'User ID and MFA token are required')
     return
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: targetUserId },
     select: {
       id: true,
       email: true,
@@ -159,9 +198,38 @@ export const verifyMfa = asyncHandler(async (req: Request, res: Response): Promi
     return
   }
 
-  const isValid = await MfaService.validateToken(userId, token)
+  // If user is currently enabling MFA from the security settings panel
+  if (!user.mfaEnabled && req.user?.userId === targetUserId) {
+    const verified = await MfaService.verifyAndEnable(targetUserId, token)
+    if (!verified) {
+      sendUnauthorized(res, 'Invalid verification code')
+      return
+    }
+    sendSuccess(res, { mfaEnabled: true }, 'MFA enabled successfully')
+    return
+  }
+
+  // If verifying MFA during login (unauthenticated request), validate mfaSessionToken when provided
+  const mfaSessionToken = req.body?.mfaSessionToken as string | undefined
+  if (!req.user && mfaSessionToken) {
+    try {
+      const decoded = jwt.verify(mfaSessionToken, jwtConfig.accessSecret) as {
+        userId: string
+        type: string
+      }
+      if (decoded.type !== 'admin_mfa' || decoded.userId !== targetUserId) {
+        sendUnauthorized(res, 'Invalid MFA session token')
+        return
+      }
+    } catch {
+      sendUnauthorized(res, 'Expired or invalid MFA session token')
+      return
+    }
+  }
+
+  const isValid = await MfaService.validateToken(targetUserId, token)
   if (!isValid) {
-    logger.warn('Invalid MFA token for admin user', { adminId: userId })
+    logger.warn('Invalid MFA token for admin user', { adminId: targetUserId })
     sendUnauthorized(res, 'Invalid MFA token')
     return
   }
@@ -170,7 +238,7 @@ export const verifyMfa = asyncHandler(async (req: Request, res: Response): Promi
   const refreshToken = generateRefreshToken(user.id, user.email, user.role)
   await storeRefreshToken(user.id, refreshToken)
 
-  logger.info('Admin MFA verified successfully', { adminId: userId })
+  logger.info('Admin MFA verified successfully', { adminId: targetUserId })
 
   setAuthCookies(res, { accessToken, refreshToken })
 
@@ -211,6 +279,19 @@ export const adminRegister = asyncHandler(async (req: Request, res: Response): P
   if (!secretsMatch) {
     logger.warn('Invalid admin registration attempt with wrong secret', { email })
     sendForbidden(res, 'Invalid admin registration secret')
+    return
+  }
+
+  // Initial admin setup is only permitted if no active administrator exists yet
+  const existingAdminCount = await prisma.user.count({
+    where: {
+      role: { in: ['ADMIN', 'SUPERADMIN'] },
+      deletedAt: null,
+    },
+  })
+  if (existingAdminCount > 0) {
+    logger.warn('Rogue admin registration attempted when administrators already exist', { email })
+    sendForbidden(res, 'Initial admin setup is disabled because an administrator already exists')
     return
   }
 

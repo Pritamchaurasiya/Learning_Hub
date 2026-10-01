@@ -118,7 +118,7 @@ describe('subscriptionService', () => {
       expect(result).toBe('https://checkout.stripe.com/session-123')
     })
 
-    it('should return mock checkoutUrl when Stripe is not configured', async () => {
+    it('should return mock checkoutUrl in dev when Stripe is not configured', async () => {
       const { fetchApi } = await import('../utils/api')
       vi.mocked(fetchApi).mockResolvedValue({
         status: 'success',
@@ -128,6 +128,26 @@ describe('subscriptionService', () => {
       const result = await subscriptionService.createCheckoutSession('pro')
 
       expect(result).toMatch(/^\/payment-success\?session_id=mock_\d+$/)
+    })
+
+    it('should throw error in production when checkoutUrl is missing', async () => {
+      const { fetchApi } = await import('../utils/api')
+      vi.mocked(fetchApi).mockResolvedValue({
+        status: 'success',
+        data: {},
+      })
+
+      const originalDev = import.meta.env.DEV
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(import.meta.env as any).DEV = false
+        await expect(subscriptionService.createCheckoutSession('pro')).rejects.toThrow(
+          'Unable to create checkout session'
+        )
+      } finally {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(import.meta.env as any).DEV = originalDev
+      }
     })
 
     it('should handle API errors', async () => {

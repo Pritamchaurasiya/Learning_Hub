@@ -29,11 +29,17 @@ jest.mock('../../src/utils/logger', () => ({
 class TestableExtendedPrismaClient extends ExtendedPrismaClient {
   constructor() {
     super({})
+    this.$transaction = jest.fn().mockImplementation(async (cb: any) => {
+      if (typeof cb === 'function') {
+        return cb(this)
+      }
+      return cb
+    }) as any
   }
 
   // Expose internals for testing
   public getRetryableErrors(): string[] {
-    return ['P1002', 'P1008', 'P1017', 'P2002', 'P2024', 'P2034']
+    return ['P1002', 'P1008', 'P1017', 'P2024', 'P2034']
   }
 
   public isRetryable(error: unknown): boolean {
@@ -76,9 +82,9 @@ describe('DatabaseConfig', () => {
       expect(db.isRetryable(err)).toBe(true)
     })
 
-    it('returns true for P2002 (unique constraint violation)', () => {
+    it('returns false for P2002 (unique constraint violation)', () => {
       const err = new Error('P2002: Unique constraint violation')
-      expect(db.isRetryable(err)).toBe(true)
+      expect(db.isRetryable(err)).toBe(false)
     })
 
     it('returns true for P2024 (connection pool timeout)', () => {

@@ -23,6 +23,8 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
       requestId: req.requestId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
+      query: req.query,
+      body: req.method !== 'GET' ? req.body : undefined,
     }
 
     if (res.statusCode >= 500) {
@@ -34,5 +36,47 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
     }
   })
 
+  next()
+}
+
+// Request body size limiter middleware
+export const bodySizeLimiter = (maxSize: number = 10 * 1024 * 1024) => { // 10MB default
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const contentLength = parseInt(req.headers['content-length'] || '0', 10)
+    if (contentLength > maxSize) {
+      res.status(413).json({
+        status: 'error',
+        message: 'Request entity too large',
+        code: 'PAYLOAD_TOO_LARGE',
+      })
+      return
+    }
+    next()
+  }
+}
+
+// Request compression middleware
+export const responseCompression = (req: Request, res: Response, next: NextFunction): void => {
+  // Skip compression for already compressed responses
+  const acceptEncoding = req.headers['accept-encoding'] || ''
+  if (!acceptEncoding.includes('gzip') && !acceptEncoding.includes('deflate')) {
+    return next()
+  }
+
+  // Skip if already compressed
+  if (res.getHeader('Content-Encoding')) {
+    return next()
+  }
+
+  // Skip for already compressed content types
+  const contentType = res.getHeader('Content-Type')
+  if (contentType && typeof contentType === 'string') {
+    const compressedTypes = ['image/', 'video/', 'audio/', 'application/zip', 'application/gzip', 'application/x-gzip']
+    if (compressedTypes.some(type => contentType.startsWith(type))) {
+      return next()
+    }
+  }
+
+  // For JSON responses, we let express handle compression
   next()
 }

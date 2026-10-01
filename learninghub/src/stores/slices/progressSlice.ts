@@ -107,6 +107,9 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
         message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
         type: 'success',
       })
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('data:bookmark-updated'))
+      }
     } catch {
       set(state => ({ progress: { ...state.progress, bookmarks: previousBookmarks } }))
       get().addToast({ message: 'Sync failed. Bookmark reverted.', type: 'error' })
@@ -262,15 +265,28 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
     set({ notifications: [], unreadCount: 0 })
   },
   addNotification: notification => {
+    const existing = get().notifications
+    const notifId =
+      (notification as unknown as { id?: string }).id ??
+      `notif-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+
+    // Prevent duplicate entries if the socket message was replayed
+    if (existing.some(n => n.id === notifId)) {
+      return
+    }
+
     const newNotification: Notification = {
       ...notification,
-      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
+      id: notifId,
+      createdAt:
+        (notification as unknown as { createdAt?: string }).createdAt ?? new Date().toISOString(),
     }
+
     set(state => ({
       notifications: [newNotification, ...state.notifications].slice(0, 50),
-      unreadCount: state.unreadCount + 1,
+      unreadCount: state.unreadCount + (newNotification.isRead ? 0 : 1),
     }))
+
     get().addToast({
       message: notification.message,
       type: notification.type === 'achievement' ? 'success' : 'info',

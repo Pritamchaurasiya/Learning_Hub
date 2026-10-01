@@ -17,7 +17,7 @@ describe('sanitizeMiddleware', () => {
     const next = jest.fn()
     expect(() => sanitizeMiddleware(req, {} as Response, next)).not.toThrow()
 
-    expect(req.query).toEqual({ q: '<script>alert(1)</script>', safe: 'math' })
+    expect(req.query).toEqual({ q: '', safe: 'math' })
     expect(req.body).toEqual({ title: 'alert(1)' })
     expect(req.params).toEqual({ id: '<abc>' })
     expect(next).toHaveBeenCalledTimes(1)

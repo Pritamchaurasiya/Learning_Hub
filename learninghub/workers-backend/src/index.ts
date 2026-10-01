@@ -78,12 +78,18 @@ async function getHealthStatus(env: Env): Promise<Record<string, unknown>> {
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url)
-    const path = url.pathname
+    const rawUrl = new URL(request.url)
+    const path = normalizeApiPath(rawUrl.pathname)
+    let activeRequest = request
+    if (path !== rawUrl.pathname) {
+      const normalizedUrl = new URL(request.url)
+      normalizedUrl.pathname = path
+      activeRequest = new Request(normalizedUrl.toString(), request)
+    }
     const requestOrigin = request.headers.get('Origin')
     const corsHeaders = getCorsHeaders(requestOrigin)
 
-    const requestContext = createRequestContext(request)
+    const requestContext = createRequestContext(activeRequest)
     logger.setRequestContext(requestContext)
 
     if (request.method === 'OPTIONS') {
@@ -96,22 +102,22 @@ export default {
       })
     }
 
-    logger.info('Request started', { path, method: request.method })
+    logger.info('Request started', { path, method: activeRequest.method })
 
     try {
       let rateLimitType: 'auth' | 'api' | 'read' | 'ai' = 'api'
       if (path.startsWith('/auth')) rateLimitType = 'auth'
       else if (path.startsWith('/ai')) rateLimitType = 'ai'
-      else if (request.method === 'GET') rateLimitType = 'read'
+      else if (activeRequest.method === 'GET') rateLimitType = 'read'
 
-      const rateLimitResponse = await applyRateLimit(request, env, rateLimitType)
+      const rateLimitResponse = await applyRateLimit(activeRequest, env, rateLimitType)
       if (rateLimitResponse) {
         logRequestCompletion(requestContext, 429)
         return rateLimitResponse
       }
 
       // CSRF token endpoint (no auth required)
-      if (path === '/csrf-token' && request.method === 'GET') {
+      if (path === '/csrf-token' && activeRequest.method === 'GET') {
         const csrfToken = generateSecureToken(32)
         const response = createJSONResponse({ csrfToken })
         // Set CSRF token as a cookie too
@@ -126,45 +132,49 @@ export default {
       let response: Response
 
       if (path.startsWith('/auth')) {
-        response = await handleAuth(request, env)
+        response = await handleAuth(activeRequest, env)
       } else if (path.startsWith('/courses')) {
-        response = await handleCourses(request, env)
+        response = await handleCourses(activeRequest, env)
       } else if (path.startsWith('/tests')) {
-        response = await handleTests(request, env)
+        response = await handleTests(activeRequest, env)
       } else if (path.startsWith('/ai')) {
-        response = await handleAI(request, env)
+        response = await handleAI(activeRequest, env)
       } else if (path.startsWith('/bookmarks') || path.startsWith('/users/bookmarks')) {
-        const newUrl = new URL(request.url)
+        const newUrl = new URL(activeRequest.url)
         newUrl.pathname = path.startsWith('/users/bookmarks')
           ? `/bookmarks${path.substring(16)}`
           : path
-        const newRequest = new Request(newUrl.toString(), request)
+        const newRequest = new Request(newUrl.toString(), activeRequest)
         response = await handleBookmarks(newRequest, env)
       } else if (path.startsWith('/gamification')) {
-        response = await handleGamification(request, env)
+        response = await handleGamification(activeRequest, env)
       } else if (path.startsWith('/admin')) {
-        response = await handleAdmin(request, env)
+        response = await handleAdmin(activeRequest, env)
       } else if (path.startsWith('/notifications')) {
-        response = await handleNotifications(request, env)
+        response = await handleNotifications(activeRequest, env)
       } else if (path.startsWith('/certificates')) {
-        response = await handleCertificates(request, env)
+        response = await handleCertificates(activeRequest, env)
       } else if (path.startsWith('/discussions')) {
-        response = await handleDiscussions(request, env)
+        response = await handleDiscussions(activeRequest, env)
       } else if (path.startsWith('/learning-paths')) {
-        response = await handleLearningPaths(request, env)
+        response = await handleLearningPaths(activeRequest, env)
       } else if (path.startsWith('/search')) {
-        response = await handleSearch(request, env)
+        response = await handleSearch(activeRequest, env)
       } else if (path.startsWith('/leaderboard')) {
-        response = await handleLeaderboard(request, env)
+        response = await handleLeaderboard(activeRequest, env)
       } else if (path.startsWith('/media')) {
-        response = await handleMedia(request, env)
+        response = await handleMedia(activeRequest, env)
       } else if (path === '/health' || path === '/') {
         const healthStatus = await getHealthStatus(env)
         response = createJSONResponse(healthStatus, healthStatus.status === 'ok' ? 200 : 503)
-      } else if (path === '/seed-demo-data' && request.method === 'POST') {
+      } else if (path === '/seed-demo-data' && activeRequest.method === 'POST') {
         // SECURITY: Only allow demo data seeding in development environment
         if (env.ENVIRONMENT !== 'development') {
-          response = createErrorResponse('Demo data seeding only allowed in development', 403, 'FORBIDDEN')
+          response = createErrorResponse(
+            'Demo data seeding only allowed in development',
+            403,
+            'FORBIDDEN'
+          )
         } else {
           try {
             const { seedDemoData, demoCredentials } = await import('./utils/demoData')

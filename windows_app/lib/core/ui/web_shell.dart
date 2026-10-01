@@ -77,7 +77,7 @@ class WebShell extends StatelessWidget {
                     icon: const Icon(Icons.settings_outlined),
                     tooltip: 'Settings',
                     onPressed: () {
-                      // TODO: Navigate to settings
+                      context.go('/settings');
                     },
                   ),
                 ),

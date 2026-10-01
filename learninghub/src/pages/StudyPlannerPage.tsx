@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Calendar,
   Clock,
@@ -11,6 +12,10 @@ import {
   Flame,
   TrendingUp,
   Layers,
+  Play,
+  Pause,
+  RotateCcw,
+  Sparkles,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -20,14 +25,148 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
 import { ErrorState } from '../components/ui/ErrorState'
+import { Modal } from '../components/ui/Modal'
+import { Input } from '../components/ui/Input'
+import KnowledgeGraphVisualizer from '../components/KnowledgeGraphVisualizer'
 import { studyPlannerService, type CreateTaskRequest } from '../services/studyPlannerService'
 import { studyGoalsService } from '../services/studyGoalsService'
 import { useStore } from '../stores/useStore'
 
+function playChime() {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+    const now = ctx.currentTime
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(587.33, now) // D5
+    osc.frequency.setValueAtTime(880, now + 0.15) // A5
+
+    gain.gain.setValueAtTime(0.08, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + 0.6)
+  } catch {
+    // fallback
+  }
+}
+
 export default function StudyPlannerPage() {
   const [filter, setFilter] = useState<'all' | 'today' | 'upcoming' | 'completed'>('all')
+  const [pomodoroSeconds, setPomodoroSeconds] = useState(25 * 60)
+  const [isPomodoroRunning, setIsPomodoroRunning] = useState(false)
+  const [pomodoroMode, setPomodoroMode] = useState<'focus' | 'break'>('focus')
   const addToast = useStore(state => state.addToast)
   const queryClient = useQueryClient()
+  const pomodoroTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const syncUpdate = searchParams.get('syncUpdate')
+  const syncTitle = searchParams.get('title')
+  const syncDeadline = searchParams.get('deadline')
+  const syncInstitution = searchParams.get('institution')
+
+  // Task creation modal state
+  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskDate, setNewTaskDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('medium')
+  const [newTaskDuration, setNewTaskDuration] = useState(45)
+  const [newTaskType, setNewTaskType] = useState<CreateTaskRequest['task_type']>('assignment')
+
+  // Create Task Mutation
+  const createTaskMutation = useMutation({
+    mutationFn: (data: CreateTaskRequest) => studyPlannerService.createTask(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['study', 'tasks'] })
+      addToast({ message: 'Study task added to schedule!', type: 'success' })
+      setIsCreateTaskModalOpen(false)
+      setNewTaskTitle('')
+    },
+    onError: () => addToast({ message: 'Failed to create study task', type: 'error' }),
+  })
+
+  // Auto-sync notice deadline when arriving via URL parameters
+  const syncedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!syncUpdate && !syncTitle) return
+    const syncKey = syncUpdate || syncTitle
+    if (syncedRef.current === syncKey) return
+    syncedRef.current = syncKey
+
+    const title = syncTitle || `[${syncInstitution || 'Exam Notice'}] Preparation Task`
+    const scheduledDate = syncDeadline
+      ? new Date(syncDeadline).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10)
+
+    const importTask = async () => {
+      try {
+        await studyPlannerService.createTask({
+          title,
+          description: `Imported from verified student update circular.`,
+          task_type: 'assignment',
+          scheduled_date: scheduledDate,
+          priority: 'high',
+          duration_minutes: 60,
+        })
+        void queryClient.invalidateQueries({ queryKey: ['study', 'tasks'] })
+        addToast({
+          message: `🎯 Synced "${title}" deadline into Study Planner!`,
+          type: 'success',
+        })
+        setSearchParams({}, { replace: true })
+      } catch {
+        addToast({
+          message: 'Could not auto-sync notice to study tasks.',
+          type: 'error',
+        })
+      }
+    }
+    void importTask()
+  }, [syncUpdate, syncTitle, syncDeadline, syncInstitution, addToast, queryClient, setSearchParams])
+
+  useEffect(() => {
+    if (isPomodoroRunning) {
+      pomodoroTimerRef.current = setInterval(() => {
+        setPomodoroSeconds(prev => {
+          if (prev <= 1) {
+            playChime()
+            setIsPomodoroRunning(false)
+            if (pomodoroMode === 'focus') {
+              setPomodoroMode('break')
+              addToast({ message: '🎯 Focus session complete! Take a 5m break.', type: 'success' })
+              return 5 * 60
+            } else {
+              setPomodoroMode('focus')
+              addToast({ message: '⚡ Break over! Ready to focus?', type: 'info' })
+              return 25 * 60
+            }
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else if (pomodoroTimerRef.current) {
+      clearInterval(pomodoroTimerRef.current)
+    }
+    return () => {
+      if (pomodoroTimerRef.current) clearInterval(pomodoroTimerRef.current)
+    }
+  }, [isPomodoroRunning, pomodoroMode, addToast])
+
+  const formatPomoTime = (secs: number) => {
+    const m = Math.floor(secs / 60)
+    const s = secs % 60
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
 
   // Goals Query
   const {
@@ -207,6 +346,63 @@ export default function StudyPlannerPage() {
             </div>
           </Card>
 
+          {/* Pomodoro Focus Station */}
+          <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-900 rounded-3xl space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="font-black text-xs uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary-500" /> Focus Engine
+              </span>
+              <span
+                className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  pomodoroMode === 'focus'
+                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                }`}
+              >
+                {pomodoroMode === 'focus' ? 'Deep Work' : 'Break'}
+              </span>
+            </div>
+
+            <div className="text-center py-2">
+              <div className="text-4xl font-black font-mono tracking-tight text-gray-900 dark:text-white">
+                {formatPomoTime(pomodoroSeconds)}
+              </div>
+              <p className="text-[11px] text-gray-500 mt-1">
+                {pomodoroMode === 'focus' ? '25 min focus interval' : '5 min rest interval'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant={isPomodoroRunning ? 'outline' : 'primary'}
+                size="sm"
+                onClick={() => setIsPomodoroRunning(!isPomodoroRunning)}
+                className="flex-1 rounded-xl text-xs font-bold"
+                leftIcon={
+                  isPomodoroRunning ? (
+                    <Pause className="w-3.5 h-3.5" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5" />
+                  )
+                }
+              >
+                {isPomodoroRunning ? 'Pause' : 'Start Focus'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsPomodoroRunning(false)
+                  setPomodoroSeconds(pomodoroMode === 'focus' ? 25 * 60 : 5 * 60)
+                }}
+                className="rounded-xl px-3"
+                title="Reset timer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </Card>
+
           <Card className="p-8 border-none shadow-xl bg-white dark:bg-gray-900 rounded-3xl">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-3">
               <Target className="w-5 h-5 text-primary-500" /> Neural Goals
@@ -270,24 +466,34 @@ export default function StudyPlannerPage() {
 
         {/* Right Column: Tasks Command Center */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Filters */}
-          <Card className="p-2 border-none shadow-md bg-white dark:bg-gray-900 rounded-2xl">
-            <div className="flex flex-wrap md:flex-nowrap bg-gray-50 dark:bg-gray-800/80 p-1.5 rounded-xl gap-1">
-              {(['all', 'today', 'upcoming', 'completed'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`flex-1 px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] transition-all ${
-                    filter === f
-                      ? 'bg-white dark:bg-gray-700 text-primary-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </Card>
+          {/* Filters & Actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <Card className="flex-1 p-2 border-none shadow-md bg-white dark:bg-gray-900 rounded-2xl">
+              <div className="flex flex-wrap md:flex-nowrap bg-gray-50 dark:bg-gray-800/80 p-1.5 rounded-xl gap-1">
+                {(['all', 'today', 'upcoming', 'completed'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`flex-1 px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] transition-all ${
+                      filter === f
+                        ? 'bg-white dark:bg-gray-700 text-primary-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </Card>
+            <Button
+              onClick={() => setIsCreateTaskModalOpen(true)}
+              variant="primary"
+              className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-md shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Task</span>
+            </Button>
+          </div>
 
           {/* Tasks List */}
           <div className="space-y-4">
@@ -318,6 +524,7 @@ export default function StudyPlannerPage() {
                   trajectory.
                 </p>
                 <Button
+                  onClick={() => setIsCreateTaskModalOpen(true)}
                   variant="outline"
                   className="mt-8 rounded-xl font-black uppercase tracking-widest border-2"
                 >
@@ -402,6 +609,117 @@ export default function StudyPlannerPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Task Modal */}
+      <Modal
+        isOpen={isCreateTaskModalOpen}
+        onClose={() => setIsCreateTaskModalOpen(false)}
+        title="Add Study Task / Goal"
+        description="Schedule a focused preparation protocol or assignment."
+      >
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            if (!newTaskTitle.trim()) return
+            createTaskMutation.mutate({
+              title: newTaskTitle.trim(),
+              task_type: newTaskType,
+              scheduled_date: newTaskDate,
+              priority: newTaskPriority,
+              duration_minutes: newTaskDuration,
+            })
+          }}
+          className="space-y-4 py-2"
+        >
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-1.5">
+              Task Title *
+            </label>
+            <Input
+              value={newTaskTitle}
+              onChange={e => setNewTaskTitle(e.target.value)}
+              placeholder="e.g. Revise Computer Networks Chapter 3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-1.5">
+                Scheduled Date
+              </label>
+              <Input
+                type="date"
+                value={newTaskDate}
+                onChange={e => setNewTaskDate(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-1.5">
+                Duration (mins)
+              </label>
+              <Input
+                type="number"
+                min="15"
+                step="15"
+                value={newTaskDuration}
+                onChange={e => setNewTaskDuration(Number(e.target.value) || 45)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-1.5">
+                Priority
+              </label>
+              <select
+                value={newTaskPriority}
+                onChange={e => setNewTaskPriority(e.target.value as 'low' | 'medium' | 'high')}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-semibold outline-none"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-1.5">
+                Category
+              </label>
+              <select
+                value={newTaskType}
+                onChange={e => setNewTaskType(e.target.value as CreateTaskRequest['task_type'])}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-semibold outline-none"
+              >
+                <option value="assignment">Assignment / Exam</option>
+                <option value="review">Revision</option>
+                <option value="reading">Reading Ebook</option>
+                <option value="practice">Practice MCQs</option>
+                <option value="video">Video Lecture</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsCreateTaskModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createTaskMutation.isPending || !newTaskTitle.trim()}
+            >
+              {createTaskMutation.isPending ? 'Saving...' : 'Add to Schedule'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Neural Concept Knowledge Graph Visualizer */}
+      <KnowledgeGraphVisualizer />
     </AnimatedPage>
   )
 }

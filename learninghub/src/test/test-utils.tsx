@@ -11,15 +11,18 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 }
 
 function AllTheProviders({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        staleTime: 0,
-        gcTime: 0,
-      },
-    },
-  })
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+            staleTime: 0,
+            gcTime: 0,
+          },
+        },
+      })
+  )
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,4 +54,4 @@ export const createMockResponse = <T,>(data: T, status = 'success') => ({
 export * from '@testing-library/react'
 
 // Override render method
-export { renderWithRouter as render }
+export { renderWithRouter as render, renderWithRouter as renderWithProviders }

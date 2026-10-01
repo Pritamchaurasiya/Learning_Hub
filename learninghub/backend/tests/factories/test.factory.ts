@@ -24,6 +24,8 @@ export const createTest = (overrides: Partial<Test> = {}): Test => ({
   negativeMarks: 0,
   isPublished: true,
   isAiGenerated: false,
+  shuffleQuestions: false,
+  shuffleOptions: false,
   templateId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -31,22 +33,27 @@ export const createTest = (overrides: Partial<Test> = {}): Test => ({
   ...overrides,
 })
 
-export const createQuestion = (overrides: Partial<Question> = {}): Question => ({
-  id: 'q-' + Math.random().toString(36).substring(7),
-  testId: 'test-123',
-  topicId: null,
-  text: 'Sample question?',
-  type: 'MCQ' as QuestionType,
-  difficulty: 0.5,
-  bloomLevel: 'UNDERSTAND' as BloomLevel,
-  explanation: 'Explanation here',
-  solutionSteps: null,
-  tags: [],
-  isAiGenerated: false,
-  points: 10,
-  order: 0,
-  ...overrides,
-})
+export const createQuestion = (overrides: Partial<Question> = {}): Question => {
+  const { sectionId, ...rest } = overrides
+  return {
+    id: 'q-' + Math.random().toString(36).substring(7),
+    testId: 'test-123',
+    topicId: null,
+    sectionId: sectionId ?? null,
+    text: 'Sample question?',
+    type: 'MCQ' as QuestionType,
+    difficulty: 0.5,
+    bloomLevel: 'UNDERSTAND' as BloomLevel,
+    explanation: 'Explanation here',
+    solutionSteps: null,
+    tags: [],
+    imageUrl: null,
+    isAiGenerated: false,
+    points: 10,
+    order: 0,
+    ...rest,
+  }
+}
 
 export const createOption = (overrides: Partial<Option> = {}): Option => ({
   id: 'opt-' + Math.random().toString(36).substring(7),

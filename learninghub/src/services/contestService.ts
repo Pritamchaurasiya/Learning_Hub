@@ -60,7 +60,7 @@ export const contestService = {
     }>,
 
   participate: (id: string) =>
-    fetchApi('/contests/join', {
+    fetchApi(`/contests/${id}/register`, {
       method: 'POST',
       body: JSON.stringify({ contestId: id }),
     }) as Promise<{ status: string; data: { registered: boolean } }>,

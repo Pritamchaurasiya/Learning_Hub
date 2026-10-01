@@ -39,6 +39,26 @@ export async function generateCsrfTokenForSession(sessionId: string): Promise<st
 
 /**
  * Stateless CSRF Protection Middleware
+ *
+ * DESIGN NOTES / TRADEOFFS (P0 documented, behaviour preserved for compat):
+ * - The `x-session-id` value is currently client-controlled (persisted in
+ *   localStorage by the SPA). This binds the HMAC token to a per-tab identifier
+ *   but does NOT prove server-side session ownership on its own. The HMAC secret
+ *   still prevents forgery, and auth still requires the httpOnly access cookie /
+ *   Bearer token. Preferred hardening (future): server generates the session id
+ *   on login (`POST /auth/login` → Set-Cookie `sid` HttpOnly + return id), store
+ *   it in `userSession.sessionToken`, and accept ONLY that value here.
+ * - No `csrf-token` cookie is issued by this service; the token is returned as
+ *   JSON (`GET /api/v1/csrf-token`) and echoed via `x-csrf-token`. If a cookie
+ *   variant is ever added for double-submit, it MUST be readable by JS
+ *   (`httpOnly: false` — required so the SPA can echo it) with
+ *   `SameSite=Strict; Secure (prod); Path=/api/v1`, short TTL, and the HMAC
+ *   check below must still run server-side. Readability is the accepted
+ *   tradeoff; secrecy comes from the HMAC secret, not the cookie.
+ * - Exemptions are intentionally minimal: safe methods, `/webhook/*`
+ *   (HMAC-signed by the payment provider, not browser-cookie auth), and the
+ *   pre-authentication endpoints below (no session exists yet). `/logout` and
+ *   `/refresh` are NOT exempt to block forced-logout / token-refresh CSRF.
  */
 export async function csrfProtection(
   req: Request,
@@ -56,13 +76,15 @@ export async function csrfProtection(
     return
   }
 
+  const normalizedPath = req.originalUrl.split('?')[0].replace(/\/+$/, '')
   if (
-    req.originalUrl.match(
-      /^\/api\/v1\/auth\/(login|register|forgot-password|reset-password|verify-email|refresh)$/
+    normalizedPath.match(
+      /^\/api\/v1\/(auth\/(login|register|forgot-password|reset-password|verify-email|mfa\/verify-login)|admin\/auth\/(login|verify-mfa|register\/initial))$/
     )
   ) {
-    // CSRF exemption: These endpoints use body-based refresh tokens.
+    // CSRF exemption: Pre-authentication endpoints before an active session token is established.
     // /logout is intentionally excluded — requires CSRF token to prevent forced logout attacks.
+    // /refresh is intentionally excluded — requires CSRF token to prevent token theft via CSRF.
     next()
     return
   }

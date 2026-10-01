@@ -7,30 +7,37 @@ function generateToastId(): string {
   return `toast-${Date.now()}-${toastCounter}`
 }
 
+function getInitialTheme(): { mode: 'light' | 'dark' | 'system' } {
+  if (typeof window === 'undefined') return { mode: 'system' }
+  try {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'dark' || saved === 'light' || saved === 'system') {
+      return { mode: saved as 'light' | 'dark' | 'system' }
+    }
+  } catch {}
+  return { mode: 'system' }
+}
+
 export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get) => ({
-  theme: (() => {
-    try {
-      const saved = localStorage.getItem('theme')
-      if (saved === 'dark' || saved === 'light' || saved === 'system') {
-        return { mode: saved as 'light' | 'dark' | 'system' }
-      }
-    } catch {}
-    return { mode: 'system' }
-  })(),
+  theme: getInitialTheme(),
   setTheme: theme => {
     set({ theme })
-    try {
-      localStorage.setItem('theme', theme.mode)
-    } catch {}
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('theme', theme.mode)
+      } catch {}
+    }
   },
   toggleDarkMode: () => {
     const current = get().theme.mode
     const newMode: 'light' | 'dark' | 'system' =
       current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light'
     set({ theme: { mode: newMode } })
-    try {
-      localStorage.setItem('theme', newMode)
-    } catch {}
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('theme', newMode)
+      } catch {}
+    }
   },
 
   sidebarOpen: false,

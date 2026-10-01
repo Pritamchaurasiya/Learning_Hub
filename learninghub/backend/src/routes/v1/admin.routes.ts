@@ -1,11 +1,12 @@
 import { Router } from 'express'
-import { authenticate, authorizeAdmin } from '../../middleware/authMiddleware'
+import { authenticate, authorizeAdmin, optionalAuth } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter, mfaLimiter } from '../../middleware/rateLimiter'
 import { requestSigning } from '../../middleware/requestSigning'
 import {
   getDashboardStats,
   getUsers,
+  getUserById,
   updateUserRole,
   deleteUser,
   getAnalytics,
@@ -16,7 +17,13 @@ import {
   getJobQueueHealth,
   triggerDataExport,
 } from '../../controllers/adminController'
-import { adminLogin, adminRegister, verifyMfa } from '../../controllers/adminAuthController'
+import {
+  adminLogin,
+  adminRegister,
+  verifyMfa,
+  setupAdminMfa,
+  disableAdminMfa,
+} from '../../controllers/adminAuthController'
 import {
   adminLoginSchema,
   adminRegisterSchema,
@@ -41,7 +48,9 @@ const adminAuthLimiter = createRateLimiter({
 
 // Auth routes (no admin auth required for initial admin registration)
 router.post('/auth/login', adminAuthLimiter, validate(adminLoginSchema), adminLogin)
-router.post('/auth/verify-mfa', mfaLimiter, validate(verifyMfaSchema), verifyMfa)
+router.post('/auth/setup-mfa', authenticate, authorizeAdmin, setupAdminMfa)
+router.post('/auth/disable-mfa', authenticate, authorizeAdmin, disableAdminMfa)
+router.post('/auth/verify-mfa', mfaLimiter, optionalAuth, validate(verifyMfaSchema), verifyMfa)
 router.post(
   '/auth/register/initial',
   adminAuthLimiter,
@@ -59,6 +68,7 @@ router.post(
 // Dashboard and user management
 router.get('/dashboard', authenticate, authorizeAdmin, getDashboardStats)
 router.get('/users', authenticate, authorizeAdmin, getUsers)
+router.get('/users/:id', authenticate, authorizeAdmin, validateUUIDParam('id'), getUserById)
 router.put(
   '/users/:id/role',
   authenticate,

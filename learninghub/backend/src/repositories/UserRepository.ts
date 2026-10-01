@@ -66,13 +66,13 @@ export interface UserSummary {
 
 export class UserRepository extends BaseRepository<User, CreateUserInput, UpdateUserInput> {
   async findById(id: string, includeRelations = false): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: { id, deletedAt: null },
       include: includeRelations
         ? {
-            progress: true,
+            topicPerformances: true,
             achievements: true,
-            bookmarks: true,
+            questionBookmarks: true,
             sessions: { where: { isRevoked: false } },
           }
         : undefined,
@@ -80,7 +80,7 @@ export class UserRepository extends BaseRepository<User, CreateUserInput, Update
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: {
         email: email.toLowerCase().trim(),
         deletedAt: null,
@@ -259,8 +259,8 @@ export class UserRepository extends BaseRepository<User, CreateUserInput, Update
   ): Promise<{ newXp: number; newLevel: number }> {
     const prisma = this.getPrismaInstance(tx)
 
-    // Calculate new level: level = floor(xp / 100) + 1
-    // e.g., 0-99 XP = Level 1, 100-199 XP = Level 2, etc.
+    // CANONICAL LEVEL FORMULA (mirrors GrowthEngineService.calculateLevel):
+    // level = max(1, floor(sqrt(xp / 100))). L1=100XP, L2=400XP, L5=2500XP.
     const currentUser = await prisma.user.findUnique({
       where: { id },
       select: { xp: true, level: true },
@@ -269,7 +269,7 @@ export class UserRepository extends BaseRepository<User, CreateUserInput, Update
     if (!currentUser) throw new Error('User not found')
 
     const newXp = currentUser.xp + xp
-    const newLevel = Math.floor(newXp / 100) + 1
+    const newLevel = Math.max(1, Math.floor(Math.sqrt(Math.max(0, newXp) / 100)))
 
     await prisma.user.update({
       where: { id },

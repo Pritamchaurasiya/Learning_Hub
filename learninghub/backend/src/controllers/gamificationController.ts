@@ -121,7 +121,10 @@ export const awardXp = asyncHandler(async (req: Request, res: Response): Promise
     select: { xp: true, level: true },
   })
 
-  const newLevel = Math.floor(user.xp / 100) + 1
+  // CANONICAL LEVEL FORMULA (single source of truth, mirrors
+  // GrowthEngineService.calculateLevel): level = max(1, floor(sqrt(xp / 100))).
+  // Do not use floor(xp/100)+1 here — it diverges at every threshold.
+  const newLevel = Math.max(1, Math.floor(Math.sqrt(Math.max(0, user.xp) / 100)))
   if (newLevel !== user.level) {
     await prisma.user.update({
       where: { id: targetUserId },
@@ -201,4 +204,22 @@ export const getDsaStats = asyncHandler(async (req: Request, res: Response): Pro
 
   await cacheService.set(cacheKey, result, 300) // Cache for 5 minutes
   sendSuccess(res, result)
+})
+
+export const checkBadges = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const [user, achievements] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true, level: true, streak: true, longestStreak: true },
+    }),
+    prisma.userAchievement.findMany({
+      where: { userId },
+    }),
+  ])
+  sendSuccess(res, {
+    unlocked: achievements,
+    stats: user,
+    message: 'Badges evaluated successfully',
+  })
 })

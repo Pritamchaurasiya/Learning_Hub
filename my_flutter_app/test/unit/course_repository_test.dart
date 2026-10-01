@@ -101,5 +101,96 @@ void main() {
         (r) => fail('Should not return Right'),
       );
     });
+
+    test('getCourseDetail returns Right(Course) on success', () async {
+      when(() => mockApiClient.get(any())).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          data: {
+            'id': '1',
+            'title': 'Test Course',
+            'slug': 'test-course',
+            'description': 'Test Description',
+            'price': 0,
+            'modules': [
+              {
+                'id': 'm1',
+                'title': 'Module 1',
+                'lessons': [
+                  {
+                    'id': 'l1',
+                    'title': 'Lesson 1',
+                    'slug': 'lesson-1',
+                    'content_type': 'video',
+                    'duration_minutes': 10,
+                  }
+                ]
+              }
+            ]
+          },
+          statusCode: 200,
+        ),
+      );
+
+      final result = await repository.getCourseDetail('test-course');
+
+      expect(result.isRight(), true);
+      result.fold(
+        (l) => fail('Should not return Left'),
+        (course) {
+          expect(course.slug, 'test-course');
+          expect(course.modules.length, 1);
+          expect(course.modules.first.lessons.length, 1);
+          expect(course.modules.first.lessons.first.durationMinutes, 10);
+        },
+      );
+    });
+
+    test('enrollInCourse returns Right(true) on 201 Created', () async {
+      when(() => mockApiClient.post(
+            any(),
+            data: any<dynamic>(named: 'data'),
+            queryParameters: any<Map<String, dynamic>?>(named: 'queryParameters'),
+          )).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          data: {'status': 'success'},
+          statusCode: 201,
+        ),
+      );
+
+      final result = await repository.enrollInCourse('test-course');
+
+      expect(result.isRight(), true);
+      result.fold(
+        (l) => fail('Should not return Left'),
+        (success) => expect(success, true),
+      );
+    });
+
+    test('completeLesson returns Right(progressPercentage) on 200 OK', () async {
+      when(() => mockApiClient.post(
+            any(),
+            data: any<dynamic>(named: 'data'),
+            queryParameters: any<Map<String, dynamic>?>(named: 'queryParameters'),
+          )).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          data: {'status': 'success', 'progress': 75},
+          statusCode: 200,
+        ),
+      );
+
+      final result = await repository.completeLesson(
+        courseSlug: 'test-course',
+        lessonId: 'l1',
+      );
+
+      expect(result.isRight(), true);
+      result.fold(
+        (l) => fail('Should not return Left'),
+        (progress) => expect(progress, 75),
+      );
+    });
   });
 }

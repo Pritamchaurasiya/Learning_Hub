@@ -41,6 +41,7 @@ model User {
   preferredLanguage    String                    @default("en")
   countryId            String?
   experimentEvents     ExperimentEvent[]
+  experimentAssignments ExperimentAssignment[]
   activityLogs         ActivityLog[]
   auditLogs            AuditLog[]
   dailyGoals           DailyGoal[]
@@ -59,6 +60,15 @@ model User {
   aiChatSessions       AIChatSession[]
   dailyStats           UserDailyStats[]
   performanceSnapshots UserPerformanceSnapshot[]
+  ebookHighlights      EbookHighlight[]
+  readingProgress      EbookReadingProgress[]
+  cart                 Cart?
+  orders               Order[]
+  subscriptions        DbSubscription[]
+  certificates         Certificate[]
+  enrollments          Enrollment[]
+  contestParticipants  ContestParticipant[]
+  contestProctorEvents ContestProctorEvent[]
 
   @@index([role, deletedAt], map: "idx_user_role_active")
   @@index([email, emailVerified], map: "idx_user_email_verified")
@@ -67,6 +77,7 @@ model User {
   @@index([deletedAt, xp(sort: Desc), id(sort: Asc)], map: "idx_user_leaderboard")
   @@index([username], map: "idx_user_username")
   @@index([createdAt(sort: Desc)], map: "idx_user_created_at")
+  @@index([countryId], map: "idx_user_country_id")
   @@map("users")
 }
 
@@ -101,13 +112,17 @@ model Test {
   negativeMarks Float                    @default(0)
   isPublished   Boolean                  @default(true)
   isAiGenerated Boolean                  @default(false)
+  shuffleQuestions Boolean               @default(false)
+  shuffleOptions   Boolean               @default(false)
   templateId    String?
   createdAt     DateTime                 @default(now())
   updatedAt     DateTime                 @updatedAt
   deletedAt     DateTime?
+  sections      TestSection[]
   questions     Question[]
   results       TestResult[]
   exam          Exam?                    @relation(fields: [examId], references: [id], onDelete: SetNull)
+  contests      Contest[]
   search_vector Unsupported("tsvector")?
 
   @@index([examId, isPublished], map: "idx_test_exam_published")
@@ -132,16 +147,20 @@ model Question {
   explanation       String?
   solutionSteps     Json?
   tags              String[]
+  imageUrl          String?
   isAiGenerated     Boolean             @default(false)
   points            Int                 @default(10)
   order             Int
   options           Option[]
   bookmarks         QuestionBookmark[]
+  sectionId         String?
+  section           TestSection?        @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   test              Test                @relation(fields: [testId], references: [id], onDelete: Cascade)
   topic             Topic?              @relation(fields: [topicId], references: [id], onDelete: SetNull)
   TestAttemptAnswer TestAttemptAnswer[]
 
   @@index([testId], map: "idx_question_test")
+  @@index([sectionId], map: "idx_question_section")
   @@index([topicId], map: "idx_question_topic")
   @@index([type], map: "idx_question_type")
   @@index([difficulty], map: "idx_question_difficulty")
@@ -165,6 +184,25 @@ model Option {
   @@map("options")
 }
 
+model TestSection {
+  id              String     @id @default(uuid())
+  testId          String
+  title           String
+  description     String?
+  order           Int        @default(1)
+  durationMinutes Int?
+  isTimed         Boolean    @default(false)
+  cutOffMarks     Float?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  test            Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questions       Question[]
+
+  @@index([testId], map: "idx_test_section_test")
+  @@index([testId, order], map: "idx_test_section_order")
+  @@map("test_sections")
+}
+
 model TestResult {
   id             String              @id @default(uuid())
   userId         String
@@ -186,7 +224,6 @@ model TestResult {
   attemptAnswers TestAttemptAnswer[]
 
   @@unique([userId, testId, attemptNumber])
-  @@unique([userId, testId, status], map: "idx_result_user_test_status_unique")
   @@index([userId, testId, status], map: "idx_result_user_test_status")
   @@index([userId, status, completedAt(sort: Desc)], map: "idx_result_user_status_completed")
   @@index([status, completedAt(sort: Desc)], map: "idx_result_status_completed")
@@ -260,6 +297,7 @@ model ProblemSubmission {
   code          String
   language      ProgrammingLanguage @default(JAVASCRIPT)
   status        SubmissionStatus    @default(PENDING)
+  score         Int                 @default(0)
   executionTime Int?
   memoryUsed    Int?
   submittedAt   DateTime            @default(now())
@@ -613,6 +651,7 @@ model UserExamPreference {
 
   @@index([userId])
   @@index([examId])
+  @@index([countryId], map: "idx_user_exam_pref_country_id")
   @@map("user_exam_preferences")
 }
 
@@ -716,15 +755,78 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+enum ExperimentStatus {
+  draft
+  running
+  paused
+  completed
+  archived
+}
+
+model Experiment {
+  id                String           @id @default(uuid())
+  name              String
+  description       String
+  status            ExperimentStatus @default(draft)
+  trafficAllocation Int              @default(100)
+  startDate         DateTime?
+  endDate            DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  variants           ExperimentVariant[]
+  assignments        ExperimentAssignment[]
+  events             ExperimentEvent[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("experiments")
+}
+
+model ExperimentVariant {
+  id            String   @id @default(uuid())
+  experimentId  String
+  experiment    Experiment   @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  trafficWeight Int
+  config        Json
+  isControl     Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  assignments   ExperimentAssignment[]
+
+  @@index([experimentId])
+  @@index([isControl])
+  @@map("experiment_variants")
+}
+
+model ExperimentAssignment {
+  id            String      @id @default(uuid())
+  userId        String
+  experimentId  String
+  variantId     String
+  assignedAt    DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiment    Experiment  @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant       ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, experimentId])
+  @@index([userId])
+  @@index([experimentId])
+  @@index([variantId])
+  @@map("experiment_assignments")
+}
+
 model ExperimentEvent {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   experimentId String
   variant      String
   userId       String
   event        String
-  value        Float    @default(0)
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value        Float      @default(0)
+  createdAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
 
   @@index([experimentId, variant])
   @@index([userId])
@@ -813,6 +915,7 @@ enum TestMode {
   TIMED_CHALLENGE
   ADAPTIVE
   FLASHCARD
+  CONTEST
 }
 
 enum TestDifficulty {
@@ -1879,4 +1982,423 @@ model AIEvalResult {
   @@index([evalSetId, modelId])
   @@index([createdAt])
   @@map("ai_eval_results")
+}
+
+model Ebook {
+  id                        String                 @id @default(uuid())
+  title                     String
+  slug                      String                 @unique
+  author                    String
+  category                  String
+  difficulty                String                 @default("Intermediate")
+  description               String
+  coverUrl                  String?
+  totalChapters             Int                    @default(1)
+  estimatedReadingTimeMins  Int                    @default(60)
+  rating                    Float                  @default(4.9)
+  publishedAt               DateTime               @default(now())
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+  chapters                  EbookChapter[]
+  highlights                EbookHighlight[]
+  readingProgress           EbookReadingProgress[]
+
+  @@index([category])
+  @@index([slug])
+  @@map("ebooks")
+}
+
+model EbookChapter {
+  id                    String                 @id @default(uuid())
+  ebookId               String
+  title                 String
+  order                 Int                    @default(1)
+  contentMarkdown       String
+  estimatedReadTimeMins Int                    @default(15)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  ebook                 Ebook                  @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  highlights            EbookHighlight[]
+  readingProgress       EbookReadingProgress[]
+
+  @@unique([ebookId, order])
+  @@index([ebookId])
+  @@map("ebook_chapters")
+}
+
+model EbookHighlight {
+  id          String        @id @default(uuid())
+  userId      String
+  ebookId     String
+  chapterId   String
+  text        String
+  color       String        @default("yellow")
+  startOffset Int           @default(0)
+  endOffset   Int           @default(0)
+  note        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ebook       Ebook         @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  chapter     EbookChapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([userId, ebookId])
+  @@index([chapterId])
+  @@map("ebook_highlights")
+}
+
+model EbookReadingProgress {
+  id              String        @id @default(uuid())
+  userId          String
+  ebookId         String
+  lastChapterId   String
+  percentComplete Float         @default(0.0)
+  lastReadAt      DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ebook           Ebook         @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  lastChapter     EbookChapter  @relation(fields: [lastChapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ebookId])
+  @@index([userId])
+  @@map("ebook_reading_progress")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMMERCE DOMAIN — Cart, Orders, Coupons
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentGateway {
+  RAZORPAY
+  STRIPE
+  MANUAL
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum SubscriptionStatusEnum {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  UNPAID
+  EXPIRED
+}
+
+model Cart {
+  id         String     @id @default(uuid())
+  userId     String     @unique
+  couponCode String?
+  discount   Float      @default(0)
+  subtotal   Float      @default(0)
+  total      Float      @default(0)
+  currency   String     @default("USD")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+
+  @@index([userId])
+  @@map("carts")
+}
+
+model CartItem {
+  id            String   @id @default(uuid())
+  cartId        String
+  courseId       String
+  courseTitle    String
+  courseThumbnail String?
+  instructorName String?
+  price         Float
+  originalPrice Float?
+  quantity      Int      @default(1)
+  addedAt       DateTime @default(now())
+  cart          Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, courseId])
+  @@index([cartId])
+  @@index([courseId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  userId          String
+  totalAmount     Float
+  currency        String        @default("USD")
+  status          OrderStatus   @default(PENDING_PAYMENT)
+  paymentGateway  PaymentGateway @default(RAZORPAY)
+  gatewayOrderId  String?
+  gatewayPaymentId String?
+  idempotencyKey  String        @unique
+  couponCode      String?
+  discountAmount  Float         @default(0)
+  paidAt          DateTime?
+  expiresAt       DateTime?
+  failureReason   String?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items           OrderItem[]
+
+  @@index([userId, status])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt])
+  @@index([gatewayOrderId])
+  @@index([idempotencyKey])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  orderId    String
+  courseId    String
+  courseTitle String
+  price      Float
+  quantity   Int    @default(1)
+  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([courseId])
+  @@map("order_items")
+}
+
+model Coupon {
+  id            String       @id @default(uuid())
+  code          String       @unique
+  description   String?
+  discountType  DiscountType @default(PERCENTAGE)
+  discountValue Float
+  maxUses       Int?
+  currentUses   Int          @default(0)
+  minOrderAmount Float?
+  maxDiscountAmount Float?
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  usages        CouponUsage[]
+
+  @@index([code])
+  @@index([isActive, expiresAt])
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id        String   @id @default(uuid())
+  couponId  String
+  userId    String
+  orderId   String?
+  usedAt    DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId])
+  @@index([userId])
+  @@index([couponId])
+  @@map("coupon_usages")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUBSCRIPTIONS DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model DbSubscriptionTier {
+  id              String                @id @default(uuid())
+  slug            String                @unique
+  name            String
+  description     String?
+  price           Float
+  interval        String                @default("month")
+  features        Json
+  stripePriceId   String?
+  isPopular       Boolean               @default(false)
+  isActive        Boolean               @default(true)
+  displayOrder    Int                   @default(0)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  subscriptions   DbSubscription[]
+
+  @@index([isActive, displayOrder])
+  @@index([slug])
+  @@map("subscription_tiers")
+}
+
+model DbSubscription {
+  id                   String                 @id @default(uuid())
+  userId               String
+  tierId               String
+  stripeSubscriptionId String?                @unique
+  stripeCustomerId     String?
+  status               SubscriptionStatusEnum @default(ACTIVE)
+  currentPeriodStart   DateTime               @default(now())
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean                @default(false)
+  canceledAt           DateTime?
+  trialEnd             DateTime?
+  metadata             Json?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                 DbSubscriptionTier     @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  @@index([status, currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CERTIFICATES DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Certificate {
+  id            String    @id @default(uuid())
+  userId        String
+  courseId       String?
+  testResultId  String?
+  code          String    @unique
+  title         String
+  recipientName String?
+  issuedAt      DateTime  @default(now())
+  expiresAt     DateTime?
+  signature     String
+  pdfUrl        String?
+  isRevoked     Boolean   @default(false)
+  revokedAt     DateTime?
+  revokedReason String?
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRevoked])
+  @@index([code])
+  @@index([userId, issuedAt(sort: Desc)])
+  @@map("certificates")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENROLLMENT DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Enrollment {
+  id          String    @id @default(uuid())
+  userId      String
+  courseId     String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  progress    Float     @default(0)
+  status      String    @default("ACTIVE")
+  source      String?
+  orderId     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId, status])
+  @@index([courseId])
+  @@index([userId, completedAt])
+  @@map("enrollments")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PAYMENT WEBHOOK EVENTS — Idempotent webhook processing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model PaymentWebhookEvent {
+  id            String   @id @default(uuid())
+  gateway       PaymentGateway
+  eventId       String   @unique
+  eventType     String
+  payload       Json
+  processed     Boolean  @default(false)
+  processedAt   DateTime?
+  error         String?
+  createdAt     DateTime @default(now())
+
+  @@index([gateway, eventType])
+  @@index([processed])
+  @@index([eventId])
+  @@map("payment_webhook_events")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTEST DOMAIN — Competitive Arena, Real-Time Leaderboard, Proctoring
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Contest {
+  id              String               @id @default(uuid())
+  title           String
+  slug            String               @unique
+  description     String?
+  startTime       DateTime
+  endTime         DateTime
+  durationMinutes Int
+  freezeMinutes   Int                  @default(15)
+  prize           String?
+  difficulty      TestDifficulty       @default(MEDIUM)
+  isPublished     Boolean              @default(true)
+  testId          String?
+  test            Test?                @relation(fields: [testId], references: [id], onDelete: SetNull)
+  participants    ContestParticipant[]
+  proctorEvents   ContestProctorEvent[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([startTime, endTime, isPublished])
+  @@index([slug])
+  @@map("contests")
+}
+
+model ContestParticipant {
+  id               String    @id @default(uuid())
+  contestId        String
+  userId           String
+  score            Float     @default(0)
+  penaltySeconds   Int       @default(0)
+  solvedCount      Int       @default(0)
+  rank             Int?
+  registeredAt     DateTime  @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  isDisqualified   Boolean   @default(false)
+  disqualifyReason String?
+  contest          Contest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([contestId, score(sort: Desc), penaltySeconds(sort: Asc)])
+  @@index([userId])
+  @@map("contest_participants")
+}
+
+model ContestProctorEvent {
+  id        String   @id @default(uuid())
+  contestId String
+  userId    String
+  eventType String
+  timestamp DateTime @default(now())
+  metadata  Json?
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, userId, eventType])
+  @@index([userId, timestamp(sort: Desc)])
+  @@map("contest_proctor_events")
 }

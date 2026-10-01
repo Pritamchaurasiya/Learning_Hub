@@ -57,6 +57,11 @@ export interface CreateReplyInput {
   parent_id?: string
 }
 
+// Server-side pagination: page/ordering/search are forwarded to the backend.
+// Do NOT add in-memory `.slice()` pagination here — the list can be large and
+// slicing client-side hides total counts and breaks deep pagination. Category
+// filtering in DiscussionsPage is a view-layer filter over the fetched page,
+// not a pagination mechanism.
 export const discussionService = {
   // Get all discussion threads
   async getDiscussions(params?: {
@@ -178,6 +183,8 @@ export const discussionService = {
   async getSummary(
     threadId: string
   ): Promise<{ status: string; data: { summary: string; key_points: string[] } }> {
-    return fetchApi(`/discussions/threads/${threadId}/summarize`)
+    return fetchApi(`/discussions/threads/${threadId}/summarize`, {
+      method: 'POST',
+    })
   },
 }

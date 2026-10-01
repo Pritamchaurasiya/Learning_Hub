@@ -17,6 +17,7 @@ This guide provides step-by-step instructions for deploying the **LearningHub** 
 ## 1. Environment Configuration
 
 ### Backend (`learninghub/backend/.env`)
+
 Ensure production environment variables are configured:
 
 ```env
@@ -53,6 +54,7 @@ npm run db:seed
 ## 3. Production Build & Start (PM2 / Node.js)
 
 ### Build Frontend & Backend
+
 ```bash
 # Build Frontend
 cd learninghub
@@ -64,6 +66,7 @@ npm run build
 ```
 
 ### Start with PM2
+
 ```bash
 cd backend
 npx pm2 start ecosystem.config.js --env production

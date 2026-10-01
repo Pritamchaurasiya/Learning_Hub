@@ -92,23 +92,26 @@ export const csrfRateLimit = rateLimit({
   validate: { xForwardedForHeader: false, keyGeneratorIpFallback: false },
 })
 
-// CORS configuration — supports comma-separated origins for multi-domain production
-const parseOrigins = (envValue: string | undefined): string | string[] => {
-  const isDev = process.env.NODE_ENV !== 'production'
-  const defaultOrigins = isDev
-    ? 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
-    : undefined
-  const raw = envValue ?? defaultOrigins
-  if (!raw) {
-    throw new Error(
-      'CORS_ORIGIN must be explicitly set in production. Set it to your frontend domain(s), comma-separated for multiple.'
-    )
+// CORS configuration — supports comma-separated origins and dynamic LAN IP detection
+const parseOrigins = (envValue: string | undefined) => {
+  return (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) return callback(null, true)
+    if (process.env.NODE_ENV !== 'production') {
+      if (
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        /^https?:\/\/(10\.\d+|192\.168\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+)/.test(origin)
+      ) {
+        return callback(null, true)
+      }
+    }
+    const defaultOrigins = 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
+    const list = (envValue ?? defaultOrigins).split(',').map(o => o.trim()).filter(Boolean)
+    if (list.includes(origin) || list.includes('*')) {
+      return callback(null, true)
+    }
+    callback(null, false)
   }
-  const origins = raw
-    .split(',')
-    .map(o => o.trim())
-    .filter(Boolean)
-  return origins.length === 1 ? origins[0] : origins
 }
 
 export const corsOptions = {
@@ -313,9 +316,13 @@ export const sanitizeInput = (input: string): string => {
   return input
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control chars (keep tab/newline)
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/data\s*:\s*text\/html/gi, '')
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
     .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
     .replace(/&#\d+;/g, '') // Remove decimal HTML entities
+    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gi, '')
     .trim()
     .slice(0, 1_000_000) // Match expanded max allowed by Zod and content-heavy fields
 }

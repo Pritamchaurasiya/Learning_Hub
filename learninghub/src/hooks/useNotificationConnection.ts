@@ -13,12 +13,16 @@ interface SocketNotification {
   createdAt?: string
 }
 
-function normalizeNotification(data: SocketNotification): Omit<Notification, 'id' | 'createdAt'> {
+function normalizeNotification(
+  data: SocketNotification
+): Omit<Notification, 'id'> & { id?: string; createdAt?: string } {
   return {
+    id: data.id,
     title: data.title,
     message: data.message,
     type: data.type,
     isRead: data.isRead ?? data.read ?? false,
+    createdAt: data.createdAt ?? new Date().toISOString(),
   }
 }
 

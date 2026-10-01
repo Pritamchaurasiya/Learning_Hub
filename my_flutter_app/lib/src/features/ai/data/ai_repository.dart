@@ -23,16 +23,18 @@ class AIRepository {
     if (responseData == null) {
       return [];
     }
-    final results = (responseData['data'] ??
-        responseData['results'] ??
-        responseData) as List<dynamic>?;
+    final dynamic raw = responseData is Map<String, dynamic>
+        ? (responseData['data'] ?? responseData['results'])
+        : responseData;
+    final List<dynamic>? results = raw is List ? raw : null;
 
     if (results == null) {
       return [];
     }
 
     return results
-        .map((e) => Course.fromJson(e as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map((e) => Course.fromJson(e))
         .toList();
   }
 
@@ -47,16 +49,18 @@ class AIRepository {
       return [];
     }
 
-    final results = (responseData['data'] ??
-        responseData['results'] ??
-        responseData) as List<dynamic>?;
+    final dynamic raw = responseData is Map<String, dynamic>
+        ? (responseData['data'] ?? responseData['results'])
+        : responseData;
+    final List<dynamic>? results = raw is List ? raw : null;
 
     if (results == null) {
       return [];
     }
 
     return results
-        .map((e) => Course.fromJson(e as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map((e) => Course.fromJson(e))
         .toList();
   }
 
@@ -80,13 +84,17 @@ class AIRepository {
       return [];
     }
 
-    final results = (responseData['data'] ?? responseData) as List<dynamic>?;
+    final dynamic raw = responseData is Map<String, dynamic>
+        ? (responseData['data'] ?? responseData['results'])
+        : responseData;
+    final List<dynamic>? results = raw is List ? raw : null;
     if (results == null) {
       return [];
     }
 
     return results
-        .map((e) => PopularCategory.fromJson(e as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map((e) => PopularCategory.fromJson(e))
         .toList();
   }
 

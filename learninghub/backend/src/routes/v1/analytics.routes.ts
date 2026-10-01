@@ -8,6 +8,10 @@ import {
   getPerformanceTrend,
   getWeakAreas,
 } from '../../controllers/analyticsController'
+import {
+  getRecommendations,
+  getSpacedRepetition,
+} from '../../controllers/userAnalyticsController'
 
 const router = Router()
 
@@ -25,5 +29,7 @@ router.get(
   getPerformanceTrend
 )
 router.get('/weak-areas', authenticate, getWeakAreas)
+router.get('/recommendations', authenticate, getRecommendations)
+router.get('/spaced-repetition', authenticate, getSpacedRepetition)
 
 export default router

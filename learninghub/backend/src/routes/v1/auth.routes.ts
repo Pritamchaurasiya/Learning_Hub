@@ -61,7 +61,7 @@ router.post('/send-verification', authenticate, sendVerificationEmail)
 router.get('/verify-email/:token', verifyEmail)
 router.post('/forgot-password', strictLimiter, validate(forgotPasswordSchema), forgotPassword)
 router.post('/reset-password', strictLimiter, validate(resetPasswordSchema), resetPassword)
-router.get('/export-data', authenticate, exportUserData)
+router.get('/export-data', authenticate, strictLimiter, exportUserData)
 
 router.get('/preferences', authenticate, getPreferences)
 router.put('/preferences', authenticate, updatePreferences)

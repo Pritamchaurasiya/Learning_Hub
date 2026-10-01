@@ -194,7 +194,7 @@ CREATE INDEX IF NOT EXISTS idx_bookmarks_item ON bookmarks(item_id);
 -- ============================================
 CREATE TABLE IF NOT EXISTS achievements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
   icon VARCHAR(50) DEFAULT '🎯',
   xp_reward INTEGER DEFAULT 0,

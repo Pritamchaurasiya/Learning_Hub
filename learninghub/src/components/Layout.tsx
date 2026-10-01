@@ -10,6 +10,7 @@ import { useStore } from '../stores/useStore'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SectionErrorBoundary } from './SectionErrorBoundary'
 import { AnnouncerRegions } from './a11y/LiveAnnouncer'
+import { CommandPalette } from './CommandPalette'
 import { Suspense, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -87,6 +88,7 @@ export default function Layout({ children }: LayoutProps) {
       <MobileNav />
       <ScrollToTop />
       <AnnouncerRegions />
+      <CommandPalette />
     </div>
   )
 }

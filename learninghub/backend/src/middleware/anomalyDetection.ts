@@ -45,6 +45,15 @@ export const anomalyDetection = async (
 ): Promise<void> => {
   const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown'
 
+  // In development, avoid blocking local loopback or mobile LAN test IPs
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1' || ip.startsWith('10.') || ip.startsWith('192.168.'))
+  ) {
+    next()
+    return
+  }
+
   if (await isIPBlocked(ip)) {
     logger.warn('Blocked request from flagged IP', { ip, path: req.path, method: req.method })
     sendError(res, 'Too many requests. Please try again later.', 429, 'IP_TEMPORARILY_BLOCKED')

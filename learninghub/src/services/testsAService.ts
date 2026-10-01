@@ -8,8 +8,10 @@ export interface TestA {
   exam_name: string
   exam_code: string
   country_name: string
-  mode: 'practice' | 'mock' | 'timed_challenge' | 'adaptive' | 'review'
+  mode: 'practice' | 'mock' | 'timed_challenge' | 'adaptive' | 'review' | 'contest'
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed' | 'adaptive'
+  ai_mode?: 'no_ai' | 'ai_optional' | 'ai_required' | 'hybrid' | string
+  question_source?: 'manual' | 'database' | 'import' | 'ai_generated' | 'hybrid' | string
   time_limit_minutes: number
   passing_score: number
   total_marks: number
@@ -19,6 +21,29 @@ export interface TestA {
   is_featured: boolean
   attempt_count: number
   created_at: string
+  shuffle_questions?: boolean
+  shuffleQuestions?: boolean
+  shuffle_options?: boolean
+  shuffleOptions?: boolean
+  sections?: TestSection[]
+}
+
+export interface TestSection {
+  id: string
+  title: string
+  description?: string
+  order: number
+  duration_minutes?: number
+  durationMinutes?: number
+  is_timed?: boolean
+  isTimed?: boolean
+  cut_off_marks?: number
+  cutOffMarks?: number
+  question_count?: number
+  allow_backward_navigation?: boolean
+  allowBackwardNavigation?: boolean
+  is_locked?: boolean
+  isLocked?: boolean
 }
 
 export interface TestQuestion {
@@ -29,6 +54,8 @@ export interface TestQuestion {
   type?: string
   difficulty: number
   bloom_level: string
+  section_id?: string | null
+  sectionId?: string | null
   options: {
     id: string
     text: string
@@ -116,12 +143,19 @@ interface RawTestData {
   country_name?: string
   mode?: string
   difficulty?: string
+  ai_mode?: string
+  aiMode?: string
+  question_source?: string
+  questionSource?: string
   time_limit_minutes?: number
   time_limit?: number
+  duration_minutes?: number
   passing_score?: number
+  passing_marks?: number
   total_marks?: number
   negative_marks_per_question?: number
   negative_marks?: number
+  negative_mark_value?: number
   question_count?: number
   total_questions?: number
   is_ai_generated?: boolean
@@ -129,6 +163,23 @@ interface RawTestData {
   attempt_count?: number
   attempts_made?: number
   created_at?: string
+  shuffle_questions?: boolean
+  shuffleQuestions?: boolean
+  shuffle_options?: boolean
+  shuffleOptions?: boolean
+  sections?: Array<{
+    id?: string
+    title?: string
+    description?: string
+    order?: number
+    duration_minutes?: number
+    durationMinutes?: number
+    is_timed?: boolean
+    isTimed?: boolean
+    cut_off_marks?: number
+    cutOffMarks?: number
+    question_count?: number
+  }>
 }
 
 const normalizeTest = (raw: RawTestData): TestA => ({
@@ -140,15 +191,37 @@ const normalizeTest = (raw: RawTestData): TestA => ({
   country_name: raw.country_name ?? '',
   mode: normalizeEnum(raw.mode, 'mock') as TestA['mode'],
   difficulty: normalizeEnum(raw.difficulty, 'mixed') as TestA['difficulty'],
-  time_limit_minutes: raw.time_limit_minutes ?? raw.time_limit ?? 0,
-  passing_score: raw.passing_score ?? 0,
+  ai_mode: normalizeEnum(raw.ai_mode ?? raw.aiMode, 'no_ai'),
+  question_source: normalizeEnum(raw.question_source ?? raw.questionSource, 'database'),
+  time_limit_minutes: raw.time_limit_minutes ?? raw.time_limit ?? raw.duration_minutes ?? 0,
+  passing_score: raw.passing_score ?? raw.passing_marks ?? 0,
   total_marks: raw.total_marks ?? 0,
-  negative_marks_per_question: raw.negative_marks_per_question ?? raw.negative_marks ?? 0,
+  negative_marks_per_question:
+    raw.negative_marks_per_question ?? raw.negative_marks ?? raw.negative_mark_value ?? 0,
   question_count: raw.question_count ?? raw.total_questions ?? 0,
   is_ai_generated: raw.is_ai_generated ?? false,
   is_featured: raw.is_featured ?? false,
   attempt_count: raw.attempt_count ?? raw.attempts_made ?? 0,
   created_at: raw.created_at ?? new Date(0).toISOString(),
+  shuffle_questions: raw.shuffle_questions ?? raw.shuffleQuestions ?? false,
+  shuffleQuestions: raw.shuffleQuestions ?? raw.shuffle_questions ?? false,
+  shuffle_options: raw.shuffle_options ?? raw.shuffleOptions ?? false,
+  shuffleOptions: raw.shuffleOptions ?? raw.shuffle_options ?? false,
+  sections: Array.isArray(raw.sections)
+    ? raw.sections.map(s => ({
+        id: s.id ?? '',
+        title: s.title ?? '',
+        description: s.description ?? '',
+        order: s.order ?? 1,
+        duration_minutes: s.duration_minutes ?? s.durationMinutes,
+        durationMinutes: s.durationMinutes ?? s.duration_minutes,
+        is_timed: s.is_timed ?? s.isTimed ?? false,
+        isTimed: s.isTimed ?? s.is_timed ?? false,
+        cut_off_marks: s.cut_off_marks ?? s.cutOffMarks,
+        cutOffMarks: s.cutOffMarks ?? s.cut_off_marks,
+        question_count: s.question_count ?? 0,
+      }))
+    : undefined,
 })
 
 const normalizeAttemptStatus = (rawStatus: unknown): TestAttempt['status'] => {
@@ -223,11 +296,13 @@ interface RawQuestionResult {
 
 interface RawResultData {
   attempt_id?: string
+  attemptId?: string
   id?: string
   test_id?: string
   testId?: string
   test?: { id?: string; title?: string; mode?: string; totalMarks?: number; timeLimit?: number }
   test_title?: string
+  testTitle?: string
   mode?: string
   score?: number
   total_marks?: number
@@ -238,43 +313,59 @@ interface RawResultData {
   timeTaken?: number
   time_taken_seconds?: number
   time_limit?: number
+  timeLimit?: number
   correct_count?: number
+  correctCount?: number
   incorrect_count?: number
+  incorrectCount?: number
   unanswered_count?: number
+  unansweredCount?: number
   question_results?: RawQuestionResult[]
+  questionResults?: RawQuestionResult[]
 }
 
 const normalizeAttemptResult = (raw: RawResultData): TestResult => {
-  const rawQuestionResults = Array.isArray(raw.question_results) ? raw.question_results : []
+  const rawQuestionResults = Array.isArray(raw.question_results)
+    ? raw.question_results
+    : Array.isArray(raw.questionResults)
+      ? raw.questionResults
+      : []
+
   const questionResults: TestResult['question_results'] = rawQuestionResults.map(
-    (question: RawQuestionResult) => ({
-      question_id: question.question_id ?? '',
-      question_text: question.question_text ?? '',
-      question_type: question.question_type ?? 'mcq',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (question: any) => ({
+      question_id: question.question_id ?? question.questionId ?? '',
+      question_text: question.question_text ?? question.questionText ?? '',
+      question_type: question.question_type ?? question.questionType ?? 'mcq',
       selected_options:
         question.selected_options ??
+        question.selectedOptions ??
         (question.selected_option_id ? [{ id: question.selected_option_id, text: '' }] : []),
       correct_options:
         question.correct_options ??
+        question.correctOptions ??
         (question.correct_option_id ? [{ id: question.correct_option_id, text: '' }] : []),
-      is_correct: question.is_correct ?? null,
-      marks_obtained: question.marks_obtained ?? 0,
+      is_correct: question.is_correct ?? question.isCorrect ?? null,
+      marks_obtained: question.marks_obtained ?? question.marksObtained ?? 0,
       explanation: question.explanation ?? '',
-      time_spent: question.time_spent ?? 0,
-      is_flagged: question.is_flagged ?? false,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      topic: (question as any).topic,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      confidence: (question as any).confidence,
+      time_spent: question.time_spent ?? question.timeSpent ?? 0,
+      is_flagged: question.is_flagged ?? question.isFlagged ?? false,
+      topic: question.topic,
+      confidence: question.confidence,
+      ai_feedback: question.ai_feedback ?? question.aiFeedback,
+      text_answer: question.text_answer ?? question.textAnswer,
     })
   )
 
   return {
-    attempt_id: raw.attempt_id ?? raw.id ?? '',
+    attempt_id: raw.attempt_id ?? raw.attemptId ?? raw.id ?? '',
     test_id:
       raw.test_id ?? raw.testId ?? (typeof raw.test === 'object' ? raw.test?.id : undefined) ?? '',
     test_title:
-      raw.test_title ?? (typeof raw.test === 'object' ? raw.test?.title : undefined) ?? 'Test',
+      raw.test_title ??
+      raw.testTitle ??
+      (typeof raw.test === 'object' ? raw.test?.title : undefined) ??
+      'Test',
     mode: normalizeEnum(
       raw.mode ?? (typeof raw.test === 'object' ? raw.test?.mode : undefined),
       'mock'
@@ -289,12 +380,20 @@ const normalizeAttemptResult = (raw: RawResultData): TestResult => {
     passed: raw.passed ?? false,
     time_taken: raw.time_taken ?? raw.timeTaken ?? raw.time_taken_seconds ?? 0,
     time_limit:
-      raw.time_limit ?? (typeof raw.test === 'object' ? raw.test?.timeLimit : undefined) ?? 0,
-    correct_count: raw.correct_count ?? questionResults.filter(q => q.is_correct).length,
+      raw.time_limit ??
+      raw.timeLimit ??
+      (typeof raw.test === 'object' ? raw.test?.timeLimit : undefined) ??
+      0,
+    correct_count:
+      raw.correct_count ?? raw.correctCount ?? questionResults.filter(q => q.is_correct).length,
     incorrect_count:
-      raw.incorrect_count ?? questionResults.filter(q => q.is_correct === false).length,
+      raw.incorrect_count ??
+      raw.incorrectCount ??
+      questionResults.filter(q => q.is_correct === false).length,
     unanswered_count:
-      raw.unanswered_count ?? questionResults.filter(q => q.selected_options.length === 0).length,
+      raw.unanswered_count ??
+      raw.unansweredCount ??
+      questionResults.filter(q => q.selected_options.length === 0).length,
     question_results: questionResults,
   }
 }
@@ -306,6 +405,8 @@ export const testsAService = {
     exam?: string
     mode?: string
     difficulty?: string
+    ai_mode?: string
+    question_source?: string
     country?: string
     search?: string
   }) => {
@@ -313,6 +414,8 @@ export const testsAService = {
     if (filters?.exam) params.append('exam', filters.exam)
     if (filters?.mode) params.append('mode', filters.mode)
     if (filters?.difficulty) params.append('difficulty', filters.difficulty)
+    if (filters?.ai_mode) params.append('ai_mode', filters.ai_mode)
+    if (filters?.question_source) params.append('question_source', filters.question_source)
     if (filters?.country) params.append('country', filters.country)
     if (filters?.search) params.append('search', filters.search)
 
@@ -338,20 +441,97 @@ export const testsAService = {
       }
     }) as Promise<{ status: string; data: TestA }>,
 
-  // AI-generate a new test
+  // Generate a new test (with AI policy support: NO_AI, AI_OPTIONAL, AI_REQUIRED, HYBRID)
   generateTest: (config: {
     topic: string
     difficulty?: string
     count?: number
     mode?: string
+    ai_mode?: 'NO_AI' | 'AI_OPTIONAL' | 'AI_REQUIRED' | 'HYBRID' | string
+    question_source?: 'MANUAL' | 'DATABASE' | 'IMPORT' | 'AI_GENERATED' | 'HYBRID' | string
     time_limit?: number
   }) =>
     fetchApi('/ai/generate-test', {
       method: 'POST',
       body: JSON.stringify(config),
+    })
+      .then(res => {
+        const data = res.data ?? {}
+        return {
+          status: res.status ?? 'success',
+          data: normalizeTest(data),
+        }
+      })
+      .catch(() => {
+        // AI unavailable: return empty test when NO_AI mode, else re-throw friendly error
+        if (config.ai_mode === 'NO_AI') {
+          return {
+            status: 'success' as const,
+            data: {
+              id: '',
+              title: '',
+              description: '',
+              exam_name: '',
+              exam_code: '',
+              country_name: '',
+              mode: 'practice' as const,
+              difficulty: 'mixed' as const,
+              ai_mode: 'NO_AI',
+              question_source: 'MANUAL',
+              time_limit_minutes: config.time_limit ?? 15,
+              passing_score: 60,
+              total_marks: 0,
+              negative_marks_per_question: 0,
+              question_count: 0,
+              is_ai_generated: false,
+              is_featured: false,
+              attempt_count: 0,
+              created_at: new Date().toISOString(),
+            },
+          }
+        }
+        throw new Error(
+          'AI test generation unavailable. Please select NO_AI mode or try again later.'
+        )
+      }) as Promise<{ status: string; data: TestA }>,
+
+  // Manually create a test with custom questions
+  createTest: (payload: {
+    title: string
+    description?: string
+    timeLimit?: number
+    passingScore?: number
+    maxAttempts?: number
+    mode?: string
+    difficulty?: string
+    totalMarks?: number
+    negativeMarks?: number
+    isPublished?: boolean
+    shuffleQuestions?: boolean
+    shuffleOptions?: boolean
+    questions?: Array<{
+      text: string
+      type?: string
+      difficulty?: number
+      bloomLevel?: string
+      points?: number
+      explanation?: string
+      topic?: string
+      tags?: string[]
+      options: Array<{
+        text: string
+        isCorrect: boolean
+        explanation?: string
+        order?: number
+      }>
+    }>
+  }) =>
+    fetchApi('/tests', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     }).then(res => ({
       status: res.status ?? 'success',
-      data: res.data,
+      data: normalizeTest(res.data ?? {}),
     })) as Promise<{ status: string; data: TestA }>,
 
   // Start a test attempt
@@ -371,6 +551,7 @@ export const testsAService = {
         answers?: Record<string, string>
         time_limit?: number
         time_remaining_seconds?: number
+        sections?: TestSection[]
       }
     }>,
 
@@ -385,10 +566,19 @@ export const testsAService = {
     })) as Promise<{ status: string; data: { saved: boolean } }>,
 
   // Batch autosave: send ALL current answers at once (used by periodic autosave)
-  batchAutosave: (testId: string, answers: Record<string, string | string[]>, attemptId?: string) =>
+  batchAutosave: (
+    testId: string,
+    answers: Record<string, string | string[]>,
+    attemptId?: string,
+    lockedSectionIds?: string[]
+  ) =>
     fetchApi(`/tests/${testId}/autosave`, {
       method: 'POST',
-      body: JSON.stringify({ answers, attempt_id: attemptId }),
+      body: JSON.stringify({
+        answers,
+        attempt_id: attemptId,
+        locked_section_ids: lockedSectionIds,
+      }),
     }).then(res => ({
       status: res.status ?? 'success',
       data: res.data,
@@ -461,6 +651,92 @@ export const testsAService = {
         data: tests.map(normalizeTest),
       }
     }) as Promise<{ status: string; data: TestA[] }>,
+
+  // Bookmark a question for revision
+  bookmarkQuestion: (questionId: string, notes?: string) =>
+    fetchApi('/tests/bookmarks', {
+      method: 'POST',
+      body: JSON.stringify({ question_id: questionId, notes }),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })) as Promise<{ status: string; data: unknown }>,
+
+  // Remove a question bookmark
+  removeBookmark: (questionId: string) =>
+    fetchApi(`/tests/bookmarks/${questionId}`, {
+      method: 'DELETE',
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })) as Promise<{ status: string; data: unknown }>,
+
+  // Download test bundle for offline access
+  getOfflineBundle: (testId: string) =>
+    fetchApi(`/tests/${testId}/offline-bundle`).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
+
+  // Submit and reconcile offline test attempt
+  submitOfflineSync: (testId: string, payload: unknown) =>
+    fetchApi(`/tests/${testId}/offline-sync`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
+
+  // Submit single adaptive step and fetch next question
+  submitAdaptiveStep: (
+    testId: string,
+    payload: {
+      attempt_id: string
+      question_id: string
+      selected_option_id: string | string[]
+      time_spent_seconds?: number
+    }
+  ) =>
+    fetchApi(`/tests/${testId}/adaptive/step`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
+
+  // Diagnose conceptual misconception with Socratic AI
+  diagnoseMisconception: (payload: {
+    question_text: string
+    selected_option_text: string
+    correct_option_text: string
+    topic?: string
+  }) =>
+    fetchApi('/tests/diagnose-misconception', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
+
+  // High precision clock synchronization for contests
+  getTimeSync: () =>
+    fetchApi('/contests/time/sync').then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
+
+  // Log proctoring security events (tab-switch, fullscreen exit, blur)
+  logProctorEvent: (contestId: string, eventType: string, metadata?: Record<string, unknown>) =>
+    fetchApi(`/contests/${contestId}/proctor-event`, {
+      method: 'POST',
+      body: JSON.stringify({ event_type: eventType, metadata }),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
 }
 
 export default testsAService

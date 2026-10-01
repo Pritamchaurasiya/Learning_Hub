@@ -3,8 +3,6 @@ import { ABTestingService } from '../services/ABTestingService'
 import { sendSuccess, sendError, sendValidationError } from '../utils/responseHelper'
 import { asyncHandler } from '../utils/errorHandler'
 
-const abTestingService = new ABTestingService()
-
 export const getMyExperiments = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId
   if (!userId) {
@@ -12,7 +10,7 @@ export const getMyExperiments = asyncHandler(async (req: Request, res: Response)
     return
   }
 
-  const experiments = abTestingService.getUserExperiments(userId)
+  const experiments = await ABTestingService.getUserExperiments(userId)
   sendSuccess(res, experiments)
 })
 
@@ -29,7 +27,7 @@ export const trackConversion = asyncHandler(async (req: Request, res: Response):
     return
   }
 
-  await abTestingService.trackConversion(userId, experimentId, eventName, value)
+  await ABTestingService.trackConversion(userId, experimentId, eventName, value)
   sendSuccess(res, { success: true })
 })
 
@@ -41,7 +39,7 @@ export const getExperimentResults = asyncHandler(
       return
     }
 
-    const results = await abTestingService.getExperimentResults(id as string)
+    const results = await ABTestingService.getExperimentResults(id as string)
     sendSuccess(res, results)
   }
 )

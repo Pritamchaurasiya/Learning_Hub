@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'ai/backend_llm_client.dart';
+import 'ai/gemini_client.dart';
 import 'ai/llm_client.dart';
 
 import 'ai/embedding_client.dart';
@@ -179,19 +180,11 @@ class AiTutorService {
   String? _activeConversationId;
 
   void _initializeClient() {
-    // 1. Try Backend (Primary)
-    // We assume backend is available if not in a pure offline/mock mode
-    // In a real app, we might check connectivity or feature flags
-    _client = BackendLLMClient();
-
-    // 2. Fallback to Gemini (Direct) if configured and backend fails?
-    // For now, we instantiate backend client.
-    // If we wanted a true fallback chain, we'd need a CompositeClient.
-    // But for this phase, we switch to Backend as primary.
-
-    // We keep Gemini for Embedding since backend embedding might not be ready
-    // or we want local RAG
     const geminiKey = String.fromEnvironment('GEMINI_API_KEY');
+    final LLMClient fallbackClient = geminiKey.isNotEmpty
+        ? GeminiClient(apiKey: geminiKey)
+        : MockLLMClient(this);
+    _client = BackendLLMClient(fallbackClient: fallbackClient);
     if (geminiKey.isNotEmpty) {
       if (kDebugMode) {
         debugPrint(

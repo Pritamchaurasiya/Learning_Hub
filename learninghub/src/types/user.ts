@@ -28,4 +28,5 @@ export interface User {
   date_joined?: string
   examPreference?: UserExamPreference | null
   role?: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPERADMIN'
+  mfaEnabled?: boolean
 }

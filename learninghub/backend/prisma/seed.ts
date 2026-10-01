@@ -359,7 +359,185 @@ async function main() {
     },
   })
 
-  console.log('✅ Seed complete')
+  // 11. Seed Curated DSA Problems
+  const dsaProblems = [
+    {
+      title: 'Two Sum',
+      slug: 'two-sum',
+      category: 'Arrays & Hashing',
+      difficulty: 'BEGINNER' as const,
+      points: 100,
+      tags: ['Array', 'Hash Table', 'Two Pointers'],
+      description:
+        'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\n### Example 1:\n```\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n```',
+      starterCode: JSON.stringify({
+        javascript: 'function twoSum(nums, target) {\n  // Write your code here\n}',
+        python:
+          'def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your code here\n    pass',
+        cpp: '#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write code here\n    }\n};',
+      }),
+      testCases: JSON.stringify([
+        { input: '[2,7,11,15]\n9', output: '[0,1]' },
+        { input: '[3,2,4]\n6', output: '[1,2]' },
+        { input: '[3,3]\n6', output: '[0,1]' },
+      ]),
+    },
+    {
+      title: 'Valid Parentheses',
+      slug: 'valid-parentheses',
+      category: 'Stack',
+      difficulty: 'BEGINNER' as const,
+      points: 100,
+      tags: ['Stack', 'String'],
+      description:
+        'Given a string `s` containing just the characters `(`, `)`, `{`, `}`, `[` and `]`, determine if the input string is valid.\n\nAn input string is valid if open brackets are closed by the same type of brackets and closed in the correct order.',
+      starterCode: JSON.stringify({
+        javascript: 'function isValid(s) {\n  // Write your code here\n}',
+        python: 'def isValid(s: str) -> bool:\n    # Write your code here\n    pass',
+      }),
+      testCases: JSON.stringify([
+        { input: '()', output: 'true' },
+        { input: '()[]{}', output: 'true' },
+        { input: '(]', output: 'false' },
+      ]),
+    },
+    {
+      title: 'Longest Substring Without Repeating Characters',
+      slug: 'longest-substring-without-repeating-characters',
+      category: 'Sliding Window',
+      difficulty: 'INTERMEDIATE' as const,
+      points: 200,
+      tags: ['Hash Table', 'String', 'Sliding Window'],
+      description:
+        'Given a string `s`, find the length of the longest substring without repeating characters.\n\n### Example:\n```\nInput: s = "abcabcbb"\nOutput: 3\nExplanation: The answer is "abc", with the length of 3.\n```',
+      starterCode: JSON.stringify({
+        javascript: 'function lengthOfLongestSubstring(s) {\n  // Write your code here\n}',
+        python: 'def lengthOfLongestSubstring(s: str) -> int:\n    pass',
+      }),
+      testCases: JSON.stringify([
+        { input: 'abcabcbb', output: '3' },
+        { input: 'bbbbb', output: '1' },
+        { input: 'pwwkew', output: '3' },
+      ]),
+    },
+    {
+      title: 'Reverse Linked List',
+      slug: 'reverse-linked-list',
+      category: 'Linked List',
+      difficulty: 'BEGINNER' as const,
+      points: 100,
+      tags: ['Linked List', 'Recursion'],
+      description:
+        'Given the head of a singly linked list, reverse the list, and return the reversed list head.',
+      starterCode: JSON.stringify({
+        javascript: 'function reverseList(head) {\n  // Write your code here\n}',
+        python: 'def reverseList(head):\n    pass',
+      }),
+      testCases: JSON.stringify([
+        { input: '[1,2,3,4,5]', output: '[5,4,3,2,1]' },
+        { input: '[1,2]', output: '[2,1]' },
+      ]),
+    },
+    {
+      title: 'Coin Change',
+      slug: 'coin-change',
+      category: 'Dynamic Programming',
+      difficulty: 'INTERMEDIATE' as const,
+      points: 250,
+      tags: ['Array', 'Dynamic Programming', 'Breadth-First Search'],
+      description:
+        'You are given an integer array `coins` representing coins of different denominations and an integer `amount` representing a total amount of money.\n\nReturn the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up by any combination of the coins, return `-1`.',
+      starterCode: JSON.stringify({
+        javascript: 'function coinChange(coins, amount) {\n  // Write your code here\n}',
+        python: 'def coinChange(coins: list[int], amount: int) -> int:\n    pass',
+      }),
+      testCases: JSON.stringify([
+        { input: '[1,2,5]\n11', output: '3' },
+        { input: '[2]\n3', output: '-1' },
+        { input: '[1]\n0', output: '0' },
+      ]),
+    },
+    {
+      title: 'Number of Islands',
+      slug: 'number-of-islands',
+      category: 'Graphs & BFS/DFS',
+      difficulty: 'INTERMEDIATE' as const,
+      points: 250,
+      tags: ['Array', 'Depth-First Search', 'Breadth-First Search', 'Union Find', 'Matrix'],
+      description:
+        'Given an `m x n` 2D binary grid `grid` which represents a map of `1`s (land) and `0`s (water), return the number of islands.\n\nAn island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically.',
+      starterCode: JSON.stringify({
+        javascript: 'function numIslands(grid) {\n  // Write your code here\n}',
+        python: 'def numIslands(grid: list[list[str]]) -> int:\n    pass',
+      }),
+      testCases: JSON.stringify([
+        {
+          input:
+            '[["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
+          output: '1',
+        },
+      ]),
+    },
+    {
+      title: 'Course Schedule',
+      slug: 'course-schedule',
+      category: 'Graphs & Topological Sort',
+      difficulty: 'INTERMEDIATE' as const,
+      points: 250,
+      tags: ['Depth-First Search', 'Breadth-First Search', 'Graph', 'Topological Sort'],
+      description:
+        'There are a total of `numCourses` courses you have to take, labeled from `0` to `numCourses - 1`. You are given an array `prerequisites` where `prerequisites[i] = [a_i, b_i]` indicates that you must take course `b_i` first if you want to take course `a_i`.\n\nReturn `true` if you can finish all courses. Otherwise, return `false`.',
+      starterCode: JSON.stringify({
+        javascript: 'function canFinish(numCourses, prerequisites) {\n  // Write your code here\n}',
+        python: 'def canFinish(numCourses: int, prerequisites: list[list[int]]) -> bool:\n    pass',
+      }),
+      testCases: JSON.stringify([
+        { input: '2\n[[1,0]]', output: 'true' },
+        { input: '2\n[[1,0],[0,1]]', output: 'false' },
+      ]),
+    },
+    {
+      title: 'LRU Cache Design',
+      slug: 'lru-cache-design',
+      category: 'Data Structures Design',
+      difficulty: 'INTERMEDIATE' as const,
+      points: 300,
+      tags: ['Hash Table', 'Linked List', 'Design', 'Doubly-Linked List'],
+      description:
+        'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.\n\nImplement the `LRUCache` class:\n- `LRUCache(int capacity)` Initialize the LRU cache with positive size `capacity`.\n- `int get(int key)` Return the value of the key if the key exists, otherwise return `-1`.\n- `void put(int key, int value)` Update the value of the key if the key exists. Otherwise, add the key-value pair to the cache. If the number of keys exceeds the capacity from this operation, evict the least recently used key.\n\nThe functions `get` and `put` must each run in `O(1)` average time complexity.',
+      starterCode: JSON.stringify({
+        javascript:
+          'class LRUCache {\n  constructor(capacity) {\n    this.capacity = capacity\n  }\n  get(key) {\n    return -1\n  }\n  put(key, value) {}\n}',
+        python:
+          'class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n    def get(self, key: int) -> int:\n        return -1\n    def put(self, key: int, value: int) -> None:\n        pass',
+      }),
+      testCases: JSON.stringify([
+        {
+          input:
+            '["LRUCache","put","put","get","put","get","put","get","get","get"]\n[[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]',
+          output: '[null,null,null,1,null,-1,null,-1,3,4]',
+        },
+      ]),
+    },
+  ]
+
+  for (const prob of dsaProblems) {
+    await prisma.problem.create({
+      data: {
+        title: prob.title,
+        slug: prob.slug,
+        category: prob.category,
+        difficulty: prob.difficulty,
+        points: prob.points,
+        tags: prob.tags,
+        description: prob.description,
+        starterCode: prob.starterCode,
+        testCases: prob.testCases,
+      },
+    })
+  }
+
+  console.log(`✅ Seed complete: ${dsaProblems.length} DSA problems seeded.`)
   console.log(`Admin: admin@learninghub.com / Admin@123!`)
   console.log(`Student: student@learninghub.com / Student@123!`)
 }

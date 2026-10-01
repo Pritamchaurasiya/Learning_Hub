@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
-import { Prisma, TestMode, TestDifficulty } from '@prisma/client'
+import { Prisma, TestMode, TestDifficulty, QuestionType, BloomLevel } from '@prisma/client'
 import {
   sendSuccess,
   sendCreated,
@@ -11,11 +11,15 @@ import {
 } from '../utils/responseHelper'
 
 import { testScoringService } from '../services/TestScoringService'
+import { offlineAssessmentService } from '../services/OfflineAssessmentService'
+import { adaptiveAssessmentEngine } from '../engines/test/AdaptiveAssessmentEngine'
+import { socraticDiagnosticService } from '../services/ai/SocraticDiagnosticService'
 import { cacheService as queryCache } from '../services/CacheService'
 import { asyncHandler } from '../utils/errorHandler'
 
 import {
   mapQuestionSafe,
+  deterministicShuffle,
   TEST_MODES,
   TEST_DIFFICULTIES,
   normalizeEnumFilter,
@@ -214,6 +218,18 @@ export const getTestDetails = asyncHandler(async (req: Request, res: Response): 
       totalMarks: true,
       negativeMarks: true,
       isAiGenerated: true,
+      sections: {
+        orderBy: { order: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          order: true,
+          durationMinutes: true,
+          isTimed: true,
+          cutOffMarks: true,
+        },
+      },
       _count: {
         select: { questions: true },
       },
@@ -239,6 +255,9 @@ export const getTestDetails = asyncHandler(async (req: Request, res: Response): 
     total_marks: test.totalMarks,
     negative_marks: test.negativeMarks,
     is_ai_generated: test.isAiGenerated,
+    shuffle_questions: (test as any).shuffleQuestions ?? false,
+    shuffle_options: (test as any).shuffleOptions ?? false,
+    sections: (test as any).sections ?? [],
   }
 
   await queryCache.set(cacheKey, quizData, 300)
@@ -257,6 +276,20 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
       maxAttempts: true,
       totalMarks: true,
       mode: true,
+      shuffleQuestions: true,
+      shuffleOptions: true,
+      sections: {
+        orderBy: { order: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          order: true,
+          durationMinutes: true,
+          isTimed: true,
+          cutOffMarks: true,
+        },
+      },
       questions: {
         orderBy: { order: 'asc' },
         select: {
@@ -266,6 +299,7 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
           difficulty: true,
           points: true,
           order: true,
+          sectionId: true,
           tags: true,
           explanation: true,
           topicId: true,
@@ -303,7 +337,14 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
   })
 
   if (existingResult) {
-    const questions = test.questions.map(mapQuestionSafe)
+    const shouldShuffleQuestions = Boolean((test as any).shuffleQuestions)
+    const shouldShuffleOptions = Boolean((test as any).shuffleOptions)
+    const rawQuestions = shouldShuffleQuestions
+      ? deterministicShuffle(test.questions, existingResult.id)
+      : test.questions
+    const questions = rawQuestions.map((q: any) =>
+      mapQuestionSafe(q, existingResult.id, shouldShuffleOptions)
+    )
     const answers: Record<string, string | string[]> = {}
     for (const a of existingResult.attemptAnswers) {
       answers[a.questionId] =
@@ -313,15 +354,20 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
 
     sendSuccess(res, {
       attempt_id: existingResult.id,
+      attemptId: existingResult.id, // canonical contract: also expose camelCase
       attempt_number: existingResult.attemptNumber,
       questions,
+      sections: (test as any).sections ?? [],
       answers,
       answered_count: Object.values(answers).filter(hasSubmittedAnswer).length,
       time_limit: test.timeLimit,
+      time_limit_minutes: test.timeLimit,
       time_limit_seconds: test.timeLimit * 60,
       time_remaining_seconds: timeRemainingSeconds,
       total_marks: test.totalMarks,
       mode: test.mode,
+      shuffle_questions: shouldShuffleQuestions,
+      shuffle_options: shouldShuffleOptions,
     })
     return
   }
@@ -344,20 +390,31 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
   }
 
   // Create test result with retry on unique constraint violation (attemptNumber race condition)
-  const result = await prisma.$transaction(async (tx: any) => {
-    // Guard against a concurrent start (e.g. rapid double-click) that already created an
-    // IN_PROGRESS attempt between the pre-check above and this transaction. Resume the
-    // existing attempt instead of creating a second, orphaned one.
-    const concurrent = await tx.testResult.findFirst({
-      where: { userId, testId, status: 'IN_PROGRESS' },
-      orderBy: { attemptNumber: 'desc' },
-      select: { id: true, attemptNumber: true, startedAt: true },
-    })
-    if (concurrent) return concurrent
+  let result: any = null
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      result = await prisma.$transaction(async (tx: any) => {
+        // Guard against a concurrent start (e.g. rapid double-click) that already created an
+        // IN_PROGRESS attempt between the pre-check above and this transaction. Resume the
+        // existing attempt instead of creating a second, orphaned one.
+        const concurrent = await tx.testResult.findFirst({
+          where: { userId, testId, status: 'IN_PROGRESS' },
+          orderBy: { attemptNumber: 'desc' },
+          select: { id: true, attemptNumber: true, startedAt: true },
+        })
+        if (concurrent) return concurrent
 
-    let attemptNumber = nextAttemptNumber
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
+        const latestAttempt = await tx.testResult.findFirst({
+          where: { userId, testId },
+          orderBy: { attemptNumber: 'desc' },
+          select: { attemptNumber: true },
+        })
+        const attemptNumber = (latestAttempt?.attemptNumber ?? 0) + 1
+
+        if (latestAttempt && latestAttempt.attemptNumber >= maxAttempts) {
+          throw new Error('MAX_ATTEMPTS_REACHED')
+        }
+
         return await tx.testResult.create({
           data: {
             userId,
@@ -370,31 +427,54 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
             attemptNumber,
           },
         })
-      } catch (error) {
-        const err = error as Error & { code?: string }
-        if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
-          attemptNumber++
-          continue
-        }
-        throw error
+      })
+      break
+    } catch (error: any) {
+      if (error?.message === 'MAX_ATTEMPTS_REACHED') {
+        sendForbidden(
+          res,
+          `Maximum attempts (${maxAttempts}) reached for this test`,
+          'MAX_ATTEMPTS_REACHED'
+        )
+        return
       }
+      const err = error as Error & { code?: string }
+      if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
+        continue
+      }
+      throw error
     }
-    throw new Error('Failed to create test result after retries')
-  })
+  }
 
-  const questions = test.questions.map(mapQuestionSafe)
+  if (!result) {
+    throw new Error('Failed to create test result after retries')
+  }
+
+  const shouldShuffleQuestions = Boolean((test as any).shuffleQuestions)
+  const shouldShuffleOptions = Boolean((test as any).shuffleOptions)
+  const rawQuestions = shouldShuffleQuestions
+    ? deterministicShuffle(test.questions, result.id)
+    : test.questions
+  const questions = rawQuestions.map((q: any) =>
+    mapQuestionSafe(q, result.id, shouldShuffleOptions)
+  )
 
   sendCreated(res, {
     attempt_id: result.id,
+    attemptId: result.id, // canonical contract: also expose camelCase
     attempt_number: result.attemptNumber,
     questions,
+    sections: (test as any).sections ?? [],
     answers: {},
     answered_count: 0,
     time_limit: test.timeLimit,
+    time_limit_minutes: test.timeLimit,
     time_limit_seconds: test.timeLimit * 60,
     time_remaining_seconds: getRemainingSeconds(result.startedAt, test.timeLimit),
     total_marks: test.totalMarks,
     mode: test.mode,
+    shuffle_questions: shouldShuffleQuestions,
+    shuffle_options: shouldShuffleOptions,
   })
 })
 
@@ -631,8 +711,43 @@ export const getTestAttemptDetails = asyncHandler(
       }
     })
 
+    const sanitizedTest = {
+      id: attempt.test.id,
+      title: attempt.test.title,
+      description: attempt.test.description,
+      duration: attempt.test.duration,
+      totalQuestions: attempt.test.totalQuestions,
+      totalPoints: attempt.test.totalPoints,
+      passingScore: attempt.test.passingScore,
+      questions: attempt.test.questions.map((q: any) => ({
+        id: q.id,
+        text: q.text,
+        type: q.type,
+        points: q.points,
+        order: q.order,
+        explanation: isCompleted ? q.explanation : undefined,
+        options: q.options.map((o: any) => ({
+          id: o.id,
+          text: o.text,
+          order: o.order,
+          ...(isCompleted ? { isCorrect: o.isCorrect } : {}),
+        })),
+      })),
+    }
+
     sendSuccess(res, {
-      ...attempt,
+      id: attempt.id,
+      testId: attempt.testId,
+      userId: attempt.userId,
+      attemptNumber: attempt.attemptNumber,
+      status: attempt.status,
+      score: isCompleted ? attempt.score : null,
+      percentage: isCompleted ? attempt.percentage : null,
+      passed: isCompleted ? attempt.passed : null,
+      startedAt: attempt.startedAt,
+      completedAt: attempt.completedAt,
+      timeTaken: attempt.timeTaken,
+      test: sanitizedTest,
       answers: answersForResponse,
       question_results: questions,
     })
@@ -642,7 +757,7 @@ export const getTestAttemptDetails = asyncHandler(
 export const autosaveTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
   const testId = req.params.id as string
-  const { answers, attempt_id } = req.body
+  const { answers, attempt_id, locked_section_ids, lockedSectionIds } = req.body
 
   if (!answers || typeof answers !== 'object') {
     sendValidationError(res, 'Answers are required and must be an object')
@@ -667,31 +782,50 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
       return null
     }
 
+    const lockedSections: string[] = locked_section_ids ?? lockedSectionIds ?? []
+    let lockedQuestionIds = new Set<string>()
+    if (Array.isArray(lockedSections) && lockedSections.length > 0 && tx.question?.findMany) {
+      const lockedQuestions = await tx.question.findMany({
+        where: {
+          testId,
+          sectionId: { in: lockedSections },
+        },
+        select: { id: true },
+      })
+      lockedQuestionIds = new Set(lockedQuestions.map((q: any) => q.id))
+    }
+
     const entries = Object.entries(answers)
-    await Promise.all(
-      entries.map(([qId, ans]) => {
-        const submittedIds = ans ? (Array.isArray(ans) ? ans : [ans]) : []
-        return tx.testAttemptAnswer.upsert({
-          where: {
-            testResultId_questionId: {
-              testResultId: attempt.id,
-              questionId: qId,
-            },
-          },
-          update: {
-            selectedOptions: submittedIds,
-            textAnswer: typeof ans === 'string' ? ans : null,
-          },
-          create: {
+    let savedCount = 0
+    // Use sequential processing to avoid concurrent upsert race conditions on the same
+    // (testResultId, questionId) composite key. Promise.all would race within a single
+    // transaction and could leave stale data if two entries target the same question.
+    for (const [qId, ans] of entries) {
+      if (lockedQuestionIds.has(qId)) {
+        continue // Skip modifying answers belonging to finalized/locked sections
+      }
+      const submittedIds = ans ? (Array.isArray(ans) ? ans : [ans]) : []
+      await tx.testAttemptAnswer.upsert({
+        where: {
+          testResultId_questionId: {
             testResultId: attempt.id,
             questionId: qId,
-            selectedOptions: submittedIds,
-            textAnswer: typeof ans === 'string' ? ans : null,
           },
-        })
+        },
+        update: {
+          selectedOptions: submittedIds,
+          textAnswer: typeof ans === 'string' ? ans : null,
+        },
+        create: {
+          testResultId: attempt.id,
+          questionId: qId,
+          selectedOptions: submittedIds,
+          textAnswer: typeof ans === 'string' ? ans : null,
+        },
       })
-    )
-    return entries.length
+      savedCount++
+    }
+    return savedCount
   })
 
   if (result === null) {
@@ -699,7 +833,17 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
     return
   }
 
-  sendSuccess(res, { saved_count: result }, 'Answer autosaved')
+  // Canonical contract: include both `saved: true` (boolean) and `saved_count` (number)
+  // so frontend TypeScript types align with backend response.
+  sendSuccess(
+    res,
+    {
+      saved: true,
+      saved_count: result,
+      attempt_id: req.body.attempt_id ?? null,
+    },
+    'Answer autosaved'
+  )
 })
 
 export const submitTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -731,24 +875,40 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
 
     const responsePayload = {
       attempt_id: result.id,
+      attemptId: result.id, // canonical: camelCase alias
       test_id: testId,
+      testId: testId, // canonical: camelCase alias
       test_title: test.title,
       mode: test.mode,
       score: result.score,
       total_marks: result.totalPoints,
+      totalMarks: result.totalPoints, // canonical: alias
       percentage: result.percentage,
       passed: result.passed,
       time_taken: result.timeTaken,
+      timeTaken: result.timeTaken, // canonical: alias
       time_limit: test.timeLimit,
+      time_limit_seconds: test.timeLimit * 60,
+      // Server-side timer enforcement is verified in TestScoringService.scoreAndSubmitTest
+      server_time_validated: true,
+      status: result.status,
       correct_count: effectiveCorrectCount,
       correct_answers: effectiveCorrectCount,
+      correctCount: effectiveCorrectCount, // canonical: camelCase alias
       incorrect_count: effectiveIncorrectCount,
+      incorrectCount: effectiveIncorrectCount, // canonical: camelCase alias
       unanswered_count: unansweredCount,
       question_results: questionResults,
     }
 
     if (isDuplicate) {
       sendSuccess(res, responsePayload, 'Test was already submitted')
+      return
+    }
+
+    // If server flagged as TIMEOUT, change message and status code
+    if (result.status === 'TIMEOUT') {
+      sendSuccess(res, responsePayload, 'Test time exceeded. Marked as TIMEOUT.')
       return
     }
 
@@ -768,3 +928,170 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
     throw error // Let asyncHandler catch this and handle it globally
   }
 })
+
+export const getOfflineBundle = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const testId = req.params.id as string
+
+  const bundle = await offlineAssessmentService.generateOfflineBundle(testId, userId)
+  sendSuccess(res, bundle, 'Offline bundle generated successfully')
+})
+
+export const submitOfflineSync = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const testId = req.params.id as string
+
+  const result = await offlineAssessmentService.reconcileOfflineSubmission({
+    userId,
+    payload: { ...req.body, testId },
+  })
+
+  sendSuccess(res, result, 'Offline assessment reconciled successfully')
+})
+
+export const processAdaptiveStep = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const testId = req.params.id as string
+  const { attempt_id, question_id, selected_option_id, time_spent_seconds } = req.body
+
+  if (!attempt_id || !question_id || selected_option_id === undefined) {
+    sendValidationError(res, 'attempt_id, question_id, and selected_option_id are required')
+    return
+  }
+
+  const result = await adaptiveAssessmentEngine.processAdaptiveStep({
+    testId,
+    userId,
+    attemptId: attempt_id,
+    questionId: question_id,
+    selectedOptionId: selected_option_id,
+    timeSpentSeconds: typeof time_spent_seconds === 'number' ? time_spent_seconds : 0,
+  })
+
+  sendSuccess(res, result)
+})
+
+export const diagnoseMisconception = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { question_text, selected_option_text, correct_option_text, topic } = req.body
+
+  if (!question_text || !selected_option_text || !correct_option_text) {
+    sendValidationError(res, 'question_text, selected_option_text, and correct_option_text are required')
+    return
+  }
+
+  const diagnosis = await socraticDiagnosticService.diagnoseMisconception({
+    questionText: question_text,
+    selectedOptionText: selected_option_text,
+    correctOptionText: correct_option_text,
+    topic: topic || 'General',
+  })
+
+  sendSuccess(res, diagnosis)
+})
+
+export const createTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const {
+    title,
+    description,
+    examId,
+    timeLimit = 30,
+    passingScore = 60,
+    maxAttempts = 5,
+    mode = 'PRACTICE',
+    difficulty = 'MIXED',
+    totalMarks,
+    negativeMarks = 0,
+    isPublished = true,
+    shuffleQuestions = false,
+    shuffleOptions = false,
+    questions = [],
+  } = req.body
+
+  const normalizedMode = (normalizeEnumFilter(mode, TEST_MODES) as TestMode) || TestMode.PRACTICE
+  const normalizedDifficulty = (normalizeEnumFilter(difficulty, TEST_DIFFICULTIES) as TestDifficulty) || TestDifficulty.MIXED
+
+  const computedTotalMarks =
+    totalMarks !== undefined
+      ? Number(totalMarks)
+      : Array.isArray(questions) && questions.length > 0
+        ? questions.reduce((sum: number, q: any) => sum + (Number(q.points) || 4), 0)
+        : 100
+
+  const cleanText = (val: unknown, maxLen: number): string =>
+    typeof val === 'string' ? val.trim().slice(0, maxLen) : ''
+
+  const newTest = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const test = await tx.test.create({
+      data: {
+        title: cleanText(title, 200),
+        description: description ? cleanText(description, 2000) : null,
+        examId: examId || null,
+        timeLimit: Number(timeLimit),
+        passingScore: Number(passingScore),
+        maxAttempts: Number(maxAttempts),
+        mode: normalizedMode,
+        difficulty: normalizedDifficulty,
+        totalMarks: Number(computedTotalMarks),
+        negativeMarks: Number(negativeMarks),
+        isPublished: Boolean(isPublished),
+        shuffleQuestions: Boolean(shuffleQuestions),
+        shuffleOptions: Boolean(shuffleOptions),
+        isAiGenerated: false,
+      },
+    })
+
+    if (Array.isArray(questions) && questions.length > 0) {
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i]
+        const rawType = String(q.type || 'MCQ').toUpperCase()
+        let qType: QuestionType = QuestionType.MCQ
+        if (rawType === 'MULTIPLE_SELECT' || rawType === 'MSQ') qType = QuestionType.MSQ
+        else if (rawType === 'TRUE_FALSE') qType = QuestionType.MCQ
+        else if (rawType === 'NUMERICAL') qType = QuestionType.NUMERICAL
+        else if (rawType === 'SUBJECTIVE') qType = QuestionType.SUBJECTIVE
+
+        const rawBloom = String(q.bloomLevel || 'UNDERSTAND').toUpperCase()
+        const bloomLevel: BloomLevel = (BloomLevel as any)[rawBloom] ?? BloomLevel.UNDERSTAND
+
+        const createdQ = await tx.question.create({
+          data: {
+            testId: test.id,
+            text: cleanText(q.text, 3000),
+            type: qType,
+            difficulty: typeof q.difficulty === 'number' ? q.difficulty : 0.5,
+            bloomLevel,
+            points: typeof q.points === 'number' ? q.points : 4,
+            explanation: q.explanation ? cleanText(q.explanation, 2000) : null,
+            tags: Array.isArray(q.tags)
+              ? q.tags.map((t: unknown) => cleanText(t, 50)).filter(Boolean)
+              : q.topic
+                ? [cleanText(q.topic, 50)]
+                : [],
+            order: i + 1,
+            isAiGenerated: false,
+          },
+        })
+
+        if (Array.isArray(q.options) && q.options.length > 0) {
+          await tx.option.createMany({
+            data: q.options.map((opt: any, optIdx: number) => ({
+              questionId: createdQ.id,
+              text: cleanText(opt.text, 1000),
+              isCorrect: Boolean(opt.isCorrect),
+              explanation: opt.explanation ? cleanText(opt.explanation, 1000) : null,
+              order: typeof opt.order === 'number' ? opt.order : optIdx + 1,
+            })),
+          })
+        }
+      }
+    }
+
+    return test
+  })
+
+  // Invalidate listTests cache pattern so newly created test is discoverable immediately
+  await queryCache.deletePattern('listTests:*')
+
+  sendCreated(res, newTest, 'Test created successfully')
+})
+

@@ -66,6 +66,17 @@ linter:
     use_to_and_as_if_applicable: true
 
 analyzer:
+  exclude:
+    - "build/**"
+    - "windows/**"
+    - "android/**"
+    - "ios/**"
+    - "macos/**"
+    - "linux/**"
+    - "web/**"
+    - "coverage/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
   language:
     strict-casts: true
     strict-inference: true

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
@@ -15,6 +15,7 @@ import {
   Bookmark,
   Settings,
   ChevronDown,
+  ShoppingBag,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -24,6 +25,14 @@ import { NotificationBell } from './NotificationBell'
 
 const Header = memo(() => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isUpdatesPage = location.pathname.startsWith('/updates')
+  const searchPlaceholder = isUpdatesPage
+    ? 'Search student updates, circulars, exams...'
+    : 'Search courses...'
+  const searchAriaLabel = isUpdatesPage
+    ? 'Search student updates and notices'
+    : 'Search courses'
   const {
     theme,
     toggleDarkMode,
@@ -70,7 +79,7 @@ const Header = memo(() => {
         // On desktop, focus the existing search input instead of opening mobile overlay
         if (window.innerWidth >= 768) {
           const searchInput = document.querySelector(
-            'header input[aria-label="Search courses"]'
+            'header input[type="text"]'
           ) as HTMLInputElement | null
           if (searchInput) {
             searchInput.focus()
@@ -125,7 +134,11 @@ const Header = memo(() => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchInput.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchInput)}`)
+      if (isUpdatesPage) {
+        navigate(`/updates?search=${encodeURIComponent(searchInput.trim())}`)
+      } else {
+        navigate(`/search?q=${encodeURIComponent(searchInput.trim())}`)
+      }
       setSearchInput('')
       setMobileSearchOpen(false)
     }
@@ -168,7 +181,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setSidebarOpen(true)}
-          className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
+          className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -191,19 +204,19 @@ const Header = memo(() => {
       </div>
 
       {/* Desktop Search */}
-      <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8" role="search">
+      <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-md mx-8" role="search">
         <div className="relative w-full group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
           <input
             type="text"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
-            placeholder="Search courses..."
-            aria-label="Search courses"
+            placeholder={searchPlaceholder}
+            aria-label={searchAriaLabel}
             className="input-field pl-10 pr-16 text-sm w-full bg-gray-50/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 focus:bg-white dark:focus:bg-gray-900 transition-all"
           />
           <kbd
-            className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600"
             aria-hidden="true"
           >
             Ctrl+K
@@ -232,8 +245,8 @@ const Header = memo(() => {
                   ref={mobileSearchInputRef}
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  placeholder="Search courses..."
-                  aria-label="Search courses"
+                  placeholder={searchPlaceholder}
+                  aria-label={searchAriaLabel}
                   className="input-field pl-10 text-sm w-full"
                 />
               </div>
@@ -260,7 +273,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setMobileSearchOpen(true)}
-          className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="lg:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Open search"
         >
           <Search className="w-5 h-5" />
@@ -319,6 +332,37 @@ const Header = memo(() => {
 
         {/* Notification Bell */}
         {isAuthenticated && <NotificationBell />}
+
+        {/* Shopping Cart */}
+        {isAuthenticated && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/cart')}
+            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center relative"
+            aria-label="View shopping cart"
+          >
+            <ShoppingBag className="w-5 h-5" />
+          </motion.button>
+        )}
+
+        {/* Unauthenticated CTAs */}
+        {!isAuthenticated && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-3.5 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl transition-colors"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => navigate('/auth?mode=signup')}
+              className="hidden sm:inline-flex px-4 py-1.5 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-md shadow-primary-500/20 transition-all duration-200"
+            >
+              Get Started
+            </button>
+          </div>
+        )}
 
         {/* User Menu Dropdown */}
         {isAuthenticated && (
@@ -380,6 +424,17 @@ const Header = memo(() => {
                   >
                     <Bookmark className="w-4 h-4 text-gray-400" />
                     <span>Bookmarks</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/cart')
+                      setUserMenuOpen(false)
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-3 transition-colors text-gray-700 dark:text-gray-300"
+                    role="menuitem"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-gray-400" />
+                    <span>Shopping Cart</span>
                   </button>
                   <button
                     onClick={() => {

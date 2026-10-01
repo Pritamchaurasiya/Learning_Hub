@@ -51,6 +51,7 @@ import {
   startTest,
   submitTest,
   getTestAttempts,
+  autosaveTest,
 } from '../../src/controllers/testsController'
 
 // ─── App factory ──────────────────────────────────────────────────────────────
@@ -66,6 +67,7 @@ function makeApp(userId = 'user-123') {
   r.get('/tests/attempts', getTestAttempts) // static BEFORE /:id
   r.get('/tests/:id', getTestDetails)
   r.post('/tests/:id/start', startTest)
+  r.post('/tests/:id/autosave', autosaveTest)
   r.post('/tests/:id/submit', submitTest)
   app.use('/api', r)
   return app
@@ -160,7 +162,7 @@ describe('POST /tests/:id/start', () => {
 
   it('resumes in-progress attempt → 200', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
-    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValueOnce({
       id: 'existing',
       attemptNumber: 1,
       completedAt: null,
@@ -194,15 +196,19 @@ describe('POST /tests/:id/start', () => {
   it('retries on unique constraint violation (attemptNumber race condition)', async () => {
     ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(TEST)
     ;(prisma.testResult.findFirst as jest.Mock)
-      .mockResolvedValueOnce(null) // no in-progress
-      .mockResolvedValueOnce(null) // no previous attempts
-      .mockResolvedValueOnce(null) // no concurrent attempt inside transaction
+      .mockResolvedValueOnce(null) // pre-check in-progress
+      .mockResolvedValueOnce(null) // pre-check maxAttempt
+      .mockResolvedValueOnce(null) // tx attempt 1: concurrent in-progress
+      .mockResolvedValueOnce(null) // tx attempt 1: latestAttempt (attemptNumber = 1)
+      .mockResolvedValueOnce(null) // tx attempt 2: concurrent in-progress
+      .mockResolvedValueOnce({ attemptNumber: 1 }) // tx attempt 2: latestAttempt found attempt #1 -> next is #2!
 
     // First create fails with P2002, second succeeds
     const prismaError = new Error('P2002: Unique constraint violation') as any
     prismaError.code = 'P2002'
 
-    const createMock = jest.fn()
+    const createMock = jest
+      .fn()
       .mockRejectedValueOnce(prismaError)
       .mockResolvedValueOnce({ id: 'a1', attemptNumber: 1 })
 
@@ -351,6 +357,230 @@ describe('POST /tests/:id/submit', () => {
       .send({ answers: { q1: 'a' }, timeTaken: 0, attempt_id: 'a1' })
     if (res.status === 500) console.error('TEXT:', res.text)
     expect(res.status).toBe(404)
+  })
+
+  it('enforces server-side timer: marks TIMEOUT when over time limit', async () => {
+    // 60-minute test (timeLimit: 60)
+    const test60min = { ...TEST, timeLimit: 60 }
+    ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(test60min)
+    // Started 65 minutes ago — over time limit
+    const startedAt = new Date(Date.now() - 65 * 60 * 1000)
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+      id: 'a1',
+      status: 'IN_PROGRESS',
+      startedAt,
+      attemptNumber: 1,
+    })
+    const mockUpdate = jest.fn().mockResolvedValue({
+      id: 'a1',
+      status: 'TIMEOUT',
+      score: 5,
+      totalPoints: 10,
+      percentage: 50,
+      passed: false,
+      timeTaken: 65 * 60, // 65 minutes
+      attemptNumber: 1,
+      questionResults: '[]',
+    })
+    mockTx({
+      findFirst: jest.fn().mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', startedAt }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'a1',
+        status: 'IN_PROGRESS',
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        passed: false,
+        timeTaken: 0,
+        attemptNumber: 1,
+        startedAt,
+      }),
+      update: mockUpdate,
+    })
+
+    // Cheater claims they took only 30 seconds (lie!)
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/submit')
+      .send({ answers: { q1: 'o2' }, timeTaken: 30, attempt_id: 'a1' })
+    if (res.status === 500) console.error('TEXT:', res.text)
+
+    // Server should have computed actual time (65 min) and marked TIMEOUT
+    expect(res.status).toBe(200)
+    expect(res.body.data.status).toBe('TIMEOUT')
+    expect(res.body.data.server_time_validated).toBe(true)
+    // Server time wins over client lie
+    expect(res.body.data.time_taken).toBeGreaterThanOrEqual(60 * 60)
+  })
+
+  it('anti-cheat: server time wins over client-supplied time', async () => {
+    const test60min = { ...TEST, timeLimit: 60 }
+    ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(test60min)
+    // Started 10 minutes ago
+    const startedAt = new Date(Date.now() - 10 * 60 * 1000)
+    ;(prisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+      id: 'a1',
+      status: 'IN_PROGRESS',
+      startedAt,
+      attemptNumber: 1,
+    })
+    const mockUpdate = jest.fn().mockResolvedValue({
+      id: 'a1',
+      status: 'COMPLETED',
+      score: 8,
+      totalPoints: 10,
+      percentage: 80,
+      passed: true,
+      timeTaken: 10 * 60,
+      attemptNumber: 1,
+      questionResults: '[]',
+    })
+    mockTx({
+      findFirst: jest.fn().mockResolvedValue({ id: 'a1', status: 'IN_PROGRESS', startedAt }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'a1',
+        status: 'IN_PROGRESS',
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        passed: false,
+        timeTaken: 0,
+        attemptNumber: 1,
+        startedAt,
+      }),
+      update: mockUpdate,
+    })
+
+    // Client lies: claims 60 seconds
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/submit')
+      .send({ answers: { q1: 'o2' }, timeTaken: 60, attempt_id: 'a1' })
+    if (res.status === 500) console.error('TEXT:', res.text)
+
+    // Server should use the actual time (10 min), not client's claim
+    expect(res.status).toBe(201)
+    expect(res.body.data.time_taken).toBeGreaterThanOrEqual(10 * 60)
+    expect(res.body.data.server_time_validated).toBe(true)
+  })
+})
+
+// ─── POST /tests/:id/autosave ─────────────────────────────────────────────────
+describe('POST /tests/:id/autosave', () => {
+  function mockTx(overrides: { findFirst?: jest.Mock; upsert?: jest.Mock } = {}) {
+    ;(prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => {
+      const tx = {
+        testResult: {
+          findFirst:
+            overrides.findFirst ?? jest.fn().mockResolvedValue({ id: 'attempt-1' }),
+        },
+        testAttemptAnswer: {
+          upsert: overrides.upsert ?? jest.fn().mockResolvedValue({}),
+        },
+      }
+      return cb(tx)
+    })
+  }
+
+  it('returns canonical contract: saved: true and saved_count', async () => {
+    mockTx()
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/autosave')
+      .send({
+        answers: { 'q-1': 'opt-a', 'q-2': 'opt-b' },
+        attempt_id: 'attempt-1',
+      })
+
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('success')
+    expect(res.body.data).toEqual(
+      expect.objectContaining({
+        saved: true,
+        saved_count: 2,
+        attempt_id: 'attempt-1',
+      })
+    )
+  })
+
+  it('handles multiple answer types (string and array)', async () => {
+    const upsertMock = jest.fn().mockResolvedValue({})
+    mockTx({ upsert: upsertMock })
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/autosave')
+      .send({
+        answers: {
+          'q-1': 'opt-a',
+          'q-2': ['opt-a', 'opt-b'], // multi-select
+          'q-3': 'free text answer', // text answer
+        },
+        attempt_id: 'attempt-1',
+      })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.saved_count).toBe(3)
+    // Verify upsert was called 3 times sequentially
+    expect(upsertMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('skips overwriting answers for questions in locked sections', async () => {
+    const upsertMock = jest.fn().mockResolvedValue({})
+    ;(prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => {
+      const tx = {
+        testResult: {
+          findFirst: jest.fn().mockResolvedValue({ id: 'attempt-1' }),
+        },
+        question: {
+          findMany: jest.fn().mockResolvedValue([{ id: 'q-locked' }]),
+        },
+        testAttemptAnswer: {
+          upsert: upsertMock,
+        },
+      }
+      return cb(tx)
+    })
+
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/autosave')
+      .send({
+        answers: {
+          'q-locked': 'new-tampered-answer',
+          'q-active': 'active-valid-answer',
+        },
+        attempt_id: 'attempt-1',
+        locked_section_ids: ['sec-locked'],
+      })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.saved_count).toBe(1)
+    expect(upsertMock).toHaveBeenCalledTimes(1)
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ questionId: 'q-active' }),
+      })
+    )
+  })
+
+  it('returns 404 when no active attempt', async () => {
+    ;(prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => {
+      const tx = {
+        testResult: {
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
+        testAttemptAnswer: { upsert: jest.fn() },
+      }
+      return cb(tx)
+    })
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/autosave')
+      .send({ answers: { 'q-1': 'opt-a' } })
+
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 when answers missing', async () => {
+    const res = await request(makeApp())
+      .post('/api/tests/test-1/autosave')
+      .send({ attempt_id: 'attempt-1' })
+
+    expect(res.status).toBe(400)
   })
 })
 

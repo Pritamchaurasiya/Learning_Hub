@@ -90,12 +90,22 @@ class CourseService {
 
         if (response.success && response.data != null) {
           final payload = response.data!;
-          final data = payload.containsKey('data')
-              ? payload['data'] as Map<String, dynamic>
-              : payload;
+          List rawCourses = [];
 
-          final courses = (data['courses'] as List)
-              .map((e) => Course.fromJson(e as Map<String, dynamic>))
+          if (payload['data'] is List) {
+            rawCourses = payload['data'] as List;
+          } else if (payload['data'] is Map<String, dynamic>) {
+            final dataMap = payload['data'] as Map<String, dynamic>;
+            rawCourses = (dataMap['courses'] ?? dataMap['results'] ?? []) as List;
+          } else if (payload['courses'] is List) {
+            rawCourses = payload['courses'] as List;
+          } else if (payload['results'] is List) {
+            rawCourses = payload['results'] as List;
+          }
+
+          final courses = rawCourses
+              .whereType<Map<String, dynamic>>()
+              .map((e) => Course.fromJson(e))
               .toList();
           return courses;
         }

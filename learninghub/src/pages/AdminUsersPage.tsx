@@ -88,8 +88,8 @@ export default function AdminUsersPage() {
 
   return (
     <AnimatedPage>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="space-y-8 pb-12">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-3">

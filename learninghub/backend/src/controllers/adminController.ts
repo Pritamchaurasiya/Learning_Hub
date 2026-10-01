@@ -108,6 +108,36 @@ export const getUsers = asyncHandler(async (req: Request, res: Response): Promis
 })
 
 /**
+ * Get user by id for admin inspection
+ */
+export const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.params.id as string
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      role: true,
+      avatar: true,
+      xp: true,
+      level: true,
+      streak: true,
+      longestStreak: true,
+      lastActive: true,
+      lastLoginAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
+  if (!user) {
+    sendNotFound(res, 'User not found')
+    return
+  }
+  sendSuccess(res, user)
+})
+
+/**
  * Update user role (admin action with audit)
  */
 export const updateUserRole = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -118,6 +148,16 @@ export const updateUserRole = asyncHandler(async (req: Request, res: Response): 
   const uppercaseRole = typeof role === 'string' ? role.toUpperCase() : ''
   if (!['STUDENT', 'INSTRUCTOR', 'ADMIN', 'SUPERADMIN'].includes(uppercaseRole)) {
     sendValidationError(res, 'Invalid role')
+    return
+  }
+
+  if (id === adminId) {
+    sendValidationError(res, 'Cannot change your own role')
+    return
+  }
+
+  if (uppercaseRole === 'SUPERADMIN' && req.user?.role !== 'SUPERADMIN') {
+    sendForbidden(res, 'Only superadmins can assign the SUPERADMIN role')
     return
   }
 

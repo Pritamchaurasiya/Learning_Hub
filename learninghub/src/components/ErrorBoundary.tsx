@@ -8,6 +8,7 @@ import { Card } from './ui/Card'
 // MONITORING INTEGRATION
 // ============================================
 // In production, this would send to Sentry/DataDog/NewRelic
+// Sentry is initialized in main.tsx
 
 export const reportError = (
   error: Error,
@@ -15,11 +16,19 @@ export const reportError = (
   context?: Record<string, any>
 ) => {
   if (import.meta.env.PROD) {
-    Sentry.withScope(scope => {
-      scope.setExtras(context || {})
-      scope.setTag('errorId', context?.errorId)
-      Sentry.captureException(error)
-    })
+    // Sentry is initialized in main.tsx if VITE_SENTRY_DSN is set
+    try {
+      Sentry.withScope(scope => {
+        scope.setExtras(context || {})
+        scope.setTag('errorId', context?.errorId)
+        Sentry.captureException(error)
+      })
+    } catch {
+      // Sentry not initialized or failed, silently continue
+      if (import.meta.env.DEV) {
+        console.warn('[ErrorBoundary] Sentry not available, error not reported:', error.message)
+      }
+    }
   }
 }
 

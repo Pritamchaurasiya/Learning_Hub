@@ -1,5 +1,6 @@
 import { prisma } from '../../prismaClient'
 import logger from '../../utils/logger'
+import { conductorClient } from '../../services/ml/ConductorClient'
 
 export interface IRTParams {
   a: number
@@ -76,7 +77,7 @@ export class AdaptiveTestEngine {
             lte: targetDifficulty + difficultyWindow,
           },
         },
-        take: 15, // Much smaller than 50 since we pre-filter by difficulty
+        take: 15,
         include: {
           options: {
             select: { id: true, text: true, isCorrect: true },
@@ -103,9 +104,29 @@ export class AdaptiveTestEngine {
 
       if (candidateQuestions.length === 0) return null
 
-      // Sort by Fisher Information in JS (now on much smaller set)
-      const sorted = this.sortQuestionsByInformation<any>(candidateQuestions, theta)
-      const bestQuestion = sorted[0]
+      // Try Conductor ML 3PL adaptive calibration first
+      const mlAdaptive = await conductorClient.calibrateAdaptiveTest({
+        currentTheta: theta,
+        responses: [],
+        availablePool: candidateQuestions.map(q => ({
+          id: q.id,
+          difficulty: this.mapDifficultyToIRT(q.difficulty ?? 0.5),
+          discrimination: 1.2,
+          guessing: 0.25,
+        })),
+      })
+
+      let bestQuestion = candidateQuestions[0]
+      if (mlAdaptive?.next_question_id) {
+        const matched = candidateQuestions.find(q => q.id === mlAdaptive.next_question_id)
+        if (matched) {
+          bestQuestion = matched
+        }
+      } else {
+        // Fallback to local Fisher Information calculation
+        const sorted = this.sortQuestionsByInformation<any>(candidateQuestions, theta)
+        bestQuestion = sorted[0]
+      }
 
       return {
         id: bestQuestion.id,

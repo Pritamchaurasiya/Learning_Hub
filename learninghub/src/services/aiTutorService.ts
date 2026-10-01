@@ -3,7 +3,7 @@
  * Calls the real backend AI endpoints (Gemini-powered).
  * Falls back gracefully when the backend is unavailable.
  */
-import { fetchApi } from '../utils/api'
+import { fetchApi, getAccessToken, getCsrfToken, getSessionId } from '../utils/api'
 
 export interface AIChatMessage {
   id: string
@@ -220,6 +220,7 @@ export const aiTutorService = {
         body: JSON.stringify({
           message: data.message,
           context: data.context,
+          session_id: data.session_id,
         }),
       })
 
@@ -267,6 +268,97 @@ export const aiTutorService = {
           updatedAt: '',
         },
       },
+    }
+  },
+
+  sendMessageStream: async (
+    data: ChatRequest,
+    onChunk: (chunk: string) => void,
+    onDone?: (fullText: string) => void,
+    onError?: (err: Error) => void,
+    signal?: AbortSignal
+  ): Promise<string> => {
+    const apiUrl = import.meta.env.VITE_API_URL || '/api/v1'
+    let accumulatedText = ''
+
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      const token = await getAccessToken()
+      if (token) headers['Authorization'] = `Bearer ${token}`
+
+      const csrfToken = getCsrfToken()
+      if (csrfToken) headers['X-CSRF-Token'] = csrfToken
+
+      const sessionId = getSessionId()
+      if (sessionId) headers['X-Session-ID'] = sessionId
+
+      const response = await fetch(`${apiUrl}/ai/tutor/stream`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          message: data.message,
+          session_id: data.session_id,
+          context: data.context,
+        }),
+        credentials: 'include',
+        signal,
+      })
+
+      if (!response.ok || !response.body) {
+        throw new Error(`Streaming failed with status ${response.status}`)
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        let eventEndIndex: number
+        while ((eventEndIndex = buffer.indexOf('\n\n')) >= 0) {
+          const event = buffer.substring(0, eventEndIndex)
+          buffer = buffer.substring(eventEndIndex + 2)
+
+          const lines = event.split('\n')
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.replace('data: ', '').trim()
+              if (dataStr === '[DONE]') break
+
+              try {
+                const parsed = JSON.parse(dataStr)
+                if (parsed.text) {
+                  accumulatedText += parsed.text
+                  onChunk(parsed.text)
+                }
+                if (parsed.error) {
+                  throw new Error(parsed.error)
+                }
+              } catch (parseError) {
+                if (
+                  parseError instanceof Error &&
+                  parseError.message !== 'Unexpected end of JSON input'
+                ) {
+                  // Ignore JSON chunk boundary errors
+                }
+              }
+            }
+          }
+        }
+      }
+
+      onDone?.(accumulatedText)
+      return accumulatedText
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      if (onError) onError(error)
+      throw error
     }
   },
 

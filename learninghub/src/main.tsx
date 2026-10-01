@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000,
-      retry: 3,
+      retry: 3, // React Query layer retry (separate from api fetch layer RETRY_CONFIG MAX_RETRIES=1) — intentional double-retry separation
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,

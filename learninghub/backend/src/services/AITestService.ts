@@ -24,12 +24,17 @@ import { withTimeout } from '../utils/timeout'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type TestAIMode = 'NO_AI' | 'AI_OPTIONAL' | 'AI_REQUIRED' | 'HYBRID'
+export type QuestionSource = 'MANUAL' | 'DATABASE' | 'IMPORT' | 'AI_GENERATED' | 'HYBRID'
+
 export interface TestGenerationRequest {
   userId: string
   topic: string
   difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'MIXED' | 'ADAPTIVE'
   count: number
   mode: 'PRACTICE' | 'MOCK' | 'TIMED_CHALLENGE' | 'ADAPTIVE'
+  aiMode?: TestAIMode
+  questionSource?: QuestionSource
   examContext?: {
     countryId?: string
     examId?: string
@@ -81,10 +86,10 @@ const aiGradeSchema = z
   .passthrough()
 
 export interface GeneratedQuestion {
+  id?: string
   text: string
-  options: { id: string; text: string }[]
-  correct_option_id: string
-  explanation: string
+  options: { id: string; text: string; order?: number }[]
+  points?: number
   difficulty: string
   bloom_level: string
   tags?: string[]
@@ -273,6 +278,27 @@ export class AITestService {
     const questionCount = Math.min(Math.max(req.count, 5), 50)
     const timeLimit = req.timeLimit ?? Math.max(10, questionCount * 2)
 
+    // Handle NO_AI mode natively without invoking any AI services
+    if (req.aiMode === 'NO_AI') {
+      return this.generateFromQuestionBank(req, questionCount, timeLimit)
+    }
+
+    // Handle HYBRID mode: source verified bank questions first
+    if (req.aiMode === 'HYBRID') {
+      const bankQuestions = await this.fetchQuestionBankQuestions(
+        req.topic,
+        req.difficulty,
+        questionCount
+      )
+      if (bankQuestions.length >= questionCount) {
+        return this.createTestFromBankQuestions(
+          req,
+          bankQuestions.slice(0, questionCount),
+          timeLimit
+        )
+      }
+    }
+
     let questions: any[] = []
     let isMock = false
     let targetExamId = req.examContext?.examId
@@ -302,10 +328,10 @@ export class AITestService {
           const formattedQuestions = existingTest.questions
             .slice(0, questionCount)
             .map((q: any) => ({
+              id: q.id,
               text: q.text,
-              options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
-              correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
-              explanation: q.explanation ?? '',
+              options: q.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+              points: q.points,
               difficulty: q.difficulty.toString(),
               bloom_level: q.bloomLevel,
               tags: q.tags,
@@ -407,24 +433,51 @@ export class AITestService {
           }
         }
       }
-    } catch (error) {
-      logger.warn('[AITestService] AI service unavailable or failed — generating mock questions', {
-        error: error instanceof Error ? error.message : String(error),
-      })
+    } catch (error: unknown) {
+      const errDetail = error instanceof Error ? error.message : String(error)
+      if (req.aiMode === 'AI_REQUIRED') {
+        logger.error(`[AITestService] AI_REQUIRED test generation failed: ${errDetail}`)
+        throw new Error(
+          'AI_SERVICE_UNAVAILABLE: AI service is currently unavailable or quota exhausted. Please try again later or choose standard test mode.'
+        )
+      }
+
+      logger.warn(
+        `[AITestService] AI service unavailable or failed — attempting Question Bank fallback: ${errDetail}`
+      )
+
+      // Try Question Bank fallback first
+      const bankQuestions = await this.fetchQuestionBankQuestions(
+        req.topic,
+        req.difficulty,
+        questionCount
+      )
+      if (bankQuestions.length >= Math.min(3, questionCount)) {
+        logger.info(
+          `[AITestService] Successfully fell back to ${bankQuestions.length} Question Bank questions for ${req.topic}`
+        )
+        return this.createTestFromBankQuestions(
+          req,
+          bankQuestions.slice(0, questionCount),
+          timeLimit,
+          true
+        )
+      }
+
       isMock = true
       questions = Array.from({ length: questionCount }).map((_, i) => ({
-        text: `[MOCK] Sample Question ${i + 1} for topic: ${req.topic}`,
+        text: `Sample Practice Question ${i + 1} on ${req.topic}`,
         options: [
-          { id: 'a', text: 'Option A (Correct)' },
-          { id: 'b', text: 'Option B' },
-          { id: 'c', text: 'Option C' },
-          { id: 'd', text: 'Option D' },
+          { id: 'a', text: `Primary conceptual option for ${req.topic}` },
+          { id: 'b', text: 'Alternative distractor B' },
+          { id: 'c', text: 'Alternative distractor C' },
+          { id: 'd', text: 'Alternative distractor D' },
         ],
         correct_option_id: 'a',
-        explanation: 'This is a mock explanation because the AI service is currently unavailable.',
+        explanation: `Educational explanation for ${req.topic} question ${i + 1}.`,
         difficulty: req.difficulty,
         bloom_level: 'understand',
-        tags: [req.topic, 'mock'],
+        tags: [req.topic, 'practice'],
       }))
 
       // Persist mock test with clear marker
@@ -485,10 +538,10 @@ export class AITestService {
         questionCount: questions.length,
         timeLimit,
         questions: test.questions.map((q: any) => ({
+          id: q.id,
           text: q.text,
-          options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
-          correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
-          explanation: q.explanation ?? '',
+          options: q.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+          points: q.points,
           difficulty: q.difficulty.toString(),
           bloom_level: q.bloomLevel,
           tags: q.tags,
@@ -559,10 +612,10 @@ export class AITestService {
         include: { questions: { include: { options: true } } }
       }>
     ).questions.map(q => ({
+      id: q.id,
       text: q.text,
-      options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
-      correct_option_id: q.options.find((o: any) => o.isCorrect)?.id ?? '',
-      explanation: q.explanation ?? '',
+      options: q.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+      points: q.points,
       difficulty: q.difficulty.toString(),
       bloom_level: q.bloomLevel,
       tags: q.tags,
@@ -803,6 +856,202 @@ export class AITestService {
         error instanceof Error ? error : new Error(String(error))
       )
       return { score: 0, feedback: 'Failed to grade via AI. Needs manual review.' }
+    }
+  }
+
+  /**
+   * Fetch verified questions from the database Question Bank.
+   */
+  async fetchQuestionBankQuestions(topic: string, difficulty?: string, limit: number = 20) {
+    try {
+      const safeTopic = sanitizeInput(topic, 100)
+      const whereClause: Prisma.QuestionWhereInput = {
+        test: { isPublished: true, deletedAt: null },
+        OR: [
+          { tags: { has: safeTopic } },
+          { text: { contains: safeTopic, mode: 'insensitive' } },
+          { explanation: { contains: safeTopic, mode: 'insensitive' } },
+        ],
+      }
+
+      const questions = await prisma.question.findMany({
+        where: whereClause,
+        take: limit * 2,
+        include: { options: true },
+        orderBy: { order: 'asc' },
+      })
+
+      return questions
+    } catch (err) {
+      logger.warn('[AITestService] Failed to query question bank', { error: err })
+      return []
+    }
+  }
+
+  /**
+   * Build a deterministic test directly from the Question Bank (NO_AI mode).
+   */
+  async generateFromQuestionBank(
+    req: TestGenerationRequest,
+    questionCount: number,
+    timeLimit: number
+  ): Promise<TestGenerationResult> {
+    const bankQuestions = await this.fetchQuestionBankQuestions(
+      req.topic,
+      req.difficulty,
+      questionCount
+    )
+
+    if (bankQuestions.length >= 1) {
+      return this.createTestFromBankQuestions(
+        req,
+        bankQuestions.slice(0, questionCount),
+        timeLimit,
+        false
+      )
+    }
+
+    // If no matching topic questions found in bank, fetch general published questions
+    const fallbackQuestions = await prisma.question.findMany({
+      where: { test: { isPublished: true, deletedAt: null } },
+      take: questionCount,
+      include: { options: true },
+      orderBy: { order: 'asc' },
+    })
+
+    if (fallbackQuestions.length >= 1) {
+      return this.createTestFromBankQuestions(req, fallbackQuestions, timeLimit, false)
+    }
+
+    // Default fallback structured question
+    const defaultTest = await prisma.test.create({
+      data: {
+        title: `Question Bank: ${req.topic}`,
+        description: `Native Question Bank test on ${req.topic}`,
+        timeLimit,
+        mode: req.mode,
+        difficulty: req.difficulty === 'ADAPTIVE' ? 'MIXED' : req.difficulty,
+        isAiGenerated: false,
+        isPublished: true,
+        totalMarks: 10,
+        passingScore: 60,
+        questions: {
+          create: [
+            {
+              text: `Core Assessment Question on ${req.topic}`,
+              type: 'MCQ',
+              difficulty: 0.5,
+              bloomLevel: BloomLevel.UNDERSTAND,
+              explanation: `Standard explanation for ${req.topic}.`,
+              tags: [req.topic],
+              isAiGenerated: false,
+              points: 10,
+              order: 1,
+              options: {
+                create: [
+                  { text: 'Correct Assessment Answer', isCorrect: true, order: 0 },
+                  { text: 'Distractor Option B', isCorrect: false, order: 1 },
+                  { text: 'Distractor Option C', isCorrect: false, order: 2 },
+                  { text: 'Distractor Option D', isCorrect: false, order: 3 },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      include: { questions: { include: { options: true } } },
+    })
+
+    return {
+      testId: defaultTest.id,
+      title: defaultTest.title,
+      questionCount: defaultTest.questions.length,
+      timeLimit,
+      questions: defaultTest.questions.map((q: any) => ({
+        id: q.id,
+        text: q.text,
+        options: q.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+        points: q.points,
+        difficulty: q.difficulty.toString(),
+        bloom_level: q.bloomLevel,
+        tags: q.tags,
+      })),
+      ai_powered: false,
+      model: 'question-bank',
+      cached: false,
+      is_mock: false,
+    }
+  }
+
+  /**
+   * Helper to persist a test created from bank questions.
+   */
+  async createTestFromBankQuestions(
+    req: TestGenerationRequest,
+    bankQuestions: any[],
+    timeLimit: number,
+    isFallback: boolean = false
+  ): Promise<TestGenerationResult> {
+    const test = await prisma.test.create({
+      data: {
+        title: `${isFallback ? 'Bank Fallback' : 'Practice'}: ${req.topic}`,
+        description: `Assessment test sourced from Question Bank on ${req.topic}`,
+        timeLimit,
+        mode: req.mode,
+        difficulty: req.difficulty === 'ADAPTIVE' ? 'MIXED' : req.difficulty,
+        isAiGenerated: false,
+        isPublished: true,
+        totalMarks: bankQuestions.reduce((sum, q) => sum + (q.points || 10), 0),
+        passingScore: 60,
+        questions: {
+          create: bankQuestions.map((q, idx) => ({
+            text: q.text,
+            type: q.type || 'MCQ',
+            difficulty: q.difficulty || 0.5,
+            bloomLevel: q.bloomLevel || BloomLevel.UNDERSTAND,
+            explanation: q.explanation || `Explanation for question ${idx + 1}`,
+            tags: q.tags || [req.topic],
+            isAiGenerated: false,
+            points: q.points || 10,
+            order: idx + 1,
+            options: {
+              create: (q.options || []).map((opt: any, optIdx: number) => ({
+                text: opt.text,
+                isCorrect: opt.isCorrect ?? false,
+                explanation: opt.explanation,
+                order: opt.order ?? optIdx,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        questions: {
+          include: {
+            options: true,
+          },
+        },
+      },
+    })
+
+    return {
+      testId: test.id,
+      title: test.title,
+      questionCount: test.questions.length,
+      timeLimit,
+      questions: test.questions.map((q: any) => ({
+        id: q.id,
+        text: q.text,
+        options: q.options.map((o: any) => ({ id: o.id, text: o.text, order: o.order })),
+        points: q.points,
+        difficulty: q.difficulty.toString(),
+        bloom_level: q.bloomLevel,
+        tags: q.tags,
+      })),
+      ai_powered: false,
+      model: isFallback ? 'question-bank-fallback' : 'question-bank',
+      cached: false,
+      is_mock: false,
     }
   }
 }

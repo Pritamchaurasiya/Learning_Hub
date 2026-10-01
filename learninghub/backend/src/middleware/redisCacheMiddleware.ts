@@ -30,12 +30,13 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
 
     try {
       // Try Redis first
-      const cached = await cacheService.get<string>(key)
+      const cached = await cacheService.get<any>(key)
       if (cached) {
         if (process.env.NODE_ENV !== 'test') {
           logger.info(`[RedisCache] HIT for ${key}`)
         }
-        res.json(JSON.parse(cached))
+        const data = typeof cached === 'string' ? JSON.parse(cached) : cached
+        res.json(data)
         return
       }
 
@@ -48,7 +49,7 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       res.json = (body: unknown) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
-            cacheService.set(key, JSON.stringify(body), durationInSeconds).catch(() => {
+            cacheService.set(key, body, durationInSeconds).catch(() => {
               fallbackCache.set(key, body, durationInSeconds)
             })
           } catch {

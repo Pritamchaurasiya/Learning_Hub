@@ -31,7 +31,7 @@ export default function LeaderboardPage() {
 
   // Use Tanstack Query for Leaderboard
   const {
-    data: leaderboardData = [],
+    data: rawData = [],
     isLoading,
     isFetching,
     error,
@@ -45,6 +45,8 @@ export default function LeaderboardPage() {
     staleTime: 60 * 1000,
     retry: 2,
   })
+
+  const leaderboardData: LeaderboardEntry[] = Array.isArray(rawData) ? rawData : []
 
   const rowVirtualizer = useVirtualizer({
     count: leaderboardData.length > 3 ? leaderboardData.length - 3 : 0,
@@ -201,28 +203,43 @@ export default function LeaderboardPage() {
         </div>
       ) : (
         <>
-          {/* Top 3 Podium */}
-          {leaderboardData.length >= 3 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              {/* Podium rendering order: 2, 1, 3 for visual effect */}
-              {[1, 0, 2].map(idx => {
-                // eslint-disable-next-line security/detect-object-injection
+          {/* Top Podium (up to 3 users) */}
+          {leaderboardData.length > 0 ? (
+            <div
+              className={`grid gap-6 items-end ${
+                leaderboardData.length === 1
+                  ? 'grid-cols-1 max-w-md mx-auto'
+                  : leaderboardData.length === 2
+                    ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto'
+                    : 'grid-cols-1 md:grid-cols-3'
+              }`}
+            >
+              {/* Podium rendering: for 3+ users show 2nd, 1st, 3rd. For 1 or 2 users show in rank order */}
+              {(leaderboardData.length >= 3
+                ? [1, 0, 2]
+                : leaderboardData.slice(0, 2).map((_, i) => i)
+              ).map(idx => {
                 const entry = leaderboardData[idx]
                 if (!entry) return null
                 const rank = idx + 1
 
-                // Mobile order: 1st place top, 2nd, 3rd. Desktop order: 2nd, 1st (center), 3rd.
                 const mobileOrder = rank === 1 ? 'order-1' : rank === 2 ? 'order-2' : 'order-3'
                 const desktopOrder =
-                  rank === 1 ? 'md:order-2' : rank === 2 ? 'md:order-1' : 'md:order-3'
+                  leaderboardData.length >= 3
+                    ? rank === 1
+                      ? 'md:order-2'
+                      : rank === 2
+                        ? 'md:order-1'
+                        : 'md:order-3'
+                    : ''
 
                 return (
                   <motion.div
-                    key={entry.rank}
+                    key={entry.rank || idx}
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className={`${mobileOrder} ${desktopOrder} ${rank === 1 ? 'md:-mt-8 md:z-10' : ''}`}
+                    className={`${mobileOrder} ${desktopOrder} ${rank === 1 && leaderboardData.length >= 3 ? 'md:-mt-8 md:z-10' : ''}`}
                   >
                     <Card
                       className={`p-6 md:p-8 text-center rounded-[2.5rem] ${getRankColor(rank)} border-2 shadow-xl hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group`}
@@ -244,15 +261,15 @@ export default function LeaderboardPage() {
                               : 'bg-gradient-to-br from-amber-600 to-amber-800'
                         }`}
                       >
-                        {(entry.display_name || entry.username).charAt(0).toUpperCase()}
+                        {(entry.display_name || entry.username || 'U').charAt(0).toUpperCase()}
                       </div>
 
                       <h3 className="font-black text-gray-900 dark:text-white mb-2 text-xl truncate relative z-10">
-                        {entry.display_name || entry.username}
+                        {entry.display_name || entry.username || 'Anonymous Learner'}
                       </h3>
 
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4 relative z-10">
-                        Level {entry.level}
+                        Level {entry.level || 1}
                       </p>
 
                       <div className="inline-flex items-center justify-center gap-2 bg-white/50 dark:bg-black/20 px-4 py-2 rounded-xl backdrop-blur-sm relative z-10">
@@ -260,7 +277,7 @@ export default function LeaderboardPage() {
                           className={`w-5 h-5 fill-current ${rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-500' : 'text-amber-500'}`}
                         />
                         <span className="font-black tabular-nums text-lg tracking-tight">
-                          {entry.xp.toLocaleString()} XP
+                          {(entry.xp || 0).toLocaleString()} XP
                         </span>
                       </div>
                     </Card>
@@ -268,7 +285,7 @@ export default function LeaderboardPage() {
                 )
               })}
             </div>
-          ) : leaderboardData.length === 0 ? (
+          ) : (
             <div className="text-center py-20">
               <Trophy className="w-24 h-24 text-gray-200 dark:text-gray-800 mx-auto mb-6" />
               <h3 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white mb-3">
@@ -278,7 +295,7 @@ export default function LeaderboardPage() {
                 Initialize learning protocols to establish neural ranking
               </p>
             </div>
-          ) : null}
+          )}
 
           {/* Current User Stats Bar */}
           {currentUser && (

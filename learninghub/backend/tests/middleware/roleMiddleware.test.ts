@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
-import { authorize, authorizeAdmin, authorizeInstructor, authorizeSuperAdmin } from '../../src/middleware/authMiddleware'
+import {
+  authorize,
+  authorizeAdmin,
+  authorizeInstructor,
+  authorizeSuperAdmin,
+} from '../../src/middleware/authMiddleware'
 
 jest.mock('../../src/utils/logger', () => ({
   __esModule: true,

@@ -54,6 +54,22 @@ vi.mock('@uiw/react-codemirror', () => ({
   ),
 }))
 
+vi.mock('../services/wasm/WasmSandboxService', () => ({
+  wasmSandboxService: {
+    supportsWasm: vi.fn().mockReturnValue(true),
+    execute: vi.fn().mockResolvedValue({
+      status: 'ACCEPTED',
+      passedTests: 1,
+      totalTests: 1,
+      totalExecutionTimeMs: 1,
+      peakMemoryKb: 120,
+      engine: 'QuickJS WASM',
+      overallPassed: true,
+      feedback: 'Sample test case passed!',
+    }),
+  },
+}))
+
 function renderWorkspace() {
   return render(
     <Routes>
@@ -139,7 +155,9 @@ describe('ProblemWorkspacePage Component', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Compiling and running sample tests|Run \(Sample Tests\): ACCEPTED/i)
+        screen.getByText(
+          /Compiling and running sample tests|Run \(Sample Tests\): ACCEPTED|WebAssembly Native Sandbox|WASM Sandbox Execution Complete/i
+        )
       ).toBeInTheDocument()
     })
   })

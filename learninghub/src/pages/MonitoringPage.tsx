@@ -246,7 +246,7 @@ export default function MonitoringPage() {
                     Response Time
                   </span>
                   <span className="text-3xl font-black tabular-nums tracking-tighter">
-                    {db?.response_time_ms.toFixed(1)}ms
+                    {(db?.response_time_ms ?? 0).toFixed(1)}ms
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
@@ -299,7 +299,7 @@ export default function MonitoringPage() {
                     Hit Latency
                   </span>
                   <span className="text-3xl font-black tabular-nums tracking-tighter">
-                    {cache?.response_time_ms.toFixed(1)}ms
+                    {(cache?.response_time_ms ?? 0).toFixed(1)}ms
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
@@ -322,66 +322,62 @@ export default function MonitoringPage() {
             </Card>
           </div>
 
-          {/* Process Monitor */}
-          <Card className="overflow-hidden border-none shadow-xl bg-white dark:bg-gray-900 rounded-[2rem]">
-            <div className="p-6 md:p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary-50 dark:bg-primary-900/30 rounded-xl">
-                  <Terminal className="w-5 h-5 text-primary-500" />
+          {/* Background Worker Threads / Subsystems */}
+          <Card className="border-none shadow-xl bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-800/80 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-950/30 flex items-center justify-center">
+                  <Terminal className="w-6 h-6 text-primary-500" />
                 </div>
-                <h2 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                  Active System Processes
-                </h2>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-widest text-gray-900 dark:text-white">
+                    Active Processes & Microservices
+                  </h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">
+                    Subsystem Thread Pool Health
+                  </p>
+                </div>
               </div>
-              <span className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                {processes?.length ?? 0} Active
+              <span className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                {processes?.length ?? 0} Workers
               </span>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50 dark:bg-gray-800/30">
-                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      PID
-                    </th>
-                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      Process Name
-                    </th>
-                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
-                      CPU %
-                    </th>
-                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
-                      MEM %
-                    </th>
-                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
-                      Status
-                    </th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50/50 dark:bg-gray-800/20">
+                    <th className="px-8 py-4">PID</th>
+                    <th className="px-8 py-4">Process Name</th>
+                    <th className="px-8 py-4 text-right">CPU %</th>
+                    <th className="px-8 py-4 text-right">Mem %</th>
+                    <th className="px-8 py-4 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                   {processes?.map(
                     (proc: {
-                      pid: number | string
+                      pid?: number | string
                       name: string
-                      cpu_percent: number
-                      memory_percent: number
+                      cpu_percent?: number
+                      memory_percent?: number
                       status: string
-                    }) => (
+                    }, pIndex: number) => (
                       <tr
-                        key={proc.pid}
+                        key={proc.pid ?? `proc-${pIndex}-${proc.name}`}
                         className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <td className="px-8 py-5 text-xs font-black tabular-nums text-gray-400">
-                          #{proc.pid}
+                          #{proc.pid ?? pIndex + 1}
                         </td>
                         <td className="px-8 py-5 text-xs font-black text-gray-900 dark:text-gray-200 uppercase tracking-tight">
                           {proc.name}
                         </td>
                         <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-primary-500">
-                          {proc.cpu_percent.toFixed(1)}%
+                          {Number(proc.cpu_percent ?? 0).toFixed(1)}%
                         </td>
                         <td className="px-8 py-5 text-xs font-black text-right tabular-nums text-purple-500">
-                          {proc.memory_percent.toFixed(1)}%
+                          {Number(proc.memory_percent ?? 0).toFixed(1)}%
                         </td>
                         <td className="px-8 py-5 text-center">
                           <span className="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-sm">
@@ -481,15 +477,15 @@ export default function MonitoringPage() {
             <div className="flex items-center justify-between mb-8 bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
               <div className="flex flex-col">
                 <span className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">
-                  {health?.components.ai_engine.status ?? 'Standby'}
+                  {health?.components?.ai_engine?.status ?? 'Standby'}
                 </span>
                 <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest mt-1">
-                  {health?.components.ai_engine.provider}
+                  {health?.components?.ai_engine?.provider ?? 'Neural Bridge'}
                 </span>
               </div>
               <div className="w-14 h-14">
                 <ProgressRing
-                  progress={health?.components.ai_engine.status === 'healthy' ? 100 : 45}
+                  progress={health?.components?.ai_engine?.status === 'healthy' ? 100 : 45}
                   size={56}
                   strokeWidth={5}
                   className="text-primary-500 drop-shadow-md"
@@ -533,8 +529,8 @@ export default function MonitoringPage() {
                     </span>
                   </div>
                   <p className="text-xs font-bold uppercase leading-relaxed opacity-90 pl-11">
-                    {health?.components.database.error ??
-                      health?.components.cache.error ??
+                    {health?.components?.database?.error ??
+                      health?.components?.cache?.error ??
                       'System is operating in degraded state. Latency may be affected.'}
                   </p>
                 </div>

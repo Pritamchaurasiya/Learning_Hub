@@ -62,12 +62,17 @@ export const validators = {
   }),
 }
 
-export function validate(value: unknown, rules: ValidationRule[]): ValidationResult {
+export function validate(
+  value: unknown,
+  rules: ValidationRule[],
+  fieldName?: string
+): ValidationResult {
   const errors: Record<string, string> = {}
 
   for (const rule of rules) {
     if (!rule.validate(value)) {
-      errors[Object.keys(errors).length] = rule.message
+      const key = fieldName ?? Object.keys(errors).length.toString()
+      errors[key] = rule.message
     }
   }
 
@@ -85,7 +90,7 @@ export function validateForm(
 
   for (const [field, rules] of Object.entries(schema)) {
     // eslint-disable-next-line security/detect-object-injection
-    const result = validate(data[field], rules)
+    const result = validate(data[field], rules, field)
     if (!result.isValid) {
       // eslint-disable-next-line security/detect-object-injection
       errors[field] = Object.values(result.errors)[0]

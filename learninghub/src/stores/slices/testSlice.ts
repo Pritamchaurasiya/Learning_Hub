@@ -1,59 +1,9 @@
 import { StateCreator } from 'zustand'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import { testsAService } from '../../services/testsAService'
-import type { TestQuestion, TestResult } from '../../services/testsAService'
-import type { AppState, TestMode } from '../types'
-export type { TestMode }
-
-export interface TestInfo {
-  testId: string
-  testTitle: string
-  totalQuestions: number
-  timeLimit: number
-}
-
-export interface TestAttemptState {
-  attemptId: string
-  testId: string
-  testTitle: string
-  status: 'in_progress' | 'completed' | 'abandoned' | 'expired'
-  startedAt: string
-  totalQuestions: number
-  answeredQuestions: number
-}
-
-export interface UnifiedTestState {
-  // Core test state (works for both modes)
-  mode: TestMode
-  isActive: boolean
-  isLoading: boolean
-  error: string | null
-
-  // Questions & Answers
-  currentQuestionIndex: number
-  questions: TestQuestion[]
-  answers: Record<string, string | string[]>
-  confidences: Record<string, string>
-  flaggedQuestions: string[]
-
-  // Timer
-  timeRemaining: number
-
-  // Test metadata
-  testInfo: TestInfo | null
-  attempt: TestAttemptState | null
-
-  // Results
-  results: TestResult | null
-  isSubmitting: boolean
-
-  // Autosave
-  lastAutosavedAt: string | null
-
-  // Legacy quiz compatibility (deprecated, will be removed)
-  currentAttempt: TestAttemptState | null
-  quizInfo: TestInfo | null
-}
+import type { TestQuestion, TestResult, TestSection } from '../../services/testsAService'
+import type { AppState, TestMode, TestInfo, TestAttemptState, UnifiedTestState } from '../types'
+export type { TestMode, TestInfo, TestAttemptState, UnifiedTestState, TestSection }
 
 const initialState: UnifiedTestState = {
   mode: 'tests-a',
@@ -71,6 +21,18 @@ const initialState: UnifiedTestState = {
   results: null,
   isSubmitting: false,
   lastAutosavedAt: null,
+  sections: [],
+  activeSectionId: null,
+  lockedSectionIds: [],
+  sectionTimeRemaining: {},
+  assessmentMode: 'ai',
+  adaptiveTheta: 0.0,
+  adaptiveSem: 1.0,
+  isOfflineMode: false,
+  pendingSyncCount: 0,
+  isContestMode: false,
+  proctorViolations: 0,
+  practiceFeedback: {},
   // Legacy compatibility
   currentAttempt: null,
   quizInfo: null,
@@ -92,13 +54,15 @@ export interface TestSlice {
   flagQuestion: (questionId: string) => void
   unflagQuestion: (questionId: string) => void
   navigateToQuestion: (index: number) => void
+  setActiveSection: (sectionId: string | null) => void
   updateTestTimer: (timeRemaining: number) => void
   setTestQuestions: (
     questions: TestQuestion[],
     testInfo: TestInfo,
     attemptId: string,
     initialAnswers?: Record<string, string>,
-    timeRemaining?: number
+    timeRemaining?: number,
+    sections?: TestSection[]
   ) => void
   submitTest: () => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
@@ -113,6 +77,19 @@ export interface TestSlice {
     percentage: number
     passed: boolean
   }) => void
+
+  // Assessment Mode actions
+  setAssessmentMode: (mode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice') => void
+  setAdaptiveMetrics: (theta: number, sem: number) => void
+  stepAdaptiveQuestion: (nextQuestion: TestQuestion) => void
+  recordProctorViolation: () => void
+  setPracticeFeedback: (
+    questionId: string,
+    feedback: { isCorrect: boolean; explanation: string; points: number }
+  ) => void
+  setPendingSyncCount: (count: number) => void
+  lockSection: (sectionId: string) => void
+  updateSectionTimer: (sectionId: string, timeRemaining: number) => void
 
   // Legacy compatibility methods (deprecated)
   quizStartAttempt: (
@@ -185,13 +162,20 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
 
   answerQuestion: (questionId: string, answerValue: string | string[]) => {
     set(state => {
+      const targetQ = state.test.questions.find(q => q.id === questionId)
+      const sectionId = targetQ?.section_id || targetQ?.sectionId
+      if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
+        return state
+      }
       const newAnswers = { ...state.test.answers, [questionId]: answerValue }
       // Backup answers to localStorage for crash recovery
-      try {
-        const backupKey = `lh_test_answers_${state.test.attempt?.attemptId}`
-        localStorage.setItem(backupKey, JSON.stringify(newAnswers))
-      } catch {
-        // Storage full or unavailable — non-critical
+      if (typeof window !== 'undefined') {
+        try {
+          const backupKey = `lh_test_answers_${state.test.attempt?.attemptId}`
+          localStorage.setItem(backupKey, JSON.stringify(newAnswers))
+        } catch {
+          // Storage full or unavailable — non-critical
+        }
       }
       return {
         test: {
@@ -210,41 +194,89 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
   },
 
   setConfidence: (questionId: string, confidence: string) => {
-    set(state => ({
-      test: {
-        ...state.test,
-        confidences: { ...state.test.confidences, [questionId]: confidence },
-      },
-    }))
+    set(state => {
+      const targetQ = state.test.questions.find(q => q.id === questionId)
+      const sectionId = targetQ?.section_id || targetQ?.sectionId
+      if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
+        return state
+      }
+      return {
+        test: {
+          ...state.test,
+          confidences: { ...state.test.confidences, [questionId]: confidence },
+        },
+      }
+    })
   },
 
   flagQuestion: (questionId: string) => {
-    set(state => ({
-      test: {
-        ...state.test,
-        flaggedQuestions: state.test.flaggedQuestions.includes(questionId)
-          ? state.test.flaggedQuestions
-          : [...state.test.flaggedQuestions, questionId],
-      },
-    }))
+    set(state => {
+      const targetQ = state.test.questions.find(q => q.id === questionId)
+      const sectionId = targetQ?.section_id || targetQ?.sectionId
+      if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
+        return state
+      }
+      return {
+        test: {
+          ...state.test,
+          flaggedQuestions: state.test.flaggedQuestions.includes(questionId)
+            ? state.test.flaggedQuestions
+            : [...state.test.flaggedQuestions, questionId],
+        },
+      }
+    })
   },
 
   unflagQuestion: (questionId: string) => {
-    set(state => ({
-      test: {
-        ...state.test,
-        flaggedQuestions: state.test.flaggedQuestions.filter(id => id !== questionId),
-      },
-    }))
+    set(state => {
+      const targetQ = state.test.questions.find(q => q.id === questionId)
+      const sectionId = targetQ?.section_id || targetQ?.sectionId
+      if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
+        return state
+      }
+      return {
+        test: {
+          ...state.test,
+          flaggedQuestions: state.test.flaggedQuestions.filter(id => id !== questionId),
+        },
+      }
+    })
   },
 
   navigateToQuestion: (index: number) => {
-    set(state => ({
-      test: {
-        ...state.test,
-        currentQuestionIndex: Math.max(0, Math.min(index, state.test.questions.length - 1)),
-      },
-    }))
+    set(state => {
+      const validIndex = Math.max(0, Math.min(index, state.test.questions.length - 1))
+      const targetQ = state.test.questions[validIndex]
+      const sectionId = targetQ?.section_id || targetQ?.sectionId || state.test.activeSectionId
+      return {
+        test: {
+          ...state.test,
+          currentQuestionIndex: validIndex,
+          activeSectionId: sectionId,
+        },
+      }
+    })
+  },
+
+  setActiveSection: (sectionId: string | null) => {
+    set(state => {
+      let nextIndex = state.test.currentQuestionIndex
+      if (sectionId !== null && state.test.questions.length > 0) {
+        const foundIndex = state.test.questions.findIndex(
+          q => (q.section_id || q.sectionId) === sectionId
+        )
+        if (foundIndex !== -1) {
+          nextIndex = foundIndex
+        }
+      }
+      return {
+        test: {
+          ...state.test,
+          activeSectionId: sectionId,
+          currentQuestionIndex: nextIndex,
+        },
+      }
+    })
   },
 
   updateTestTimer: (timeRemaining: number) => {
@@ -253,25 +285,51 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
     }))
   },
 
-  setTestQuestions: (questions, testInfo, attemptId, initialAnswers = {}, timeRemaining) => {
+  setTestQuestions: (
+    questions,
+    testInfo,
+    attemptId,
+    initialAnswers = {},
+    timeRemaining,
+    sections
+  ) => {
+    const resolvedSections = sections ?? testInfo.sections ?? []
+    const firstSectionId = resolvedSections.length > 0 ? resolvedSections[0].id : null
+    const initialLocked = resolvedSections
+      .filter(s => s.is_locked || s.isLocked)
+      .map(s => s.id)
+    const initialSectionTimers: Record<string, number> = {}
+    resolvedSections.forEach(s => {
+      const duration = s.duration_minutes || s.durationMinutes
+      if (s.is_timed && duration) {
+        initialSectionTimers[s.id] = duration * 60
+      }
+    })
+
     // Merge any localStorage-backed answers with server-provided answers
     let mergedAnswers = { ...initialAnswers }
-    try {
-      const backupKey = `lh_test_answers_${attemptId}`
-      const backup = localStorage.getItem(backupKey)
-      if (backup) {
-        const parsed = JSON.parse(backup) as Record<string, string>
-        // Backup wins for keys not already in server answers (server is fresher)
-        mergedAnswers = { ...parsed, ...initialAnswers }
+    if (typeof window !== 'undefined') {
+      try {
+        const backupKey = `lh_test_answers_${attemptId}`
+        const backup = localStorage.getItem(backupKey)
+        if (backup) {
+          const parsed = JSON.parse(backup) as Record<string, string>
+          // Backup wins for keys not already in server answers (server is fresher)
+          mergedAnswers = { ...parsed, ...initialAnswers }
+        }
+      } catch {
+        // Ignore parse errors
       }
-    } catch {
-      // Ignore parse errors
     }
 
     set(state => ({
       test: {
         ...state.test,
         questions,
+        sections: resolvedSections,
+        activeSectionId: firstSectionId,
+        lockedSectionIds: initialLocked,
+        sectionTimeRemaining: initialSectionTimers,
         answers: mergedAnswers,
         confidences: {},
         testInfo,
@@ -324,10 +382,12 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
       const resultData = response.data
       if (response.status === 'success' || resultData.score !== undefined) {
         // Clean up localStorage backup on successful submission
-        try {
-          localStorage.removeItem(`lh_test_answers_${attempt.attemptId}`)
-        } catch {
-          // non-critical
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem(`lh_test_answers_${attempt.attemptId}`)
+          } catch {
+            // non-critical
+          }
         }
 
         set(state => ({
@@ -354,6 +414,10 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
           total_questions: test.questions.length,
           mode: test.mode,
         })
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('data:test-updated'))
+        }
 
         return { success: true, score: Number(resultData.score ?? 0) }
       }
@@ -384,7 +448,7 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
   resetTestState: () => {
     // Clean up any localStorage backup
     const state = get()
-    if (state.test.attempt?.attemptId) {
+    if (state.test.attempt?.attemptId && typeof window !== 'undefined') {
       try {
         localStorage.removeItem(`lh_test_answers_${state.test.attempt.attemptId}`)
       } catch {
@@ -396,7 +460,7 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
 
   abandonTest: () => {
     const state = get()
-    if (state.test.attempt?.attemptId) {
+    if (state.test.attempt?.attemptId && typeof window !== 'undefined') {
       try {
         localStorage.removeItem(`lh_test_answers_${state.test.attempt.attemptId}`)
       } catch {
@@ -428,11 +492,118 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
     }))
   },
 
-  setLastAutosavedAt: (timestamp: number | string) => {
+  setLastAutosavedAt: timestamp => {
     set(state => ({
       test: {
         ...state.test,
-        lastAutosavedAt: String(timestamp),
+        lastAutosavedAt:
+          typeof timestamp === 'number' ? new Date(timestamp).toISOString() : timestamp,
+      },
+    }))
+  },
+
+  setAssessmentMode: mode => {
+    set(state => ({
+      test: {
+        ...state.test,
+        assessmentMode: mode,
+        isContestMode: mode === 'contest',
+        isOfflineMode: mode === 'offline',
+      },
+    }))
+  },
+
+  setAdaptiveMetrics: (theta, sem) => {
+    set(state => ({
+      test: {
+        ...state.test,
+        adaptiveTheta: theta,
+        adaptiveSem: sem,
+      },
+    }))
+  },
+
+  stepAdaptiveQuestion: nextQuestion => {
+    set(state => ({
+      test: {
+        ...state.test,
+        questions: [...state.test.questions, nextQuestion],
+        currentQuestionIndex: state.test.questions.length,
+      },
+    }))
+  },
+
+  recordProctorViolation: () => {
+    set(state => ({
+      test: {
+        ...state.test,
+        proctorViolations: state.test.proctorViolations + 1,
+      },
+    }))
+  },
+
+  setPracticeFeedback: (questionId, feedback) => {
+    set(state => ({
+      test: {
+        ...state.test,
+        practiceFeedback: {
+          ...state.test.practiceFeedback,
+          [questionId]: feedback,
+        },
+      },
+    }))
+  },
+
+  setPendingSyncCount: count => {
+    set(state => ({
+      test: {
+        ...state.test,
+        pendingSyncCount: count,
+      },
+    }))
+  },
+
+  lockSection: sectionId => {
+    set(state => {
+      const locked = state.test.lockedSectionIds || []
+      if (locked.includes(sectionId)) return state
+      const nextLocked = [...locked, sectionId]
+
+      let nextActiveSectionId = state.test.activeSectionId
+      let nextQuestionIndex = state.test.currentQuestionIndex
+
+      if (state.test.sections && state.test.sections.length > 0) {
+        const nextUnlockedSection = state.test.sections.find(s => !nextLocked.includes(s.id))
+        if (nextUnlockedSection) {
+          nextActiveSectionId = nextUnlockedSection.id
+          const firstUnlockedQIndex = state.test.questions.findIndex(
+            q => (q.section_id || q.sectionId) === nextUnlockedSection.id
+          )
+          if (firstUnlockedQIndex !== -1) {
+            nextQuestionIndex = firstUnlockedQIndex
+          }
+        }
+      }
+
+      return {
+        test: {
+          ...state.test,
+          lockedSectionIds: nextLocked,
+          activeSectionId: nextActiveSectionId,
+          currentQuestionIndex: nextQuestionIndex,
+        },
+      }
+    })
+  },
+
+  updateSectionTimer: (sectionId, timeRemaining) => {
+    set(state => ({
+      test: {
+        ...state.test,
+        sectionTimeRemaining: {
+          ...(state.test.sectionTimeRemaining || {}),
+          [sectionId]: Math.max(0, timeRemaining),
+        },
       },
     }))
   },

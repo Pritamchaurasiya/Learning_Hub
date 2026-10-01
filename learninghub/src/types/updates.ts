@@ -79,6 +79,10 @@ export interface StudentUpdate {
   category: UpdateCategory;
   sub_category: string;
   institution: string;
+  department?: string;
+  issuer_name?: string;
+  issuer_role?: string;
+  circular_number?: string;
   course?: string;
   semester?: string;
   published_at?: string;
@@ -185,4 +189,56 @@ export interface FollowTargetPayload {
   target_type: 'INSTITUTION' | 'COURSE' | 'SEMESTER' | 'EXAM' | 'CATEGORY';
   target_value: string;
 }
+
+export interface CollegeCircularPayload {
+  title: string;
+  summary: string;
+  department: string;
+  institution: string;
+  issuer_name: string;
+  issuer_role?: string;
+  circular_number?: string;
+  category?: UpdateCategory;
+  sub_category?: string;
+  importance?: UpdateImportance;
+  course?: string;
+  semester?: string;
+  deadline?: string;
+  source_url?: string;
+}
+
+export interface UpdateEngagementEventPayload {
+  event_type: 'IMPRESSION' | 'CLICK_DETAIL' | 'CLICK_SOURCE' | 'CALENDAR_EXPORT' | 'BOOKMARK' | 'REMINDER_SET';
+  client_hash?: string;
+}
+
+export interface UpdateAnalyticsData {
+  update_id: string;
+  title: string;
+  institution: string;
+  department?: string;
+  impressions: number;
+  detail_clicks: number;
+  source_clicks: number;
+  calendar_exports: number;
+  bookmarks: number;
+  reminders_set: number;
+  click_through_rate: number;
+}
+
+export interface GlobalEngagementAnalytics {
+  total_events: number;
+  total_impressions: number;
+  total_detail_clicks: number;
+  total_source_clicks: number;
+  total_calendar_exports: number;
+  total_bookmarks: number;
+  total_reminders_set: number;
+  average_click_through_rate: number;
+  category_breakdown: Array<{
+    update__category: string;
+    event_count: number;
+  }>;
+}
+
 

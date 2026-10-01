@@ -21,7 +21,7 @@ export default function AchievementsPage() {
   const addToast = useStore(state => state.addToast)
 
   const {
-    data: achievements = [],
+    data: mergedAchievements = [],
     isLoading,
     error,
     refetch,
@@ -29,28 +29,14 @@ export default function AchievementsPage() {
     queryKey: ['achievements'],
     queryFn: async () => {
       const res = await fetchApi('/gamification/achievements')
-      return ((res.data ?? []) as Achievement[]).map(a => ({
+      const items = (res.data ?? []) as Achievement[]
+      return items.map(a => ({
         ...a,
-        unlocked: !!a.earned_at,
+        unlocked: !!a.earned_at || !!a.unlocked,
         unlockedAt: a.earned_at,
       }))
     },
     staleTime: 60 * 1000,
-  })
-
-  const { data: myAchievements = [] } = useQuery({
-    queryKey: ['my-achievements'],
-    queryFn: async () => {
-      const res = await fetchApi('/gamification/achievements')
-      const items = (res.data ?? []) as Achievement[]
-      return items.map(a => ({ ...a, unlocked: true, unlockedAt: a.earned_at }))
-    },
-    staleTime: 60 * 1000,
-  })
-
-  const mergedAchievements = achievements.map(a => {
-    const mine = myAchievements.find(ma => ma.id === a.id)
-    return mine ?? { ...a, unlocked: false }
   })
 
   const unlockedCount = mergedAchievements.filter(a => a.unlocked).length

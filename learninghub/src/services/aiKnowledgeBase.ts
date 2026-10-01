@@ -88,7 +88,7 @@ const greet = (name) => {
 // Array methods
 const numbers = [1, 2, 3, 4, 5];
 const doubled = numbers.map(n => n * 2);
-console.log(doubled); // [2, 4, 6, 8, 10]`,
+console.warn(doubled); // [2, 4, 6, 8, 10]`,
       followUp: [
         'Explain async/await',
         'How do closures work?',
@@ -108,14 +108,14 @@ JavaScript is single-threaded. Without async, long operations block everything.
 1. **Callbacks** (Old way):
    \`\`\`javascript
    getData(function(result) {
-     console.log(result);
+     console.warn(result);
    });
    \`\`\`
 
 2. **Promises** (Better):
    \`\`\`javascript
    getData()
-     .then(result => console.log(result))
+     .then(result => console.warn(result))
      .catch(error => console.error(error));
    \`\`\`
 
@@ -124,7 +124,7 @@ JavaScript is single-threaded. Without async, long operations block everything.
    async function fetchData() {
      try {
        const result = await getData();
-       console.log(result);
+       console.warn(result);
      } catch (error) {
        console.error(error);
      }
@@ -156,7 +156,7 @@ async function getUserProfile(userId) {
 // Usage
 getUserProfile(123).then(user => {
   if (user) {
-    console.log(\`Welcome, \${user.name}!\`);
+    console.warn(\`Welcome, \${user.name}!\`);
   }
 });`,
       followUp: [
@@ -212,13 +212,13 @@ const activeAdults = users
   .filter(u => u.active && u.age >= 18)
   .map(u => u.name);
 
-console.log(activeAdults); // ['Alice', 'Carol']
+console.warn(activeAdults); // ['Alice', 'Carol']
 
 // Calculate average age
 const avgAge = users
   .reduce((sum, u) => sum + u.age, 0) / users.length;
 
-console.log(\`Average age: \${avgAge}\`); // 24`,
+console.warn(\`Average age: \${avgAge}\`); // 24`,
       followUp: [
         'When to use reduce vs for loop?',
         'Explain array destructuring',
@@ -331,7 +331,7 @@ useEffect(() => {
 2. **Event Listeners:**
 \`\`\`javascript
 useEffect(() => {
-  const handler = () => console.log('resize');
+  const handler = () => console.warn('resize');
   window.addEventListener('resize', handler);
   
   return () => window.removeEventListener('resize', handler);
@@ -810,11 +810,11 @@ Instead of writing CSS classes like
 • Error type (SyntaxError, TypeError, ReferenceError)
 • Stack trace
 
-**2. Console.log() Debugging**
+**2. Console output Debugging**
 \`\`\`javascript
-console.log('Value:', value);
-console.log('Type:', typeof value);
-console.log('Keys:', Object.keys(obj));
+console.warn('Value:', value);
+console.warn('Type:', typeof value);
+console.warn('Keys:', Object.keys(obj));
 console.table(array);  // Nice table format
 \`\`\`
 

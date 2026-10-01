@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.3% </span>
+                <span class="strong">24.16% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>35/144</span>
+                <span class='fraction'>36/149</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.92% </span>
+                <span class="strong">1.81% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/104</span>
+                <span class='fraction'>2/110</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.4% </span>
+                <span class="strong">23.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>33/141</span>
+                <span class='fraction'>34/146</span>
             </div>
         
             
@@ -315,7 +315,13 @@
 <a name='L250'></a><a href='#L250'>250</a>
 <a name='L251'></a><a href='#L251'>251</a>
 <a name='L252'></a><a href='#L252'>252</a>
-<a name='L253'></a><a href='#L253'>253</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -328,6 +334,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -496,6 +503,10 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -561,6 +572,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -580,6 +592,7 @@ import {
   ConflictError,
   RateLimitError,
 } from '../utils/errors'
+import { AttemptTransitionError } from '../utils/attemptStateMachine'
 &nbsp;
 export enum ErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -735,6 +748,10 @@ export const errorHandler = <span class="fstat-no" title="function not covered" 
 <span class="cstat-no" title="statement not covered" >    statusCode = 400</span>
 <span class="cstat-no" title="statement not covered" >    message = 'Invalid JSON in request body'</span>
 <span class="cstat-no" title="statement not covered" >    logger.warn(`SyntaxError: ${message} requestId=${requestId ?? 'unknown'}`)</span>
+  } else <span class="cstat-no" title="statement not covered" >if (err instanceof AttemptTransitionError) {</span>
+<span class="cstat-no" title="statement not covered" >    statusCode = 409</span>
+<span class="cstat-no" title="statement not covered" >    message = err.message</span>
+<span class="cstat-no" title="statement not covered" >    logger.warn(`AttemptTransitionError: ${message} requestId=${requestId ?? 'unknown'}`)</span>
   } else <span class="cstat-no" title="statement not covered" >if (err instanceof AuthenticationError) {</span>
 <span class="cstat-no" title="statement not covered" >    statusCode = 401</span>
 <span class="cstat-no" title="statement not covered" >    message = err.message</span>
@@ -812,9 +829,10 @@ function <span class="fstat-no" title="function not covered" >handlePrismaError(
 }
 &nbsp;
 export const notFoundHandler = <span class="fstat-no" title="function not covered" >(r</span>eq: Request, res: Response): void =&gt; {
-<span class="cstat-no" title="statement not covered" >  res</span>
-    .status(404)
-    .json({ status: 'error', message: `Route not found: ${req.method} ${req.originalUrl}` })
+<span class="cstat-no" title="statement not covered" >  res.status(404).json({</span>
+    status: 'error',
+    message: `Route not found: ${req.method} ${req.originalUrl || req.url}`,
+  })
 }
 &nbsp;
 export { handlePrismaError as prismaErrorHandler }
@@ -826,7 +844,7 @@ export default errorHandler
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-10T16:47:23.813Z
+                at 2026-10-01T05:13:09.193Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

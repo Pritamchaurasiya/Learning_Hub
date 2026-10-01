@@ -1,6 +1,7 @@
 import Queue, { Job, QueueOptions } from 'bull'
 import logger from '../utils/logger'
 import type { XPReason } from './GrowthEngineService'
+import emailService from './EmailService'
 
 const REDIS_URL = process.env.REDIS_QUEUE_URL ?? process.env.REDIS_URL ?? 'redis://localhost:6379'
 const REDIS_ENABLED = process.env.REDIS_ENABLED === 'true'
@@ -92,8 +93,21 @@ class JobQueueService {
   private setupProcessors() {
     void this.emailQueue?.process(10, async (job: Job<EmailJobData>) => {
       logger.info('Processing email job', { jobId: job.id })
-      // Email sending logic here
-      return { sent: true, jobId: job.id }
+      try {
+        await emailService.sendInline({
+          to: job.data.to,
+          subject: job.data.subject,
+          html: job.data.data?.html ?? `<p>${job.data.subject}</p>`,
+          text: job.data.data?.text,
+        })
+        return { sent: true, jobId: job.id }
+      } catch (err) {
+        logger.error(
+          'Failed to send email in JobQueueService',
+          err instanceof Error ? err : new Error(String(err))
+        )
+        throw err
+      }
     })
 
     void this.aiQueue?.process(5, async (job: Job<AIJobData>) => {
@@ -226,8 +240,21 @@ class JobQueueService {
   async addEmailJob(data: EmailJobData, priority?: number) {
     if (!this.enabled || !this.emailQueue) {
       logger.warn('[JobQueueService] Email job falling back to in-memory processing')
-      setTimeout(() => {
-        logger.info('Processing email job in-memory', { to: data.to })
+      setTimeout(async () => {
+        try {
+          await emailService.sendInline({
+            to: data.to,
+            subject: data.subject,
+            html: data.data?.html ?? `<p>${data.subject}</p>`,
+            text: data.data?.text,
+          })
+          logger.info('Processed email job in-memory successfully', { to: data.to })
+        } catch (err) {
+          logger.error(
+            'Failed to send fallback in-memory email in JobQueueService',
+            err instanceof Error ? err : new Error(String(err))
+          )
+        }
       }, 0)
       return null
     }
@@ -385,7 +412,7 @@ class JobQueueService {
     return this.testSubmissionQueue.add(data)
   }
 
-  async getJobStatus(
+  async getJob(
     queue: 'email' | 'ai' | 'report' | 'analytics' | 'growth' | 'testSubmission',
     jobId: string
   ) {
@@ -402,7 +429,14 @@ class JobQueueService {
                 ? this.growthQueue
                 : this.testSubmissionQueue
     if (!targetQueue) return null
-    const job = await targetQueue.getJob(jobId)
+    return targetQueue.getJob(jobId)
+  }
+
+  async getJobStatus(
+    queue: 'email' | 'ai' | 'report' | 'analytics' | 'growth' | 'testSubmission',
+    jobId: string
+  ) {
+    const job = await this.getJob(queue, jobId)
     return job ? { state: await job.getState(), progress: job.progress() } : null
   }
 

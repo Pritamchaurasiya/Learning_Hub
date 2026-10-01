@@ -22,7 +22,7 @@ import { trackFailedAuth, clearFailedAuth } from '../middleware/anomalyDetection
 import jwt from 'jsonwebtoken'
 
 function generateMfaSessionToken(userId: string): string {
-  return jwt.sign({ userId, purpose: 'mfa_login', iat: Date.now() }, config.jwtRefreshSecret, {
+  return jwt.sign({ userId, purpose: 'mfa_login' }, config.jwtRefreshSecret, {
     expiresIn: '5m',
   })
 }
@@ -91,6 +91,23 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
           level: result.user.level,
           streak: result.user.streak,
         },
+        // COMPAT DUALITY NOTE: tokens are returned in the body AND as httpOnly
+        // cookies. Body exposure is kept only for legacy SPA/mobile clients that
+        // cannot read httpOnly cookies; web clients MUST use the cookies and
+        // ignore the body copy (never persist it to localStorage). Mitigations
+        // kept: 15-min access TTL, single-use rotating refresh tokens with reuse
+        // detection (AuthService.refreshToken marks usedAt atomically), hashed
+        // storage, per-access-token blacklist (`bl:token:*`) and global
+        // logout-all blacklist (`bl:user:*`) enforced in authMiddleware.
+        token: result.tokens.accessToken,
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        tokens: {
+          access: result.tokens.accessToken,
+          refresh: result.tokens.refreshToken,
+          accessToken: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
+        },
       },
       'Registration successful'
     )
@@ -158,6 +175,18 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
           streak: result.user.streak,
           lastActive: result.user.lastActive,
         },
+        // COMPAT DUALITY NOTE (see register): body copy kept for legacy clients;
+        // web clients must prefer the httpOnly cookies. Refresh rotation +
+        // blacklists (see authMiddleware/AuthService.logout) still apply.
+        token: result.tokens.accessToken,
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        tokens: {
+          access: result.tokens.accessToken,
+          refresh: result.tokens.refreshToken,
+          accessToken: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
+        },
       },
       'Login successful'
     )
@@ -192,7 +221,8 @@ export const logout = asyncHandler(async (req: Request, res: Response): Promise<
 })
 
 export const refresh = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const refreshToken = req.body.refresh_token ?? req.body.refresh ?? getRefreshTokenFromCookie(req)
+  const refreshToken =
+    req.body.refresh_token ?? req.body.refresh ?? req.body.refreshToken ?? getRefreshTokenFromCookie(req)
   if (!refreshToken) {
     sendValidationError(res, 'Refresh token is required')
     return
@@ -200,8 +230,15 @@ export const refresh = asyncHandler(async (req: Request, res: Response): Promise
 
   try {
     const result = await authService.refreshToken(refreshToken)
+    // COMPAT DUALITY NOTE (see register): cookies are primary; body copy is for
+    // legacy clients. Rotation is single-use with reuse detection in AuthService.
     setAuthCookies(res, result)
-    sendSuccess(res, { message: 'Token refreshed' })
+    sendSuccess(res, {
+      message: 'Token refreshed',
+      token: result.accessToken,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    })
   } catch {
     sendUnauthorized(res, 'Invalid or expired refresh token')
   }
@@ -232,6 +269,9 @@ export const me = asyncHandler(async (req: Request, res: Response): Promise<void
         },
       },
     }),
+    // PAGINATION ENFORCED: hard-capped take (20/50) with recency ordering so /me
+    // cannot fan out to unbounded rows. Full history lives behind dedicated
+    // paginated endpoints (achievements/bookmarks) — do not raise these caps.
     prisma.userAchievement.findMany({
       where: { userId },
       take: 20,
@@ -377,9 +417,34 @@ export const uploadAvatar = asyncHandler(
       avatarPath = await uploadFileToStorage(req.file, FileType.AVATAR)
     } else if (req.body.avatar && typeof req.body.avatar === 'string') {
       const avatar = req.body.avatar.trim()
-      const isDataUrl = avatar.startsWith('data:image/')
-      const isHttpsUrl = avatar.startsWith('https://')
-      if ((!isDataUrl && !isHttpsUrl) || avatar.length > 2_000_000) {
+      // AVATAR ALLOWLIST: https:// URLs only (no data: URIs — they bypass
+      // content-type checks and inflate DB rows), 500KB cap, extension allowlist.
+      // Multer file uploads above are already MIME-checked + 2MB-capped in
+      // FileUploadService; this branch covers URL-form avatars.
+      const MAX_AVATAR_URL_BYTES = 500_000
+      const ALLOWED_AVATAR_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif']
+      if (!avatar.startsWith('https://') || avatar.length > MAX_AVATAR_URL_BYTES) {
+        sendValidationError(res, 'Invalid avatar format')
+        return
+      }
+      let parsed: URL
+      try {
+        parsed = new URL(avatar)
+      } catch {
+        sendValidationError(res, 'Invalid avatar format')
+        return
+      }
+      if (parsed.protocol !== 'https:') {
+        sendValidationError(res, 'Invalid avatar format')
+        return
+      }
+      const lowerPath = parsed.pathname.toLowerCase()
+      const hasAllowedExt = ALLOWED_AVATAR_EXTS.some(ext => lowerPath.endsWith(ext))
+      // Allow extensionless CDN URLs (e.g. signed image endpoints) only when they
+      // carry an image content hint; otherwise require an image extension so
+      // `https://evil.example/payload.svg` / `.html` cannot be stored as avatar.
+      const hasImageHint = /[?&](format|fm|content-type|ct)=[^&]*image/i.test(avatar)
+      if (!hasAllowedExt && !hasImageHint) {
         sendValidationError(res, 'Invalid avatar format')
         return
       }
@@ -495,12 +560,36 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response): P
 
 export const exportUserData = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
-
+  // GDPR EXPORT CAPS + RATE-LIMIT NOTE: take(200/500) are hard caps with recency
+  // ordering so a single export cannot scan unbounded history. Route-level
+  // throttling must stay enabled (strictLimiter on /export-data or equivalent);
+  // full-history export for large accounts should use cursor pagination across
+  // multiple signed downloads rather than raising these caps.
   const userData = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      achievements: true,
-      testResults: { include: { test: true } },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      role: true,
+      createdAt: true,
+      achievements: {
+        take: 200,
+        orderBy: { unlockedAt: 'desc' },
+      },
+      testResults: {
+        take: 500,
+        orderBy: { completedAt: 'desc' },
+        select: {
+          testId: true,
+          score: true,
+          completedAt: true,
+          passed: true,
+          test: {
+            select: { title: true },
+          },
+        },
+      },
     },
   })
 
@@ -521,7 +610,7 @@ export const exportUserData = asyncHandler(async (req: Request, res: Response): 
     achievements: userData.achievements,
     testResults: userData.testResults.map((tr: any) => ({
       testId: tr.testId,
-      testTitle: tr.test.title,
+      testTitle: tr.test?.title ?? 'Unknown Test',
       score: tr.score,
       completedAt: tr.completedAt,
       passed: tr.passed,
@@ -536,12 +625,22 @@ export const exportUserData = asyncHandler(async (req: Request, res: Response): 
 export const getPreferences = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
 
+  // SELECTIVE SELECT: avoid full-row exam/country/subject payloads on this hot path.
   const preference = await prisma.userExamPreference.findUnique({
     where: { userId },
-    include: {
-      exam: true,
-      country: true,
-      subjects: true,
+    select: {
+      id: true,
+      userId: true,
+      countryId: true,
+      examId: true,
+      subjectIds: true,
+      difficulty: true,
+      dailyGoal: true,
+      createdAt: true,
+      updatedAt: true,
+      exam: { select: { id: true, name: true, slug: true } },
+      country: { select: { id: true, name: true, code: true } },
+      subjects: { select: { id: true, name: true } },
     },
   })
   sendSuccess(res, preference)
@@ -554,27 +653,36 @@ export const updatePreferences = asyncHandler(
     const { countryId, examId, subjectIds, difficulty, dailyGoal } = req.body
     const formattedSubjectIds = Array.isArray(subjectIds) ? subjectIds : []
 
+    let validSubjectIds = formattedSubjectIds
+    if (formattedSubjectIds.length > 0) {
+      const existingSubjects = await prisma.subject.findMany({
+        where: { id: { in: formattedSubjectIds } },
+        select: { id: true },
+      })
+      validSubjectIds = existingSubjects.map((s: { id: string }) => s.id)
+    }
+
     const preference = await prisma.userExamPreference.upsert({
       where: { userId },
       update: {
         countryId: countryId ?? null,
         examId: examId ?? null,
-        subjectIds: formattedSubjectIds,
+        subjectIds: validSubjectIds,
         difficulty: difficulty ?? 'MEDIUM',
         dailyGoal: dailyGoal ?? 10,
         subjects: {
-          set: formattedSubjectIds.map((id: string) => ({ id })),
+          set: validSubjectIds.map((id: string) => ({ id })),
         },
       },
       create: {
         userId,
         countryId: countryId ?? null,
         examId: examId ?? null,
-        subjectIds: formattedSubjectIds,
+        subjectIds: validSubjectIds,
         difficulty: difficulty ?? 'MEDIUM',
         dailyGoal: dailyGoal ?? 10,
         subjects: {
-          connect: formattedSubjectIds.map((id: string) => ({ id })),
+          connect: validSubjectIds.map((id: string) => ({ id })),
         },
       },
       include: {

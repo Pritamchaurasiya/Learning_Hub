@@ -4,7 +4,7 @@ const idSchema = z
   .string()
   .min(1, 'ID is required')
   .max(50, 'ID cannot exceed 50 characters')
-  .regex(/^[a-zA-Z0-9-]+$/, 'Invalid ID format')
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid ID format')
 
 export const registerSchema = z.object({
   body: z.object({
@@ -58,10 +58,30 @@ export const refreshSchema = z.object({
         .min(1, 'Refresh token is required')
         .max(512, 'Refresh token too long')
         .optional(),
+      // Frontend canonical contract: also accept camelCase refreshToken
+      refreshToken: z
+        .string()
+        .min(1, 'Refresh token is required')
+        .max(512, 'Refresh token too long')
+        .optional(),
     })
-    .refine(data => data.refresh_token ?? data.refresh, {
-      message: 'Refresh token is required (provide refresh_token or refresh)',
+    .refine(data => data.refresh_token ?? data.refresh ?? data.refreshToken, {
+      message: 'Refresh token is required (provide refresh_token, refresh, or refreshToken)',
     }),
+})
+
+// Autosave test answers — must be an object map of questionId → optionId|optionId[]|text
+export const autosaveTestSchema = z.object({
+  body: z.object({
+    answers: z.record(
+      z.string().min(1).max(128),
+      z.union([z.string().max(1024), z.array(z.string().max(1024)).max(10)])
+    ),
+    attempt_id: z.string().min(1).max(128).optional(),
+    attemptId: z.string().min(1).max(128).optional(),
+    locked_section_ids: z.array(z.string().max(128)).optional(),
+    lockedSectionIds: z.array(z.string().max(128)).optional(),
+  }),
 })
 
 export const enrollCourseSchema = z.object({
@@ -110,6 +130,40 @@ export const submitTestSchema = z.object({
   }),
 })
 
+export const createTestSchema = z.object({
+  body: z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),
+    description: z.string().max(2000, 'Description must not exceed 2000 characters').optional().nullable(),
+    examId: z.string().max(100).optional().nullable(),
+    timeLimit: z.number().int().min(0, 'Time limit must be non-negative').max(480, 'Time limit cannot exceed 480 minutes').default(30),
+    passingScore: z.number().min(0).max(100).default(60),
+    maxAttempts: z.number().int().min(1).max(100).default(5),
+    mode: z.enum(['PRACTICE', 'MOCK', 'TIMED_CHALLENGE', 'ADAPTIVE', 'CONTEST', 'practice', 'mock', 'timed_challenge', 'adaptive', 'contest']).default('PRACTICE'),
+    difficulty: z.enum(['EASY', 'MEDIUM', 'HARD', 'MIXED', 'ADAPTIVE', 'easy', 'medium', 'hard', 'mixed', 'adaptive']).default('MIXED'),
+    totalMarks: z.number().nonnegative().optional(),
+    negativeMarks: z.number().nonnegative().default(0),
+    isPublished: z.boolean().default(true),
+    shuffleQuestions: z.boolean().default(false),
+    shuffleOptions: z.boolean().default(false),
+    questions: z.array(z.object({
+      text: z.string().min(3, 'Question text must be at least 3 characters'),
+      type: z.enum(['MCQ', 'MSQ', 'TRUE_FALSE', 'NUMERICAL', 'SHORT_ANSWER', 'SUBJECTIVE', 'mcq', 'multiple_select', 'true_false', 'numerical', 'subjective']).default('MCQ'),
+      difficulty: z.number().min(0).max(5).default(0.5),
+      bloomLevel: z.enum(['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE']).default('UNDERSTAND'),
+      points: z.number().int().positive().default(4),
+      explanation: z.string().max(2000).optional().nullable(),
+      topic: z.string().max(100).optional().nullable(),
+      tags: z.array(z.string().max(50)).default([]),
+      options: z.array(z.object({
+        text: z.string().min(1, 'Option text cannot be empty'),
+        isCorrect: z.boolean().default(false),
+        explanation: z.string().max(1000).optional().nullable(),
+        order: z.number().int().nonnegative().optional(),
+      })).default([]),
+    })).max(200, 'Maximum 200 questions allowed per test').optional().default([]),
+  }),
+})
+
 export const createLiveSessionSchema = z.object({
   body: z.object({
     title: z.string().min(3).max(100, 'Title must not exceed 100 characters'),
@@ -142,6 +196,7 @@ export const submitProblemSchema = z.object({
       .string()
       .max(50, 'Language identifier must not exceed 50 characters')
       .default('javascript'),
+    customInput: z.string().max(10000, 'Custom input must not exceed 10KB').optional(),
   }),
 })
 
@@ -290,7 +345,7 @@ export const disableMfaSchema = z.object({
 
 export const verifyMfaSchema = z.object({
   body: z.object({
-    userId: z.string().min(1, 'User ID is required'),
+    userId: z.string().min(1, 'User ID is required').optional(),
     token: z
       .string()
       .min(6, 'MFA token must be at least 6 digits')
@@ -299,23 +354,9 @@ export const verifyMfaSchema = z.object({
 })
 
 // ==================== PAYMENTS SCHEMAS ====================
-export const createOrderSchema = z.object({
-  body: z.object({
-    course_id: idSchema,
-    gateway: z.string().max(50).optional(),
-  }),
-})
-
 export const verifySessionSchema = z.object({
   body: z.object({
     session_id: z.string().min(1, 'Session ID is required').max(200),
-  }),
-})
-
-export const applyCouponSchema = z.object({
-  body: z.object({
-    code: z.string().min(1, 'Coupon code is required').max(50),
-    course_id: idSchema.optional(),
   }),
 })
 
@@ -463,21 +504,6 @@ export const searchSchema = z.object({
   }),
 })
 
-// ==================== COMMERCE/CART SCHEMAS ====================
-export const addToCartSchema = z.object({
-  body: z.object({
-    course_id: idSchema,
-  }),
-})
-
-export const updateCartItemSchema = z.object({
-  params: z.object({
-    id: idSchema,
-  }),
-  body: z.object({
-    quantity: z.number().int().min(1).max(100).optional(),
-  }),
-})
 
 // ==================== NOTIFICATIONS SCHEMAS ====================
 export const markNotificationReadSchema = z.object({
@@ -698,5 +724,109 @@ export const adminSecurityEventsSchema = z.object({
       .optional()
       .transform(val => (val ? Number(val) : 7))
       .pipe(z.number().int().min(1).max(365)),
+  }),
+})
+
+// ==================== COMMERCE SCHEMAS ====================
+
+export const addToCartSchema = z.object({
+  body: z.object({
+    course_id: z
+      .string()
+      .min(1, 'Course ID is required')
+      .max(128, 'Course ID must not exceed 128 characters'),
+    quantity: z
+      .number()
+      .int()
+      .positive('Quantity must be positive')
+      .max(1, 'Maximum quantity is 1 for digital courses')
+      .optional()
+      .default(1),
+    course_title: z.string().max(500).optional(),
+    price: z.number().nonnegative().optional(),
+    original_price: z.number().nonnegative().optional(),
+    thumbnail: z.string().url().max(2000).optional().nullable(),
+    instructor_name: z.string().max(200).optional(),
+  }),
+})
+
+export const updateCartItemSchema = z.object({
+  params: z.object({
+    id: idSchema,
+  }),
+  body: z.object({
+    quantity: z
+      .number()
+      .int()
+      .positive('Quantity must be positive')
+      .max(1, 'Maximum quantity is 1'),
+  }),
+})
+
+export const removeCartItemSchema = z.object({
+  params: z.object({
+    id: idSchema,
+  }),
+})
+
+export const applyCouponSchema = z.object({
+  body: z
+    .object({
+      code: z
+        .string()
+        .max(50, 'Coupon code must not exceed 50 characters')
+        .optional(),
+      coupon_code: z
+        .string()
+        .max(50, 'Coupon code must not exceed 50 characters')
+        .optional(),
+    })
+    .refine(data => data.code || data.coupon_code, {
+      message: 'Coupon code is required (provide code or coupon_code)',
+    }),
+})
+
+export const createOrderSchema = z.object({
+  body: z.object({
+    gateway: z
+      .string()
+      .max(20, 'Gateway must not exceed 20 characters')
+      .optional()
+      .default('razorpay'),
+    course_id: z.string().max(128).optional(),
+    idempotency_key: z.string().max(128).optional(),
+    idempotencyKey: z.string().max(128).optional(),
+  }),
+})
+
+// ==================== SUBSCRIPTION SCHEMAS ====================
+
+export const createCheckoutSchema = z.object({
+  body: z.object({
+    tierId: z
+      .string()
+      .min(1, 'Tier ID is required')
+      .max(50, 'Tier ID must not exceed 50 characters'),
+  }),
+})
+
+// ==================== CERTIFICATE SCHEMAS ====================
+
+export const generateCertificateSchema = z.object({
+  body: z.object({
+    courseId: z
+      .string()
+      .min(1, 'Course ID is required')
+      .max(128, 'Course ID must not exceed 128 characters'),
+  }),
+})
+
+export const verifyCertificateSchema = z.object({
+  params: z.object({
+    code: z
+      .string()
+      .min(1, 'Certificate code is required')
+      .max(100, 'Certificate code must not exceed 100 characters')
+      .regex(/^[A-Za-z0-9\-]+$/, 'Invalid certificate code format'),
   }),
 })

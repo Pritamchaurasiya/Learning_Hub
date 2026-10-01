@@ -17,7 +17,18 @@ export function initSentry() {
         if (event.request?.data) {
           try {
             const bodyStr = JSON.stringify(event.request.data).toLowerCase()
-            if (bodyStr.includes('password') || bodyStr.includes('token')) {
+            const sensitiveKeywords = [
+              'password',
+              'token',
+              'secret',
+              'credit_card',
+              'card_number',
+              'cvv',
+              'ssn',
+              'api_key',
+              'authorization',
+            ]
+            if (sensitiveKeywords.some(keyword => bodyStr.includes(keyword))) {
               event.request.data = '[Redacted by PII Scrubber]'
             }
           } catch {

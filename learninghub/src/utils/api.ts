@@ -7,6 +7,7 @@ import {
   setCachedData,
   trackInFlightRequest,
 } from './cache'
+import { SecureStorage } from './security'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -17,13 +18,72 @@ if (!API_URL) {
   throw new Error(msg)
 }
 
+const TOKEN_KEY = 'lh_access_token'
+const REFRESH_TOKEN_KEY = 'lh_refresh_token'
+
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const token = await SecureStorage.getItem(TOKEN_KEY)
+    if (token) return token
+    return await SecureStorage.getItem('token')
+  } catch {
+    return null
+  }
+}
+
+async function getRefreshToken(): Promise<string | null> {
+  try {
+    const token = await SecureStorage.getItem(REFRESH_TOKEN_KEY)
+    if (token) return token
+    return await SecureStorage.getItem('refreshToken')
+  } catch {
+    return null
+  }
+}
+
+async function setAccessToken(token: string | null): Promise<void> {
+  if (token) {
+    await SecureStorage.setItem(TOKEN_KEY, token)
+    await SecureStorage.setItem('token', token)
+  } else {
+    SecureStorage.removeItem(TOKEN_KEY)
+    SecureStorage.removeItem('token')
+  }
+}
+
+async function setRefreshToken(token: string | null): Promise<void> {
+  if (token) {
+    await SecureStorage.setItem(REFRESH_TOKEN_KEY, token)
+    await SecureStorage.setItem('refreshToken', token)
+  } else {
+    SecureStorage.removeItem(REFRESH_TOKEN_KEY)
+    SecureStorage.removeItem('refreshToken')
+  }
+}
+
+async function clearTokens(): Promise<void> {
+  SecureStorage.removeItem(TOKEN_KEY)
+  SecureStorage.removeItem('token')
+  SecureStorage.removeItem(REFRESH_TOKEN_KEY)
+  SecureStorage.removeItem('refreshToken')
+}
+
+export { getAccessToken, getRefreshToken, setAccessToken, setRefreshToken, clearTokens }
+
+// Spec: MAX_RETRIES=1 at the fetch layer (single retry with exponential backoff).
+// React Query `retry: 3` in main.tsx is a SEPARATE layer (UI/query retries) —
+// intentional separation, not double-retry of the same layer. Do not raise this
+// value without updating the spec; raising it reintroduces double-retry storms.
 const RETRY_CONFIG = {
-  maxRetries: 3,
+  maxRetries: 1, // spec MAX_RETRIES=1 — queryClient retry handles React Query layer separately, api handles fetch layer
   baseDelay: 1000,
   maxDelay: 5000,
   retryableStatuses: [408, 429, 500, 502, 503, 504] as readonly number[],
 }
 
+// 30s per-attempt timeout applied via AbortController in executeWithTimeout.
+// Every fetch path (initial request AND 401-refresh retry) must go through
+// executeWithTimeout so timeout/abort chaining is never bypassed.
 const REQUEST_TIMEOUT_MS = 30_000
 
 function getDelay(attempt: number): number {
@@ -36,6 +96,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 let csrfTokenMemory: string | null = null
+let csrfTokenPromise: Promise<string | null> | null = null
 
 export const getCsrfToken = (): string | null => {
   if (csrfTokenMemory) return csrfTokenMemory
@@ -45,10 +106,37 @@ export const getCsrfToken = (): string | null => {
   return token
 }
 
+export const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID()
+    } catch {
+      // Fallback if randomUUID fails or restricted
+    }
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    try {
+      const bytes = new Uint8Array(16)
+      crypto.getRandomValues(bytes)
+      bytes[6] = (bytes[6] & 0x0f) | 0x40
+      bytes[8] = (bytes[8] & 0x3f) | 0x80
+      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+    } catch {
+      // Fallback if getRandomValues fails
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 export const getSessionId = (): string => {
   let sessionId = localStorage.getItem('sessionId')
   if (!sessionId) {
-    sessionId = crypto.randomUUID()
+    sessionId = generateUUID()
     localStorage.setItem('sessionId', sessionId)
   }
   return sessionId
@@ -60,37 +148,71 @@ export const setCsrfToken = (token: string): void => {
   document.cookie = `csrf-token=${token}; path=/; SameSite=Lax${secureSuffix}`
 }
 
-export const initCsrfToken = async (forceRefresh = false): Promise<void> => {
-  if (!forceRefresh && getCsrfToken()) return
-  try {
-    const response = await fetch(`${API_URL}/csrf-token`, {
-      headers: { 'Content-Type': 'application/json', 'X-Session-ID': getSessionId() },
-    })
-    if (response.ok) {
-      const body = await response.json()
-      const csrfToken = body?.data?.csrfToken ?? body?.csrfToken
-      if (csrfToken) setCsrfToken(csrfToken)
+export const initCsrfToken = async (forceRefresh = false): Promise<string | null> => {
+  if (!forceRefresh && getCsrfToken()) return getCsrfToken()
+
+  // Use a proper mutex to prevent concurrent CSRF token fetches
+  if (csrfTokenPromise) return csrfTokenPromise
+
+  csrfTokenPromise = (async () => {
+    try {
+      const response = await fetch(`${API_URL}/csrf-token`, {
+        headers: { 'Content-Type': 'application/json', 'X-Session-ID': getSessionId() },
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const body = await response.json()
+        const csrfToken = body?.data?.csrfToken ?? body?.csrfToken
+        if (csrfToken) {
+          setCsrfToken(csrfToken)
+          return csrfToken
+        }
+      } else if (import.meta.env.DEV) {
+        console.warn('[API] CSRF token fetch failed:', response.status)
+      }
+      return null
+    } catch {
+      if (import.meta.env.DEV) {
+        console.warn('[API] CSRF token fetch failed — backend may not be running')
+      }
+      return null
+    } finally {
+      // Clear in-flight mutex so subsequent attempts can retry
+      csrfTokenPromise = null
     }
-  } catch {
-    // silently ignore
+  })()
+
+  return csrfTokenPromise
+}
+
+// Client-side guard only: 200 req/min PER TAB (in-memory closure).
+// NOTE (multi-tab limitation): each tab holds its own counter, so N open tabs
+// can emit N×200 req/min. The authoritative limit is enforced server-side;
+// this guard is best-effort burst protection, not a security boundary.
+// A future improvement is BroadcastChannel/SharedWorker cross-tab counting,
+// but server enforcement remains the source of truth.
+// Atomic rate limiter using closure to prevent race conditions
+const createRateLimiter = () => {
+  let count = 0
+  let windowStart = Date.now()
+  return (): boolean => {
+    const now = Date.now()
+    if (now - windowStart > 60_000) {
+      count = 0
+      windowStart = now
+    }
+    count++
+    if (count > 200) {
+      if (import.meta.env.DEV) {
+        console.warn('[API] Client rate limit exceeded (200 req/min)')
+      }
+      return true
+    }
+    return false
   }
 }
 
-const rateLimitState = { count: 0, windowStart: Date.now() }
-
-const isRateLimited = (): boolean => {
-  const now = Date.now()
-  if (now - rateLimitState.windowStart > 60_000) {
-    rateLimitState.count = 0
-    rateLimitState.windowStart = now
-  }
-  rateLimitState.count++
-  if (rateLimitState.count > 60) {
-    console.warn('[API] Client rate limit exceeded (60 req/min)')
-    return true
-  }
-  return false
-}
+const isRateLimited = createRateLimiter()
 
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return ''
@@ -100,6 +222,23 @@ export const sanitizeInput = (input: string): string => {
     .replace(/javascript:/gi, '')
     .replace(/on\w+\s*=/gi, '')
     .replace(/\beval\s*\(/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed\b[^>]*>[\s\S]*?<\/embed>/gi, '')
+    .replace(/<applet\b[^>]*>[\s\S]*?<\/applet>/gi, '')
+    .replace(/<meta\b[^>]*>/gi, '')
+    .replace(/<link\b[^>]*>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/expression\s*\(/gi, '')
+    .replace(/url\s*\(/gi, '')
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/mocha\s*:/gi, '')
+    .replace(/livescript\s*:/gi, '')
+    .replace(/<link\b[^>]*>/gi, '')
+    .replace(/<meta\b[^>]*>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
 }
 
 export const validateEmail = (email: string): boolean => {
@@ -122,6 +261,7 @@ const INVALIDATE_CACHE_EVENTS = [
   'data:course-deleted',
   'data:enrollment-changed',
   'data:progress-updated',
+  'data:bookmark-updated',
 ]
 INVALIDATE_CACHE_EVENTS.forEach(event => {
   window.addEventListener(event, () => invalidateCache())
@@ -135,20 +275,61 @@ const refreshAccessToken = async (): Promise<void> => {
   tokenRefreshPromise = (async () => {
     if (isRateLimited()) throw new Error('Too many requests. Please try again later.')
 
+    const refreshToken = await getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'X-Session-ID': getSessionId(),
     }
-    const csrfToken = getCsrfToken()
+    let csrfToken = getCsrfToken()
+    if (!csrfToken) {
+      csrfToken = await initCsrfToken(false)
+    }
     if (csrfToken) headers['X-CSRF-Token'] = csrfToken
 
-    const response = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-      headers,
-    })
+    // Timeout-guarded refresh: never use raw fetch without AbortController timeout.
+    // Chains abort so a hung /auth/refresh cannot stall the 401-retry path forever.
+    const refreshController = new AbortController()
+    const refreshTimeoutId = setTimeout(() => refreshController.abort(), REQUEST_TIMEOUT_MS)
+    let response: Response
+    try {
+      response = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
+        signal: refreshController.signal,
+      })
+    } finally {
+      clearTimeout(refreshTimeoutId)
+    }
 
-    if (!response.ok) throw new Error('Token refresh failed')
+    if (!response.ok) {
+      await clearTokens()
+      throw new Error('Token refresh failed')
+    }
+
+    const data = await response.json().catch(() => ({}))
+    const newAccessToken =
+      data?.data?.token ??
+      data?.data?.accessToken ??
+      data?.data?.access_token ??
+      data?.token ??
+      data?.access_token ??
+      data?.access ??
+      null
+    const newRefreshToken =
+      data?.data?.refreshToken ?? data?.data?.refresh ?? data?.refreshToken ?? data?.refresh ?? null
+
+    if (newAccessToken) {
+      await setAccessToken(newAccessToken)
+    }
+    if (newRefreshToken) {
+      await setRefreshToken(newRefreshToken)
+    }
 
     window.dispatchEvent(new CustomEvent('auth:token-refreshed'))
   })().finally(() => {
@@ -230,11 +411,21 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
   if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   headers.set('X-Session-ID', getSessionId())
 
+  // Attach JWT access token if available
+  const accessToken = await getAccessToken()
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`)
+  }
+
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     const csrfToken = getCsrfToken()
-    if (!csrfToken) await initCsrfToken(false)
-    const finalToken = getCsrfToken()
-    if (finalToken) headers.set('X-CSRF-Token', finalToken)
+    if (!csrfToken) {
+      const token = await initCsrfToken(false)
+      if (token) headers.set('X-CSRF-Token', token)
+      // If still no CSRF token after init, log in dev but don't add header with null
+    } else {
+      headers.set('X-CSRF-Token', csrfToken)
+    }
   }
 
   const executeRequest = async (): Promise<unknown> => {
@@ -252,7 +443,8 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
           return data
         }
 
-        if (!RETRY_CONFIG.retryableStatuses.includes(response.status)) {
+        const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(method.toUpperCase())
+        if (!isIdempotent || !RETRY_CONFIG.retryableStatuses.includes(response.status)) {
           return handleNonRetryable(
             response,
             fullUrl,
@@ -336,8 +528,16 @@ async function handleNonRetryable(
         headers.set('X-Session-ID', getSessionId())
         const csrfToken = getCsrfToken()
         if (csrfToken) headers.set('X-CSRF-Token', csrfToken)
+        const newAccessToken = await getAccessToken()
+        if (newAccessToken) headers.set('Authorization', `Bearer ${newAccessToken}`)
 
-        const retryResponse = await fetch(fullUrl, { ...options, headers, credentials: 'include' })
+        // 401-refresh retry MUST reuse the timeout/abort pipeline (not raw fetch)
+        // so REQUEST_TIMEOUT_MS and caller-signal chaining still apply.
+        const retryResponse = await executeWithTimeout(
+          fullUrl,
+          { ...options, headers },
+          headers
+        )
 
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
@@ -348,6 +548,7 @@ async function handleNonRetryable(
         }
         response = retryResponse
       } catch {
+        await clearTokens()
         window.dispatchEvent(
           new CustomEvent('auth:session-expired', { detail: { reason: 'token-refresh-failed' } })
         )
@@ -357,8 +558,51 @@ async function handleNonRetryable(
   }
 
   const errorData = await response.json().catch(() => ({}))
+  const errorCode = (errorData.code || errorData.error?.code || '') as string
   const errorMessage =
-    errorData.message ?? errorData.detail ?? 'An error occurred. Please try again.'
+    errorData.message ?? errorData.error?.message ?? errorData.detail ?? 'An error occurred. Please try again.'
+
+  if (
+    response.status === 403 &&
+    (errorCode.startsWith('CSRF_') || errorMessage.toLowerCase().includes('csrf'))
+  ) {
+    try {
+      const freshCsrf = await initCsrfToken(true)
+      if (freshCsrf) {
+        const headers = new Headers(options.headers ?? {})
+        if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
+        headers.set('X-Session-ID', getSessionId())
+        headers.set('X-CSRF-Token', freshCsrf)
+        const currentAccessToken = await getAccessToken()
+        if (currentAccessToken) headers.set('Authorization', `Bearer ${currentAccessToken}`)
+
+        const retryResponse = await executeWithTimeout(
+          fullUrl,
+          { ...options, headers },
+          headers
+        )
+
+        if (retryResponse.ok) {
+          if (responseType === 'blob') return retryResponse.blob()
+          const data = await retryResponse.json()
+          if (method === 'GET' && isCacheable(fullUrl, options))
+            setCachedData(fullUrl, data, options)
+          return data
+        }
+        const retryErrorData = await retryResponse.json().catch(() => ({}))
+        const retryErrorMessage =
+          retryErrorData.message ?? retryErrorData.error?.message ?? retryErrorData.detail ?? errorMessage
+        throw new Error(retryErrorMessage)
+      }
+    } catch (e) {
+      if (e instanceof Error && !e.message.toLowerCase().includes('csrf')) {
+        throw e
+      }
+      if (import.meta.env.DEV) {
+        console.warn('[API] CSRF auto-refresh retry failed:', e)
+      }
+    }
+  }
 
   if (response.status === 401) {
     if (

@@ -94,9 +94,9 @@ vi.mock('./ui/ProgressRing', () => ({
 
 import Header from './Header'
 
-function renderHeader() {
+function renderHeader(initialEntries = ['/']) {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Header />
     </MemoryRouter>
   )
@@ -114,9 +114,16 @@ describe('Header Component', () => {
     expect(screen.getByText('LH')).toBeInTheDocument()
   })
 
-  it('renders search input', () => {
+  it('renders search input with default courses placeholder', () => {
     renderHeader()
     expect(screen.getByPlaceholderText('Search courses...')).toBeInTheDocument()
+  })
+
+  it('renders context-aware search input when on updates page', () => {
+    renderHeader(['/updates'])
+    expect(
+      screen.getByPlaceholderText('Search student updates, circulars, exams...')
+    ).toBeInTheDocument()
   })
 
   it('renders XP and level badges', () => {

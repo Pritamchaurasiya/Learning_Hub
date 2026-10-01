@@ -205,6 +205,7 @@ export class ExtendedPrismaClient extends PrismaClient {
 
     this.$use(async (params, next) => {
       if (params.model && modelsWithSoftDelete.includes(params.model)) {
+        params.args = params.args || {}
         if (
           params.action === 'findUnique' ||
           params.action === 'findFirst' ||
@@ -286,7 +287,7 @@ export class ExtendedPrismaClient extends PrismaClient {
       'P1002', // Database timeout
       'P1008', // Operations timed out
       'P1017', // Server has closed the connection
-      'P2002', // Unique constraint violation (possible race condition)
+      // 'P2002', // Unique constraint violation (NOT retryable - same data will always fail)
       'P2024', // Timed out fetching a connection from the pool
       'P2034', // Transaction failed due to a write conflict or a deadlock
     ]

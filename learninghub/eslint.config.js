@@ -29,6 +29,8 @@ export default [
       'playwright.config.ts',
       'tailwind.config.js',
       'postcss.config.js',
+      'e2e/**',
+      '**/e2e/**',
     ],
   },
 

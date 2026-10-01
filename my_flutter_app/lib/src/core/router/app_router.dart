@@ -16,9 +16,11 @@ import 'package:my_flutter_app/src/features/auth/presentation/login_screen.dart'
 import 'package:my_flutter_app/src/features/auth/presentation/profile_screen.dart';
 import 'package:my_flutter_app/src/features/auth/presentation/register_screen.dart';
 import 'package:my_flutter_app/src/features/cart/presentation/cart_screen.dart';
+import 'package:my_flutter_app/src/features/courses/domain/course_model.dart';
 import 'package:my_flutter_app/src/features/courses/presentation/course_detail_screen.dart';
 import 'package:my_flutter_app/src/features/courses/presentation/course_list_screen.dart';
 import 'package:my_flutter_app/src/features/courses/presentation/downloads_screen.dart';
+import 'package:my_flutter_app/src/features/courses/presentation/lesson_player_screen.dart';
 import 'package:my_flutter_app/src/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:my_flutter_app/src/features/discussions/presentation/discussion_screen.dart';
 import 'package:my_flutter_app/src/features/dsa/presentation/dsa_screen.dart'
@@ -83,6 +85,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => CourseDetailScreen(
               slug: state.pathParameters['slug']!,
             ),
+            routes: [
+              GoRoute(
+                path: 'learn',
+                builder: (context, state) {
+                  final course = state.extra as Course?;
+                  if (course != null) {
+                    return LessonPlayerScreen(course: course);
+                  }
+                  return CourseDetailScreen(slug: state.pathParameters['slug']!);
+                },
+              ),
+            ],
           ),
         ],
       ),

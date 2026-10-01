@@ -3,6 +3,12 @@ import { examEngineInstance } from '../../src/engines/exam'
 import { progressionEngineInstance } from '../../src/engines/progression'
 import { questionEngineInstance } from '../../src/engines/question'
 import { adminEngineInstance } from '../../src/engines/admin'
+import { bktService } from '../../src/engines/analytics'
+import { knowledgeGraphService } from '../../src/engines/knowledge'
+import { spacedRepetitionEngine } from '../../src/engines/learning'
+import { recommendationEngine } from '../../src/engines/recommendation'
+import { questionResponseService } from '../../src/engines/response'
+import { adaptiveTestEngine } from '../../src/engines/test'
 import { engineRegistry } from '../../src/engines'
 
 describe('Production Engines Suite', () => {
@@ -13,6 +19,12 @@ describe('Production Engines Suite', () => {
       expect(engineRegistry.progression).toBe('Production')
       expect(engineRegistry.question).toBe('Production')
       expect(engineRegistry.admin).toBe('Production')
+      expect(engineRegistry.analytics).toBe('Production')
+      expect(engineRegistry.knowledge).toBe('Production')
+      expect(engineRegistry.learning).toBe('Production')
+      expect(engineRegistry.recommendation).toBe('Production')
+      expect(engineRegistry.response).toBe('Production')
+      expect(engineRegistry.test).toBe('Production')
     })
   })
 
@@ -82,7 +94,7 @@ describe('Production Engines Suite', () => {
     })
 
     it('should evaluate level up correctly', () => {
-      const res = progressionEngineInstance.evaluateLevelUp(90, 20)
+      const res = progressionEngineInstance.evaluateLevelUp(390, 20)
       expect(res.previousLevel).toBe(1)
       expect(res.newLevel).toBe(2)
       expect(res.didLevelUp).toBe(true)
@@ -156,6 +168,69 @@ describe('Production Engines Suite', () => {
       expect(res.hasAnomalies).toBe(true)
       expect(res.riskLevel).toBe('CRITICAL')
       expect(res.anomalies[0].type).toBe('HIGH_ERROR_RATE')
+    })
+  })
+
+  describe('BayesianKnowledgeTracingService', () => {
+    it('should increase knowledge probability after a correct answer', () => {
+      const nextProb = bktService.calculateNextProbability(0.5, true)
+      expect(nextProb).toBeGreaterThan(0.5)
+      expect(nextProb).toBeLessThanOrEqual(1.0)
+    })
+
+    it('should decrease knowledge probability after an incorrect answer', () => {
+      const nextProb = bktService.calculateNextProbability(0.5, false)
+      expect(nextProb).toBeLessThan(0.5)
+      expect(nextProb).toBeGreaterThanOrEqual(0.0)
+    })
+  })
+
+  describe('KnowledgeGraphService', () => {
+    it('should safely terminate mastery propagation at depth limit or low delta', async () => {
+      await expect(
+        knowledgeGraphService.propagateMastery('user_1', 'concept_1', 0.001, 0)
+      ).resolves.not.toThrow()
+
+      await expect(
+        knowledgeGraphService.propagateMastery('user_1', 'concept_1', 0.5, 3)
+      ).resolves.not.toThrow()
+    })
+
+    it('should return concept graph with nodes, edges and recommendations', async () => {
+      const graph = await knowledgeGraphService.getConceptGraph('user_test_kg')
+      expect(graph.nodes).toBeDefined()
+      expect(graph.nodes.length).toBeGreaterThan(0)
+      expect(graph.edges.length).toBeGreaterThan(0)
+      expect(graph.overallProgressPercentage).toBeGreaterThanOrEqual(0)
+      expect(graph.nodes[0].name).toBeDefined()
+      expect(graph.nodes[0].level).toBeDefined()
+    })
+  })
+
+  describe('SpacedRepetitionEngine', () => {
+    it('should calculate next review date and ease factor according to SM-2 rules', () => {
+      const result = spacedRepetitionEngine.calculateSM2(5, 1, 2.5, 1)
+      expect(result.intervalDays).toBe(6)
+      expect(result.repetitions).toBe(2)
+      expect(result.easeFactor).toBeGreaterThanOrEqual(2.5)
+    })
+
+    it('should reset repetitions to 0 and interval to 1 on failure (quality < 3)', () => {
+      const result = spacedRepetitionEngine.calculateSM2(1, 10, 2.5, 5)
+      expect(result.intervalDays).toBe(1)
+      expect(result.repetitions).toBe(0)
+    })
+  })
+
+  describe('AdaptiveTestEngine', () => {
+    it('should calculate 2PL probability correctly', () => {
+      const prob = adaptiveTestEngine.calculateIRTProbability(0.0, { a: 1.0, b: 0.0, c: 0.0 })
+      expect(prob).toBeCloseTo(0.5, 2)
+    })
+
+    it('should calculate Fisher information correctly', () => {
+      const info = adaptiveTestEngine.calculateFisherInformation(0.0, { a: 1.0, b: 0.0, c: 0.0 })
+      expect(info).toBeGreaterThan(0)
     })
   })
 })

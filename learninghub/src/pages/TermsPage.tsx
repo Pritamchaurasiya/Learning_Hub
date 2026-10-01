@@ -115,12 +115,12 @@ const TermsPage = memo(() => {
         >
           <p className="text-sm text-gray-500 dark:text-gray-400">
             If you have any questions about these terms, please{' '}
-            <button
-              onClick={() => navigate('/contact')}
+            <a
+              href="mailto:support@learninghub.com"
               className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
             >
               contact our support team
-            </button>
+            </a>
             .
           </p>
         </motion.div>

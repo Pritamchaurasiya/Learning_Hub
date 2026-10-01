@@ -83,12 +83,16 @@ export const subscriptionService = {
       body: JSON.stringify({ tierId }),
     })
 
-    if (res.data?.checkoutUrl) {
+    if (res?.data?.checkoutUrl) {
       return res.data.checkoutUrl
     }
 
-    // If Stripe is not configured or fails, we return a mock success flow
-    return `/payment-success?session_id=mock_${Date.now()}`
+    if (import.meta.env.DEV) {
+      // In local development mode without Stripe, provide simulated checkout flow
+      return `/payment-success?session_id=mock_${Date.now()}`
+    }
+
+    throw new Error('Unable to create checkout session. Please try again or contact support.')
   },
 
   cancelSubscription: async (): Promise<boolean> => {

@@ -28,7 +28,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+    // Generate unique ID if not provided to prevent collisions with same labels
+    const generatedId = label?.toLowerCase().replace(/\s+/g, '-')
+    const inputId =
+      id ??
+      (generatedId
+        ? `input-${generatedId}-${Math.random().toString(36).slice(2, 8)}`
+        : `input-${Math.random().toString(36).slice(2, 8)}`)
+    const errorId = `${inputId}-error`
+    const helperId = `${inputId}-helper`
 
     return (
       <div className={cn('space-y-1.5', fullWidth && 'w-full')}>
@@ -52,9 +60,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             required={required}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={
-              error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
-            }
+            aria-errormessage={error ? errorId : undefined}
+            aria-describedby={!error && helperText ? helperId : undefined}
             className={cn(
               // Base styles
               'flex h-11 w-full min-h-[44px] rounded-lg border bg-white dark:bg-gray-900 px-3 py-2 text-sm',
@@ -81,12 +88,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="text-sm text-red-500" role="alert">
+          <p id={errorId} className="text-sm text-red-500" role="alert">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="text-sm text-gray-500 dark:text-gray-400">
+          <p id={helperId} className="text-sm text-gray-500 dark:text-gray-400">
             {helperText}
           </p>
         )}

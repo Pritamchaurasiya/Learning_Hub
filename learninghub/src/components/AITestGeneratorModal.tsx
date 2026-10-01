@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BrainCircuit, Sparkles } from 'lucide-react'
 import { useStore } from '../stores/useStore'
@@ -20,6 +20,8 @@ interface AITestGeneratorModalProps {
     attemptId: string
   }) => void
   hasAccess?: boolean
+  initialTopic?: string
+  initialMode?: 'adaptive' | 'weak_area'
 }
 
 export const AITestGeneratorModal = memo(function AITestGeneratorModal({
@@ -27,9 +29,21 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
   onClose,
   onTestGenerated,
   hasAccess = true,
+  initialTopic,
+  initialMode,
 }: AITestGeneratorModalProps) {
   const auth = useStore(state => state.auth)
   const addToast = useStore(state => state.addToast)
+
+  // Use refs for callbacks to avoid recreating useCallback
+  const onTestGeneratedRef = useRef(onTestGenerated)
+  onTestGeneratedRef.current = onTestGenerated
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  const addToastRef = useRef(addToast)
+  addToastRef.current = addToast
+  const hasAccessRef = useRef(hasAccess)
+  hasAccessRef.current = hasAccess
 
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiTestMode, setAiTestMode] = useState<'adaptive' | 'weak_area'>('adaptive')
@@ -38,23 +52,27 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
   const [aiTestCount, setAiTestCount] = useState<number>(10)
 
   useEffect(() => {
-    if (isOpen && auth.user?.examPreference) {
-      const pref = auth.user.examPreference
-      if (pref.difficulty) {
-        const diff = pref.difficulty.toLowerCase()
+    if (isOpen) {
+      if (initialTopic) {
+        setAiTestTopic(initialTopic)
+      } else if (auth.user?.examPreference?.subjects?.[0]?.name) {
+        setAiTestTopic(auth.user.examPreference.subjects[0].name)
+      }
+      if (initialMode) {
+        setAiTestMode(initialMode)
+      }
+      if (auth.user?.examPreference?.difficulty) {
+        const diff = auth.user.examPreference.difficulty.toLowerCase()
         if (diff === 'easy' || diff === 'medium' || diff === 'hard') {
           setAiTestDifficulty(diff as 'easy' | 'medium' | 'hard')
         }
       }
-      if (pref.subjects && pref.subjects.length > 0) {
-        setAiTestTopic(pref.subjects[0].name)
-      }
     }
-  }, [isOpen, auth.user?.examPreference])
+  }, [isOpen, initialTopic, initialMode, auth.user?.examPreference])
 
   const handleGenerate = useCallback(async () => {
-    if (!hasAccess) {
-      addToast({ message: 'AI Test Generation is a premium feature.', type: 'error' })
+    if (!hasAccessRef.current) {
+      addToastRef.current({ message: 'AI Test Generation is a premium feature.', type: 'error' })
       return
     }
 
@@ -65,7 +83,7 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
         response = await aiTutorService.generateWeakAreaTest(aiTestCount)
       } else {
         if (!aiTestTopic.trim()) {
-          addToast({
+          addToastRef.current({
             message:
               aiTestMode === 'adaptive'
                 ? 'Please select or enter a topic.'
@@ -112,7 +130,7 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
         const totalQuestions = questions.length || data.question_count
         const timeLimit = startData.time_limit ?? data.time_limit
 
-        onTestGenerated({
+        onTestGeneratedRef.current({
           questions,
           testId: generatedTestId,
           testTitle,
@@ -120,7 +138,7 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
           timeLimit,
           attemptId: startData.attempt_id ?? startData.attemptId ?? '',
         })
-        onClose()
+        onCloseRef.current()
       } else {
         throw new Error((response.data as any)?.error ?? 'Failed to generate test.')
       }
@@ -128,20 +146,11 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
       if (import.meta.env.DEV) {
         console.error('AI Test Generation failed:', err)
       }
-      addToast({ message: 'Failed to generate AI Test', type: 'error' })
+      addToastRef.current({ message: 'Failed to generate AI Test', type: 'error' })
     } finally {
       setIsGenerating(false)
     }
-  }, [
-    hasAccess,
-    aiTestMode,
-    aiTestCount,
-    aiTestTopic,
-    aiTestDifficulty,
-    onTestGenerated,
-    onClose,
-    addToast,
-  ])
+  }, [aiTestMode, aiTestCount, aiTestTopic, aiTestDifficulty])
 
   return (
     <Modal

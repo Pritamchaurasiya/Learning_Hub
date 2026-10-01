@@ -23,41 +23,28 @@ services:
     restart: unless-stopped
     ports:
       - '6379:6379'
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
 
-  backend:
+  express_backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      # Database Configuration
-      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
-      - DIRECT_URL=${DIRECT_URL:-postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}}
-      # Redis Configuration
-      - REDIS_ENABLED=true
-      - REDIS_URL=redis://redis:6379
-      # Server Configuration (changed from 8000 to 5000 to match code default and .env.development)
-      - PORT=5000
       - NODE_ENV=production
-      # JWT Configuration
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-${JWT_SECRET:-your-super-secret-jwt-key}}
-      # CORS & Frontend Configuration
-      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000,http://127.0.0.1:3000}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
-      # CSRF Configuration (use a strong 64+ char hex string in production)
-      - CSRF_SECRET=${CSRF_SECRET:-change-me-generate-a-secure-csrf-secret-at-least-32-chars-long-please-replace-me}
-      # Admin Configuration
-      - ADMIN_SECRET=${ADMIN_SECRET:-change-me-generate-a-secure-admin-secret-at-least-16-chars}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@learninghub.com}
-      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-change-me-secure-password-123}
-      # External APIs
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-mock-key}
+      - PORT=5000
+      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=true
+      - JWT_SECRET=${JWT_SECRET:-learninghub_super_secret_jwt_key_2026_prod}
+      - CSRF_SECRET=${CSRF_SECRET:-lh-csrf-prod-signing-key-super-secure-64charslong-production-token!}
+      - ADMIN_SECRET=${ADMIN_SECRET:-lh-admin-prod-secret-32charslong!}
     ports:
       - '5000:5000'
     depends_on:
@@ -65,8 +52,29 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  django_backend:
+    build:
+      context: ./django_backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DJANGO_SETTINGS_MODULE=learninghub_server.settings
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-production-super-secret-key-learninghub-2026!}
+      - DEBUG=${DEBUG:-False}
+      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
+      - REDIS_URL=redis://redis:6379/0
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - ADMIN_SECRET=${ADMIN_SECRET:-test-admin-secret-key-32charslong!!}
+    ports:
+      - '8000:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: >
-      sh -c "npx prisma migrate deploy && npm start"
+      sh -c "python manage.py migrate && python manage.py seed_data && daphne -b 0.0.0.0 -p 8000 learninghub_server.asgi:application"
 
   frontend:
     build:
@@ -76,7 +84,9 @@ services:
     ports:
       - '3000:80'
     depends_on:
-      - backend
+      - django_backend
+      - express_backend
 
 volumes:
   postgres_data:
+  redis_data:

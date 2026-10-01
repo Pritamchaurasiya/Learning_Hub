@@ -59,7 +59,9 @@ interface BadgeProgressProps {
 }
 
 export const BadgeProgress = ({ badge }: BadgeProgressProps) => {
-  const progress = Math.min((badge.currentProgress / badge.requirement) * 100, 100)
+  const current = badge.currentProgress ?? (badge as any).progress ?? 0
+  const req = badge.requirement ?? (badge as any).maxProgress ?? 1
+  const progress = Math.min((current / req) * 100, 100)
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
@@ -79,7 +81,7 @@ export const BadgeProgress = ({ badge }: BadgeProgressProps) => {
         />
       </div>
       <p className="text-xs text-gray-500 mt-1">
-        {badge.currentProgress} / {badge.requirement}
+        {current} / {req}
       </p>
     </div>
   )

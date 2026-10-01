@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Calendar,
@@ -43,6 +43,12 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
   const [isSaving, setIsSaving] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  useEffect(() => {
+    if (update?.id) {
+      updatesService.logEngagement(update.id, 'IMPRESSION')
+    }
+  }, [update?.id])
+
   const handleToggleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
@@ -55,6 +61,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
     try {
       if (nextState) {
         await updatesService.saveBookmark(update.id)
+        updatesService.logEngagement(update.id, 'BOOKMARK')
       } else {
         await updatesService.removeBookmark(update.id)
       }
@@ -170,6 +177,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
         <Link
           to={`/updates/${update.id}`}
           onClick={e => {
+            updatesService.logEngagement(update.id, 'CLICK_DETAIL')
             if (onViewDetails) {
               e.preventDefault()
               onViewDetails(update)
@@ -186,6 +194,12 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
             <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <span className="truncate max-w-[220px]">{update.institution}</span>
           </span>
+
+          {update.department && (
+            <span className="rounded bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-800 dark:text-indigo-300">
+              Dept: {update.department}
+            </span>
+          )}
 
           {update.course && (
             <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">

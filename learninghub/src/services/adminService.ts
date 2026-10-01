@@ -40,9 +40,10 @@ export interface Course {
   category: string
   level?: string
   difficulty?: string
-  phase?: string
   status?: string
   published?: boolean
+  isPublished?: boolean
+  is_published?: boolean
   instructor?: string
   instructor_name?: string
   enrolledCount?: number

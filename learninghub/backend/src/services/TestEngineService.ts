@@ -14,6 +14,7 @@ import crypto from 'crypto'
 import { Prisma, TestMode, AttemptStatus } from '@prisma/client'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
+import { isTerminalStatus } from '../utils/attemptStateMachine'
 import { topicPerformanceService } from './TopicPerformanceService'
 import { growthEngineService } from './GrowthEngineService'
 import { adaptiveTestEngine } from '../engines/test/AdaptiveTestEngine'
@@ -67,17 +68,14 @@ export class TestEngineService {
       try {
         const txResult = await prisma.$transaction(
           async (tx: Prisma.TransactionClient) => {
-            // ATOMIC: Use upsert to find or create practice test result
-            // This eliminates the race condition between findFirst and create
-            // Using unique constraint [userId, testId, status] on TestResult
-            const practiceResult = await tx.testResult.upsert({
+            const practiceResult = await (tx.testResult as any).upsert({
               where: {
                 userId_testId_status: {
                   userId: req.userId,
                   testId: req.testId,
                   status: 'IN_PROGRESS',
                 },
-              },
+              } as any,
               create: {
                 userId: req.userId,
                 testId: req.testId,
@@ -89,7 +87,7 @@ export class TestEngineService {
                 status: 'IN_PROGRESS',
                 attemptNumber: 1,
               },
-              update: {}, // No update needed if already exists
+              update: {},
             })
 
             // 1. Upsert TestAttemptAnswer with incremental score update
@@ -106,8 +104,9 @@ export class TestEngineService {
                   questionId: req.questionId,
                 },
               },
-              select: { marksObtained: true },
+              select: { marksObtained: true, isCorrect: true },
             })
+            const wasAlreadySolved = existingAnswer?.isCorrect === true
 
             const newMarks = isCorrect ? question.points : 0
             const oldMarks = existingAnswer?.marksObtained ?? 0
@@ -152,7 +151,7 @@ export class TestEngineService {
               where: { id: practiceResult.id },
               data: {
                 percentage:
-                  updatedResult.totalPoints > 0
+                  updatedResult?.totalPoints > 0
                     ? Math.round((updatedResult.score / updatedResult.totalPoints) * 100)
                     : 0,
               },
@@ -164,6 +163,7 @@ export class TestEngineService {
               explanation: question.explanation || 'No explanation available',
               correctOptionId: correctOption?.id || '',
               points: isCorrect ? question.points : 0,
+              wasAlreadySolved,
             }
           },
           { isolationLevel: 'ReadCommitted' }
@@ -171,9 +171,13 @@ export class TestEngineService {
 
         // Fire-and-forget growth engine updates AFTER transaction commits successfully.
         // These are non-critical and should not block the response or hold a DB transaction open.
+        // FIRST-SOLVE GATE: practice_session XP is awarded only when a question
+        // transitions to correct for the first time; repeats just update streak.
         try {
           await growthEngineService.checkAndUpdateStreak(req.userId)
-          await growthEngineService.awardXP(req.userId, 'practice_session')
+          if (txResult.isCorrect && !txResult.wasAlreadySolved) {
+            await growthEngineService.awardXP(req.userId, 'practice_session')
+          }
           if (question.tags && question.tags.length > 0) {
             await topicPerformanceService.updateForSingleAnswer(
               req.userId,
@@ -188,7 +192,13 @@ export class TestEngineService {
           )
         }
 
-        return txResult
+        return {
+          questionId: txResult.questionId,
+          isCorrect: txResult.isCorrect,
+          explanation: txResult.explanation,
+          correctOptionId: txResult.correctOptionId,
+          points: txResult.points,
+        }
       } catch (error) {
         currentTry++
         if (currentTry >= maxRetries) {
@@ -248,6 +258,8 @@ export class TestEngineService {
       bloom_level: q.bloomLevel,
       points: q.points,
       order: q.order,
+      section_id: q.sectionId ?? null,
+      sectionId: q.sectionId ?? null,
       options: q.options.map((o: any) => ({
         id: o.id,
         text: o.text,
@@ -638,7 +650,13 @@ export class TestEngineService {
 
     // Double check status to avoid double processing
 
-    if (!attempt || attempt.status !== 'IN_PROGRESS') {
+    if (!attempt || isTerminalStatus(attempt.status)) {
+      // Already processed or missing — skip silently (idempotent)
+      if (attempt) {
+        logger.debug(
+          `[TestEngine] Skipping expired test processing for attempt ${attemptId}: already ${attempt.status}`
+        )
+      }
       return
     }
 

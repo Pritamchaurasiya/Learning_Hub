@@ -19,7 +19,10 @@ import { CodeCopyHandler } from './components/CodeCopyHandler'
 import { useQueryClient } from '@tanstack/react-query'
 import './index.css'
 
-// Critical pages — eager loaded for instant navigation
+// Critical pages — exactly 4 eager for LCP (Home/Auth/Profile/TestsA).
+// Every other route is lazy + Suspense + ErrorBoundary via LazyRoute (public)
+// or ProtectedLayout's Suspense + SectionErrorBoundary (protected). Do not add
+// more eager imports without measuring LCP impact.
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import ProfilePage from './pages/ProfilePage'
@@ -48,6 +51,8 @@ const DownloadsPage = lazy(() => import('./pages/DownloadsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const DiscussionsPage = lazy(() => import('./pages/DiscussionsPage'))
 const AITutorPage = lazy(() => import('./pages/AITutorPage'))
+const AlgorithmVisualizerPage = lazy(() => import('./pages/AlgorithmVisualizerPage'))
+const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -58,6 +63,16 @@ const PricingPage = lazy(() => import('./pages/PricingPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const CourseDetailsPage = lazy(() => import('./pages/CourseDetailsPage'))
+const LessonPlayerPage = lazy(() => import('./pages/LessonPlayerPage'))
+const VerifyCertificatePage = lazy(() => import('./pages/VerifyCertificatePage'))
+const CartPage = lazy(() => import('./pages/CartPage'))
+const StudentUpdatesPage = lazy(() =>
+  import('./pages/StudentUpdatesPage').then(m => ({ default: m.StudentUpdatesPage }))
+)
+const UpdateDetailsPage = lazy(() =>
+  import('./pages/UpdateDetailsPage').then(m => ({ default: m.UpdateDetailsPage }))
+)
 
 function ProtectedLayout() {
   const auth = useStore(state => state.auth)
@@ -85,6 +100,12 @@ function ProtectedLayout() {
 function PublicRoute({ children }: { children: ReactNode }) {
   const auth = useStore(state => state.auth)
   const location = useLocation()
+  // Hydration guard: zustand persist rehydrates async. Without this, an
+  // authenticated user briefly sees the public landing (flash) before the
+  // redirect to /dashboard fires. Mirror ProtectedLayout behavior.
+  if (!auth.isHydrated) {
+    return <LoadingScreen fullScreen={true} />
+  }
   if (auth.isAuthenticated) {
     return <Navigate to="/dashboard" state={{ from: location }} replace />
   }
@@ -117,14 +138,18 @@ function App() {
       // Clear all cached queries to prevent stale user data after logout
       queryClient.clear()
       void logout()
-      addToast({ message: 'Session expired. Please log in again.', type: 'warning' })
-      navigate('/auth', { replace: true })
+      const publicPaths = ['/', '/pricing', '/offline', '/terms', '/privacy', '/auth', '/forgot-password']
+      const isPublicPath = publicPaths.includes(location.pathname) || location.pathname.startsWith('/auth')
+      if (!isPublicPath) {
+        addToast({ message: 'Session expired. Please log in again.', type: 'warning' })
+        navigate('/auth', { replace: true, state: { from: location } })
+      }
     }
     window.addEventListener('auth:session-expired', handleSessionExpired)
     return () => {
       window.removeEventListener('auth:session-expired', handleSessionExpired)
     }
-  }, [logout, addToast, navigate, queryClient])
+  }, [logout, addToast, navigate, queryClient, location])
 
   useEffect(() => {
     if (auth.isAuthenticated && !auth.user) {
@@ -167,8 +192,14 @@ function App() {
     } else if (theme.mode === 'light') {
       document.documentElement.classList.remove('dark')
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      document.documentElement.classList.toggle('dark', prefersDark)
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      document.documentElement.classList.toggle('dark', mediaQuery.matches)
+
+      const handler = (e: MediaQueryListEvent) => {
+        document.documentElement.classList.toggle('dark', e.matches)
+      }
+      mediaQuery.addEventListener('change', handler)
+      return () => mediaQuery.removeEventListener('change', handler)
     }
   }, [theme.mode])
 
@@ -207,11 +238,9 @@ function App() {
             <Route
               path="/pricing"
               element={
-                <PublicRoute>
-                  <LazyRoute sectionName="Pricing">
-                    <PricingPage />
-                  </LazyRoute>
-                </PublicRoute>
+                <LazyRoute sectionName="Pricing">
+                  <PricingPage />
+                </LazyRoute>
               }
             />
             <Route
@@ -238,9 +267,29 @@ function App() {
                 </LazyRoute>
               }
             />
+            <Route
+              path="/verify-certificate"
+              element={
+                <LazyRoute sectionName="Verify Certificate">
+                  <VerifyCertificatePage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path="/verify-certificate/:code"
+              element={
+                <LazyRoute sectionName="Verify Certificate">
+                  <VerifyCertificatePage />
+                </LazyRoute>
+              }
+            />
 
             <Route element={<ProtectedLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route
+                path="/payment-success"
+                element={<Navigate to="/dashboard" replace state={{ paymentSuccess: true }} />}
+              />
               <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/search"
@@ -255,6 +304,22 @@ function App() {
                 element={
                   <LazyRoute sectionName="Bookmarks">
                     <BookmarksPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/updates"
+                element={
+                  <LazyRoute sectionName="Student Updates">
+                    <StudentUpdatesPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/updates/:id"
+                element={
+                  <LazyRoute sectionName="Notice Details">
+                    <UpdateDetailsPage />
                   </LazyRoute>
                 }
               />
@@ -275,6 +340,22 @@ function App() {
                 }
               />
               <Route
+                path="/visualizer"
+                element={
+                  <LazyRoute sectionName="Algorithm Visualizer">
+                    <AlgorithmVisualizerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/algorithms"
+                element={
+                  <LazyRoute sectionName="Algorithm Visualizer">
+                    <AlgorithmVisualizerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
                 path="/problem/:slug"
                 element={
                   <LazyRoute sectionName="Problem Workspace">
@@ -283,9 +364,40 @@ function App() {
                 }
               />
               <Route path="/certificates" element={<Navigate to="/achievements" replace />} />
+              <Route path="/course" element={<Navigate to="/library" replace />} />
+              <Route
+                path="/course/:courseId"
+                element={
+                  <LazyRoute sectionName="Course Details">
+                    <CourseDetailsPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/lesson-player/:courseId/:lessonId?"
+                element={
+                  <LazyRoute sectionName="Lesson Player">
+                    <LessonPlayerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/courses" element={<Navigate to="/library" replace />} />
+              <Route path="/ebooks" element={<Navigate to="/library?tab=ebooks" replace />} />
+              <Route path="/learning-path" element={<Navigate to="/study-planner" replace />} />
+              <Route path="/planner" element={<Navigate to="/study-planner" replace />} />
+              <Route path="/tests" element={<Navigate to="/tests-a" replace />} />
+              <Route path="/tests/a" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz/:quizId" element={<Navigate to="/tests-a" replace />} />
               <Route path="/quiz-history" element={<Navigate to="/tests-a-history" replace />} />
+              <Route
+                path="/live-class/:id"
+                element={
+                  <LazyRoute sectionName="Live Class">
+                    <LiveClassPage />
+                  </LazyRoute>
+                }
+              />
               <Route path="/tests-a" element={<TestsAPage />} />
               <Route path="/tests-a/:testId" element={<TestsAPage />} />
               <Route
@@ -304,6 +416,8 @@ function App() {
                   </LazyRoute>
                 }
               />
+              <Route path="/algorithm-visualizer" element={<Navigate to="/visualizer" replace />} />
+              <Route path="/contests" element={<Navigate to="/contest" replace />} />
               <Route
                 path="/contest"
                 element={
@@ -317,6 +431,22 @@ function App() {
                 element={
                   <LazyRoute sectionName="Library">
                     <LibraryPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/ebook/:id"
+                element={
+                  <LazyRoute sectionName="Ebook Reader">
+                    <EbookReaderPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/ebook/:id/:chapterId"
+                element={
+                  <LazyRoute sectionName="Ebook Reader">
+                    <EbookReaderPage />
                   </LazyRoute>
                 }
               />
@@ -381,6 +511,14 @@ function App() {
                 element={
                   <LazyRoute sectionName="Study Planner">
                     <StudyPlannerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <LazyRoute sectionName="Shopping Cart">
+                    <CartPage />
                   </LazyRoute>
                 }
               />

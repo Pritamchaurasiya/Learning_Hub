@@ -60,25 +60,40 @@ class User {
   bool isInWishlist(String courseId) => wishlistCourseIds.contains(courseId);
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final rawRole = (json['role'] as String?) ?? 'student';
+    final role = UserRole.values.firstWhere(
+      (r) => r.name.toLowerCase() == rawRole.toLowerCase(),
+      orElse: () => UserRole.student,
+    );
+
+    final createdStr = (json['created_at'] ?? json['createdAt']) as String?;
+    final lastLoginStr = (json['last_login_at'] ?? json['lastLoginAt']) as String?;
+
     return User(
-      id: json['id'] as String,
-      email: json['email'] as String,
+      id: (json['id'] ?? '') as String,
+      email: (json['email'] ?? '') as String,
       phone: json['phone'] as String?,
-      displayName: (json['display_name'] as String?) ?? json['email'] as String,
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
-      avatarUrl: json['avatar'] as String?,
+      displayName: (json['display_name'] ?? json['displayName'] ?? json['name'] ?? json['email'] ?? 'User') as String,
+      firstName: (json['first_name'] ?? json['firstName']) as String?,
+      lastName: (json['last_name'] ?? json['lastName']) as String?,
+      avatarUrl: (json['avatar'] ?? json['avatarUrl'] ?? json['avatar_url']) as String?,
       bio: json['bio'] as String?,
-      role: UserRole.values.byName(json['role'] as String),
+      role: role,
       enrolledCourseIds: json['enrolled_courses'] != null
           ? List<String>.from(json['enrolled_courses'] as List)
-          : [],
+          : (json['enrolledCourseIds'] != null
+              ? List<String>.from(json['enrolledCourseIds'] as List)
+              : []),
       completedCourseIds: json['completed_courses'] != null
           ? List<String>.from(json['completed_courses'] as List)
-          : [],
+          : (json['completedCourseIds'] != null
+              ? List<String>.from(json['completedCourseIds'] as List)
+              : []),
       wishlistCourseIds: json['wishlist_courses'] != null
           ? List<String>.from(json['wishlist_courses'] as List)
-          : [],
+          : (json['wishlistCourseIds'] != null
+              ? List<String>.from(json['wishlistCourseIds'] as List)
+              : []),
       preferences: json['preferences'] != null
           ? UserPreferences.fromJson(
               json['preferences'] as Map<String, dynamic>)
@@ -90,12 +105,14 @@ class User {
       stats: json['stats'] != null
           ? UserStats.fromJson(json['stats'] as Map<String, dynamic>)
           : UserStats.empty(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      lastLoginAt: json['last_login_at'] != null
-          ? DateTime.parse(json['last_login_at'] as String)
+      createdAt: createdStr != null
+          ? (DateTime.tryParse(createdStr) ?? DateTime.now())
           : DateTime.now(),
-      isVerified: json['is_verified'] as bool? ?? false,
-      isActive: json['is_active'] as bool? ?? true,
+      lastLoginAt: lastLoginStr != null
+          ? (DateTime.tryParse(lastLoginStr) ?? DateTime.now())
+          : DateTime.now(),
+      isVerified: (json['is_verified'] ?? json['isVerified'] ?? json['email_verified'] ?? false) as bool,
+      isActive: (json['is_active'] ?? json['isActive'] ?? true) as bool,
     );
   }
 

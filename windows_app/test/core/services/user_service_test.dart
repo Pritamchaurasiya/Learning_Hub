@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:learning_hub/core/services/user_service.dart';
 import 'package:learning_hub/core/services/api_client.dart';
 import 'package:learning_hub/core/services/cache_manager.dart';
 import 'package:learning_hub/core/services/biometric_service.dart';
+import 'package:learning_hub/data/models/user_model.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Define mocks locally to ensure correctness and isolation
@@ -12,6 +14,8 @@ class MockCacheManager extends Mock implements CacheManager {}
 
 class MockBiometricService extends Mock implements BiometricService {}
 
+class FakeUser extends Fake implements User {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -20,20 +24,48 @@ void main() {
   late MockCacheManager mockCache;
   late MockBiometricService mockBiometric;
 
+  setUpAll(() {
+    registerFallbackValue(FakeUser());
+    registerFallbackValue(Duration.zero);
+  });
+
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     mockApi = MockApiClient();
     mockCache = MockCacheManager();
     mockBiometric = MockBiometricService();
 
-    // Stub cache methods with explicit types
-    registerFallbackValue(Duration.zero);
-
     when(() => mockCache.set<dynamic>(
           any(),
-          any<String>(),
+          any(),
           ttl: any(named: 'ttl'),
+          persistToDisk: any(named: 'persistToDisk'),
           encoder: any(named: 'encoder'),
-        )).thenAnswer((_) async => true);
+        )).thenAnswer((_) async {});
+
+    when(() => mockCache.set<User?>(
+          any(),
+          any(),
+          ttl: any(named: 'ttl'),
+          persistToDisk: any(named: 'persistToDisk'),
+          encoder: any(named: 'encoder'),
+        )).thenAnswer((_) async {});
+
+    when(() => mockCache.set<User>(
+          any(),
+          any(),
+          ttl: any(named: 'ttl'),
+          persistToDisk: any(named: 'persistToDisk'),
+          encoder: any(named: 'encoder'),
+        )).thenAnswer((_) async {});
+
+    when(() => mockCache.set<Map<String, dynamic>>(
+          any(),
+          any(),
+          ttl: any(named: 'ttl'),
+          persistToDisk: any(named: 'persistToDisk'),
+          encoder: any(named: 'encoder'),
+        )).thenAnswer((_) async {});
 
     when(() => mockCache.remove(any())).thenAnswer((_) async => true);
 

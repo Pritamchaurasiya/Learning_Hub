@@ -72,14 +72,15 @@ export default function AdminAnalyticsPage() {
     queryKey: ['admin', 'analytics', 'dau'],
     queryFn: async () => {
       const res = await fetchApi('/admin/analytics/dau?days=30')
-      return res.data?.data ?? []
+      const raw = res?.data ?? res
+      return Array.isArray(raw) ? raw : (raw?.data ?? [])
     },
   })
 
   return (
     <AnimatedPage>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="space-y-8 pb-12">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
               <span className="p-2 bg-purple-100 text-purple-600 rounded-xl dark:bg-purple-900/30 dark:text-purple-400">

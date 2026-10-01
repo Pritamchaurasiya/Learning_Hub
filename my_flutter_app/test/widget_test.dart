@@ -114,8 +114,12 @@ class FakeCourseRepository extends CourseRepository {
   FakeCourseRepository() : super(MockApiClient(), MockNetworkInfo());
 
   @override
-  Future<Either<Failure, List<Course>>> getCourses(
-          {bool forceRefresh = false}) async =>
+  Future<Either<Failure, List<Course>>> getCourses({
+    bool forceRefresh = false,
+    String? category,
+    String? difficulty,
+    String? search,
+  }) async =>
       const Right([]);
 
   @override
@@ -206,14 +210,13 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
-      // Verify Title
-      expect(find.text('Learning Hub'), findsWidgets);
-
-      // Verify Mobile specific buttons
-      expect(find.text('Browse Courses'), findsOneWidget);
-      expect(find.text('DSA Lab'), findsOneWidget);
+      // Verify Header and Category Chips
+      expect(find.text('Welcome back,'), findsWidgets);
+      expect(find.text('For You'), findsOneWidget);
+      expect(find.text('DSA Arena'), findsOneWidget);
+      expect(find.text('AI Tutor'), findsOneWidget);
 
       // Reset size
       addTearDown(tester.view.resetPhysicalSize);
@@ -248,17 +251,13 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
-      // Verify Desktop Hero Text
-      expect(find.textContaining('Master Future Skills'),
-          findsWidgets); // using textContaining for multiline
-
-      // Verify Desktop buttons
-      expect(find.text('Start Learning'), findsOneWidget);
-      // 'DSA Lab' might be hidden or in menu, let's loosen check if logic changed
-      // expect(find.text('DSA Lab'), findsWidgets);
-      // expect(find.text('Research Curriculum'), findsOneWidget);
+      // Verify Desktop elements
+      expect(find.text('Welcome back,'), findsWidgets);
+      expect(find.text('For You'), findsOneWidget);
+      expect(find.text('DSA Arena'), findsOneWidget);
+      expect(find.text('Weekly Activity'), findsOneWidget);
 
       addTearDown(tester.view.resetPhysicalSize);
     });

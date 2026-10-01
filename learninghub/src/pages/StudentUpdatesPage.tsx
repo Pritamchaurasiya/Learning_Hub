@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BellRing,
   Flame,
@@ -41,16 +41,25 @@ import type {
 
 export const StudentUpdatesPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') || '';
 
   // Tab State
   const [activeTab, setActiveTab] = useState<'feed' | 'personalized' | 'deadlines' | 'watchers' | 'bookmarks' | 'sources'>('feed');
 
   // Filter States
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [selectedCategory, setSelectedCategory] = useState<UpdateCategory>('ALL');
   const [selectedImportance, setSelectedImportance] = useState<UpdateImportance | 'ALL'>('ALL');
   const [onlyDeadlines, setOnlyDeadlines] = useState(false);
   const [selectedInstitution, setSelectedInstitution] = useState('');
+
+  // Sync external URL search changes into local filter
+  useEffect(() => {
+    if (urlSearch !== searchQuery) {
+      setSearchQuery(urlSearch);
+    }
+  }, [urlSearch]);
 
   // Data States
   const [updates, setUpdates] = useState<StudentUpdate[]>([]);
@@ -179,6 +188,23 @@ export const StudentUpdatesPage: React.FC = () => {
 
   const activeWatchersCount = resultWatchers.filter(w => w.status === 'ACTIVE').length;
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (query) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set('search', query);
+        return next;
+      });
+    } else {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete('search');
+        return next;
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-16">
       {/* Top Banner & Header */}
@@ -215,6 +241,17 @@ export const StudentUpdatesPage: React.FC = () => {
               >
                 <Radio className="w-3.5 h-3.5 animate-pulse" />
                 <span>Watch My Result</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPrefModalOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:bg-accent transition-colors shadow-sm"
+                title="Configure Quiet Hours & Anti-Noise Preferences"
+                aria-label="Delivery Settings"
+              >
+                <Sliders className="w-3.5 h-3.5 text-primary" />
+                <span className="hidden sm:inline">Delivery Settings</span>
               </button>
 
               <button
@@ -380,7 +417,7 @@ export const StudentUpdatesPage: React.FC = () => {
             {/* Filter Bar */}
             <UpdateFilterBar
               searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
+              onSearchChange={handleSearchChange}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               selectedImportance={selectedImportance}
@@ -415,6 +452,11 @@ export const StudentUpdatesPage: React.FC = () => {
                     setSelectedCategory('ALL');
                     setSelectedInstitution('');
                     setOnlyDeadlines(false);
+                    setSearchParams(prev => {
+                      const next = new URLSearchParams(prev);
+                      next.delete('search');
+                      return next;
+                    });
                   }}
                   className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground"
                 >
@@ -771,6 +813,12 @@ export const StudentUpdatesPage: React.FC = () => {
         onCreated={handleWatcherCreated}
         defaultInstitution={resultWatcherDefaults.institution}
         defaultCourse={resultWatcherDefaults.course}
+      />
+
+      {/* Notification Delivery Preferences Modal */}
+      <NotificationPreferencesModal
+        isOpen={isPrefModalOpen}
+        onClose={() => setIsPrefModalOpen(false)}
       />
     </div>
   );

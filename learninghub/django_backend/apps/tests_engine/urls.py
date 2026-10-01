@@ -1,0 +1,46 @@
+from django.urls import path
+from .views import (
+    TestListView, TestDetailView, StartTestView, SubmitTestView,
+    TestAutosaveView, TestAttemptDetailView, TestResultView,
+    AIGenerateTestView, TestAttemptHistoryView, TopicPerformanceView,
+    BookmarkQuestionView, AdaptiveNextQuestionView
+)
+
+urlpatterns = [
+    path('tests', TestListView.as_view(), name='tests-list'),
+    path('tests/', TestListView.as_view(), name='tests-list-slash'),
+    path('tests/attempts', TestAttemptHistoryView.as_view(), name='tests-attempts'),
+    path('tests/attempts/', TestAttemptHistoryView.as_view(), name='tests-attempts-slash'),
+    path('tests/attempts/<str:attempt_id>/next-question', AdaptiveNextQuestionView.as_view(), name='adaptive-next-question'),
+    path('tests/attempts/<str:attempt_id>/next-question/', AdaptiveNextQuestionView.as_view(), name='adaptive-next-question-slash'),
+    path('tests/attempts/<str:pk>', TestAttemptDetailView.as_view(), name='test-attempt-detail'),
+    path('tests/attempts/<str:pk>/', TestAttemptDetailView.as_view(), name='test-attempt-detail-slash'),
+    path('tests/history', TestAttemptHistoryView.as_view(), name='tests-history'),
+    path('tests/analytics/topics', TopicPerformanceView.as_view(), name='topic-performance'),
+    path('tests/generate', AIGenerateTestView.as_view(), name='test-generate'),
+    path('tests/<str:pk>', TestDetailView.as_view(), name='test-detail'),
+    path('tests/<str:pk>/', TestDetailView.as_view(), name='test-detail-slash'),
+    path('tests/<str:pk>/start', StartTestView.as_view(), name='test-start'),
+    path('tests/<str:pk>/start/', StartTestView.as_view(), name='test-start-slash'),
+    path('tests/<str:pk>/autosave', TestAutosaveView.as_view(), name='test-autosave'),
+    path('tests/<str:pk>/autosave/', TestAutosaveView.as_view(), name='test-autosave-slash'),
+    path('tests/<str:pk>/submit', SubmitTestView.as_view(), name='test-submit'),
+    path('tests/<str:pk>/submit/', SubmitTestView.as_view(), name='test-submit-slash'),
+    path('tests/<str:pk>/result', TestResultView.as_view(), name='test-result'),
+    path('tests/<str:pk>/result/', TestResultView.as_view(), name='test-result-slash'),
+    path('tests/<str:pk>/adaptive-next', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test'),
+    path('tests/<str:pk>/adaptive-next/', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test-slash'),
+    path('bookmarks/questions', BookmarkQuestionView.as_view(), name='bookmarks-questions'),
+    path('bookmarks/questions/', BookmarkQuestionView.as_view(), name='bookmarks-questions-slash'),
+    path('bookmarks/questions/<str:question_id>', BookmarkQuestionView.as_view(), name='bookmark-question-delete'),
+    path('bookmarks/questions/<str:question_id>/', BookmarkQuestionView.as_view(), name='bookmark-question-delete-slash'),
+    path('tests/bookmarks', BookmarkQuestionView.as_view(), name='tests-bookmarks'),
+    path('tests/bookmarks/', BookmarkQuestionView.as_view(), name='tests-bookmarks-slash'),
+    path('tests/bookmarks/<str:question_id>', BookmarkQuestionView.as_view(), name='tests-bookmark-delete'),
+    path('tests/bookmarks/<str:question_id>/', BookmarkQuestionView.as_view(), name='tests-bookmark-delete-slash'),
+    path('question-bookmarks', BookmarkQuestionView.as_view(), name='question-bookmarks'),
+    path('question-bookmarks/', BookmarkQuestionView.as_view(), name='question-bookmarks-slash'),
+    path('question-bookmarks/<str:question_id>', BookmarkQuestionView.as_view(), name='question-bookmarks-delete'),
+    path('question-bookmarks/<str:question_id>/', BookmarkQuestionView.as_view(), name='question-bookmarks-delete-slash'),
+]
+

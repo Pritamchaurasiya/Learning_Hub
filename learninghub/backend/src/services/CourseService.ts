@@ -144,15 +144,43 @@ export const courseService = {
       throw new Error('Authentication required')
     }
 
-    const existing = await prisma.testResult.findFirst({
-      where: { userId, testId: courseId },
+    // Check if test exists and is published
+    const test = await prisma.test.findFirst({
+      where: { id: courseId, isPublished: true, deletedAt: null },
+      select: { id: true, title: true, isPublished: true },
     })
-
-    if (existing) {
-      return { enrollment_id: existing.id, status: 'enrolled', message: 'Already enrolled' }
+    if (!test) {
+      throw new Error('Course not found or not available')
     }
 
-    return { enrollment_id: '', status: 'enrolled', message: 'Access granted' }
+    // Check if user has already attempted this (proxy for "enrolled")
+    const existingAttempt = await prisma.testResult.findFirst({
+      where: { userId, testId: courseId },
+      select: { id: true, status: true, attemptNumber: true },
+      orderBy: { attemptNumber: 'desc' },
+    })
+
+    if (existingAttempt) {
+      return {
+        enrollment_id: existingAttempt.id,
+        status: 'enrolled',
+        message: 'Already enrolled',
+        course_id: courseId,
+        course_title: test.title,
+        attempt_number: existingAttempt.attemptNumber,
+      }
+    }
+
+    // For new enrollment, we cannot create a "test result" record (that's for after taking the test).
+    // We use the test metadata itself as the enrollment record.
+    return {
+      enrollment_id: courseId, // use course id as enrollment id until test is attempted
+      status: 'enrolled',
+      message: 'Access granted',
+      course_id: courseId,
+      course_title: test.title,
+      attempt_number: 0,
+    }
   },
 
   async getProgress(userId: string | undefined, courseId: string) {
@@ -162,17 +190,43 @@ export const courseService = {
 
     const result = await prisma.testResult.findFirst({
       where: { userId, testId: courseId },
-      select: { score: true, passed: true, completedAt: true },
+      select: { score: true, passed: true, completedAt: true, status: true },
+      orderBy: { startedAt: 'desc' },
     })
 
     if (!result) {
-      return { progress_percent: 0, completed_lessons: 0, total_lessons: 0 }
+      return {
+        progress_percent: 0,
+        completed_lessons: 0,
+        total_lessons: 0,
+        server_computed: true,
+      }
+    }
+
+    // Server-computed progress based on actual test result state
+    // Cannot claim 100% without passing; cannot claim > score
+    let progressPercent = 0
+    let completedLessons = 0
+    const totalLessons = 1 // single test/course in this simplified model
+
+    if (result.passed) {
+      progressPercent = 100
+      completedLessons = 1
+    } else if (result.completedAt) {
+      // Attempted but didn't pass: progress reflects score
+      progressPercent = Math.min(99, Math.max(0, result.score ?? 0))
+      completedLessons = 0
+    } else if (result.status === 'IN_PROGRESS') {
+      // In progress: low percentage to show "started but not finished"
+      progressPercent = 10
+      completedLessons = 0
     }
 
     return {
-      progress_percent: result.score,
-      completed_lessons: result.passed ? 1 : 0,
-      total_lessons: 1,
+      progress_percent: progressPercent,
+      completed_lessons: completedLessons,
+      total_lessons: totalLessons,
+      server_computed: true, // signal to frontend this is from server data
     }
   },
 
@@ -180,6 +234,46 @@ export const courseService = {
     if (!userId) {
       throw new Error('Authentication required')
     }
-    return { enrollment: { progress } }
+
+    // SECURITY: Validate progress value is a finite number between 0 and 100
+    if (typeof progress !== 'number' || !Number.isFinite(progress)) {
+      throw new Error('Invalid progress value: must be a finite number')
+    }
+    const clampedProgress = Math.min(100, Math.max(0, progress))
+
+    // Server-computed progress: derive from actual test result performance
+    // Client cannot arbitrarily set progress; this value is computed from real data
+    const result = await prisma.testResult.findFirst({
+      where: { userId, testId: courseId },
+      select: { score: true, passed: true, completedAt: true },
+    })
+
+    // SECURITY: Cannot mark 100% complete without having attempted and passed the test
+    // This prevents users from faking 100% course completion without doing the work
+    if (clampedProgress >= 100) {
+      if (!result || !result.passed) {
+        // Anti-cheat: cannot claim 100% without actually passing
+        throw new Error('Cannot claim 100% completion without passing the test')
+      }
+    }
+
+    let serverComputedProgress = 0
+    if (result) {
+      // If passed: 100% complete. If attempted but not passed: 50% (in progress).
+      // If just started: 10% (started).
+      if (result.passed) {
+        serverComputedProgress = 100
+      } else if (result.completedAt) {
+        serverComputedProgress = Math.min(99, Math.max(0, result.score ?? 50))
+      } else {
+        serverComputedProgress = 10 // in progress
+      }
+    }
+
+    // SERVER-COMPUTED ENFORCEMENT: server-computed progress caps client claim.
+    // Client can never inflate beyond what server computed (Canonical Course Contract).
+    const effectiveProgress = Math.min(clampedProgress, serverComputedProgress)
+
+    return { enrollment: { progress: effectiveProgress } }
   },
 }

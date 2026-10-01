@@ -1,26 +1,27 @@
 import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, Search, Code2, Brain, BarChart3, BookOpen, Library } from 'lucide-react'
+import { Home, Code2, Brain, BarChart3, BookOpen, Library, BellRing } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { useStore } from '../stores/useStore'
 
-const navItems = [
+const authNavItems = [
   { to: '/dashboard', icon: Home, label: 'Home' },
-  { to: '/search', icon: Search, label: 'Explore' },
-  { to: '/library', icon: Library, label: 'Library', authOnly: true },
-  { to: '/tests-a', icon: Brain, label: 'Tests', authOnly: true },
-  { to: '/problems', icon: Code2, label: 'Practice', authOnly: true },
-  { to: '/study-planner', icon: BookOpen, label: 'Plan', authOnly: true },
-  { to: '/analytics', icon: BarChart3, label: 'Stats', authOnly: true },
+  { to: '/updates', icon: BellRing, label: 'Updates' },
+  { to: '/tests-a', icon: Brain, label: 'Tests' },
+  { to: '/problems', icon: Code2, label: 'Practice' },
+  { to: '/analytics', icon: BarChart3, label: 'Stats' },
+]
+
+const publicNavItems = [
+  { to: '/', icon: Home, label: 'Home' },
+  { to: '/updates', icon: BellRing, label: 'Updates' },
+  { to: '/pricing', icon: BookOpen, label: 'Pricing' },
+  { to: '/auth', icon: Library, label: 'Sign In' },
 ]
 
 export default function MobileNav() {
   const isAuthenticated = useStore(s => s.auth.isAuthenticated)
-
-  const visibleItems = navItems.filter(item => {
-    if (item.authOnly === true) return isAuthenticated
-    return true
-  })
+  const visibleItems = isAuthenticated ? authNavItems : publicNavItems
 
   return (
     <nav

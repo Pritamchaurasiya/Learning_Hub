@@ -77,7 +77,7 @@ export class ConductorClient {
   ): Promise<{ difficulty: number; discrimination: number } | null> {
     return this.withRetry(
       async () => {
-        const res = await this.fetchWithTimeout(`${this.baseURL}/ai/irt/calibrate`, {
+        const res = await this.fetchWithTimeout(`${this.baseURL}/ai/irt-calibrate/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -89,6 +89,44 @@ export class ConductorClient {
         return await res.json()
       },
       'calibrateItem',
+      null
+    )
+  }
+
+  /**
+   * Run Real-Time Adaptive IRT 3PL Estimation & Question Selection
+   */
+  async calibrateAdaptiveTest(params: {
+    currentTheta: number
+    responses: Array<{ question_id: string; is_correct: boolean }>
+    availablePool: Array<{
+      id: string
+      difficulty: number
+      discrimination?: number
+      guessing?: number
+    }>
+  }): Promise<{
+    estimated_theta: number
+    next_question_id: string | null
+    fisher_information: number
+    remaining_pool_count: number
+  } | null> {
+    return this.withRetry(
+      async () => {
+        const res = await this.fetchWithTimeout(`${this.baseURL}/ai/irt-calibrate/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_theta: params.currentTheta,
+            responses: params.responses,
+            available_pool: params.availablePool,
+          }),
+        })
+        if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status })
+        const json = await res.json()
+        return json.data
+      },
+      'calibrateAdaptiveTest',
       null
     )
   }

@@ -61,12 +61,17 @@ export function Modal({
     const modal = document.querySelector('[role="dialog"]')
     if (!modal) return
 
-    const focusableElements = modal.querySelectorAll(
+    let focusableElements = modal.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
 
+    const updateFocusableElements = () => {
+      focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    }
+
     const firstElement = focusableElements[0] as HTMLElement
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
 
     firstElement?.focus()
 
@@ -74,17 +79,29 @@ export function Modal({
       const keyboardEvent = e as KeyboardEvent
       if (keyboardEvent.key !== 'Tab') return
 
-      if (keyboardEvent.shiftKey && document.activeElement === firstElement) {
+      // Re-query in case DOM changed
+      updateFocusableElements()
+      const currentFirst = focusableElements[0] as HTMLElement
+      const currentLast = focusableElements[focusableElements.length - 1] as HTMLElement
+
+      if (keyboardEvent.shiftKey && document.activeElement === currentFirst) {
         keyboardEvent.preventDefault()
-        lastElement?.focus()
-      } else if (!keyboardEvent.shiftKey && document.activeElement === lastElement) {
+        currentLast?.focus()
+      } else if (!keyboardEvent.shiftKey && document.activeElement === currentLast) {
         keyboardEvent.preventDefault()
-        firstElement?.focus()
+        currentFirst?.focus()
       }
     }
 
+    // Use MutationObserver to detect content changes and update focusable elements
+    const observer = new MutationObserver(updateFocusableElements)
+    observer.observe(modal, { childList: true, subtree: true })
+
     modal.addEventListener('keydown', handleTabKey as EventListener)
-    return () => modal.removeEventListener('keydown', handleTabKey as EventListener)
+    return () => {
+      observer.disconnect()
+      modal.removeEventListener('keydown', handleTabKey as EventListener)
+    }
   }, [isOpen])
 
   const sizeClasses = {

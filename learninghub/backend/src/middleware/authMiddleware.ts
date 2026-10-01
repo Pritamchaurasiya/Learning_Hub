@@ -21,7 +21,14 @@ export interface DecodedTokenWithIat {
   iat?: number
 }
 
+const AUTH_STATUS_CACHE_TTL_SECONDS = 30
+
 const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountStatus | null> => {
+  // SECURITY/PERF TRADEOFF: account status (deletedAt/lockedUntil) is cached briefly
+  // to avoid a DB hit per request. TTL is intentionally short (30s) so
+  // deactivate/lock propagates quickly. Security-critical transitions (password
+  // change, logout-all, account delete/lock) MUST call
+  // `invalidateUserAccountStatus(userId)` (exported below) to close the window.
   const cacheKey = `auth:user:${userId}`
   let user = await cacheService.get<UserAccountStatus>(cacheKey)
 
@@ -32,11 +39,15 @@ const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountSt
     })) as UserAccountStatus | null
 
     if (user) {
-      await cacheService.set(cacheKey, user, 60)
+      await cacheService.set(cacheKey, user, AUTH_STATUS_CACHE_TTL_SECONDS)
     }
   }
 
   return user
+}
+
+export const invalidateUserAccountStatus = async (userId: string): Promise<void> => {
+  await cacheService.delete(`auth:user:${userId}`)
 }
 
 const isAccountActive = (user: UserAccountStatus): boolean => {
@@ -51,7 +62,10 @@ export const authenticate = async (
   try {
     const authHeader = req.headers.authorization
     const cookieToken = getAccessTokenFromCookie(req)
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : cookieToken
+    // Prefer httpOnly cookie over Authorization header for security
+    // Authorization header is kept as fallback for API clients / mobile apps
+    const token =
+      cookieToken || (authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null)
 
     if (!token) {
       sendError(res, 'Authentication required', 401, 'NO_TOKEN')
@@ -97,52 +111,78 @@ export const authenticate = async (
         role: decoded.role,
       }
 
-      const sessionId = req.headers['x-session-id'] as string | undefined
+      const sessionId = (req.headers['x-auth-session-id'] || req.headers['x-user-session-id']) as
+        string | undefined
       if (sessionId) {
-        const session = await prisma.userSession.findFirst({
-          where: {
-            userId: decoded.userId,
-            sessionToken: sessionId,
-            isRevoked: false,
-            expiresAt: { gt: new Date() },
-          },
-          select: { id: true, lastUsedAt: true, createdAt: true },
-        })
+        const sessionCacheKey = `session:${decoded.userId}:${sessionId}`
+        let session = await cacheService.get<{
+          id: string
+          lastUsedAt: Date | string
+          createdAt: Date | string
+        }>(sessionCacheKey)
+
+        if (session) {
+          session.lastUsedAt = new Date(session.lastUsedAt)
+          session.createdAt = new Date(session.createdAt)
+        } else {
+          session = await prisma.userSession.findFirst({
+            where: {
+              userId: decoded.userId,
+              sessionToken: sessionId,
+              isRevoked: false,
+              expiresAt: { gt: new Date() },
+            },
+            select: { id: true, lastUsedAt: true, createdAt: true },
+          })
+
+          if (session) {
+            await cacheService.set(sessionCacheKey, session, 300)
+          }
+        }
 
         if (!session) {
           sendError(res, 'Session expired or invalid', 401, 'SESSION_EXPIRED')
           return
         }
 
+        const lastUsedAtDate = session.lastUsedAt as Date
+        const createdAtDate = session.createdAt as Date
+
         const now = Date.now()
-        const idleMs = now - session.lastUsedAt.getTime()
+        const idleMs = now - lastUsedAtDate.getTime()
         if (idleMs > sessionConfig.idleTimeoutMinutes * 60 * 1000) {
           await prisma.userSession.update({
             where: { id: session.id },
             data: { isRevoked: true, revokedAt: new Date(now) },
           })
+          await cacheService.delete(sessionCacheKey)
           sendError(res, 'Session expired due to inactivity', 401, 'SESSION_IDLE_TIMEOUT')
           return
         }
 
-        const sessionAgeMs = now - session.createdAt.getTime()
+        const sessionAgeMs = now - createdAtDate.getTime()
         if (sessionAgeMs > sessionConfig.absoluteTimeoutMinutes * 60 * 1000) {
           await prisma.userSession.update({
             where: { id: session.id },
             data: { isRevoked: true, revokedAt: new Date(now) },
           })
+          await cacheService.delete(sessionCacheKey)
           sendError(res, 'Session expired', 401, 'SESSION_ABSOLUTE_TIMEOUT')
           return
         }
 
-        prisma.userSession
-          .update({ where: { id: session.id }, data: { lastUsedAt: new Date(now) } })
-          .catch((err: any) =>
-            logger.error(
-              'Failed to update session lastUsedAt',
-              err instanceof Error ? err : new Error(String(err))
+        if (idleMs > 60000) {
+          session.lastUsedAt = new Date(now)
+          await cacheService.set(sessionCacheKey, session, 300)
+          prisma.userSession
+            .update({ where: { id: session.id }, data: { lastUsedAt: new Date(now) } })
+            .catch((err: any) =>
+              logger.error(
+                'Failed to update session lastUsedAt',
+                err instanceof Error ? err : new Error(String(err))
+              )
             )
-          )
+        }
       }
 
       next()
@@ -173,7 +213,10 @@ export const optionalAuth = async (
   try {
     const authHeader = req.headers.authorization
     const cookieToken = getAccessTokenFromCookie(req)
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : cookieToken
+    // Prefer httpOnly cookie over Authorization header for security
+    // Authorization header is kept as fallback for API clients / mobile apps
+    const token =
+      cookieToken || (authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null)
 
     if (!token) {
       next()

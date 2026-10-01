@@ -221,3 +221,128 @@ def test_result_watcher_workflow_and_match(api_client, auth_user, seed_data):
     del_res = api_client.delete(f'/api/v1/updates/result-watchers/{watcher_id}/')
     assert del_res.status_code == 200
 
+
+@pytest.mark.django_db
+def test_sync_update_to_planner_api(api_client, auth_user, seed_data):
+    api_client.force_authenticate(user=auth_user)
+
+    res = api_client.post(
+        '/api/v1/updates/upd-test-1/sync-planner/',
+        {'note': 'Revise DSA Chapter 1-5'}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data['status'] == 'success'
+    assert data['data']['update_id'] == 'upd-test-1'
+    assert data['data']['is_synced'] is True
+    assert 'calendar.google.com' in data['data']['google_calendar_url']
+    assert '/api/v1/updates/upd-test-1/calendar.ics' in data['data']['ical_download_url']
+
+
+@pytest.mark.django_db
+def test_calendar_ics_export_api(api_client, seed_data):
+    res = api_client.get('/api/v1/updates/upd-test-1/calendar.ics')
+    assert res.status_code == 200
+    assert 'text/calendar' in res['Content-Type']
+    content = res.content.decode('utf-8')
+    assert 'BEGIN:VCALENDAR' in content
+    assert 'BEGIN:VEVENT' in content
+    assert 'UID:lh-update-upd-test-1@learninghub.com' in content
+    assert 'END:VCALENDAR' in content
+
+
+@pytest.mark.django_db
+def test_crosslink_ecosystem_synthesis(api_client, seed_data):
+    from apps.updates.services import StudentUpdateService
+    update = StudentUpdateService.ingest_notice_from_source(
+        source_or_id='src-mgkvp',
+        raw_payload={
+            'title': 'AKTU B.Tech Engineering Examination Carry Over Form 2026',
+            'summary': 'Core Engineering and Computer Systems branch form submission date.',
+            'category': 'EXAMINATION',
+            'institution': 'AKTU',
+            'course': 'B.Tech',
+            'deadline_str': '25-10-2026',
+            'url': 'https://aktu.ac.in/notice-eng.html',
+            'status': 'PUBLISHED',
+        }
+    )
+
+    detail_res = api_client.get(f'/api/v1/updates/{update.id}/')
+    assert detail_res.status_code == 200
+    cross_links = detail_res.json()['data'].get('cross_links', [])
+    assert len(cross_links) >= 2
+    types = [cl['content_type'] for cl in cross_links]
+    assert 'TEST' in types or 'STUDY_PLAN' in types
+
+
+@pytest.mark.django_db
+def test_college_circular_publish_and_list_api(api_client, auth_user):
+    api_client.force_authenticate(user=auth_user)
+
+    payload = {
+        'title': 'Computer Science Department Lab Exam Schedule Notice',
+        'summary': 'All BCA and MCA students must report for practical lab examinations on 12th October.',
+        'department': 'Computer Science & Engineering',
+        'institution': 'Kashi Institute of Technology',
+        'issuer_name': 'Prof. Rajesh Sharma',
+        'issuer_role': 'HEAD_OF_DEPARTMENT',
+        'circular_number': 'KIT/CSE/2026/089',
+        'category': 'ACADEMIC',
+        'sub_category': 'DEPARTMENTAL_CIRCULAR',
+        'importance': 'IMPORTANT',
+        'course': 'BCA',
+        'semester': '5th Semester',
+    }
+
+    create_res = api_client.post('/api/v1/updates/college-circulars/publish/', payload)
+    assert create_res.status_code == 201
+    res_data = create_res.json()
+    assert res_data['status'] == 'success'
+    circ_id = res_data['data']['id']
+    assert 'upd-dept-' in circ_id
+    assert res_data['data']['department'] == 'Computer Science & Engineering'
+    assert res_data['data']['issuer_name'] == 'Prof. Rajesh Sharma'
+    assert res_data['data']['authority_level'] == 2
+
+    # Query departmental circulars list
+    list_res = api_client.get('/api/v1/updates/college-circulars/?department=Computer+Science')
+    assert list_res.status_code == 200
+    list_data = list_res.json()['data']
+    assert list_data['total_count'] >= 1
+    assert any(c['id'] == circ_id for c in list_data['results'])
+
+
+@pytest.mark.django_db
+def test_notice_engagement_and_analytics_api(api_client, seed_data):
+    # 1. Post impressions and clicks
+    imp_res = api_client.post(
+        '/api/v1/updates/upd-test-1/engagement/',
+        {'event_type': 'IMPRESSION', 'client_hash': 'anon-hash-123'}
+    )
+    assert imp_res.status_code == 201
+
+    clk_res = api_client.post(
+        '/api/v1/updates/upd-test-1/engagement/',
+        {'event_type': 'CLICK_DETAIL', 'client_hash': 'anon-hash-123'}
+    )
+    assert clk_res.status_code == 201
+
+    # 2. Get notice analytics
+    analytics_res = api_client.get('/api/v1/updates/upd-test-1/analytics/')
+    assert analytics_res.status_code == 200
+    adata = analytics_res.json()['data']
+    assert adata['update_id'] == 'upd-test-1'
+    assert adata['impressions'] >= 1
+    assert adata['detail_clicks'] >= 1
+    assert adata['click_through_rate'] > 0
+
+    # 3. Get platform overview analytics
+    global_res = api_client.get('/api/v1/updates/analytics/overview/')
+    assert global_res.status_code == 200
+    gdata = global_res.json()['data']
+    assert gdata['total_events'] >= 2
+    assert gdata['total_impressions'] >= 1
+
+
+

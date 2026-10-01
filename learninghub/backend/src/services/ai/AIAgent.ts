@@ -7,6 +7,9 @@ export interface AIProviderOptions {
   model?: string
   temperature?: number
   maxTokens?: number
+  task?: 'chat' | 'code_review' | 'test_generation' | 'socratic' | 'irt'
+  skipCache?: boolean
+  preferredProvider?: 'gemini' | 'openai' | 'anthropic' | 'mock'
 }
 
 export interface AIGenerationResult {
@@ -16,6 +19,9 @@ export interface AIGenerationResult {
     completionTokens: number
     totalTokens: number
   }
+  provider?: string
+  cached?: boolean
+  latencyMs?: number
 }
 
 /**

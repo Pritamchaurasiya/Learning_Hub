@@ -1,1 +1,1 @@
-export { SpacedRepetitionEngine } from './SpacedRepetitionEngine'
+export { SpacedRepetitionEngine, spacedRepetitionEngine } from './SpacedRepetitionEngine'

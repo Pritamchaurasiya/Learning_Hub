@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useStore } from './useStore'
 
-// Mock fetchApi
+// Mock fetchApi and token methods
 vi.mock('../utils/api', () => ({
   fetchApi: vi.fn(),
+  setAccessToken: vi.fn().mockResolvedValue(undefined),
+  setRefreshToken: vi.fn().mockResolvedValue(undefined),
+  clearTokens: vi.fn().mockResolvedValue(undefined),
+  getAccessToken: vi.fn().mockResolvedValue(null),
+  getRefreshToken: vi.fn().mockResolvedValue(null),
 }))
 
 describe('useStore', () => {
@@ -73,7 +78,7 @@ describe('useStore', () => {
       lastActive: new Date().toISOString(),
     }
 
-    setAuth('fake-token', 'fake-refresh-token', mockUser)
+    await setAuth('fake-token', 'fake-refresh-token', mockUser)
     expect(useStore.getState().auth.isAuthenticated).toBe(true)
     expect(useStore.getState().auth.user).toEqual(mockUser)
 

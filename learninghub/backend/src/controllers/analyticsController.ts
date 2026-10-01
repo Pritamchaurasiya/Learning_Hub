@@ -29,7 +29,7 @@ export const getLearnerDashboardStats = asyncHandler(
     const cachedStats = await cacheService.getOrSet(
       cacheKey,
       async () => {
-        const [user, testStats, topicStats] = await Promise.all([
+        const [user, testStats, topicStats, enrollments, testCount, goalStats] = await Promise.all([
           prisma.user.findUnique({
             where: { id: userId },
             select: { xp: true, level: true, streak: true, longestStreak: true },
@@ -48,27 +48,57 @@ export const getLearnerDashboardStats = asyncHandler(
               accuracy: true,
             },
           }),
+          prisma.enrollment.findMany({
+            where: { userId },
+            select: { status: true, progress: true },
+          }),
+          prisma.testResult.count({
+            where: { userId, status: 'COMPLETED' },
+          }),
+          prisma.dailyGoal.aggregate({
+            where: { userId },
+            _sum: { completedMinutes: true },
+          }),
         ])
 
         if (!user) {
           throw new Error('User not found')
         }
 
-        return {
-          total_tests: 0, // Placeholder
-          total_learning_time: 0, // Placeholder if no daily goals exist
+        const totalCourses = Array.isArray(enrollments) ? enrollments.length : 0
+        const completedCourses = Array.isArray(enrollments)
+          ? enrollments.filter(
+              (e: { status: string; progress: number }) =>
+                e.status === 'COMPLETED' || (e.progress != null && e.progress >= 100)
+            ).length
+          : 0
+        const inProgressCourses = Array.isArray(enrollments)
+          ? enrollments.filter(
+              (e: { status: string; progress: number }) =>
+                e.status === 'ACTIVE' && (e.progress == null || e.progress < 100)
+            ).length
+          : 0
+        const totalLearningTime = (goalStats?._sum?.completedMinutes ?? 0) * 60
 
-          average_score: Math.round(testStats._avg.percentage ?? 0),
+        return {
+          total_courses: totalCourses,
+          completed_courses: completedCourses,
+          in_progress_courses: inProgressCourses,
+          total_tests: typeof testCount === 'number' ? testCount : 0,
+          total_learning_time: totalLearningTime,
+          average_score: Math.round(testStats?._avg?.percentage ?? 0),
           current_streak: user.streak,
           longest_streak: user.longestStreak,
           xp_points: user.xp,
           level: user.level,
-          topic_performance: topicStats.map((tp: any) => ({
-            topic: tp.topicName,
-            subject: tp.subjectName,
-            attempts: tp.totalAttempts,
-            accuracy: tp.accuracy,
-          })),
+          topic_performance: Array.isArray(topicStats)
+            ? topicStats.map((tp: any) => ({
+                topic: tp.topicName,
+                subject: tp.subjectName,
+                attempts: tp.totalAttempts,
+                accuracy: tp.accuracy,
+              }))
+            : [],
         }
       },
       60 // 1 minute TTL avoids DB spikes while feeling real-time

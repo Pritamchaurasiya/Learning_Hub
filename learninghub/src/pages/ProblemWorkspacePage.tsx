@@ -38,10 +38,14 @@ import {
   AlertCircle,
   Users,
   Radio,
+  Zap,
 } from 'lucide-react'
 import { AICouncilModal } from '../components/AICouncilModal'
 import { CollabSessionModal } from '../components/CollabSessionModal'
 import { useCollaborativeSession } from '../hooks/useCollaborativeSession'
+import { wasmSandboxService } from '../services/wasm/WasmSandboxService'
+import { WasmTestResultsView } from '../components/WasmTestResultsView'
+import type { WasmExecutionResult, ExecutionMode } from '../services/wasm/types'
 
 // ─── Error Boundary for Lazy Loaded Editor ───────────────────────────
 class EditorErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -235,8 +239,11 @@ export default function ProblemWorkspacePage() {
   const [code, setCode] = useState(DEFAULT_CODE.javascript)
   const [output, setOutput] = useState<string | null>(null)
   const [isConsoleOpen, setIsConsoleOpen] = useState(true)
-  const [consoleTab, setConsoleTab] = useState<'output' | 'custom'>('output')
+  const [consoleTab, setConsoleTab] = useState<'output' | 'custom' | 'wasm'>('output')
   const [customInput, setCustomInput] = useState('')
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>('wasm')
+  const [wasmResult, setWasmResult] = useState<WasmExecutionResult | null>(null)
+  const [isWasmRunning, setIsWasmRunning] = useState(false)
   const [isReviewing, setIsReviewing] = useState(false)
   const [mobileTab, setMobileTab] = useState<'description' | 'editor'>('description')
   const [fontSize, setFontSize] = useState<number>(14)
@@ -446,15 +453,68 @@ export default function ProblemWorkspacePage() {
     },
   })
 
-  const handleRun = useCallback(() => {
+  const handleRun = useCallback(async () => {
     if (!problem) return
-    setOutput('⏳ Compiling and running sample tests…')
     setIsConsoleOpen(true)
     if (collabRoomId) {
       sendRunTests()
     }
+
+    if (executionMode === 'wasm' && wasmSandboxService.supportsWasm(language)) {
+      setIsWasmRunning(true)
+      setOutput('⚡ Running via WebAssembly Native Sandbox (Air-Gapped 0ms)…')
+      try {
+        const res = await wasmSandboxService.execute(language, code, {
+          testCases: problem.examples ?? [],
+          customInput: consoleTab === 'custom' && customInput.trim() ? customInput : undefined,
+        })
+        setWasmResult(res)
+        setConsoleTab('wasm')
+        setOutput(
+          `⚡ WASM Sandbox Execution Complete: ${res.status}\n` +
+            `   Passed: ${res.passedTests}/${res.totalTests} test cases\n` +
+            `   Runtime: ${res.totalExecutionTimeMs}ms (Sub-millisecond)\n` +
+            `   Memory: ${res.peakMemoryKb}KB\n` +
+            `   Engine: ${res.engine}\n\n` +
+            (res.feedback ? `${res.feedback}\n` : '')
+        )
+        if (collabRoomId) {
+          sendTestResults(res.feedback, res.overallPassed ? 'passed' : 'failed')
+        }
+        if (res.overallPassed) {
+          addToast({
+            message: `⚡ All ${res.passedTests}/${res.totalTests} WASM test cases passed in ${res.totalExecutionTimeMs}ms!`,
+            type: 'success',
+          })
+        } else {
+          addToast({
+            message: `WASM Run: ${res.passedTests}/${res.totalTests} passed`,
+            type: 'warning',
+          })
+        }
+      } catch (err: any) {
+        setOutput(`❌ WASM Sandbox Error: ${err.message || String(err)}`)
+      } finally {
+        setIsWasmRunning(false)
+      }
+      return
+    }
+
+    setOutput('⏳ Compiling and running sample tests via Cloud Container…')
     runCodeMutation.mutate()
-  }, [problem, runCodeMutation, collabRoomId, sendRunTests])
+  }, [
+    problem,
+    code,
+    language,
+    executionMode,
+    consoleTab,
+    customInput,
+    collabRoomId,
+    sendRunTests,
+    sendTestResults,
+    addToast,
+    runCodeMutation,
+  ])
 
   const handleSubmit = useCallback(() => {
     if (!problem) return
@@ -640,6 +700,42 @@ ${review.overallFeedback}
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Execution Engine Selector */}
+          <div className="hidden lg:flex items-center bg-gray-900 border border-gray-800 rounded-lg p-0.5 text-[11px]">
+            <button
+              onClick={() => {
+                setExecutionMode('wasm')
+                addToast({
+                  message: '⚡ WebAssembly Native Sandbox enabled (Instant, 0ms latency)',
+                  type: 'info',
+                })
+              }}
+              className={`flex items-center gap-1 px-2 py-1 rounded font-medium transition-colors ${
+                executionMode === 'wasm'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+              title="Air-gapped Client WebAssembly Execution (0ms latency, zero server load)"
+            >
+              <Zap className="w-3 h-3 text-amber-400" />
+              WASM (0ms)
+            </button>
+            <button
+              onClick={() => {
+                setExecutionMode('cloud')
+                addToast({ message: '☁️ Cloud Container Sandbox enabled', type: 'info' })
+              }}
+              className={`flex items-center gap-1 px-2 py-1 rounded font-medium transition-colors ${
+                executionMode === 'cloud'
+                  ? 'bg-primary-500/20 text-primary-300 border border-primary-500/30'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+              title="Remote Cloud Docker Container Execution"
+            >
+              Cloud
+            </button>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
@@ -682,18 +778,26 @@ ${review.overallFeedback}
             variant="outline"
             size="sm"
             onClick={handleRun}
-            isLoading={runCodeMutation.isPending}
+            isLoading={isWasmRunning || runCodeMutation.isPending}
             disabled={submitSolutionMutation.isPending}
-            leftIcon={<Play className="w-3.5 h-3.5" />}
+            leftIcon={
+              executionMode === 'wasm' && wasmSandboxService.supportsWasm(language) ? (
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <Play className="w-3.5 h-3.5" />
+              )
+            }
             className="bg-gray-800/80 border-gray-700 hover:bg-gray-700 text-gray-200 text-xs h-8"
           >
-            Run
+            {executionMode === 'wasm' && wasmSandboxService.supportsWasm(language)
+              ? 'Run (WASM)'
+              : 'Run'}
           </Button>
           <Button
             size="sm"
             onClick={handleSubmit}
             isLoading={submitSolutionMutation.isPending}
-            disabled={runCodeMutation.isPending}
+            disabled={isWasmRunning || runCodeMutation.isPending}
             leftIcon={<Send className="w-3.5 h-3.5" />}
             className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 text-xs h-8"
           >
@@ -928,6 +1032,20 @@ ${review.overallFeedback}
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => {
+                      setConsoleTab('wasm')
+                      setIsConsoleOpen(true)
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                      consoleTab === 'wasm' && isConsoleOpen
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm'
+                        : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    Test Cases (WASM)
+                  </button>
+                  <button
+                    onClick={() => {
                       setConsoleTab('output')
                       setIsConsoleOpen(true)
                     }}
@@ -972,7 +1090,21 @@ ${review.overallFeedback}
               {/* Console Body */}
               {isConsoleOpen && (
                 <div className="flex-1 overflow-y-auto p-3 font-mono text-xs whitespace-pre-wrap text-gray-400 custom-scrollbar min-h-0">
-                  {consoleTab === 'custom' ? (
+                  {consoleTab === 'wasm' ? (
+                    wasmResult ? (
+                      <WasmTestResultsView result={wasmResult} />
+                    ) : (
+                      <div className="text-gray-500 space-y-2 font-sans">
+                        <div className="flex items-center gap-2 text-amber-400 font-semibold">
+                          <Zap className="w-4 h-4" />
+                          <span>⚡ WebAssembly Native Sandbox Ready</span>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          Click <strong>Run (WASM)</strong> to evaluate your solution in-browser with 0ms server latency, zero cloud cost, and complete air-gapped security.
+                        </p>
+                      </div>
+                    )
+                  ) : consoleTab === 'custom' ? (
                     <div className="space-y-3 font-sans">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-gray-300">

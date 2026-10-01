@@ -56,6 +56,34 @@ export interface SpacedRepetitionItem {
   intervalDays: number
 }
 
+export interface ConceptNode {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  type: string
+  order: number
+  level: number
+  masteryScore: number
+  status: 'LOCKED' | 'UNLOCKED' | 'IN_PROGRESS' | 'MASTERED'
+  prerequisiteIds: string[]
+  isRecommended: boolean
+}
+
+export interface ConceptEdge {
+  id: string
+  from: string
+  to: string
+  strength: string
+}
+
+export interface KnowledgeGraphData {
+  nodes: ConceptNode[]
+  edges: ConceptEdge[]
+  recommendedConceptId: string | null
+  overallProgressPercentage: number
+}
+
 export interface SkillProgress {
   skill_name: string
   category: string
@@ -273,5 +301,17 @@ export const analyticsService = {
 
   async getSpacedRepetitionSchedule(): Promise<{ status: string; data: SpacedRepetitionItem[] }> {
     return fetchApi('/analytics/spaced-repetition').catch(() => ({ status: 'error', data: [] }))
+  },
+
+  async getKnowledgeGraph(): Promise<{ status: string; data: KnowledgeGraphData }> {
+    return fetchApi('/recommendations/knowledge-graph').catch(() => ({
+      status: 'error',
+      data: {
+        nodes: [],
+        edges: [],
+        recommendedConceptId: null,
+        overallProgressPercentage: 0,
+      },
+    }))
   },
 }

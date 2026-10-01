@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { io, type Socket } from 'socket.io-client'
 
 interface WebSocketState {
@@ -10,68 +10,67 @@ interface WebSocketState {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WebSocketEventHandler<T = any> = (data: T) => void
 
-// Module-level singleton state
-let globalSocket: Socket | null = null
-let globalState: WebSocketState = {
-  isConnected: false,
-  isConnecting: false,
-  error: null,
-}
-const globalEventHandlers = new Map<string, Set<WebSocketEventHandler>>()
-let connectAttemptCount = 0
-let activeConnectionCount = 0
-const MAX_RECONNECT_ATTEMPTS = 10
-
-// A set of setters to notify all instances of state changes
-const stateSubscribers = new Set<React.Dispatch<React.SetStateAction<WebSocketState>>>()
-
-function updateGlobalState(
-  newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)
-) {
-  const nextState =
-    typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState }
-  globalState = nextState
-  stateSubscribers.forEach(setState => setState(nextState))
+interface UseWebSocketReturn extends WebSocketState {
+  connect: () => void
+  disconnect: () => void
+  on: <T>(event: string, handler: WebSocketEventHandler<T>) => () => void
+  off: (event: string, handler: WebSocketEventHandler) => void
+  emit: (event: string, data?: unknown) => void
+  joinRoom: (roomId: string) => void
+  leaveRoom: (roomId: string) => void
+  socket: Socket | null
 }
 
 /**
- * Production-grade WebSocket hook with:
- * - Exponential backoff with jitter on reconnection
- * - Maximum reconnection attempts (10) with increasing delays
- * - Silent failure handling — no console spam in production
- * - Singleton socket instance per application lifecycle
- * - Cookie-based authentication (httpOnly JWT cookies)
+ * Production-grade WebSocket hook with per-instance connection management.
+ * Each component gets its own socket connection with proper cleanup.
+ * Uses React refs for stable references and avoids singleton anti-pattern.
  */
-export function useWebSocket() {
-  const [state, setState] = useState<WebSocketState>(globalState)
+export function useWebSocket(): UseWebSocketReturn {
+  const [state, setState] = useState<WebSocketState>({
+    isConnected: false,
+    isConnecting: false,
+    error: null,
+  })
 
-  useEffect(() => {
-    stateSubscribers.add(setState)
-    return () => {
-      stateSubscribers.delete(setState)
-    }
-  }, [])
+  const socketRef = useRef<Socket | null>(null)
+  const eventHandlersRef = useRef<Map<string, Set<WebSocketEventHandler>>>(new Map())
+  const connectAttemptCountRef = useRef(0)
+  const isMountedRef = useRef(true)
+  const MAX_RECONNECT_ATTEMPTS = 10
+
+  const updateState = useCallback(
+    (newState: Partial<WebSocketState> | ((prev: WebSocketState) => WebSocketState)) => {
+      if (!isMountedRef.current) return
+      setState(prev => {
+        const nextState = typeof newState === 'function' ? newState(prev) : { ...prev, ...newState }
+        return nextState
+      })
+    },
+    []
+  )
 
   const connect = useCallback(() => {
-    activeConnectionCount++
-    if (globalSocket?.connected || globalSocket?.active) return
+    if (socketRef.current?.connected || socketRef.current?.active) return
 
-    if (connectAttemptCount >= MAX_RECONNECT_ATTEMPTS) {
+    if (connectAttemptCountRef.current >= MAX_RECONNECT_ATTEMPTS) {
       if (import.meta.env.DEV) {
         console.warn('[WebSocket] Max reconnection attempts reached. Giving up.')
       }
       return
     }
 
-    updateGlobalState({ isConnecting: true, error: null })
+    updateState({ isConnecting: true, error: null })
 
     const envUrl = import.meta.env.VITE_API_URL
     if (!envUrl && import.meta.env.PROD) {
       throw new Error('VITE_API_URL environment variable is required for WebSocket connection')
     }
-    const API_URL = envUrl?.replace('/api/v1', '') ?? ''
+    const API_URL = envUrl?.startsWith('http')
+      ? envUrl.replace('/api/v1', '')
+      : window.location.origin
 
-    globalSocket = io(API_URL, {
+    const socket = io(API_URL, {
       transports: ['websocket', 'polling'],
       withCredentials: true,
       reconnection: true,
@@ -83,17 +82,17 @@ export function useWebSocket() {
       forceNew: true,
     })
 
-    const socket = globalSocket
+    socketRef.current = socket
 
     socket.on('connect', () => {
-      connectAttemptCount = 0
+      connectAttemptCountRef.current = 0
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.log('[WebSocket] Connected:', socket.id)
+        console.warn('[WebSocket] Connected:', socket.id)
       }
-      updateGlobalState({ isConnected: true, isConnecting: false, error: null })
+      updateState({ isConnected: true, isConnecting: false, error: null })
 
-      globalEventHandlers.forEach((handlers, event) => {
+      // Re-register all event handlers
+      eventHandlersRef.current.forEach((handlers, event) => {
         handlers.forEach(handler => {
           socket.off(event, handler)
           socket.on(event, handler)
@@ -103,68 +102,73 @@ export function useWebSocket() {
 
     socket.on('disconnect', (reason: string) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.log('[WebSocket] Disconnected:', reason)
+        console.warn('[WebSocket] Disconnected:', reason)
       }
-      updateGlobalState({ isConnected: false })
+      updateState({ isConnected: false })
     })
 
     socket.on('connect_error', (error: Error) => {
-      connectAttemptCount++
+      connectAttemptCountRef.current++
 
-      if (connectAttemptCount === 1 && import.meta.env.DEV) {
+      if (connectAttemptCountRef.current === 1 && import.meta.env.DEV) {
         console.warn('[WebSocket] Connection failed — will retry with backoff:', error.message)
-      } else if (connectAttemptCount >= MAX_RECONNECT_ATTEMPTS) {
+      } else if (connectAttemptCountRef.current >= MAX_RECONNECT_ATTEMPTS) {
         if (import.meta.env.DEV) {
           console.warn('[WebSocket] All reconnection attempts exhausted.')
         }
         socket.disconnect()
       }
 
-      updateGlobalState({ isConnecting: false, error })
+      updateState({ isConnecting: false, error })
     })
-  }, [])
+  }, [updateState])
 
   const disconnect = useCallback(() => {
-    activeConnectionCount = Math.max(0, activeConnectionCount - 1)
-    if (activeConnectionCount === 0 && globalSocket) {
-      globalSocket.removeAllListeners()
-      globalSocket.disconnect()
-      globalSocket = null
-      connectAttemptCount = 0
-      updateGlobalState({ isConnected: false, isConnecting: false, error: null })
+    if (socketRef.current) {
+      socketRef.current.removeAllListeners()
+      socketRef.current.disconnect()
+      socketRef.current = null
+      connectAttemptCountRef.current = 0
+      updateState({ isConnected: false, isConnecting: false, error: null })
     }
-  }, [])
+  }, [updateState])
 
-  const on = useCallback((event: string, handler: WebSocketEventHandler) => {
-    if (!globalEventHandlers.has(event)) {
-      globalEventHandlers.set(event, new Set())
+  const on = useCallback(<T>(event: string, handler: WebSocketEventHandler<T>) => {
+    if (!eventHandlersRef.current.has(event)) {
+      eventHandlersRef.current.set(event, new Set())
     }
+    eventHandlersRef.current.get(event)!.add(handler)
 
-    globalEventHandlers.get(event)!.add(handler)
-
-    globalSocket?.on(event, handler)
+    socketRef.current?.on(event, handler)
 
     return () => off(event, handler)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const off = useCallback((event: string, handler: WebSocketEventHandler) => {
-    globalEventHandlers.get(event)?.delete(handler)
-    globalSocket?.off(event, handler)
+    eventHandlersRef.current.get(event)?.delete(handler)
+    socketRef.current?.off(event, handler)
   }, [])
 
   const emit = useCallback((event: string, data?: unknown) => {
-    globalSocket?.emit(event, data)
+    socketRef.current?.emit(event, data)
   }, [])
 
   const joinRoom = useCallback((roomId: string) => {
-    globalSocket?.emit('join-room', roomId)
+    socketRef.current?.emit('join-room', roomId)
   }, [])
 
   const leaveRoom = useCallback((roomId: string) => {
-    globalSocket?.emit('leave-room', roomId)
+    socketRef.current?.emit('leave-room', roomId)
   }, [])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      disconnect()
+    }
+  }, [disconnect])
 
   return {
     ...state,
@@ -176,7 +180,7 @@ export function useWebSocket() {
     joinRoom,
     leaveRoom,
     get socket() {
-      return globalSocket
+      return socketRef.current
     },
   }
 }

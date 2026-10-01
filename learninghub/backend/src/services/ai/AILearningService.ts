@@ -7,6 +7,59 @@ import { cacheService } from '../CacheService'
 import { withTimeout, TimeoutError } from '../../utils/timeout'
 import { TokenTrimmer } from '../../utils/TokenTrimmer'
 
+// Enhanced types for better context and debugging
+export interface DebuggingHelpRequest {
+  userId: string
+  code: string
+  language: string
+  problemDescription: string
+  errorMessage?: string
+  stackTrace?: string
+  expectedBehavior: string
+  actualBehavior: string
+  userCode?: string
+}
+
+export interface DebuggingHelpResponse {
+  rootCause: string
+  fix: string
+  explanation: string
+  preventionTips: string[]
+  suggestedCode?: string
+}
+
+export interface CodeExplanationRequest {
+  userId: string
+  code: string
+  language: string
+  focusAreas?: ('timeComplexity' | 'spaceComplexity' | 'readability' | 'bestPractices' | 'bugs')[]
+}
+
+export interface CodeExplanationResponse {
+  summary: string
+  lineByLineExplanation: { line: number; explanation: string }[]
+  timeComplexity: string
+  spaceComplexity: string
+  potentialIssues: string[]
+  improvements: string[]
+}
+
+export interface ConceptExplanationRequest {
+  userId: string
+  concept: string
+  context?: string
+  userLevel: 'beginner' | 'intermediate' | 'advanced'
+}
+
+export interface ConceptExplanationResponse {
+  definition: string
+  analogy: string
+  keyPoints: string[]
+  examples: { description: string; code?: string }[]
+  relatedConcepts: string[]
+  practiceProblems: string[]
+}
+
 /**
  * Context window budget.
  * gemini-2.0-flash has a 1M token window but we keep a safe margin.
@@ -642,6 +695,240 @@ Expected JSON Output:
         error instanceof Error ? error : new Error(String(error))
       )
       throw new Error('AI Code Review failed')
+    }
+  }
+
+  /**
+   * Enhanced debugging help - provides step-by-step debugging assistance
+   */
+  async getDebuggingHelp(request: DebuggingHelpRequest): Promise<DebuggingHelpResponse> {
+    try {
+      const { problemDescription, language, errorMessage, stackTrace, expectedBehavior, actualBehavior, userCode } = request
+      const adapter = AIServiceFactory.getAgent()
+      
+      const prompt = `
+      <trusted_instructions>
+      You are an expert debugging assistant for LearningHub. A student is asking for help debugging their code.
+      
+      Analyze the provided information and provide step-by-step debugging assistance.
+      Respond strictly in the following JSON schema:
+      {
+        "rootCause": "Clear explanation of the root cause",
+        "fix": "Specific code fix or approach",
+        "explanation": "Detailed explanation of why this issue occurred",
+        "preventionTips": ["tip1", "tip2", ...],
+        "suggestedCode": "corrected code snippet if applicable"
+      }
+      </trusted_instructions>
+      
+      <student_request>
+      Problem: ${problemDescription}
+      Language: ${language}
+      Error Message: ${errorMessage || 'None provided'}
+      Stack Trace: ${stackTrace || 'None provided'}
+      Expected Behavior: ${expectedBehavior}
+      Actual Behavior: ${actualBehavior}
+      ${userCode ? `Student's Code:\n\`\`\`${language}\n${userCode}\n\`\`\`` : ''}
+      </student_request>
+      `
+
+      const parsed = await adapter.generateJSON<DebuggingHelpResponse>(prompt, {
+        model: 'gemini-2.0-flash',
+        temperature: 0.3,
+        maxTokens: 1500,
+      })
+
+      return parsed
+    } catch (error) {
+      logger.error(
+        '[AILearningService] Debugging help failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      throw new Error('AI Debugging Help failed')
+    }
+  }
+
+  /**
+   * Explain code line by line with complexity analysis
+   */
+  async explainCode(request: CodeExplanationRequest): Promise<CodeExplanationResponse> {
+    try {
+      const { code, language, focusAreas } = request
+      const adapter = AIServiceFactory.getAgent()
+      
+      const prompt = `
+      <trusted_instructions>
+      You are an expert programming instructor. Explain the provided code in detail.
+      Respond strictly in the following JSON schema:
+      {
+        "summary": "High-level summary of what the code does",
+        "lineByLineExplanation": [{"line": 1, "explanation": "..."}],
+        "timeComplexity": "O(N)",
+        "spaceComplexity": "O(1)",
+        "potentialIssues": ["issue1", "issue2"],
+        "improvements": ["improvement1", "improvement2"]
+      }
+      </trusted_instructions>
+      
+      <student_code>
+      Language: ${language}
+      Focus Areas: ${focusAreas?.join(', ') || 'all'}
+      
+      ${code}
+      </student_code>
+      `
+
+      const parsed = await adapter.generateJSON<CodeExplanationResponse>(prompt, {
+        model: 'gemini-2.0-flash',
+        temperature: 0.2,
+        maxTokens: 1500,
+      })
+
+      return parsed
+    } catch (error) {
+      logger.error(
+        '[AILearningService] Code explanation failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      throw new Error('Code explanation failed')
+    }
+  }
+
+  /**
+   * Explain a programming concept at the appropriate level
+   */
+  async explainConcept(request: ConceptExplanationRequest): Promise<ConceptExplanationResponse> {
+    try {
+      const { concept, context, userLevel } = request
+      const adapter = AIServiceFactory.getAgent()
+      
+      const prompt = `
+      <trusted_instructions>
+      You are an expert programming educator. Explain the given concept at the specified user level.
+      Respond strictly in the following JSON schema:
+      {
+        "definition": "Clear, concise definition",
+        "analogy": "Real-world analogy to help understand",
+        "keyPoints": ["point1", "point2", "point3"],
+        "examples": [{"description": "Example description", "code": "code snippet if applicable"}],
+        "relatedConcepts": ["related1", "related2"],
+        "practiceProblems": ["problem1", "problem2"]
+      }
+      </trusted_instructions>
+      
+      <request>
+      Concept: ${concept}
+      Context: ${context || 'General programming'}
+      User Level: ${userLevel}
+      </request>
+      `
+
+      const parsed = await adapter.generateJSON<ConceptExplanationResponse>(prompt, {
+        model: 'gemini-2.0-flash',
+        temperature: 0.3,
+        maxTokens: 1500,
+      })
+
+      return parsed
+    } catch (error) {
+      logger.error(
+        '[AILearningService] Concept explanation failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      throw new Error('Concept explanation failed')
+    }
+  }
+
+  /**
+   * Generate a personalized study plan based on user's weak areas
+   */
+  async generatePersonalizedStudyPlan(userId: string, targetGoal?: string): Promise<{
+    focusAreas: string[]
+    dailyGoals: { day: number; topic: string; estimatedHours: number; resources: string[] }[]
+    milestones: { day: number; goal: string }[]
+    estimatedCompletionDays: number
+  }> {
+    try {
+      const cacheKey = `studyPlan:${userId}:${targetGoal || 'general'}`
+      const cached = await cacheService.get<{
+        focusAreas: string[]
+        dailyGoals: { day: number; topic: string; estimatedHours: number; resources: string[] }[]
+        milestones: { day: number; goal: string }[]
+        estimatedCompletionDays: number
+      }>(cacheKey)
+      if (cached) return cached
+
+      const [passedTests, weakTopics, inProgressTests, learningVelocity] = await Promise.all([
+        prisma.testResult.findMany({
+          where: { userId, passed: true },
+          include: { test: { select: { title: true, difficulty: true } } },
+          take: 20,
+        }),
+        prisma.topicPerformance.findMany({
+          where: { userId, accuracy: { lt: 60 } },
+          orderBy: { accuracy: 'asc' },
+          take: 10,
+        }),
+        prisma.testResult.findMany({
+          where: { userId, status: 'IN_PROGRESS' },
+          include: { test: { select: { title: true } } },
+          take: 5,
+        }),
+        prisma.learningVelocityEvent.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: 30,
+        }),
+      ])
+
+      const weakAreas = weakTopics.map((t: any) => t.topic)
+      const strongAreas = passedTests
+        .filter((r: any) => r.passed && (r.percentage ?? 0) >= 80)
+        .map((r: any) => r.test?.title || 'Test')
+
+      const prompt = `
+      <trusted_instructions>
+      You are an expert learning path designer. Create a personalized study plan.
+      Respond with ONLY valid JSON:
+      {
+        "focusAreas": ["area1", "area2", "area3"],
+        "dailyGoals": [
+          {"day": 1, "topic": "topic name", "estimatedHours": 2, "resources": ["resource1", "resource2"]}
+        ],
+        "milestones": [{"day": 7, "goal": "Complete topic X"}, {"day": 14, "goal": "Pass test Y"}],
+        "estimatedCompletionDays": 14
+      }
+      </trusted_instructions>
+      
+      <student_profile>
+      Strong areas: ${strongAreas.join(', ') || 'None yet'}
+      Weak areas: ${weakAreas.join(', ') || 'None identified'}
+      In-progress: ${inProgressTests.map((t: any) => t.test?.title || 'Test').join(', ') || 'None'}
+      Learning velocity: ${learningVelocity.length > 0 ? 'Active' : 'New learner'}
+      Target goal: ${targetGoal || 'General improvement'}
+      </student_profile>
+      `
+
+      const adapter = AIServiceFactory.getAgent()
+      const parsed = await adapter.generateJSON<{
+        focusAreas: string[]
+        dailyGoals: { day: number; topic: string; estimatedHours: number; resources: string[] }[]
+        milestones: { day: number; goal: string }[]
+        estimatedCompletionDays: number
+      }>(prompt, {
+        model: 'gemini-2.0-flash',
+        temperature: 0.3,
+        maxTokens: 2000,
+      })
+
+      await cacheService.set(`studyPlan:${userId}:${targetGoal || 'general'}`, parsed, 86400) // 24h cache
+      return parsed
+    } catch (error) {
+      logger.error(
+        '[AILearningService] Study plan generation failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
+      throw new Error('Study plan generation failed')
     }
   }
 }

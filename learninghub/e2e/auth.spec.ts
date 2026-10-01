@@ -19,7 +19,7 @@ test.describe('Authentication Flow', () => {
       sessionStorage.clear()
       localStorage.setItem('cookieConsent', 'accepted')
     })
-    
+
     // Mock user authentication context
     await page.route('**/auth/login', async route => {
       const body = JSON.parse(route.request().postData() || '{}')
@@ -29,14 +29,17 @@ test.describe('Authentication Flow', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             status: 'success',
-            data: { user: { id: 'user-1', email: body.email, role: 'STUDENT' }, tokens: { accessToken: 'mock-token' } }
-          })
+            data: {
+              user: { id: 'user-1', email: body.email, role: 'STUDENT' },
+              tokens: { accessToken: 'mock-token' },
+            },
+          }),
         })
       } else {
         await route.fulfill({
           status: 401,
           contentType: 'application/json',
-          body: JSON.stringify({ status: 'error', message: 'Invalid credentials' })
+          body: JSON.stringify({ status: 'error', message: 'Invalid credentials' }),
         })
       }
     })
@@ -47,8 +50,8 @@ test.describe('Authentication Flow', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           status: 'success',
-          data: { user: { id: 'user-1', email: 'student@learninghub.com', role: 'STUDENT' } }
-        })
+          data: { user: { id: 'user-1', email: 'student@learninghub.com', role: 'STUDENT' } },
+        }),
       })
     })
 
@@ -56,24 +59,36 @@ test.describe('Authentication Flow', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ status: 'success' })
+        body: JSON.stringify({ status: 'success' }),
       })
     })
 
     // Mock notifications and user data to prevent redirects
     await page.route('**/notifications*', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: { notifications: [], count: 0 } }) })
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: { notifications: [], count: 0 } }),
+      })
     })
     await page.route('**/gamification/achievements', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: [] }) })
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
     })
     await page.route('**/tests/attempts*', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', data: [] }) })
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
     })
   })
 
   test('should redirect unauthenticated user to login page', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
     // Should redirect to /auth
     await expect(page).toHaveURL(/.*auth/)
@@ -102,9 +117,9 @@ test.describe('Authentication Flow', () => {
   test('should show error for invalid credentials', async ({ page }) => {
     await page.goto('/auth')
 
-    // Fill in invalid credentials
+    // Fill in invalid credentials (valid client format, invalid on server)
     await page.locator('#auth-email').fill('invalid@example.com')
-    await page.locator('#auth-password').fill('wrongpassword123')
+    await page.locator('#auth-password').fill('WrongPassword@123!')
 
     // Submit form
     await page.getByRole('button', { name: /sign in/i }).click()

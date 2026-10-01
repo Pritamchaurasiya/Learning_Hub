@@ -5,15 +5,18 @@ test.describe('Tests A+ Module', () => {
     // Set localStorage tokens before any page navigation to avoid auth redirect race conditions
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
-      window.localStorage.setItem('learninghub-storage', JSON.stringify({
-        state: {
-          auth: {
-            isAuthenticated: true,
-            user: { id: "user-1", username: "TestUser", role: "STUDENT" }
-          }
-        },
-        version: 0
-      }))
+      window.localStorage.setItem(
+        'learninghub-storage',
+        JSON.stringify({
+          state: {
+            auth: {
+              isAuthenticated: true,
+              user: { id: 'user-1', username: 'TestUser', role: 'STUDENT' },
+            },
+          },
+          version: 0,
+        })
+      )
     })
 
     // Mock user authentication
@@ -64,40 +67,43 @@ test.describe('Tests A+ Module', () => {
 
   test('should display available tests on /tests-a', async ({ page }) => {
     // Mock tests list
-    await page.route(/.*\/tests(\?.*)?$/, async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          status: 'success',
-          data: {
-            results: [
-              {
-                id: 'test-1',
-                title: 'Mock DSA Test',
-                description: 'This is a mock test',
-                category: 'DSA',
-                difficulty: 'hard',
-                durationMinutes: 45,
-                totalMarks: 100,
-                questionsCount: 10,
-                mode: 'mock',
-                time_limit_minutes: 45,
-                passing_score: 60,
-                negative_marks_per_question: 0,
-                question_count: 10,
-                is_ai_generated: false,
-                is_featured: false,
-                attempt_count: 0,
-              },
-            ],
-          },
-        }),
-      })
-    })
+    await page.route(
+      url => url.pathname.endsWith('/tests') || url.pathname.endsWith('/tests/'),
+      async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'success',
+            data: {
+              results: [
+                {
+                  id: 'test-1',
+                  title: 'Mock DSA Test',
+                  description: 'This is a mock test',
+                  category: 'DSA',
+                  difficulty: 'hard',
+                  durationMinutes: 45,
+                  totalMarks: 100,
+                  questionsCount: 10,
+                  mode: 'mock',
+                  time_limit_minutes: 45,
+                  passing_score: 60,
+                  negative_marks_per_question: 0,
+                  question_count: 10,
+                  is_ai_generated: false,
+                  is_featured: false,
+                  attempt_count: 0,
+                },
+              ],
+            },
+          }),
+        })
+      }
+    )
 
     await page.goto('/tests-a')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await expect(page.getByRole('heading', { name: 'Mock DSA Test' })).toBeVisible({
       timeout: 15000,
     })
@@ -154,36 +160,30 @@ test.describe('Tests A+ Module', () => {
     })
 
     // 1.5 Mock Test List
-    await page.route(/.*\/tests(\?.*)?$/, async route => {
-      // Don't match /tests/test-1
-      if (
-        route
-          .request()
-          .url()
-          .match(/.*\/tests\/[^?]/)
-      ) {
-        return route.fallback()
+    await page.route(
+      url => url.pathname.endsWith('/tests') || url.pathname.endsWith('/tests/'),
+      async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'success',
+            data: {
+              results: [
+                {
+                  id: 'test-1',
+                  title: 'Mock Gamified Exam',
+                  mode: 'mock',
+                  difficulty: 'medium',
+                  time_limit_minutes: 10,
+                  question_count: 2,
+                },
+              ],
+            },
+          }),
+        })
       }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          status: 'success',
-          data: {
-            results: [
-              {
-                id: 'test-1',
-                title: 'Mock Gamified Exam',
-                mode: 'mock',
-                difficulty: 'medium',
-                time_limit_minutes: 10,
-                question_count: 2,
-              },
-            ]
-          },
-        }),
-      })
-    })
+    )
 
     // 2. Mock Start Test (POST)
     await page.route(/.*\/tests\/test-1\/start$/, async route => {

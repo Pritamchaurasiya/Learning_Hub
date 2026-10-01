@@ -367,7 +367,7 @@ describe('TestScoringService', () => {
       })
 
       // SUBJECTIVE questions get 0 marks initially, dispatched to AI worker
-      expect(result.questionResults[0].is_correct).toBe(false)
+      expect(result.questionResults[0].is_correct).toBeNull()
       expect(result.questionResults[0].explanation).toBe('Grading in progress by AI worker...')
       expect(jobQueueService.addAIJob).toHaveBeenCalledWith(
         expect.objectContaining({

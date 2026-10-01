@@ -48,7 +48,10 @@ export const requestSigning = (req: Request, res: Response, next: NextFunction):
   const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {})
   const expected = computeHmac(rawBody, timestamp, SIGNING_SECRET)
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) {
+  const sigBuf = Buffer.from(signature, 'hex')
+  const expBuf = Buffer.from(expected, 'hex')
+
+  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
     logger.warn('Invalid request signature', {
       path: req.path,
       method: req.method,

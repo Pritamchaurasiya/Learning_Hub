@@ -6,8 +6,8 @@ export interface CartItem {
     id: string
     title: string
     thumbnail?: string
-    instructor: {
-      display_name: string
+    instructor?: {
+      display_name?: string
     }
     price: number
     original_price?: number
@@ -24,6 +24,7 @@ export interface Cart {
   discount: number
   total: number
   currency: string
+  coupon_code?: string | null
   created_at: string
   updated_at: string
 }
@@ -31,77 +32,86 @@ export interface Cart {
 export interface CartResponse {
   status: string
   data: Cart
+  message?: string
 }
 
-export interface CartItemResponse {
+export interface CheckoutResponse {
   status: string
-  data: CartItem
+  data: {
+    order_id: string
+    amount: number
+    currency: string
+    gateway: string
+    status: string
+    idempotent_replay?: boolean
+    course_id?: string
+    razorpay_order_id?: string
+    stripe_client_secret?: string
+  }
+  message?: string
 }
 
 export const cartService = {
   getCart: async (options?: { signal?: AbortSignal }): Promise<CartResponse> => {
-    return fetchApi('/commerce/cart/', { signal: options?.signal }) as Promise<CartResponse>
+    return fetchApi('/commerce/cart', { signal: options?.signal }) as Promise<CartResponse>
   },
 
-  addToCart: async (courseId: string, quantity: number = 1): Promise<CartResponse> => {
-    return (await fetchApi('/commerce/cart/add/', {
+  addToCart: async (
+    courseId: string,
+    quantity: number = 1,
+    metadata?: { title?: string; price?: number; thumbnail?: string; instructorName?: string }
+  ): Promise<CartResponse> => {
+    return fetchApi('/commerce/cart/add', {
       method: 'POST',
-      body: JSON.stringify({ course_id: courseId, quantity }),
-    })) as CartResponse
+      body: JSON.stringify({
+        course_id: courseId,
+        quantity,
+        course_title: metadata?.title,
+        price: metadata?.price,
+        thumbnail: metadata?.thumbnail,
+        instructor_name: metadata?.instructorName,
+      }),
+    }) as Promise<CartResponse>
   },
 
-  updateCartItem: async (itemId: string, quantity: number): Promise<CartItemResponse> => {
-    return fetchApi(`/commerce/cart/items/${itemId}/`, {
+  updateCartItem: async (itemId: string, quantity: number): Promise<CartResponse> => {
+    return fetchApi(`/commerce/cart/items/${itemId}`, {
       method: 'PUT',
       body: JSON.stringify({ quantity }),
-    }) as Promise<CartItemResponse>
+    }) as Promise<CartResponse>
   },
 
-  removeFromCart: async (itemId: string): Promise<{ status: string }> => {
-    return fetchApi(`/commerce/cart/items/${itemId}/`, {
+  removeFromCart: async (itemId: string): Promise<CartResponse> => {
+    return fetchApi(`/commerce/cart/items/${itemId}`, {
       method: 'DELETE',
-    })
+    }) as Promise<CartResponse>
   },
 
   clearCart: async (): Promise<{ status: string }> => {
-    return fetchApi('/commerce/cart/clear/', {
+    return fetchApi('/commerce/cart/clear', {
       method: 'POST',
     })
   },
 
   applyCoupon: async (code: string): Promise<CartResponse> => {
-    return fetchApi('/payments/coupons', {
+    return fetchApi('/commerce/cart/apply-coupon', {
       method: 'POST',
       body: JSON.stringify({ code }),
-    })
+    }) as Promise<CartResponse>
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  checkout: async (paymentMethod: string, courseId?: string): Promise<any> => {
-    // If cart is not implemented, use direct course enrollment
-    if (courseId) {
-      return fetchApi('/payments/orders', {
-        method: 'POST',
-        body: JSON.stringify({
-          gateway: paymentMethod,
-          course_id: courseId,
-        }),
-      })
-    }
-
-    // Try to get cart and use first item
-    const cart = await cartService.getCart()
-    const firstItem = cart.data.items[0]
-    if (!firstItem) {
-      throw new Error('Cart is empty')
-    }
-
-    return fetchApi('/payments/orders', {
+  checkout: async (
+    gateway: string = 'razorpay',
+    courseId?: string,
+    idempotencyKey?: string
+  ): Promise<CheckoutResponse> => {
+    return fetchApi('/commerce/cart/checkout', {
       method: 'POST',
       body: JSON.stringify({
-        gateway: paymentMethod,
-        course_id: firstItem.course.id,
+        gateway,
+        course_id: courseId,
+        idempotency_key: idempotencyKey,
       }),
-    })
+    }) as Promise<CheckoutResponse>
   },
 }

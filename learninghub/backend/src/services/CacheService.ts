@@ -253,6 +253,35 @@ export class CacheService {
     )
   }
 
+  /**
+   * Set key only if it doesn't exist (atomic NX operation)
+   * Returns true if key was set, false if it already existed
+   */
+  async setNX(key: string, value: unknown, ttl: number): Promise<boolean> {
+    let result = false
+    await this.withRedis(
+      async () => {
+        if (!this.client) return
+        // SET key value EX ttl NX
+        const serialized = JSON.stringify(value)
+        const setResult = await this.client.set(key, serialized, { EX: ttl, NX: true })
+        result = setResult === 'OK'
+      },
+      () => {
+        // For memory fallback, check if key exists
+        if (!this.memoryCache.has(key)) {
+          this.setInMemory(key, value, ttl)
+          result = true
+        } else {
+          result = false
+        }
+      },
+      'Cache setNX error:',
+      false
+    )
+    return result
+  }
+
   async delete(key: string): Promise<void> {
     await this.withRedis(
       async () => {
@@ -441,8 +470,7 @@ export class CacheService {
         this.memoryCache.set(key, current, Math.max(1, Math.ceil(windowMs / 1000)))
         return current
       },
-      'Cache incrementWithExpiry error:',
-      true
+      'Cache incrementWithExpiry error:'
     )
   }
 

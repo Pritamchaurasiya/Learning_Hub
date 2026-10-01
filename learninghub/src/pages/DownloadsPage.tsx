@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Trash2,
   Play,
@@ -7,6 +7,8 @@ import {
   CheckCircle,
   X,
   Download as DownloadIcon,
+  Sparkles,
+  FileText,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
@@ -14,9 +16,34 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ErrorState } from '../components/ui/ErrorState'
 import AnimatedPage from '../components/AnimatedPage'
-import { downloadService } from '../services/downloadService'
+import { downloadService, type Download } from '../services/downloadService'
+import { useStore } from '../stores/useStore'
 
 const storageTotal = 32
+
+const OFFLINE_REVISION_KITS = [
+  {
+    id: 'kit-dsa-matrix',
+    title: 'DSA & Big-O Complexity Master Reference',
+    type: 'document' as const,
+    file_size: 4.2 * 1024 * 1024,
+    description: 'Time & Space complexities for 25+ sorting, tree, graph, and DP patterns.',
+  },
+  {
+    id: 'kit-math-formulas',
+    title: 'Calculus, Vectors & Algebra Formula Handbook',
+    type: 'document' as const,
+    file_size: 6.8 * 1024 * 1024,
+    description: 'High-yield calculus derivatives, integrals, and linear algebra transformations.',
+  },
+  {
+    id: 'kit-system-design',
+    title: 'System Design & Scalability Architecture Primer',
+    type: 'document' as const,
+    file_size: 8.5 * 1024 * 1024,
+    description: 'Caching hierarchies, message brokers, load balancing, and consensus protocols.',
+  },
+]
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 MB'
@@ -28,7 +55,26 @@ function formatBytes(bytes: number): string {
 
 export default function DownloadsPage() {
   const [filter, setFilter] = useState<'all' | 'downloading' | 'completed'>('all')
+  const [localKits, setLocalKits] = useState<Download[]>([])
+  const [realStorage, setRealStorage] = useState<{ usedGB: number; quotaGB: number } | null>(null)
+  const addToast = useStore(state => state.addToast)
   const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'storage' in navigator && navigator.storage.estimate) {
+      navigator.storage
+        .estimate()
+        .then(estimate => {
+          if (estimate.usage !== undefined && estimate.quota !== undefined) {
+            setRealStorage({
+              usedGB: estimate.usage / (1024 * 1024 * 1024),
+              quotaGB: estimate.quota / (1024 * 1024 * 1024),
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
 
   const {
     data: downloads = [],
@@ -108,16 +154,45 @@ export default function DownloadsPage() {
     },
   })
 
-  const filteredDownloads = downloads.filter(download => {
+  const handleSaveOfflineKit = (kit: (typeof OFFLINE_REVISION_KITS)[number]) => {
+    if (localKits.some(k => k.id === kit.id)) {
+      addToast({ message: `${kit.title} is already saved for offline study.`, type: 'info' })
+      return
+    }
+
+    const newDownload: Download = {
+      id: kit.id,
+      title: kit.title,
+      type: kit.type,
+      file_size: kit.file_size,
+      progress_percent: 100,
+      status: 'completed',
+      is_expired: false,
+      created_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+    }
+
+    setLocalKits(prev => [newDownload, ...prev])
+    addToast({
+      message: `📥 Saved "${kit.title}" for offline revision!`,
+      type: 'success',
+      duration: 4000,
+    })
+  }
+
+  const allDownloads = [...localKits, ...downloads]
+
+  const filteredDownloads = allDownloads.filter(download => {
     if (filter === 'all') return true
     if (filter === 'downloading')
       return download.status === 'downloading' || download.status === 'paused'
     if (filter === 'completed') return download.status === 'completed'
     return true
   })
-  const storageUsedMB = stats?.total_size_mb ?? 0
-  const storageUsedGB = storageUsedMB / 1024
-  const storagePercentage = (storageUsedGB / storageTotal) * 100
+
+  const effectiveUsedGB = realStorage ? realStorage.usedGB : (stats?.total_size_mb ?? 0) / 1024
+  const effectiveQuotaGB = realStorage ? realStorage.quotaGB : storageTotal
+  const storagePercentage = Math.min(100, (effectiveUsedGB / Math.max(1, effectiveQuotaGB)) * 100)
 
   const typeIcons: Record<'video' | 'course' | 'document', React.ElementType> = {
     video: Play,
@@ -135,15 +210,19 @@ export default function DownloadsPage() {
     <AnimatedPage className="space-y-6">
       <SEO
         title="Downloads - LearningHub"
-        description="Manage your offline content"
-        keywords="downloads, offline, content"
+        description="Manage your offline content and revision kits"
+        keywords="downloads, offline, content, revision, notes"
       />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Downloads</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your offline content</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Offline Learning & Downloads
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Access lecture notes, formula sheets, and cached learning materials offline
+          </p>
         </div>
       </div>
 
@@ -163,25 +242,78 @@ export default function DownloadsPage() {
           <div className="flex items-center gap-3">
             <HardDrive className="w-6 h-6 text-primary-600" />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Storage Used</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Storage Quota</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {storageUsedGB.toFixed(2)} GB of {storageTotal} GB
+                {effectiveUsedGB.toFixed(2)} GB used of {effectiveQuotaGB.toFixed(1)} GB available
+                {realStorage && ' (Browser Cache & IndexedDB)'}
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm">
-            Manage Storage
-          </Button>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
           <div
             className="bg-primary-500 h-3 rounded-full transition-all"
-            style={{ width: `${storagePercentage}%` }}
+            style={{ width: `${Math.max(2, storagePercentage)}%` }}
           />
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          {storagePercentage.toFixed(1)}% used
+          {storagePercentage.toFixed(1)}% quota utilized
         </p>
+      </Card>
+
+      {/* High-Yield Offline Revision Kits */}
+      <Card className="p-6 bg-gradient-to-br from-primary-500/5 via-indigo-500/5 to-purple-500/5 border-primary-500/20">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">
+              Instant Offline Revision Kits
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40 px-2.5 py-1 rounded-full border border-primary-500/20">
+            Available Offline
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {OFFLINE_REVISION_KITS.map(kit => {
+            const isSaved = allDownloads.some(d => d.id === kit.id)
+            return (
+              <div
+                key={kit.id}
+                className="p-4 rounded-2xl bg-white dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 mb-2">
+                    <FileText className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">
+                      PDF Reference
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-1.5 leading-snug">
+                    {kit.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
+                    {kit.description}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700/60 mt-auto">
+                  <span className="text-xs font-medium text-gray-400">
+                    {formatBytes(kit.file_size)}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant={isSaved ? 'outline' : 'primary'}
+                    onClick={() => handleSaveOfflineKit(kit)}
+                    disabled={isSaved}
+                    className="text-xs rounded-xl"
+                  >
+                    {isSaved ? 'Saved Offline' : 'Save Offline'}
+                  </Button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </Card>
 
       {/* Filter */}

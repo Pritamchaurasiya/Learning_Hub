@@ -79,12 +79,12 @@ export const ProblemCard = React.memo(({ problem, index }: ProblemCardProps) => 
 
           <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800/50">
             <div className="flex flex-wrap gap-1.5">
-              {problem.tags.slice(0, 2).map(tag => (
+              {problem.tags.slice(0, 2).map((tag, tIdx) => (
                 <span
-                  key={tag.id}
+                  key={typeof tag === 'string' ? `${tag}-${tIdx}` : (tag.id || tag.name || `tag-${tIdx}`)}
                   className="px-2 py-1 text-[10px] font-bold uppercase tracking-tighter rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-400"
                 >
-                  {tag.name}
+                  {typeof tag === 'string' ? tag : tag.name}
                 </span>
               ))}
             </div>

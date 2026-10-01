@@ -13,6 +13,16 @@ const SKIP_FIELDS = new Set([
   'options',
   'metadata',
   'config',
+  'password',
+  'currentPassword',
+  'newPassword',
+  'confirmPassword',
+  'adminSecret',
+  'secret',
+  'token',
+  'refreshToken',
+  'sessionToken',
+  'csrfToken',
 ])
 
 const shouldSanitize = (fieldName: string): boolean => {

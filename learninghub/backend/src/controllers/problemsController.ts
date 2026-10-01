@@ -99,7 +99,7 @@ export const getProblem = asyncHandler(async (req: Request, res: Response): Prom
     return
   }
 
-  const problem = await prisma.problem.findUnique({
+  const problem = await prisma.problem.findFirst({
     where: { slug, deletedAt: null },
     select: {
       id: true,
@@ -125,12 +125,152 @@ export const getProblem = asyncHandler(async (req: Request, res: Response): Prom
   sendSuccess(res, problem)
 })
 
+export const runSolution = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const problemId = req.params.id as string
+  const { code, language, customInput } = req.body
+
+  // INPUT VALIDATION: bound sandbox workload and reject unsupported languages
+  // before any DB/sandbox work. Code cap (100KB) prevents payload abuse;
+  // language allowlist mirrors CodeSandboxService.LANGUAGE_MAP.
+  const ALLOWED_LANGUAGES = new Set([
+    'python',
+    'python3',
+    'javascript',
+    'js',
+    'node',
+    'typescript',
+    'ts',
+    'java',
+    'cpp',
+    'c++',
+    'c',
+    'go',
+    'rust',
+  ])
+  if (typeof code !== 'string' || code.length === 0 || code.length > 100_000) {
+    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })
+    return
+  }
+  const resolvedLanguage = typeof language === 'string' && language ? language : 'javascript'
+  if (resolvedLanguage.length > 32 || !ALLOWED_LANGUAGES.has(resolvedLanguage.toLowerCase())) {
+    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })
+    return
+  }
+
+  let problem = await prisma.problem.findUnique({ where: { id: problemId } })
+  if (!problem) {
+    problem = await prisma.problem.findFirst({ where: { slug: problemId, deletedAt: null } })
+  }
+  if (!problem) {
+    sendNotFound(res, 'Problem not found')
+    return
+  }
+
+  let testCases = []
+  if (problem.testCases) {
+    try {
+      testCases = JSON.parse(problem.testCases)
+    } catch (e) {
+      logger.error(
+        `Failed to parse test cases for problem ${problemId}`,
+        e instanceof Error ? e : new Error(String(e))
+      )
+    }
+  }
+
+  if (!Array.isArray(testCases) || testCases.length === 0) {
+    testCases = [{ input: '', output: '' }]
+  }
+
+  // If user provided a custom test input, run against it; otherwise use the first 1-2 sample test cases
+  const isCustomInput = typeof customInput === 'string' && customInput.trim().length > 0
+  const sampleTestCases = isCustomInput
+    ? [{ input: customInput.trim(), output: '' }]
+    : testCases.slice(0, Math.min(testCases.length, 2))
+
+  const executionResult = await CodeSandboxService.execute({
+    code,
+    language: resolvedLanguage,
+    testCases: sampleTestCases,
+    timeLimit: 5,
+    memoryLimit: 256,
+  })
+
+  const status =
+    executionResult.status === 'accepted'
+      ? 'ACCEPTED'
+      : executionResult.status === 'wrong_answer'
+        ? 'WRONG_ANSWER'
+        : executionResult.status === 'compilation_error'
+          ? 'COMPILATION_ERROR'
+          : executionResult.status === 'time_limit_exceeded'
+            ? 'TIME_LIMIT_EXCEEDED'
+            : 'RUNTIME_ERROR'
+
+  sendSuccess(res, {
+    id: `run-${Date.now()}`,
+    problem: problem.id,
+    problemId: problem.id,
+    code,
+    language: resolvedLanguage,
+    is_custom_input: isCustomInput,
+    status,
+    passed_tests: executionResult.testCasesPassed,
+    total_tests: executionResult.testCasesTotal,
+    execution_time_ms: executionResult.executionTime,
+    memory_kb: executionResult.memoryUsed,
+    feedback:
+      executionResult.message ||
+      (isCustomInput
+        ? 'Custom Testcase executed successfully.'
+        : status === 'ACCEPTED'
+          ? 'Sample Test Cases Passed! You are ready to Submit.'
+          : `Sample test execution returned ${status}`),
+    output: executionResult.output || '',
+    created_at: new Date().toISOString(),
+  })
+})
+
 export const submitSolution = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const problemId = req.params.id as string
   const { code, language } = req.body
   const userId = req.user!.userId
 
-  const problem = await prisma.problem.findUnique({ where: { id: problemId } })
+  // Same input bounds as runSolution — enforced again here because submit
+  // executes the FULL test suite and writes XP/score rows.
+  const ALLOWED_SUBMIT_LANGUAGES = new Set([
+    'python',
+    'python3',
+    'javascript',
+    'js',
+    'node',
+    'typescript',
+    'ts',
+    'java',
+    'cpp',
+    'c++',
+    'c',
+    'go',
+    'rust',
+  ])
+  if (typeof code !== 'string' || code.length === 0 || code.length > 100_000) {
+    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })
+    return
+  }
+  if (
+    typeof language !== 'string' ||
+    language.length === 0 ||
+    language.length > 32 ||
+    !ALLOWED_SUBMIT_LANGUAGES.has(language.toLowerCase())
+  ) {
+    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })
+    return
+  }
+
+  let problem = await prisma.problem.findUnique({ where: { id: problemId } })
+  if (!problem) {
+    problem = await prisma.problem.findFirst({ where: { slug: problemId, deletedAt: null } })
+  }
   if (!problem) {
     sendNotFound(res, 'Problem not found')
     return
@@ -184,7 +324,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
   const result = await prisma.$transaction(async (tx: any) => {
     const submission = await tx.problemSubmission.create({
       data: {
-        problemId,
+        problemId: problem!.id,
         userId,
         code,
         language,
@@ -196,7 +336,15 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     })
 
     if (status === 'ACCEPTED') {
-      await growthEngineService.awardXP(userId, 'practice_session', tx)
+      // FIRST-SOLVE ONLY: repeated ACCEPTED submissions for the same problem do
+      // not farm XP. Check precedes award inside the same transaction.
+      const priorAccepted = await tx.problemSubmission.findFirst({
+        where: { problemId: problem!.id, userId, status: 'ACCEPTED', id: { not: submission.id } },
+        select: { id: true },
+      })
+      if (!priorAccepted) {
+        await growthEngineService.awardXP(userId, 'practice_session', tx)
+      }
     }
 
     return submission
@@ -205,7 +353,21 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
   await cacheService.deletePattern('problems*')
   await cacheService.delete(`dsaStats:${userId}`)
 
-  sendSuccess(res, result)
+  // Harmonized response supporting both DB submission properties and frontend workspace state
+  sendSuccess(res, {
+    ...result,
+    problem: problem.id,
+    passed_tests: executionResult.testCasesPassed,
+    total_tests: executionResult.testCasesTotal,
+    execution_time_ms: executionTime,
+    memory_kb: memoryUsed,
+    feedback:
+      executionResult.message ||
+      (status === 'ACCEPTED'
+        ? 'Solution Accepted! All test cases passed.'
+        : `Submission ${status}: ${executionResult.testCasesPassed}/${executionResult.testCasesTotal} test cases passed`),
+    output: executionResult.output || '',
+  })
 })
 
 export const getSubmissions = asyncHandler(async (req: Request, res: Response): Promise<void> => {

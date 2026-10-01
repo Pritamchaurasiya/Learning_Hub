@@ -3,6 +3,7 @@ import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
 import {
   listProblems,
   getProblem,
+  runSolution,
   submitSolution,
   getSubmissions,
 } from '../../src/controllers/problemsController'
@@ -47,7 +48,13 @@ describe('ProblemsController', () => {
       ;(prisma.problem.count as jest.Mock).mockResolvedValue(2)
       ;(prisma.problem.findMany as jest.Mock).mockResolvedValue([
         { id: 'p1', title: 'Two Sum', difficulty: 'EASY', points: 100, user_status: 'UNATTEMPTED' },
-        { id: 'p2', title: 'Reverse Linked List', difficulty: 'MEDIUM', points: 200, user_status: 'ATTEMPTED' },
+        {
+          id: 'p2',
+          title: 'Reverse Linked List',
+          difficulty: 'MEDIUM',
+          points: 200,
+          user_status: 'ATTEMPTED',
+        },
       ])
       ;(prisma.problemSubmission.findMany as jest.Mock).mockResolvedValue([])
 
@@ -88,14 +95,16 @@ describe('ProblemsController', () => {
   describe('getProblem', () => {
     it('returns problem by slug', async () => {
       mockReq.params = { slug: 'two-sum' }
-      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+      const mockProblem = {
         id: 'p1',
         slug: 'two-sum',
         title: 'Two Sum',
         description: 'Find two numbers that add up to target',
         difficulty: 'EASY',
         points: 100,
-      })
+      }
+      ;(prisma.problem.findFirst as jest.Mock).mockResolvedValue(mockProblem)
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(mockProblem)
 
       await getProblem(mockReq as any, mockRes as any, nextMock)
 
@@ -110,6 +119,7 @@ describe('ProblemsController', () => {
 
     it('returns 404 when problem not found', async () => {
       mockReq.params = { slug: 'non-existent' }
+      ;(prisma.problem.findFirst as jest.Mock).mockResolvedValue(null)
       ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue(null)
 
       await getProblem(mockReq as any, mockRes as any, nextMock)
@@ -232,13 +242,103 @@ describe('ProblemsController', () => {
     })
   })
 
+  describe('runSolution', () => {
+    it('runs sample test cases against code', async () => {
+      mockReq.params = { id: 'p1' }
+      mockReq.body = { code: 'console.log("hello")', language: 'javascript' }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        title: 'Two Sum',
+        testCases: '[{"input":"1 2","output":"3"}]',
+      })
+      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue({
+        status: 'accepted',
+        executionTime: 45,
+        memoryUsed: 128,
+        testCasesPassed: 1,
+        testCasesTotal: 1,
+        output: '3',
+      })
+
+      await runSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(CodeSandboxService.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'console.log("hello")',
+          language: 'javascript',
+          testCases: [{ input: '1 2', output: '3' }],
+        })
+      )
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({
+            status: 'ACCEPTED',
+            passed_tests: 1,
+            total_tests: 1,
+          }),
+        })
+      )
+    })
+
+    it('executes with customInput when provided by user', async () => {
+      mockReq.params = { id: 'p1' }
+      mockReq.body = {
+        code: 'console.log("custom")',
+        language: 'javascript',
+        customInput: 'nums = [5, 10], target = 15',
+      }
+      ;(prisma.problem.findUnique as jest.Mock).mockResolvedValue({
+        id: 'p1',
+        title: 'Two Sum',
+        testCases: '[{"input":"1 2","output":"3"}]',
+      })
+      ;(CodeSandboxService.execute as jest.Mock).mockResolvedValue({
+        status: 'accepted',
+        executionTime: 30,
+        memoryUsed: 128,
+        testCasesPassed: 1,
+        testCasesTotal: 1,
+        output: '[0, 1]',
+      })
+
+      await runSolution(mockReq as any, mockRes as any, nextMock)
+
+      expect(CodeSandboxService.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: 'console.log("custom")',
+          language: 'javascript',
+          testCases: [{ input: 'nums = [5, 10], target = 15', output: '' }],
+        })
+      )
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({
+            status: 'ACCEPTED',
+            is_custom_input: true,
+            feedback: 'Custom Testcase executed successfully.',
+          }),
+        })
+      )
+    })
+  })
+
   describe('getSubmissions', () => {
     it('returns submissions for a problem', async () => {
       mockReq.params = { id: 'p1' }
       mockReq.user = { userId: 'user-1', email: 'student@test.com', role: 'STUDENT' }
       ;(prisma.problemSubmission.findMany as jest.Mock).mockResolvedValue([
         { id: 's1', status: 'ACCEPTED', score: 100, language: 'javascript', createdAt: new Date() },
-        { id: 's2', status: 'WRONG_ANSWER', score: 0, language: 'javascript', createdAt: new Date() },
+        {
+          id: 's2',
+          status: 'WRONG_ANSWER',
+          score: 0,
+          language: 'javascript',
+          createdAt: new Date(),
+        },
       ])
 
       await getSubmissions(mockReq as any, mockRes as any, nextMock)

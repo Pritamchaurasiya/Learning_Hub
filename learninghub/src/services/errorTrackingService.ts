@@ -59,7 +59,7 @@ class ErrorTrackingService {
     if (this.initialized || !isEnabled()) {
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
-        console.log('[ErrorTracking] Disabled (dev mode or no consent)')
+        console.warn('[ErrorTracking] Disabled (dev mode or no consent)')
       }
       return
     }
@@ -74,7 +74,7 @@ class ErrorTrackingService {
 
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.log('[ErrorTracking] Initialized')
+      console.warn('[ErrorTracking] Initialized')
     }
   }
 
@@ -134,7 +134,7 @@ class ErrorTrackingService {
     if (!this.initialized) {
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
-        console.log(`[ErrorTracking] ${level}:`, message)
+        console.warn(`[ErrorTracking] ${level}:`, message)
       }
       return
     }
@@ -142,7 +142,7 @@ class ErrorTrackingService {
     if (!import.meta.env.DEV) {
       // Sentry.captureMessage(message, level)
       // eslint-disable-next-line no-console
-      console.log(`[ErrorTracking] ${level}:`, message)
+      console.warn(`[ErrorTracking] ${level}:`, message)
     }
   }
 
@@ -167,7 +167,7 @@ class ErrorTrackingService {
     // Store for Sentry integration
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.log(`[ErrorTracking] Tag: ${key}=${value}`)
+      console.warn(`[ErrorTracking] Tag: ${key}=${value}`)
     }
   }
 
@@ -204,7 +204,7 @@ class ErrorTrackingService {
 
         if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
-          console.log(`[Performance] ${name}: ${duration.toFixed(2)}ms`)
+          console.warn(`[Performance] ${name}: ${duration.toFixed(2)}ms`)
         }
       },
     }

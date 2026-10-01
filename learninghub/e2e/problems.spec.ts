@@ -5,15 +5,18 @@ test.describe('DSA Practice Module', () => {
     // Set localStorage tokens before any page navigation to avoid auth redirect race conditions
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
-      window.localStorage.setItem('learninghub-storage', JSON.stringify({
-        state: {
-          auth: {
-            isAuthenticated: true,
-            user: { id: "user-1", username: "TestUser", role: "STUDENT" }
-          }
-        },
-        version: 0
-      }))
+      window.localStorage.setItem(
+        'learninghub-storage',
+        JSON.stringify({
+          state: {
+            auth: {
+              isAuthenticated: true,
+              user: { id: 'user-1', username: 'TestUser', role: 'STUDENT' },
+            },
+          },
+          version: 0,
+        })
+      )
     })
 
     // Mock user authentication
@@ -78,9 +81,17 @@ test.describe('DSA Practice Module', () => {
       })
     })
 
-    // Mock Problems
+    // Mock Problems API
     await page.route('**/problems*', async (route, request) => {
-      if (request.resourceType() === 'document') return route.continue()
+      if (
+        request.resourceType() === 'document' ||
+        request.url().includes('.tsx') ||
+        request.url().includes('.ts') ||
+        request.url().includes('.js') ||
+        request.url().includes('/src/')
+      ) {
+        return route.continue()
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -133,9 +144,17 @@ test.describe('DSA Practice Module', () => {
   })
 
   test('should display empty state when filtering yields no results', async ({ page }) => {
-    // Mock empty problems
+    // Mock empty problems API
     await page.route('**/problems*', async (route, request) => {
-      if (request.resourceType() === 'document') return route.continue()
+      if (
+        request.resourceType() === 'document' ||
+        request.url().includes('.tsx') ||
+        request.url().includes('.ts') ||
+        request.url().includes('.js') ||
+        request.url().includes('/src/')
+      ) {
+        return route.continue()
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

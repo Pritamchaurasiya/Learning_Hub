@@ -42,6 +42,12 @@ process.env.JWT_EXPIRES_IN = '1h'
 process.env.REFRESH_TOKEN_EXPIRES_IN = '7d'
 process.env.NODE_ENV = 'test'
 process.env.LOG_LEVEL = '3' // DEBUG level for tests
+process.env.ADMIN_SECRET = 'test-admin-secret-thirty-two-chars-min!!'
+process.env.ADMIN_EMAIL = 'admin@learninghub.test'
+process.env.ADMIN_DEFAULT_PASSWORD = 'TestPassword123!@#'
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/testdb'
+process.env.DIRECT_URL = process.env.DIRECT_URL || 'postgresql://test:test@localhost:5432/testdb'
 process.env.RATE_LIMIT_ENABLED = 'false' // Disable rate limiting explicitly for unit tests
 
 // Suppress console output during tests (optional, can be enabled for debugging)

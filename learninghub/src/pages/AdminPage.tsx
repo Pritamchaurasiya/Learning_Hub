@@ -7,15 +7,21 @@ import {
   TrendingUp,
   Search,
   Activity as ActivityIcon,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  X,
+  Loader2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SEO } from '../components/SEO'
 import AnimatedPage from '../components/AnimatedPage'
 import { Card } from '../components/ui/Card'
 import { fetchApi } from '../utils/api'
 import { adminService, Course } from '../services/adminService'
 import { Skeleton } from '../components/ui/Skeleton'
+import { useStore } from '../stores/useStore'
 import AdminABTestingPage from './AdminABTestingPage'
 import AdminSecurityPage from './AdminSecurityPage'
 import AdminAILabPage from './AdminAILabPage'
@@ -37,6 +43,72 @@ export default function AdminPage() {
   >('overview')
   const [searchQuery, setSearchQuery] = useState('')
   const [userSearchQuery, setUserSearchQuery] = useState('')
+
+  const queryClient = useQueryClient()
+  const addToast = useStore(state => state.addToast)
+
+  // Course Creation State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    category: 'Computer Science',
+    level: 'Beginner',
+    price: 0,
+    description: '',
+  })
+
+  // Create Course Mutation
+  const createCourseMutation = useMutation({
+    mutationFn: (data: Partial<Course>) => adminService.createCourse(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] })
+      addToast({ message: 'Course created successfully!', type: 'success' })
+      setIsCreateModalOpen(false)
+      setNewCourse({
+        title: '',
+        category: 'Computer Science',
+        level: 'Beginner',
+        price: 0,
+        description: '',
+      })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      addToast({ message: err.message ?? 'Failed to create course', type: 'error' })
+    },
+  })
+
+  // Toggle Publish Mutation
+  const togglePublishMutation = useMutation({
+    mutationFn: ({ id, isPublished }: { id: string; isPublished: boolean }) =>
+      adminService.updateCourse(id, {
+        published: isPublished,
+        status: isPublished ? 'published' : 'draft',
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] })
+      addToast({ message: 'Course status updated!', type: 'success' })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      addToast({ message: err.message ?? 'Failed to update course', type: 'error' })
+    },
+  })
+
+  // Delete Course Mutation
+  const deleteCourseMutation = useMutation({
+    mutationFn: (id: string) => adminService.deleteCourse(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] })
+      addToast({ message: 'Course removed successfully!', type: 'success' })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      addToast({ message: err.message ?? 'Failed to delete course', type: 'error' })
+    },
+  })
 
   // Overview Stats Query
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -347,7 +419,7 @@ export default function AdminPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="flex justify-between items-center bg-white dark:bg-gray-900 p-4 rounded-2xl border-none shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-2xl border-none shadow-sm">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -358,11 +430,131 @@ export default function AdminPage() {
                     className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl pl-12 pr-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500/50 outline-none"
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-600/20 transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Course
+                </button>
               </div>
 
+              {/* Course Creation Modal */}
+              <AnimatePresence>
+                {isCreateModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-gray-100 dark:border-gray-800"
+                    >
+                      <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-gray-800">
+                        <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                          <BookOpen className="w-5 h-5 text-primary-500" />
+                          New Course Master
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setIsCreateModalOpen(false)}
+                          className="text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                            Course Title
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Distributed Systems in Go"
+                            value={newCourse.title}
+                            onChange={e => setNewCourse({ ...newCourse, title: e.target.value })}
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                              Category
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Backend"
+                              value={newCourse.category}
+                              onChange={e =>
+                                setNewCourse({ ...newCourse, category: e.target.value })
+                              }
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                              Difficulty
+                            </label>
+                            <select
+                              value={newCourse.level}
+                              onChange={e => setNewCourse({ ...newCourse, level: e.target.value })}
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500"
+                            >
+                              <option value="Beginner">Beginner</option>
+                              <option value="Intermediate">Intermediate</option>
+                              <option value="Advanced">Advanced</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                            Description
+                          </label>
+                          <textarea
+                            rows={3}
+                            placeholder="Comprehensive curriculum description..."
+                            value={newCourse.description}
+                            onChange={e =>
+                              setNewCourse({ ...newCourse, description: e.target.value })
+                            }
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                        <button
+                          type="button"
+                          onClick={() => setIsCreateModalOpen(false)}
+                          className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!newCourse.title.trim() || createCourseMutation.isPending}
+                          onClick={() => createCourseMutation.mutate(newCourse)}
+                          className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 disabled:opacity-50"
+                        >
+                          {createCourseMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                          Save Course
+                        </button>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
+
               <div className="overflow-x-auto rounded-2xl border-none shadow-lg">
-                <Card className="overflow-hidden min-w-[800px] border-none rounded-2xl">
-                  <table className="w-full text-left border-collapse">
+                <Card className="overflow-hidden w-full min-w-0 border-none rounded-2xl">
+                  <table className="min-w-[640px] w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-800">
                         <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -375,7 +567,7 @@ export default function AdminPage() {
                           Status
                         </th>
                         <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest text-right">
-                          System ID
+                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -436,8 +628,16 @@ export default function AdminPage() {
                               </div>
                             </td>
                             <td className="px-6 py-5">
-                              <span
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  togglePublishMutation.mutate({
+                                    id: course.id,
+                                    isPublished: course.status !== 'published',
+                                  })
+                                }
+                                title="Click to toggle published status"
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all hover:scale-105 ${
                                   course.status === 'published'
                                     ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                                     : course.status === 'draft'
@@ -446,10 +646,27 @@ export default function AdminPage() {
                                 }`}
                               >
                                 {course.status ?? (course.published ? 'published' : 'draft')}
-                              </span>
+                              </button>
                             </td>
-                            <td className="px-6 py-5 text-right text-[10px] font-medium font-mono text-gray-400 tracking-wider">
-                              {course.id}
+                            <td className="px-6 py-5 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  title="Delete Course"
+                                  onClick={() => {
+                                    // eslint-disable-next-line no-alert
+                                    const confirmed = window.confirm(
+                                      `Are you sure you want to remove "${course.title}"?`
+                                    )
+                                    if (confirmed) {
+                                      deleteCourseMutation.mutate(course.id)
+                                    }
+                                  }}
+                                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -483,8 +700,8 @@ export default function AdminPage() {
               </div>
 
               <div className="overflow-x-auto rounded-2xl border-none shadow-lg">
-                <Card className="overflow-hidden min-w-[800px] border-none rounded-2xl">
-                  <table className="w-full text-left border-collapse">
+                <Card className="overflow-hidden w-full min-w-0 border-none rounded-2xl">
+                  <table className="min-w-[640px] w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-800">
                         <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">

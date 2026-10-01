@@ -311,7 +311,7 @@ export class GrowthEngineService {
       }
     }
 
-    const newLongestStreak = Math.max(user.longestStreak, newStreak)
+    let newLongestStreak = Math.max(user.longestStreak, newStreak)
 
     // Check for streak milestones
     let milestoneReached: number | null = null
@@ -323,24 +323,49 @@ export class GrowthEngineService {
     }
 
     // Update user with optimistic locking to prevent race conditions
-    // If two concurrent calls read the same streak, only the first update succeeds
-    const updateResult = await prisma.user.updateMany({
-      where: { id: userId, streak: user.streak },
-      data: {
-        streak: newStreak,
-        longestStreak: newLongestStreak,
-        lastActive: now,
-      },
-    })
-    if (updateResult.count === 0) {
-      // Another process already updated the streak — re-read and return current state
+    // Retry up to 3 times if concurrent update occurs
+    let updateResult = { count: 0 }
+    let retries = 0
+    const maxRetries = 3
+
+    while (retries < maxRetries) {
+      updateResult = await prisma.user.updateMany({
+        where: { id: userId, streak: user.streak },
+        data: {
+          streak: newStreak,
+          longestStreak: newLongestStreak,
+          lastActive: now,
+        },
+      })
+      if (updateResult.count > 0) break
+
+      // Another process already updated the streak — re-read and retry
       const refreshed = await prisma.user.findUnique({
         where: { id: userId },
         select: { streak: true, longestStreak: true },
       })
+      if (!refreshed) {
+        throw new Error('User not found')
+      }
+      user.streak = refreshed.streak
+      user.longestStreak = refreshed.longestStreak
+      // Recalculate newStreak and newLongestStreak based on refreshed data
+      if (streakMaintained) {
+        newStreak = user.streak + 1
+      } else if (streakBroken) {
+        newStreak = 1
+      } else {
+        newStreak = user.streak
+      }
+      newLongestStreak = Math.max(newStreak, user.longestStreak)
+      retries++
+    }
+
+    if (updateResult.count === 0) {
+      // All retries exhausted - return current state without updating
       return {
-        currentStreak: refreshed?.streak ?? newStreak,
-        longestStreak: refreshed?.longestStreak ?? newLongestStreak,
+        currentStreak: user.streak,
+        longestStreak: user.longestStreak,
         streakMaintained: false,
         streakBroken: false,
         milestoneReached: null,

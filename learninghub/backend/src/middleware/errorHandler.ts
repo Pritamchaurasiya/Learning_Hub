@@ -11,6 +11,7 @@ import {
   ConflictError,
   RateLimitError,
 } from '../utils/errors'
+import { AttemptTransitionError } from '../utils/attemptStateMachine'
 
 export enum ErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -166,6 +167,10 @@ export const errorHandler = (
     statusCode = 400
     message = 'Invalid JSON in request body'
     logger.warn(`SyntaxError: ${message} requestId=${requestId ?? 'unknown'}`)
+  } else if (err instanceof AttemptTransitionError) {
+    statusCode = 409
+    message = err.message
+    logger.warn(`AttemptTransitionError: ${message} requestId=${requestId ?? 'unknown'}`)
   } else if (err instanceof AuthenticationError) {
     statusCode = 401
     message = err.message

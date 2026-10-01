@@ -68,21 +68,66 @@ export class UserAnalyticsService {
   async getDashboardAnalytics(userId: string, days: number = 30): Promise<UserDashboardAnalytics> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    const userPref = await prisma.userExamPreference.findUnique({
-      where: { userId },
-      select: { examId: true },
-    })
-    const targetExamId = userPref?.examId ?? undefined
+    let targetExamId: string | undefined
+    try {
+      const userPref = await prisma.userExamPreference.findUnique({
+        where: { userId },
+        select: { examId: true },
+      })
+      targetExamId = userPref?.examId ?? undefined
+    } catch {
+      targetExamId = undefined
+    }
 
-    const [summary, accuracyTrend, speedTrend, topicMastery, growth, recentActivity] =
-      await Promise.all([
-        this.getSummary(userId, startDate, targetExamId),
-        this.getAccuracyTrend(userId, days, targetExamId),
-        this.getSpeedTrend(userId, days, targetExamId),
-        topicPerformanceService.getTopicMasteryMap(userId),
-        this.getGrowthMetrics(userId, days, targetExamId),
-        this.getRecentActivity(userId, 20),
-      ])
+    const [
+      summaryResult,
+      accuracyTrendResult,
+      speedTrendResult,
+      topicMasteryResult,
+      growthResult,
+      recentActivityResult,
+    ] = await Promise.allSettled([
+      this.getSummary(userId, startDate, targetExamId),
+      this.getAccuracyTrend(userId, days, targetExamId),
+      this.getSpeedTrend(userId, days, targetExamId),
+      topicPerformanceService.getTopicMasteryMap(userId),
+      this.getGrowthMetrics(userId, days, targetExamId),
+      this.getRecentActivity(userId, 20),
+    ])
+
+    const summary =
+      summaryResult.status === 'fulfilled'
+        ? summaryResult.value
+        : {
+            totalTestsCompleted: 0,
+            totalQuestionsAnswered: 0,
+            overallAccuracy: 0,
+            averageScore: 0,
+            passRate: 0,
+            totalStudyTimeMinutes: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+          }
+
+    const accuracyTrend = accuracyTrendResult.status === 'fulfilled' ? accuracyTrendResult.value : []
+    const speedTrend = speedTrendResult.status === 'fulfilled' ? speedTrendResult.value : []
+    const topicMastery =
+      topicMasteryResult.status === 'fulfilled'
+        ? topicMasteryResult.value
+        : { topics: [], weakTopics: [], strongTopics: [], overallAccuracy: 0, totalTopics: 0 }
+    const growth =
+      growthResult.status === 'fulfilled'
+        ? growthResult.value
+        : {
+            growthScore: 0,
+            accuracyDelta: 0,
+            speedDelta: 0,
+            consistencyScore: 0,
+            topicsImproved: 0,
+            topicsDegraded: 0,
+          }
+    const recentActivity =
+      recentActivityResult.status === 'fulfilled' ? recentActivityResult.value : []
 
     return {
       summary,

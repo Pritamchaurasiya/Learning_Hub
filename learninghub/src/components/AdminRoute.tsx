@@ -33,6 +33,17 @@ export function AdminRoute({
   const auth = useStore(state => state.auth)
   const { hasAnyPermission, hasAllPermissions, hasRole } = useAdminAuth()
 
+  if (!auth.isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-[3px] border-primary-500/20 border-t-primary-500 animate-spin" />
+          <p className="text-sm font-medium text-gray-500">Restoring admin session...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!auth.isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />
   }

@@ -33,6 +33,8 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
 import AnimatedPage from '../components/AnimatedPage'
+import { SpeedAccuracyScatterChart } from '../components/test/SpeedAccuracyScatterChart'
+import { PeerPercentileBellCurve } from '../components/test/PeerPercentileBellCurve'
 
 // Types
 interface Stats {
@@ -42,6 +44,9 @@ interface Stats {
   averageScore: number
   totalTime: number
   bestScore: number
+  irtTheta: number
+  userPercentile: number
+  masteryTier: string
 }
 
 const TestsAHistoryPage = () => {
@@ -87,19 +92,43 @@ const TestsAHistoryPage = () => {
         averageScore: 0,
         totalTime: 0,
         bestScore: 0,
+        irtTheta: 0.0,
+        userPercentile: 50.0,
+        masteryTier: 'Novice',
       }
     }
 
     const passed = history.filter(h => h.passed).length
     const scores = history.map(h => h.score)
+    const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / history.length)
+    const rawTheta = (avgScore - 50) / 16.66
+    const irtTheta = Math.max(-3, Math.min(3, Number(rawTheta.toFixed(2))))
+    const userPercentile = Math.max(
+      1,
+      Math.min(99.9, Math.round((1 / (1 + Math.exp(-1.702 * irtTheta))) * 1000) / 10)
+    )
+
+    const masteryTier =
+      irtTheta >= 2.0
+        ? 'Master (Top 2%)'
+        : irtTheta >= 1.0
+          ? 'Advanced (Top 15%)'
+          : irtTheta >= 0.0
+            ? 'Proficient'
+            : irtTheta >= -1.5
+              ? 'Competent'
+              : 'Novice'
 
     return {
       totalTests: history.length,
       passedTests: passed,
       failedTests: history.length - passed,
-      averageScore: Math.round(scores.reduce((a, b) => a + b, 0) / history.length),
+      averageScore: avgScore,
       totalTime: history.reduce((acc, h) => acc + (h.time_taken_seconds ?? 0), 0),
-      bestScore: Math.max(...scores),
+      bestScore: scores.length > 0 ? Math.max(...scores) : 0,
+      irtTheta,
+      userPercentile,
+      masteryTier,
     }
   }, [history])
 
@@ -220,7 +249,7 @@ const TestsAHistoryPage = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <Card className="p-4 text-center">
             <BarChart3 className="w-8 h-8 text-blue-500 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -251,6 +280,16 @@ const TestsAHistoryPage = () => {
               {stats.bestScore}%
             </div>
             <div className="text-sm text-gray-500">Best Score</div>
+          </Card>
+
+          <Card className="p-4 text-center border-indigo-500/30 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20">
+            <Brain className="w-8 h-8 text-indigo-500 mx-auto mb-2" />
+            <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+              θ {stats.irtTheta >= 0 ? `+${stats.irtTheta}` : stats.irtTheta}
+            </div>
+            <div className="text-xs font-semibold text-gray-500 truncate" title={stats.masteryTier}>
+              {stats.masteryTier}
+            </div>
           </Card>
         </div>
 
@@ -363,6 +402,15 @@ const TestsAHistoryPage = () => {
           </Card>
         )}
 
+        {/* Advanced Psychometric & Cohort Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <SpeedAccuracyScatterChart />
+          <PeerPercentileBellCurve
+            userScore={stats.averageScore || 50}
+            userPercentile={stats.userPercentile}
+          />
+        </div>
+
         {/* History List */}
         <div className="space-y-4">
           {filteredHistory.length === 0 ? (
@@ -416,8 +464,11 @@ const TestsAHistoryPage = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {(attempt as TestAttempt & { test?: { title?: string } }).test?.title ??
-                              'Test'}
+                            {(attempt as any).test_title ??
+                              (attempt as any).test?.title ??
+                              (typeof attempt.test === 'string' && attempt.test
+                                ? attempt.test
+                                : 'Test')}
                           </h3>
                           <p className="text-sm text-gray-500">
                             {attempt.status === 'submitted'
@@ -475,7 +526,13 @@ const TestsAHistoryPage = () => {
                         <Button
                           variant={attempt.passed ? 'outline' : 'primary'}
                           size="sm"
-                          onClick={() => handleRetakeTest(attempt.test)}
+                          onClick={() => {
+                            const testId =
+                              typeof attempt.test === 'object' && attempt.test !== null
+                                ? (attempt.test as any).id
+                                : (attempt.test ?? (attempt as any).test_id)
+                            if (testId) handleRetakeTest(testId)
+                          }}
                         >
                           <RotateCcw className="w-4 h-4 mr-1" />
                           Retake

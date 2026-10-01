@@ -42,6 +42,13 @@ const AuthPage = memo(function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  // MFA 2FA Challenge State
+  const [isMfaChallenge, setIsMfaChallenge] = useState(false)
+  const [mfaSessionToken, setMfaSessionToken] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaLoading, setMfaLoading] = useState(false)
+  const [mfaError, setMfaError] = useState<string | null>(null)
+
   const setAuth = useStore(state => state.setAuth)
   const addToast = useStore(state => state.addToast)
   const navigate = useNavigate()
@@ -80,7 +87,8 @@ const AuthPage = memo(function AuthPage() {
 
     if (!password) {
       errors.password = 'Password is required'
-    } else if (!isLogin) {
+    } else {
+      // Always validate password strength, regardless of login/signup mode
       if (password.length < 8) {
         errors.password = 'Must be at least 8 characters'
       } else if (!/[A-Z]/.test(password)) {
@@ -122,10 +130,26 @@ const AuthPage = memo(function AuthPage() {
       })
 
       const data = response?.data ?? response
+
+      if (data?.mfaRequired && data?.mfaSessionToken) {
+        setMfaSessionToken(data.mfaSessionToken)
+        setIsMfaChallenge(true)
+        setMfaCode('')
+        setMfaError(null)
+        addToast({
+          message: 'Two-factor verification required. Enter your 6-digit code.',
+          type: 'info',
+        })
+        return
+      }
+
       const user = data?.user ?? data
 
       if (user?.id) {
-        setAuth('', null, user)
+        const tokens = data?.tokens ?? data
+        const accessToken = tokens?.token ?? tokens?.accessToken ?? ''
+        const refreshToken = tokens?.refreshToken ?? tokens?.refresh ?? null
+        setAuth(accessToken, refreshToken, user)
         addToast({
           message: isLogin ? 'Welcome back!' : 'Account created successfully!',
           type: 'success',
@@ -145,15 +169,61 @@ const AuthPage = memo(function AuthPage() {
     }
   }
 
-  const quickFillAdmin = () => {
-    setEmail('admin@learninghub.com')
-    setPassword('Admin@123!')
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (mfaCode.length !== 6) return
+    setMfaLoading(true)
+    setMfaError(null)
+    try {
+      const response = await fetchApi('/auth/mfa/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          mfaSessionToken,
+          token: mfaCode,
+        }),
+      })
+
+      const data = response?.data ?? response
+      const user = data?.user ?? data
+
+      if (user?.id) {
+        const tokens = data?.tokens ?? data
+        const accessToken = tokens?.token ?? tokens?.accessToken ?? ''
+        const refreshToken = tokens?.refreshToken ?? tokens?.refresh ?? null
+        setAuth(accessToken, refreshToken, user)
+        addToast({
+          message: 'Welcome back!',
+          type: 'success',
+        })
+        navigate(from, { replace: true })
+      } else {
+        const errStr = response?.message ?? data?.message ?? 'MFA verification failed'
+        setMfaError(errStr)
+        addToast({ message: errStr, type: 'error' })
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Invalid MFA verification code'
+      setMfaError(message)
+      addToast({ message, type: 'error' })
+    } finally {
+      setMfaLoading(false)
+    }
   }
 
-  const quickFillStudent = () => {
-    setEmail('student@learninghub.com')
-    setPassword('Student@123!')
-  }
+  // Development-only quick fill credentials - not included in production build
+  const quickFillAdmin = import.meta.env.DEV
+    ? () => {
+        setEmail('admin@learninghub.com')
+        setPassword('Admin@123!')
+      }
+    : undefined
+
+  const quickFillStudent = import.meta.env.DEV
+    ? () => {
+        setEmail('student@learninghub.com')
+        setPassword('Student@123!')
+      }
+    : undefined
 
   const fieldClass = (field: keyof FieldErrors) => {
     // eslint-disable-next-line security/detect-object-injection
@@ -240,14 +310,80 @@ const AuthPage = memo(function AuthPage() {
             </p>
           </motion.div>
 
-          <form onSubmit={handleAuth} className="relative z-10 space-y-5" noValidate>
-            <div className="space-y-1.5">
-              <label
-                htmlFor="auth-email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Email Address <span className="ml-1 text-red-500">*</span>
-              </label>
+          {isMfaChallenge ? (
+            <form onSubmit={handleMfaSubmit} className="relative z-10 space-y-6" data-testid="mfa-challenge-form">
+              <div className="text-center space-y-2 mb-2">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 shadow-inner">
+                  <Shield className="w-7 h-7" />
+                </div>
+                <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                  Two-Factor Verification
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Enter the 6-digit code generated by your authenticator app to complete sign in.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  id="auth-mfa-code"
+                  data-testid="auth-mfa-code"
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  placeholder="000000"
+                  value={mfaCode}
+                  onChange={e => {
+                    setMfaCode(e.target.value.replace(/\D/g, ''))
+                    if (mfaError) setMfaError(null)
+                  }}
+                  className="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-center text-2xl font-mono font-black tracking-[0.5em] focus:border-rose-500 focus:outline-none dark:text-white transition-colors"
+                />
+                {mfaError && (
+                  <p className="text-xs text-red-500 mt-1 flex items-center justify-center gap-1 font-bold" role="alert">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    {mfaError}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Button
+                  type="submit"
+                  disabled={mfaCode.length !== 6 || mfaLoading}
+                  isLoading={mfaLoading}
+                  fullWidth
+                  size="lg"
+                  className="rounded-xl font-black uppercase tracking-widest text-xs py-4 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20"
+                >
+                  Verify & Continue
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  fullWidth
+                  onClick={() => {
+                    setIsMfaChallenge(false)
+                    setMfaCode('')
+                    setMfaSessionToken('')
+                    setMfaError(null)
+                  }}
+                  className="rounded-xl font-black uppercase tracking-widest text-xs py-3"
+                >
+                  Cancel & Back to Login
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleAuth} className="relative z-10 space-y-5" noValidate>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="auth-email"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Email Address <span className="ml-1 text-red-500">*</span>
+                  </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -448,7 +584,7 @@ const AuthPage = memo(function AuthPage() {
 
               <div className="mt-4 space-y-2">
                 <motion.button
-                  onClick={quickFillAdmin}
+                  onClick={quickFillAdmin!}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 text-sm font-medium hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
@@ -458,7 +594,7 @@ const AuthPage = memo(function AuthPage() {
                   Admin Login
                 </motion.button>
                 <motion.button
-                  onClick={quickFillStudent}
+                  onClick={quickFillStudent!}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
@@ -521,6 +657,8 @@ const AuthPage = memo(function AuthPage() {
                 </div>
               </div>
             </motion.div>
+          )}
+            </>
           )}
         </motion.div>
       </div>

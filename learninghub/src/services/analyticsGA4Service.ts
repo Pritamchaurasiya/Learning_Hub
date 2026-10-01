@@ -55,8 +55,7 @@ export function trackPageView(path: string, title?: string): void {
 export function trackEvent(eventName: string, parameters?: Record<string, unknown>): void {
   if (!isAnalyticsEnabled()) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('[Analytics]', eventName, parameters)
+      console.warn('[Analytics]', eventName, parameters)
     }
     return
   }

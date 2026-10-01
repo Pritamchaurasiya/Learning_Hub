@@ -26,6 +26,7 @@ export interface Problem {
   acceptance_rate?: number
   total_submissions?: number
   user_status?: 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED'
+  starterCode?: string | Record<string, string> | null
 }
 
 export interface TestCase {

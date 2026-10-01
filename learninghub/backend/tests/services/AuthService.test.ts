@@ -59,6 +59,11 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(mockPrisma.user.findFirst as jest.Mock).mockReset()
+    ;(mockPrisma.user.findUnique as jest.Mock).mockReset()
+    ;(mockPrisma.user.findFirst as jest.Mock).mockImplementation(async (args: any) => {
+      return (mockPrisma.user.findUnique as jest.Mock)(args)
+    })
     auditService = new AuditService(mockPrisma)
     authService = new AuthService(mockPrisma, auditService)
   })
@@ -124,14 +129,19 @@ describe('AuthService', () => {
     it('should reject duplicate email', async () => {
       ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'existing-user' })
 
-      await expect(authService.register(validInput)).rejects.toThrow('Registration failed: Invalid request')
+      await expect(authService.register(validInput)).rejects.toThrow(
+        'Registration failed: Invalid request'
+      )
     })
 
     it('should reject duplicate username', async () => {
-      ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(null) // email check
-      ;(mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({ id: 'existing-user' }) // username check
+      ;(mockPrisma.user.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // email check (findByEmail)
+        .mockResolvedValueOnce({ id: 'existing-user' }) // username check (findByUsername)
 
-      await expect(authService.register(validInput)).rejects.toThrow('Registration failed: Invalid request')
+      await expect(authService.register(validInput)).rejects.toThrow(
+        'Registration failed: Invalid request'
+      )
     })
   })
 
@@ -269,6 +279,9 @@ describe('AuthService', () => {
         const tx = {
           refreshToken: {
             updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            create: jest.fn().mockResolvedValue({}),
+            findMany: jest.fn().mockResolvedValue([]),
+            deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
           },
         }
         return cb(tx)

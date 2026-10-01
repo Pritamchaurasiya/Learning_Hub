@@ -2,7 +2,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
+  roots: ['<rootDir>/tests', '<rootDir>/src'],
   testMatch: ['**/*.test.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   transform: {
@@ -15,15 +15,16 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/server.ts', '!src/prismaClient.ts'],
   coverageThreshold: {
     global: {
-      branches: 25,
-      functions: 25,
-      lines: 30,
-      statements: 30,
+      branches: 30,
+      functions: 35,
+      lines: 40,
+      statements: 40,
     },
   },
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'text-summary', 'lcov', 'json-summary'],
   verbose: true,
   clearMocks: true,
   restoreMocks: true,
   testTimeout: 60000,
+  maxWorkers: 1,
 }

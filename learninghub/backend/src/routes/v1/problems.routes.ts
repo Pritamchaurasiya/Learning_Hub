@@ -6,6 +6,7 @@ import { submitProblemSchema } from '../../validations/schemas'
 import {
   listProblems,
   getProblem,
+  runSolution,
   submitSolution,
   getSubmissions,
 } from '../../controllers/problemsController'
@@ -22,6 +23,13 @@ const codeExecutionLimiter = createRateLimiter({
 
 router.get('/', optionalAuth, listProblems)
 router.get('/:slug', optionalAuth, getProblem)
+router.post(
+  '/:id/run',
+  optionalAuth,
+  codeExecutionLimiter,
+  validate(submitProblemSchema),
+  runSolution
+)
 router.post(
   '/:id/submit',
   authenticate,

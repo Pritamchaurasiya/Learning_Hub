@@ -167,107 +167,70 @@ export class MasteryAnalyticsService {
         }
       }
 
-      // Phase 2: Aggregated Legacy Performance Updates
+      // Phase 2: Supplementary Updates (avgTimeSeconds, subjectName only)
+      // Phase 1 already handled totalAttempts, correctAnswers, accuracy (BKT), and strengthLevel.
+      // Phase 2 must NOT re-increment counts or overwrite BKT-derived accuracy.
       const grouped = new Map<
         string,
         {
-          correct: number
-          total: number
           totalTime: number
           lastAttemptAt: Date
-          subjectId?: string
           subjectName?: string
-          topicName: string
           topicId?: string
+          responseCount: number
         }
       >()
       for (const r of responses) {
         const key = r.topicId ?? r.topicName ?? 'unknown'
         const existing = grouped.get(key) ?? {
           topicId: r.topicId ?? 'unknown',
-          correct: 0,
-          total: 0,
           totalTime: 0,
           lastAttemptAt: r.completedAt,
-          subjectId: r.subjectId ?? undefined,
           subjectName: r.subjectName ?? undefined,
-          topicName: r.topicName ?? 'General',
+          responseCount: 0,
         }
-        existing.total++
-        if (r.isCorrect) existing.correct++
+        existing.responseCount++
         existing.totalTime += r.timeSpentSeconds
         if (r.completedAt > existing.lastAttemptAt) existing.lastAttemptAt = r.completedAt
         grouped.set(key, existing)
       }
 
-      for (const [topicId, stats] of grouped.entries()) {
-        const accuracy = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0
-        const roundedAccuracy = Math.round(accuracy * 100) / 100
+      for (const [_topicId, stats] of grouped.entries()) {
         let retryCount = 0
         let success = false
         while (retryCount < 3 && !success) {
           try {
             await prisma.$transaction(
               async (tx: any) => {
-                const legacy = await tx.topicPerformance.findUnique({
+                const record = await tx.topicPerformance.findUnique({
                   where: { userId_topicId: { userId, topicId: stats.topicId || 'unknown' } },
                 })
-                const legacyPrevTotal = legacy?.totalAttempts ?? 0
-                const legacyNewTotal = legacyPrevTotal + stats.total
-                const legacyNewCorrect = (legacy?.correctAnswers ?? 0) + stats.correct
-                const legacyNewAccuracy =
-                  legacyNewTotal > 0
-                    ? Math.round((legacyNewCorrect / legacyNewTotal) * 100 * 100) / 100
-                    : 0
-                const legacyAvgTime =
-                  legacyNewTotal > 0
-                    ? ((legacy?.avgTimeSeconds ?? 0) * legacyPrevTotal + stats.totalTime) /
-                      legacyNewTotal
-                    : 0
-                const legacyStrengthLevel = strengthLevelFromAccuracy(
-                  legacyNewAccuracy,
-                  legacyNewTotal
-                )
-                const legacySubjectName = stats.subjectName ?? legacy?.subjectName
+                if (!record) return // Phase 1 should have created it; skip if missing
 
-                if (legacy) {
-                  await tx.topicPerformance.update({
-                    where: { id: legacy.id },
-                    data: {
-                      totalAttempts: legacyNewTotal,
-                      correctAnswers: legacyNewCorrect,
-                      accuracy: legacyNewAccuracy,
-                      avgTimeSeconds: Math.round(legacyAvgTime * 100) / 100,
-                      lastAttemptAt: stats.lastAttemptAt,
-                      strengthLevel: legacyStrengthLevel,
-                      subjectName: legacySubjectName,
-                    },
-                  })
-                } else {
-                  await tx.topicPerformance.create({
-                    data: {
-                      userId,
-                      topicId,
-                      topicName: stats.topicName,
-                      subjectName: legacySubjectName,
-                      totalAttempts: stats.total,
-                      correctAnswers: stats.correct,
-                      accuracy: roundedAccuracy,
-                      avgTimeSeconds: Math.round((stats.totalTime / stats.total) * 100) / 100,
-                      lastAttemptAt: stats.lastAttemptAt,
-                      strengthLevel: strengthLevelFromAccuracy(roundedAccuracy, stats.total),
-                    },
-                  })
-                }
+                // Compute weighted average time from existing + new responses
+                const prevTotal = Math.max(0, record.totalAttempts - stats.responseCount)
+                const avgTime =
+                  record.totalAttempts > 0
+                    ? ((record.avgTimeSeconds ?? 0) * prevTotal + stats.totalTime) /
+                      record.totalAttempts
+                    : 0
+
+                await tx.topicPerformance.update({
+                  where: { id: record.id },
+                  data: {
+                    avgTimeSeconds: Math.round(avgTime * 100) / 100,
+                    subjectName: stats.subjectName ?? record.subjectName,
+                  },
+                })
               },
-              { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+              { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
             )
             success = true
           } catch {
             retryCount++
             if (retryCount >= 3) {
               logger.warn(
-                `[MasteryAnalytics] Topic mastery legacy update failed after 3 retries for ${userId}/${topicId}`
+                `[MasteryAnalytics] Topic mastery supplementary update failed after 3 retries for ${userId}/${stats.topicId}`
               )
             }
           }

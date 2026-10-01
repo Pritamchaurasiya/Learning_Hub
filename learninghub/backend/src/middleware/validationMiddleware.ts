@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { z, ZodError } from 'zod'
 import { sendValidationError, sendInternalError } from '../utils/responseHelper'
+import logger from '../utils/logger'
 
 type ParsedRequestParts = {
   body?: unknown
@@ -19,23 +20,33 @@ export const validate =
       })
 
       // Re-assign sanitized data back to req to strip unknown fields
-      // and apply type coercions defined in Zod schemas
-      if (parsed.body !== undefined) req.body = parsed.body
+      // and apply type coercions defined in Zod schemas (safely for Express 5)
+      if (parsed.body !== undefined) {
+        req.body = parsed.body
+      }
       if (parsed.query != null) {
-        Object.defineProperty(req, 'query', {
-          value: parsed.query,
-          writable: true,
-          configurable: true,
-          enumerable: true,
-        })
+        try {
+          req.query = parsed.query as any
+        } catch {
+          Object.defineProperty(req, 'query', {
+            value: parsed.query,
+            configurable: true,
+            enumerable: true,
+            writable: true,
+          })
+        }
       }
       if (parsed.params != null) {
-        Object.defineProperty(req, 'params', {
-          value: parsed.params,
-          writable: true,
-          configurable: true,
-          enumerable: true,
-        })
+        try {
+          req.params = parsed.params as any
+        } catch {
+          Object.defineProperty(req, 'params', {
+            value: parsed.params,
+            configurable: true,
+            enumerable: true,
+            writable: true,
+          })
+        }
       }
 
       return next()
@@ -47,7 +58,10 @@ export const validate =
         }))
         return sendValidationError(res, 'Validation failed', 'VALIDATION_ERROR', details)
       }
-      console.error('[Validation Error]', error)
+      logger.error(
+        '[Validation Error]',
+        error instanceof Error ? error : new Error(String(error))
+      )
       return sendInternalError(res, 'Internal server error during validation')
     }
   }

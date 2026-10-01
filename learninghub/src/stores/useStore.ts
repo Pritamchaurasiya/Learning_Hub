@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { createAuthSlice } from './slices/authSlice'
 import { createUISlice } from './slices/uiSlice'
 import { createProgressSlice } from './slices/progressSlice'
-import { createQuizSlice } from './slices/quizSlice'
 import { createTestsASlice } from './slices/testsASlice'
 import { createTestSlice } from './slices/testSlice'
 import type { AppState } from './types'
@@ -14,7 +13,6 @@ export const useStore = create<AppState>()(
       ...createAuthSlice(...a),
       ...createUISlice(...a),
       ...createProgressSlice(...a),
-      ...createQuizSlice(...a),
       ...createTestsASlice(...a),
       ...createTestSlice(...a),
     }),

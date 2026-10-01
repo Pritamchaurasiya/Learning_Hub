@@ -61,7 +61,7 @@ console.log('='.repeat(50))
 
 // Resolve paths relative to working directory or project root
 const inSubdir = fs.existsSync('src') && fs.existsSync('backend')
-const prefix = (p) => inSubdir ? p.replace(/^learninghub\//, '') : p
+const prefix = p => (inSubdir ? p.replace(/^learninghub\//, '') : p)
 
 // Check 1: Backend files
 console.log('\n📦 Checking Backend...')

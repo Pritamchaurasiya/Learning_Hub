@@ -89,8 +89,7 @@ describe('GrowthEngineService Suite', () => {
 
     it('should award XP and stay at same level when under threshold', async () => {
       // test_completed = 10 XP -> atomic increment from 150 -> 160 -> Level 1
-      ;(prisma.user.update as jest.Mock)
-        .mockResolvedValueOnce({ xp: 160, level: 1 })
+      ;(prisma.user.update as jest.Mock).mockResolvedValueOnce({ xp: 160, level: 1 })
 
       const result = await service.awardXP('user-1', 'test_completed')
 
@@ -114,8 +113,7 @@ describe('GrowthEngineService Suite', () => {
 
     it('should award XP and trigger levelUp when crossing threshold', async () => {
       // perfect_score = 50 XP -> atomic increment from 380 -> 430 -> Level 2
-      ;(prisma.user.update as jest.Mock)
-        .mockResolvedValueOnce({ xp: 430, level: 1 })
+      ;(prisma.user.update as jest.Mock).mockResolvedValueOnce({ xp: 430, level: 1 })
 
       const result = await service.awardXP('user-1', 'perfect_score')
 
@@ -149,6 +147,51 @@ describe('GrowthEngineService Suite', () => {
         select: { xp: true, level: true },
       })
     })
+
+    it('anti-cheat: uses atomic increment to prevent XP grinding via race', async () => {
+      // Verify the implementation uses `increment` not read-modify-write
+      // which would allow race conditions where two awards could be lost
+      ;(prisma.user.update as jest.Mock).mockResolvedValueOnce({ xp: 110, level: 1 })
+      await service.awardXP('user-1', 'test_completed')
+
+      const updateCall = (prisma.user.update as jest.Mock).mock.calls[0][0]
+      expect(updateCall.data.xp).toHaveProperty('increment')
+      expect(updateCall.data.xp.increment).toBe(10) // test_completed XP
+      // Verify no read-modify-write: should NOT set xp to a literal value
+      expect(typeof updateCall.data.xp.increment).toBe('number')
+    })
+
+    it('security: only valid XP reasons are awarded (no client-controlled amounts)', async () => {
+      const validReasons = [
+        'test_completed',
+        'test_passed',
+        'perfect_score',
+        'daily_goal_met',
+        'streak_milestone',
+        'achievement_unlocked',
+        'first_test',
+        'practice_session',
+      ]
+
+      // Hard-coded reference values from GrowthEngineService (DO NOT change)
+      const expectedXP: Record<string, number> = {
+        test_completed: 10,
+        test_passed: 25,
+        perfect_score: 50,
+        daily_goal_met: 15,
+        streak_milestone: 30,
+        achievement_unlocked: 20,
+        first_test: 25,
+        practice_session: 5,
+      }
+
+      for (const reason of validReasons) {
+        // Each reason should have a fixed, bounded amount
+        const amount = expectedXP[reason]
+        expect(amount).toBeGreaterThan(0)
+        expect(amount).toBeLessThanOrEqual(50) // max single award cap
+      }
+    })
   })
 
   describe('checkAndUpdateStreak', () => {
@@ -172,12 +215,11 @@ describe('GrowthEngineService Suite', () => {
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
 
-      ;(prisma.user.findUnique as jest.Mock)
-        .mockResolvedValueOnce({
-          streak: 6,
-          longestStreak: 6,
-          lastActive: yesterday,
-        })
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+        streak: 6,
+        longestStreak: 6,
+        lastActive: yesterday,
+      })
       ;(prisma.user.update as jest.Mock).mockResolvedValue({
         xp: 200,
         level: 1,

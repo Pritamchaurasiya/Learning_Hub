@@ -26,7 +26,7 @@ class WebSocketService {
   void _attemptConnection(String token) {
     const baseUrl = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'https://api.learninghub.app',
+      defaultValue: 'http://localhost:5000',
     );
 
     try {

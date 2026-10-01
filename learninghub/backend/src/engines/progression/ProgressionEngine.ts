@@ -65,15 +65,21 @@ export class ProgressionEngine {
   }
 
   /**
-   * Evaluates if added XP triggers a level up using progressive XP curve: Level = floor(sqrt(XP / 100)) + 1
+   * Evaluates if added XP triggers a level up using the canonical XP curve
+   * shared with GrowthEngineService: Level = max(1, floor(sqrt(XP / 100))),
+   * i.e. level L requires 100 * L^2 total XP (L1=100, L2=400, L5=2500...).
    */
   public evaluateLevelUp(currentXP: number, addedXP: number): LevelEvaluationResult {
     const previousXP = currentXP
     const newXP = currentXP + addedXP
 
-    // Curve: level L requires 100 * (L - 1)^2 total XP
-    const getLevelFromXP = (xp: number): number => Math.floor(Math.sqrt(Math.max(0, xp) / 100)) + 1
-    const getXPForLevel = (level: number): number => 100 * Math.pow(Math.max(1, level) - 1, 2)
+    // Canonical curve (must match GrowthEngineService.calculateLevel/xpForLevel).
+    const getLevelFromXP = (xp: number): number =>
+      Math.max(1, Math.floor(Math.sqrt(Math.max(0, xp) / 100)))
+    const getXPForLevel = (level: number): number => {
+      if (!Number.isFinite(level) || level <= 1) return 100
+      return level * level * 100
+    }
 
     const previousLevel = getLevelFromXP(previousXP)
     const newLevel = getLevelFromXP(newXP)

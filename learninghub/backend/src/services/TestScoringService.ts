@@ -1,13 +1,16 @@
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
 import { AttemptStatus } from '@prisma/client'
+import { AppError } from '../middleware/errorHandler'
 import { normalizeAnswerIds, answersMatch } from '../utils/testsHelper'
+import { assertValidTransition, isTerminalStatus } from '../utils/attemptStateMachine'
 import { QuestionResult } from './TopicPerformanceService'
 import { growthEngineService } from './GrowthEngineService'
 import { jobQueueService } from './JobQueueService'
 import { conductorClient } from './ml/ConductorClient'
 import { webSocketService } from './WebSocketService'
 import { IRTScoringEngine } from './IRTScoringEngine'
+import { testSubmissionsTotal, testScoreHistogram } from '../utils/metrics'
 
 export class TestScoringService {
   /**
@@ -76,13 +79,18 @@ export class TestScoringService {
     let actualTimeTaken = typeof timeTaken === 'number' ? Math.max(0, timeTaken) : 0
 
     if (existingResult?.startedAt) {
-      const serverTimeTaken = Math.floor((Date.now() - existingResult.startedAt.getTime()) / 1000)
-      if (serverTimeTaken > actualTimeTaken + 10) {
+      const serverTimeTaken = Math.max(
+        0,
+        Math.floor((Date.now() - existingResult.startedAt.getTime()) / 1000)
+      )
+      if (actualTimeTaken === 0 || serverTimeTaken > actualTimeTaken + 10) {
         actualTimeTaken = serverTimeTaken
       }
     }
 
     const isOverTime = actualTimeTaken > timeLimitSeconds
+    const isTooFast = timeLimitSeconds > 60 && actualTimeTaken < 5
+    if (isTooFast) throw new AppError('SUSPICIOUS_FAST_SUBMISSION', 400)
     const finalStatus: AttemptStatus = isOverTime ? 'TIMEOUT' : 'COMPLETED'
 
     let score = 0
@@ -104,14 +112,54 @@ export class TestScoringService {
         let isPendingSubjective = false
 
         if (hasAnswer) {
-          if (q.type === 'SUBJECTIVE') {
-            // Instead of blocking to grade here, we mark as pending and dispatch an AI job later.
+          const qTypeUpper = (q.type || 'MCQ').toUpperCase()
+          if (qTypeUpper === 'SUBJECTIVE') {
+            // Instead of blocking to grade here, we mark as pending and dispatch an AI job later if available
             marksObtained = 0
             isCorrect = null // Will be updated by async worker - use null to indicate "pending"
             aiFeedback = 'Grading in progress by AI worker...'
             isPendingSubjective = true
+          } else if (qTypeUpper === 'NUMERICAL') {
+            // Numerical answer comparison with 1% tolerance
+            const rawUserStr = Array.isArray(userAnswerId)
+              ? userAnswerId[0]
+              : String(userAnswerId ?? '').trim()
+            const userNum = parseFloat(rawUserStr)
+            const targetStr = correctOptions[0]?.text ?? q.explanation ?? ''
+            const targetNum = parseFloat(targetStr.replace(/[^0-9.-]/g, ''))
+
+            if (!isNaN(userNum) && !isNaN(targetNum)) {
+              const tolerance = Math.max(0.001, Math.abs(targetNum) * 0.01)
+              isCorrect = Math.abs(userNum - targetNum) <= tolerance
+            } else {
+              isCorrect = false
+            }
+            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+          } else if (qTypeUpper === 'SHORT_ANSWER' || qTypeUpper === 'FILL_BLANK') {
+            // Normalized text match
+            const rawUserStr = (
+              Array.isArray(userAnswerId) ? userAnswerId[0] : String(userAnswerId ?? '')
+            )
+              .trim()
+              .toLowerCase()
+            const correctTexts = correctOptions.map((o: any) => o.text.trim().toLowerCase())
+            isCorrect = correctTexts.some((ct: string) => ct === rawUserStr)
+            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+          } else if (qTypeUpper === 'TRUE_FALSE') {
+            if (correctOptions.length > 0) {
+              const userOpt = submittedIds[0]
+              const correctOpt = correctOptions[0].id
+              const correctText = correctOptions[0].text.trim().toLowerCase()
+              const userText = (
+                Array.isArray(userAnswerId) ? userAnswerId[0] : String(userAnswerId ?? '')
+              )
+                .trim()
+                .toLowerCase()
+              isCorrect = userOpt === correctOpt || userText === correctText
+              marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+            }
           } else if (correctOptions.length > 0) {
-            if (q.type === 'MSQ') {
+            if (qTypeUpper === 'MSQ' || qTypeUpper === 'MULTIPLE_SELECT') {
               isCorrect = answersMatch(
                 submittedIds,
                 correctOptions.map((o: any) => o.id)
@@ -153,7 +201,7 @@ export class TestScoringService {
           question_type: q.type,
           selected_options: submittedIds.map(id => ({ id })),
           correct_options: correctOptions.map((o: any) => ({ id: o.id, text: o.text })),
-          is_correct: isCorrect,
+          is_correct: isCorrect === null ? null : isCorrect === true,
           marks_obtained: marksObtained,
           cbm_multiplier: cbmMultiplier,
           explanation: aiFeedback ?? q.explanation,
@@ -181,7 +229,8 @@ export class TestScoringService {
         })
       }
 
-      if (txExistingResult && txExistingResult.status !== 'IN_PROGRESS') {
+      if (txExistingResult && isTerminalStatus(txExistingResult.status)) {
+        // Attempt is already in a terminal state — treat as idempotent duplicate
         return {
           isDuplicate: true,
           result: txExistingResult,
@@ -189,6 +238,11 @@ export class TestScoringService {
           incorrectCount: 0,
           questionResults: [],
         }
+      }
+
+      // Validate the state transition before proceeding
+      if (txExistingResult) {
+        assertValidTransition(txExistingResult.id, txExistingResult.status, finalStatus)
       }
 
       const submissionData = {
@@ -327,6 +381,16 @@ export class TestScoringService {
           e instanceof Error ? e : new Error(String(e))
         )
       })
+
+      // Record Prometheus domain metrics
+      try {
+        testSubmissionsTotal.inc({ status: finalStatus, passed: String(passed) })
+        testScoreHistogram.observe(percentage)
+      } catch (metricsErr) {
+        logger.debug('[TestScoringService] Failed to record Prometheus metric', {
+          error: metricsErr,
+        })
+      }
 
       // Notify client in real-time that their test expired
       if (finalStatus === 'TIMEOUT') {

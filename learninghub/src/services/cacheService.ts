@@ -31,13 +31,24 @@ export class CacheService {
 }
 
 export const CacheKeys = {
-  search: (query: string, filters: Record<string, string | number | boolean>) =>
-    `search_${query}_${JSON.stringify(filters)}`,
+  search: (query: string, filters: Record<string, string | number | boolean>) => {
+    // Deterministic key: sort filter keys
+    const sortedFilters = Object.keys(filters)
+      .sort()
+      .map(k => `${k}:${filters[k]}`)
+      .join(',')
+    return `search_${query}_${sortedFilters}`
+  },
 
   course: (id: string) => `course_${id}`,
 
-  courseList: (params: Record<string, string | number | boolean>) =>
-    `courses_${JSON.stringify(params)}`,
+  courseList: (params: Record<string, string | number | boolean>) => {
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map(k => `${k}:${params[k]}`)
+      .join(',')
+    return `courses_${sortedParams}`
+  },
 
   user: (id: string) => `user_${id}`,
 

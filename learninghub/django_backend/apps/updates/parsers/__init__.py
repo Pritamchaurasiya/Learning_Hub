@@ -11,6 +11,8 @@ from .lucknow_univ_parser import LucknowUnivNoticeParser
 from .bhu_parser import BHUNoticeParser
 from .ddu_parser import DDUNoticeParser
 from .nta_parser import NTANoticeParser
+from .ssc_parser import SSCNoticeParser
+from .upsc_parser import UPSCNoticeParser
 
 
 def get_parser_for_source(source: Any) -> BaseUpdateParser:
@@ -34,6 +36,10 @@ def get_parser_for_source(source: Any) -> BaseUpdateParser:
     if fetch_method == 'RSS_FEED':
         return RSSFeedParser()
 
+    if 'ssc.gov.in' in domain or 'ssc.nic.in' in domain or 'ssc' in source_id:
+        return SSCNoticeParser()
+    if 'upsc.gov.in' in domain or 'upsc' in source_id:
+        return UPSCNoticeParser()
     if 'aktu' in domain or 'aktu' in source_id:
         return AKTUNoticeParser()
     if 'allduniv' in domain or 'allahabad' in source_id or 'uod' in source_id:
@@ -63,5 +69,7 @@ __all__ = [
     'BHUNoticeParser',
     'DDUNoticeParser',
     'NTANoticeParser',
+    'SSCNoticeParser',
+    'UPSCNoticeParser',
     'get_parser_for_source',
 ]

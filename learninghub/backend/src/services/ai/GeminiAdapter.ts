@@ -3,23 +3,27 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { IAIAgent, AIProviderOptions, AIGenerationResult, AIMessage } from './AIAgent'
 import logger from '../../utils/logger'
 import { CircuitBreaker } from '../../utils/CircuitBreaker'
+import { aiOperationsDuration, aiOperationsTotal } from '../../utils/metrics'
 
 const MAX_RETRIES = 3
 const BASE_DELAY_MS = 1000 // 1 second, doubles each retry
 
 export class GeminiAdapter implements IAIAgent {
   private ai: GoogleGenerativeAI
-  private defaultModel = 'gemini-1.5-flash'
+  private defaultModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
   private circuitBreaker = new CircuitBreaker('GeminiAPI', {
     failureThreshold: 5,
     resetTimeout: 30000,
   })
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, model?: string) {
     const key = apiKey ?? process.env.GEMINI_API_KEY
     if (!key) {
       logger.error('[GeminiAdapter] GEMINI_API_KEY is not configured')
       throw new Error('GEMINI_API_KEY is missing')
+    }
+    if (model) {
+      this.defaultModel = model
     }
     this.ai = new GoogleGenerativeAI(key)
   }
@@ -30,16 +34,40 @@ export class GeminiAdapter implements IAIAgent {
    */
   private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
     let lastError: Error | undefined
+    const startTime = Date.now()
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
-        return await this.circuitBreaker.execute(() => operation())
+        const result = await this.circuitBreaker.execute(() => operation())
+        try {
+          aiOperationsDuration.observe(
+            { operation: operationName, provider: 'gemini' },
+            (Date.now() - startTime) / 1000
+          )
+          aiOperationsTotal.inc({
+            operation: operationName,
+            status: 'success',
+            provider: 'gemini',
+          })
+        } catch {
+          // Ignore metrics errors
+        }
+        return result
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
         const errorMessage = lastError.message.toLowerCase()
 
         // Don't retry if the circuit is open
         if (errorMessage.includes('circuitbreaker is open')) {
+          try {
+            aiOperationsTotal.inc({
+              operation: operationName,
+              status: 'circuit_open',
+              provider: 'gemini',
+            })
+          } catch {
+            // Ignore metrics errors
+          }
           throw lastError
         }
 
@@ -56,6 +84,15 @@ export class GeminiAdapter implements IAIAgent {
           errorMessage.includes('enotfound')
 
         if (!isRetryable || attempt === MAX_RETRIES) {
+          try {
+            aiOperationsTotal.inc({
+              operation: operationName,
+              status: 'error',
+              provider: 'gemini',
+            })
+          } catch {
+            // Ignore metrics errors
+          }
           logger.error(
             `[GeminiAdapter] ${operationName} failed after ${attempt + 1} attempt(s)`,
             lastError

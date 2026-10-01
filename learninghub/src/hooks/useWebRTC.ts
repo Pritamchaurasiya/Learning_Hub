@@ -4,6 +4,7 @@ import { useStore } from '../stores/useStore'
 
 interface WebRTCUserJoinedData {
   socketId: string
+  userId?: string
 }
 
 interface WebRTCOfferData {
@@ -32,7 +33,8 @@ export function useWebRTC(roomId: string | null) {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
 
   const peersRef = useRef<Map<string, RTCPeerConnection>>(new Map())
-  const { on, emit } = useWebSocket()
+  const iceCandidateQueues = useRef<Map<string, RTCIceCandidateInit[]>>(new Map())
+  const { on, emit, socket } = useWebSocket()
   const auth = useStore(state => state.auth)
 
   // Initialize Media Stream
@@ -136,14 +138,32 @@ export function useWebRTC(roomId: string | null) {
 
     const handleUserJoined = (data: WebRTCUserJoinedData) => {
       // Create a peer connection and send an offer to the new user
-      if (data.socketId !== auth.user?.id) {
+      const isSelf =
+        (socket?.id && data.socketId === socket.id) ||
+        (data.userId && data.userId === auth.user?.id)
+      if (!isSelf) {
         createPeer(data.socketId, true)
+      }
+    }
+
+    const drainCandidateQueue = async (sender: string, peer: RTCPeerConnection) => {
+      const queue = iceCandidateQueues.current.get(sender)
+      if (queue && queue.length > 0) {
+        for (const candidate of queue) {
+          try {
+            await peer.addIceCandidate(new RTCIceCandidate(candidate))
+          } catch (e) {
+            console.error('Error adding queued ICE candidate', e)
+          }
+        }
+        iceCandidateQueues.current.delete(sender)
       }
     }
 
     const handleOffer = async (data: WebRTCOfferData) => {
       const peer = peersRef.current.get(data.sender) ?? createPeer(data.sender, false)
       await peer.setRemoteDescription(new RTCSessionDescription(data.offer))
+      await drainCandidateQueue(data.sender, peer)
       const answer = await peer.createAnswer()
       await peer.setLocalDescription(answer)
       emit('webrtc-answer', {
@@ -157,17 +177,22 @@ export function useWebRTC(roomId: string | null) {
       const peer = peersRef.current.get(data.sender)
       if (peer) {
         await peer.setRemoteDescription(new RTCSessionDescription(data.answer))
+        await drainCandidateQueue(data.sender, peer)
       }
     }
 
     const handleCandidate = async (data: WebRTCCandidateData) => {
       const peer = peersRef.current.get(data.sender)
-      if (peer) {
+      if (peer && peer.remoteDescription) {
         try {
           await peer.addIceCandidate(new RTCIceCandidate(data.candidate))
         } catch (e) {
           console.error('Error adding ICE candidate', e)
         }
+      } else {
+        const queue = iceCandidateQueues.current.get(data.sender) ?? []
+        queue.push(data.candidate)
+        iceCandidateQueues.current.set(data.sender, queue)
       }
     }
 

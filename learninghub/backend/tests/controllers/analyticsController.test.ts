@@ -68,12 +68,18 @@ describe('AnalyticsController learner endpoints', () => {
           accuracy: 80,
         },
       ])
+      ;(prisma.enrollment.findMany as jest.Mock).mockResolvedValue([])
+      ;(prisma.testResult.count as jest.Mock).mockResolvedValue(0)
+      ;(prisma.dailyGoal.aggregate as jest.Mock).mockResolvedValue({ _sum: { completedMinutes: 0 } })
 
       await getLearnerDashboardStats(mockReq as any, mockRes as any, nextMock)
 
       expect(jsonMock).toHaveBeenCalledWith({
         status: 'success',
         data: {
+          total_courses: 0,
+          completed_courses: 0,
+          in_progress_courses: 0,
           total_tests: 0,
           total_learning_time: 0,
           average_score: 85,
@@ -93,6 +99,9 @@ describe('AnalyticsController learner endpoints', () => {
         _avg: { percentage: null },
       })
       ;(prisma.topicPerformance.findMany as jest.Mock).mockResolvedValue([])
+      ;(prisma.enrollment.findMany as jest.Mock).mockResolvedValue([])
+      ;(prisma.testResult.count as jest.Mock).mockResolvedValue(0)
+      ;(prisma.dailyGoal.aggregate as jest.Mock).mockResolvedValue({ _sum: { completedMinutes: 0 } })
 
       await getLearnerDashboardStats(mockReq as any, mockRes as any, nextMock)
 

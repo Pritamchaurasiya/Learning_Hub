@@ -93,8 +93,15 @@ GeneratedPluginRegistrant.*
 .env.production
 .env.development
 .env.prod
+.env.new
+.env.staging
 *.env.production
 *.env.development
+*.env.new
+*.env.staging
+!.env.example
+!.env.prod.example
+dev.db
 secrets/
 *.pem
 *.key
@@ -248,3 +255,20 @@ learninghub/qa-artifacts/
 learninghub/backend/coverage/
 *.err
 backend_pid.txt
+
+# ==================== CRITICAL SENSITIVE EXCLUSIONS ====================
+# Prevent database dumps and sensitive backups from ever being tracked
+backups/
+*.json.gz
+*.dump
+*.dump.gz
+*.sql.gz
+
+# ==================== TEST ARTIFACTS, COVERAGE & LOCAL PROMPTS ====================
+coverage.xml
+**/coverage/**
+tests_a_*.png
+unmerged_branch_analysis.json
+step360_prompt.txt
+AUDIT_CLASSIFICATION_REPORT.json
+

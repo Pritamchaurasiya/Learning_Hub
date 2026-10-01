@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
@@ -19,6 +19,10 @@ import {
   LayoutDashboard,
   RefreshCw,
   Sparkles,
+  X,
+  Filter,
+  ChevronDown,
+  Keyboard,
 } from 'lucide-react'
 import { ProblemCard } from '../components/ui/ProblemCard'
 import { problemService } from '../services/problemService'
@@ -86,6 +90,8 @@ function PracticeStatCardSkeleton() {
 export default function ProblemsPage() {
   useDocumentTitle('DSA Practice')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  void searchParams.get('contest')
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,6 +101,22 @@ export default function ProblemsPage() {
   const [selectedStatus, setSelectedStatus] = useState<
     'ALL' | 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED'
   >('ALL')
+  const [showFilters, setShowFilters] = useState(false)
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
+  // Native keyboard shortcuts listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowKeyboardShortcuts(prev => !prev)
+      } else if (e.key === 'Escape') {
+        setShowKeyboardShortcuts(false)
+        setShowFilters(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Fetch DSA Stats
   const {
@@ -170,7 +192,15 @@ export default function ProblemsPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="primary"
+            onClick={() => navigate('/visualizer')}
+            leftIcon={<Sparkles className="w-4 h-4" />}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
+          >
+            DSA Visualizer Studio
+          </Button>
           <Button
             variant="outline"
             onClick={() => navigate('/analytics')}
@@ -184,6 +214,17 @@ export default function ProblemsPage() {
             leftIcon={<Trophy className="w-4 h-4" />}
           >
             Compete
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowKeyboardShortcuts(true)}
+            leftIcon={<Keyboard className="w-4 h-4" />}
+            className="hidden sm:inline-flex"
+            aria-label="Keyboard shortcuts"
+          >
+            <Keyboard className="w-4 h-4" />
+            <span className="hidden sm:inline">Shortcuts</span>
           </Button>
         </div>
       </div>
@@ -236,7 +277,7 @@ export default function ProblemsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: List */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Filters */}
+{/* Filters */}
           <Card className="p-4 border-none shadow-sm bg-white dark:bg-gray-900/50 backdrop-blur-md sticky top-16 z-20">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -251,28 +292,38 @@ export default function ProblemsPage() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
-                <select
-                  value={selectedDifficulty}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onChange={e => setSelectedDifficulty(e.target.value as any)}
-                  className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="sm:hidden flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300"
+                  aria-label="Toggle filters"
                 >
-                  <option value="ALL">Difficulty</option>
-                  <option value="EASY">Beginner</option>
-                  <option value="MEDIUM">Intermediate</option>
-                  <option value="HARD">Expert</option>
-                </select>
-                <select
-                  value={selectedStatus}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onChange={e => setSelectedStatus(e.target.value as any)}
-                  className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
-                >
-                  <option value="ALL">Status</option>
-                  <option value="SOLVED">Solved</option>
-                  <option value="ATTEMPTED">Attempted</option>
-                </select>
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline">Filters</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`flex flex-col sm:flex-row gap-2 ${showFilters ? 'flex' : 'hidden sm:flex'}`}>
+                  <select
+                    value={selectedDifficulty}
+                    onChange={e => setSelectedDifficulty(e.target.value as any)}
+                    className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                  >
+                    <option value="ALL">Difficulty</option>
+                    <option value="EASY">Beginner</option>
+                    <option value="MEDIUM">Intermediate</option>
+                    <option value="HARD">Expert</option>
+                  </select>
+                  <select
+                    value={selectedStatus}
+                    onChange={e => setSelectedStatus(e.target.value as any)}
+                    className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                  >
+                    <option value="ALL">Status</option>
+                    <option value="SOLVED">Solved</option>
+                    <option value="ATTEMPTED">Attempted</option>
+                  </select>
+                </div>
               </div>
             </div>
           </Card>
@@ -435,6 +486,68 @@ export default function ProblemsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Keyboard Shortcuts Modal */}
+      <AnimatePresence>
+        {showKeyboardShortcuts && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div className="absolute inset-0 bg-black/50" onClick={() => setShowKeyboardShortcuts(false)} />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-w-md overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+                <button
+                  onClick={() => setShowKeyboardShortcuts(false)}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘K</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Open command palette</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘S</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Save draft</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘Enter</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Run code</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘⇧R</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">AI Code Review</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Esc</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Close modals/panels</span>
+                  </div>
+                </div>
+                <div className="text-center pt-4">
+                  <button
+                    onClick={() => setShowKeyboardShortcuts(false)}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatedPage>
   )
 }

@@ -69,7 +69,14 @@ export class TopicPerformanceService {
   private invalidateTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly DEBOUNCE_MS = 30_000
 
-  private async invalidateCache(userId: string) {
+  /**
+   * Redis key for tracking debounced invalidation
+   */
+  private getDebounceKey(userId: string): string {
+    return `topic_perf:debounce:${userId}`
+  }
+
+  async invalidateCache(userId: string): Promise<void> {
     await Promise.all([
       cacheService.delete(cacheService.topicMasteryKey(userId)),
       cacheService.delete(cacheService.topicWeakKey(userId)),
@@ -84,26 +91,26 @@ export class TopicPerformanceService {
   /**
    * Debounced cache invalidation — batches rapid per-answer updates into a single
    * invalidation after DEBOUNCE_MS of inactivity.
-   *
-   * NOTE: This uses in-memory timers, which means it only works correctly for
-   * single-node deployments. For multi-node scaling, replace this with a
-   * Redis-backed debounce (e.g., SET with NX + TTL and a background poller).
    */
-  private scheduleDebouncedInvalidation(userId: string) {
+  scheduleDebouncedInvalidation(userId: string, delayMs: number = this.DEBOUNCE_MS): void {
     const existing = this.invalidateTimers.get(userId)
-    if (existing) clearTimeout(existing)
-    this.invalidateTimers.set(
-      userId,
-      setTimeout(() => {
-        this.invalidateTimers.delete(userId)
-        this.invalidateCache(userId).catch(err => {
-          logger.error(
-            `[TopicPerformanceService] Debounced cache invalidation failed for user ${userId}`,
-            err instanceof Error ? err : new Error(String(err))
-          )
-        })
-      }, this.DEBOUNCE_MS)
-    )
+    if (existing) {
+      clearTimeout(existing)
+    }
+
+    const timer = setTimeout(async () => {
+      this.invalidateTimers.delete(userId)
+      try {
+        await this.invalidateCache(userId)
+      } catch (err) {
+        logger.error(
+          `[TopicPerformanceService] Debounced cache invalidation failed for user ${userId}`,
+          err instanceof Error ? err : new Error(String(err))
+        )
+      }
+    }, delayMs)
+
+    this.invalidateTimers.set(userId, timer)
   }
 
   /**
@@ -195,7 +202,7 @@ export class TopicPerformanceService {
       }
 
       // Debounce cache invalidation — batches per-answer updates into one invalidation
-      this.scheduleDebouncedInvalidation(userId)
+      await this.scheduleDebouncedInvalidation(userId)
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error)
       logger.error(

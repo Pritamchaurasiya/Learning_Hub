@@ -92,7 +92,7 @@ class DsaProblemsNotifier extends StateNotifier<DsaProblemsState> {
 final dsaProblemsProvider =
     StateNotifierProvider<DsaProblemsNotifier, DsaProblemsState>((ref) {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://127.0.0.1:8000',
+    baseUrl: 'http://localhost:5000',
     connectTimeout: const Duration(seconds: 10),
   ));
   return DsaProblemsNotifier(dio);

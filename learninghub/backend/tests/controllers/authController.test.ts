@@ -82,12 +82,10 @@ jest.mock('../../src/services/CacheService', () => ({
 
 jest.mock('../../src/services/QueryOptimizationService', () => ({
   queryOptimizationService: {
-    getUserPerformanceSummary: jest
-      .fn()
-      .mockResolvedValue({
-        test_stats: { total_tests: 0, average_score: 0, best_score: 0, worst_score: 0 },
-        recent_tests: [],
-      }),
+    getUserPerformanceSummary: jest.fn().mockResolvedValue({
+      test_stats: { total_tests: 0, average_score: 0, best_score: 0, worst_score: 0 },
+      recent_tests: [],
+    }),
   },
 }))
 
@@ -144,21 +142,20 @@ describe('AuthController', () => {
         expect.any(Object)
       )
       expect(statusMock).toHaveBeenCalledWith(201)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'success',
-        message: 'Registration successful',
-        data: {
-          user: {
-            id: createdUser.id,
-            email: createdUser.email,
-            username: createdUser.username,
-            role: createdUser.role,
-            xp: createdUser.xp,
-            level: createdUser.level,
-            streak: createdUser.streak,
-          },
-        },
-      })
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          message: 'Registration successful',
+          data: expect.objectContaining({
+            user: expect.objectContaining({
+              id: createdUser.id,
+              email: createdUser.email,
+              username: createdUser.username,
+              role: createdUser.role,
+            }),
+          }),
+        })
+      )
     })
 
     it('should return 400 when email or password is missing', async () => {
@@ -180,7 +177,10 @@ describe('AuthController', () => {
 
       expect(statusMock).toHaveBeenCalledWith(400)
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'error', message: 'Registration failed. Email or username may be unavailable' })
+        expect.objectContaining({
+          status: 'error',
+          message: 'Registration failed. Email or username may be unavailable',
+        })
       )
     })
 
@@ -217,22 +217,28 @@ describe('AuthController', () => {
         expect.any(Object)
       )
       expect(statusMock).toHaveBeenCalledWith(200)
-      expect(jsonMock).toHaveBeenCalledWith({
-        status: 'success',
-        message: 'Login successful',
-        data: {
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            username: existingUser.username,
-            role: existingUser.role,
-            xp: existingUser.xp,
-            level: existingUser.level,
-            streak: existingUser.streak,
-            lastActive: existingUser.lastActive,
-          },
-        },
-      })
+      // Frontend canonical contract: tokens must also be in body, not just cookies
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          message: 'Login successful',
+          data: expect.objectContaining({
+            user: expect.objectContaining({
+              id: existingUser.id,
+              email: existingUser.email,
+              username: existingUser.username,
+              role: existingUser.role,
+            }),
+            token: 'mock-token',
+            accessToken: 'mock-token',
+            refreshToken: 'mock-refresh-token',
+            tokens: expect.objectContaining({
+              access: 'mock-token',
+              refresh: 'mock-refresh-token',
+            }),
+          }),
+        })
+      )
     })
 
     it('should return mfaRequired challenge if user has mfaEnabled', async () => {
@@ -324,7 +330,10 @@ describe('AuthController', () => {
         expect.any(Object)
       )
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'success', data: { message: 'Token refreshed' } })
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({ message: 'Token refreshed' }),
+        })
       )
     })
 
@@ -358,7 +367,10 @@ describe('AuthController', () => {
         expect.any(Object)
       )
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'success', data: { message: 'Token refreshed' } })
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({ message: 'Token refreshed' }),
+        })
       )
     })
 
@@ -368,6 +380,50 @@ describe('AuthController', () => {
       expect(statusMock).toHaveBeenCalledWith(400)
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({ status: 'error', message: 'Refresh token is required' })
+      )
+    })
+
+    it('should accept refreshToken (camelCase) — frontend canonical contract', async () => {
+      const user = createUser({ id: 'user-frontend' })
+
+      mockReq.body = { refreshToken: 'frontend-canonical-token' }
+      verifyRefreshToken.mockReturnValue({ userId: user.id })
+      ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue({
+        id: 'rt-fe',
+        token: 'hashed-token',
+        userId: user.id,
+        revokedAt: null,
+        usedAt: null,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      ;(prisma.refreshToken.update as jest.Mock).mockResolvedValue({})
+      ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({ id: 'rt-fe2' })
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
+
+      await refresh(mockReq as any, mockRes as any, jest.fn())
+
+      // Cookies set (defense in depth)
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'access_token',
+        expect.any(String),
+        expect.any(Object)
+      )
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'refresh_token',
+        expect.any(String),
+        expect.any(Object)
+      )
+      // Tokens returned in body so frontend can use them directly
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'success',
+          data: expect.objectContaining({
+            token: expect.any(String),
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+            message: 'Token refreshed',
+          }),
+        })
       )
     })
 

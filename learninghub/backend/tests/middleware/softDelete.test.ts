@@ -49,7 +49,9 @@ describe('Soft-Delete Middleware', () => {
 
   describe('injectDeletedAt behavior', () => {
     it('should inject deletedAt: null when where is undefined', () => {
-      const injectDeletedAt = (where: Record<string, unknown> | undefined): Record<string, unknown> => {
+      const injectDeletedAt = (
+        where: Record<string, unknown> | undefined
+      ): Record<string, unknown> => {
         if (!where) return { deletedAt: null }
         if (where.deletedAt !== undefined) return where
 
@@ -87,7 +89,9 @@ describe('Soft-Delete Middleware', () => {
     })
 
     it('should inject deletedAt: null into nested OR conditions', () => {
-      const injectDeletedAt = (where: Record<string, unknown> | undefined): Record<string, unknown> => {
+      const injectDeletedAt = (
+        where: Record<string, unknown> | undefined
+      ): Record<string, unknown> => {
         if (!where) return { deletedAt: null }
         if (where.deletedAt !== undefined) return where
 
@@ -131,7 +135,9 @@ describe('Soft-Delete Middleware', () => {
     })
 
     it('should inject deletedAt: null into nested AND conditions', () => {
-      const injectDeletedAt = (where: Record<string, unknown> | undefined): Record<string, unknown> => {
+      const injectDeletedAt = (
+        where: Record<string, unknown> | undefined
+      ): Record<string, unknown> => {
         if (!where) return { deletedAt: null }
         if (where.deletedAt !== undefined) return where
 
@@ -175,7 +181,9 @@ describe('Soft-Delete Middleware', () => {
     })
 
     it('should inject deletedAt: null into nested NOT conditions', () => {
-      const injectDeletedAt = (where: Record<string, unknown> | undefined): Record<string, unknown> => {
+      const injectDeletedAt = (
+        where: Record<string, unknown> | undefined
+      ): Record<string, unknown> => {
         if (!where) return { deletedAt: null }
         if (where.deletedAt !== undefined) return where
 
@@ -216,7 +224,9 @@ describe('Soft-Delete Middleware', () => {
     })
 
     it('should preserve explicit deletedAt filter', () => {
-      const injectDeletedAt = (where: Record<string, unknown> | undefined): Record<string, unknown> => {
+      const injectDeletedAt = (
+        where: Record<string, unknown> | undefined
+      ): Record<string, unknown> => {
         if (!where) return { deletedAt: null }
         if (where.deletedAt !== undefined) return where
 

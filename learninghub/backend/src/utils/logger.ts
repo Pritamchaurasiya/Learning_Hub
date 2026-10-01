@@ -144,6 +144,35 @@ const safeStringify = (obj: unknown): string => {
   })
 }
 
+// PII REDACTION (winston retained intentionally — see note below): scrub well-known
+// sensitive keys and token/email-like values before they reach transports, so
+// request contexts and error metadata cannot leak credentials into log files.
+// NOTE: logger library stays winston (docs mention of pino is a contradiction we
+// do not act on); PII safety is provided by this redaction layer instead.
+const SENSITIVE_KEY_PATTERN = /passw|passwd|pwd|secret|token|api[_-]?key|auth|cookie|session|otp|mfa|card|cvv|ssn/i
+const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/
+const BEARER_PATTERN = /Bearer\s+[A-Za-z0-9\-._~+/=]+/g
+
+export const redactPII = (value: unknown, depth = 0): unknown => {
+  if (depth > 10 || value === null || value === undefined) return value
+  if (typeof value === 'string') {
+    let out = value
+    if (EMAIL_PATTERN.test(out)) out = out.replace(EMAIL_PATTERN, '[REDACTED_EMAIL]')
+    out = out.replace(BEARER_PATTERN, 'Bearer [REDACTED]')
+    return out
+  }
+  if (Array.isArray(value)) return value.map(v => redactPII(v, depth + 1))
+  if (typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      // eslint-disable-next-line security/detect-object-injection
+      out[k] = SENSITIVE_KEY_PATTERN.test(k) ? '[REDACTED]' : redactPII(v, depth + 1)
+    }
+    return out
+  }
+  return value
+}
+
 const emitTestLog = (
   level: AppLogLevel,
   message: string,
@@ -195,38 +224,43 @@ const emitTestAuditLog = (
 
 export const logger = {
   error: (message: string, error?: Error, context?: Record<string, unknown>) => {
+    const redactedContext = context ? (redactPII(context) as Record<string, unknown>) : undefined
     emitTestLog('error', message, {
       error: error ? { message: error.message, stack: error.stack, name: error.name } : undefined,
-      context,
+      context: redactedContext,
     })
     winstonLogger.error(message, {
       error: error ? { message: error.message, stack: error.stack, name: error.name } : undefined,
-      context,
+      context: redactedContext,
     })
   },
 
   warn: (message: string, context?: Record<string, unknown>) => {
-    emitTestLog('warn', message, { context })
-    winstonLogger.warn(message, { context })
+    const redacted = context ? (redactPII(context) as Record<string, unknown>) : undefined
+    emitTestLog('warn', message, { context: redacted })
+    winstonLogger.warn(message, { context: redacted })
   },
 
   info: (message: string, context?: Record<string, unknown>) => {
-    emitTestLog('info', message, { context })
-    winstonLogger.info(message, { context })
+    const redacted = context ? (redactPII(context) as Record<string, unknown>) : undefined
+    emitTestLog('info', message, { context: redacted })
+    winstonLogger.info(message, { context: redacted })
   },
 
   debug: (message: string, context?: Record<string, unknown>) => {
-    emitTestLog('debug', message, { context })
-    winstonLogger.debug(message, { context })
+    const redacted = context ? (redactPII(context) as Record<string, unknown>) : undefined
+    emitTestLog('debug', message, { context: redacted })
+    winstonLogger.debug(message, { context: redacted })
   },
 
   // Audit logging for sensitive operations
   audit: (action: string, userId: string, details: Record<string, unknown>) => {
-    emitTestAuditLog(action, userId, details)
+    const redactedDetails = redactPII(details) as Record<string, unknown>
+    emitTestAuditLog(action, userId, redactedDetails)
     auditLogger.info(action, {
       action,
       userId,
-      details,
+      details: redactedDetails,
     })
   },
 }

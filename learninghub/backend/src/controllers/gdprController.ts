@@ -9,8 +9,18 @@ export const exportUserData = asyncHandler(async (req: Request, res: Response): 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      testResults: { select: { testId: true, score: true, completedAt: true } },
-      achievements: { select: { name: true, unlockedAt: true } },
+      // Capped recency windows (not full history) + route throttling required —
+      // see authController.exportUserData note. Large accounts paginate.
+      testResults: {
+        select: { testId: true, score: true, completedAt: true },
+        orderBy: { completedAt: 'desc' },
+        take: 500,
+      },
+      achievements: {
+        select: { name: true, unlockedAt: true },
+        orderBy: { unlockedAt: 'desc' },
+        take: 200,
+      },
       activityLogs: { select: { activityType: true, createdAt: true }, take: 100 },
     },
   })

@@ -16,6 +16,7 @@ from .models import (
     QueuedUpdateNotification,
     UpdateNotificationAudit,
     ResultWatcher,
+    UpdateEngagementLog,
 )
 
 
@@ -112,6 +113,10 @@ class StudentUpdateListSerializer(serializers.ModelSerializer):
             'category',
             'sub_category',
             'institution',
+            'department',
+            'issuer_name',
+            'issuer_role',
+            'circular_number',
             'course',
             'semester',
             'published_at',
@@ -141,6 +146,7 @@ class StudentUpdateListSerializer(serializers.ModelSerializer):
 
 class StudentUpdateDetailSerializer(serializers.ModelSerializer):
     source = UpdateSourceSerializer(read_only=True)
+    authority_level = serializers.IntegerField(source='source.authority_level', read_only=True, default=1)
     attachments = UpdateAttachmentSerializer(many=True, read_only=True)
     cross_links = UpdateCrossLinkSerializer(many=True, read_only=True)
     versions = UpdateVersionSerializer(many=True, read_only=True)
@@ -159,6 +165,10 @@ class StudentUpdateDetailSerializer(serializers.ModelSerializer):
             'category',
             'sub_category',
             'institution',
+            'department',
+            'issuer_name',
+            'issuer_role',
+            'circular_number',
             'exam',
             'course',
             'semester',
@@ -175,6 +185,7 @@ class StudentUpdateDetailSerializer(serializers.ModelSerializer):
             'version',
             'last_checked_at',
             'source',
+            'authority_level',
             'attachments',
             'cross_links',
             'versions',
@@ -332,4 +343,34 @@ class CreateResultWatcherInputSerializer(serializers.Serializer):
     course = serializers.CharField(required=True, max_length=255)
     semester = serializers.CharField(required=False, allow_blank=True, default='', max_length=64)
     roll_number = serializers.CharField(required=False, allow_blank=True, default='', max_length=64)
+
+
+class UpdateEngagementLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UpdateEngagementLog
+        fields = [
+            'id',
+            'update',
+            'event_type',
+            'client_hash',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class CollegeCircularCreateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=500, required=True)
+    summary = serializers.CharField(required=True)
+    department = serializers.CharField(max_length=255, required=True)
+    institution = serializers.CharField(max_length=255, required=True)
+    issuer_name = serializers.CharField(max_length=255, required=True)
+    issuer_role = serializers.CharField(max_length=64, default="HEAD_OF_DEPARTMENT")
+    circular_number = serializers.CharField(max_length=128, required=False, allow_blank=True)
+    category = serializers.CharField(max_length=64, default="ACADEMIC")
+    sub_category = serializers.CharField(max_length=64, default="DEPARTMENTAL_CIRCULAR")
+    importance = serializers.ChoiceField(choices=['NORMAL', 'IMPORTANT', 'URGENT'], default="NORMAL")
+    course = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    semester = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    deadline = serializers.DateTimeField(required=False, allow_null=True)
+    source_url = serializers.URLField(required=False, allow_blank=True)
 

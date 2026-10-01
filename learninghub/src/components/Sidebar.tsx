@@ -23,6 +23,12 @@ import {
   Bot,
   ChevronDown,
   Zap,
+  Video,
+  Calendar,
+  Download,
+  CreditCard,
+  Cpu,
+  BellRing,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -38,7 +44,7 @@ export default function Sidebar() {
   const setSidebarOpen = useStore(s => s.setSidebarOpen)
   const progress = useStore(s => s.progress)
   const auth = useStore(s => s.auth)
-  const isDesktop = useBreakpoint('md') // Change to md (<768px) for mobile sidebar
+  const isDesktop = useBreakpoint('lg') // Synced with lg (>=1024px) for desktop docked sidebar
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -58,6 +64,7 @@ export default function Sidebar() {
   const mainNavItems = [
     { to: '/dashboard', icon: Home, label: 'Dashboard' },
     { to: '/search', icon: Search, label: 'Explore' },
+    { to: '/updates', icon: BellRing, label: 'Student Updates' },
     { to: '/library', icon: Library, label: 'My Library' },
     ...(isAdmin
       ? [
@@ -74,6 +81,7 @@ export default function Sidebar() {
       defaultOpen: true,
       items: [
         { to: '/problems', icon: Code2, label: 'DSA Practice' },
+        { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/tests-a-history', icon: History, label: 'Test History' },
         { to: '/contest', icon: Trophy, label: 'Contests' },
@@ -83,14 +91,20 @@ export default function Sidebar() {
     {
       label: 'Community',
       defaultOpen: true,
-      items: [{ to: '/discussions', icon: MessageSquare, label: 'Discussions' }],
+      items: [
+        { to: '/discussions', icon: MessageSquare, label: 'Discussions' },
+        { to: '/live-class', icon: Video, label: 'Live Classes' },
+      ],
     },
     {
       label: 'AI & Tools',
       defaultOpen: true,
       items: [
-        { to: '/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/ai-tutor', icon: Bot, label: 'AI Tutor' },
+        { to: '/study-planner', icon: Calendar, label: 'Study Planner' },
+        { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+        { to: '/downloads', icon: Download, label: 'Offline Downloads' },
+        { to: '/pricing', icon: CreditCard, label: 'Plans & Pricing' },
       ],
     },
     {
@@ -130,7 +144,7 @@ export default function Sidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
             onClick={() => setSidebarOpen(false)}
             role="button"
             aria-label="Close sidebar"
@@ -143,14 +157,14 @@ export default function Sidebar() {
         initial={false}
         animate={isDesktop || sidebarOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className="fixed md:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden md:shadow-none md:translate-x-0"
+        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden lg:shadow-none lg:translate-x-0"
         aria-label="Main navigation"
         role="navigation"
         drag={isDesktop ? false : 'x'}
         dragConstraints={{ left: -100, right: 0 }}
         dragElastic={0.1}
-        onDragEnd={(_e, { offset, velocity }) => {
-          if (offset.x < -50 || velocity.x < -500) {
+        onDragEnd={(_e: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+          if (info.offset.x < -50 || info.velocity.x < -500) {
             setSidebarOpen(false)
           }
         }}
@@ -174,7 +188,7 @@ export default function Sidebar() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -226,7 +240,7 @@ export default function Sidebar() {
                     {/* Active route indicator background */}
                     {isActive && (
                       <motion.div
-                        layoutId="sidebar-main-bg"
+                        layoutId={`sidebar-main-bg-${to}`}
                         className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
                         initial={false}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -290,7 +304,7 @@ export default function Sidebar() {
                               <>
                                 {isActive && (
                                   <motion.div
-                                    layoutId="sidebar-section-bg"
+                                    layoutId={`sidebar-section-bg-${section.label}-${label}`}
                                     className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
                                     initial={false}
                                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}

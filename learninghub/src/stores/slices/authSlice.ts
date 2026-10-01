@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { fetchApi } from '../../utils/api'
+import { fetchApi, setAccessToken, setRefreshToken, clearTokens } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import type { AppState, AuthSlice } from '../types'
 
@@ -21,6 +21,9 @@ function extractUserFromResponse(response: unknown): Record<string, unknown> | u
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   auth: initialAuthState,
   setAuth: (_token, _refreshToken, user) => {
+    // Persist any provided tokens (login/register flows) in background
+    if (_token) void setAccessToken(_token)
+    if (_refreshToken) void setRefreshToken(_refreshToken)
     set(state => ({
       auth: { isAuthenticated: true, user, isHydrated: state.auth.isHydrated },
       progress: {
@@ -46,12 +49,14 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       try {
         await fetchApi('/auth/logout', { method: 'POST' })
       } catch (error) {
-        // Log logout failures for debugging but still clear local state
         console.warn('[Auth] Logout request failed:', error)
       }
     }
-
+    await clearTokens()
     set({ auth: { isAuthenticated: false, user: null, isHydrated: true } })
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('data:progress-updated'))
+    }
     trackEvent('user_logged_out')
   },
   setHydrated: async () => {

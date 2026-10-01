@@ -65,6 +65,10 @@ def gen_watcher_id() -> str:
     return generate_id('watch', 8)
 
 
+def gen_engagement_id() -> str:
+    return generate_id('eng', 8)
+
+
 class UpdateSource(models.Model):
     """
     Official and approved external source registry.
@@ -201,6 +205,10 @@ class StudentUpdate(models.Model):
     category = models.CharField(max_length=64, choices=CATEGORY_CHOICES, default='ACADEMIC', db_index=True)
     sub_category = models.CharField(max_length=64, blank=True, default='', db_index=True)
     institution = models.CharField(max_length=255, db_index=True)
+    department = models.CharField(max_length=255, blank=True, default='', db_index=True)
+    issuer_name = models.CharField(max_length=255, blank=True, default='')
+    issuer_role = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    circular_number = models.CharField(max_length=128, blank=True, default='', db_index=True)
     exam = models.CharField(max_length=255, blank=True, default='', db_index=True)
     course = models.CharField(max_length=255, blank=True, default='', db_index=True)
     semester = models.CharField(max_length=64, blank=True, default='')
@@ -673,4 +681,36 @@ class ResultWatcher(models.Model):
 
     def __str__(self):
         return f"Watch {self.course} ({self.semester}) @ {self.institution} for {self.user.email}"
+
+
+class UpdateEngagementLog(models.Model):
+    """
+    Anonymized engagement telemetry for read rates, link conversions, and interaction analytics.
+    Preserves zero PII — clients provide an anonymous hash or session fingerprint.
+    """
+    EVENT_TYPES = (
+        ('IMPRESSION', 'Notice Rendered in Viewport'),
+        ('CLICK_DETAIL', 'Opened Full Detail Page'),
+        ('CLICK_SOURCE', 'Navigated to Official Portal URL'),
+        ('CALENDAR_EXPORT', 'Exported to Google/iCal Calendar'),
+        ('BOOKMARK', 'Saved to Bookmarks'),
+        ('REMINDER_SET', 'Configured Push Reminder'),
+    )
+
+    id = models.CharField(primary_key=True, max_length=64, default=gen_engagement_id)
+    update = models.ForeignKey(StudentUpdate, on_delete=models.CASCADE, related_name='engagement_logs')
+    event_type = models.CharField(max_length=32, choices=EVENT_TYPES, db_index=True)
+    client_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'lh_update_engagement_logs'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['update', 'event_type']),
+            models.Index(fields=['event_type', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} on {self.update.id} at {self.created_at}"
 

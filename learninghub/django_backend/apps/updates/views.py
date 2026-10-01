@@ -4,6 +4,7 @@ API Views for LearningHub Student Updates Hub.
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 
 from apps.core.responses import success_response, error_response
@@ -16,6 +17,7 @@ from .models import (
     QueuedUpdateNotification,
     UpdateNotificationAudit,
     ResultWatcher,
+    UpdateEngagementLog,
 )
 from .serializers import (
     StudentUpdateListSerializer,
@@ -31,6 +33,8 @@ from .serializers import (
     QueuedUpdateNotificationSerializer,
     ResultWatcherSerializer,
     CreateResultWatcherInputSerializer,
+    UpdateEngagementLogSerializer,
+    CollegeCircularCreateSerializer,
 )
 from .selectors import (
     list_student_updates,
@@ -710,6 +714,167 @@ class ResultWatcherDetailView(APIView):
         if not deleted:
             return error_response("Result Watcher not found or already cancelled.", status_code=status.HTTP_404_NOT_FOUND)
         return success_response(message="Result Watcher successfully cancelled.")
+
+
+class SyncUpdateToPlannerView(APIView):
+    """
+    Synchronizes an update's deadline directly into the student's Study Planner.
+    Returns synchronized goal metadata, Google Calendar URL, and iCal download URL.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, update_id: str):
+        note = request.data.get("note", "")
+        try:
+            res = StudentUpdateService.sync_deadline_to_study_planner(
+                user=request.user,
+                update_id=update_id,
+                note=note
+            )
+            return success_response(
+                data=res,
+                message="Deadline synchronized with Study Planner.",
+                status_code=status.HTTP_200_OK
+            )
+        except ValidationError as e:
+            return error_response(str(e.message if hasattr(e, 'message') else e), status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateCalendarExportView(APIView):
+    """
+    Exports an update's deadline as standard RFC 5545 iCalendar (.ics) format.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, update_id: str):
+        update = StudentUpdate.objects.filter(id=update_id).first()
+        if not update:
+            return error_response("Update not found.", status_code=status.HTTP_404_NOT_FOUND)
+
+        ical_content = StudentUpdateService.generate_icalendar_for_update(update)
+        response = HttpResponse(ical_content, content_type='text/calendar; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="notice_{update.id}.ics"'
+        return response
+
+
+class CollegeNoticeCreateView(APIView):
+    """
+    Allows authenticated college faculty, HODs, and deans to publish official departmental circulars.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CollegeCircularCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(
+                "Invalid college circular data.",
+                errors=serializer.errors,
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            circular = StudentUpdateService.publish_college_circular(
+                user=request.user,
+                payload=serializer.validated_data
+            )
+            return success_response(
+                data=StudentUpdateDetailSerializer(circular).data,
+                message="Official departmental circular published successfully.",
+                status_code=status.HTTP_201_CREATED
+            )
+        except ValidationError as e:
+            return error_response(
+                str(e.message if hasattr(e, 'message') else e),
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class CollegeNoticeListView(APIView):
+    """
+    Lists published departmental notices with filtering by institution and department.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        institution = request.query_params.get('institution', '').strip()
+        department = request.query_params.get('department', '').strip()
+
+        qs = StudentUpdate.objects.filter(
+            status='PUBLISHED',
+            department__gt=''
+        ).order_by('-published_at')
+
+        if institution:
+            qs = qs.filter(institution__icontains=institution)
+        if department:
+            qs = qs.filter(department__icontains=department)
+
+        page_size = min(int(request.query_params.get('page_size', 20)), 100)
+        items = qs[:page_size]
+        serializer = StudentUpdateListSerializer(items, many=True)
+        return success_response(data={
+            'results': serializer.data,
+            'total_count': qs.count(),
+        })
+
+
+class UpdateEngagementLogView(APIView):
+    """
+    Logs an anonymized zero-PII user interaction event (impression, click, export, reminder).
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, update_id: str):
+        event_type = request.data.get('event_type')
+        client_hash = request.data.get('client_hash', '')
+        if not event_type:
+            return error_response("event_type is required.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            log = StudentUpdateService.log_notice_engagement(
+                update_id=update_id,
+                event_type=event_type,
+                client_hash=client_hash
+            )
+            return success_response(
+                data={'id': log.id, 'event_type': log.event_type},
+                message="Engagement event recorded.",
+                status_code=status.HTTP_201_CREATED
+            )
+        except ValidationError as e:
+            return error_response(
+                str(e.message if hasattr(e, 'message') else e),
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class UpdateNoticeAnalyticsView(APIView):
+    """
+    Retrieves read rates, detail clicks, and conversion analytics for a notice.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, update_id: str):
+        try:
+            analytics = StudentUpdateService.get_notice_analytics(update_id)
+            return success_response(data=analytics)
+        except ValidationError as e:
+            return error_response(
+                str(e.message if hasattr(e, 'message') else e),
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+
+class UpdateGlobalAnalyticsOverviewView(APIView):
+    """
+    Retrieves platform-wide notice telemetry and aggregate engagement metrics.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        analytics = StudentUpdateService.get_global_engagement_analytics()
+        return success_response(data=analytics)
+
+
 
 
 

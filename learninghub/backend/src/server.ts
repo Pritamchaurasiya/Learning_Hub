@@ -45,6 +45,13 @@ import { webSocketService } from './services/WebSocketService'
 import { cacheService } from './services/CacheService'
 
 const app = express()
+// TRUST-PROXY ALLOWLIST NOTE: `trust proxy, 1` trusts only the first hop (the
+// adjacent load balancer / ingress). In production restrict this to known proxy
+// IPs/CIDRs (e.g. `app.set('trust proxy', ['10.0.0.0/8'])` or explicit IPs) so
+// untrusted clients cannot spoof X-Forwarded-For / X-Forwarded-Proto and poison
+// rate-limit keys, secure-cookie detection, or audit IPs. Single-hop default is
+// kept for the current single-LB deployment.
+app.set('trust proxy', 1)
 const httpServer = http.createServer(app)
 const io = new Server(httpServer, {
   cors: {
@@ -66,6 +73,9 @@ let ioSubClient: ReturnType<typeof createClient> | undefined
 if (process.env.REDIS_ENABLED === 'true' && process.env.REDIS_URL) {
   ioPubClient = createClient({ url: process.env.REDIS_URL })
   ioSubClient = ioPubClient.duplicate()
+
+  ioPubClient.on('error', err => logger.error('[Socket.IO Redis Pub] Client Error:', err))
+  ioSubClient.on('error', err => logger.error('[Socket.IO Redis Sub] Client Error:', err))
 
   Promise.all([ioPubClient.connect(), ioSubClient.connect()])
     .then(() => {
@@ -91,8 +101,13 @@ app.use(metricsMiddleware)
 configureSecurity(app)
 app.use(compression())
 app.use(globalLimiter)
-app.use(express.json({ limit: '1mb' }))
-app.use(express.urlencoded({ extended: true, limit: '1mb' }))
+// Larger limits for upload-heavy and generative AI routes must be mounted before default
+app.use('/api/v1/media', express.json({ limit: '10mb' }))
+app.use('/api/v1/media', express.urlencoded({ extended: true, limit: '10mb' }))
+app.use('/api/v1/ai', express.json({ limit: '2mb' }))
+app.use('/api/v1/ai', express.urlencoded({ extended: true, limit: '2mb' }))
+app.use(express.json({ limit: '256kb' }))
+app.use(express.urlencoded({ extended: true, limit: '256kb' }))
 app.use(cookieMiddleware)
 app.use(sanitizeMiddleware)
 app.use('/api/v1', csrfProtection)
@@ -107,6 +122,10 @@ app.get('/api/v1/csrf-token', csrfRateLimit, async (req: Request, res: Response)
   }
   const token = await generateCsrfTokenForSession(sessionId)
   sendSuccess(res, { csrfToken: token })
+})
+
+app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' })
 })
 
 app.get('/api/v1/health', async (_req: Request, res: Response) => {

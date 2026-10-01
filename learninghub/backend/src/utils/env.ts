@@ -25,8 +25,10 @@ const envSchema = z.object({
   REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
 
   // CORS Configuration
-  CORS_ORIGIN: z.string().min(1, 'CORS_ORIGIN is required in production'),
-  FRONTEND_URL: z.string().min(1, 'FRONTEND_URL is required'),
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173'),
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
 
   // Logging Configuration
   LOG_LEVEL: z.string().default('2'),
@@ -101,15 +103,18 @@ try {
     })
     if (process.env.NODE_ENV === 'test') {
       // In test mode, provide minimal defaults needed for module loading
+      // WARNING: These are INSECURE test-only defaults. DO NOT USE IN PRODUCTION.
+      // If NODE_ENV=test is accidentally set in production, this will use weak secrets!
+      // Always set explicit test environment variables in CI/test environments.
       validatedEnv = {
         PORT: process.env.PORT ?? '5000',
         NODE_ENV: process.env.NODE_ENV ?? 'test',
         DB_PROVIDER: process.env.DB_PROVIDER ?? 'sqlite',
         DATABASE_URL: process.env.DATABASE_URL ?? 'file:./test.db',
         DIRECT_URL: process.env.DIRECT_URL ?? 'file:./test.db',
-        JWT_SECRET: process.env.JWT_SECRET ?? 'test-secret-thirty-two-characters-min!!',
+        JWT_SECRET: process.env.JWT_SECRET ?? 'TEST_ONLY_JWT_SECRET_MIN_32_CHARS_ABCDEFGH',
         JWT_REFRESH_SECRET:
-          process.env.JWT_REFRESH_SECRET ?? 'test-refresh-secret-thirty-two-chars!!',
+          process.env.JWT_REFRESH_SECRET ?? 'TEST_ONLY_REFRESH_SECRET_MIN_32_CHARS_IJKLMNOP',
         JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? '1h',
         REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN ?? '7d',
         CORS_ORIGIN: process.env.CORS_ORIGIN ?? '*',
@@ -125,10 +130,11 @@ try {
         UPLOAD_DIR: process.env.UPLOAD_DIR ?? 'uploads/',
         REDIS_URL: process.env.REDIS_URL ?? '',
         REDIS_ENABLED: process.env.REDIS_ENABLED ?? 'false',
-        CSRF_SECRET: process.env.CSRF_SECRET ?? 'test-csrf-secret-thirty-two-characters-min!!',
-        ADMIN_SECRET: process.env.ADMIN_SECRET ?? 'test-admin-secret-32-chars-long!!!!!',
+        CSRF_SECRET: process.env.CSRF_SECRET ?? 'TEST_ONLY_CSRF_SECRET_MIN_32_CHARS_QRSTUVWX',
+        ADMIN_SECRET: process.env.ADMIN_SECRET ?? 'TEST_ONLY_ADMIN_SECRET_MIN_16_CHARS_YZ',
         ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? 'admin@test.com',
-        ADMIN_DEFAULT_PASSWORD: process.env.ADMIN_DEFAULT_PASSWORD ?? 'test-admin-pwd-12chars',
+        ADMIN_DEFAULT_PASSWORD:
+          process.env.ADMIN_DEFAULT_PASSWORD ?? 'TEST_ONLY_ADMIN_PWD_12_CHARS',
         AUDIT_LOG_TO_CONSOLE: process.env.AUDIT_LOG_TO_CONSOLE ?? 'true',
         AUDIT_LOG_TO_DATABASE: process.env.AUDIT_LOG_TO_DATABASE ?? 'false',
         AUDIT_LOG_RETENTION_DAYS: process.env.AUDIT_LOG_RETENTION_DAYS ?? '90',

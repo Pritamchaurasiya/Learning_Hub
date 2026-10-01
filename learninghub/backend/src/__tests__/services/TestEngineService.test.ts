@@ -158,6 +158,11 @@ describe('TestEngineService', () => {
               totalPoints: 0,
             }),
             update: jest.fn().mockResolvedValue({ score: 10, totalPoints: 10 }),
+            upsert: jest.fn().mockResolvedValue({
+              id: 'result-1',
+              score: 0,
+              totalPoints: 0,
+            }),
           },
           testAttemptAnswer: {
             findUnique: jest.fn().mockResolvedValue(null), // No existing answer
@@ -192,6 +197,11 @@ describe('TestEngineService', () => {
               totalPoints: 0,
             }),
             update: jest.fn().mockResolvedValue({ score: 0, totalPoints: 10 }),
+            upsert: jest.fn().mockResolvedValue({
+              id: 'result-1',
+              score: 0,
+              totalPoints: 0,
+            }),
           },
           testAttemptAnswer: {
             findUnique: jest.fn().mockResolvedValue(null),
@@ -215,7 +225,7 @@ describe('TestEngineService', () => {
     it('should create a new testResult when none exists for the user/test', async () => {
       ;(prisma.question.findUnique as jest.Mock).mockResolvedValue(baseMockQuestion)
 
-      const mockCreate = jest.fn().mockResolvedValue({
+      const mockUpsert = jest.fn().mockResolvedValue({
         id: 'new-result-1',
         score: 0,
         totalPoints: 0,
@@ -224,20 +234,15 @@ describe('TestEngineService', () => {
       ;(prisma.$transaction as jest.Mock).mockImplementation(async (cb: Function) => {
         const tx = {
           testResult: {
-            findFirst: jest.fn().mockResolvedValue(null), // No existing result
-            create: mockCreate,
+            findFirst: jest.fn().mockResolvedValue(null),
             update: jest.fn().mockResolvedValue({ score: 10, totalPoints: 10 }),
+            upsert: mockUpsert,
           },
           testAttemptAnswer: {
             findUnique: jest.fn().mockResolvedValue(null),
             upsert: jest.fn().mockResolvedValue({}),
           },
         }
-        // The service also calls findFirst for maxAttempt
-        tx.testResult.findFirst = jest
-          .fn()
-          .mockResolvedValueOnce(null) // No IN_PROGRESS result
-          .mockResolvedValueOnce(null) // No previous attempts (maxAttempt)
         return cb(tx)
       })
 
@@ -248,9 +253,9 @@ describe('TestEngineService', () => {
         selectedOptionId: 'opt-b',
       })
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockUpsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
+          create: expect.objectContaining({
             userId: 'user-1',
             testId: 'test-1',
             status: 'IN_PROGRESS',

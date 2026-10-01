@@ -49,9 +49,9 @@ describe('TestEngineService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     if (mockPrisma.$transaction && (mockPrisma.$transaction as jest.Mock).mockReset) {
-      (mockPrisma.$transaction as jest.Mock).mockReset()
+      ;(mockPrisma.$transaction as jest.Mock).mockReset()
     }
-    (mockPrisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+    ;(mockPrisma.$transaction as jest.Mock).mockImplementation(async callback => {
       return callback(mockPrisma)
     })
     service = new TestEngineService()
@@ -134,9 +134,7 @@ describe('TestEngineService', () => {
     it('should throw error for non-existent question', async () => {
       ;(mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(null)
 
-      await expect(service.submitPracticeAnswer(mockRequest)).rejects.toThrow(
-        'Question not found'
-      )
+      await expect(service.submitPracticeAnswer(mockRequest)).rejects.toThrow('Question not found')
     })
 
     it('should throw error for non-practice mode', async () => {
@@ -193,15 +191,13 @@ describe('TestEngineService', () => {
       const prismaError = new Error('P2002: Unique constraint violation') as any
       prismaError.code = 'P2002'
 
-      const upsertMock = jest.fn()
-        .mockRejectedValueOnce(prismaError)
-        .mockResolvedValueOnce({
-          id: 'result-1',
-          userId: mockRequest.userId,
-          testId: mockRequest.testId,
-          score: 0,
-          attemptNumber: 1,
-        })
+      const upsertMock = jest.fn().mockRejectedValueOnce(prismaError).mockResolvedValueOnce({
+        id: 'result-1',
+        userId: mockRequest.userId,
+        testId: mockRequest.testId,
+        score: 0,
+        attemptNumber: 1,
+      })
 
       ;(mockPrisma.testResult.upsert as jest.Mock) = upsertMock
 
@@ -361,9 +357,7 @@ describe('TestEngineService', () => {
         passed: true,
         status: 'COMPLETED',
         completedAt: new Date('2024-01-02'),
-        questionResults: [
-          { question_id: 'q3', is_correct: true, marks_obtained: 15 },
-        ],
+        questionResults: [{ question_id: 'q3', is_correct: true, marks_obtained: 15 }],
         test: {
           id: 'test-2',
           title: 'Science Test',

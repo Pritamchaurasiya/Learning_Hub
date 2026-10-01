@@ -10,6 +10,7 @@ import { userAnalyticsService } from '../services/UserAnalyticsService'
 import { recommendationService } from '../services/RecommendationService'
 import { growthEngineService } from '../services/GrowthEngineService'
 import { topicPerformanceService } from '../services/TopicPerformanceService'
+import { knowledgeGraphService } from '../engines/knowledge'
 import { asyncHandler } from '../utils/errorHandler'
 import { sendSuccess } from '../utils/responseHelper'
 
@@ -122,6 +123,16 @@ export const getSpacedRepetition = asyncHandler(async (req: Request, res: Respon
   )
 
   sendSuccess(res, recommendations)
+})
+
+/**
+ * GET /api/v1/recommendations/knowledge-graph
+ * Get concept knowledge graph with prerequisite links and user mastery.
+ */
+export const getKnowledgeGraph = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.userId
+  const graph = await knowledgeGraphService.getConceptGraph(userId)
+  sendSuccess(res, graph)
 })
 
 /**

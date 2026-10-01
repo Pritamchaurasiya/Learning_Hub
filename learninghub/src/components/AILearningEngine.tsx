@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { BrainCircuit, Sparkles, CalendarClock, Brain, Target, ArrowRight } from 'lucide-react'
 import { Card } from './ui/Card'
@@ -6,6 +7,7 @@ import { analyticsService } from '../services/analyticsService'
 import { Skeleton } from './ui/Skeleton'
 
 export default function AILearningEngine() {
+  const navigate = useNavigate()
   const { data: recommendationsRes, isLoading: isLoadingRecs } = useQuery({
     queryKey: ['ai-recommendations'],
     queryFn: () => analyticsService.getRecommendations(),
@@ -40,9 +42,9 @@ export default function AILearningEngine() {
               </div>
             ) : recommendations.length > 0 ? (
               <div className="space-y-4">
-                {recommendations.map(rec => (
+                {recommendations.map((rec, idx) => (
                   <motion.div
-                    key={rec.id}
+                    key={rec.id || `rec-${idx}`}
                     whileHover={{ scale: 1.02 }}
                     className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 cursor-pointer hover:bg-white/20 transition-all"
                   >
@@ -59,7 +61,10 @@ export default function AILearningEngine() {
                     </div>
                     <p className="text-sm font-medium text-white/90">{rec.reason}</p>
                     <div className="mt-3 flex justify-end">
-                      <button className="flex items-center gap-1 text-xs font-bold text-white bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-xl transition-colors">
+                      <button
+                        onClick={() => navigate('/problems')}
+                        className="flex items-center gap-1 text-xs font-bold text-white bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                      >
                         Launch Practice <ArrowRight className="w-3 h-3" />
                       </button>
                     </div>
@@ -95,14 +100,14 @@ export default function AILearningEngine() {
               </div>
             ) : srSchedule.length > 0 ? (
               <div className="space-y-3">
-                {srSchedule.map(sr => {
+                {srSchedule.map((sr, idx) => {
                   const reviewDate = new Date(sr.nextReview)
                   const isToday = reviewDate.toDateString() === new Date().toDateString()
                   const isOverdue = reviewDate < new Date() && !isToday
 
                   return (
                     <motion.div
-                      key={sr.id}
+                      key={sr.id || `sr-${idx}-${sr.topicName || ''}`}
                       whileHover={{ scale: 1.02 }}
                       className={`bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center justify-between ${
                         isOverdue ? 'border-red-500/50 bg-red-500/10' : ''

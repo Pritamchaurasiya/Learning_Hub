@@ -22,6 +22,8 @@ jest.mock('../../src/prismaClient', () => ({
 
 jest.mock('../../src/services/CacheService', () => ({
   cacheService: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(true),
     delete: jest.fn().mockResolvedValue(undefined),
     topicMasteryKey: jest.fn((id: string) => `mastery_${id}`),
     topicWeakKey: jest.fn((id: string) => `weak_${id}`),
@@ -50,7 +52,7 @@ describe('TopicPerformanceService Suite', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     if (prisma.$transaction && (prisma.$transaction as jest.Mock).mockReset) {
-      (prisma.$transaction as jest.Mock).mockReset()
+      ;(prisma.$transaction as jest.Mock).mockReset()
     }
     jest.useFakeTimers()
     service = new TopicPerformanceService()
@@ -113,7 +115,7 @@ describe('TopicPerformanceService Suite', () => {
           strengthLevel: 'developing',
         }),
       })
-      jest.advanceTimersByTime(30000)
+      await jest.advanceTimersByTimeAsync(30000)
       expect(cacheService.delete).toHaveBeenCalledTimes(7)
     })
 

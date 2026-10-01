@@ -10,6 +10,16 @@ import { jwtConfig, bcryptConfig, validatePasswordStrength } from '../config'
 import logger from '../utils/logger'
 import { emailService } from './EmailService'
 
+const invalidateAuthStatusCache = async (userId: string): Promise<void> => {
+  // Close the authMiddleware `auth:user:*` cache window (30s TTL) immediately on
+  // security transitions so deactivate/lock/password-change takes effect now.
+  try {
+    await cacheService.delete(`auth:user:${userId}`)
+  } catch {
+    // Cache failures must never break auth flows (fail open for cache only).
+  }
+}
+
 export interface RegisterInput {
   email: string
   password: string
@@ -157,6 +167,8 @@ export class AuthService {
     if (!isValidPassword) {
       // Increment failed login attempts
       await this.userRepository.incrementFailedLogins(user.id)
+      // A lockout may have just been set — close the auth-status cache window.
+      await invalidateAuthStatusCache(user.id)
 
       // Log failed attempt
       await this.auditService.log({
@@ -229,7 +241,7 @@ export class AuthService {
       }
 
       // Mark old token as used atomically — prevents race condition on concurrent refreshToken calls
-      const updateResult = await this.prisma.$transaction(async tx => {
+      const newTokens = await this.prisma.$transaction(async tx => {
         const updated = await tx.refreshToken.updateMany({
           where: { id: storedToken.id, usedAt: null },
           data: { usedAt: new Date() },
@@ -237,10 +249,71 @@ export class AuthService {
         if (updated.count === 0) {
           throw new Error('Refresh token already used — possible token reuse attack')
         }
-        return this.generateTokens(user)
+
+        // Generate new tokens within the same transaction
+        // We need to replicate the token generation logic here to keep it in the transaction
+        const payload: TokenPayload = {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        }
+
+        const accessToken = jwt.sign(payload, jwtConfig.accessSecret, {
+          expiresIn: jwtConfig.accessExpiresIn as jwt.SignOptions['expiresIn'],
+          issuer: jwtConfig.issuer,
+          audience: jwtConfig.audience,
+          algorithm: jwtConfig.algorithm as jwt.Algorithm,
+        })
+
+        const refreshToken = jwt.sign(
+          { ...payload, tokenId: crypto.randomUUID() },
+          jwtConfig.refreshSecret,
+          {
+            expiresIn: jwtConfig.refreshExpiresIn as jwt.SignOptions['expiresIn'],
+            algorithm: jwtConfig.algorithm as jwt.Algorithm,
+            issuer: jwtConfig.issuer,
+            audience: jwtConfig.audience,
+          }
+        )
+
+        // Store refresh token in DB for revocation tracking
+        const refreshExpiresAt = new Date()
+        refreshExpiresAt.setDate(refreshExpiresAt.getDate() + 7)
+
+        const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
+        await tx.refreshToken.create({
+          data: {
+            userId: user.id,
+            token: refreshTokenHash,
+            expiresAt: refreshExpiresAt,
+          },
+        })
+
+        // Clean up old refresh tokens (keep only last 10 per user)
+        const tokensToKeep = await tx.refreshToken.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true },
+        })
+        if (tokensToKeep.length > 0) {
+          await tx.refreshToken.deleteMany({
+            where: {
+              userId: user.id,
+              id: { notIn: tokensToKeep.map(t => t.id) },
+              revokedAt: null,
+            },
+          })
+        }
+
+        return {
+          accessToken,
+          refreshToken,
+          expiresIn: 900, // 15 minutes in seconds
+        }
       })
 
-      return updateResult
+      return newTokens
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         throw new Error('Refresh token expired')
@@ -324,6 +397,8 @@ export class AuthService {
 
     // Clear user cache
     await cacheService.deletePattern(`user:${userId}*`)
+    // Immediately close the auth status cache window (see authMiddleware)
+    await invalidateAuthStatusCache(userId)
 
     // Log security event
     await this.auditService.log({
@@ -497,35 +572,40 @@ export class AuthService {
   ): Promise<void> {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30) // 30 days
-
-    await this.prisma.userSession.create({
-      data: {
-        userId,
-        sessionToken: crypto.randomBytes(32).toString('hex'),
-        deviceId: sessionData.deviceId,
-        deviceName: sessionData.deviceName,
-        deviceType: sessionData.deviceType,
-        ipAddress: sessionData.ipAddress,
-        userAgent: sessionData.userAgent,
-        expiresAt,
-      },
-    })
-
-    // Limit sessions per user
     const maxSessions = parseInt(process.env.MAX_SESSIONS_PER_USER ?? '5', 10)
-    const sessions = await this.prisma.userSession.findMany({
-      where: { userId, isRevoked: false },
-      orderBy: { lastUsedAt: 'desc' },
-    })
 
-    if (sessions.length > maxSessions) {
-      const sessionsToRevoke = sessions.slice(maxSessions)
-      const idsToRevoke = sessionsToRevoke.map(s => s.id)
-      await this.prisma.userSession.updateMany({
-        where: { id: { in: idsToRevoke } },
-        data: { isRevoked: true, revokedAt: new Date() },
+    // Use transaction to prevent race conditions when creating session and limiting count
+    await this.prisma.$transaction(async tx => {
+      // Create the new session
+      await tx.userSession.create({
+        data: {
+          userId,
+          sessionToken: crypto.randomBytes(32).toString('hex'),
+          deviceId: sessionData.deviceId,
+          deviceName: sessionData.deviceName,
+          deviceType: sessionData.deviceType,
+          ipAddress: sessionData.ipAddress,
+          userAgent: sessionData.userAgent,
+          expiresAt,
+        },
       })
-    }
+
+      // Count sessions and revoke excess atomically
+      // We use a subquery to avoid race condition
+      const sessions = await tx.userSession.findMany({
+        where: { userId, isRevoked: false },
+        orderBy: { lastUsedAt: 'desc' },
+        select: { id: true },
+      })
+
+      if (sessions.length > maxSessions) {
+        const idsToRevoke = sessions.slice(maxSessions).map(s => s.id)
+        await tx.userSession.updateMany({
+          where: { id: { in: idsToRevoke } },
+          data: { isRevoked: true, revokedAt: new Date() },
+        })
+      }
+    })
   }
 
   /**
@@ -600,6 +680,8 @@ export class AuthService {
         username: null,
       },
     })
+
+    await invalidateAuthStatusCache(userId)
 
     await this.prisma.refreshToken.deleteMany({
       where: { userId },

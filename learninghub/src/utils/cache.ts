@@ -62,8 +62,20 @@ function generateCacheKey(url: string, options?: RequestInit): string {
   }
   // Include method and body in cache key for POST requests
   const method = options.method ?? 'GET'
-  const body = options.body ? String(options.body) : ''
-  return `${method}:${url}:${body}`
+  let bodyHash = ''
+  if (options.body) {
+    // Hash the body to avoid huge cache keys
+    const bodyStr = String(options.body)
+    // Simple hash function (not cryptographic, just for key deduplication)
+    let hash = 0
+    for (let i = 0; i < bodyStr.length; i++) {
+      const char = bodyStr.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+    bodyHash = `:${hash.toString(36)}`
+  }
+  return `${method}:${url}${bodyHash}`
 }
 
 /**
@@ -130,8 +142,25 @@ export function isCacheable(url: string, options?: RequestInit): boolean {
   const method = options?.method?.toUpperCase() ?? 'GET'
   if (method !== 'GET') return false
 
-  // Don't cache authenticated-sensitive endpoints
-  const noCachePatterns = ['/auth/', '/login', '/logout', '/password', '/token']
+  // Don't cache authenticated-sensitive, commerce, or interactive dynamic endpoints
+  const noCachePatterns = [
+    '/auth/',
+    '/login',
+    '/logout',
+    '/password',
+    '/token',
+    '/cart',
+    '/commerce/',
+    '/users/me',
+    '/me',
+    '/analytics',
+    '/notifications',
+    '/study-planner',
+    '/study-goals',
+    '/bookmarks',
+    '/attempts',
+    '/admin/',
+  ]
 
   return !noCachePatterns.some(pattern => url.includes(pattern))
 }
@@ -148,8 +177,7 @@ export function getCachedData<T>(url: string, options?: RequestInit): T | null {
   if (entry && isValid(entry)) {
     stats.hits++
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log(`[Cache] Hit: ${url}`)
+      console.warn(`[Cache] Hit: ${url}`)
     }
     return entry.data
   }
@@ -183,8 +211,7 @@ export function setCachedData<T>(url: string, data: T, options?: RequestInit, tt
   stats.evictions += evicted
 
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log(`[Cache] Stored: ${url} (TTL: ${entry.ttl}ms)`)
+    console.warn(`[Cache] Stored: ${url} (TTL: ${entry.ttl}ms)`)
   }
 }
 
@@ -227,8 +254,7 @@ export function invalidateCache(pattern?: string): void {
   if (!pattern) {
     cache.clear()
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('[Cache] All entries cleared')
+      console.warn('[Cache] All entries cleared')
     }
     return
   }
@@ -240,8 +266,7 @@ export function invalidateCache(pattern?: string): void {
   }
 
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log(`[Cache] Invalidated pattern: ${pattern}`)
+    console.warn(`[Cache] Invalidated pattern: ${pattern}`)
   }
 }
 
@@ -267,7 +292,10 @@ export function getCacheStats(): {
 }
 
 /**
- * Check if device is offline and serve cached data
+ * Check if device is offline and serve cached data.
+ * Expired entries are NEVER served as fresh: stale data is only returned
+ * when explicitly valid, otherwise null so callers show offline UI instead
+ * of silently rendering stale leaderboard/pricing content.
  */
 export function getOfflineFallback<T>(url: string, options?: RequestInit): T | null {
   if (navigator.onLine) return null
@@ -275,15 +303,21 @@ export function getOfflineFallback<T>(url: string, options?: RequestInit): T | n
   const key = generateCacheKey(url, options)
   const entry = cache.get(key) as CacheEntry<T> | undefined
 
-  if (entry) {
+  if (!entry) return null
+
+  if (!isValid(entry)) {
+    // Do not serve expired fallback as fresh — evict and force offline UI.
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log(`[Cache] Offline fallback served: ${url}`)
+      console.warn(`[Cache] Offline fallback expired, not served as fresh: ${url}`)
     }
-    return entry.data
+    cache.delete(key)
+    return null
   }
 
-  return null
+  if (import.meta.env.DEV) {
+    console.warn(`[Cache] Offline fallback served (fresh): ${url}`)
+  }
+  return entry.data
 }
 
 // Periodic cleanup of expired entries (browser-only, skipped in SSR/test)

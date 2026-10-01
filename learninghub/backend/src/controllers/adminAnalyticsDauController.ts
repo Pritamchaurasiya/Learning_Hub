@@ -17,12 +17,12 @@ export const getDauAnalytics = asyncHandler(async (req: Request, res: Response):
   startDate.setDate(startDate.getDate() - days)
 
   const activeUsers = await prisma.user.groupBy({
-    by: ['updatedAt'],
+    by: ['lastActive'],
     _count: { id: true },
     where: {
-      updatedAt: { gte: startDate },
+      lastActive: { gte: startDate },
     },
-    orderBy: { updatedAt: 'asc' },
+    orderBy: { lastActive: 'asc' },
   })
 
   const dauMap = new Map<string, number>()
@@ -34,9 +34,13 @@ export const getDauAnalytics = asyncHandler(async (req: Request, res: Response):
   }
 
   activeUsers.forEach((u: any) => {
-    const dateStr = u.updatedAt.toISOString().split('T')[0]
+    if (!u.lastActive) return
+    const dateStr =
+      u.lastActive instanceof Date
+        ? u.lastActive.toISOString().split('T')[0]
+        : String(u.lastActive).split('T')[0]
     if (dauMap.has(dateStr)) {
-      dauMap.set(dateStr, (dauMap.get(dateStr) ?? 0) + u._count.id)
+      dauMap.set(dateStr, (dauMap.get(dateStr) ?? 0) + (u._count?.id ?? 1))
     }
   })
 

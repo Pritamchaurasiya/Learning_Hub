@@ -34,9 +34,17 @@ export const leaderboardService = {
     signal?: AbortSignal
   ): Promise<{ status: string; data: LeaderboardEntry[] }> {
     const res = await fetchApi('/gamification/leaderboard', { signal })
-    const users: RawLeaderboardUser[] = res.data ?? []
+    const rawData = res.data as any
+    const rawList: RawLeaderboardUser[] = Array.isArray(rawData)
+      ? rawData
+      : Array.isArray(rawData?.users)
+        ? rawData.users
+        : Array.isArray(rawData?.data)
+          ? rawData.data
+          : []
+
     // Transform and assign rank
-    const mapped: LeaderboardEntry[] = users.slice(0, limit).map((u, idx) => ({
+    const mapped: LeaderboardEntry[] = rawList.slice(0, limit).map((u, idx) => ({
       rank: idx + 1,
       user_id: u.id,
       username: u.username || '',

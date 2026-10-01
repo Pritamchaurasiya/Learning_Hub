@@ -57,7 +57,10 @@ describe('GrowthEngineService', () => {
         xp: 90,
         level: 1,
       })
-      ;(prisma.user.update as jest.Mock).mockResolvedValue({})
+      ;(prisma.user.update as jest.Mock).mockResolvedValue({
+        xp: 100,
+        level: 1,
+      })
 
       // Act
       const result = await growthService.awardXP('user-1', 'test_completed', prisma) // bypass $transaction
@@ -69,17 +72,22 @@ describe('GrowthEngineService', () => {
       expect(result?.leveledUp).toBe(false)
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { xp: 100, level: 1 },
+        data: { xp: { increment: 10 } },
+        select: { xp: true, level: true },
       })
     })
 
     it('should trigger level up when crossing XP threshold', async () => {
       // Arrange
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        xp: 390,
-        level: 1,
-      })
-      ;(prisma.user.update as jest.Mock).mockResolvedValue({})
+      ;(prisma.user.update as jest.Mock)
+        .mockResolvedValueOnce({
+          xp: 415,
+          level: 1,
+        })
+        .mockResolvedValueOnce({
+          xp: 415,
+          level: 2,
+        })
 
       // Act
       const result = await growthService.awardXP('user-1', 'test_passed', prisma) // bypass $transaction
@@ -91,7 +99,12 @@ describe('GrowthEngineService', () => {
       expect(result?.newLevel).toBe(2)
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { xp: 415, level: 2 },
+        data: { xp: { increment: 25 } },
+        select: { xp: true, level: true },
+      })
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { level: 2 },
       })
     })
 
