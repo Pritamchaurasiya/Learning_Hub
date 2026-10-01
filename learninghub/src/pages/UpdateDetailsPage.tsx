@@ -45,17 +45,23 @@ export const UpdateDetailsPage: React.FC = () => {
       if (!id) return;
       try {
         setLoading(true);
-        updatesService.logEngagement(id, 'CLICK_DETAIL');
-        const [data, analyticsData] = await Promise.all([
-          updatesService.getUpdateById(id),
-          updatesService.getUpdateAnalytics(id),
-        ]);
+        if (typeof updatesService?.logEngagement === 'function') {
+          updatesService.logEngagement(id, 'CLICK_DETAIL').catch(() => {});
+        }
+        const data = await updatesService.getUpdateById(id);
         if (data) {
           setUpdate(data);
           setIsBookmarked(!!data.is_bookmarked);
         }
-        if (analyticsData) {
-          setAnalytics(analyticsData);
+        if (typeof updatesService?.getUpdateAnalytics === 'function') {
+          try {
+            const analyticsData = await updatesService.getUpdateAnalytics(id);
+            if (analyticsData) {
+              setAnalytics(analyticsData);
+            }
+          } catch {
+            // Analytics optional
+          }
         }
       } catch {
         // Handled by service fallbacks

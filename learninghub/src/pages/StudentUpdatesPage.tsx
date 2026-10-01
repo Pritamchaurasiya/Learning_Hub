@@ -596,7 +596,66 @@ export const StudentUpdatesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Tab 3: Result Watchers (Phase 4 Feature) */}
+        {/* Tab 3: College Departmental Circulars */}
+        {activeTab === 'circulars' && (
+          <div className="space-y-6">
+            <div className="p-5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Verified College Notice Desks</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Official departmental circulars, practical lab schedules, viva dates, and departmental orders authenticated by college faculties.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCollegeCircularModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Publish Departmental Circular</span>
+              </button>
+            </div>
+
+            {collegeCirculars.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground bg-card/30 space-y-3">
+                <Building2 className="w-10 h-10 mx-auto text-muted-foreground/50" />
+                <h3 className="font-semibold text-foreground text-base">No departmental circulars published yet</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Department heads and faculty members can post verified examination notices and lab memos directly.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsCollegeCircularModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white"
+                >
+                  Post First Circular
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {collegeCirculars.map(circular => (
+                  <UpdateCard
+                    key={circular.id}
+                    update={circular}
+                    onBookmarkToggle={handleBookmarkToggle}
+                    onSetReminder={(u: StudentUpdate) => setReminderModalUpdate(u)}
+                    onViewDetails={(u: StudentUpdate) => navigate(`/updates/${u.id}`)}
+                    onFollowUniversity={handleToggleFollow}
+                    isFollowingUniversity={isFollowing(circular.institution)}
+                    onOpenResultWatcher={handleOpenResultWatcher}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Result Watchers (Phase 4 Feature) */}
         {activeTab === 'watchers' && (
           <div className="space-y-6">
             <div className="p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -851,6 +910,16 @@ export const StudentUpdatesPage: React.FC = () => {
       <NotificationPreferencesModal
         isOpen={isPrefModalOpen}
         onClose={() => setIsPrefModalOpen(false)}
+      />
+
+      {/* College Circular Modal */}
+      <CollegeCircularModal
+        isOpen={isCollegeCircularModalOpen}
+        onClose={() => setIsCollegeCircularModalOpen(false)}
+        onCircularPublished={(newCirc) => {
+          setCollegeCirculars(prev => [newCirc, ...prev]);
+          setUpdates(prev => [newCirc, ...prev]);
+        }}
       />
     </div>
   );
