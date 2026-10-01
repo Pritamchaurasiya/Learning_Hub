@@ -93,6 +93,8 @@ vi.mock('../services/updatesService', () => ({
     getSources: vi.fn(),
     getStats: vi.fn(),
     seedInitialData: vi.fn(),
+    getCollegeCirculars: vi.fn(),
+    logEngagement: vi.fn(),
   },
   DEMO_STUDENT_UPDATES: [],
   DEMO_SOURCES: [],
@@ -103,6 +105,8 @@ describe('StudentUpdatesPage Component', () => {
     vi.clearAllMocks();
     vi.mocked(updatesService.getUpdates).mockResolvedValue(MOCK_UPDATES);
     vi.mocked(updatesService.getPersonalizedFeed).mockResolvedValue([MOCK_UPDATES[0]]);
+    vi.mocked(updatesService.getCollegeCirculars).mockResolvedValue({ results: [], total_count: 0 });
+    vi.mocked(updatesService.logEngagement).mockResolvedValue(true);
     vi.mocked(updatesService.getBookmarks).mockResolvedValue([]);
     vi.mocked(updatesService.getSources).mockResolvedValue(MOCK_SOURCES);
     vi.mocked(updatesService.getResultWatchers).mockResolvedValue(MOCK_WATCHERS);
