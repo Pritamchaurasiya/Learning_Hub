@@ -73,8 +73,19 @@ class SubjectDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_topics(self, obj):
-        topics = obj.topics.filter(is_active=True, parent__isnull=True).select_related('subject')
-        return TopicTreeSerializer(topics, many=True).data
+        all_topics = list(obj.topics.filter(is_active=True).select_related('subject'))
+        topic_map = {topic.id: topic for topic in all_topics}
+        for topic in all_topics:
+            topic._prefetched_children = []
+
+        root_topics = []
+        for topic in all_topics:
+            if topic.parent_id and topic.parent_id in topic_map:
+                topic_map[topic.parent_id]._prefetched_children.append(topic)
+            elif not topic.parent_id:
+                root_topics.append(topic)
+
+        return TopicTreeSerializer(root_topics, many=True, context=self.context).data
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -102,8 +113,10 @@ class TopicTreeSerializer(serializers.ModelSerializer):
         ]
 
     def get_children(self, obj):
+        if hasattr(obj, '_prefetched_children'):
+            return TopicTreeSerializer(obj._prefetched_children, many=True, context=self.context).data
         children = obj.children.filter(is_active=True)
-        return TopicTreeSerializer(children, many=True).data
+        return TopicTreeSerializer(children, many=True, context=self.context).data
 
 
 class TopicListSerializer(serializers.ModelSerializer):

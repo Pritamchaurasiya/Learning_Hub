@@ -37,12 +37,12 @@ class AIClient:
     @classmethod
     def get_client(cls) -> Optional[genai.Client]:
         if cls._client is None:
-            if cls._api_key is None:
-                cls._api_key = os.getenv("GEMINI_API_KEY")
-            if cls._api_key:
-                cls._client = genai.Client(api_key=cls._api_key)
+            api_key = cls._api_key or os.getenv("GEMINI_API_KEY")
+            if api_key:
+                cls._client = genai.Client(api_key=api_key)
             else:
                 logger.warning("WARNING: GEMINI_API_KEY not found in environment.")
+                return None
         return cls._client
 
     # Prometheus Metrics

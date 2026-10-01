@@ -3,10 +3,28 @@ Django Base Settings for Learning Hub Backend.
 """
 
 import os
+import sys
+import types
+from collections.abc import Iterable
+
+if "django.utils.itercompat" not in sys.modules:
+    try:
+        import django.utils.itercompat
+    except ImportError:
+        itercompat = types.ModuleType("django.utils.itercompat")
+        itercompat.is_iterable = lambda x: isinstance(x, Iterable)
+        sys.modules["django.utils.itercompat"] = itercompat
+        try:
+            import django.utils
+            django.utils.itercompat = itercompat
+        except Exception:
+            pass
+
 from datetime import timedelta
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
+
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -33,7 +51,7 @@ if not SECRET_KEY:
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # SECURITY: Ensure ALLOWED_HOSTS is properly configured
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
 if not ALLOWED_HOSTS and not DEBUG:
     raise ValueError(
@@ -101,7 +119,9 @@ LOCAL_APPS = [
     "apps.analytics",
     "apps.analytics_v2",     # NEW: Advanced analytics & performance tracking
     "apps.subscriptions",    # NEW: Monetization, subscriptions, usage limits
-    "apps.quiz",            # Legacy quiz (deprecated, use test_engine)
+    "apps.quiz",
+    "apps.monitoring",       # System health & telemetry monitoring
+    "apps.ebooks",           # Digital library & interactive ebooks
     # Archived apps (disabled to reduce startup time & attack surface):
     # "apps.web3",
     # "apps.metaverse",
@@ -120,11 +140,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # Advanced Security Middleware (after CORS + core security)
     "apps.core.security_middleware.SecurityHeadersMiddleware",
-    "apps.core.security_middleware.RequestLoggingMiddleware",
-    "apps.core.security_middleware.SQLInjectionDetectionMiddleware",
-    "apps.core.security_middleware.IPAnomalyDetectionMiddleware",
     # Resilience
-    "apps.core.middleware.SelfHealingMiddleware",
     # Phase 10: Input Sanitization & CORS Hardening
     "apps.core.middleware.InputSanitizationMiddleware",
     "apps.core.middleware.CORSHardeningMiddleware",
@@ -136,7 +152,6 @@ MIDDLEWARE = [
     # Auth-dependent middleware must come AFTER AuthenticationMiddleware
     "apps.core.security_middleware.JWTBlacklistMiddleware",
     "apps.core.audit_middleware.AuditMiddleware",
-    "apps.core.rate_limit_service.RateLimitMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
@@ -271,8 +286,8 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/day",
-        "user": "5000/day",
+        "anon": "1000/day",
+        "user": "10000/day",
         "ai_critic": STRICT_RATE,
         "ai_chat": "10/minute",
         "ai_tutor": "15/minute",
@@ -336,6 +351,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Learning Hub API",
     "DESCRIPTION": "RESTful API for Learning Hub Mobile Application",
     "VERSION": "1.0.0",
+    "SCHEMA_PATH_PREFIX": "/api/v[0-9]",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
     "SECURITY": [{"jwt": []}],
@@ -454,55 +470,43 @@ CACHES = {
 CELERY_BEAT_SCHEDULE = {
     # Gamification Tasks
     "reset-weekly-xp": {
-        "task": "apps.core.background_tasks.reset_weekly_xp",
+        "task": "gamification.reset_weekly_xp",
         "schedule": 604800,  # Weekly
     },
     "process-streak-reminders": {
-        "task": "apps.core.background_tasks.process_streak_reminders",
-        "schedule": 86400,  # Daily
-    },
-    "check-streak-expiry": {
-        "task": "apps.gamification.tasks.check_streak_expiry",
+        "task": "gamification.process_streak_reminders",
         "schedule": 86400,  # Daily
     },
     "check-achievements-batch": {
-        "task": "apps.core.background_tasks.check_achievements_batch",
+        "task": "gamification.check_achievements",
         "schedule": 21600,  # Every 6 hours
     },
     # Maintenance Tasks
     "warm-cache": {
-        "task": "apps.core.background_tasks.warm_cache",
+        "task": "cache.warm_courses",
         "schedule": 3600,  # Hourly
     },
-    "cleanup-blacklisted-tokens": {
-        "task": "apps.core.background_tasks.cleanup_blacklisted_tokens",
-        "schedule": 86400,  # Daily
-    },
     "cleanup-audit-logs": {
-        "task": "apps.core.background_tasks.cleanup_old_audit_logs",
+        "task": "cleanup.old_audit_logs",
         "schedule": 86400,  # Daily
     },
     "cleanup-expired-tokens": {
-        "task": "apps.core.background_tasks.cleanup_expired_tokens",
+        "task": "cleanup.expired_tokens",
         "schedule": 86400,  # Daily
     },
     # Analytics
     "daily-analytics-aggregation": {
-        "task": "apps.core.background_tasks.daily_analytics_aggregation",
+        "task": "analytics.aggregate_daily",
         "schedule": 86400,  # Daily (Midnight)
-    },
-    "calculate-course-stats": {
-        "task": "apps.courses.tasks.calculate_course_stats",
-        "schedule": 86400,  # Daily
     },
     # Notifications
     "send-daily-digest": {
-        "task": "apps.core.background_tasks.send_daily_digest",
+        "task": "notifications.send_digest",
         "schedule": 86400,  # Daily at 09:00 UTC
     },
     # Health
     "system-health-check": {
-        "task": "apps.core.background_tasks.system_health_check",
+        "task": "system.health_check",
         "schedule": 300,  # Every 5 minutes
     },
     # Test Engine Tasks
@@ -516,19 +520,6 @@ CELERY_BEAT_SCHEDULE = {
     },
     "recalculate-question-stats": {
         "task": "apps.test_engine.tasks.recalculate_question_stats",
-        "schedule": 86400,  # Daily
-    },
-    # Subscription Tasks
-    "cleanup-expired-subscriptions": {
-        "task": "apps.subscriptions.tasks.cleanup_expired_subscriptions",
-        "schedule": 3600,  # Every hour
-    },
-    "send-expiry-reminders": {
-        "task": "apps.subscriptions.tasks.send_expiry_reminders",
-        "schedule": 86400,  # Daily at 09:00 UTC
-    },
-    "convert-expired-trials": {
-        "task": "apps.subscriptions.tasks.convert_expired_trials",
         "schedule": 86400,  # Daily
     },
 }
@@ -593,8 +584,8 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# Suppress warnings
-SILENCED_SYSTEM_CHECKS = ['drf_spectacular.W002', 'drf_spectacular.W001']
-
-
+# Request size limits
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB max upload
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB in-memory, rest to disk
 

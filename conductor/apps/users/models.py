@@ -146,6 +146,36 @@ class User(AbstractBaseUser, PermissionsMixin, UUIDMixin, TimestampMixin):
         return self.username
 
     @property
+    def date_joined(self):
+        """Backwards compatibility alias for created_at."""
+        return self.created_at
+
+    @property
+    def first_name(self):
+        """Compatibility property extracting first name from display_name or username."""
+        if self.display_name:
+            return self.display_name.split()[0]
+        return self.username
+
+    @first_name.setter
+    def first_name(self, value):
+        if value:
+            self.display_name = value
+
+    @property
+    def last_name(self):
+        """Compatibility property extracting last name from display_name."""
+        if self.display_name and " " in self.display_name:
+            parts = self.display_name.split(maxsplit=1)
+            return parts[1] if len(parts) > 1 else ""
+        return ""
+
+    @last_name.setter
+    def last_name(self, value):
+        if value:
+            self.display_name = f"{self.first_name} {value}".strip()
+
+    @property
     def is_instructor(self):
         """Check if user is an instructor."""
         return self.role == self.Role.INSTRUCTOR
@@ -218,3 +248,64 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.course.title}"
+
+
+class TwoFactorAuth(BaseModel):
+    """Two-Factor Authentication (TOTP) credentials for user."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="two_factor")
+    is_enabled = models.BooleanField(default=False)
+    secret = models.CharField(max_length=64, blank=True)
+    recovery_codes = models.JSONField(default=list, blank=True)
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "user_two_factor"
+        verbose_name = "Two-Factor Auth"
+
+    def __str__(self):
+        return f"2FA for {self.user.email} (Enabled: {self.is_enabled})"
+
+
+class UserSession(BaseModel):
+    """Tracks active user sessions and devices."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sessions")
+    session_key = models.CharField(max_length=100, db_index=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    device_info = models.CharField(max_length=150, blank=True)
+    last_active = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "user_sessions"
+        ordering = ["-last_active"]
+        indexes = [
+            models.Index(fields=["user", "is_active"]),
+            models.Index(fields=["session_key"]),
+        ]
+
+    def __str__(self):
+        return f"Session {self.session_key[:8]} for {self.user.email}"
+
+
+class APIKey(BaseModel):
+    """API Keys for external developer access and integrations."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="api_keys")
+    name = models.CharField(max_length=100)
+    prefix = models.CharField(max_length=12, db_index=True)
+    hashed_key = models.CharField(max_length=128)
+    scopes = models.JSONField(default=list, blank=True)
+    is_active = models.BooleanField(default=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "user_api_keys"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["prefix", "is_active"]),
+            models.Index(fields=["user", "is_active"]),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.prefix}...)"

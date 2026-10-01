@@ -47,6 +47,21 @@ app.conf.update(
     task_default_rate_limit="100/m",
     # Logging
     worker_hijack_root_logger=False,
+    # Periodic Tasks (Celery Beat)
+    beat_schedule={
+        "check-expired-attempts-every-minute": {
+            "task": "apps.test_engine.tasks.check_expired_attempts",
+            "schedule": 60.0,
+        },
+        "cleanup-abandoned-attempts-every-hour": {
+            "task": "apps.test_engine.tasks.cleanup_abandoned_attempts",
+            "schedule": 3600.0,
+        },
+        "recalculate-question-stats-daily": {
+            "task": "apps.test_engine.tasks.recalculate_question_stats",
+            "schedule": 86400.0,
+        },
+    },
 )
 
 

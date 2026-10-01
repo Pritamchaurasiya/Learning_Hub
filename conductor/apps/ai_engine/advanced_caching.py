@@ -134,11 +134,12 @@ class AdvancedCacheManager:
         self.cache_configs: Dict[str, CacheConfig] = {}
         self.invalidation_callbacks: Dict[str, List[Callable]] = {}
         self.background_refresh_tasks: Dict[str, asyncio.Task] = {}
-        self._initialize_redis()
         self._start_background_tasks()
     
-    async def _initialize_redis(self):
-        """Initialize Redis connection."""
+    async def _ensure_redis(self):
+        """Initialize Redis connection if not already connected."""
+        if self.redis_client is not None:
+            return
         try:
             self.redis_client = redis.from_url(
                 settings.REDIS_URL,
@@ -210,6 +211,7 @@ class AdvancedCacheManager:
                     return value
             
             # Level 2: Redis cache
+            await self._ensure_redis()
             if self.redis_client:
                 try:
                     redis_value = await self.redis_client.get(key)
@@ -250,6 +252,7 @@ class AdvancedCacheManager:
             self.l1_cache.set(key, value, effective_ttl)
             
             # Level 2: Redis cache
+            await self._ensure_redis()
             if self.redis_client:
                 try:
                     # Serialize based on configuration
@@ -277,6 +280,7 @@ class AdvancedCacheManager:
             self.l1_cache.delete(key)
             
             # Level 2: Redis cache
+            await self._ensure_redis()
             if self.redis_client:
                 try:
                     await self.redis_client.delete(key)

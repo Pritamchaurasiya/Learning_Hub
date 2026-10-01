@@ -25,4 +25,8 @@ urlpatterns = [
 
     # Combined Dashboard
     path('stats/', views.get_gamification_stats, name='user-stats'),
+
+    # DSA Practice Metrics (Contract parity with problemService.getDsaStats)
+    path('dsa-stats/', views.get_user_dsa_stats, name='gamification-dsa-stats'),
+    path('dsa-stats', views.get_user_dsa_stats, name='gamification-dsa-stats-noslash'),
 ]

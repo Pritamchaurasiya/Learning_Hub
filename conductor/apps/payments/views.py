@@ -117,11 +117,11 @@ class CreateOrderView(generics.GenericAPIView):
                 cancel_url = settings.FRONTEND_URL + '/payment/cancel'
                 
                 session_data = stripe_service.create_checkout_session(
-                    request.user, course, success_url, cancel_url
+                    request.user, course, success_url, cancel_url, payment=payment
                 )
                 
                 payment.gateway_payment_id = session_data["id"]
-                payment.save()
+                payment.save(update_fields=['gateway_payment_id'])
                 
                 return Response({
                     "status": "success",
@@ -156,7 +156,7 @@ class CreateOrderView(generics.GenericAPIView):
                             "amount": float(amount),
                             "discount": float(discount),
                             "order_id": order['id'],  # Return actual Razorpay Order ID
-                            "key": settings.RAZORPAY_KEY_ID, # Frontend needs this
+                            "key": getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_mock'),
                             "gateway": "razorpay"
                         },
                     }
@@ -521,3 +521,95 @@ class PaymentStatsView(generics.GenericAPIView):
                 },
             }
         )
+
+
+class ValidateCouponView(generics.GenericAPIView):
+    """Validate a coupon code and calculate discounted price without creating an order.
+
+    POST /api/v1/payments/validate-coupon/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get('code', '').strip().upper()
+        amount_raw = request.data.get('amount')
+        course_id = request.data.get('course_id')
+
+        if not code:
+            return Response({"status": "error", "message": "Coupon code is required."}, status=400)
+
+        coupon = Coupon.objects.filter(code=code, is_active=True).first()
+        if not coupon or not coupon.is_valid():
+            return Response({"status": "error", "valid": False, "message": "Invalid or expired coupon."}, status=400)
+
+        # Check course-specific restriction if configured
+        if course_id and coupon.courses.exists():
+            if not coupon.courses.filter(id=course_id).exists():
+                return Response({"status": "error", "valid": False, "message": "Coupon not applicable to this course."}, status=400)
+
+        base_amount = Decimal(str(amount_raw)) if amount_raw is not None else Decimal(0)
+        discount_amount = base_amount * (Decimal(coupon.discount_percent) / Decimal(100))
+        final_amount = max(Decimal(0), base_amount - discount_amount)
+
+        return Response({
+            "status": "success",
+            "valid": True,
+            "data": {
+                "code": coupon.code,
+                "discount_percent": float(coupon.discount_percent),
+                "original_amount": float(base_amount),
+                "discount_amount": float(discount_amount),
+                "final_amount": float(final_amount),
+                "currency": "INR"
+            }
+        })
+
+
+class InvoiceListView(generics.GenericAPIView):
+    """List student invoices."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .models import Invoice
+        invoices = Invoice.objects.filter(user=request.user).select_related('payment', 'payment__course')
+        data = [
+            {
+                "id": str(inv.id),
+                "invoice_number": inv.invoice_number,
+                "course_title": inv.payment.course.title if inv.payment.course else "Subscription / Platform Service",
+                "amount": float(inv.total_amount),
+                "tax_amount": float(inv.tax_amount),
+                "issued_at": inv.issued_at.isoformat(),
+                "payment_id": str(inv.payment_id),
+            }
+            for inv in invoices
+        ]
+        return Response({"status": "success", "count": len(data), "data": data})
+
+
+class InvoiceDetailView(generics.GenericAPIView):
+    """Retrieve digital invoice receipt details."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, invoice_number):
+        from .models import Invoice
+        inv = Invoice.objects.filter(user=request.user, invoice_number=invoice_number).select_related('payment', 'payment__course').first()
+        if not inv:
+            return Response({"status": "error", "message": "Invoice not found."}, status=404)
+
+        return Response({
+            "status": "success",
+            "data": {
+                "invoice_number": inv.invoice_number,
+                "billing_name": inv.billing_name or request.user.get_full_name() or request.user.username,
+                "billing_email": inv.billing_email or request.user.email,
+                "item_description": inv.payment.course.title if inv.payment.course else "Pro Tier Access",
+                "subtotal": float(inv.total_amount - inv.tax_amount),
+                "tax_amount": float(inv.tax_amount),
+                "total_amount": float(inv.total_amount),
+                "currency": inv.payment.currency,
+                "payment_gateway": inv.payment.gateway,
+                "payment_status": inv.payment.status,
+                "issued_at": inv.issued_at.isoformat(),
+            }
+        })

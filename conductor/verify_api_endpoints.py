@@ -124,12 +124,14 @@ class APIEndpointVerifier:
         if 'ws' in path.lower():
             return 'skipped', 'websocket'
             
-        # Prepare path for testing
-        test_path = f"/{path.rstrip('/')}"
+        # Prepare path for testing - keep trailing slash if endpoint expects it
+        test_path = f"/{path.lstrip('/')}"
+        if not test_path.endswith('/') and not '.' in test_path.split('/')[-1]:
+            test_path += '/'
         
         try:
-            # Try GET request
-            response = self.client.get(test_path)
+            # Try GET request with follow redirects
+            response = self.client.get(test_path, follow=True)
             status = response.status_code
             
             if status == 200:
@@ -142,8 +144,14 @@ class APIEndpointVerifier:
                 return 'not_found', 'Not Found (404)'
             elif status == 405:
                 # Method not allowed, try POST
-                response = self.client.post(test_path)
-                if response.status_code == 401:
+                response = self.client.post(test_path, follow=True)
+                if response.status_code == 200:
+                    return 'success', 'POST - OK (200)'
+                elif response.status_code == 201:
+                    return 'success', 'POST - Created (201)'
+                elif response.status_code == 400:
+                    return 'auth_required', 'POST - Bad Request (400 - Validation/Payload Required)'
+                elif response.status_code == 401:
                     return 'auth_required', 'POST - Authentication Required (401)'
                 elif response.status_code == 403:
                     return 'forbidden', 'POST - Forbidden (403)'

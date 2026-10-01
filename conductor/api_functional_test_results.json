@@ -1,0 +1,66 @@
+{
+  "passed": 15,
+  "failed": 0,
+  "tests": [
+    {
+      "test": "health_check",
+      "status": "PASS"
+    },
+    {
+      "test": "deep_health_check",
+      "status": "PASS"
+    },
+    {
+      "test": "authentication",
+      "status": "PASS"
+    },
+    {
+      "test": "token_refresh",
+      "status": "PASS"
+    },
+    {
+      "test": "get_profile",
+      "status": "PASS"
+    },
+    {
+      "test": "two_factor_auth_flow",
+      "status": "PASS"
+    },
+    {
+      "test": "session_management",
+      "status": "PASS"
+    },
+    {
+      "test": "api_key_management",
+      "status": "PASS"
+    },
+    {
+      "test": "list_courses",
+      "status": "PASS"
+    },
+    {
+      "test": "course_features",
+      "status": "PASS"
+    },
+    {
+      "test": "dsa_engine",
+      "status": "PASS"
+    },
+    {
+      "test": "exams_taxonomy",
+      "status": "PASS"
+    },
+    {
+      "test": "gamification",
+      "status": "PASS"
+    },
+    {
+      "test": "payments_and_invoices",
+      "status": "PASS"
+    },
+    {
+      "test": "api_documentation",
+      "status": "PASS"
+    }
+  ]
+}

@@ -42,7 +42,7 @@ class TestUserSerializers:
         data = {"email": "login@test.com", "password": password}
         serializer = UserLoginSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data["user"] == user
+        assert str(serializer.validated_data["user"].id) == str(user.id)
         assert "access_token" in serializer.validated_data["tokens"]
 
     def test_login_invalid_credentials(self, user_factory):

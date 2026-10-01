@@ -70,22 +70,18 @@ def global_search(request):
         if category_slug:
             courses = courses.filter(category__slug=category_slug)
         if level:
-            courses = courses.filter(level=level)
+            courses = courses.filter(difficulty=level)
         
         # Apply sorting
         if sort_by == 'rating':
-            courses = courses.annotate(
-                avg_rating=Avg('reviews__rating')
-            ).order_by('-avg_rating')
+            courses = courses.order_by('-avg_rating')
         elif sort_by == 'newest':
             courses = courses.order_by('-created_at')
         elif sort_by == 'popular':
-            courses = courses.annotate(
-                enrollment_count=Count('enrollments')
-            ).order_by('-enrollment_count')
+            courses = courses.order_by('-enrollment_count')
         
-        # Limit results
-        courses = courses[:20]
+        # Limit results and prefetch relations
+        courses = courses.select_related('instructor', 'category')[:20]
         
         results['courses'] = [{
             'id': c.id,
@@ -96,24 +92,23 @@ def global_search(request):
             'instructor': {
                 'id': c.instructor.id,
                 'name': c.instructor.get_full_name() or c.instructor.username,
-                'avatar': c.instructor.profile.avatar.url if hasattr(c.instructor, 'profile') and c.instructor.profile.avatar else None
+                'avatar': c.instructor.avatar.url if c.instructor.avatar else None
             },
             'category': c.category.name if c.category else None,
-            'level': c.level,
+            'level': c.difficulty,
             'price': str(c.price),
-            'rating': c.average_rating,
-            'enrollment_count': c.enrollments.count(),
-            'duration': c.estimated_duration
+            'rating': float(c.avg_rating),
+            'enrollment_count': c.enrollment_count,
+            'duration': c.duration_hours
         } for c in courses]
     
     # Search instructors
     if search_type in ['all', 'users']:
         instructors = User.objects.filter(
-            is_instructor=True
+            role=User.Role.INSTRUCTOR
         ).filter(
             Q(username__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query) |
+            Q(display_name__icontains=query) |
             Q(email__icontains=query)
         )[:10]
         
@@ -121,9 +116,9 @@ def global_search(request):
             'id': u.id,
             'username': u.username,
             'name': u.get_full_name() or u.username,
-            'avatar': u.profile.avatar.url if hasattr(u, 'profile') and u.profile.avatar else None,
-            'bio': u.profile.bio[:200] if hasattr(u, 'profile') and u.profile.bio else '',
-            'course_count': u.courses.count()
+            'avatar': u.avatar.url if u.avatar else None,
+            'bio': u.bio[:200] if u.bio else '',
+            'course_count': u.courses_taught.filter(is_published=True).count()
         } for u in instructors]
     
     results['total_count'] = len(results['courses']) + len(results['instructors'])
@@ -247,7 +242,7 @@ def advanced_search(request):
     # Level filter
     level = request.GET.get('level', '')
     if level:
-        courses = courses.filter(level=level)
+        courses = courses.filter(difficulty=level)
     
     # Price range
     price_min = request.GET.get('price_min')
@@ -261,26 +256,28 @@ def advanced_search(request):
     # Rating filter
     rating = request.GET.get('rating')
     if rating:
-        courses = courses.filter(average_rating__gte=rating)
+        courses = courses.filter(avg_rating__gte=rating)
     
     # Certificate filter
     has_certificate = request.GET.get('has_certificate')
     if has_certificate == 'true':
-        courses = courses.filter(has_certificate=True)
+        courses = courses.filter(certificates__isnull=False).distinct()
+    elif has_certificate == 'false':
+        courses = courses.filter(certificates__isnull=True).distinct()
     
     # Duration filter
     duration = request.GET.get('duration')
     if duration == 'short':
-        courses = courses.filter(estimated_duration__lt=300)  # < 5 hours
+        courses = courses.filter(duration_hours__lt=5)  # < 5 hours
     elif duration == 'medium':
-        courses = courses.filter(estimated_duration__gte=300, estimated_duration__lte=1200)  # 5-20 hours
+        courses = courses.filter(duration_hours__gte=5, duration_hours__lte=20)  # 5-20 hours
     elif duration == 'long':
-        courses = courses.filter(estimated_duration__gt=1200)  # > 20 hours
+        courses = courses.filter(duration_hours__gt=20)  # > 20 hours
     
     # Sorting
     sort = request.GET.get('sort', 'relevance')
     if sort == 'rating':
-        courses = courses.order_by('-average_rating')
+        courses = courses.order_by('-avg_rating')
     elif sort == 'newest':
         courses = courses.order_by('-created_at')
     elif sort == 'price_low':
@@ -288,9 +285,7 @@ def advanced_search(request):
     elif sort == 'price_high':
         courses = courses.order_by('-price')
     elif sort == 'popular':
-        courses = courses.annotate(
-            enrollment_count=Count('enrollments')
-        ).order_by('-enrollment_count')
+        courses = courses.order_by('-enrollment_count')
     
     # Pagination
     page = int(request.GET.get('page', 1))
@@ -299,7 +294,7 @@ def advanced_search(request):
     end = start + per_page
     
     total_count = courses.count()
-    courses = courses[start:end]
+    courses = courses.select_related('instructor', 'category')[start:end]
     
     return Response({
         'query': query,
@@ -326,15 +321,12 @@ def advanced_search(request):
             'thumbnail': c.thumbnail.url if c.thumbnail else None,
             'instructor': c.instructor.get_full_name() or c.instructor.username,
             'category': c.category.name if c.category else None,
-            'level': c.level,
+            'level': c.difficulty,
             'price': str(c.price),
-            'original_price': str(c.original_price) if c.original_price else None,
-            'discount_percentage': c.discount_percentage,
-            'rating': c.average_rating,
-            'review_count': c.reviews.count(),
-            'enrollment_count': c.enrollments.count(),
-            'duration': c.estimated_duration,
-            'has_certificate': c.has_certificate,
+            'rating': float(c.avg_rating),
+            'review_count': c.review_count,
+            'enrollment_count': c.enrollment_count,
+            'duration': c.duration_hours,
             'created_at': c.created_at.isoformat()
         } for c in courses]
     })

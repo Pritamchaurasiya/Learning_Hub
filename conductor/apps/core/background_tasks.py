@@ -196,7 +196,7 @@ def aggregate_daily_analytics():
     # Calculate daily metrics
     metrics = {
         'date': yesterday.isoformat(),
-        'new_users': User.objects.filter(date_joined__date=yesterday).count(),
+        'new_users': User.objects.filter(created_at__date=yesterday).count(),
         'active_users': User.objects.filter(last_login__date=yesterday).count(),
         'new_enrollments': Enrollment.objects.filter(created_at__date=yesterday).count(),
         'lessons_completed': LessonCompletion.objects.filter(completed_at__date=yesterday).count(),

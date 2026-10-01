@@ -107,7 +107,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import NotFound
             raise NotFound("Conversation not found")
 
-        if self.request.user not in conversation.participants.all():
+        if not conversation.participants.filter(id=self.request.user.id).exists():
             raise permissions.PermissionDenied("You are not a participant")
 
         serializer.save(sender=self.request.user)

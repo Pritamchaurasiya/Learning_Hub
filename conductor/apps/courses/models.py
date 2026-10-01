@@ -405,3 +405,52 @@ class LessonProgress(BaseModel):
 
     def __str__(self):
         return f"{self.user.username} - {self.lesson.title} ({self.progress_seconds}s)"
+
+
+class CourseNote(BaseModel):
+    """Personal timestamped student notes for course lessons."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course_notes")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="student_notes")
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="notes")
+    timestamp_seconds = models.PositiveIntegerField(default=0)
+    content = models.TextField()
+
+    class Meta:
+        db_table = "course_notes"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "course"]),
+            models.Index(fields=["lesson", "user"]),
+        ]
+
+    def __str__(self):
+        return f"Note by {self.user.username} on {self.lesson.title}"
+
+
+class CourseResource(BaseModel):
+    """Downloadable resources, slides, cheat sheets for a course."""
+    class ResourceType(models.TextChoices):
+        PDF = "pdf", "PDF Document"
+        CODE = "code", "Code Repository / Zip"
+        SLIDES = "slides", "Lecture Slides"
+        LINK = "link", "External Reference Link"
+        DATASET = "dataset", "Dataset File"
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="resources")
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True, related_name="resources")
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    resource_type = models.CharField(max_length=20, choices=ResourceType.choices, default=ResourceType.PDF)
+    file = models.FileField(upload_to="courses/resources/", null=True, blank=True)
+    external_url = models.URLField(blank=True)
+    file_size_bytes = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "course_resources"
+        ordering = ["title"]
+        indexes = [
+            models.Index(fields=["course", "resource_type"]),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.course.title})"

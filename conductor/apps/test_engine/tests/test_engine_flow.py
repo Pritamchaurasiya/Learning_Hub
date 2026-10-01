@@ -100,3 +100,104 @@ class TestEngineFlowTests(TestCase):
         self.assertIn(attempt.status, ('submitted', 'expired'))
         self.assertIsNotNone(attempt.submitted_at)
 
+    def test_ai_test_generation_flow(self):
+        from apps.ai_engine.test_generation import AITestGenerationService
+        service = AITestGenerationService()
+        generated_test = service.generate_test(
+            user=self.user,
+            exam_id=self.exam.id,
+            subject_id=self.subject.id,
+            topic_ids=[self.topic.id],
+            config={
+                'mode': 'mock',
+                'difficulty': 'medium',
+                'question_count': 5,
+                'time_limit_minutes': 15,
+            }
+        )
+        self.assertIsNotNone(generated_test)
+        self.assertEqual(str(generated_test.exam.id), str(self.exam.id))
+        self.assertEqual(generated_test.test_questions.count(), 5)
+        for tq in generated_test.test_questions.all():
+            self.assertEqual(tq.question.options.count(), 4)
+            self.assertEqual(tq.question.options.filter(is_correct=True).count(), 1)
+
+    def test_api_endpoints_and_analytics_integration(self):
+        from rest_framework.test import APIClient
+        from django.urls import reverse
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
+        # 1. Start attempt via API using reversed URL
+        start_url = reverse('test-start-attempt', kwargs={'pk': self.test.id})
+        response = client.post(start_url, {'mode': 'mock'}, format='json')
+        self.assertEqual(response.status_code, 201)
+        attempt_data = response.data['data']
+        attempt_id = attempt_data['id']
+
+        # 2. Autosave via API
+        autosave_url = reverse('test-autosave', kwargs={'pk': self.test.id})
+        autosave_resp = client.post(
+            autosave_url,
+            {
+                'question_id': str(self.question.id),
+                'selected_options': [str(self.option2.id)],
+                'time_spent': 12,
+            },
+            format='json'
+        )
+        self.assertEqual(autosave_resp.status_code, 200)
+
+        # 3. Submit attempt via API
+        submit_url = reverse('test-submit-attempt', kwargs={'pk': self.test.id})
+        submit_resp = client.post(submit_url, {}, format='json')
+        self.assertEqual(submit_resp.status_code, 200)
+        self.assertEqual(submit_resp.data['data']['score'], 1.0)
+        self.assertTrue(submit_resp.data['data']['passed'])
+
+        # 4. Get Result via API
+        result_url = reverse('test-get-result', kwargs={'pk': self.test.id})
+        result_resp = client.get(result_url)
+        self.assertEqual(result_resp.status_code, 200)
+        self.assertEqual(result_resp.data['data']['attempt_id'], str(attempt_id))
+
+        # 5. Verify Analytics Engine dashboard
+        from apps.analytics_v2.services import AnalyticsEngine
+        dashboard = AnalyticsEngine.get_dashboard(self.user, exam_id=self.exam.id)
+        self.assertGreaterEqual(dashboard['total_tests_taken'], 1)
+        self.assertGreaterEqual(dashboard['total_questions_answered'], 1)
+        self.assertEqual(dashboard['overall_accuracy'], 100.0)
+
+    def test_celery_periodic_tasks(self):
+        from apps.test_engine.tasks import (
+            check_expired_attempts,
+            cleanup_abandoned_attempts,
+            recalculate_question_stats,
+        )
+
+        # 1. Test check_expired_attempts
+        attempt = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        # Backdate started_at
+        TestAttempt.objects.filter(id=attempt.id).update(
+            started_at=timezone.now() - timedelta(minutes=self.test.time_limit_minutes + 5)
+        )
+        res_expired = check_expired_attempts()
+        self.assertGreaterEqual(res_expired['expired'], 1)
+
+        # 2. Test cleanup_abandoned_attempts
+        attempt2 = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        # Backdate last_activity_at to 48 hours ago
+        TestAttempt.objects.filter(id=attempt2.id).update(
+            last_activity_at=timezone.now() - timedelta(hours=48)
+        )
+        res_abandoned = cleanup_abandoned_attempts()
+        self.assertGreaterEqual(res_abandoned['abandoned'], 1)
+        attempt2.refresh_from_db()
+        self.assertEqual(attempt2.status, 'abandoned')
+
+        # 3. Test recalculate_question_stats bulk update
+        res_stats = recalculate_question_stats()
+        self.assertIsInstance(res_stats['updated'], int)
+
+
+

@@ -34,7 +34,11 @@ if not exist "venv" (
     python -m venv venv
 )
 call venv\Scripts\activate
-pip install -r requirements.txt >nul 2>&1
+if exist "requirements\local.txt" (
+    pip install -r requirements\local.txt >nul 2>&1
+) else if exist "requirements.txt" (
+    pip install -r requirements.txt >nul 2>&1
+)
 echo [OK] Dependencies verified.
 
 echo.

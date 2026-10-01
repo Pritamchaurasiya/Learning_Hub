@@ -42,6 +42,9 @@ class DiscussionReplySerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return 0
+        user_votes = self.context.get('user_votes')
+        if user_votes is not None:
+            return user_votes.get(obj.id, 0)
         from .models import DiscussionVote
         from django.contrib.contenttypes.models import ContentType
         ct = ContentType.objects.get_for_model(obj)
@@ -74,10 +77,12 @@ class DiscussionThreadSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return 0
+        user_votes = self.context.get('user_votes')
+        if user_votes is not None:
+            return user_votes.get(obj.id, 0)
         from .models import DiscussionVote
         from django.contrib.contenttypes.models import ContentType
         ct = ContentType.objects.get_for_model(obj)
-        # Optimized lookup could be done via prefetch, but simple for now
         vote = DiscussionVote.objects.filter(
             user=request.user, content_type=ct, object_id=obj.id
         ).first()
@@ -96,6 +101,6 @@ class DiscussionThreadDetailSerializer(DiscussionThreadSerializer):
         fields = DiscussionThreadSerializer.Meta.fields + ['replies', 'ai_summary', 'views']
 
     def get_replies(self, obj):
-        # Only return top level replies (parent__isnull=True), the DiscussionReplySerializer handles the children.
-        top_level = obj.replies.filter(parent__isnull=True).prefetch_related('nested_replies', 'author')
+        # Only return top level replies (parent__isnull=True), with author and nested replies prefetched
+        top_level = obj.replies.filter(parent__isnull=True).select_related('author').prefetch_related('nested_replies', 'nested_replies__author')
         return DiscussionReplySerializer(top_level, many=True, context=self.context).data

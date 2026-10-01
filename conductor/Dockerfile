@@ -1,28 +1,27 @@
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=config.settings.production
+# Create non-root user for security
+RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies first (better layer caching)
+COPY requirements/ ./requirements/
+RUN pip install --no-cache-dir -r requirements/production.txt && \
+    rm -rf /root/.cache/pip
 
-COPY requirements/base.txt requirements/production.txt ./
-RUN pip install --no-cache-dir -r production.txt
+# Copy app code
+COPY --chown=appuser:appgroup . .
 
-COPY . .
+# Collect static files
+RUN python manage.py collectstatic --noinput 2>/dev/null || true
 
-RUN mkdir -p logs
-RUN python manage.py collectstatic --noinput
-
-RUN chmod +x entrypoint.sh
+# Switch to non-root user
+USER appuser
 
 EXPOSE 8000
 
-ENTRYPOINT ["./entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "60", "config.wsgi:application"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')" || exit 1
+
+CMD ["gunicorn", "config.wsgi:application", "--config", "gunicorn_config.py"]

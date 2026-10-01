@@ -28,7 +28,7 @@ INDEXES_TO_CREATE = [
     ('users_user', 'idx_user_email', 'email'),
     ('users_user', 'idx_user_username', 'username'),
     ('users_user', 'idx_user_is_active', 'is_active'),
-    ('users_user', 'idx_user_date_joined', 'date_joined DESC'),
+    ('users_user', 'idx_user_created_at', 'created_at DESC'),
     
     # Enrollment indexes
     ('courses_enrollment', 'idx_enrollment_user_course', 'user_id, course_id'),

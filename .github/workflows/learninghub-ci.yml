@@ -1,0 +1,218 @@
+# DEPRECATED — do not use or extend. Canonical CI is .github/workflows/ci.yml at the repo root.
+# This workflow is orphaned: it references workers-backend/conductor paths from an older
+# monorepo layout and duplicates frontend/backend jobs. Kept for history only; safe to
+# delete once the team confirms no runner references it.
+name: LearningHub Unified CI (DEPRECATED)
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: 🌐 React Frontend (Build & Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./learninghub
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: ./learninghub/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Typecheck
+        run: npm run typecheck
+
+      - name: Unit & Integration Tests (Vitest)
+        run: npm test
+
+      - name: Production Bundle Build (Vite)
+        run: npm run build
+
+  backend-express:
+    name: ⚡ Express API (Prisma & Jest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./learninghub/backend
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: ./learninghub/backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Backend Typecheck
+        run: npx tsc --noEmit
+
+      - name: Run Jest Test Suite
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci-test-jwt-secret-32charactersminimum!
+          CSRF_SECRET: ci-test-csrf-secret-32charactersmin!
+          REDIS_URL: redis://localhost:6379
+        run: npm test
+
+  workers-backend:
+    name: ☁️ Cloudflare Workers API (Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./learninghub/workers-backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: ./learninghub/workers-backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Worker Tests (Vitest)
+        run: npx vitest run --passWithNoTests
+
+  conductor-django:
+    name: 🧠 Conductor ML & AI Engine (Django)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./conductor
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: learninghub_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test_user -d learninghub_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: ./conductor/requirements/*.txt
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements/base.txt ]; then pip install -r requirements/base.txt; fi
+
+      - name: Run Django Checks & Tests
+        env:
+          SECRET_KEY: "ci-test-conductor-secret-key-32chars!"
+          DEBUG: "True"
+          DATABASE_URL: "postgres://test_user:test_password@localhost:5432/learninghub_test"
+          REDIS_URL: "redis://localhost:6379/0"
+        run: |
+          python manage.py check
+          python manage.py test --noinput
+
+  django-rest-backend:
+    name: 🐍 Django REST API (Pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: ./learninghub/django_backend/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r learninghub/django_backend/requirements.txt
+
+      - name: Run Django Backend Pytest
+        env:
+          SECRET_KEY: "ci-test-django-backend-secret-key-32chars!"
+        run: pytest learninghub/django_backend/tests
+
+  security-gate:
+    name: 🔒 Security & Secret Exposure Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Block Committed SQLite dev.db Files
+        run: |
+          if git ls-files | grep -E '\.sqlite3$|\.db$|dev\.db$'; then
+            echo "::error::Found SQLite database file committed in Git repository!"
+            exit 1
+          fi
+
+      - name: Block Committed Secrets & Private Keys
+        run: |
+          if git ls-files | grep -E '^\.env$|\.env\.local$|\.pem$|\.key$'; then
+            echo "::error::Found sensitive environment file committed in Git!"
+            exit 1
+          fi

@@ -112,7 +112,7 @@ class DSAPracticeEngine:
         
         # Get user's submission history
         submissions = Submission.objects.filter(user=user)
-        solved_ids = set(submissions.filter(status='accepted').values_list('problem_id', flat=True))
+        solved_ids = set(submissions.filter(status__in=['AC', 'accepted']).values_list('problem_id', flat=True))
         
         # Analyze by category
         category_stats = cls._analyze_category_performance(user)
@@ -129,32 +129,34 @@ class DSAPracticeEngine:
         ) / len(category_stats) if category_stats else 0.5
         
         if avg_success_rate >= 0.7:
-            target_difficulty = ['medium', 'hard']
+            target_difficulty = ['MEDIUM', 'HARD']
         elif avg_success_rate >= 0.4:
-            target_difficulty = ['easy', 'medium']
+            target_difficulty = ['EASY', 'MEDIUM']
         else:
-            target_difficulty = ['easy']
+            target_difficulty = ['EASY']
         
         # Build query
         query = Problem.objects.filter(is_active=True).exclude(id__in=solved_ids)
         
         if category:
-            query = query.filter(category=category.value)
+            cat_name = category.value.replace('_', ' ')
+            query = query.filter(Q(tags__slug=category.value) | Q(tags__name__iexact=cat_name))
         elif weak_categories:
             # Prioritize weak categories
-            query = query.filter(category__in=weak_categories[:3])
+            weak_names = [c.replace('_', ' ') for c in weak_categories[:3]]
+            query = query.filter(Q(tags__slug__in=weak_categories[:3]) | Q(tags__name__in=weak_names))
         
         query = query.filter(difficulty__in=target_difficulty)
         
         # Get problems with some randomization
-        problems = list(query.order_by('?')[:limit])
+        problems = list(query.prefetch_related('tags').order_by('?')[:limit])
         
         result = [
             {
                 'problem_id': str(p.id),
                 'title': p.title,
                 'difficulty': p.difficulty,
-                'category': p.category,
+                'category': p.tags.first().name if p.tags.exists() else 'General',
                 'acceptance_rate': cls._get_acceptance_rate(p),
                 'reason': cls._get_recommendation_reason(p, weak_categories)
             }
@@ -166,20 +168,21 @@ class DSAPracticeEngine:
     
     @classmethod
     def _analyze_category_performance(cls, user) -> Dict[str, Dict]:
-        """Analyze user performance by category."""
+        """Analyze user performance by category (problem tags)."""
         from apps.dsa.models import Submission
         
         stats = {}
         
         for category in ProblemCategory:
+            cat_name = category.value.replace('_', ' ')
             submissions = Submission.objects.filter(
-                user=user,
-                problem__category=category.value
+                Q(problem__tags__slug=category.value) | Q(problem__tags__name__iexact=cat_name),
+                user=user
             )
             
             total = submissions.count()
             if total > 0:
-                accepted = submissions.filter(status='accepted').count()
+                accepted = submissions.filter(status__in=['AC', 'accepted']).count()
                 stats[category.value] = {
                     'total_attempts': total,
                     'accepted': accepted,
@@ -197,20 +200,23 @@ class DSAPracticeEngine:
         if total == 0:
             return 0.5  # Default
         
-        accepted = Submission.objects.filter(problem=problem, status='accepted').count()
+        accepted = Submission.objects.filter(problem=problem, status__in=['AC', 'accepted']).count()
         return round(accepted / total, 2)
     
     @classmethod
     def _get_recommendation_reason(cls, problem, weak_categories: List[str]) -> str:
         """Generate recommendation reason."""
-        if problem.category in weak_categories:
-            return f"Practice your weak area: {problem.category.replace('_', ' ').title()}"
-        elif problem.difficulty == 'easy':
+        prob_tags = [t.slug for t in problem.tags.all()]
+        if any(w in prob_tags for w in weak_categories):
+            primary_tag = problem.tags.first().name if problem.tags.exists() else 'DSA'
+            return f"Practice your weak area: {primary_tag}"
+        elif problem.difficulty.lower() == 'easy':
             return "Build confidence with this warmup problem"
-        elif problem.difficulty == 'hard':
+        elif problem.difficulty.lower() == 'hard':
             return "Challenge yourself with this advanced problem"
         else:
             return "Good practice for skill building"
+
     
     # ==========================================================================
     # CODE VALIDATION
@@ -263,33 +269,28 @@ class DSAPracticeEngine:
             total_memory = max(total_memory, result.get('memory_kb', 0))
         
         # Determine status
-        if passed == len(test_cases):
-            status = 'accepted'
-        elif passed == 0:
-            status = 'wrong_answer'
-        else:
-            status = 'partial'
+        db_status = 'AC' if (test_cases and passed == len(test_cases)) else ('WA' if passed == 0 else 'WA')
+        display_status = 'accepted' if (test_cases and passed == len(test_cases)) else ('wrong_answer' if passed == 0 else 'partial')
         
-        # Save submission
-        Submission.objects.create(
-            id=submission_id,
+        # Save submission cleanly
+        sub = Submission.objects.create(
             user=user,
             problem=problem,
             code=code,
             language=language,
-            status=status,
-            passed_tests=passed,
-            total_tests=len(test_cases),
-            execution_time=total_time,
-            memory_used=total_memory
+            status=db_status,
+            runtime_ms=int(total_time),
+            memory_kb=total_memory,
+            error_log=f"Passed {passed}/{len(test_cases)} tests."
         )
+        submission_id = str(sub.id)
         
         # Generate AI feedback
-        feedback = cls._generate_feedback(code, language, status, passed, len(test_cases))
+        feedback = cls._generate_feedback(code, language, display_status, passed, len(test_cases))
         
         return SubmissionResult(
             submission_id=submission_id,
-            status=status,
+            status=display_status,
             passed_tests=passed,
             total_tests=len(test_cases),
             execution_time_ms=total_time,
@@ -297,6 +298,7 @@ class DSAPracticeEngine:
             test_results=test_results,
             feedback=feedback
         )
+
     
     @classmethod
     def _run_test_case(
@@ -551,56 +553,74 @@ del sys
     
     @classmethod
     def get_user_dsa_stats(cls, user) -> Dict[str, Any]:
-        """Get comprehensive DSA practice stats for a user."""
+        """Get comprehensive DSA practice stats for a user matching frontend DSAStats."""
         from apps.dsa.models import Submission, Problem
         
         submissions = Submission.objects.filter(user=user)
         
         # Overall stats
         total_problems = Problem.objects.filter(is_active=True).count()
-        solved = submissions.filter(status='accepted').values('problem_id').distinct().count()
+        solved = submissions.filter(status__in=['AC', 'accepted']).values('problem_id').distinct().count()
+        attempted = submissions.values('problem_id').distinct().count()
+        total_submissions = submissions.count()
         
-        # By difficulty
-        difficulty_stats = {}
-        for diff in Difficulty:
-            diff_problems = Problem.objects.filter(difficulty=diff.value, is_active=True)
-            diff_solved = submissions.filter(
-                status='accepted',
-                problem__difficulty=diff.value
+        # By difficulty (DB has 'EASY', 'MEDIUM', 'HARD')
+        diff_map = {'easy': 'EASY', 'medium': 'MEDIUM', 'hard': 'HARD'}
+        diff_total_counts = {}
+        diff_solved_counts = {}
+        for k, v in diff_map.items():
+            diff_total_counts[k] = Problem.objects.filter(difficulty=v, is_active=True).count()
+            diff_solved_counts[k] = submissions.filter(
+                status__in=['AC', 'accepted'],
+                problem__difficulty=v
             ).values('problem_id').distinct().count()
-            
-            difficulty_stats[diff.value] = {
-                'total': diff_problems.count(),
-                'solved': diff_solved
-            }
+
+        difficulty_stats = {
+            k: {'total': diff_total_counts[k], 'solved': diff_solved_counts[k]}
+            for k in diff_map
+        }
         
         # By category
         category_stats = cls._analyze_category_performance(user)
         
         # Recent activity
-        recent = submissions.order_by('-created_at')[:10]
+        recent = submissions.order_by('-submitted_at')[:10]
         recent_activity = [
             {
                 'problem_title': s.problem.title,
                 'status': s.status,
                 'language': s.language,
-                'submitted_at': s.created_at.isoformat()
+                'submitted_at': s.submitted_at.isoformat() if s.submitted_at else ''
             }
             for s in recent
         ]
         
         # Streak
         streak = cls._calculate_dsa_streak(user)
-        
+        ranking = cls._get_user_ranking(user)
+        acceptance_rate = round((solved / total_submissions * 100) if total_submissions > 0 else 0, 1)
+
         return {
             'total_problems': total_problems,
-            'solved': solved,
+            'solved_problems': solved,
+            'attempted_problems': attempted,
+            'submissions_count': total_submissions,
+            'acceptance_rate': acceptance_rate,
+            'current_streak': streak,
+            'longest_streak': streak,
+            'rank': ranking.get('rank', 1),
+            'easy_solved': diff_solved_counts['easy'],
+            'medium_solved': diff_solved_counts['medium'],
+            'hard_solved': diff_solved_counts['hard'],
+            'total_easy': diff_total_counts['easy'],
+            'total_medium': diff_total_counts['medium'],
+            'total_hard': diff_total_counts['hard'],
             'solve_rate': round((solved / total_problems * 100) if total_problems > 0 else 0, 1),
             'by_difficulty': difficulty_stats,
             'by_category': category_stats,
             'recent_activity': recent_activity,
             'streak_days': streak,
-            'ranking': cls._get_user_ranking(user)
+            'ranking': ranking
         }
     
     @classmethod
@@ -615,7 +635,7 @@ del sys
             date = today - timedelta(days=i)
             has_submission = Submission.objects.filter(
                 user=user,
-                created_at__date=date
+                submitted_at__date=date
             ).exists()
             
             if has_submission:
@@ -632,11 +652,13 @@ del sys
         from django.db.models import Count
         
         # Get all users sorted by solved problems
-        user_scores = Submission.objects.filter(
-            status='accepted'
-        ).values('user_id').annotate(
-            solved=Count('problem_id', distinct=True)
-        ).order_by('-solved')
+        user_scores = list(
+            Submission.objects.filter(
+                status__in=['AC', 'accepted']
+            ).values('user_id').annotate(
+                solved=Count('problem_id', distinct=True)
+            ).order_by('-solved')
+        )
         
         user_id = user.id
         rank = 1
@@ -648,8 +670,12 @@ del sys
                 break
             rank += 1
         
+        total_users = len(user_scores)
+        percentile = round((1 - rank / max(total_users, 1)) * 100, 1) if total_users > 0 else 100.0
+
         return {
             'rank': rank,
             'solved': user_solved,
-            'percentile': round((1 - rank / max(user_scores.count(), 1)) * 100, 1)
+            'percentile': percentile
         }
+

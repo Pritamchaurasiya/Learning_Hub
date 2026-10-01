@@ -27,6 +27,7 @@ from .serializers import (
 class DiscussionThreadViewSet(viewsets.ModelViewSet):
     """ViewSet for discussion threads."""
     
+    throttle_scope = 'discussions'
     queryset = DiscussionThread.objects.select_related('author', 'course').prefetch_related('tags')
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['course', 'is_resolved', 'author']
@@ -216,6 +217,7 @@ class DiscussionThreadViewSet(viewsets.ModelViewSet):
 class DiscussionReplyViewSet(viewsets.ModelViewSet):
     """ViewSet for thread replies."""
     
+    throttle_scope = 'discussions'
     serializer_class = DiscussionReplySerializer
     
     def get_queryset(self):

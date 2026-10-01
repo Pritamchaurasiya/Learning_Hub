@@ -67,15 +67,20 @@ class RegisterView(generics.CreateAPIView):
         except Exception:
             pass  # EventBus is non-critical
 
+        user_data = UserProfileSerializer(user).data
         return Response(
             {
                 "status": "success",
                 "message": "Registration successful",
                 "data": {
-                    "user": UserProfileSerializer(user).data,
+                    "user": user_data,
                     "accessToken": tokens["access_token"],
                     "refreshToken": tokens["refresh_token"],
                 },
+                "access": tokens["access_token"],
+                "refresh": tokens["refresh_token"],
+                "token": tokens["access_token"],
+                **user_data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -104,15 +109,20 @@ class LoginView(generics.GenericAPIView):
         # Update last login
         user.update_last_login()
 
+        user_data = UserProfileSerializer(user).data
         return Response(
             {
                 "status": "success",
                 "message": "Login successful",
                 "data": {
-                    "user": UserProfileSerializer(user).data,
+                    "user": user_data,
                     "accessToken": tokens["access_token"],
                     "refreshToken": tokens["refresh_token"],
                 },
+                "access": tokens["access_token"],
+                "refresh": tokens["refresh_token"],
+                "token": tokens["access_token"],
+                **user_data,
             }
         )
 
@@ -302,11 +312,13 @@ class UserProfileViewSet(viewsets.GenericViewSet):
     def profile(self, request):
         """Get current user's profile."""
         serializer = UserProfileSerializer(request.user)
+        user_data = serializer.data
         return Response(
             {
                 "status": "success",
                 "message": "Profile retrieved",
-                "data": serializer.data,
+                "data": user_data,
+                **user_data,
             }
         )
 
@@ -322,11 +334,13 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        user_data = UserProfileSerializer(request.user).data
         return Response(
             {
                 "status": "success",
                 "message": "Profile updated",
-                "data": UserProfileSerializer(request.user).data,
+                "data": user_data,
+                **user_data,
             }
         )
 
@@ -440,9 +454,10 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         )
 
         if not created:
-            # Test expects 400 when bookmark already exists and 'error' in response
             return Response({
-                'error': 'Course already in bookmarks'
+                'status': 'error',
+                'error': 'Course already in bookmarks',
+                'message': 'Course already in bookmarks'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
@@ -469,6 +484,127 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             })
         except Bookmark.DoesNotExist:
             return Response(
-                {'error': 'Bookmark not found'},
+                {
+                    'status': 'error',
+                    'error': 'Bookmark not found',
+                    'message': 'Bookmark not found'
+                },
                 status=status.HTTP_404_NOT_FOUND
             )
+
+    # =========================================================================
+    # TWO-FACTOR AUTHENTICATION (2FA / TOTP)
+    # =========================================================================
+
+    @extend_schema(description="Initialize 2FA setup and get TOTP secret/QR URL", responses={200: dict})
+    @action(detail=False, methods=["get", "post"], url_path="2fa/setup", permission_classes=[IsAuthenticated])
+    def two_factor_setup(self, request):
+        """Generate/retrieve TOTP secret and provisioning URI."""
+        from .two_factor_service import TwoFactorService
+        data = TwoFactorService.setup_2fa(request.user)
+        return Response({"status": "success", "data": data})
+
+    @extend_schema(description="Verify TOTP code and enable 2FA", responses={200: dict})
+    @action(detail=False, methods=["post"], url_path="2fa/verify", permission_classes=[IsAuthenticated])
+    def two_factor_verify(self, request):
+        """Verify TOTP code and enable 2FA."""
+        from .two_factor_service import TwoFactorService
+        code = request.data.get("code", "")
+        if not code:
+            return Response(
+                {"status": "error", "message": "Verification code is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            result = TwoFactorService.enable_2fa(request.user, code)
+            return Response({"status": "success", "data": result})
+        except ValueError as e:
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(description="Disable 2FA with password confirmation", responses={200: dict})
+    @action(detail=False, methods=["post"], url_path="2fa/disable", permission_classes=[IsAuthenticated])
+    def two_factor_disable(self, request):
+        """Disable 2FA with password check."""
+        from .two_factor_service import TwoFactorService
+        password = request.data.get("password", "")
+        if not password:
+            return Response(
+                {"status": "error", "message": "Password confirmation is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            TwoFactorService.disable_2fa(request.user, password)
+            return Response({"status": "success", "message": "2FA disabled successfully."})
+        except ValueError as e:
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # =========================================================================
+    # ACTIVE SESSIONS & DEVICE SECURITY
+    # =========================================================================
+
+    @extend_schema(description="List active user sessions and devices", responses={200: dict})
+    @action(detail=False, methods=["get"], url_path="sessions", permission_classes=[IsAuthenticated])
+    def list_sessions(self, request):
+        """List active login sessions."""
+        from .session_service import SessionService
+        SessionService.record_session(request.user, request)
+        sessions = SessionService.list_active_sessions(request.user)
+        return Response({"status": "success", "count": len(sessions), "data": sessions})
+
+    @extend_schema(description="Revoke an active session or all other sessions", responses={200: dict})
+    @action(detail=False, methods=["post"], url_path="sessions/revoke", permission_classes=[IsAuthenticated])
+    def revoke_sessions(self, request):
+        """Revoke a session by ID or revoke all other sessions."""
+        from .session_service import SessionService
+        session_id = request.data.get("session_id")
+        revoke_all_others = request.data.get("revoke_all_others", False)
+
+        if revoke_all_others:
+            count = SessionService.revoke_all_other_sessions(request.user)
+            return Response({"status": "success", "message": f"{count} other sessions revoked."})
+
+        if not session_id:
+            return Response(
+                {"status": "error", "message": "session_id is required or set revoke_all_others=True."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        success = SessionService.revoke_session(request.user, session_id)
+        if success:
+            return Response({"status": "success", "message": "Session revoked successfully."})
+        return Response({"status": "error", "message": "Session not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # =========================================================================
+    # DEVELOPER API KEYS
+    # =========================================================================
+
+    @extend_schema(description="List or create developer API keys", responses={200: dict})
+    @action(detail=False, methods=["get", "post"], url_path="api-keys", permission_classes=[IsAuthenticated])
+    def manage_api_keys(self, request):
+        """List API keys on GET, create new API key on POST."""
+        from .api_key_service import APIKeyService
+        if request.method == "GET":
+            keys = APIKeyService.list_api_keys(request.user)
+            return Response({"status": "success", "count": len(keys), "data": keys})
+
+        name = request.data.get("name", "Default API Key")
+        scopes = request.data.get("scopes", ["read", "write"])
+        expires_in_days = request.data.get("expires_in_days")
+        try:
+            if expires_in_days:
+                expires_in_days = int(expires_in_days)
+        except (ValueError, TypeError):
+            expires_in_days = None
+
+        new_key = APIKeyService.create_api_key(request.user, name=name, scopes=scopes, expires_in_days=expires_in_days)
+        return Response({"status": "success", "message": "API key generated successfully.", "data": new_key}, status=status.HTTP_201_CREATED)
+
+    @extend_schema(description="Revoke a developer API key", responses={200: dict})
+    @action(detail=False, methods=["delete"], url_path="api-keys/(?P<key_id>[^/.]+)", permission_classes=[IsAuthenticated])
+    def revoke_key(self, request, key_id=None):
+        """Revoke an API key."""
+        from .api_key_service import APIKeyService
+        success = APIKeyService.revoke_api_key(request.user, key_id)
+        if success:
+            return Response({"status": "success", "message": "API key revoked successfully."})
+        return Response({"status": "error", "message": "API key not found."}, status=status.HTTP_404_NOT_FOUND)

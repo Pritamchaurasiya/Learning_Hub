@@ -36,15 +36,7 @@ def evaluate_submission_task(self, submission_id):
         # Refetch to get updated status and runtime
         submission.refresh_from_db()
 
-        if submission.status == 'AC':
-            # Award XP based on problem difficulty points
-            from apps.gamification.services import GamificationService
-            points = submission.problem.points or 10
-            GamificationService.award_xp(
-                submission.user, points,
-                f"Solved: {submission.problem.title}"
-            )
-
+        # Note: XP awarding is handled by post_save signal in apps.dsa.signals
         send_update(user_id, submission.status, submission_id)
 
         return f"Submission {submission_id} evaluated with status {submission.status}"

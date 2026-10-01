@@ -55,7 +55,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = [
-            'id', 'text', 'question_type', 'difficulty', 'discrimination',
+            'id', 'text', 'question_type', 'status', 'difficulty', 'discrimination',
             'guess_factor', 'bloom_level', 'explanation', 'solution_steps',
             'tags', 'is_ai_generated', 'ai_model', 'is_verified',
             'usage_count', 'correct_count', 'incorrect_count', 'accuracy_rate',
@@ -76,7 +76,7 @@ class TestListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
         fields = [
-            'id', 'title', 'description', 'mode', 'difficulty',
+            'id', 'title', 'description', 'mode', 'difficulty', 'ai_mode', 'question_source',
             'time_limit_minutes', 'passing_score', 'total_marks',
             'negative_marks_per_question', 'question_count', 'avg_difficulty',
             'exam_name', 'exam_code', 'country_name',
@@ -96,7 +96,7 @@ class TestDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
         fields = [
-            'id', 'title', 'description', 'mode', 'difficulty',
+            'id', 'title', 'description', 'mode', 'difficulty', 'ai_mode', 'question_source',
             'time_limit_minutes', 'passing_score', 'total_marks',
             'negative_marks_per_question', 'marks_per_correct',
             'exam_name', 'exam_code', 'country_name',

@@ -1,8 +1,12 @@
 from datetime import datetime
 from typing import Dict, List
 from django.db.models import F
-from apps.gamification.models import UserChallenge
 from apps.courses.models import Enrollment
+
+try:
+    from apps.gamification.models import UserChallenge
+except ImportError:
+    UserChallenge = None
 
 class KnowledgeTracer:
     """
@@ -41,23 +45,45 @@ class KnowledgeTracer:
             float: Mastery probability scalar [0.0, 1.0].
         """
         # 1. Fetch historical interactions related to this domain
-        # In a real DKT model, we'd query highly specific interaction logs (like `ActivityLog`).
-        # For this implementation, we aggregate their Challenge successes vs failures as a proxy.
-        
-        # Filter Challenges that map roughly to the domain (using domain as a substring for MVP)
-        recent_challenges = UserChallenge.objects.filter(
-            user_id=user_id,
-            challenge__title__icontains=module_domain
-        ).order_by('completed_at')
-        
-        if not recent_challenges.exists():
+        observations = []
+        if UserChallenge is not None:
+            try:
+                recent_challenges = UserChallenge.objects.filter(
+                    user_id=user_id,
+                    challenge__title__icontains=module_domain
+                ).order_by('completed_at')
+                for ch in recent_challenges:
+                    observations.append(ch.status == 'COMPLETED')
+            except Exception:
+                pass
+
+        if not observations:
+            try:
+                from apps.dsa.models import Submission
+                submissions = Submission.objects.filter(
+                    user_id=user_id,
+                    problem__title__icontains=module_domain
+                ).order_by('created_at')
+                for s in submissions:
+                    observations.append(s.status == 'ACCEPTED')
+            except Exception:
+                pass
+
+        if not observations:
+            # Check Enrollment progress as a continuous mastery proxy
+            try:
+                enrollment = Enrollment.objects.filter(user_id=user_id, course__title__icontains=module_domain).first()
+                if enrollment:
+                    progress = float(enrollment.progress_percentage or 0) / 100.0
+                    return max(cls.PRIOR_KNOWLEDGE, min(0.99, progress))
+            except Exception:
+                pass
             return cls.PRIOR_KNOWLEDGE
             
         # 2. Execute discrete Bayesian Knowledge Tracing Iterations
         current_mastery = cls.PRIOR_KNOWLEDGE
         
-        for interaction in recent_challenges:
-            is_correct = interaction.status == 'COMPLETED'
+        for is_correct in observations:
             
             # Update step logic: 
             # P(L_t) = P(L_{t-1} | Obs) + (1 - P(L_{t-1} | Obs)) * Transition

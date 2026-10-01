@@ -1,8 +1,59 @@
-"""
-Pytest fixtures for Learning Hub Backend tests.
-"""
+import sys
+import types
+from collections.abc import Iterable
+
+if "django.utils.itercompat" not in sys.modules:
+    try:
+        import django.utils.itercompat
+    except ImportError:
+        itercompat = types.ModuleType("django.utils.itercompat")
+        itercompat.is_iterable = lambda x: isinstance(x, Iterable)
+        sys.modules["django.utils.itercompat"] = itercompat
+        try:
+            import django.utils
+            django.utils.itercompat = itercompat
+        except Exception:
+            pass
 
 import pytest
+import django.template.context
+
+# Python 3.14 compatibility patch for Django Context/BaseContext.__copy__
+def _patched_context_copy(self):
+    duplicate = object.__new__(self.__class__)
+    duplicate.__dict__.update(self.__dict__)
+    if hasattr(self, 'dicts'):
+        duplicate.dicts = self.dicts[:]
+    return duplicate
+
+try:
+    django.template.context.BaseContext.__copy__ = _patched_context_copy
+    django.template.context.Context.__copy__ = _patched_context_copy
+except Exception:
+    pass
+
+
+
+
+@pytest.fixture(autouse=True)
+def clean_test_environment():
+    """Ensure cache and global singletons are pristine for each test."""
+    from django.core.cache import cache
+    cache.clear()
+    try:
+        from apps.ai_engine.ai_client import AIClient
+        AIClient._client = None
+        AIClient._api_key = None
+    except Exception:
+        pass
+    yield
+    cache.clear()
+    try:
+        from apps.ai_engine.ai_client import AIClient
+        AIClient._client = None
+        AIClient._api_key = None
+    except Exception:
+        pass
 
 
 @pytest.fixture

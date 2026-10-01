@@ -342,4 +342,21 @@ urlpatterns = [
     path('gaussian-splatting/', views.run_gaussian_splatting, name='gaussian_splatting'),
     path('audio-bridge/', views.run_audio_bridge, name='audio_bridge'),
     path('fim-code-gen/', views.run_fim_code_gen, name='fim_code_gen'),
+    path('irt-calibrate/', views.run_irt_calibration, name='irt_calibrate'),
+    # DKT & Anti-Cheat Anomaly Detection (ConductorClient Parity)
+    path('dkt/recommendations/<str:user_id>/', views.get_dkt_recommendations, name='dkt_recommendations_user'),
+    path('dkt/recommendations/<str:user_id>', views.get_dkt_recommendations, name='dkt_recommendations_user_noslash'),
+    path('dkt/recommendations/', views.get_dkt_recommendations, name='dkt_recommendations_default'),
+    path('anomaly/detect/', views.detect_test_anomaly, name='anomaly_detect'),
+    path('anomaly/detect', views.detect_test_anomaly, name='anomaly_detect_noslash'),
+    # Smart Ebook AI Reading Companion Parity
+    path('ebook/summarize-chapter/', views.summarize_ebook_chapter, name='ebook_summarize_chapter'),
+    path('ebook/summarize-chapter', views.summarize_ebook_chapter, name='ebook_summarize_chapter_noslash'),
+    path('ebook/explain-paragraph/', views.explain_ebook_paragraph, name='ebook_explain_paragraph'),
+    path('ebook/explain-paragraph', views.explain_ebook_paragraph, name='ebook_explain_paragraph_noslash'),
+    # AI Test Generation Contract Parity (testsAService.generateTest)
+    path('generate-test/', views.generate_practice_test, name='ai_generate_test'),
+    path('generate-test', views.generate_practice_test, name='ai_generate_test_noslash'),
 ]
+
+

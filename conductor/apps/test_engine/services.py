@@ -156,7 +156,7 @@ class TestSessionManager:
         key = str(question_id)
         existing = attempt.autosave_data or {}
         existing[key] = {
-            'selected_options': selected_option_ids,
+            'selected_options': [str(opt_id) for opt_id in selected_option_ids],
             'text_answer': answer.text_answer,
             'timestamp': timezone.now().isoformat(),
         }
@@ -225,7 +225,7 @@ class TestSessionManager:
 
     @classmethod
     @transaction.atomic
-    def submit_attempt(cls, attempt_id):
+    def submit_attempt(cls, attempt_id, time_taken_seconds=None):
         """
         Submit a test attempt and calculate final score.
         Handles negative marking, partial credit, and analytics update.
@@ -284,9 +284,12 @@ class TestSessionManager:
         attempt.passed = percentage >= test.passing_score
         attempt.status = 'submitted'
         attempt.submitted_at = timezone.now()
-        attempt.time_taken_seconds = int(
-            (attempt.submitted_at - attempt.started_at).total_seconds()
-        )
+        if time_taken_seconds is not None:
+            attempt.time_taken_seconds = int(time_taken_seconds)
+        elif not attempt.time_taken_seconds or attempt.time_taken_seconds == 0:
+            attempt.time_taken_seconds = int(
+                (attempt.submitted_at - attempt.started_at).total_seconds()
+            )
         attempt.save()
 
         # Update analytics asynchronously (best-effort)
@@ -370,6 +373,42 @@ class TestSessionManager:
                 'marks': test.marks_per_correct if is_correct else 0,
             }
 
+        elif question.question_type in ('multiple_select', 'msq'):
+            selected = set(answer.selected_options.values_list('id', flat=True))
+            correct = set(question.options.filter(is_correct=True).values_list('id', flat=True))
+
+            is_correct = selected == correct and len(selected) > 0
+            is_wrong = len(selected) > 0 and not is_correct
+
+            answer.is_correct = is_correct
+            answer.marks_obtained = test.marks_per_correct if is_correct else 0
+            answer.save()
+
+            return {
+                'is_correct': is_correct,
+                'is_wrong': is_wrong,
+                'marks': test.marks_per_correct if is_correct else 0,
+            }
+
+        elif question.question_type in ('fill_blank', 'short_answer'):
+            if not answer.text_answer:
+                return {'is_correct': False, 'is_wrong': False, 'marks': 0}
+
+            user_text = answer.text_answer.strip().lower()
+            correct_options = question.options.filter(is_correct=True)
+            correct_texts = [opt.text.strip().lower() for opt in correct_options]
+
+            is_correct = user_text in correct_texts or (correct_options.count() == 0 and bool(question.explanation and user_text == question.explanation.strip().lower()))
+            answer.is_correct = is_correct
+            answer.marks_obtained = test.marks_per_correct if is_correct else 0
+            answer.save()
+
+            return {
+                'is_correct': is_correct,
+                'is_wrong': not is_correct,
+                'marks': test.marks_per_correct if is_correct else 0,
+            }
+
         return {'is_correct': False, 'is_wrong': False, 'marks': 0}
 
     @classmethod
@@ -431,9 +470,39 @@ class TestSessionManager:
     @classmethod
     def _update_analytics_sync(cls, attempt):
         """Synchronous analytics update fallback."""
-        from apps.analytics_v2.models import TopicPerformance
-        # This will be implemented when analytics app is created
-        pass
+        try:
+            answers = attempt.answers.select_related('question', 'question__topic').filter(
+                answered_at__isnull=False
+            )
+            from apps.analytics_v2.models import TopicPerformance, ExamPerformance
+            for answer in answers:
+                topic = getattr(answer.question, 'topic', None)
+                if topic:
+                    try:
+                        perf, _ = TopicPerformance.objects.get_or_create(
+                            user=attempt.user,
+                            topic=topic,
+                        )
+                        perf.update_from_attempt(
+                            is_correct=answer.is_correct,
+                            time_spent=answer.time_spent_seconds or 0,
+                        )
+                    except Exception as ex:
+                        logger.warning(f"TopicPerformance update failed for topic {topic.id}: {ex}")
+
+            if attempt.test and attempt.test.exam:
+                try:
+                    exam_perf, _ = ExamPerformance.objects.get_or_create(
+                        user=attempt.user,
+                        exam=attempt.test.exam,
+                    )
+                    exam_perf.total_tests_taken = (exam_perf.total_tests_taken or 0) + 1
+                    exam_perf.save()
+                except Exception as ex:
+                    logger.warning(f"ExamPerformance update failed: {ex}")
+        except Exception as e:
+            logger.warning(f"Sync analytics update failed for attempt {attempt.id}: {e}")
+
 
     @classmethod
     def get_attempt_result(cls, attempt):
@@ -441,27 +510,55 @@ class TestSessionManager:
         if attempt.status not in ('submitted', 'expired'):
             raise ValueError("Attempt not yet submitted")
 
-        answers = attempt.answers.select_related('question').prefetch_related(
-            'question__options', 'selected_options'
-        )
+        answers = {
+            str(a.question_id): a
+            for a in attempt.answers.select_related('question').prefetch_related(
+                'question__options', 'selected_options'
+            )
+        }
+
+        test_questions = attempt.test.test_questions.select_related('question').prefetch_related(
+            'question__options'
+        ).order_by('order')
 
         question_results = []
-        for answer in answers:
-            correct_options = list(answer.question.options.filter(is_correct=True).values('id', 'text'))
-            selected_options = list(answer.selected_options.values('id', 'text'))
+        for tq in test_questions:
+            q = tq.question
+            answer = answers.get(str(q.id))
+            correct_options = list(q.options.filter(is_correct=True).values('id', 'text'))
 
-            question_results.append({
-                'question_id': str(answer.question.id),
-                'question_text': answer.question.text[:200],
-                'question_type': answer.question.question_type,
-                'selected_options': selected_options,
-                'correct_options': correct_options,
-                'is_correct': answer.is_correct,
-                'marks_obtained': answer.marks_obtained,
-                'explanation': answer.question.explanation,
-                'time_spent': answer.time_spent_seconds,
-                'is_flagged': answer.is_flagged,
-            })
+            if answer:
+                selected_options = list(answer.selected_options.values('id', 'text'))
+                question_results.append({
+                    'question_id': str(q.id),
+                    'question_text': q.text[:200],
+                    'question_type': q.question_type,
+                    'selected_options': selected_options,
+                    'correct_options': correct_options,
+                    'is_correct': answer.is_correct,
+                    'marks_obtained': answer.marks_obtained,
+                    'explanation': q.explanation,
+                    'time_spent': answer.time_spent_seconds,
+                    'is_flagged': answer.is_flagged,
+                    'is_answered': bool(answer.answered_at or selected_options or answer.text_answer),
+                })
+            else:
+                question_results.append({
+                    'question_id': str(q.id),
+                    'question_text': q.text[:200],
+                    'question_type': q.question_type,
+                    'selected_options': [],
+                    'correct_options': correct_options,
+                    'is_correct': False,
+                    'marks_obtained': 0.0,
+                    'explanation': q.explanation,
+                    'time_spent': 0,
+                    'is_flagged': False,
+                    'is_answered': False,
+                })
+
+        total_q = attempt.test.question_count
+        unanswered = max(0, total_q - attempt.correct_count - attempt.incorrect_count)
 
         return {
             'attempt_id': str(attempt.id),
@@ -476,6 +573,6 @@ class TestSessionManager:
             'time_limit': attempt.test.time_limit_minutes * 60,
             'correct_count': attempt.correct_count,
             'incorrect_count': attempt.incorrect_count,
-            'unanswered_count': attempt.test.question_count - attempt.correct_count - attempt.incorrect_count,
+            'unanswered_count': unanswered,
             'question_results': question_results,
         }

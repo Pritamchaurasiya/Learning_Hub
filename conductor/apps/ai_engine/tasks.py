@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from apps.ai_engine.action_service import ActionService

@@ -4,7 +4,7 @@ Analytics v2 service: Dashboard, trends, weak area identification, recommendatio
 import logging
 from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Avg, Count, Sum, Q, F
+from django.db.models import Avg, Count, Sum, Q, F, Max
 
 from .models import TopicPerformance, ExamPerformance, PerformanceTrend, AIRecommendation
 from apps.exams.models import Topic
@@ -30,7 +30,7 @@ class AnalyticsEngine:
 
         # Overall stats
         total_tests = attempts.count()
-        total_questions = attempts.aggregate(total=Sum('answers__count'))['total'] or 0
+        total_questions = attempts.aggregate(total=Count('answers'))['total'] or 0
         avg_percentage = attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
         best_score = attempts.aggregate(best=Max('percentage'))['best'] or 0
 
@@ -186,10 +186,12 @@ class AnalyticsEngine:
             user=user,
             total_attempts__gte=3,
             accuracy__lt=60,
-        ).select_related('topic', 'topic__subject', 'topic__subject__exam').order_by('accuracy')[:limit]
+        ).select_related('topic', 'topic__subject', 'topic__subject__exam')
 
         if exam_id:
             performances = performances.filter(topic__subject__exam_id=exam_id)
+
+        performances = performances.order_by('accuracy')[:limit]
 
         from .serializers import TopicPerformanceSerializer
         return TopicPerformanceSerializer(performances, many=True).data
@@ -201,10 +203,12 @@ class AnalyticsEngine:
             user=user,
             total_attempts__gte=3,
             accuracy__gte=70,
-        ).select_related('topic', 'topic__subject', 'topic__subject__exam').order_by('-accuracy')[:limit]
+        ).select_related('topic', 'topic__subject', 'topic__subject__exam')
 
         if exam_id:
             performances = performances.filter(topic__subject__exam_id=exam_id)
+
+        performances = performances.order_by('-accuracy')[:limit]
 
         from .serializers import TopicPerformanceSerializer
         return TopicPerformanceSerializer(performances, many=True).data
@@ -217,10 +221,12 @@ class AnalyticsEngine:
             is_actioned=False,
             is_dismissed=False,
             expires_at__gt=timezone.now(),
-        ).order_by('-priority', '-created_at')[:limit]
+        )
 
         if exam_id:
             recs = recs.filter(Q(exam_id=exam_id) | Q(exam__isnull=True))
+
+        recs = recs.order_by('-priority', '-created_at')[:limit]
 
         from .serializers import AIRecommendationSerializer
         return AIRecommendationSerializer(recs, many=True).data
@@ -278,6 +284,3 @@ class AnalyticsEngine:
 
         return recommendations
 
-
-# Import Max for the dashboard
-from django.db.models import Max

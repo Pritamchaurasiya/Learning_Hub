@@ -179,7 +179,7 @@ class AnalyticsService:
         total_users = User.objects.count()
         active_today = User.objects.filter(last_login__date=today).count()
         active_week = User.objects.filter(last_login__date__gte=week_ago).count()
-        new_users_month = User.objects.filter(date_joined__date__gte=month_ago).count()
+        new_users_month = User.objects.filter(created_at__date__gte=month_ago).count()
         
         # Course stats
         total_courses = Course.objects.filter(is_published=True).count()

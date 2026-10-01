@@ -47,7 +47,7 @@ def dashboard_stats(request):
         },
         'recent_activity': {
             'new_users_30d': User.objects.filter(
-                date_joined__gte=last_30_days
+                created_at__gte=last_30_days
             ).count(),
             'new_enrollments_30d': Enrollment.objects.filter(
                 created_at__gte=last_30_days
@@ -194,7 +194,7 @@ def user_analytics(request):
         'summary': {
             'total_users': users.count(),
             'new_users': users.filter(
-                date_joined__range=[start_date, end_date]
+                created_at__range=[start_date, end_date]
             ).count(),
             'active_users': users.filter(
                 last_login__range=[start_date, end_date]
@@ -202,9 +202,9 @@ def user_analytics(request):
             'instructors': users.filter(is_instructor=True).count(),
         },
         'by_date': users.filter(
-            date_joined__range=[start_date, end_date]
+            created_at__range=[start_date, end_date]
         ).annotate(
-            date=TruncDate('date_joined')
+            date=TruncDate('created_at')
         ).values('date').annotate(
             count=Count('id')
         ).order_by('date'),
@@ -236,7 +236,7 @@ def calculate_retention(days, start_date, end_date):
     """Calculate user retention rate."""
     cohort_start = end_date - timedelta(days=days)
     cohort_users = User.objects.filter(
-        date_joined__range=[cohort_start, end_date]
+        created_at__range=[cohort_start, end_date]
     )
     
     if not cohort_users.exists():

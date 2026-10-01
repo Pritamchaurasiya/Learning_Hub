@@ -9,6 +9,7 @@ class TestAIClient(TestCase):
     def setUp(self):
         # Clear client before each test
         AIClient._client = None
+        AIClient._api_key = None
 
     @patch('apps.ai_engine.ai_client.genai.Client')
     @patch('apps.ai_engine.ai_client.os.getenv')

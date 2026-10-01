@@ -30,7 +30,7 @@ from .serializers import (
     LessonSerializer,
 )
 
-from .services import CourseService
+from .services import CourseService, LessonService, NoteService, ResourceService
 from .certificate_service import CertificateService, CertificateType
 
 class CourseFilter(filters.FilterSet):
@@ -111,7 +111,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "retrieve":
             return CourseDetailSerializer
-        if self.action == "review":
+        if self.action in ["review", "rate"]:
             return CreateReviewSerializer
         return CourseListSerializer
 
@@ -164,6 +164,37 @@ class CourseViewSet(viewsets.ModelViewSet):
         """Auto-assign instructor during creation."""
         serializer.save(instructor=self.request.user)
 
+    def get_object(self):
+        """
+        Support lookup by slug OR by primary key (UUID / integer).
+        Ensures both canonical slug URLs and ID-based client requests succeed.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+
+        if not lookup_value:
+            return super().get_object()
+
+        import uuid
+        obj = None
+        is_uuid = False
+        try:
+            uuid.UUID(str(lookup_value))
+            is_uuid = True
+        except (ValueError, AttributeError):
+            is_uuid = False
+
+        if is_uuid or (isinstance(lookup_value, str) and lookup_value.isdigit()):
+            obj = queryset.filter(id=lookup_value).first()
+
+        if obj is None:
+            from django.shortcuts import get_object_or_404
+            obj = get_object_or_404(queryset, slug=lookup_value)
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         """List courses (Cached 15m)."""
@@ -209,6 +240,69 @@ class CourseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="enroll")
+    def enroll_by_body(self, request):
+        """
+        Enroll via POST /api/v1/courses/enroll/ with {"course_id": "<slug_or_id>"}.
+        Provides 100% parity with frontend clients that post to the collection endpoint.
+        """
+        course_id = request.data.get("course_id") or request.data.get("id") or request.data.get("course")
+        if not course_id:
+            return Response(
+                {"status": "error", "message": "Field 'course_id' is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        import uuid
+        is_uuid = False
+        try:
+            uuid.UUID(str(course_id))
+            is_uuid = True
+        except (ValueError, AttributeError):
+            is_uuid = False
+
+        if is_uuid or (isinstance(course_id, str) and course_id.isdigit()):
+            course = Course.objects.filter(id=course_id).first()
+        else:
+            course = Course.objects.filter(slug=course_id).first()
+
+        if not course:
+            return Response(
+                {"status": "error", "message": f"Course '{course_id}' not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            from apps.core.exceptions import PaymentRequiredException
+        except ImportError:
+            from rest_framework.exceptions import APIException
+            class PaymentRequiredException(APIException):
+                status_code = 402
+                default_detail = "Payment required."
+
+        try:
+            enrollment = CourseService.enroll_user(request.user, course)
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Successfully enrolled in course.",
+                    "data": EnrollmentSerializer(enrollment).data,
+                    "enrollment_id": str(enrollment.id),
+                    "course_id": str(course.id),
+                    "course_title": course.title,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except (ValueError, ValidationError) as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except PaymentRequiredException as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
     @method_decorator(cache_page(60 * 5))  # cache 5 min
     @action(detail=True, methods=["get"])
     def reviews(self, request, slug=None):
@@ -238,6 +332,33 @@ class CourseViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def rate(self, request, slug=None):
+        """Submit a rating/review (alias for /review/ with frontend parameter normalization)."""
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        if "comment" in data and "content" not in data:
+            data["content"] = data["comment"]
+        if "title" not in data or not data["title"]:
+            data["title"] = (data.get("content") or "Course Review")[:50]
+        if "content" not in data or not data["content"]:
+            data["content"] = "Review submitted via rating."
+
+        course = self.get_object()
+        user = request.user
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        review = CourseService.add_review(user, course, serializer.validated_data)
+        return Response(
+            {
+                "status": "success",
+                "message": "Review submitted successfully.",
+                "data": ReviewSerializer(review).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def my_courses(self, request):
         """Get user's enrolled courses."""
@@ -245,6 +366,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer = EnrollmentSerializer(enrollments, many=True)
 
         return Response({"status": "success", "data": serializer.data})
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def enrolled(self, request):
+        """Get user's enrolled courses (canonical alias for /enrolled/ parity)."""
+        return self.my_courses(request)
 
     @method_decorator(cache_page(60 * 15))
     @action(detail=False, methods=["get"])
@@ -485,90 +611,23 @@ class CourseViewSet(viewsets.ModelViewSet):
         lesson_id = request.data.get('lesson_id')
         
         if not lesson_id:
-            return Response({"error": "lesson_id required"}, status=400)
+            return Response({"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST)
             
-        from .models import Lesson, LessonCompletion, Enrollment
-        from django.utils import timezone
-        from apps.gamification.services import GamificationService
+        from .models import Lesson
 
         try:
             lesson = Lesson.objects.get(id=lesson_id, module__course=course)
         except Lesson.DoesNotExist:
-            return Response({"error": "Lesson not found in this course"}, status=404)
+            return Response({"error": "Lesson not found in this course"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            from django.db import transaction
-
-            # Idempotent Completion
-            _, created = LessonCompletion.objects.get_or_create(
-                user=request.user,
-                lesson=lesson
-            )
-            
-            # Only award XP on first completion
-            if created:
-                GamificationService.award_xp(request.user, 50, f"Completed Lesson: {lesson.title}")
-            
-            # Update Enrollment Progress — locked to prevent concurrent overwrites
-            total_lessons = Lesson.objects.filter(module__course=course).count()
-            completed_count = LessonCompletion.objects.filter(
-                user=request.user, 
-                lesson__module__course=course
-            ).count()
-            
-            progress = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
-            
-            with transaction.atomic():
-                # select_for_update is only supported on PostgreSQL, not SQLite
-                from django.db import connection
-                if 'postgresql' in connection.settings_dict.get('ENGINE', ''):
-                    enrollment, _ = Enrollment.objects.select_for_update().get_or_create(
-                        user=request.user, course=course
-                    )
-                else:
-                    enrollment, _ = Enrollment.objects.get_or_create(
-                        user=request.user, course=course
-                    )
-                
-                # Only update if progress increased
-                if progress > enrollment.progress_percentage:
-                    enrollment.progress_percentage = min(progress, 100)
-                    if progress >= 100 and not enrollment.completed_at:
-                        enrollment.completed_at = timezone.now()
-                        GamificationService.award_xp(request.user, 500, f"Certified: {course.title}")
-                        
-                        # Async Certificate Generation
-                        from .tasks import generate_certificate_task
-                        generate_certificate_task.delay(request.user.id, course.id)
-                        
-                    enrollment.save(update_fields=['progress_percentage', 'completed_at', 'updated_at'])
-
-            # Publish lesson.completed event for notifications
-            try:
-                from apps.core.event_bus import EventBus
-                EventBus.publish("lesson.completed", {
-                    "user_id": request.user.id,
-                    "username": request.user.username,
-                    "lesson_id": str(lesson.id),
-                    "lesson_title": lesson.title,
-                    "course_title": course.title,
-                    "progress": progress,
-                })
-            except Exception:
-                pass  # EventBus is non-critical
-
-            return Response({
-                "status": "success", 
-                "progress": progress,
-                "completed": True,
-                "message": "Lesson marked as complete."
-            })
-            
+            result = LessonService.complete_lesson(request.user, lesson, course)
+            return Response(result, status=status.HTTP_200_OK)
         except Exception:
             import logging
             logger = logging.getLogger(__name__)
             logger.exception("Error completing lesson %s for user %s", lesson_id, request.user.id)
-            return Response({"error": "Failed to complete lesson"}, status=500)
+            return Response({"error": "Failed to complete lesson"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'], url_path='update-progress', permission_classes=[IsAuthenticated])
     def update_progress(self, request, slug=None):
@@ -580,24 +639,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         seconds = request.data.get('seconds', 0.0)
         
         if not lesson_id:
-             return Response({"error": "lesson_id required"}, status=400)
+            return Response({"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST)
              
         try:
-            from .models import Lesson, LessonProgress
-            
-            # Upsert
-            progress, _ = LessonProgress.objects.update_or_create(
-                user=request.user,
-                lesson_id=lesson_id,
-                defaults={
-                    'progress_seconds': float(seconds),
-                    'last_updated': timezone.now() # Auto-updates anyway due to auto_now, but being explicit
-                }
-            )
-            
+            progress = LessonService.update_lesson_progress(request.user, lesson_id, float(seconds))
             return Response({"status": "success", "saved_at": progress.progress_seconds})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'], url_path='bookmark', permission_classes=[IsAuthenticated])
     def bookmark(self, request, slug=None):
@@ -635,10 +683,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         similar = Course.objects.filter(
             category=course.category,
             is_published=True
-        ).exclude(id=course.id).annotate(
-            avg_rating=Avg('reviews__rating'),
-            enrollment_count=Count('enrollments')
-        ).order_by('-enrollment_count')[:10]
+        ).exclude(id=course.id).order_by('-enrollment_count')[:10]
         serializer = CourseListSerializer(similar, many=True)
         return Response({"status": "success", "data": serializer.data})
 
@@ -660,6 +705,181 @@ class CourseViewSet(viewsets.ModelViewSet):
             "share_url": share_url,
             "title": course.title,
             "description": course.short_description or course.description[:200]
+        })
+
+    # =========================================================================
+    # COURSE NOTES & TIMESTAMPED BOOKMARKS
+    # =========================================================================
+
+    @extend_schema(description="Get or create timestamped notes for this course", responses={200: dict})
+    @action(detail=True, methods=['get', 'post'], url_path='notes', permission_classes=[IsAuthenticated])
+    def notes(self, request, slug=None):
+        """List course notes on GET, create new lesson note on POST."""
+        course = self.get_object()
+        from .models import CourseNote, Lesson
+
+        if request.method == 'GET':
+            lesson_id = request.query_params.get('lesson_id')
+            qs = CourseNote.objects.filter(user=request.user, course=course)
+            if lesson_id:
+                qs = qs.filter(lesson_id=lesson_id)
+            notes_data = [
+                {
+                    "id": str(n.id),
+                    "lesson_id": str(n.lesson_id),
+                    "lesson_title": n.lesson.title,
+                    "timestamp_seconds": n.timestamp_seconds,
+                    "content": n.content,
+                    "created_at": n.created_at.isoformat(),
+                }
+                for n in qs.select_related('lesson')
+            ]
+            return Response({"status": "success", "count": len(notes_data), "data": notes_data})
+
+        lesson_id = request.data.get('lesson_id')
+        content = request.data.get('content', '').strip()
+        timestamp = request.data.get('timestamp_seconds', 0)
+
+        if not lesson_id or not content:
+            return Response({"status": "error", "message": "lesson_id and content are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        lesson = Lesson.objects.filter(id=lesson_id, module__course=course).first()
+        if not lesson:
+            return Response({"status": "error", "message": "Lesson not found in this course."}, status=status.HTTP_404_NOT_FOUND)
+
+        note = NoteService.create_note(
+            user=request.user,
+            course=course,
+            lesson=lesson,
+            content=content,
+            timestamp_seconds=int(timestamp),
+        )
+        return Response({
+            "status": "success",
+            "message": "Note saved.",
+            "data": {
+                "id": str(note.id),
+                "lesson_id": str(note.lesson_id),
+                "timestamp_seconds": note.timestamp_seconds,
+                "content": note.content,
+            }
+        }, status=status.HTTP_201_CREATED)
+
+    @extend_schema(description="Delete a student note", responses={200: dict})
+    @action(detail=True, methods=['delete'], url_path='notes/(?P<note_id>[^/.]+)', permission_classes=[IsAuthenticated])
+    def delete_note(self, request, slug=None, note_id=None):
+        """Delete student note."""
+        course = self.get_object()
+        deleted = NoteService.delete_note(user=request.user, course=course, note_id=note_id)
+        if deleted:
+            return Response({"status": "success", "message": "Note deleted."})
+        return Response({"status": "error", "message": "Note not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # =========================================================================
+    # COURSE RESOURCES & DOWNLOADS
+    # =========================================================================
+
+    @extend_schema(description="List downloadable resources and cheat sheets for course", responses={200: dict})
+    @action(detail=True, methods=['get', 'post'], url_path='resources')
+    def resources(self, request, slug=None):
+        """List or add course resources."""
+        course = self.get_object()
+        from .models import CourseResource
+
+        if request.method == 'GET':
+            res_list = CourseResource.objects.filter(course=course).select_related('lesson')
+            data = [
+                {
+                    "id": str(r.id),
+                    "title": r.title,
+                    "description": r.description,
+                    "resource_type": r.resource_type,
+                    "file_url": r.file.url if r.file else r.external_url,
+                    "file_size_bytes": r.file_size_bytes,
+                    "lesson_id": str(r.lesson_id) if r.lesson_id else None,
+                    "lesson_title": r.lesson.title if r.lesson else None,
+                }
+                for r in res_list
+            ]
+            return Response({"status": "success", "count": len(data), "data": data})
+
+        # POST: Must be instructor / admin
+        if not request.user.is_authenticated or (request.user != course.instructor and not request.user.is_staff):
+            return Response({"status": "error", "message": "Only course instructors can add resources."}, status=status.HTTP_403_FORBIDDEN)
+
+        title = request.data.get('title')
+        res_type = request.data.get('resource_type', 'pdf')
+        ext_url = request.data.get('external_url', '')
+        desc = request.data.get('description', '')
+
+        if not title:
+            return Response({"status": "error", "message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        resource = ResourceService.create_resource(
+            course=course,
+            title=title,
+            description=desc,
+            resource_type=res_type,
+            external_url=ext_url
+        )
+        return Response({"status": "success", "message": "Resource added.", "data": {"id": str(resource.id), "title": resource.title}}, status=status.HTTP_201_CREATED)
+
+    # =========================================================================
+    # DETAILED PROGRESS SUMMARY
+    # =========================================================================
+
+    @extend_schema(description="Get full progress breakdown across all modules and lessons", responses={200: dict})
+    @action(detail=True, methods=['get'], url_path='progress-summary', permission_classes=[IsAuthenticated])
+    def progress_summary(self, request, slug=None):
+        """Get comprehensive progress summary for student."""
+        course = self.get_object()
+        from .models import Enrollment, Lesson, LessonCompletion, LessonProgress
+
+        enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+        if not enrollment:
+            return Response({"status": "error", "message": "You are not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
+
+        completed_lesson_ids = set(
+            LessonCompletion.objects.filter(
+                user=request.user, lesson__module__course=course
+            ).values_list('lesson_id', flat=True)
+        )
+
+        all_lessons = list(
+            Lesson.objects.filter(module__course=course)
+            .select_related('module')
+            .order_by('module__order', 'order')
+        )
+
+        total_count = len(all_lessons)
+        completed_count = len(completed_lesson_ids)
+        percentage = int((completed_count / total_count) * 100) if total_count > 0 else 0
+
+        # Find next uncompleted lesson
+        next_lesson = None
+        for les in all_lessons:
+            if les.id not in completed_lesson_ids:
+                next_lesson = {
+                    "id": str(les.id),
+                    "title": les.title,
+                    "module_title": les.module.title,
+                    "duration_seconds": les.duration_seconds if hasattr(les, 'duration_seconds') else 0
+                }
+                break
+
+        return Response({
+            "status": "success",
+            "data": {
+                "course_title": course.title,
+                "course_slug": course.slug,
+                "progress_percentage": percentage,
+                "total_lessons": total_count,
+                "completed_lessons_count": completed_count,
+                "is_completed": percentage >= 100,
+                "completed_at": enrollment.completed_at.isoformat() if enrollment.completed_at else None,
+                "completed_lesson_ids": [str(lid) for lid in completed_lesson_ids],
+                "next_lesson": next_lesson,
+            }
         })
 
 

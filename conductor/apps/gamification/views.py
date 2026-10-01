@@ -83,13 +83,23 @@ def add_xp(request):
     reason = serializer.validated_data.get('reason', 'Activity')
 
     try:
-        user_xp = GamificationService.award_xp(request.user, amount, reason=reason)
+        result = GamificationService.award_xp(request.user, amount, reason=reason)
+        if isinstance(result, dict):
+            user_xp_instance = result.get('xp')
+            total_xp = user_xp_instance.total_xp if user_xp_instance else 0
+            level = user_xp_instance.level if user_xp_instance else 1
+            awarded = result.get('awarded', amount)
+        else:
+            total_xp = result.total_xp
+            level = result.level
+            awarded = amount
+
         return Response({
             'status': 'success',
             'data': {
-                'totalXP': user_xp.total_xp,
-                'level': user_xp.level,
-                'message': f'+{amount} XP for {reason}',
+                'totalXP': total_xp,
+                'level': level,
+                'message': f'+{awarded} XP for {reason}',
             }
         })
     except Exception as e:
@@ -336,3 +346,26 @@ def get_gamification_stats(request):
             {'status': 'error', 'message': 'Internal server error'},
             status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@extend_schema(
+    tags=["Gamification"],
+    description="Get DSA practice stats for the current user matching problemService.getDsaStats.",
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_dsa_stats(request):
+    """
+    Returns DSA metrics matching TypeScript DSAStats interface.
+    """
+    try:
+        from apps.dsa.practice_engine import DSAPracticeEngine
+        stats = DSAPracticeEngine.get_user_dsa_stats(request.user)
+        return Response({'status': 'success', 'data': stats})
+    except Exception as e:
+        logger.exception("Error fetching user DSA stats")
+        return Response(
+            {'status': 'error', 'message': str(e)},
+            status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+

@@ -26,7 +26,7 @@ class AnalyticsService:
 
         # New users this week
         week_ago = timezone.now() - timedelta(days=7)
-        new_users_week = User.objects.filter(date_joined__gte=week_ago).count()
+        new_users_week = User.objects.filter(created_at__gte=week_ago).count()
 
         data = {
             "total_users": total_users,

@@ -83,14 +83,20 @@ def course_saved_handler(sender, instance, created, **kwargs):
     clear_course_cache(str(instance.id))
 
 
+@receiver(post_save, sender='test_engine.TestAttempt')
+def test_attempt_saved_handler(sender, instance, created, **kwargs):
+    """Clear test/quiz stats cache when test attempt is saved."""
+    if created:
+        cache.delete(f"api:test_stats:user_{instance.user_id}")
+        cache.delete(f"api:quiz_stats:user_{instance.user_id}")
+        clear_user_cache(instance.user_id)
+
+
 @receiver(post_save, sender='quiz.QuizAttempt')
 def quiz_attempt_saved_handler(sender, instance, created, **kwargs):
-    """Clear quiz stats cache when attempt is saved."""
+    """Clear quiz stats cache when quiz attempt is saved."""
     if created:
-        # Clear user's quiz stats cache
         cache.delete(f"api:quiz_stats:user_{instance.user_id}")
-        
-        # Clear dashboard cache
         clear_user_cache(instance.user_id)
 
 

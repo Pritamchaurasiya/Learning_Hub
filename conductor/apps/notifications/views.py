@@ -110,6 +110,30 @@ class MarkReadView(generics.GenericAPIView):
 
 @extend_schema(
     tags=["Notifications"],
+    responses={200: OpenApiResponse(description="Notification marked as read")}
+)
+class MarkSingleNotificationReadView(generics.GenericAPIView):
+    """Mark a single notification as read by ID."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        updated = Notification.objects.filter(user=request.user, pk=pk).update(
+            is_read=True, read_at=timezone.now()
+        )
+        if not updated:
+            return Response(
+                {"status": "error", "message": "Notification not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(
+            {"status": "success", "message": "Notification marked as read"},
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(
+    tags=["Notifications"],
     responses={200: OpenApiResponse(description="Notifications deleted")}
 )
 class DeleteNotificationsView(generics.GenericAPIView):

@@ -74,7 +74,7 @@ def update_analytics_after_attempt(self, attempt_id):
     Updates topic performance, exam performance, and gamification.
     """
     try:
-        attempt = TestAttempt.objects.select_related('test', 'user').get(id=attempt_id)
+        attempt = TestAttempt.objects.select_related('test', 'test__exam', 'user').get(id=attempt_id)
 
         # Update topic performance for each question answered
         answers = attempt.answers.select_related('question', 'question__topic').filter(
@@ -82,15 +82,42 @@ def update_analytics_after_attempt(self, attempt_id):
         )
 
         for answer in answers:
-            topic = answer.question.topic
-            # This will be implemented when analytics_v2 app is created
-            # For now, update question usage stats
+            topic = getattr(answer.question, 'topic', None)
+            if topic:
+                try:
+                    from apps.analytics_v2.models import TopicPerformance
+                    topic_perf, _ = TopicPerformance.objects.get_or_create(
+                        user=attempt.user,
+                        topic=topic,
+                    )
+                    topic_perf.update_from_attempt(
+                        is_correct=answer.is_correct,
+                        time_spent=answer.time_spent_seconds or 0,
+                    )
+                except Exception as ex:
+                    logger.warning(f"Failed to update TopicPerformance for topic {topic.id}: {ex}")
+
+            # Update question usage stats
             answer.question.usage_count += 1
             if answer.is_correct:
                 answer.question.correct_count += 1
             elif answer.is_correct is False:
                 answer.question.incorrect_count += 1
             answer.question.save(update_fields=['usage_count', 'correct_count', 'incorrect_count'])
+
+        # Update exam performance summary
+        if attempt.test and attempt.test.exam:
+            try:
+                from apps.analytics_v2.models import ExamPerformance
+                exam = attempt.test.exam
+                exam_perf, _ = ExamPerformance.objects.get_or_create(
+                    user=attempt.user,
+                    exam=exam,
+                )
+                exam_perf.total_tests_taken = (exam_perf.total_tests_taken or 0) + 1
+                exam_perf.save()
+            except Exception as ex:
+                logger.warning(f"Failed to update ExamPerformance for exam: {ex}")
 
         logger.info(f"Analytics updated for attempt {attempt_id}")
         return {'status': 'success', 'attempt_id': attempt_id}
@@ -123,27 +150,94 @@ def cleanup_abandoned_attempts():
 @shared_task
 def recalculate_question_stats():
     """
-    Recalculate question statistics (accuracy rate, avg time).
+    Recalculate question statistics (accuracy rate, avg time, IRT difficulty parameter calibration).
     Runs daily via Celery Beat.
-    Uses bulk aggregation instead of N+1 queries.
+    Uses bulk aggregation and chunked bulk update instead of N+1 individual queries.
     """
-    from django.db.models import Avg, Count
+    import math
+    from django.db.models import Avg, Count, Q
     from .models import Question, AttemptAnswer
 
-    # Single aggregation query instead of N+1
+    # Single aggregation query with conditional counts
     stats = AttemptAnswer.objects.filter(
         answered_at__isnull=False,
     ).values('question_id').annotate(
         avg_time=Avg('time_spent_seconds'),
-        total_answers=Count('id'),
+        correct_total=Count('id', filter=Q(is_correct=True)),
+        incorrect_total=Count('id', filter=Q(is_correct=False)),
     )
 
-    updated = 0
+    questions_to_update = []
     for stat in stats:
-        Question.objects.filter(id=stat['question_id']).update(
-            avg_time_seconds=stat['avg_time'] or 0
-        )
-        updated += 1
+        q_id = stat['question_id']
+        avg_time = stat['avg_time'] or 0
+        correct_cnt = stat['correct_total'] or 0
+        incorrect_cnt = stat['incorrect_total'] or 0
+        total_answers = correct_cnt + incorrect_cnt
+        
+        # 1-PL / 3-PL IRT difficulty calibration based on empirical response logs
+        if total_answers >= 5:
+            p_val = max(0.02, min(0.98, correct_cnt / total_answers))
+            # Logit transformation to standard scale theta in [-3.0, +3.0]
+            irt_diff = -math.log(p_val / (1.0 - p_val)) / 1.7
+            calibrated_diff = max(-3.0, min(3.0, round(irt_diff, 3)))
+        else:
+            calibrated_diff = None
 
-    logger.info(f"Recalculated stats for {updated} questions")
-    return {'updated': updated}
+        q_kwargs = {
+            'id': q_id,
+            'avg_time_seconds': avg_time,
+            'correct_count': correct_cnt,
+            'incorrect_count': incorrect_cnt,
+            'usage_count': total_answers,
+        }
+        if calibrated_diff is not None:
+            q_kwargs['difficulty'] = calibrated_diff
+
+        questions_to_update.append(Question(**q_kwargs))
+
+    # Chunked bulk update in batches of 500
+    batch_size = 500
+    fields_to_update = ['avg_time_seconds', 'correct_count', 'incorrect_count', 'usage_count']
+    if any(hasattr(q, 'difficulty') for q in questions_to_update):
+        fields_to_update.append('difficulty')
+
+    for i in range(0, len(questions_to_update), batch_size):
+        chunk = questions_to_update[i:i + batch_size]
+        Question.objects.bulk_update(
+            chunk,
+            fields_to_update
+        )
+
+    logger.info(f"Recalculated stats and IRT calibration for {len(questions_to_update)} questions in bulk")
+    return {'updated': len(questions_to_update)}
+
+
+@shared_task(bind=True, queue='ai_queue', max_retries=2)
+def generate_test_async_task(self, user_id, exam_id, subject_id, topic_ids, config):
+    """
+    Asynchronously generate an AI test in the background.
+    """
+    from django.contrib.auth import get_user_model
+    from apps.ai_engine.test_generation import AITestGenerationService
+    from .serializers import TestDetailSerializer
+    
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+        service = AITestGenerationService()
+        test = service.generate_test(
+            user=user,
+            exam_id=exam_id,
+            subject_id=subject_id,
+            topic_ids=topic_ids or [],
+            config=config,
+        )
+        return {
+            'status': 'success',
+            'test_id': str(test.id),
+            'test': TestDetailSerializer(test).data,
+        }
+    except Exception as e:
+        logger.error(f"Async test generation failed for user {user_id}: {e}")
+        raise self.retry(exc=e, countdown=10)

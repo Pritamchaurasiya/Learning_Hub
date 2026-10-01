@@ -357,20 +357,24 @@ def enhanced_exception_handler(exc: Exception, context: dict) -> Response:
     )
     error.log()
     
+    req_id = getattr(request, 'request_id', None) if request else None
+
     if response is not None:
         # Standardize response format
         response.data = {
             'status': 'error',
             'message': str(exc) if status_code < 500 else 'An unexpected error occurred',
             'code': exc.__class__.__name__,
-            'errors': response.data if isinstance(response.data, dict) and status_code == 400 else None
+            'errors': response.data if isinstance(response.data, (dict, list)) and status_code == 400 else None,
+            'request_id': req_id,
         }
     else:
         # Handle unhandled exceptions
         response = Response({
             'status': 'error',
             'message': 'An unexpected error occurred',
-            'code': 'INTERNAL_SERVER_ERROR'
+            'code': 'INTERNAL_SERVER_ERROR',
+            'request_id': req_id,
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     return response

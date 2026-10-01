@@ -9,6 +9,7 @@ from .base import *  # noqa: F401, F403
 from .base import BASE_DIR, LOGGING
 
 DEBUG = True
+ALLOWED_HOSTS = ["*"]
 
 # Remove postgres-specific and unavailable apps for SQLite development
 # Database - Fallback to base.py which uses dj_database_url from .env

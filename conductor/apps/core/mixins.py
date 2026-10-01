@@ -2,6 +2,7 @@
 Reusable model mixins for Learning Hub.
 """
 
+import uuid
 from django.db import models
 from django.utils import timezone
 
@@ -63,14 +64,16 @@ class SoftDeleteManager(models.Manager):
         return super().get_queryset().filter(is_deleted=True)
 
 
+def default_uuid_str():
+    return str(uuid.uuid4())
+
+
 class UUIDMixin(models.Model):
     """
     Mixin that uses UUID as primary key.
     """
 
-    import uuid
-
-    id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
+    id = models.CharField(primary_key=True, max_length=36, default=default_uuid_str, editable=False)
 
     class Meta:
         abstract = True

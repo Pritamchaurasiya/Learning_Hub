@@ -21,6 +21,17 @@ DATABASES = {
     }
 }
 
+class DisableMigrations:
+    def __contains__(self, item):
+        return True
+    def __getitem__(self, item):
+        return None
+
+MIGRATION_MODULES = DisableMigrations()
+
+# Strip daphne from test app runner to prevent Twisted bytecode memory spikes
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'daphne']  # type: ignore[name-defined]  # noqa: F405
+
 # ============================================================================
 # MIDDLEWARE — Strip all custom middleware that depends on external services
 # ============================================================================
@@ -134,6 +145,14 @@ CSRF_COOKIE_SECURE = False
 # Faster password hashing for tests
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',
+]
+
+# Use lightweight MinimumLengthValidator in tests (avoids heavy common-passwords.txt.gz decompression)
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 8},
+    },
 ]
 
 # ============================================================================

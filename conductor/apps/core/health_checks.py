@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,13 +42,16 @@ def check_cache():
 
 def check_redis():
     """Check Redis connectivity specifically."""
+    backend = settings.CACHES.get('default', {}).get('BACKEND', '')
+    if 'locmem' in backend.lower() or 'dummy' in backend.lower():
+        return True, "Redis skipped (In-memory cache active)"
     try:
         from django_redis import get_redis_connection
         redis_conn = get_redis_connection('default')
         redis_conn.ping()
         return True, "Redis connection OK"
     except Exception as e:
-        logger.error(f"Redis health check failed: {e}")
+        logger.warning(f"Redis health check failed: {e}")
         return False, f"Redis error: {str(e)}"
 
 
@@ -174,8 +177,8 @@ def system_metrics(request):
             'total': User.objects.count(),
             'active_last_24h': User.objects.filter(last_login__gte=last_24h).count(),
             'active_last_7d': User.objects.filter(last_login__gte=last_7d).count(),
-            'new_last_24h': User.objects.filter(date_joined__gte=last_24h).count(),
-            'new_last_7d': User.objects.filter(date_joined__gte=last_7d).count(),
+            'new_last_24h': User.objects.filter(created_at__gte=last_24h).count(),
+            'new_last_7d': User.objects.filter(created_at__gte=last_7d).count(),
         },
         'courses': {
             'total': Course.objects.count(),

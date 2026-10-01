@@ -89,12 +89,19 @@ urlpatterns += [
                 # path("content/", include("apps.content.urls")),
                 path("gamification/", include("apps.gamification.urls")),
                 path("payments/", include("apps.payments.urls")),
+                path("commerce/cart/", include("apps.payments.cart_urls")),
+                path("cart/", include("apps.payments.cart_urls")),
+                path("checkout/", include([
+                    path("", include("apps.payments.cart_urls")),
+                ])),
                 path("notifications/", include("apps.notifications.urls")),
                 path("ai/", include("apps.ai_engine.urls")),
                 path("dsa/", include("apps.dsa.urls")),
+                path("problems/", include("apps.dsa.direct_urls")),
                 path("exams/", include("apps.exams.urls")),
                 path("tests/", include("apps.test_engine.urls")),
                 path("quizzes/", include("apps.quiz.urls")),
+                path("quiz/", include("apps.quiz.urls")),
                 path("discussions/", include("apps.discussions.urls")),
                 path("support/", include("apps.support.urls")),
                 path("chat/", include("apps.chat.urls")),
@@ -109,6 +116,7 @@ urlpatterns += [
                 path("search/", include("apps.search.urls")),
                 path("analytics/", include("apps.analytics_v2.urls")),
                 path("subscriptions/", include("apps.subscriptions.urls")),
+                path("ebooks/", include("apps.ebooks.urls")),
             ]
         ),
     ),
@@ -162,7 +170,7 @@ urlpatterns += [
     path("health/ready/", readiness_view, name="readiness_probe"),
     path("health/metrics/", metrics_view, name="app_metrics"),
     path("monitoring/", include("apps.monitoring.urls")),
-    re_path(r'^(?!api|admin|health|metrics|monitoring|static)(?P<path>.*)$', serve_spa),
+    re_path(r'^(?!api/|admin/|god-admin/|health/|metrics/|monitoring/|static/)(?P<path>.*)$', serve_spa),
 ]
 
 # Serve media files in development

@@ -100,3 +100,38 @@ class Submission(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.problem.title} - {self.status}"
+
+
+class DailyProblem(models.Model):
+    """Problem of the Day (POTD) with bonus XP rewards."""
+    date = models.DateField(unique=True, db_index=True)
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='daily_features')
+    bonus_xp = models.PositiveIntegerField(default=50)
+    solved_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Problem of the Day"
+        verbose_name_plural = "Problems of the Day"
+
+    def __str__(self):
+        return f"POTD {self.date}: {self.problem.title}"
+
+
+class UserCodeDraft(models.Model):
+    """Saves user's in-progress code drafts per problem and language."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dsa_drafts')
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='user_drafts')
+    language = models.CharField(max_length=50, default='python')
+    code = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'problem', 'language']
+        indexes = [
+            models.Index(fields=['user', 'problem']),
+        ]
+
+    def __str__(self):
+        return f"Draft for {self.user.username} on {self.problem.title} ({self.language})"

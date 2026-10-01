@@ -2,6 +2,7 @@
 Database Connection Pooling Configuration
 Optimize database connections for high load
 """
+import os
 
 # PostgreSQL connection pooling with PgBouncer settings
 # Add to settings/production.py

@@ -267,6 +267,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
               href={update.source_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => updatesService.logEngagement(update.id, 'CLICK_SOURCE')}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               title="Open Official University Source"
             >
@@ -289,7 +290,11 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
             {update.deadline && (onOpenReminder || onSetReminder) && (
               <button
                 type="button"
-                onClick={() => (onOpenReminder ? onOpenReminder(update) : onSetReminder?.(update))}
+                onClick={() => {
+                  updatesService.logEngagement(update.id, 'REMINDER_SET')
+                  if (onOpenReminder) onOpenReminder(update)
+                  else onSetReminder?.(update)
+                }}
                 className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-indigo-400"
                 title="Set Deadline Reminder"
               >

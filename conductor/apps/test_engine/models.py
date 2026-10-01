@@ -31,10 +31,19 @@ class Question(models.Model):
         ('create', 'Create'),
     ]
 
+    QUESTION_STATUSES = [
+        ('draft', 'Draft'),
+        ('review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('published', 'Published'),
+        ('archived', 'Archived'),
+    ]
+
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='mcq')
+    status = models.CharField(max_length=20, choices=QUESTION_STATUSES, default='published', db_index=True)
 
     # IRT parameters for adaptive testing
     difficulty = models.FloatField(default=0.5, help_text="IRT difficulty parameter (0-5)")
@@ -155,6 +164,21 @@ class Test(models.Model):
         ('adaptive', 'Adaptive'),
     ]
 
+    AI_MODES = [
+        ('no_ai', 'No AI (Deterministic Question Bank)'),
+        ('ai_optional', 'AI Optional (Enhanced when available)'),
+        ('ai_required', 'AI Required (Strict AI session)'),
+        ('hybrid', 'Hybrid (Bank first + AI fill)'),
+    ]
+
+    QUESTION_SOURCES = [
+        ('manual', 'Manual'),
+        ('database', 'Database Question Bank'),
+        ('import', 'Imported'),
+        ('ai_generated', 'AI Generated'),
+        ('hybrid', 'Hybrid Sources'),
+    ]
+
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='tests')
     title = models.CharField(max_length=300)
@@ -163,6 +187,8 @@ class Test(models.Model):
     # Configuration
     mode = models.CharField(max_length=20, choices=MODES, default='mock')
     difficulty = models.CharField(max_length=15, choices=DIFFICULTIES, default='mixed')
+    ai_mode = models.CharField(max_length=20, choices=AI_MODES, default='no_ai', db_index=True)
+    question_source = models.CharField(max_length=20, choices=QUESTION_SOURCES, default='database', db_index=True)
     time_limit_minutes = models.IntegerField(default=60)
     passing_score = models.FloatField(default=50.0, help_text="Minimum percentage to pass")
     total_marks = models.FloatField(default=0)

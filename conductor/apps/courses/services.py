@@ -379,3 +379,147 @@ class EnrollmentService:
             "total_revenue": total_enrollments * float(course.price) if not course.is_free else 0
         }
 
+
+class LessonService:
+    """Service layer for Lesson completion and progress tracking."""
+
+    @staticmethod
+    def complete_lesson(user, lesson, course) -> Dict[str, Any]:
+        """
+        Mark a lesson as complete, update course enrollment progress, award XP,
+        and trigger certificate generation if course is 100% finished.
+        """
+        from django.utils import timezone
+        from apps.courses.models import Lesson, LessonCompletion
+        from apps.gamification.services import GamificationService
+
+        # Idempotent Completion
+        _, created = LessonCompletion.objects.get_or_create(user=user, lesson=lesson)
+
+        # Only award XP on first completion
+        if created:
+            GamificationService.award_xp(user, 50, f"Completed Lesson: {lesson.title}")
+
+        # Update Enrollment Progress — locked to prevent concurrent overwrites
+        total_lessons = Lesson.objects.filter(module__course=course).count()
+        completed_count = LessonCompletion.objects.filter(
+            user=user, lesson__module__course=course
+        ).count()
+
+        progress = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
+
+        with transaction.atomic():
+            from django.db import connection
+            if "postgresql" in connection.settings_dict.get("ENGINE", ""):
+                enrollment, _ = Enrollment.objects.select_for_update().get_or_create(
+                    user=user, course=course
+                )
+            else:
+                enrollment, _ = Enrollment.objects.get_or_create(
+                    user=user, course=course
+                )
+
+            # Only update if progress increased
+            if progress > enrollment.progress_percentage:
+                enrollment.progress_percentage = min(progress, 100)
+                if progress >= 100 and not enrollment.completed_at:
+                    enrollment.completed_at = timezone.now()
+                    GamificationService.award_xp(user, 500, f"Certified: {course.title}")
+
+                    # Async Certificate Generation
+                    from apps.courses.tasks import generate_certificate_task
+                    generate_certificate_task.delay(user.id, course.id)
+
+                enrollment.save(update_fields=["progress_percentage", "completed_at", "updated_at"])
+
+        # Publish lesson.completed event for notifications
+        try:
+            from apps.core.event_bus import EventBus
+            EventBus.publish("lesson.completed", {
+                "user_id": user.id,
+                "username": user.username,
+                "lesson_id": str(lesson.id),
+                "lesson_title": lesson.title,
+                "course_title": course.title,
+                "progress": progress,
+            })
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "progress": progress,
+            "completed": True,
+            "message": "Lesson marked as complete.",
+        }
+
+    @staticmethod
+    def update_lesson_progress(user, lesson_id, progress_seconds: float) -> Any:
+        """Upsert playback progress timestamp for a lesson."""
+        from django.utils import timezone
+        from apps.courses.models import LessonProgress
+        from apps.courses.validators import validate_lesson_progress
+
+        validate_lesson_progress(progress_seconds)
+        progress_obj, _ = LessonProgress.objects.update_or_create(
+            user=user,
+            lesson_id=lesson_id,
+            defaults={
+                "progress_seconds": float(progress_seconds),
+                "last_updated": timezone.now(),
+            },
+        )
+        return progress_obj
+
+
+class NoteService:
+    """Service layer for Student notes."""
+
+    @staticmethod
+    def create_note(user, course, lesson, content: str, timestamp_seconds: int = 0) -> Any:
+        """Create a student note."""
+        from apps.courses.models import CourseNote
+        from apps.courses.validators import validate_note_content
+
+        clean_content = validate_note_content(content)
+        return CourseNote.objects.create(
+            user=user,
+            course=course,
+            lesson=lesson,
+            timestamp_seconds=int(timestamp_seconds),
+            content=clean_content,
+        )
+
+    @staticmethod
+    def delete_note(user, course, note_id: str) -> bool:
+        """Delete a student note."""
+        from apps.courses.models import CourseNote
+        note = CourseNote.objects.filter(user=user, course=course, id=note_id).first()
+        if note:
+            note.delete()
+            return True
+        return False
+
+
+class ResourceService:
+    """Service layer for Course downloadable resources."""
+
+    @staticmethod
+    def create_resource(course, title: str, resource_type: str = "pdf", file=None, external_url: str = "", description: str = "", lesson=None) -> Any:
+        """Create a course downloadable resource."""
+        from apps.courses.models import CourseResource
+
+        if not title or not title.strip():
+            raise ValidationError("Title is required for resource.")
+
+        return CourseResource.objects.create(
+            course=course,
+            title=title.strip(),
+            resource_type=resource_type,
+            file=file,
+            external_url=external_url,
+            description=description,
+            lesson=lesson,
+        )
+
+

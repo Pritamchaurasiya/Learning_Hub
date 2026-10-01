@@ -16,9 +16,8 @@ from datetime import datetime
 
 # Try to import Django models
 try:
-    from apps.courses.models import Course, Category
+    from apps.courses.models import Course, Category, Enrollment
     from apps.users.models import User
-    from apps.enrollments.models import Enrollment
     MODELS_AVAILABLE = True
 except ImportError:
     MODELS_AVAILABLE = False

@@ -37,14 +37,8 @@ class PlanViewSet(viewsets.ReadOnlyModelViewSet):
 class SubscriptionViewSet(viewsets.ViewSet):
     """
     User subscription management.
-    GET /api/v1/subscriptions/my-subscription/ - Current subscription
-    POST /api/v1/subscriptions/create/ - Create/upgrade subscription
-    POST /api/v1/subscriptions/cancel/ - Cancel subscription
-    POST /api/v1/subscriptions/trial/ - Start free trial
-    GET /api/v1/subscriptions/usage/ - Current usage summary
-    GET /api/v1/subscriptions/history/ - Subscription history
-    GET /api/v1/subscriptions/transactions/ - Payment history
     """
+    throttle_scope = 'subscription'
     permission_classes = [IsAuthenticated]
 
     @extend_schema(description='Get current active subscription')

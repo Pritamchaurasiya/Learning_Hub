@@ -11,6 +11,13 @@ class TestGamificationService:
 
     def test_award_xp_basic(self, test_user):
         """Test basic XP awarding and leveling up."""
+        # Reset XP from account registration bonus signal
+        xp_init, _ = UserXP.objects.get_or_create(user=test_user)
+        xp_init.total_xp = 0
+        xp_init.weekly_xp = 0
+        xp_init.level = 1
+        xp_init.save()
+
         result = GamificationService.award_xp(test_user, 50, reason="test_reason")
         
         assert result['awarded'] == 50
@@ -29,9 +36,8 @@ class TestGamificationService:
         assert xp_obj.total_xp == 110
         assert xp_obj.level == 2
 
-    @patch('apps.gamification.services.cache.get')
-    @patch('apps.gamification.services.cache.set')
-    def test_award_xp_anti_cheat(self, mock_cache_set, mock_cache_get, test_user):
+    @patch('apps.gamification.services.cache.add')
+    def test_award_xp_anti_cheat(self, mock_cache_add, test_user):
         """Test that anti-cheat prevents rapid XP farming for the same action."""
         reason = "lesson_complete"
         
@@ -40,13 +46,8 @@ class TestGamificationService:
         xp_obj.total_xp = 0
         xp_obj.save()
         
-        # Mock cache.get to return True only for the anti-cheat key
-        def mocked_get(key, default=None):
-            if "anti_cheat_xp" in key:
-                return True
-            return default
-            
-        mock_cache_get.side_effect = mocked_get
+        # Mock cache.add to return False (rate limited/already present)
+        mock_cache_add.return_value = False
         
         result = GamificationService.award_xp(test_user, 50, reason=reason)
         

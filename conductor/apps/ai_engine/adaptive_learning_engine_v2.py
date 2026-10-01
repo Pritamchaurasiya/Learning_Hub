@@ -123,11 +123,10 @@ class AdaptiveLearningEngine:
         self.redis_client: Optional[redis.Redis] = None
         self.scaler = StandardScaler() if StandardScaler else None
         self.kmeans_model = KMeans(n_clusters=5, random_state=42) if KMeans else None
-        self._initialize_connections()
         self._load_ml_models()
     
-    async def _initialize_connections(self):
-        """Initialize Redis and database connections."""
+    async def initialize(self):
+        """Async lifecycle initialization for Redis and database connections."""
         try:
             self.redis_client = redis.from_url(
                 "redis://redis-service:6379/5",

@@ -17,10 +17,10 @@ class TestCourseService:
         # Test basic search
         results = CourseService.search_courses("Python")
         assert len(results) >= 2
-        ids = [c.id for c in results]
-        assert course1.id in ids
-        assert course3.id in ids
-        assert course2.id not in ids
+        ids = [str(c.id) for c in results]
+        assert str(course1.id) in ids
+        assert str(course3.id) in ids
+        assert str(course2.id) not in ids
         
         # Test empty query
         results = CourseService.search_courses("")

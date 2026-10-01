@@ -534,7 +534,7 @@ class AdvancedAnalyticsService:
         return {
             'users': {
                 'total': User.objects.count(),
-                'new_this_week': User.objects.filter(date_joined__date__gte=week_ago).count(),
+                'new_this_week': User.objects.filter(created_at__date__gte=week_ago).count(),
                 'active_this_week': User.objects.filter(last_login_at__date__gte=week_ago).count()
             },
             'courses': {

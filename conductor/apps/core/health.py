@@ -30,7 +30,7 @@ class DeepHealthCheckView(APIView):
         try:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
-            health_report["components"]["database"] = {"status": "up", "latency": "ok"}
+            health_report["components"]["database"] = {"status": "connected", "latency": "ok"}
         except Exception as e:
             db_status = False
             health_report["components"]["database"] = {"status": "down", "error": str(e)}
@@ -43,7 +43,7 @@ class DeepHealthCheckView(APIView):
             val = cache.get('god_mode_health')
             if val != 'ok':
                 raise Exception("Cache Read/Write Failed")
-            health_report["components"]["cache"] = {"status": "up", "backend": settings.CACHES['default']['BACKEND']}
+            health_report["components"]["cache"] = {"status": "connected", "backend": settings.CACHES['default']['BACKEND']}
         except Exception as e:
             # Don't fail overall health for cache if it's not critical, but warn
             health_report["components"]["cache"] = {"status": "degraded", "error": str(e)}
@@ -52,9 +52,13 @@ class DeepHealthCheckView(APIView):
         try:
             mem = psutil.virtual_memory()
             disk = shutil.disk_usage('/')
+            disk_percent = round((disk.used / disk.total) * 100, 1) if disk.total else 0
             health_report["components"]["system"] = {
                 "memory_used_percent": mem.percent,
+                "memory_percent": mem.percent,
                 "disk_free_gb": round(disk.free / (1024**3), 2),
+                "disk_used_percent": disk_percent,
+                "disk_usage": {"percent": disk_percent, "free_gb": round(disk.free / (1024**3), 2)},
                 "cpu_percent": psutil.cpu_percent(interval=0.1)
             }
         except Exception as e:

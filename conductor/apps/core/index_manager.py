@@ -23,7 +23,7 @@ class DatabaseIndexManager:
         'users_user': [
             ('email', 'is_active'),
             ('username', 'is_active'),
-            ('date_joined', 'is_active'),
+            ('created_at', 'is_active'),
         ],
         'courses_enrollment': [
             ('user_id', 'course_id', 'status'),

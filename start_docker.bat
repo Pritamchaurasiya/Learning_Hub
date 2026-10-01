@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 title Learning Hub - Docker Launcher
 echo ========================================
 echo    Learning Hub - Docker Setup
@@ -30,9 +31,11 @@ if errorlevel 1 (
 
 echo.
 echo ========================================
-echo    Server: http://127.0.0.1
-echo    API:    http://127.0.0.1:8000/api/v1/
-echo    Admin:  http://127.0.0.1:8000/admin/
+echo    Frontend : http://127.0.0.1
+echo    Express  : http://127.0.0.1:5000/api/v1/
+echo    Conductor: http://127.0.0.1:8000/api/v1/
+echo    Admin    : http://127.0.0.1:8000/admin/
+echo    God Admin: http://127.0.0.1:8000/god-admin/
 echo ========================================
 echo.
 echo Commands:

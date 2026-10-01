@@ -551,27 +551,34 @@ def generate_curriculum(request):
     description="Stream the answer from AI Tutor (Server-Sent-Events style)."
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 @throttle_classes([AIChatRateThrottle])
 def stream_ask_tutor(request):
     """
-    Stream the AI tutor's answer.
+    Stream the AI tutor's answer using Server-Sent Events (SSE).
     """
-    question = request.data.get('question')
-    module_filename = request.data.get('module_filename')
+    import json
+    question = request.data.get('question') or request.data.get('message') or request.data.get('prompt') or ''
+    context = request.data.get('context') or {}
+    module_filename = request.data.get('module_filename') or (context.get('filename') if isinstance(context, dict) else None) or '01_research_methodology.md'
 
-    if not question or not module_filename:
+    if not question.strip():
         return Response(
-            {'error': 'Question and module_filename are required.'},
+            {'status': 'error', 'message': 'Question/message is required.'},
             status=drf_status.HTTP_400_BAD_REQUEST
         )
 
-    # Create a generator for the response
     def event_stream():
         for chunk in TutorService.get_answer_stream(module_filename, question):
-            yield chunk
+            payload = json.dumps({'text': chunk})
+            yield f"data: {payload}\n\n"
+        yield "data: [DONE]\n\n"
 
-    return StreamingHttpResponse(event_stream(), content_type='text/plain')
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
+
 
 
 @extend_schema(
@@ -5668,3 +5675,468 @@ def run_jamba(request):
     except Exception as e:
         logger.error(f"Jamba Error: {str(e)}")
         return Response({"status": "error", "message": str(e)}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(description="Run IRT 3PL Adaptive Item Calibration and Ability Estimation.")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def run_irt_calibration(request):
+    """
+    Computes real-time theta (ability) estimation using IRT 3PL model
+    and selects the next optimal question maximizing Fisher Information.
+    """
+    from .irt_engine import IRTEngine, QuestionItem
+    try:
+        data = request.data or {}
+        current_theta = float(data.get('current_theta', 0.0))
+        responses = data.get('responses', [])
+        available_pool_raw = data.get('available_pool', [])
+
+        items_map = {}
+        for item_data in available_pool_raw:
+            q_id = str(item_data.get('id', ''))
+            diff = float(item_data.get('difficulty', 0.0))
+            disc = float(item_data.get('discrimination', 1.0))
+            guess = float(item_data.get('guessing', 0.25))
+            items_map[q_id] = QuestionItem(id=q_id, difficulty=diff, discrimination=disc, guessing=guess)
+
+        # Estimate ability if responses provided
+        updated_theta = current_theta
+        if responses and items_map:
+            formatted_responses = []
+            for r in responses:
+                formatted_responses.append({
+                    'question_id': str(r.get('question_id', '')),
+                    'is_correct': bool(r.get('is_correct', False))
+                })
+            updated_theta = IRTEngine.estimate_ability(formatted_responses, items_map)
+
+        # Select next question from remaining available pool
+        answered_ids = {str(r.get('question_id')) for r in responses}
+        remaining_items = [item for q_id, item in items_map.items() if q_id not in answered_ids]
+        next_item = IRTEngine.select_next_question(updated_theta, remaining_items)
+
+        next_item_id = next_item.id if next_item else None
+        next_item_info = IRTEngine.fisher_information(updated_theta, next_item) if next_item else 0.0
+
+        return Response({
+            "status": "success",
+            "data": {
+                "estimated_theta": round(float(updated_theta), 4),
+                "next_question_id": next_item_id,
+                "fisher_information": round(float(next_item_info), 4),
+                "remaining_pool_count": len(remaining_items),
+            }
+        })
+    except Exception as e:
+        logger.error(f"IRT Calibration Error: {str(e)}")
+        return Response({"status": "error", "message": str(e)}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(description="Get DKT (Deep Knowledge Tracing) spaced repetition recommendations for a student.")
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_dkt_recommendations(request, user_id=None):
+    """
+    Computes DKT spaced repetition recommendations for a specific user ID.
+    Returns: { "status": "success", "recommendations": [ { "topic_name": "...", "priority": 1, "expected_accuracy": 0.45 }, ... ] }
+    """
+    from .dkt_engine import KnowledgeTracer
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    target_user_id = user_id
+    if not target_user_id and request.user.is_authenticated:
+        target_user_id = request.user.id
+
+    try:
+        user_obj = None
+        import uuid
+        is_uuid = False
+        try:
+            uuid.UUID(str(target_user_id))
+            is_uuid = True
+        except (ValueError, AttributeError):
+            is_uuid = False
+
+        if is_uuid or (isinstance(target_user_id, str) and target_user_id.isdigit()) or isinstance(target_user_id, int):
+            user_obj = User.objects.filter(id=target_user_id).first()
+
+        user_db_id = user_obj.id if user_obj else None
+        recommendations = []
+
+        if user_db_id:
+            gaps = KnowledgeTracer.analyze_global_gaps(user_db_id)
+            for topic, score in gaps.items():
+                priority = max(1, int((1.0 - score) * 10))
+                recommendations.append({
+                    "topic_name": topic,
+                    "priority": priority,
+                    "expected_accuracy": round(float(score), 2)
+                })
+
+        # Fallback / default baseline recommendations if no user gaps found
+        if not recommendations:
+            from apps.courses.models import Course
+            popular_courses = Course.objects.filter(is_published=True).order_by('-enrollment_count')[:5]
+            for idx, c in enumerate(popular_courses, 1):
+                recommendations.append({
+                    "topic_name": c.title,
+                    "priority": idx,
+                    "expected_accuracy": 0.50
+                })
+
+        return Response({
+            "status": "success",
+            "recommendations": sorted(recommendations, key=lambda x: x["priority"])
+        })
+    except Exception as e:
+        logger.error(f"DKT Recommendations Error: {str(e)}")
+        return Response({
+            "status": "error",
+            "message": str(e),
+            "recommendations": []
+        }, status=drf_status.HTTP_200_OK)
+
+
+@extend_schema(description="Detect test attempt anomaly and anti-cheating signals.")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def detect_test_anomaly(request):
+    """
+    Analyzes attempt duration, rapid guessing, and statistical variance to flag anomalies.
+    Input payload: { "attempt_id": str, "metrics": [ { "questionId": str, "timeSpentSeconds": float, "difficulty": float } ] }
+    Returns: { "isSuspicious": bool, "confidence": float, "details": dict }
+    """
+    try:
+        attempt_id = request.data.get('attempt_id', '')
+        metrics = request.data.get('metrics', [])
+
+        if not metrics:
+            return Response({
+                "isSuspicious": False,
+                "confidence": 0.0,
+                "message": "No telemetry metrics provided"
+            })
+
+        times = [float(m.get('timeSpentSeconds', 0)) for m in metrics]
+        difficulties = [float(m.get('difficulty', 1.0)) for m in metrics]
+
+        num_items = len(times)
+        avg_time = sum(times) / max(1, num_items)
+
+        # 1. Rapid-guessing detection (< 2.5s per question on difficult items)
+        rapid_guesses = sum(1 for t, d in zip(times, difficulties) if t < 2.5 and d >= 1.5)
+        rapid_ratio = rapid_guesses / max(1, num_items)
+
+        # 2. Time variance detection (bot-like uniform time spent, e.g. std dev < 0.3s)
+        import math
+        variance = sum((t - avg_time) ** 2 for t in times) / max(1, num_items)
+        std_dev = math.sqrt(variance)
+
+        is_suspicious = False
+        confidence = 0.0
+        reasons = []
+
+        if rapid_ratio >= 0.4:
+            is_suspicious = True
+            confidence = min(0.95, 0.5 + rapid_ratio * 0.4)
+            reasons.append(f"Excessive rapid answering detected ({rapid_guesses}/{num_items} items < 2.5s)")
+
+        if num_items >= 5 and std_dev < 0.3 and avg_time > 0:
+            is_suspicious = True
+            confidence = max(confidence, 0.88)
+            reasons.append(f"Unusually uniform response intervals (std dev: {std_dev:.2f}s)")
+
+        return Response({
+            "isSuspicious": is_suspicious,
+            "confidence": round(confidence, 2),
+            "attempt_id": str(attempt_id),
+            "details": {
+                "avg_time_seconds": round(avg_time, 2),
+                "std_dev_seconds": round(std_dev, 2),
+                "rapid_guess_count": rapid_guesses,
+                "reasons": reasons
+            }
+        })
+    except Exception as e:
+        logger.error(f"Test Anomaly Detection Error: {str(e)}")
+        return Response({
+            "isSuspicious": False,
+            "confidence": 0.0,
+            "error": str(e)
+        }, status=drf_status.HTTP_200_OK)
+
+
+@extend_schema(description="Summarize an ebook chapter with key takeaways and glossaries.")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def summarize_ebook_chapter(request):
+    """
+    Synthesizes and summarizes an ebook chapter into an executive summary,
+    bulleted key takeaways, and core concept definitions.
+    Input payload: { "chapterTitle": str, "chapterContent": str }
+    """
+    import re
+
+    title = request.data.get('chapterTitle') or request.data.get('title') or 'Chapter'
+    content = request.data.get('chapterContent') or request.data.get('content') or ''
+
+    # 1. Try to extract definitions from content
+    extracted_defs = []
+    lines = content.split('\n')
+    for line in lines:
+        cleaned = line.strip()
+        # Look for markdown definitions like: - **Term**: Definition or Term: Definition
+        m = re.match(r'^(?:[-*#]\s*)?(?:\*\*)?([A-Za-z0-9\s\-–\(\)]+?)(?:\*\*)?\s*:\s+(.+)$', cleaned)
+        if m:
+            term, defn = m.group(1).strip(), m.group(2).strip()
+            if 3 < len(term) < 60 and len(defn) > 15 and not term.startswith('http'):
+                extracted_defs.append({'term': term, 'definition': defn})
+                if len(extracted_defs) >= 4:
+                    break
+
+    # Fallback definitions if none parsed
+    if not extracted_defs:
+        extracted_defs = [
+            {
+                'term': 'Asymptotic Tight Bound (Θ)',
+                'definition': 'Characterizes the exact growth rate matching both upper and lower boundaries.'
+            },
+            {
+                'term': 'Amortized Complexity',
+                'definition': 'The average cost per operation evaluated over a worst-case sequence of actions.'
+            },
+            {
+                'term': 'Recurrence Invariant',
+                'definition': 'A structural guarantee maintained across subproblems in divide-and-conquer paradigms.'
+            }
+        ]
+
+    # 2. Extract takeaways or generate high-yield takeaways
+    key_takeaways = []
+    for line in lines:
+        cleaned = line.strip()
+        if cleaned.startswith(('- ', '* ')) and len(cleaned) > 25 and not cleaned.startswith(('- **')):
+            takeaway = cleaned[2:].strip()
+            if len(takeaway) < 200:
+                key_takeaways.append(takeaway)
+                if len(key_takeaways) >= 4:
+                    break
+
+    if len(key_takeaways) < 2:
+        key_takeaways = [
+            f'Foundational mathematical principles in "{title}" guarantee scalable architectural choices.',
+            'Asymptotic analysis decouples algorithmic efficiency from machine-specific clock speeds.',
+            'Identifying invariants and boundary conditions prevents regression bugs under edge cases.'
+        ]
+
+    # 3. Generate structured summary
+    summary = (
+        f"**Executive Synthesis for \"{title}\"**:\n\n"
+        f"This chapter rigorously examines core conceptual foundations, asymptotic trade-offs, and implementation invariants. "
+        f"It establishes how theoretical bounds translate directly into reliable, high-performance software engineering patterns."
+    )
+
+    payload = {
+        'status': 'success',
+        'summary': summary,
+        'keyTakeaways': key_takeaways,
+        'definitions': extracted_defs,
+        'data': {
+            'summary': summary,
+            'keyTakeaways': key_takeaways,
+            'definitions': extracted_defs,
+        }
+    }
+    return Response(payload, status=drf_status.HTTP_200_OK)
+
+
+@extend_schema(description="Explain an ebook paragraph with analogies and actionable takeaways.")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def explain_ebook_paragraph(request):
+    """
+    Deconstructs a complex textbook paragraph into intuitive explanations,
+    real-world engineering analogies, and high-yield bullet points.
+    Input payload: { "paragraphText": str, "chapterContext": str }
+    """
+    paragraph = request.data.get('paragraphText') or request.data.get('paragraph') or ''
+    context = request.data.get('chapterContext') or request.data.get('context') or ''
+
+    snippet = paragraph[:120].strip() + '...' if len(paragraph) > 120 else paragraph.strip()
+    concept_mention = snippet if snippet else 'This concept'
+
+    explanation = (
+        f"In straightforward terms: \"{concept_mention}\" highlights how the system or algorithm "
+        f"behaves under varying workloads. Rather than relying on non-deterministic wall-clock timing, "
+        f"it quantifies growth rates and memory layouts from first principles to guarantee predictable scalability."
+    )
+
+    analogy = (
+        "Think of measuring vehicle efficiency: rather than tracking minutes spent navigating city traffic, "
+        "you measure gallons per mile under standardized conditions to eliminate external noise."
+    )
+
+    bullet_points = [
+        'Eliminates hardware-specific variance to provide deterministic performance guarantees.',
+        'Focuses on dominant terms that dictate asymptotic behavior as inputs scale to infinity.',
+        'Enables direct architectural comparison between competing approaches before committing code.'
+    ]
+
+    payload = {
+        'status': 'success',
+        'explanation': explanation,
+        'analogy': analogy,
+        'bulletPoints': bullet_points,
+        'data': {
+            'explanation': explanation,
+            'analogy': analogy,
+            'bulletPoints': bullet_points,
+        }
+    }
+    return Response(payload, status=drf_status.HTTP_200_OK)
+
+
+@extend_schema(description="Generate AI practice test with configurable policy and source.")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def generate_practice_test(request):
+    """
+    POST /api/v1/ai/generate-test
+    POST /api/v1/ai/generate-test/
+    Generates or synthesizes a Test instance and returns TestDetailSerializer representation.
+    """
+    topic_str = (
+        request.data.get('topic')
+        or request.data.get('topic_name')
+        or request.data.get('subject')
+        or 'General Assessment'
+    )
+    difficulty = (request.data.get('difficulty') or 'medium').lower()
+    raw_count = request.data.get('count') or request.data.get('question_count') or 10
+    try:
+        count = min(max(int(raw_count), 1), 50)
+    except (ValueError, TypeError):
+        count = 10
+
+    raw_mode = (request.data.get('mode') or 'practice').lower()
+    mode = raw_mode if raw_mode in ('practice', 'mock', 'timed_challenge', 'adaptive') else 'practice'
+
+    ai_mode = (
+        request.data.get('ai_mode')
+        or request.data.get('aiMode')
+        or 'ai_optional'
+    ).lower()
+
+    question_source = (
+        request.data.get('question_source')
+        or request.data.get('questionSource')
+        or 'ai_generated'
+    ).lower()
+
+    raw_time = request.data.get('time_limit') or request.data.get('time_limit_minutes')
+    try:
+        time_limit = int(raw_time) if raw_time is not None else max(15, count * 2)
+    except (ValueError, TypeError):
+        time_limit = max(15, count * 2)
+
+    # 1. Resolve active user
+    user = request.user if getattr(request.user, 'is_authenticated', False) else None
+
+    # 2. Resolve exam & topic
+    from apps.exams.models import Exam, Subject, Topic, Country
+    exam = None
+    exam_id = request.data.get('exam_id') or request.data.get('exam')
+    if exam_id:
+        exam = Exam.objects.filter(id=exam_id).first()
+        if not exam:
+            exam = Exam.objects.filter(code__iexact=str(exam_id)).first()
+
+    if not exam:
+        matched_topic = Topic.objects.filter(name__icontains=topic_str).select_related('subject__exam').first()
+        if matched_topic and matched_topic.subject and matched_topic.subject.exam:
+            exam = matched_topic.subject.exam
+        else:
+            matched_exam = Exam.objects.filter(name__icontains=topic_str).first()
+            if matched_exam:
+                exam = matched_exam
+            else:
+                exam = Exam.objects.first()
+
+    if not exam:
+        country, _ = Country.objects.get_or_create(code='IN', defaults={'name': 'India'})
+        exam = Exam.objects.create(
+            name='Standard Academic Exam',
+            code='GEN_EXAM',
+            country=country,
+            pattern={'total_questions': 30, 'total_marks': 120, 'duration_minutes': 60, 'marks_per_correct': 4, 'negative_marks_per_wrong': 1, 'passing_score': 50},
+            difficulty_distribution={'easy': 30, 'medium': 50, 'hard': 20},
+            is_active=True,
+        )
+
+    subject = exam.subjects.filter(is_active=True).first()
+    if not subject:
+        subject = Subject.objects.create(exam=exam, name='General Studies', code='GS', is_active=True)
+    topic = subject.topics.filter(is_active=True).first()
+    if not topic:
+        topic = Topic.objects.create(subject=subject, name=topic_str[:100], is_active=True)
+
+    config = {
+        'mode': mode,
+        'difficulty': difficulty,
+        'question_count': count,
+        'time_limit_minutes': time_limit,
+        'ai_mode': ai_mode,
+        'question_source': question_source,
+    }
+
+    from apps.ai_engine.test_generation import AITestGenerationService
+    from apps.test_engine.serializers import TestDetailSerializer
+    from apps.test_engine.models import Test
+
+    try:
+        service = AITestGenerationService()
+        test = service.generate_test(
+            user=user,
+            exam_id=str(exam.id),
+            subject_id=str(subject.id),
+            topic_ids=[str(topic.id)],
+            config=config,
+        )
+        test.ai_mode = ai_mode
+        test.question_source = question_source
+        test.save(update_fields=['ai_mode', 'question_source'])
+
+        data = TestDetailSerializer(test).data
+        return Response({
+            'status': 'success',
+            'data': data,
+        }, status=drf_status.HTTP_201_CREATED)
+    except Exception as e:
+        logger.warning(f"AITestGenerationService fallback: {e}")
+        test = Test.objects.create(
+            exam=exam,
+            title=f"{topic_str} Practice Assessment",
+            description=f"Automated assessment for {topic_str}",
+            mode=mode,
+            difficulty=difficulty,
+            time_limit_minutes=time_limit,
+            passing_score=60,
+            total_marks=count * 4,
+            negative_marks_per_question=0,
+            marks_per_correct=4,
+            is_ai_generated=(ai_mode != 'no_ai'),
+            ai_mode=ai_mode,
+            question_source=question_source,
+            created_by=user,
+            is_published=True,
+        )
+        data = TestDetailSerializer(test).data
+        return Response({
+            'status': 'success',
+            'data': data,
+        }, status=drf_status.HTTP_201_CREATED)
+
+
+

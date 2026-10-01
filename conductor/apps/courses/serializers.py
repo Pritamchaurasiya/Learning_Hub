@@ -136,6 +136,11 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.BooleanField())
     def get_is_enrolled(self, obj):
         """Check if current user is enrolled."""
+        if hasattr(obj, '_user_enrollment'):
+            return obj._user_enrollment is not None
+        enrollments_map = self.context.get('enrollments_map')
+        if enrollments_map is not None:
+            return obj.id in enrollments_map
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             return Enrollment.objects.filter(user=request.user, course=obj).exists()
@@ -144,6 +149,12 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_user_progress(self, obj):
         """Get current user's progress."""
+        if hasattr(obj, '_user_enrollment'):
+            return obj._user_enrollment.progress_percentage if obj._user_enrollment else None
+        enrollments_map = self.context.get('enrollments_map')
+        if enrollments_map is not None:
+            enrollment = enrollments_map.get(obj.id)
+            return enrollment.progress_percentage if enrollment else None
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             try:

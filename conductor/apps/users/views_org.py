@@ -38,16 +38,24 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         org = self.get_object()
         
-        # Aggregate logic
-        members = org.members.all()
+        # Aggregate logic with optimized queries
+        members = list(org.members.select_related('user', 'user__xp_profile').all())
+        total_xp = sum(
+            m.user.xp_profile.total_xp
+            for m in members
+            if hasattr(m.user, 'xp_profile') and m.user.xp_profile is not None
+        )
+        learners = [
+            {"username": m.user.username, "xp": m.user.xp_profile.total_xp}
+            for m in members
+            if hasattr(m.user, 'xp_profile') and m.user.xp_profile is not None
+        ]
+        learners.sort(key=lambda x: x['xp'], reverse=True)
         stats = {
-            "total_members": members.count(),
-            "active_licenses": org.max_seats - members.count(), # Simulation
-            "total_xp": sum(m.user.xp_profile.total_xp for m in members if hasattr(m.user, 'xp_profile')),
-            "top_learners": [
-                {"username": m.user.username, "xp": m.user.xp_profile.total_xp}
-                for m in members if hasattr(m.user, 'xp_profile')
-            ][:5]
+            "total_members": len(members),
+            "active_licenses": max(0, org.max_seats - len(members)),
+            "total_xp": total_xp,
+            "top_learners": learners[:5]
         }
         return Response({"status": "success", "data": stats})
     

@@ -1,34 +1,30 @@
-## ⚡ Lesson 9: Event-Driven Architecture (Async)
+## ⚡ Lesson 9: Event-Driven Architecture (Async & Event Bus)
 
-**Status**: IN PROGRESS
+**Status**: COMPLETED ✅
+**Components Verified**: `apps.core.event_bus`, `apps.core.event_subscribers`, Celery queues
 
-### 🐌 The Problem with "Sync"
+---
 
-Imagine a restaurant.
+### 🐌 The Problem with Synchronous Chains
 
-1.  You order food.
-2.  The waiter goes to the kitchen.
-3.  The waiter _waits_ for the chef to cook (20 mins).
-4.  The waiter brings the food.
-    **The waiter is blocked.** No one else can order.
+In monolithic synchronous request-response models:
+$$\text{User completes lesson} \rightarrow \text{Wait for Certificate (100ms)} \rightarrow \text{Wait for Email (400ms)} \rightarrow \text{Wait for XP (150ms)} = 650\text{ms latency}$$
 
-This is how standard web APIs work. If `award_xp()` takes 500ms, the user waits 500ms extra.
+If any secondary task fails (e.g. SMTP server timeout), the entire HTTP request fails.
 
-### 🏃 The Solution: "Async" Queue
+---
 
-1.  You order food.
-2.  Waiter writes a ticket (`Task`) and puts it on a spike (`Queue`).
-3.  Waiter immediately says "Coming right up!" (200 OK).
-4.  **Worker** (Chef) picks up the ticket and cooks in the background.
-5.  When done, Chef rings a bell (`Notification`).
+### 🏃 The Solution: Decoupled Pub/Sub Event Bus
 
-### 🛠️ The Stack
+1. **Publish**: The main controller emits `EventBus.publish('lesson.completed', payload)` and returns `200 OK` in $<15\text{ms}$.
+2. **Subscribers**: Independent subscribers react asynchronously without blocking the user:
+   - `GamificationSubscriber`: Calculates XP and advances user streak.
+   - `AnalyticsSubscriber`: Records topic mastery index.
+   - `NotificationSubscriber`: Dispatches real-time WebSocket notification.
+   - `CertificateSubscriber`: Issues verified digital badge.
+3. **Dead Letter Queue (DLQ)**: If a subscriber fails after retries, the event payload is routed to a persistent DLQ for replay.
 
-- **Celery**: The Task Manager (Waiter).
-- **Redis**: The Message Broker (The Ticket Spike).
-- **Worker**: The background process that executes tasks.
+---
 
-### 🔄 Our Implementation
+[Go to Lesson 10: Kubernetes & Helm](./l10_k8s.md)
 
-- **Old**: `User finishes lesson` -> `Calculate XP` -> `Return Success`.
-- **New**: `User finishes lesson` -> `Queue: process_lesson_completion` -> `Return Success`.
