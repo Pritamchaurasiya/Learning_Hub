@@ -136,4 +136,21 @@ export const verifiableCredentialService = {
   <text x="780" y="575" font-family="system-ui, sans-serif" font-size="11" fill="#f59e0b" text-anchor="end">LearningHub Academic Council</text>
 </svg>`
   },
+
+  /**
+   * Downloads tamper-proof SVG vector certificate to student's disk
+   */
+  downloadCertificateSvg(vc: W3CVerifiableCredential, filename?: string): void {
+    const svgStr = this.generateCertificateSvg(vc)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download =
+      filename || `learninghub-certificate-${vc.id.replace(/[^a-zA-Z0-9-]/g, '_')}.svg`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  },
 }

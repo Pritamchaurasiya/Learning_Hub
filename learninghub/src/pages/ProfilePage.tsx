@@ -24,6 +24,7 @@ import { Input } from '../components/ui/Input'
 import { StatCard } from '../components/ui/StatCard'
 import { Skeleton } from '../components/ui/Skeleton'
 import { userService, type UserProfile, type UpdateProfileData } from '../services/userService'
+import { StudentCredentialsPortfolio } from '../components/credentials/StudentCredentialsPortfolio'
 import { motion } from 'framer-motion'
 
 // Animation Variants
@@ -520,6 +521,11 @@ export default function ProfilePage() {
               </div>
             )}
           </Card>
+        </motion.div>
+
+        {/* Verifiable Credentials & Web3 Identity Portfolio */}
+        <motion.div variants={itemVariants}>
+          <StudentCredentialsPortfolio />
         </motion.div>
       </motion.div>
     </div>
