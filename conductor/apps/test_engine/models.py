@@ -8,6 +8,13 @@ from django.conf import settings
 from django.utils import timezone
 from apps.exams.models import Exam, Topic
 
+try:
+    from django.contrib.postgres.indexes import GinIndex
+except ImportError:
+    GinIndex = None  # Not available without PostgreSQL
+
+from django.contrib.postgres.search import SearchVectorField
+
 
 class Question(models.Model):
     """
@@ -62,6 +69,8 @@ class Question(models.Model):
     correct_count = models.IntegerField(default=0)
     incorrect_count = models.IntegerField(default=0)
     avg_time_seconds = models.FloatField(default=0, help_text="Average time users take to answer")
+
+    search_vector = SearchVectorField(null=True)
 
     # Quality control
     is_verified = models.BooleanField(default=False, help_text="Manually verified by instructor")
@@ -392,4 +401,8 @@ class AttemptAnswer(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.attempt.user.email} - Q{self.question.text[:30]}..."
+        return f"Answer for {self.attempt} - {self.question}"
+
+if GinIndex:
+    if not hasattr(Question._meta, 'indexes'): Question._meta.indexes = []
+    Question._meta.indexes.append(GinIndex(fields=['search_vector'], name='question_search_idx'))

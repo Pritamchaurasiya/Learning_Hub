@@ -7,6 +7,8 @@ try:
 except ImportError:
     GinIndex = None  # Not available without PostgreSQL
 
+from django.contrib.postgres.search import SearchVectorField
+
 
 class DiscussionThread(BaseModel):
     """Discussion thread for course Q&A."""
@@ -29,6 +31,8 @@ class DiscussionThread(BaseModel):
     like_count = models.PositiveIntegerField(default=0)
     ai_summary = models.TextField(blank=True, help_text="AI-generated summary of the discussion")
     
+    search_vector = SearchVectorField(null=True)
+
     class Meta:
         ordering = ['-is_pinned', '-created_at']
         indexes = [
@@ -141,3 +145,10 @@ class DiscussionVote(BaseModel):
         indexes = [
             models.Index(fields=['user', 'content_type', 'object_id']),
         ]
+
+    def __str__(self):
+        return f"{self.user} - {self.value} on {self.content_object}"
+
+if GinIndex:
+    if not hasattr(DiscussionThread._meta, 'indexes'): DiscussionThread._meta.indexes = []
+    DiscussionThread._meta.indexes.append(GinIndex(fields=['search_vector'], name='discussion_search_idx'))

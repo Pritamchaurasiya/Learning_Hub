@@ -10,6 +10,8 @@ try:
 except ImportError:
     GinIndex = None  # Not available without PostgreSQL
 
+from django.contrib.postgres.search import SearchVectorField
+
 try:
     from pgvector.django import HnswIndex
 except ImportError:
@@ -122,6 +124,8 @@ class Course(BaseModel):
     # AI / Semantics
     embedding = models.JSONField(null=True, blank=True, help_text="Semantic vector embedding (384-dim)")
 
+    search_vector = SearchVectorField(null=True)
+
     class Meta:
         db_table = "courses"
         ordering = ["-created_at"]
@@ -173,6 +177,8 @@ class Module(BaseModel):
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
 
+    search_vector = SearchVectorField(null=True)
+
     class Meta:
         db_table = "course_modules"
         ordering = ["order"]
@@ -208,6 +214,8 @@ class Lesson(BaseModel):
     order = models.PositiveIntegerField(default=0)
     is_preview = models.BooleanField(default=False)
     is_pro_only = models.BooleanField(default=False, help_text="Requires active subscription")
+
+    search_vector = SearchVectorField(null=True)
 
     class Meta:
         db_table = "lessons"
@@ -405,3 +413,11 @@ class LessonProgress(BaseModel):
 
     def __str__(self):
         return f"{self.user.username} - {self.lesson.title} ({self.progress_seconds}s)"
+
+if GinIndex:
+    if not hasattr(Course._meta, 'indexes'): Course._meta.indexes = []
+    Course._meta.indexes.append(GinIndex(fields=['search_vector'], name='course_search_idx'))
+    if not hasattr(Module._meta, 'indexes'): Module._meta.indexes = []
+    Module._meta.indexes.append(GinIndex(fields=['search_vector'], name='module_search_idx'))
+    if not hasattr(Lesson._meta, 'indexes'): Lesson._meta.indexes = []
+    Lesson._meta.indexes.append(GinIndex(fields=['search_vector'], name='lesson_search_idx'))
