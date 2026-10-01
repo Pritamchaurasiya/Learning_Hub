@@ -27,6 +27,7 @@ import { UpdateTimeline } from '../components/updates/UpdateTimeline';
 import { UpdateReminderModal } from '../components/updates/UpdateReminderModal';
 import { ResultWatcherModal } from '../components/updates/ResultWatcherModal';
 import { NotificationPreferencesModal } from '../components/updates/NotificationPreferencesModal';
+import { CollegeCircularModal } from '../components/updates/CollegeCircularModal';
 import { updatesService } from '../services/updatesService';
 import type {
   StudentUpdate,
@@ -45,7 +46,7 @@ export const StudentUpdatesPage: React.FC = () => {
   const urlSearch = searchParams.get('search') || '';
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'feed' | 'personalized' | 'deadlines' | 'watchers' | 'bookmarks' | 'sources'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'personalized' | 'circulars' | 'deadlines' | 'watchers' | 'bookmarks' | 'sources'>('feed');
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState(urlSearch);
@@ -64,6 +65,7 @@ export const StudentUpdatesPage: React.FC = () => {
   // Data States
   const [updates, setUpdates] = useState<StudentUpdate[]>([]);
   const [personalizedUpdates, setPersonalizedUpdates] = useState<StudentUpdate[]>([]);
+  const [collegeCirculars, setCollegeCirculars] = useState<StudentUpdate[]>([]);
   const [bookmarks, setBookmarks] = useState<UpdateBookmark[]>([]);
   const [sources, setSources] = useState<UpdateSource[]>([]);
   const [resultWatchers, setResultWatchers] = useState<ResultWatcher[]>([]);
@@ -82,12 +84,13 @@ export const StudentUpdatesPage: React.FC = () => {
   const [isResultWatcherModalOpen, setIsResultWatcherModalOpen] = useState(false);
   const [resultWatcherDefaults, setResultWatcherDefaults] = useState<{ institution?: string; course?: string }>({});
   const [isPrefModalOpen, setIsPrefModalOpen] = useState(false);
+  const [isCollegeCircularModalOpen, setIsCollegeCircularModalOpen] = useState(false);
 
   // Load Main Data
   const loadData = async () => {
     try {
       setLoading(true);
-      const [allUpdates, personal, bmkList, srcList, statData, watchersList, subsList] = await Promise.all([
+      const [allUpdates, personal, bmkList, srcList, statData, watchersList, subsList, circsData] = await Promise.all([
         updatesService.getUpdates({
           category: selectedCategory,
           search: searchQuery,
@@ -101,10 +104,12 @@ export const StudentUpdatesPage: React.FC = () => {
         updatesService.getStats(),
         updatesService.getResultWatchers(),
         updatesService.getSubscriptions(),
+        updatesService.getCollegeCirculars(),
       ]);
 
       setUpdates(Array.isArray(allUpdates) ? allUpdates : []);
       setPersonalizedUpdates(Array.isArray(personal) ? personal : []);
+      setCollegeCirculars(Array.isArray(circsData?.results) ? circsData.results : []);
       setBookmarks(Array.isArray(bmkList) ? bmkList : []);
       setSources(Array.isArray(srcList) ? srcList : []);
       setResultWatchers(Array.isArray(watchersList) ? watchersList : []);
@@ -245,6 +250,17 @@ export const StudentUpdatesPage: React.FC = () => {
 
               <button
                 type="button"
+                onClick={() => setIsCollegeCircularModalOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-indigo-500/30 bg-indigo-50 dark:bg-indigo-950/40 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors shadow-sm"
+                title="Publish Authenticated College Circular"
+                aria-label="Post College Circular"
+              >
+                <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span className="hidden sm:inline">Post Circular</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setIsPrefModalOpen(true)}
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:bg-accent transition-colors shadow-sm"
                 title="Configure Quiet Hours & Anti-Noise Preferences"
@@ -344,6 +360,22 @@ export const StudentUpdatesPage: React.FC = () => {
             <span>For You</span>
             <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted text-muted-foreground">
               {personalizedUpdates.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('circulars')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors ${
+              activeTab === 'circulars'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>College Circulars</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted text-muted-foreground">
+              {collegeCirculars.length}
             </span>
           </button>
 

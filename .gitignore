@@ -271,4 +271,7 @@ tests_a_*.png
 unmerged_branch_analysis.json
 step360_prompt.txt
 AUDIT_CLASSIFICATION_REPORT.json
+api_endpoint_verification_report.json
+branch_audit_results.json
+fast_branch_records.json
 
