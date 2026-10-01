@@ -45,7 +45,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
 
   useEffect(() => {
     if (update?.id) {
-      updatesService.logEngagement(update.id, 'IMPRESSION')
+      updatesService.logEngagement?.(update.id, 'IMPRESSION')
     }
   }, [update?.id])
 
@@ -61,7 +61,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
     try {
       if (nextState) {
         await updatesService.saveBookmark(update.id)
-        updatesService.logEngagement(update.id, 'BOOKMARK')
+        updatesService.logEngagement?.(update.id, 'BOOKMARK')
       } else {
         await updatesService.removeBookmark(update.id)
       }
@@ -177,7 +177,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
         <Link
           to={`/updates/${update.id}`}
           onClick={e => {
-            updatesService.logEngagement(update.id, 'CLICK_DETAIL')
+            updatesService.logEngagement?.(update.id, 'CLICK_DETAIL')
             if (onViewDetails) {
               e.preventDefault()
               onViewDetails(update)
@@ -267,7 +267,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
               href={update.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => updatesService.logEngagement(update.id, 'CLICK_SOURCE')}
+              onClick={() => updatesService.logEngagement?.(update.id, 'CLICK_SOURCE')}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               title="Open Official University Source"
             >
@@ -291,7 +291,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  updatesService.logEngagement(update.id, 'REMINDER_SET')
+                  updatesService.logEngagement?.(update.id, 'REMINDER_SET')
                   if (onOpenReminder) onOpenReminder(update)
                   else onSetReminder?.(update)
                 }}
