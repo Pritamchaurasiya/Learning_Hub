@@ -324,5 +324,66 @@ describe('TestsAPage', () => {
       expect(screen.getByText('AI Dynamic Test Generation')).toBeInTheDocument()
     })
   })
+
+  it('renders cognitive mistake diagnostics card and button when results have errors', async () => {
+    vi.mocked(testsAService.getTests).mockResolvedValue({
+      status: 'success',
+      data: mockTests as any,
+    })
+
+    useStore.setState({
+      test: {
+        ...useStore.getState().test,
+        isActive: false,
+        results: {
+          attempt_id: 'att-res-1',
+          test_id: 'test-1',
+          test_title: 'Mathematics Assessment',
+          mode: 'mock',
+          score: 4,
+          total_marks: 10,
+          percentage: 40,
+          passed: false,
+          time_taken: 180,
+          time_limit: 600,
+          correct_count: 1,
+          incorrect_count: 1,
+          unanswered_count: 0,
+          question_results: [
+            {
+              question_id: 'q1',
+              question_text: 'Evaluate integral of sin(x)',
+              question_type: 'mcq',
+              selected_options: [{ id: 'opt1', text: 'cos(x)' }],
+              correct_options: [{ id: 'opt2', text: '-cos(x)' }],
+              is_correct: false,
+              marks_obtained: 0,
+              explanation: 'The integral of sin(x) dx is -cos(x) + C.',
+              time_spent: 80,
+              is_flagged: false,
+              topic: 'Calculus',
+            },
+          ],
+        },
+      },
+    })
+
+    render(<TestsAPage />)
+
+    await waitFor(() => {
+      // Verify Cognitive Diagnostics Snapshot Card
+      expect(screen.getByText('Cognitive Error Pattern Analysis')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Mistake Diagnostics \(1\)/i })).toBeInTheDocument()
+    })
+
+    // Click Mistake Diagnostics button
+    const mistakeBtn = screen.getByRole('button', { name: /Mistake Diagnostics \(1\)/i })
+    fireEvent.click(mistakeBtn)
+
+    // Modal opens
+    expect(screen.getByText('Cognitive Mistake Diagnostics')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Start 5-Min Remediation Drill/i })).toBeInTheDocument()
+  })
 })
+
 

@@ -195,6 +195,7 @@ class CodeSandboxService:
     def _run_python(code: str, input_data: str, timeout_sec: float, start_time: float):
         with tempfile.NamedTemporaryFile(suffix='.py', mode='w', delete=False, encoding='utf-8') as f:
             f.write(code)
+            f.flush()
             temp_path = f.name
 
         try:
@@ -276,11 +277,16 @@ class CodeSandboxService:
                     'status': 'Runtime Error',
                 }
 
-        with tempfile.NamedTemporaryFile(suffix='.js', mode='w', delete=False, encoding='utf-8') as f:
-            f.write(code)
-            temp_path = f.name
-
+        temp_path = None
         try:
+            with tempfile.NamedTemporaryFile(suffix='.js', mode='w', delete=False, encoding='utf-8') as f:
+                f.write(code)
+                f.flush()
+                temp_path = f.name
+
+            # Windows process startup under high test suite CPU load requires resilient timeout
+            effective_timeout = max(5.0, timeout_sec) if sys.platform.startswith('win') else timeout_sec
+
             process = subprocess.Popen(
                 ['node', '--no-addons', '--disallow-code-generation-from-strings', temp_path],
                 stdin=subprocess.PIPE,
@@ -289,7 +295,7 @@ class CodeSandboxService:
                 text=True
             )
 
-            stdout, stderr = process.communicate(input=input_data, timeout=timeout_sec)
+            stdout, stderr = process.communicate(input=input_data, timeout=effective_timeout)
             elapsed_ms = int((time.time() - start_time) * 1000)
 
             if process.returncode == 0:
@@ -321,7 +327,8 @@ class CodeSandboxService:
                 'status': 'Accepted',
             }
         except subprocess.TimeoutExpired:
-            process.kill()
+            if 'process' in locals() and process:
+                process.kill()
             return {
                 'success': False,
                 'stdout': '',

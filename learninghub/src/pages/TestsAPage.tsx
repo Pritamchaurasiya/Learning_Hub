@@ -54,6 +54,8 @@ import { IRTThetaGauge } from '../components/test/IRTThetaGauge'
 import { SocraticReviewModal } from '../components/test/SocraticReviewModal'
 import { MathRenderer } from '../components/MathRenderer'
 import { playExamChime } from '../utils/soundEffects'
+import { analyzeMistakes } from '../services/remediationService'
+import { MistakeRemediationModal } from '../components/test/MistakeRemediationModal'
 
 interface TestCardProps {
   test: TestA
@@ -481,6 +483,8 @@ const ResultsView = memo(
     const timeTaken = result.time_taken ?? 0
     const isMock = result.is_mock ?? false
     const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set())
+    const [isMistakeModalOpen, setIsMistakeModalOpen] = useState(false)
+    const mistakeSummary = useMemo(() => analyzeMistakes(result), [result])
     const [socraticQuestion, setSocraticQuestion] = useState<{
       questionText: string
       selectedOptionText: string
@@ -683,6 +687,16 @@ const ResultsView = memo(
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {mistakeSummary.totalMistakes > 0 && (
+              <Button
+                onClick={() => setIsMistakeModalOpen(true)}
+                variant="secondary"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 shadow-md font-semibold"
+              >
+                <BrainCircuit className="w-4 h-4" />
+                Mistake Diagnostics ({mistakeSummary.totalMistakes})
+              </Button>
+            )}
             {weakTopics.length > 0 && onRemediate && (
               <Button
                 onClick={() => onRemediate(weakTopics.map(t => t.topic))}
@@ -743,6 +757,62 @@ const ResultsView = memo(
                         style={{ width: `${topic.percentage}%` }}
                       />
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Cognitive Diagnostics Snapshot Card */}
+        {mistakeSummary.totalMistakes > 0 && (
+          <Card className="p-6 sm:p-8 bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/40 dark:from-indigo-950/20 dark:via-gray-900 dark:to-purple-950/20 border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-md">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    Cognitive Error Pattern Analysis
+                    <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 font-semibold text-xs">
+                      {mistakeSummary.totalMistakes} Error{mistakeSummary.totalMistakes === 1 ? '' : 's'}
+                    </Badge>
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Primary Root Cause:{' '}
+                    <strong className="text-indigo-600 dark:text-indigo-400">
+                      {mistakeSummary.primaryWeaknessLabel}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                size="sm"
+                onClick={() => setIsMistakeModalOpen(true)}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Review Errors & Launch 5-Min Drill</span>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {mistakeSummary.categories.map(cat => (
+                <div
+                  key={cat.type}
+                  className="p-3 rounded-xl bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 shadow-xs"
+                >
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <span className="font-medium truncate">{cat.label}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{cat.count}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-indigo-600 h-1.5 rounded-full"
+                      style={{ width: `${cat.percentage}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -919,6 +989,20 @@ const ResultsView = memo(
             questionText={socraticQuestion.questionText}
             selectedOptionText={socraticQuestion.selectedOptionText}
             correctOptionText={socraticQuestion.correctOptionText}
+          />
+        )}
+
+        {isMistakeModalOpen && (
+          <MistakeRemediationModal
+            isOpen={isMistakeModalOpen}
+            onClose={() => setIsMistakeModalOpen(false)}
+            summary={mistakeSummary}
+            onStartTargetedDrill={topics => {
+              setIsMistakeModalOpen(false)
+              if (onRemediate) onRemediate(topics)
+            }}
+            onBookmarkQuestion={handleToggleBookmark}
+            bookmarkedQuestionIds={bookmarkedIds}
           />
         )}
       </motion.div>
