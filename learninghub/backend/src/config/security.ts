@@ -140,7 +140,6 @@ export const helmetConfig = {
         "'self'",
         ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
       ],
-      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
@@ -314,8 +313,6 @@ export const sanitizeInput = (input: string): string => {
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove null bytes and control chars (keep tab/newline)
     .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
-    .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
-    .replace(/&#\d+;/g, '') // Remove decimal HTML entities
     .trim()
     .slice(0, 1_000_000) // Match expanded max allowed by Zod and content-heavy fields
 }

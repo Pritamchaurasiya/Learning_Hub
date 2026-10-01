@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { useStore } from './stores/useStore'
 import './index.css'
 import * as Sentry from '@sentry/react'
 
@@ -20,17 +19,6 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
   })
 }
-
-// Rehydrate Zustand persisted state
-void (async () => {
-  try {
-    await useStore.persist.rehydrate()
-  } catch (err) {
-    console.error('[Hydration] Failed to rehydrate persisted state:', err)
-  } finally {
-    useStore.getState().setHydrated()
-  }
-})()
 
 // Create React Query client with optimized defaults
 const queryClient = new QueryClient({
