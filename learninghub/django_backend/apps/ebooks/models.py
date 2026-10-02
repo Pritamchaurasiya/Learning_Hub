@@ -23,6 +23,11 @@ def generate_flashcard_id():
     return f"card-{uuid.uuid4().hex[:12]}"
 
 
+def generate_progress_id():
+    return f"prog-{uuid.uuid4().hex[:12]}"
+
+
+
 class Ebook(models.Model):
     DIFFICULTY_CHOICES = [
         ("Beginner", "Beginner"),
@@ -124,7 +129,7 @@ class EbookBookmark(models.Model):
 
 
 class EbookReadingProgress(models.Model):
-    id = models.CharField(max_length=64, primary_key=True, default=lambda: f"prog-{uuid.uuid4().hex[:12]}")
+    id = models.CharField(max_length=64, primary_key=True, default=generate_progress_id)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ebook_progress")
     ebook = models.ForeignKey(Ebook, on_delete=models.CASCADE, related_name="user_progress")
     current_chapter = models.ForeignKey(EbookChapter, on_delete=models.SET_NULL, null=True, blank=True)

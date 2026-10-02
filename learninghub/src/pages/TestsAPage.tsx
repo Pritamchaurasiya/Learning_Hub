@@ -56,6 +56,9 @@ import { MathRenderer } from '../components/MathRenderer'
 import { playExamChime } from '../utils/soundEffects'
 import { analyzeMistakes } from '../services/remediationService'
 import { MistakeRemediationModal } from '../components/test/MistakeRemediationModal'
+import { useProctoring } from '../hooks/useProctoring'
+import { AssessmentIntegrityScorecard } from '../components/test/AssessmentIntegrityScorecard'
+import { ProctoringWarningBanner } from '../components/test/ProctoringWarningBanner'
 
 interface TestCardProps {
   test: TestA
@@ -726,6 +729,9 @@ const ResultsView = memo(
           </div>
         </Card>
 
+        {/* Assessment Integrity Shield Card */}
+        <AssessmentIntegrityScorecard result={result} />
+
         {/* Topic-wise Breakdown */}
         {topicBreakdown.length > 0 && (
           <Card className="p-8">
@@ -1044,6 +1050,25 @@ const TestsAPage = memo(() => {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [hasAccess, setHasAccess] = useState(true)
   const [tabSwitchCount, setTabSwitchCount] = useState(0)
+
+  const {
+    violations: proctorViolations,
+    violationCount: proctorViolationCount,
+    isWarningVisible: isProctorWarningVisible,
+    lastViolation: proctorLastViolation,
+    dismissWarning: dismissProctorWarning,
+    resetViolations: resetProctorViolations,
+  } = useProctoring({
+    isActive: Boolean(test.isActive && test.questions.length > 0 && !test.results),
+    strictMode: true,
+    requireFullscreen: false,
+    onViolation: v => {
+      recordProctorViolation()
+      if (v.type === 'TAB_SWITCH') {
+        setTabSwitchCount(prev => prev + 1)
+      }
+    },
+  })
 
   // 6-Mode Platform States
   const [offlineBundles, setOfflineBundles] = useState<CachedOfflineBundle[]>([])
@@ -1561,6 +1586,7 @@ const TestsAPage = memo(() => {
 
       try {
         setError(null)
+        resetProctorViolations()
         const isAdaptive = testItem.mode === 'adaptive' || testItem.difficulty === 'adaptive'
         const isContest = testItem.mode === 'contest'
         const isPractice = testItem.mode === 'practice'
@@ -1666,6 +1692,7 @@ const TestsAPage = memo(() => {
       navigate,
       addToast,
       resetTestState,
+      resetProctorViolations,
     ]
   )
 
@@ -1780,7 +1807,7 @@ const TestsAPage = memo(() => {
         return
       }
 
-      const result = await submitTest()
+      const result = await submitTest(proctorViolations)
       if (!result.success) {
         setError('Failed to submit test. Please try again.')
       }
@@ -1801,6 +1828,7 @@ const TestsAPage = memo(() => {
     test.questions,
     test.flaggedQuestions,
     offlineBundles,
+    proctorViolations,
     submitTest,
     setTestResults,
     addToast,
@@ -2104,6 +2132,13 @@ const TestsAPage = memo(() => {
             </span>
           </div>
         )}
+
+        <ProctoringWarningBanner
+          isWarningVisible={isProctorWarningVisible}
+          lastViolation={proctorLastViolation}
+          onDismiss={dismissProctorWarning}
+          violationCount={proctorViolationCount}
+        />
 
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-4 py-4">

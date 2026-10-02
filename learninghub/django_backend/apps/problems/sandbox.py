@@ -271,17 +271,49 @@ class CodeSandboxService:
 
     @classmethod
     def _run_javascript(cls, code: str, input_data: str, timeout_sec: float, start_time: float):
+        import re
         # Static AST/Regex safety check for JavaScript sandbox
-        for mod in cls.DISALLOWED_JS_MODULES:
-            if f"require('{mod}')" in code or f'require("{mod}")' in code or f"from '{mod}'" in code or f'from "{mod}"' in code:
+        # 1. Check for module imports (require, import, dynamic import, node: protocol)
+        mod_pattern = r'\b(?:require|import)\s*\(\s*[\'"`](?:node:)?(?:' + '|'.join(cls.DISALLOWED_JS_MODULES) + r')[\'"`]\s*\)'
+        if re.search(mod_pattern, code, re.IGNORECASE):
+            return {
+                'success': False,
+                'stdout': '',
+                'stderr': 'Security policy violation: Disallowed module import detected.',
+                'runtime_ms': 0,
+                'memory_mb': 0.0,
+                'status': 'Runtime Error',
+            }
+
+        # 2. Check for ES6 from '...' syntax
+        es6_pattern = r'\bfrom\s*[\'"`](?:node:)?(?:' + '|'.join(cls.DISALLOWED_JS_MODULES) + r')[\'"`]'
+        if re.search(es6_pattern, code, re.IGNORECASE):
+            return {
+                'success': False,
+                'stdout': '',
+                'stderr': 'Security policy violation: Disallowed module import detected.',
+                'runtime_ms': 0,
+                'memory_mb': 0.0,
+                'status': 'Runtime Error',
+            }
+
+        # 3. Check for process/child_process escape vectors
+        dangerous_calls = [
+            r'\bprocess\.(?:exit|env|binding|mainModule|kill|geteuid|dlopen)\b',
+            r'\b(?:child_process|worker_threads)\b',
+            r'\b(?:eval|Function)\s*\(',
+        ]
+        for danger in dangerous_calls:
+            if re.search(danger, code, re.IGNORECASE):
                 return {
                     'success': False,
                     'stdout': '',
-                    'stderr': f'Security policy violation: Module "{mod}" is strictly disallowed in sandbox.',
+                    'stderr': 'Security policy violation: Disallowed API call detected in sandbox.',
                     'runtime_ms': 0,
                     'memory_mb': 0.0,
                     'status': 'Runtime Error',
                 }
+
 
         temp_path = None
         try:

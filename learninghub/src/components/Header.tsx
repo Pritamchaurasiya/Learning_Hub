@@ -22,6 +22,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
+import { BrandLogo } from './BrandLogo'
 
 const Header = memo(() => {
   const navigate = useNavigate()
@@ -187,20 +188,12 @@ const Header = memo(() => {
           <Menu className="w-5 h-5" />
         </motion.button>
 
-        <motion.h1
-          whileHover={{ scale: 1.02 }}
-          className="text-xl font-bold text-gradient cursor-pointer select-none hidden sm:block"
-          onClick={() => navigate('/')}
-        >
-          LearningHub
-        </motion.h1>
-        <motion.h1
-          whileHover={{ scale: 1.02 }}
-          className="text-xl font-bold text-gradient cursor-pointer select-none sm:hidden"
-          onClick={() => navigate('/')}
-        >
-          LH
-        </motion.h1>
+        <div onClick={() => navigate('/')} className="cursor-pointer flex items-center">
+          <BrandLogo size="md" variant="full" badgeText="PRO" className="hidden sm:inline-flex" />
+          <BrandLogo size="sm" variant="full" showBadge={false} className="sm:hidden" />
+          <span className="sr-only">LearningHub</span>
+          <span className="sr-only">LH</span>
+        </div>
       </div>
 
       {/* Desktop Search */}

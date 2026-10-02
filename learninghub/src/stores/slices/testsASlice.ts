@@ -145,7 +145,9 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
     }))
   },
 
-  submitTest: async (): Promise<{ success: boolean; score: number }> => {
+  submitTest: async (
+    violations?: Array<{ type: string; timestamp: number; details?: string }>
+  ): Promise<{ success: boolean; score: number }> => {
     const { testsA } = get()
     const { testInfo, answers, confidences, attemptId, timeRemaining } = testsA
 
@@ -167,7 +169,8 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
         answers,
         timeTaken,
         attemptId,
-        confidences
+        confidences,
+        violations
       )
 
       const resultData = response.data

@@ -113,6 +113,17 @@ export interface TestResult {
   incorrect_count: number
   unanswered_count: number
   is_mock?: boolean
+  integrity_score?: number
+  integrity_risk?: 'EXCELLENT' | 'LOW_RISK' | 'MODERATE_RISK' | 'HIGH_RISK'
+  telemetry_summary?: {
+    integrity_score: number
+    risk_level: 'EXCELLENT' | 'LOW_RISK' | 'MODERATE_RISK' | 'HIGH_RISK'
+    total_violations: number
+    violation_counts: Record<string, number>
+    flagged_for_review: boolean
+    audit_hash?: string
+    events_logged?: number
+  }
   question_results: Array<{
     question_id: string
     question_text: string
@@ -320,6 +331,12 @@ interface RawResultData {
   incorrectCount?: number
   unanswered_count?: number
   unansweredCount?: number
+  integrity_score?: number
+  integrityScore?: number
+  integrity_risk?: 'EXCELLENT' | 'LOW_RISK' | 'MODERATE_RISK' | 'HIGH_RISK'
+  integrityRisk?: 'EXCELLENT' | 'LOW_RISK' | 'MODERATE_RISK' | 'HIGH_RISK'
+  telemetry_summary?: any
+  telemetrySummary?: any
   question_results?: RawQuestionResult[]
   questionResults?: RawQuestionResult[]
 }
@@ -394,6 +411,9 @@ const normalizeAttemptResult = (raw: RawResultData): TestResult => {
       raw.unanswered_count ??
       raw.unansweredCount ??
       questionResults.filter(q => q.selected_options.length === 0).length,
+    integrity_score: raw.integrity_score ?? raw.integrityScore ?? 100,
+    integrity_risk: raw.integrity_risk ?? raw.integrityRisk ?? 'EXCELLENT',
+    telemetry_summary: raw.telemetry_summary ?? raw.telemetrySummary,
     question_results: questionResults,
   }
 }
@@ -590,15 +610,30 @@ export const testsAService = {
     answers: Record<string, string | string[]>,
     timeTaken: number,
     attemptId: string,
-    confidences?: Record<string, string>
+    confidences?: Record<string, string>,
+    violations?: Array<{ type: string; timestamp: number; details?: string }>
   ) =>
     fetchApi(`/tests/${testId}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ answers, timeTaken, attempt_id: attemptId, confidences }),
+      body: JSON.stringify({ answers, timeTaken, attempt_id: attemptId, confidences, violations }),
     }).then(res => ({
       status: res.status ?? 'success',
       data: res.data,
     })) as Promise<{ status: string; data: TestResult }>,
+
+  // Send periodic or final assessment telemetry audit log
+  sendTelemetry: (
+    testId: string,
+    attemptId: string,
+    violations: Array<{ type: string; timestamp: number; details?: string }>
+  ) =>
+    fetchApi(`/tests/${testId}/telemetry`, {
+      method: 'POST',
+      body: JSON.stringify({ attempt_id: attemptId, violations }),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
 
   // Get test result
   getResult: (testId: string) =>

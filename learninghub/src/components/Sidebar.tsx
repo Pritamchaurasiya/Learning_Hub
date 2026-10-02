@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
+import BrandLogo from './BrandLogo'
 
 interface NavSection {
   label: string
@@ -170,20 +171,14 @@ export default function Sidebar() {
         }}
       >
         {/* Sidebar header */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-200/40 dark:border-white/10 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/25">
-              L
-            </div>
-            <div>
-              <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider leading-none">
-                LearningHub
-              </h2>
-              <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                Pro Platform
-              </p>
-            </div>
-          </div>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/40 dark:border-white/10 shrink-0">
+          <NavLink
+            to="/dashboard"
+            onClick={closeMobileSidebar}
+            className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg group"
+          >
+            <BrandLogo size="sm" variant="full" subtitle="Pro Platform" animated={false} />
+          </NavLink>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

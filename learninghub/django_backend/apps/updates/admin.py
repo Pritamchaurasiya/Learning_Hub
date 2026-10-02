@@ -97,24 +97,31 @@ class StudentUpdateAdmin(admin.ModelAdmin):
 class UpdateBookmarkAdmin(admin.ModelAdmin):
     list_display = ('user', 'update', 'tag', 'created_at')
     search_fields = ('user__email', 'update__title', 'tag')
+    autocomplete_fields = ['user', 'update']
+    list_select_related = ['user', 'update']
 
 
 @admin.register(UpdateReminder)
 class UpdateReminderAdmin(admin.ModelAdmin):
     list_display = ('user', 'update', 'reminder_type', 'trigger_at', 'is_dispatched')
     list_filter = ('reminder_type', 'is_dispatched')
+    autocomplete_fields = ['user', 'update']
+    list_select_related = ['user', 'update']
 
 
 @admin.register(UpdateSubscription)
 class UpdateSubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'target_type', 'target_value', 'created_at')
     list_filter = ('target_type',)
+    autocomplete_fields = ['user']
+    list_select_related = ['user']
 
 
 @admin.register(UpdateFetchLog)
 class UpdateFetchLogAdmin(admin.ModelAdmin):
     list_display = ('source', 'status_code', 'latency_ms', 'change_detected', 'created_at')
     list_filter = ('status_code', 'change_detected')
+    list_select_related = ['source']
 
 
 @admin.register(UpdateNotificationPreference)
@@ -122,6 +129,8 @@ class UpdateNotificationPreferenceAdmin(admin.ModelAdmin):
     list_display = ('user', 'quiet_hours_enabled', 'quiet_hours_start', 'quiet_hours_end', 'max_daily_push', 'digest_mode')
     list_filter = ('quiet_hours_enabled', 'digest_mode')
     search_fields = ('user__email',)
+    autocomplete_fields = ['user']
+    list_select_related = ['user']
 
 
 @admin.register(QueuedUpdateNotification)
@@ -129,6 +138,8 @@ class QueuedUpdateNotificationAdmin(admin.ModelAdmin):
     list_display = ('user', 'update', 'queue_reason', 'scheduled_for', 'is_dispatched')
     list_filter = ('queue_reason', 'is_dispatched')
     search_fields = ('user__email', 'update__title')
+    autocomplete_fields = ['user', 'update']
+    list_select_related = ['user', 'update']
 
 
 @admin.register(UpdateNotificationAudit)
@@ -136,3 +147,6 @@ class UpdateNotificationAuditAdmin(admin.ModelAdmin):
     list_display = ('user', 'update', 'channel', 'decision', 'delivered_at')
     list_filter = ('channel', 'decision')
     search_fields = ('user__email', 'update__title')
+    autocomplete_fields = ['user', 'update']
+    list_select_related = ['user', 'update']
+

@@ -83,7 +83,11 @@ class CsrfTokenView(APIView):
     def get(self, request):
         from django.middleware.csrf import get_token
         token = get_token(request)
-        response = success_response(data={'csrfToken': token}, message='CSRF token generated')
+        session_id = request.session.session_key or ""
+        response = success_response(data={
+            'csrfToken': token,
+            'sessionId': session_id
+        }, message='CSRF token generated')
         response.set_cookie('csrf-token', token, samesite='Lax')
         return response
 

@@ -204,3 +204,87 @@ class Topic(models.Model):
         # Update parent recursively
         if self.parent_id:
             Topic.objects.filter(id=self.parent_id).update(question_count=F('question_count') + 1)
+
+
+class PYQ(models.Model):
+    """
+    Previous Year Question model for national/global competitive exams.
+    Provides complete parity with Node Prisma schema.
+    """
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='pyqs')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='pyqs')
+    topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name='pyqs')
+    year = models.IntegerField(db_index=True)
+    paper_number = models.CharField(max_length=50, blank=True)
+    question_text = models.TextField()
+    solution_text = models.TextField(blank=True)
+    difficulty = models.CharField(max_length=20, default='MEDIUM')
+    marks = models.IntegerField(default=4)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'exam_pyqs'
+        ordering = ['-year', 'exam']
+        indexes = [
+            models.Index(fields=['exam', 'year']),
+            models.Index(fields=['subject', 'year']),
+        ]
+
+    def __str__(self):
+        return f"{self.exam.code} ({self.year}) - {self.question_text[:50]}"
+
+
+class Formula(models.Model):
+    """
+    Quick-revision formula and identity repository (LaTeX / KaTeX).
+    """
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='formulas')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='formulas')
+    title = models.CharField(max_length=200)
+    formula_latex = models.TextField(help_text="Formula in LaTeX formatting")
+    description = models.TextField(blank=True)
+    variables_explanation = models.JSONField(default=dict, blank=True)
+    is_important = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'exam_formulas'
+        ordering = ['subject', 'title']
+        indexes = [
+            models.Index(fields=['subject', 'topic']),
+            models.Index(fields=['is_important']),
+        ]
+
+    def __str__(self):
+        return f"{self.topic.name}: {self.title}"
+
+
+class RevisionNote(models.Model):
+    """
+    High-yield revision notes and cheat-sheets for rapid exam prep.
+    """
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='revision_notes')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='revision_notes')
+    title = models.CharField(max_length=200)
+    content_markdown = models.TextField()
+    summary = models.TextField(blank=True)
+    key_points = models.JSONField(default=list, blank=True)
+    estimated_read_time_mins = models.IntegerField(default=5)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'exam_revision_notes'
+        ordering = ['subject', 'title']
+        indexes = [
+            models.Index(fields=['subject', 'topic']),
+        ]
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+

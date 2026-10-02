@@ -3,7 +3,7 @@ from .views import (
     TestListView, TestDetailView, StartTestView, SubmitTestView,
     TestAutosaveView, TestAttemptDetailView, TestResultView,
     AIGenerateTestView, TestAttemptHistoryView, TopicPerformanceView,
-    BookmarkQuestionView, AdaptiveNextQuestionView
+    BookmarkQuestionView, AdaptiveNextQuestionView, TestTelemetryView
 )
 
 urlpatterns = [
@@ -30,6 +30,10 @@ urlpatterns = [
     path('tests/<str:pk>/result/', TestResultView.as_view(), name='test-result-slash'),
     path('tests/<str:pk>/adaptive-next', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test'),
     path('tests/<str:pk>/adaptive-next/', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test-slash'),
+    path('tests/<str:pk>/telemetry', TestTelemetryView.as_view(), name='test-telemetry'),
+    path('tests/<str:pk>/telemetry/', TestTelemetryView.as_view(), name='test-telemetry-slash'),
+    path('tests/attempts/<str:attempt_id>/telemetry', TestTelemetryView.as_view(), name='attempt-telemetry'),
+    path('tests/attempts/<str:attempt_id>/telemetry/', TestTelemetryView.as_view(), name='attempt-telemetry-slash'),
     path('bookmarks/questions', BookmarkQuestionView.as_view(), name='bookmarks-questions'),
     path('bookmarks/questions/', BookmarkQuestionView.as_view(), name='bookmarks-questions-slash'),
     path('bookmarks/questions/<str:question_id>', BookmarkQuestionView.as_view(), name='bookmark-question-delete'),

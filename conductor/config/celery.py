@@ -61,6 +61,26 @@ app.conf.update(
             "task": "apps.test_engine.tasks.recalculate_question_stats",
             "schedule": 86400.0,
         },
+        "check-achievements-batch": {
+            "task": "apps.gamification.tasks.check_achievements_task",
+            "schedule": 21600.0,
+        },
+        "cleanup-expired-sessions": {
+            "task": "apps.users.tasks.cleanup_expired_sessions_task",
+            "schedule": 86400.0,
+        },
+        "cleanup-expired-subscriptions": {
+            "task": "apps.subscriptions.tasks.cleanup_expired_subscriptions",
+            "schedule": 3600.0,
+        },
+        "send-subscription-expiry-reminders": {
+            "task": "apps.subscriptions.tasks.send_expiry_reminders",
+            "schedule": 86400.0,
+        },
+        "convert-expired-trials": {
+            "task": "apps.subscriptions.tasks.convert_expired_trials",
+            "schedule": 86400.0,
+        },
     },
 )
 

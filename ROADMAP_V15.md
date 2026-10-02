@@ -61,4 +61,19 @@
   - UI Component: [`MistakeRemediationModal.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/MistakeRemediationModal.tsx) & [`MistakeRemediationModal.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/MistakeRemediationModal.test.tsx)
   - Page Integration: [`TestsAPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/TestsAPage.tsx) & [`TestsAPage.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/TestsAPage.test.tsx)
 
+### Milestone 6: Real-Time Assessment Integrity Shield & Behavioral Telemetry Engine (Q2 2027) — [COMPLETED & VERIFIED]
+- **Status**: ✅ Shipped & Tested (100% pass across backend pytest suites, frontend vitest suites, tsc typecheck, and Vite PWA build).
+- **Architecture**:
+  - Non-invasive client-side behavioral telemetry monitoring tab switches, window blur/focus loss, clipboard copy/paste interceptions, right-click context menu prevention, and DevTools inspection key shortcuts (`F12`, `Ctrl+Shift+I`, `Ctrl+U`).
+  - Real-time client-side and backend scoring engine computing a 0–100 Assessment Integrity Score with category-specific caps and risk levels (`EXCELLENT`, `LOW_RISK`, `MODERATE_RISK`, `HIGH_RISK`).
+  - Active Test HUD: Non-intrusive floating status indicator with animated pulse badge and warning dialog on out-of-window events via [`ProctoringWarningBanner.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/ProctoringWarningBanner.tsx).
+  - Results Page Scorecard: Dedicated [`AssessmentIntegrityScorecard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/AssessmentIntegrityScorecard.tsx) presenting integrity scores, behavioral metric breakdown pills, expandable session telemetry audit log, and cryptographic HMAC-SHA256 session proof digest.
+  - Backend Telemetry Ingestion: Django endpoints `/api/v1/tests/<pk>/telemetry` and `/api/v1/tests/attempts/<attempt_id>/telemetry` powered by [`AssessmentIntegrityEngine`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/telemetry.py) with automated proctor review flagging.
+- **Components**:
+  - Backend Engine & Endpoints: [`telemetry.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/telemetry.py), [`views.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/views.py#L847), [`urls.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/urls.py#L32), and [`test_assessment_integrity.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/tests/test_assessment_integrity.py).
+  - Frontend Hook & Services: [`useProctoring.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/hooks/useProctoring.ts), [`useProctoring.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/hooks/useProctoring.test.ts), and [`testsAService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/testsAService.ts).
+  - Frontend Components: [`ProctoringWarningBanner.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/ProctoringWarningBanner.tsx), [`AssessmentIntegrityScorecard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/AssessmentIntegrityScorecard.tsx), and [`AssessmentIntegrityScorecard.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/AssessmentIntegrityScorecard.test.tsx).
+  - Page Integration: [`TestsAPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/TestsAPage.tsx) & [`testSlice.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/stores/slices/testSlice.ts).
+
+
 

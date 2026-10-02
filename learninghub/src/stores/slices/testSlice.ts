@@ -64,7 +64,9 @@ export interface TestSlice {
     timeRemaining?: number,
     sections?: TestSection[]
   ) => void
-  submitTest: () => Promise<{ success: boolean; score: number }>
+  submitTest: (
+    violations?: Array<{ type: string; timestamp: number; details?: string }>
+  ) => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
@@ -354,7 +356,7 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
     }))
   },
 
-  submitTest: async () => {
+  submitTest: async (violations?: Array<{ type: string; timestamp: number; details?: string }>) => {
     const { test } = get()
     const { testInfo, answers, confidences, attempt, timeRemaining } = test
 
@@ -376,7 +378,8 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
         answers,
         timeTaken,
         attempt.attemptId,
-        confidences
+        confidences,
+        violations
       )
 
       const resultData = response.data

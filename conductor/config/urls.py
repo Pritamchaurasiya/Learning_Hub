@@ -82,6 +82,16 @@ urlpatterns += [
         include(
             [
                 path("auth/", include("apps.users.urls.auth")),
+                path("csrf-token", lambda request: JsonResponse({
+                    "status": "success",
+                    "csrfToken": __import__("django.middleware.csrf", fromlist=["get_token"]).get_token(request),
+                    "sessionId": request.session.session_key or ""
+                }), name="csrf_token_bare"),
+                path("csrf-token/", lambda request: JsonResponse({
+                    "status": "success",
+                    "csrfToken": __import__("django.middleware.csrf", fromlist=["get_token"]).get_token(request),
+                    "sessionId": request.session.session_key or ""
+                }), name="csrf_token"),
                 path("users/", include("apps.users.urls.users")),
                 path("organizations/", include("apps.users.urls.orgs")),
                 path("core/", include("apps.core.urls")),

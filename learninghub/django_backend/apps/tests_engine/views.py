@@ -12,6 +12,7 @@ from .serializers import (
     TopicPerformanceSerializer, QuestionBookmarkSerializer
 )
 from .scoring import IRTScoringEngine
+from .telemetry import AssessmentIntegrityEngine
 
 class TestListView(APIView):
     permission_classes = [AllowAny]
@@ -297,6 +298,7 @@ class SubmitTestView(APIView):
             already_submitted = attempt.status in ('SUBMITTED', 'TIMEOUT', 'EXPIRED', 'ABANDONED')
 
             answers_data = request.data.get('answers', [])
+            violations_data = request.data.get('violations', [])
             client_time_spent_seconds = int(request.data.get('timeSpentSeconds') or request.data.get('time_spent') or request.data.get('timeTaken') or 0)
 
             # SERVER-SIDE TIMER ENFORCEMENT (anti-cheat):
@@ -445,6 +447,19 @@ class SubmitTestView(APIView):
             'question_results': question_results,
             'xpEarned': xp_earned,
         }
+
+        integrity_report = AssessmentIntegrityEngine.evaluate_violations(
+            violations_data,
+            attempt_id=attempt.id
+        )
+        response_data.update({
+            'integrity_score': integrity_report['integrity_score'],
+            'integrityScore': integrity_report['integrity_score'],
+            'integrity_risk': integrity_report['risk_level'],
+            'integrityRisk': integrity_report['risk_level'],
+            'telemetry_summary': integrity_report,
+            'telemetrySummary': integrity_report,
+        })
 
         if is_over_time:
             response_message = 'Test time exceeded. Marked as TIMEOUT.'
@@ -828,4 +843,38 @@ class AdaptiveNextQuestionView(APIView):
             },
             message='Next adaptive question dispatched'
         )
+
+
+class TestTelemetryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk=None, attempt_id=None):
+        violations = request.data.get('violations', [])
+        target_attempt_id = attempt_id or request.data.get('attempt_id') or request.data.get('attemptId')
+
+        attempt = None
+        if target_attempt_id:
+            attempt = TestAttempt.objects.filter(id=target_attempt_id, user=request.user).first()
+        elif pk:
+            attempt = TestAttempt.objects.filter(test_id=pk, user=request.user, status='IN_PROGRESS').first()
+
+        report = AssessmentIntegrityEngine.evaluate_violations(
+            violations,
+            attempt_id=attempt.id if attempt else (target_attempt_id or '')
+        )
+
+        return success_response(
+            data={
+                'attempt_id': attempt.id if attempt else target_attempt_id,
+                'integrity_score': report['integrity_score'],
+                'risk_level': report['risk_level'],
+                'total_violations': report['total_violations'],
+                'violation_counts': report['violation_counts'],
+                'flagged_for_review': report['flagged_for_review'],
+                'audit_hash': report['audit_hash'],
+                'events_logged': report['events_logged'],
+            },
+            message='Telemetry audit recorded successfully'
+        )
+
 

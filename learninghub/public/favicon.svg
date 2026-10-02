@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="fav-grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+    <linearGradient id="fav-grad-secondary" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#F43F5E" />
+    </linearGradient>
+    <filter id="fav-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#6366F1" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Rounded App Tile Background -->
+  <rect width="128" height="128" rx="28" fill="#0F172A" />
+  <rect width="126" height="126" x="1" y="1" rx="27" stroke="url(#fav-grad-primary)" stroke-width="2" opacity="0.4" />
+
+  <!-- Stylized Interlocking Wings & Nucleus -->
+  <g filter="url(#fav-glow)">
+    <!-- Left Wing / 'L' Shape -->
+    <path d="M30 42 C30 42 44 28 64 42 C64 56 50 82 36 94 C28 100 20 94 20 84 C20 66 30 42 30 42 Z" fill="url(#fav-grad-primary)" />
+    <!-- Right Wing / 'H' Arc -->
+    <path d="M98 42 C98 42 84 28 64 42 C64 56 78 82 92 94 C100 100 108 94 108 84 C108 66 98 42 98 42 Z" fill="url(#fav-grad-secondary)" />
+    <!-- Center Radiant Core -->
+    <polygon points="64,54 74,68 64,82 54,68" fill="#FFFFFF" />
+    <circle cx="64" cy="68" r="4" fill="#38BDF8" />
+  </g>
+</svg>

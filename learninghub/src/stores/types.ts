@@ -225,7 +225,9 @@ export interface TestsASlice {
     initialAnswers?: Record<string, string>,
     timeRemaining?: number
   ) => void
-  submitTest: () => Promise<{ success: boolean; score: number }>
+  submitTest: (
+    violations?: Array<{ type: string; timestamp: number; details?: string }>
+  ) => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
   abandonTest: () => void
   setTestResults: (results: TestResult) => void
@@ -291,7 +293,9 @@ export interface TestSlice {
     timeRemaining?: number,
     sections?: TestSection[]
   ) => void
-  submitTest: () => Promise<{ success: boolean; score: number }>
+  submitTest: (
+    violations?: Array<{ type: string; timestamp: number; details?: string }>
+  ) => Promise<{ success: boolean; score: number }>
   resetTestState: () => void
   abandonTest: () => void
   setTestResults: (results: TestResult) => void

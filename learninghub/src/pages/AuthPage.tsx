@@ -17,6 +17,7 @@ import {
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
+import BrandLogo from '../components/BrandLogo'
 
 interface FieldErrors {
   email?: string
@@ -286,24 +287,26 @@ const AuthPage = memo(function AuthPage() {
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500/20 via-purple-500/20 to-pink-500/20 opacity-0 hover:opacity-100 transition-opacity duration-500" />
 
           <motion.div
-            className="relative z-10 text-center mb-8"
+            className="relative z-10 text-center mb-8 flex flex-col items-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
+            <div className="mb-3">
+              <BrandLogo size="lg" variant="vertical" subtitle="Next-Gen AI Learning OS" animated />
+            </div>
+
             <motion.div
-              className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-primary-100/50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-medium"
+              className="inline-flex items-center gap-2 mb-3 px-3.5 py-1 rounded-full bg-primary-100/60 dark:bg-primary-950/50 border border-primary-500/20 text-primary-600 dark:text-primary-300 text-xs font-semibold backdrop-blur-md shadow-sm"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.3 }}
             >
-              <Sparkles className="w-4 h-4 animate-pulse" />
-              <span>{isLogin ? 'Welcome Back' : 'Get Started'}</span>
+              <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-500" />
+              <span>{isLogin ? 'Welcome Back' : 'Create Free Account'}</span>
             </motion.div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600">
-              LearningHub
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+
+            <p className="text-gray-600 dark:text-gray-400 text-sm max-w-xs">
               {isLogin
                 ? 'Sign in to continue your learning journey.'
                 : 'Create an account to start learning.'}

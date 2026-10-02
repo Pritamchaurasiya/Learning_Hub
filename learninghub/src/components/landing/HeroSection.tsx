@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { Button } from '../ui/Button'
-import { Play, ArrowRight, Star, Users, BookOpen, Award } from 'lucide-react'
+import { Play, ArrowRight, Star, Users, BookOpen, Award, Sparkles } from 'lucide-react'
 import { useABTest } from '../../hooks/useABTest'
+import BrandLogo from '../BrandLogo'
 
 interface HeroSectionProps {
   onStartFree: () => void
@@ -25,7 +26,27 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-900 to-slate-950">
+      {/* Dynamic Animated Ambient Orbs */}
+      <motion.div
+        animate={{
+          scale: [1, 1.25, 1],
+          x: [0, 40, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/4 -left-24 w-96 h-96 bg-primary-500/25 rounded-full blur-3xl pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.3, 1],
+          x: [0, -50, 0],
+          y: [0, 40, 0],
+        }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute bottom-12 right-12 w-[480px] h-[480px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none"
+      />
+
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div
@@ -44,16 +65,28 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-6"
-            >
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-white text-sm font-medium">Trusted by 1,00,000+ Students</span>
-            </motion.div>
+            {/* Brand Logo & Trust Badges */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
+              >
+                <BrandLogo size="xs" variant="icon-only" animated />
+                <span className="text-xs font-bold text-white tracking-wider uppercase">LearningHub AI 2.0</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-yellow-400/20 backdrop-blur-sm rounded-full border border-yellow-300/30"
+              >
+                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                <span className="text-white text-xs font-medium">Trusted by 1,00,000+ Students</span>
+              </motion.div>
+            </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">

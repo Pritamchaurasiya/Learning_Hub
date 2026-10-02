@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 
 export interface ProctoringViolation {
   type:
@@ -12,6 +12,55 @@ export interface ProctoringViolation {
     | 'FULLSCREEN_EXIT'
   timestamp: number
   details?: string
+}
+
+export type IntegrityRiskLevel = 'EXCELLENT' | 'LOW_RISK' | 'MODERATE_RISK' | 'HIGH_RISK'
+
+export function calculateClientIntegrityScore(violations: ProctoringViolation[]): {
+  score: number
+  riskLevel: IntegrityRiskLevel
+  counts: Record<string, number>
+} {
+  const weights: Record<string, number> = {
+    DEV_TOOLS: 35.0,
+    MULTIPLE_FACES: 25.0,
+    NO_FACE: 20.0,
+    COPY_PASTE: 15.0,
+    FULLSCREEN_EXIT: 10.0,
+    TAB_SWITCH: 10.0,
+    WINDOW_BLUR: 5.0,
+    CONTEXT_MENU: 5.0,
+  }
+
+  const caps: Record<string, number> = {
+    COPY_PASTE: 30.0,
+    TAB_SWITCH: 40.0,
+    WINDOW_BLUR: 20.0,
+    FULLSCREEN_EXIT: 20.0,
+    CONTEXT_MENU: 15.0,
+  }
+
+  const counts: Record<string, number> = {}
+  const deductions: Record<string, number> = {}
+
+  for (const v of violations) {
+    counts[v.type] = (counts[v.type] ?? 0) + 1
+    deductions[v.type] = (deductions[v.type] ?? 0) + (weights[v.type] ?? 5.0)
+  }
+
+  let totalDeduction = 0
+  for (const [type, raw] of Object.entries(deductions)) {
+    const cap = caps[type] ?? 50.0
+    totalDeduction += Math.min(raw, cap)
+  }
+
+  const score = Math.max(0, Math.min(100, Math.round((100 - totalDeduction) * 10) / 10))
+  let riskLevel: IntegrityRiskLevel = 'EXCELLENT'
+  if (score < 50 || (counts['DEV_TOOLS'] ?? 0) > 0) riskLevel = 'HIGH_RISK'
+  else if (score < 75) riskLevel = 'MODERATE_RISK'
+  else if (score < 90) riskLevel = 'LOW_RISK'
+
+  return { score, riskLevel, counts }
 }
 
 interface UseProctoringOptions {
@@ -66,7 +115,6 @@ export function useProctoring({
     }
 
     const handleBlur = () => {
-      // Prevent multiple blur events when rapidly switching
       if (!isBlurredRef.current) {
         isBlurredRef.current = true
         recordViolation('WINDOW_BLUR', 'Browser window lost focus.')
@@ -79,12 +127,12 @@ export function useProctoring({
 
     const handleCopyPaste = (e: ClipboardEvent) => {
       e.preventDefault()
-      recordViolation('COPY_PASTE', `Attempted to ${e.type} content.`)
+      recordViolation('COPY_PASTE', `Attempted to ${e.type} content during assessment.`)
     }
 
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault()
-      recordViolation('CONTEXT_MENU', 'Attempted to use right-click context menu.')
+      recordViolation('CONTEXT_MENU', 'Attempted to open right-click context menu.')
     }
 
     const handleFullscreenChange = () => {
@@ -93,10 +141,30 @@ export function useProctoring({
       }
     }
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent and record DevTools shortcuts
+      if (e.key === 'F12') {
+        e.preventDefault()
+        recordViolation('DEV_TOOLS', 'F12 Developer Tools key press detected.')
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) {
+        e.preventDefault()
+        recordViolation('DEV_TOOLS', 'Developer inspection shortcut detected.')
+        return
+      }
+      if ((e.ctrlKey || (e.metaKey && e.altKey)) && ['u', 'U'].includes(e.key)) {
+        e.preventDefault()
+        recordViolation('DEV_TOOLS', 'View Source shortcut detected.')
+        return
+      }
+    }
+
     // Attach listeners
     document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('blur', handleBlur)
     window.addEventListener('focus', handleFocus)
+    window.addEventListener('keydown', handleKeyDown)
 
     document.addEventListener('copy', handleCopyPaste)
     document.addEventListener('cut', handleCopyPaste)
@@ -108,6 +176,7 @@ export function useProctoring({
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('blur', handleBlur)
       window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('keydown', handleKeyDown)
 
       document.removeEventListener('copy', handleCopyPaste)
       document.removeEventListener('cut', handleCopyPaste)
@@ -127,11 +196,18 @@ export function useProctoring({
     setLastViolation(null)
   }, [])
 
+  const integrityProfile = useMemo(() => {
+    return calculateClientIntegrityScore(violations)
+  }, [violations])
+
   return {
     violations,
     violationCount: violations.length,
     isWarningVisible,
     lastViolation,
+    integrityScore: integrityProfile.score,
+    riskLevel: integrityProfile.riskLevel,
+    violationCounts: integrityProfile.counts,
     dismissWarning,
     resetViolations,
   }

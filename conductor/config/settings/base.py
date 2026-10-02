@@ -468,47 +468,6 @@ CACHES = {
 
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {
-    # Gamification Tasks
-    "reset-weekly-xp": {
-        "task": "gamification.reset_weekly_xp",
-        "schedule": 604800,  # Weekly
-    },
-    "process-streak-reminders": {
-        "task": "gamification.process_streak_reminders",
-        "schedule": 86400,  # Daily
-    },
-    "check-achievements-batch": {
-        "task": "gamification.check_achievements",
-        "schedule": 21600,  # Every 6 hours
-    },
-    # Maintenance Tasks
-    "warm-cache": {
-        "task": "cache.warm_courses",
-        "schedule": 3600,  # Hourly
-    },
-    "cleanup-audit-logs": {
-        "task": "cleanup.old_audit_logs",
-        "schedule": 86400,  # Daily
-    },
-    "cleanup-expired-tokens": {
-        "task": "cleanup.expired_tokens",
-        "schedule": 86400,  # Daily
-    },
-    # Analytics
-    "daily-analytics-aggregation": {
-        "task": "analytics.aggregate_daily",
-        "schedule": 86400,  # Daily (Midnight)
-    },
-    # Notifications
-    "send-daily-digest": {
-        "task": "notifications.send_digest",
-        "schedule": 86400,  # Daily at 09:00 UTC
-    },
-    # Health
-    "system-health-check": {
-        "task": "system.health_check",
-        "schedule": 300,  # Every 5 minutes
-    },
     # Test Engine Tasks
     "check-expired-attempts": {
         "task": "apps.test_engine.tasks.check_expired_attempts",
@@ -520,6 +479,29 @@ CELERY_BEAT_SCHEDULE = {
     },
     "recalculate-question-stats": {
         "task": "apps.test_engine.tasks.recalculate_question_stats",
+        "schedule": 86400,  # Daily IRT logit calibration
+    },
+    # Gamification Tasks
+    "check-achievements-batch": {
+        "task": "apps.gamification.tasks.check_achievements_task",
+        "schedule": 21600,  # Every 6 hours
+    },
+    # User Session Maintenance
+    "cleanup-expired-sessions": {
+        "task": "apps.users.tasks.cleanup_expired_sessions_task",
+        "schedule": 86400,  # Daily
+    },
+    # Subscriptions & Monetization Maintenance
+    "cleanup-expired-subscriptions": {
+        "task": "apps.subscriptions.tasks.cleanup_expired_subscriptions",
+        "schedule": 3600,  # Hourly
+    },
+    "send-subscription-expiry-reminders": {
+        "task": "apps.subscriptions.tasks.send_expiry_reminders",
+        "schedule": 86400,  # Daily
+    },
+    "convert-expired-trials": {
+        "task": "apps.subscriptions.tasks.convert_expired_trials",
         "schedule": 86400,  # Daily
     },
 }
