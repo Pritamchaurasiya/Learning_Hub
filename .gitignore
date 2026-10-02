@@ -32,6 +32,8 @@ env/
 *.virtualenv
 pip-log.txt
 pip-delete-this-directory.txt
+extracted_user_request.txt
+step360_prompt.txt
 htmlcov/
 .coverage
 .coverage.*
