@@ -38,7 +38,7 @@ class ProblemDetailView(APIView):
         return success_response(data=serializer.data)
 
 class RunCodeView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk=None):
         code = request.data.get('code', '')

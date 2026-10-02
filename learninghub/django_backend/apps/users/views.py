@@ -2,6 +2,7 @@ import sys
 import hmac
 import secrets
 import pyotp
+import jwt
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
@@ -29,6 +30,7 @@ def get_tokens_for_user(user):
     refresh['email'] = user.email
     refresh['role'] = user.role
     refresh['username'] = user.username
+    refresh['token_version'] = user.token_version
     return {
         'access': str(refresh.access_token),
         'refresh': str(refresh),
@@ -151,8 +153,17 @@ class LoginView(APIView):
         )
 
         if user.mfa_enabled:
+            pre_auth_token = jwt.encode(
+                {
+                    'user_id': str(user.id),
+                    'purpose': 'mfa_pre_auth',
+                    'exp': int((timezone.now() + timedelta(minutes=5)).timestamp())
+                },
+                settings.SECRET_KEY,
+                algorithm='HS256'
+            )
             return success_response(
-                data={'mfaRequired': True, 'userId': user.id},
+                data={'mfaRequired': True, 'userId': user.id, 'preAuthToken': pre_auth_token},
                 message='MFA verification required'
             )
 
@@ -187,6 +198,13 @@ class RefreshTokenView(APIView):
             refresh = RefreshToken(raw_refresh)
             user_id = refresh.get('user_id')
             user = User.objects.get(id=user_id)
+
+            if not user.is_active:
+                return error_response('Account is deactivated', status_code=status.HTTP_401_UNAUTHORIZED)
+
+            token_ver = refresh.payload.get('token_version')
+            if token_ver is not None and token_ver != user.token_version:
+                return error_response('Token version invalid or revoked', status_code=status.HTTP_401_UNAUTHORIZED)
 
             # Invalidate old refresh token (strict rotation)
             try:
@@ -400,62 +418,74 @@ class VerifyMfaView(APIView):
     def post(self, request):
         serializer = MfaVerifySerializer(data=request.data)
         if not serializer.is_valid():
-            return error_response('User ID and MFA token are required', status_code=status.HTTP_400_BAD_REQUEST)
+            return error_response('MFA verification payload is invalid', status_code=status.HTTP_400_BAD_REQUEST)
 
-        user_id = serializer.validated_data['userId']
+        user_id = serializer.validated_data.get('userId')
+        pre_auth_token = serializer.validated_data.get('preAuthToken')
         token = serializer.validated_data['token'].strip()
 
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return error_response('Invalid request', status_code=status.HTTP_401_UNAUTHORIZED)
+        target_user = None
+        if request.user and request.user.is_authenticated:
+            target_user = request.user
+        elif pre_auth_token:
+            try:
+                payload = jwt.decode(pre_auth_token, settings.SECRET_KEY, algorithms=['HS256'])
+                if payload.get('purpose') != 'mfa_pre_auth':
+                    return error_response('Invalid pre-auth token purpose', status_code=status.HTTP_401_UNAUTHORIZED)
+                target_user = User.objects.get(id=payload.get('user_id'))
+            except (jwt.PyJWTError, User.DoesNotExist):
+                return error_response('Invalid or expired pre-auth token', status_code=status.HTTP_401_UNAUTHORIZED)
+        elif user_id:
+            try:
+                target_user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return error_response('Invalid request', status_code=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return error_response('Authentication context or preAuthToken required', status_code=status.HTTP_401_UNAUTHORIZED)
 
-        if not user.mfa_secret:
+        if not target_user or not target_user.mfa_secret:
             return error_response('MFA not set up for this user', status_code=status.HTTP_400_BAD_REQUEST)
 
         is_valid = False
         try:
-            totp = pyotp.TOTP(user.mfa_secret)
+            totp = pyotp.TOTP(target_user.mfa_secret)
             is_valid = totp.verify(token, valid_window=1)
         except Exception:
             is_valid = False
 
-        # In testing/debug environment, allow mock token '123456' for legacy test suite compatibility
-        if not is_valid and (settings.DEBUG or 'pytest' in sys.modules or getattr(settings, 'TESTING', False)) and token == '123456':
-            is_valid = True
-
         if not is_valid:
             AuditLog.record(
                 'AUTH_LOGIN_FAILED',
-                target_user=user,
+                target_user=target_user,
                 ip_address=request.META.get('REMOTE_ADDR'),
                 user_agent=request.META.get('HTTP_USER_AGENT'),
                 details={'reason': 'Invalid MFA TOTP token'}
             )
             return error_response('Invalid MFA token', status_code=status.HTTP_401_UNAUTHORIZED)
 
-        user.mfa_enabled = True
-        user.save(update_fields=['mfa_enabled'])
+        target_user.mfa_enabled = True
+        target_user.save(update_fields=['mfa_enabled'])
 
         AuditLog.record(
             'AUTH_MFA_ENABLED',
-            actor=user,
-            target_user=user,
+            actor=target_user,
+            target_user=target_user,
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT'),
             details={'method': 'TOTP'}
         )
 
-        tokens = get_tokens_for_user(user)
-        return success_response(
+        tokens = get_tokens_for_user(target_user)
+        response = success_response(
             data={
-                'user': UserSerializer(user).data,
+                'user': UserSerializer(target_user).data,
                 'token': tokens['access'],
                 'refreshToken': tokens['refresh'],
                 'tokens': tokens,
             },
             message='MFA verified successfully'
         )
+        return _set_auth_cookies(response, tokens)
 
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
@@ -491,13 +521,26 @@ class AdminLoginView(APIView):
         user.save(update_fields=['failed_logins', 'locked_until'])
 
         if user.mfa_enabled:
-            return success_response(data={'mfaRequired': True, 'userId': user.id}, message='Admin MFA required')
+            pre_auth_token = jwt.encode(
+                {
+                    'user_id': str(user.id),
+                    'purpose': 'mfa_pre_auth',
+                    'exp': int((timezone.now() + timedelta(minutes=5)).timestamp())
+                },
+                settings.SECRET_KEY,
+                algorithm='HS256'
+            )
+            return success_response(
+                data={'mfaRequired': True, 'userId': user.id, 'preAuthToken': pre_auth_token},
+                message='Admin MFA required'
+            )
 
         tokens = get_tokens_for_user(user)
-        return success_response(
+        response = success_response(
             data={'user': UserSerializer(user).data, 'token': tokens['access'], 'refreshToken': tokens['refresh']},
             message='Admin login successful'
         )
+        return _set_auth_cookies(response, tokens)
 
 class AdminRegisterView(APIView):
     permission_classes = [AllowAny]

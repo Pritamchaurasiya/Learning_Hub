@@ -165,6 +165,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'apps.core.authentication.JWTCookieAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
@@ -182,6 +183,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/min',
         'user': '1000/min',
+        'auth': '5/min',  # Strict rate limit for authentication endpoints to prevent brute-force
         'notifications': '30/min',  # Tighter rate limit for notification endpoints
         'leaderboard': '60/min',  # Rate limit for leaderboard (prevents scraping)
         'ai_tutor': '10/min',  # AI tutor rate limit (cost control)
@@ -300,7 +302,9 @@ if custom_origins:
     CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in custom_origins.split(',') if o.strip()])
 
 # Security Hardening for Production Deployments
-if not DEBUG:
+if not DEBUG and not _IS_TEST_RUNNER:
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1')
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
@@ -312,5 +316,8 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     CORS_ALLOW_ALL_ORIGINS = False
+    prod_origins = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+    if prod_origins:
+        CSRF_TRUSTED_ORIGINS = prod_origins
     CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
 

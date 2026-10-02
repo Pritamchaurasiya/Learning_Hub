@@ -26,7 +26,7 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8)
     username = serializers.CharField(required=False, allow_blank=True)
-    role = serializers.ChoiceField(choices=['STUDENT', 'INSTRUCTOR'], default='STUDENT')
+    role = serializers.CharField(required=False, default='STUDENT')
 
     def validate_email(self, value):
         norm_email = value.lower().strip()
@@ -37,6 +37,11 @@ class RegisterSerializer(serializers.Serializer):
     def validate_password(self, value):
         validate_password(value)
         return value
+
+    def validate(self, attrs):
+        # SECURITY: Public registration is strictly restricted to STUDENT role
+        attrs['role'] = 'STUDENT'
+        return attrs
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -57,5 +62,6 @@ class AdminRegisterSerializer(serializers.Serializer):
         return value
 
 class MfaVerifySerializer(serializers.Serializer):
-    userId = serializers.CharField()
+    userId = serializers.CharField(required=False, allow_blank=True)
+    preAuthToken = serializers.CharField(required=False, allow_blank=True)
     token = serializers.CharField(max_length=10)

@@ -40,11 +40,11 @@ app.conf.update(
     worker_hijack_root_logger=False,
     beat_schedule={
         "check-expired-attempts-every-minute": {
-            "task": "apps.test_engine.tasks.check_expired_attempts",
+            "task": "apps.tests_engine.tasks.check_expired_attempts",
             "schedule": 60.0,
         },
         "cleanup-abandoned-attempts-every-hour": {
-            "task": "apps.test_engine.tasks.cleanup_abandoned_attempts",
+            "task": "apps.tests_engine.tasks.cleanup_abandoned_attempts",
             "schedule": 3600.0,
         },
         "poll-student-updates-active-sources": {

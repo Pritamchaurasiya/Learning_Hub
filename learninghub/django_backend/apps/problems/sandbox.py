@@ -12,12 +12,14 @@ class CodeSandboxService:
         'fcntl', 'signal', 'multiprocessing', 'threading', 'asyncio', 'inspect',
         'pickle', 'shelve', 'marshal', 'sqlite3', 'urllib', 'http', 'requests',
         'ssl', 'tempfile', 'webbrowser', 'code', 'codeop', 'pdb', 'platform',
-        'winreg', 'msvcrt', 'gc', 'traceback'
+        'winreg', 'msvcrt', 'gc', 'traceback', 'codecs', 'io', 'site',
+        'zipfile', 'tarfile', 'pkgutil', 'pkg_resources'
     }
 
     DISALLOWED_CALLS = {
         'eval', 'exec', '__import__', 'compile', 'open', 'breakpoint',
-        'memoryview', 'globals', 'locals', 'vars', 'dir', 'help', 'exit', 'quit'
+        'memoryview', 'globals', 'locals', 'vars', 'dir', 'help', 'exit', 'quit',
+        'getattr', 'setattr', 'delattr', 'hasattr'
     }
     # NOTE: 'input' is intentionally allowed — stdin is piped via communicate(input_data)
     # with a timeout, so controlled input() cannot hang the worker. Blocking it would
@@ -25,7 +27,8 @@ class CodeSandboxService:
 
     DISALLOWED_ATTRIBUTES = {
         '__subclasses__', '__bases__', '__mro__', '__globals__', '__builtins__',
-        '__code__', '__class__', '__dict__', '__import__'
+        '__code__', '__class__', '__dict__', '__import__', '__init_subclass__',
+        '__reduce__', '__reduce_ex__', '__getattribute__'
     }
 
     @classmethod
@@ -96,13 +99,16 @@ class CodeSandboxService:
 
             def visit_Import(self, node):
                 for alias in node.names:
-                    if alias.name in CodeSandboxService.DISALLOWED_MODULES:
+                    root_mod = alias.name.split('.')[0]
+                    if root_mod in CodeSandboxService.DISALLOWED_MODULES or root_mod.startswith('_'):
                         self.sec_issues.append(f"Disallowed module import: {alias.name}")
                 self.generic_visit(node)
 
             def visit_ImportFrom(self, node):
-                if node.module in CodeSandboxService.DISALLOWED_MODULES:
-                    self.sec_issues.append(f"Disallowed module import: {node.module}")
+                if node.module:
+                    root_mod = node.module.split('.')[0]
+                    if root_mod in CodeSandboxService.DISALLOWED_MODULES or root_mod.startswith('_'):
+                        self.sec_issues.append(f"Disallowed module import: {node.module}")
                 self.generic_visit(node)
 
             def visit_Call(self, node):

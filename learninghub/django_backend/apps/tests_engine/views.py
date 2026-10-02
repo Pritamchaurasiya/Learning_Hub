@@ -101,6 +101,21 @@ class StartTestView(APIView):
                         opt_rng = random.Random(f"{in_progress.id}-{q_data['id']}")
                         opt_rng.shuffle(q_data['options'])
 
+                elapsed_seconds = int((timezone.now() - in_progress.started_at).total_seconds())
+                duration_seconds = test.duration_minutes * 60
+                if elapsed_seconds >= duration_seconds:
+                    in_progress.status = 'TIMEOUT'
+                    in_progress.submitted_at = timezone.now()
+                    in_progress.time_spent_seconds = duration_seconds
+                    in_progress.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
+                    return error_response(
+                        'This test session has expired and was automatically closed.',
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        code='TEST_EXPIRED'
+                    )
+
+                time_remaining_seconds = max(0, duration_seconds - elapsed_seconds)
+
                 return success_response(
                     data={
                         'attemptId': in_progress.id,
@@ -109,7 +124,7 @@ class StartTestView(APIView):
                         'title': test.title,
                         'status': 'IN_PROGRESS',
                         'time_limit': test.duration_minutes,
-                        'time_remaining_seconds': max(60, test.duration_minutes * 60 - int((timezone.now() - in_progress.started_at).total_seconds())),
+                        'time_remaining_seconds': time_remaining_seconds,
                         'sections': sections_data,
                         'questions': questions_data,
                         'answers': answers_map,
@@ -216,17 +231,27 @@ class TestAutosaveView(APIView):
             for q_id, opt_id in answers_data.items():
                 try:
                     q = Question.objects.get(pk=q_id)
-                    selected_opt = Option.objects.filter(pk=opt_id).first() if isinstance(opt_id, str) and not opt_id.isdigit() else None
-                    if not selected_opt and isinstance(opt_id, str):
+                    selected_opt = None
+                    selected_ids = []
+                    text_ans = ''
+                    if isinstance(opt_id, list):
+                        selected_ids = [str(x) for x in opt_id]
+                        selected_opt = Option.objects.filter(question=q, id__in=selected_ids).first()
+                    elif isinstance(opt_id, str):
                         selected_opt = Option.objects.filter(question=q, id=opt_id).first()
+                        if selected_opt:
+                            selected_ids = [selected_opt.id]
+                        else:
+                            text_ans = opt_id
 
                     AttemptAnswer.objects.update_or_create(
                         attempt=attempt,
                         question=q,
                         defaults={
                             'selected_option': selected_opt,
-                            'text_answer': opt_id if not selected_opt else '',
-                            'time_spent_seconds': 10
+                            'selected_option_ids': selected_ids,
+                            'text_answer': text_ans,
+                            'time_spent_sec': 10
                         }
                     )
                     saved_count += 1
@@ -255,9 +280,9 @@ class SubmitTestView(APIView):
             
             attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
             if attempt_id:
-                attempt = TestAttempt.objects.filter(pk=attempt_id, user=user).first()
+                attempt = TestAttempt.objects.select_for_update().filter(pk=attempt_id, user=user).first()
             else:
-                attempt = TestAttempt.objects.filter(user=user, test=test, status='IN_PROGRESS').first()
+                attempt = TestAttempt.objects.select_for_update().filter(user=user, test=test, status='IN_PROGRESS').first()
 
             if not attempt:
                 attempt = TestAttempt.objects.create(
@@ -298,16 +323,23 @@ class SubmitTestView(APIView):
                 return error_response('Submission rejected: suspiciously fast (<5s for >60s test)', status_code=400, code='SUSPICIOUS_FAST_SUBMISSION')
 
             # Normalize frontend dict format {questionId: optionId} to list format
-            # expected by IRTScoringEngine: [{questionId, selectedOptionId, timeSpentSeconds}]
+            # expected by IRTScoringEngine: [{questionId, selectedOptionId, selectedOptionIds, timeSpentSeconds}]
             if isinstance(answers_data, dict):
                 normalized_answers = []
                 for q_id, opt_id in answers_data.items():
+                    selected_ids = []
+                    single_opt_id = ''
                     if isinstance(opt_id, list):
-                        # Multiple select: use first selected option for scoring
-                        opt_id = opt_id[0] if opt_id else ''
+                        selected_ids = [str(x) for x in opt_id]
+                        single_opt_id = selected_ids[0] if selected_ids else ''
+                    elif opt_id:
+                        single_opt_id = str(opt_id)
+                        selected_ids = [single_opt_id]
+
                     normalized_answers.append({
                         'questionId': str(q_id),
-                        'selectedOptionId': str(opt_id) if opt_id else '',
+                        'selectedOptionId': single_opt_id,
+                        'selectedOptionIds': selected_ids,
                         'timeSpentSeconds': 0,
                     })
                 answers_data = normalized_answers
@@ -441,14 +473,39 @@ class TestAttemptDetailView(APIView):
         test = attempt.test
         question_results = []
         answers_map = {}
+        is_completed = attempt.status.upper() in ['SUBMITTED', 'EXPIRED', 'TIMEOUT']
+
+        # Pre-index answers and options in memory to avoid N+1 queries
+        answers_by_q = {ans.question_id: ans for ans in attempt.answers.all()}
+        options_by_id = {o.id: o for q in test.questions.all() for o in q.options.all()}
 
         for q in test.questions.all():
-            ans = attempt.answers.filter(question=q).first()
-            correct_opts = [{'id': o.id, 'text': o.text} for o in q.options.filter(is_correct=True)]
-            selected_opts = [{'id': ans.selected_option.id, 'text': ans.selected_option.text}] if ans and ans.selected_option else []
+            ans = answers_by_q.get(q.id)
 
-            if ans and ans.selected_option:
-                answers_map[q.id] = ans.selected_option.id
+            if is_completed:
+                correct_opts = [{'id': o.id, 'text': o.text} for o in q.options.all() if o.is_correct]
+                explanation = q.explanation or 'Comprehensive explanation available in study review.'
+                is_corr = ans.is_correct if ans else False
+                marks_obtained = ans.marks_awarded if ans else 0
+            else:
+                correct_opts = []
+                explanation = 'Explanation available after test submission.'
+                is_corr = None
+                marks_obtained = None
+
+            selected_opts = []
+            if ans:
+                if ans.selected_option:
+                    selected_opts.append({'id': ans.selected_option.id, 'text': ans.selected_option.text})
+                    answers_map[q.id] = ans.selected_option.id
+                elif ans.selected_option_ids:
+                    for s_id in ans.selected_option_ids:
+                        opt_obj = options_by_id.get(s_id)
+                        if opt_obj:
+                            selected_opts.append({'id': opt_obj.id, 'text': opt_obj.text})
+                    answers_map[q.id] = ans.selected_option_ids
+                elif ans.text_answer:
+                    answers_map[q.id] = ans.text_answer
 
             question_results.append({
                 'question_id': q.id,
@@ -456,9 +513,9 @@ class TestAttemptDetailView(APIView):
                 'question_type': q.question_type.lower() if q.question_type else 'mcq',
                 'selected_options': selected_opts,
                 'correct_options': correct_opts,
-                'is_correct': ans.is_correct if ans else False,
-                'marks_obtained': ans.marks_awarded if ans else 0,
-                'explanation': q.explanation or 'Comprehensive explanation available in study review.',
+                'is_correct': is_corr,
+                'marks_obtained': marks_obtained,
+                'explanation': explanation,
                 'time_spent': ans.time_spent_sec if ans else 0,
                 'is_flagged': False,
                 'topic': q.topic,
@@ -471,17 +528,17 @@ class TestAttemptDetailView(APIView):
             'test_title': test.title,
             'mode': 'mock',
             'status': attempt.status.lower(),
-            'score': attempt.score,
+            'score': attempt.score if is_completed else None,
             'total_marks': test.total_marks,
-            'percentage': attempt.percentage,
-            'passed': attempt.passed,
+            'percentage': attempt.percentage if is_completed else None,
+            'passed': attempt.passed if is_completed else None,
             'time_taken_seconds': attempt.time_spent_seconds,
             'attempt_number': attempt.attempt_number,
             'started_at': attempt.started_at.isoformat() if attempt.started_at else None,
             'submitted_at': attempt.submitted_at.isoformat() if attempt.submitted_at else None,
-            'correct_count': len([q for q in question_results if q['is_correct']]),
-            'incorrect_count': len([q for q in question_results if not q['is_correct']]),
-            'unanswered_count': 0,
+            'correct_count': len([q for q in question_results if q['is_correct'] is True]) if is_completed else None,
+            'incorrect_count': len([q for q in question_results if q['is_correct'] is False]) if is_completed else None,
+            'unanswered_count': len([q for q in question_results if not q['selected_options']]) if is_completed else None,
             'answers': answers_map,
             'question_results': question_results,
         }

@@ -592,8 +592,10 @@ class TestCoverageBoost:
         assert self.user.mfa_secret == secret
 
         # MFA verify
+        import pyotp
         mfa_verify_url = reverse("auth-mfa-verify")
-        res_mfa_verify = anon.post(mfa_verify_url, {"userId": self.user.id, "token": "123456"}, format="json")
+        valid_totp = pyotp.TOTP(secret).now()
+        res_mfa_verify = anon.post(mfa_verify_url, {"userId": self.user.id, "token": valid_totp}, format="json")
         assert res_mfa_verify.status_code == status.HTTP_200_OK
         self.user.refresh_from_db()
         assert self.user.mfa_enabled is True
