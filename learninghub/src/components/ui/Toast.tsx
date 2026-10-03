@@ -189,3 +189,18 @@ export function ToastContainer({ position = 'bottom-right', maxToasts = 5 }: Toa
     </div>
   )
 }
+
+/**
+ * Convenience hook to dispatch toasts throughout the application.
+ */
+export function useToast() {
+  const addToastStore = useStore(s => s.addToast)
+  const addToast = useCallback(
+    (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+      addToastStore({ message, type })
+    },
+    [addToastStore]
+  )
+  return { addToast }
+}
+

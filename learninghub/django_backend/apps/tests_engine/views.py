@@ -6,13 +6,17 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import F
 from apps.core.responses import success_response, error_response
-from .models import Test, Question, Option, TestAttempt, AttemptAnswer, TopicPerformance, QuestionBookmark
+from .models import (
+    Test, Question, Option, TestAttempt, AttemptAnswer,
+    TopicPerformance, QuestionBookmark, SpacedRepetitionCard
+)
 from .serializers import (
     TestListSerializer, TestDetailSerializer, TestAttemptSerializer,
     TopicPerformanceSerializer, QuestionBookmarkSerializer
 )
 from .scoring import IRTScoringEngine
 from .telemetry import AssessmentIntegrityEngine
+from .spaced_repetition import SuperMemoEngine
 
 class TestListView(APIView):
     permission_classes = [AllowAny]
@@ -876,5 +880,131 @@ class TestTelemetryView(APIView):
             },
             message='Telemetry audit recorded successfully'
         )
+
+
+class SpacedRepetitionDeckView(APIView):
+    """
+    API endpoint for retrieving user's daily SM-2 spaced repetition review deck
+    and creating custom active recall cards.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        topic = request.query_params.get('topic')
+        card_type = request.query_params.get('card_type')
+        limit = int(request.query_params.get('limit', 30))
+
+        deck = SuperMemoEngine.get_daily_deck(
+            user=request.user,
+            topic=topic,
+            card_type=card_type,
+            limit=limit,
+        )
+        return success_response(data=deck)
+
+    def post(self, request):
+        front = request.data.get('front', '').strip()
+        back = request.data.get('back', '').strip()
+        explanation = request.data.get('explanation', '').strip()
+        topic = request.data.get('topic', 'General').strip()
+        subject = request.data.get('subject', 'General').strip()
+        card_type = request.data.get('card_type', 'QUESTION').upper()
+
+        if not front or not back:
+            return error_response('Both front and back card contents are required', status_code=status.HTTP_400_BAD_REQUEST)
+
+        valid_types = {'QUESTION', 'FORMULA', 'CONCEPT', 'MISTAKE'}
+        if card_type not in valid_types:
+            card_type = 'QUESTION'
+
+        card = SpacedRepetitionCard.objects.create(
+            user=request.user,
+            card_type=card_type,
+            front=front,
+            back=back,
+            explanation=explanation,
+            topic=topic or 'General',
+            subject=subject or 'General',
+        )
+        return success_response(
+            data=SuperMemoEngine.serialize_card(card),
+            message='Spaced repetition card created',
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class SpacedRepetitionReviewView(APIView):
+    """
+    API endpoint to record SuperMemo SM-2 active recall reviews.
+    Accepts card_id and quality rating (0 to 5).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        card_id = request.data.get('card_id') or request.data.get('cardId')
+        quality = request.data.get('quality')
+        if quality is None:
+            quality = request.data.get('rating')
+
+        if not card_id:
+            return error_response('card_id is required', status_code=status.HTTP_400_BAD_REQUEST)
+        if quality is None:
+            return error_response('quality (0-5) is required', status_code=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            quality_int = int(quality)
+        except (ValueError, TypeError):
+            return error_response('quality must be an integer between 0 and 5', status_code=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = SuperMemoEngine.record_card_review(request.user, card_id, quality_int)
+            return success_response(data=result, message='Card review recorded successfully')
+        except SpacedRepetitionCard.DoesNotExist:
+            return error_response('Card not found', status_code=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return error_response(str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SpacedRepetitionGenerateView(APIView):
+    """
+    API endpoint to auto-generate spaced repetition cards from test mistakes or question bookmarks.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        source = request.data.get('source', 'mistakes').lower()
+
+        if source == 'mistakes':
+            attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
+            if not attempt_id:
+                return error_response('attempt_id is required when source is mistakes', status_code=status.HTTP_400_BAD_REQUEST)
+            try:
+                result = SuperMemoEngine.generate_from_mistakes(request.user, attempt_id)
+                return success_response(
+                    data=result,
+                    message=f"Generated {result['created_count']} review cards from test mistakes"
+                )
+            except TestAttempt.DoesNotExist:
+                return error_response('Test attempt not found', status_code=status.HTTP_404_NOT_FOUND)
+        elif source == 'bookmarks':
+            result = SuperMemoEngine.generate_from_bookmarks(request.user)
+            return success_response(
+                data=result,
+                message=f"Generated {result['created_count']} review cards from question bookmarks"
+            )
+        else:
+            return error_response('Invalid source. Supported: mistakes, bookmarks', status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class SpacedRepetitionStatsView(APIView):
+    """
+    API endpoint to retrieve comprehensive psychometric retention curves and mastery stats.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        stats = SuperMemoEngine.get_retention_analytics(request.user)
+        return success_response(data=stats)
+
 
 

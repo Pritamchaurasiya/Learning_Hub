@@ -1,10 +1,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
 
 export interface BrandLogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  variant?: 'full' | 'icon-only' | 'vertical'
+  variant?: 'full' | 'icon-only' | 'vertical' | 'badge' | 'app-icon'
+  showTagline?: boolean
+  tagline?: string
   showBadge?: boolean
   badgeText?: string
   subtitle?: string
@@ -16,186 +17,335 @@ export interface BrandLogoProps {
 
 const sizeConfig = {
   xs: {
-    iconSize: 26,
-    textSize: 'text-sm',
-    hubSize: 'text-xs px-1.5 py-0.5',
+    iconSize: 28,
+    textSize: 'text-sm font-extrabold',
+    hubSize: 'text-sm font-extrabold',
+    taglineSize: 'text-[7px]',
     subSize: 'text-[8px]',
-    gap: 'gap-1.5',
-  },
-  sm: {
-    iconSize: 34,
-    textSize: 'text-base',
-    hubSize: 'text-xs px-2 py-0.5',
-    subSize: 'text-[9px]',
     gap: 'gap-2',
   },
-  md: {
-    iconSize: 42,
-    textSize: 'text-xl',
-    hubSize: 'text-sm px-2.5 py-0.5',
-    subSize: 'text-[10px]',
+  sm: {
+    iconSize: 36,
+    textSize: 'text-base font-extrabold',
+    hubSize: 'text-base font-extrabold',
+    taglineSize: 'text-[8px]',
+    subSize: 'text-[9px]',
     gap: 'gap-2.5',
   },
-  lg: {
-    iconSize: 56,
-    textSize: 'text-2xl',
-    hubSize: 'text-base px-3 py-1',
-    subSize: 'text-xs',
+  md: {
+    iconSize: 46,
+    textSize: 'text-xl font-black',
+    hubSize: 'text-xl font-black',
+    taglineSize: 'text-[9px]',
+    subSize: 'text-[10px]',
     gap: 'gap-3',
+  },
+  lg: {
+    iconSize: 58,
+    textSize: 'text-2xl font-black',
+    hubSize: 'text-2xl font-black',
+    taglineSize: 'text-[10px]',
+    subSize: 'text-xs',
+    gap: 'gap-3.5',
   },
   xl: {
     iconSize: 76,
-    textSize: 'text-3xl md:text-4xl',
-    hubSize: 'text-lg md:text-xl px-3.5 py-1',
+    textSize: 'text-4xl font-black',
+    hubSize: 'text-4xl font-black',
+    taglineSize: 'text-xs',
     subSize: 'text-sm',
     gap: 'gap-4',
   },
 }
 
-export const BrandEmblem: React.FC<{ size?: number; className?: string; animate?: boolean; animated?: boolean }> = ({
-  size = 42,
+/**
+ * Flagship Vector Emblem of LearningHub
+ * Features:
+ * 1. Graduation Cap (Knowledge, Education, Success)
+ * 2. 4-Point Golden Star (Achievement, Brighter Future, Excellence)
+ * 3. Human Figure (Learner, Growth, Progress, Aspiration)
+ * 4. Open Book (Learning, Infinite Possibilities)
+ * 5. Dynamic Gradient Pages (Rising Sun & Modern Innovation)
+ */
+export const BrandEmblem: React.FC<{
+  size?: number
+  className?: string
+  animate?: boolean
+  animated?: boolean
+}> = ({
+  size = 46,
   className = '',
   animate: propAnimate = true,
   animated: propAnimated,
 }) => {
-  const animate = propAnimated ?? propAnimate
+  const shouldAnimate = propAnimated ?? propAnimate
+
   return (
     <div
       className={`relative flex items-center justify-center shrink-0 select-none group ${className}`}
       style={{ width: size, height: size }}
     >
-      {/* Ambient Pulsing Glow Backdrop */}
-      {animate && (
+      {/* Soft Ambient Glow Backdrop */}
+      {shouldAnimate && (
         <motion.div
-          className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-cyan-500/30 via-indigo-500/40 to-pink-500/35 blur-xl -z-10"
+          className="absolute inset-0 rounded-full bg-gradient-to-tr from-sky-400/20 via-indigo-500/25 to-purple-500/20 blur-lg -z-10"
           animate={{
             scale: [1, 1.15, 1],
-            opacity: [0.6, 0.9, 0.6],
+            opacity: [0.5, 0.8, 0.5],
           }}
           transition={{
-            duration: 4,
+            duration: 3.5,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
         />
       )}
 
-      {/* Modern High-End SVG Emblem */}
+      {/* SVG Emblem with Exact Geometry from Reference Kit */}
       <svg
-        viewBox="0 0 100 100"
+        viewBox="0 0 400 360"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full drop-shadow-[0_4px_12px_rgba(79,70,229,0.35)] transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-full drop-shadow-[0_4px_10px_rgba(30,58,138,0.25)] transition-transform duration-300 group-hover:scale-105"
       >
         <defs>
-          <linearGradient id="emblem-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06B6D4" />
-            <stop offset="40%" stopColor="#3B82F6" />
-            <stop offset="80%" stopColor="#6366F1" />
-            <stop offset="100%" stopColor="#8B5CF6" />
+          {/* Depth Filters */}
+          <filter id="svg-cap-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#1E3A8A" floodOpacity="0.3" />
+          </filter>
+          <filter id="svg-star-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+
+          {/* Cap Gradients */}
+          <linearGradient id="svg-cap-top" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1E40AF" />
+            <stop offset="45%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#1D4ED8" />
           </linearGradient>
 
-          <linearGradient id="emblem-grad-2" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4F46E5" />
-            <stop offset="50%" stopColor="#A855F7" />
-            <stop offset="100%" stopColor="#EC4899" />
+          {/* Star Gradient (Golden Achievement) */}
+          <linearGradient id="svg-star-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="40%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#F59E0B" />
           </linearGradient>
 
-          <linearGradient id="emblem-specular" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-            <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          {/* Learner Gradients (Human Growth) */}
+          <linearGradient id="svg-learner-head" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="70%" stopColor="#0284C7" />
+            <stop offset="100%" stopColor="#0369A1" />
           </linearGradient>
 
-          <radialGradient id="core-flare" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="50%" stopColor="#67E8F9" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-          </radialGradient>
+          <linearGradient id="svg-learner-body" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="50%" stopColor="#0284C7" />
+            <stop offset="100%" stopColor="#1D4ED8" />
+          </linearGradient>
+
+          {/* Page Gradients (Open Book & Dynamic Knowledge) */}
+          <linearGradient id="svg-page-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="40%" stopColor="#0EA5E9" />
+            <stop offset="100%" stopColor="#0284C7" />
+          </linearGradient>
+
+          <linearGradient id="svg-page-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0284C7" />
+            <stop offset="60%" stopColor="#1D4ED8" />
+            <stop offset="100%" stopColor="#1E3A8A" />
+          </linearGradient>
+
+          <linearGradient id="svg-page-sun" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F59E0B" />
+            <stop offset="50%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#FDE047" />
+          </linearGradient>
+
+          <linearGradient id="svg-page-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#818CF8" />
+            <stop offset="40%" stopColor="#8B5CF6" />
+            <stop offset="80%" stopColor="#A855F7" />
+            <stop offset="100%" stopColor="#C026D3" />
+          </linearGradient>
         </defs>
 
-        {/* Outer Hex Shield Frame */}
-        <polygon
-          points="50,6 88,28 88,72 50,94 12,72 12,28"
-          fill="#0F172A"
-          stroke="url(#emblem-grad-1)"
-          strokeWidth="2.5"
-          className="dark:fill-[#0B0F19] fill-[#1E293B]"
-        />
+        {/* Under-Book Base Glow */}
+        <ellipse cx="200" cy="305" rx="140" ry="18" fill="#6366F1" fillOpacity="0.12" />
 
-        {/* Left Dynamic Knowledge Wing (L form) */}
-        <path
-          d="M24 32 C24 32 36 20 50 32 C50 44 38 68 26 78 C20 83 14 78 14 70 C14 54 24 32 24 32 Z"
-          fill="url(#emblem-grad-1)"
-        />
-
-        {/* Right Dynamic Knowledge Wing (H arc) */}
-        <path
-          d="M76 32 C76 32 64 20 50 32 C50 44 62 68 74 78 C80 83 86 78 86 70 C86 54 76 32 76 32 Z"
-          fill="url(#emblem-grad-2)"
-        />
-
-        {/* Subtle Specular Highlights */}
-        <path
-          d="M24 32 C36 20 50 32 50 32"
-          stroke="url(#emblem-specular)"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M76 32 C64 20 50 32 50 32"
-          stroke="url(#emblem-specular)"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-
-        {/* Lower Anchor Keystone */}
-        <polygon points="50,60 58,72 50,84 42,72" fill="url(#emblem-grad-2)" />
-
-        {/* Radiant Core Star / AI Mastery Nucleus */}
-        <g>
-          <circle cx="50" cy="48" r="14" fill="url(#core-flare)" />
-          {/* Diamond Shimmer Star */}
+        {/* OPEN BOOK PAGES */}
+        <g id="book-pages">
+          {/* 1. Rising Sun / Golden Page (Right Background) */}
           <path
-            d="M50 36 Q50 48 62 48 Q50 48 50 60 Q50 48 38 48 Q50 48 50 36 Z"
-            fill="#FFFFFF"
+            d="M200 248 C235 220 285 185 328 170 C336 167 344 172 344 180 C344 196 338 214 322 230 C280 248 238 256 200 258 Z"
+            fill="url(#svg-page-sun)"
           />
-          <circle cx="50" cy="48" r="3" fill="#06B6D4" />
+
+          {/* 2. Lower Deep Blue Page (Left) */}
+          <path
+            d="M200 270 C160 270 100 258 54 236 C46 232 44 222 49 215 C58 202 72 192 90 184 C128 212 168 238 200 248 Z"
+            fill="url(#svg-page-blue)"
+          />
+
+          {/* 3. Dynamic Cyan Page (Left Front) */}
+          <path
+            d="M200 278 C158 274 105 258 64 226 C56 220 54 209 60 201 C68 188 84 176 104 168 C144 200 178 232 200 254 Z"
+            fill="url(#svg-page-cyan)"
+          />
+
+          {/* 4. Lower Indigo/Purple Wing (Right) */}
+          <path
+            d="M200 270 C240 270 300 258 346 236 C354 232 356 222 351 215 C342 202 328 192 310 184 C272 212 232 238 200 248 Z"
+            fill="#4F46E5"
+          />
+
+          {/* 5. Main Innovation Purple Page (Right Front) */}
+          <path
+            d="M200 278 C242 274 295 258 336 226 C344 220 346 209 340 201 C332 188 316 176 296 168 C256 200 222 232 200 254 Z"
+            fill="url(#svg-page-purple)"
+          />
+
+          {/* Book Spine Apex Center */}
+          <path
+            d="M196 276 Q200 273 204 276 L202 284 Q200 286 198 284 Z"
+            fill="#0F172A"
+            opacity="0.3"
+          />
         </g>
 
-        {/* Floating Quantum Sparkles */}
-        <circle cx="28" cy="46" r="2" fill="#38BDF8" />
-        <circle cx="72" cy="46" r="2" fill="#F43F5E" />
+        {/* LEARNER FIGURE */}
+        <g id="learner-figure">
+          {/* Torso & Reaching Arms */}
+          <path
+            d="M200 246 
+               C188 215 168 175 138 144
+               C132 138 138 128 146 130
+               C164 136 178 152 188 170
+               C194 156 206 156 212 170
+               C222 152 236 136 254 130
+               C262 128 268 138 262 144
+               C232 175 212 215 200 246 Z"
+            fill="url(#svg-learner-body)"
+          />
+
+          {/* Learner Head */}
+          <circle
+            cx="200"
+            cy="138"
+            r="16"
+            fill="url(#svg-learner-head)"
+          />
+        </g>
+
+        {/* GRADUATION CAP */}
+        <g id="graduation-cap" filter="url(#svg-cap-shadow)">
+          {/* Under-Cap Crown Band */}
+          <path
+            d="M164 96 C164 116 178 128 200 128 C222 128 236 116 236 96 C226 102 214 106 200 106 C186 106 174 102 164 96 Z"
+            fill="#0F172A"
+          />
+
+          {/* Mortarboard Diamond Plane */}
+          <path
+            d="M200 52 L268 84 L200 106 L132 84 Z"
+            fill="url(#svg-cap-top)"
+          />
+
+          {/* Specular Diamond Highlight */}
+          <path
+            d="M200 52 L268 84 L200 88 L132 84 Z"
+            fill="#FFFFFF"
+            opacity="0.22"
+          />
+
+          {/* Center Button */}
+          <ellipse cx="200" cy="84" rx="5" ry="3.5" fill="#1E3A8A" />
+
+          {/* Tassel Ribbon & Hanging Node */}
+          <path
+            d="M200 84 Q238 88 252 98 Q260 106 260 118"
+            stroke="#38BDF8"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="260" cy="120" r="3" fill="#38BDF8" />
+          <path d="M258 122 L256 138 L264 138 L262 122 Z" fill="#38BDF8" />
+        </g>
+
+        {/* 4-POINT ACHIEVEMENT STAR */}
+        <g id="achievement-star" filter="url(#svg-star-glow)">
+          <path
+            d="M300 56 Q300 78 318 78 Q300 78 300 100 Q300 78 282 78 Q300 78 300 56 Z"
+            fill="url(#svg-star-grad)"
+            className={shouldAnimate ? 'animate-pulse' : ''}
+          />
+          <circle cx="300" cy="78" r="2.5" fill="#FFFFFF" />
+        </g>
       </svg>
     </div>
   )
 }
 
+/**
+ * LearningHub Primary Brand Logo Component
+ */
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = 'md',
   variant = 'full',
-  showBadge = true,
+  showTagline = false,
+  tagline = 'LEARN • PRACTICE • GROW • ACHIEVE',
+  showBadge = false,
   badgeText = 'AI OS',
   subtitle,
-  animate: propAnimate,
-  animated,
+  animate: propAnimate = true,
+  animated: propAnimated,
   className = '',
   onClick,
 }) => {
-  const animate = propAnimate ?? animated ?? true
+  const shouldAnimate = propAnimated ?? propAnimate
   const currentSize = sizeConfig[size]
 
+  const screenReaderText = null
+
+  // 1. Icon-Only Variant
   if (variant === 'icon-only') {
     return (
       <div
         onClick={onClick}
         className={`inline-flex items-center justify-center cursor-pointer ${className}`}
+        aria-label="LearningHub"
       >
-        <BrandEmblem size={currentSize.iconSize} animate={animate} />
+        <BrandEmblem size={currentSize.iconSize} animate={shouldAnimate} />
+        {screenReaderText}
       </div>
     )
   }
 
+  // 2. App-Icon / Squircle Variant (from reference image)
+  if (variant === 'app-icon') {
+    return (
+      <div
+        onClick={onClick}
+        className={`flex flex-col items-center justify-center p-4 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden select-none cursor-pointer group ${className}`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/10 via-purple-500/10 to-transparent pointer-events-none" />
+        <BrandEmblem size={currentSize.iconSize * 1.4} animate={shouldAnimate} />
+        <div className="mt-2.5 flex items-center justify-center">
+          <span className="font-extrabold text-white text-lg tracking-tight">Learning</span>
+          <span className="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 text-lg tracking-tight">Hub</span>
+        </div>
+        <span className="text-[8px] font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">
+          {tagline}
+        </span>
+        {screenReaderText}
+      </div>
+    )
+  }
+
+  // 3. Vertical Variant (Centered for Login / Splash Cards)
   if (variant === 'vertical') {
     return (
       <div
@@ -203,85 +353,86 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         className={`flex flex-col items-center text-center select-none cursor-pointer ${className}`}
       >
         <motion.div
-          whileHover={animate ? { scale: 1.06, rotate: [0, -1, 1, 0] } : undefined}
+          whileHover={shouldAnimate ? { scale: 1.06 } : undefined}
           transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-          className="relative mb-3"
+          className="relative mb-2.5"
         >
-          <BrandEmblem size={currentSize.iconSize} animate={animate} />
+          <BrandEmblem size={currentSize.iconSize * 1.25} animate={shouldAnimate} />
         </motion.div>
 
-        <div className="flex items-center gap-2">
-          <span
-            className={`font-black tracking-tight text-gray-900 dark:text-white ${currentSize.textSize}`}
-          >
+        <div className="flex items-center justify-center">
+          <span className={`font-black tracking-tight text-slate-900 dark:text-white ${currentSize.textSize}`}>
             Learning
           </span>
-          <span
-            className={`font-black rounded-lg bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-md shadow-purple-500/30 ${currentSize.hubSize}`}
-          >
+          <span className={`font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400 ${currentSize.hubSize}`}>
             Hub
+          </span>
+          <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 ml-0.5 -mt-3">
+            ™
           </span>
         </div>
 
-        {(showBadge || subtitle) && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            {showBadge && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-primary-100 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800/60 shadow-sm">
-                <Sparkles className="w-2.5 h-2.5 text-primary-500 animate-pulse" />
-                {badgeText}
-              </span>
-            )}
-            {subtitle && (
-              <span className={`font-semibold text-gray-500 dark:text-gray-400 ${currentSize.subSize}`}>
-                {subtitle}
-              </span>
-            )}
-          </div>
+        <p className={`font-bold tracking-widest text-slate-400 dark:text-slate-400 uppercase mt-1 ${currentSize.taglineSize}`}>
+          {tagline}
+        </p>
+
+        {subtitle && (
+          <p className={`font-medium text-slate-500 dark:text-slate-400 mt-1 ${currentSize.subSize}`}>
+            {subtitle}
+          </p>
         )}
+
+        {screenReaderText}
       </div>
     )
   }
 
-  // Default 'full' horizontal layout
+  // 4. Default Horizontal / Full Variant
   return (
-    <motion.div
+    <div
       onClick={onClick}
-      whileHover={animate ? { scale: 1.02 } : undefined}
-      whileTap={animate ? { scale: 0.98 } : undefined}
-      className={`inline-flex items-center ${currentSize.gap} select-none cursor-pointer group ${className}`}
+      className={`inline-flex items-center ${currentSize.gap} select-none cursor-pointer ${className}`}
     >
-      <BrandEmblem size={currentSize.iconSize} animate={animate} />
+      <motion.div
+        whileHover={shouldAnimate ? { scale: 1.05 } : undefined}
+        transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+        className="shrink-0"
+      >
+        <BrandEmblem size={currentSize.iconSize} animate={shouldAnimate} />
+      </motion.div>
 
-      <div className="flex flex-col leading-none">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col justify-center leading-none">
+        <div className="flex items-baseline">
           <span
-            className={`font-black tracking-tight text-gray-900 dark:text-white transition-colors duration-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 ${currentSize.textSize}`}
+            className={`tracking-tight text-slate-900 dark:text-white ${currentSize.textSize}`}
           >
             Learning
           </span>
           <span
-            className={`font-black rounded-md bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-sm shadow-purple-500/25 transition-all duration-300 group-hover:shadow-md group-hover:shadow-purple-500/40 ${currentSize.hubSize}`}
+            className={`tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400 ${currentSize.hubSize}`}
           >
             Hub
           </span>
-        </div>
-
-        {subtitle ? (
-          <span
-            className={`font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1 ${currentSize.subSize}`}
-          >
-            {subtitle}
+          <span className="text-[9px] font-bold text-violet-600 dark:text-violet-400 ml-0.5 -mt-2">
+            ™
           </span>
-        ) : showBadge ? (
-          <div className="flex items-center gap-1 mt-0.5">
-            <span className="text-[9px] font-extrabold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-indigo-400 to-pink-500">
+
+          {showBadge && (
+            <span className="ml-2 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300 border border-violet-200 dark:border-violet-800/60">
               {badgeText}
             </span>
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping inline-block" />
-          </div>
-        ) : null}
+          )}
+        </div>
+
+        {(showTagline || subtitle) && (
+          <p className={`font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mt-0.5 ${currentSize.taglineSize}`}>
+            {subtitle || tagline}
+          </p>
+        )}
       </div>
-    </motion.div>
+
+      {screenReaderText}
+    </div>
   )
 }
 

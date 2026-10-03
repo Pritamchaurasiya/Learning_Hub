@@ -8,6 +8,7 @@ from .models import (
     Option,
     Question,
     QuestionBookmark,
+    SpacedRepetitionCard,
     Test,
     TestAttempt,
     TestSection,
@@ -120,3 +121,22 @@ class QuestionBookmarkAdmin(admin.ModelAdmin):
     list_display = ["user", "question", "created_at"]
     list_select_related = ["user", "question"]
     autocomplete_fields = ["user", "question"]
+
+
+@admin.register(SpacedRepetitionCard)
+class SpacedRepetitionCardAdmin(admin.ModelAdmin):
+    list_display = [
+        "id", "user", "card_type", "topic", "interval_days",
+        "ease_factor", "repetitions", "lapses", "stability",
+        "retention_display", "next_review_at"
+    ]
+    list_filter = ["card_type", "topic", "repetitions", "lapses"]
+    search_fields = ["user__email", "front", "topic", "subject"]
+    list_select_related = ["user", "question"]
+    autocomplete_fields = ["user", "question"]
+    readonly_fields = ["id", "created_at", "last_reviewed_at"]
+
+    @admin.display(description="Retention %")
+    def retention_display(self, obj):
+        return f"{round(obj.retention_probability * 100, 1)}%"
+

@@ -3,7 +3,9 @@ from .views import (
     TestListView, TestDetailView, StartTestView, SubmitTestView,
     TestAutosaveView, TestAttemptDetailView, TestResultView,
     AIGenerateTestView, TestAttemptHistoryView, TopicPerformanceView,
-    BookmarkQuestionView, AdaptiveNextQuestionView, TestTelemetryView
+    BookmarkQuestionView, AdaptiveNextQuestionView, TestTelemetryView,
+    SpacedRepetitionDeckView, SpacedRepetitionReviewView,
+    SpacedRepetitionGenerateView, SpacedRepetitionStatsView
 )
 
 urlpatterns = [
@@ -46,5 +48,16 @@ urlpatterns = [
     path('question-bookmarks/', BookmarkQuestionView.as_view(), name='question-bookmarks-slash'),
     path('question-bookmarks/<str:question_id>', BookmarkQuestionView.as_view(), name='question-bookmarks-delete'),
     path('question-bookmarks/<str:question_id>/', BookmarkQuestionView.as_view(), name='question-bookmarks-delete-slash'),
+
+    # SuperMemo SM-2 Spaced Repetition Revision Routes
+    path('revision/deck', SpacedRepetitionDeckView.as_view(), name='revision-deck'),
+    path('revision/deck/', SpacedRepetitionDeckView.as_view(), name='revision-deck-slash'),
+    path('revision/review', SpacedRepetitionReviewView.as_view(), name='revision-review'),
+    path('revision/review/', SpacedRepetitionReviewView.as_view(), name='revision-review-slash'),
+    path('revision/generate', SpacedRepetitionGenerateView.as_view(), name='revision-generate'),
+    path('revision/generate/', SpacedRepetitionGenerateView.as_view(), name='revision-generate-slash'),
+    path('revision/stats', SpacedRepetitionStatsView.as_view(), name='revision-stats'),
+    path('revision/stats/', SpacedRepetitionStatsView.as_view(), name='revision-stats-slash'),
 ]
+
 

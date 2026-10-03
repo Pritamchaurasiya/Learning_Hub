@@ -383,7 +383,10 @@ async function executeWithTimeout(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}): Promise<any> => {
+export async function fetchApi<T = any>(
+  endpoint: string,
+  options: FetchApiOptions = {}
+): Promise<T> {
   const responseType = options.responseType ?? 'json'
   const normalizedEndpoint =
     endpoint.endsWith('/') && endpoint.length > 1 ? endpoint.slice(0, -1) : endpoint
@@ -392,16 +395,16 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
 
   if (responseType === 'json' && method === 'GET' && !options.bypassCache) {
     const cachedData = getCachedData(fullUrl, options)
-    if (cachedData !== null) return cachedData
+    if (cachedData !== null) return cachedData as T
 
     if (!options.signal) {
       const inFlight = getInFlightRequest(fullUrl, options)
-      if (inFlight !== null) return inFlight
+      if (inFlight !== null) return inFlight as T
     }
 
     if (!navigator.onLine) {
       const offlineData = getOfflineFallback(fullUrl, options)
-      if (offlineData !== null) return offlineData
+      if (offlineData !== null) return offlineData as T
     }
   }
 
@@ -500,10 +503,10 @@ export const fetchApi = async (endpoint: string, options: FetchApiOptions = {}):
   }
 
   if (responseType === 'json' && method === 'GET' && !options.signal && !options.bypassCache) {
-    return trackInFlightRequest(fullUrl, options, executeRequest())
+    return (await trackInFlightRequest(fullUrl, options, executeRequest())) as T
   }
 
-  return executeRequest()
+  return (await executeRequest()) as T
 }
 
 async function handleNonRetryable(

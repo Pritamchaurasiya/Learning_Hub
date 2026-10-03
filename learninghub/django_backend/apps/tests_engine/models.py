@@ -175,3 +175,69 @@ class QuestionBookmark(models.Model):
     class Meta:
         db_table = 'lh_question_bookmarks'
         unique_together = ('user', 'question')
+
+
+def generate_card_id():
+    return f"srs-{uuid.uuid4().hex[:10]}"
+
+
+class SpacedRepetitionCard(models.Model):
+    """
+    SuperMemo SM-2 Spaced Repetition Card tracking active recall intervals,
+    forgetting curve decay, and psychometric memory stability.
+    """
+    CARD_TYPE_CHOICES = (
+        ('QUESTION', 'Practice Question'),
+        ('FORMULA', 'Formula Recall'),
+        ('CONCEPT', 'Conceptual Derivation'),
+        ('MISTAKE', 'Diagnostic Mistake Remediation'),
+    )
+
+    id = models.CharField(primary_key=True, max_length=64, default=generate_card_id)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='spaced_cards')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, related_name='spaced_cards')
+    card_type = models.CharField(max_length=32, choices=CARD_TYPE_CHOICES, default='QUESTION', db_index=True)
+    front = models.TextField()
+    back = models.TextField()
+    explanation = models.TextField(blank=True, default='')
+    topic = models.CharField(max_length=100, default='General', db_index=True)
+    subject = models.CharField(max_length=100, default='General', db_index=True)
+    difficulty = models.FloatField(default=0.0)
+
+    # SuperMemo SM-2 Psychometric Parameters
+    interval_days = models.IntegerField(default=1)
+    ease_factor = models.FloatField(default=2.5)
+    repetitions = models.IntegerField(default=0)
+    lapses = models.IntegerField(default=0)
+    stability = models.FloatField(default=1.0)
+    last_quality = models.IntegerField(default=0)
+
+    last_reviewed_at = models.DateTimeField(null=True, blank=True)
+    next_review_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lh_spaced_repetition_cards'
+        ordering = ['next_review_at']
+        indexes = [
+            models.Index(fields=['user', 'next_review_at']),
+            models.Index(fields=['user', 'topic']),
+            models.Index(fields=['user', 'card_type']),
+        ]
+
+    def __str__(self):
+        return f"SRS Card [{self.card_type}]: {self.front[:30]} ({self.user.email})"
+
+    @property
+    def retention_probability(self) -> float:
+        """
+        Calculates predicted memory retention probability R(t) = exp(-t / S)
+        where t is elapsed time in days and S is memory stability.
+        Returns value between 0.0 and 1.0.
+        """
+        if not self.last_reviewed_at or self.stability <= 0:
+            return 1.0
+        elapsed_days = (timezone.now() - self.last_reviewed_at).total_seconds() / 86400.0
+        import math
+        return round(math.exp(-elapsed_days / max(self.stability, 0.5)), 4)
+

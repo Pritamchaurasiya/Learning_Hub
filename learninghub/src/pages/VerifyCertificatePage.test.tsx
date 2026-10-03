@@ -13,6 +13,12 @@ vi.mock('../services/certificateService', () => ({
   },
 }))
 
+vi.mock('../services/verifiableCredentialService', () => ({
+  verifiableCredentialService: {
+    verifyCredential: vi.fn().mockResolvedValue({ status: 'success', data: null }),
+  },
+}))
+
 function renderWithProviders(initialEntry = '/verify-certificate') {
   const queryClient = new QueryClient({
     defaultOptions: {

@@ -53,6 +53,7 @@ const DiscussionsPage = lazy(() => import('./pages/DiscussionsPage'))
 const AITutorPage = lazy(() => import('./pages/AITutorPage'))
 const AlgorithmVisualizerPage = lazy(() => import('./pages/AlgorithmVisualizerPage'))
 const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
+const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -408,6 +409,17 @@ function App() {
                   </LazyRoute>
                 }
               />
+              <Route
+                path="/revision"
+                element={
+                  <LazyRoute sectionName="Spaced Revision">
+                    <RevisionPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/srs" element={<Navigate to="/revision" replace />} />
+              <Route path="/flashcards" element={<Navigate to="/revision" replace />} />
+
               <Route
                 path="/settings"
                 element={

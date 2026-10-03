@@ -84,6 +84,7 @@ export default function Sidebar() {
         { to: '/problems', icon: Code2, label: 'DSA Practice' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
+        { to: '/revision', icon: Zap, label: 'Spaced Revision' },
         { to: '/tests-a-history', icon: History, label: 'Test History' },
         { to: '/contest', icon: Trophy, label: 'Contests' },
         { to: '/leaderboard', icon: BarChart3, label: 'Leaderboard' },

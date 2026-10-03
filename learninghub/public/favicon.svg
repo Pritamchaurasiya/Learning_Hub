@@ -1,32 +1,97 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <defs>
-    <linearGradient id="fav-grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#06B6D4" />
-      <stop offset="50%" stop-color="#6366F1" />
-      <stop offset="100%" stop-color="#A855F7" />
+    <linearGradient id="fav-cap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
     </linearGradient>
-    <linearGradient id="fav-grad-secondary" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#4F46E5" />
-      <stop offset="50%" stop-color="#EC4899" />
-      <stop offset="100%" stop-color="#F43F5E" />
+    <linearGradient id="fav-star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="50%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
     </linearGradient>
-    <filter id="fav-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#6366F1" flood-opacity="0.6" />
-    </filter>
+    <linearGradient id="fav-learner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="fav-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="fav-sun" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+    <linearGradient id="fav-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#C026D3" />
+    </linearGradient>
   </defs>
 
-  <!-- Rounded App Tile Background -->
-  <rect width="128" height="128" rx="28" fill="#0F172A" />
-  <rect width="126" height="126" x="1" y="1" rx="27" stroke="url(#fav-grad-primary)" stroke-width="2" opacity="0.4" />
+  <!-- Scale and center the emblem in 128x128 -->
+  <g transform="translate(-18, -12) scale(0.41)">
+    <!-- Right Sun Page -->
+    <path
+      d="M200 248 C235 220 285 185 328 170 C336 167 344 172 344 180 C344 196 338 214 322 230 C280 248 238 256 200 258 Z"
+      fill="url(#fav-sun)"
+    />
+    <!-- Left Blue Page -->
+    <path
+      d="M200 270 C160 270 100 258 54 236 C46 232 44 222 49 215 C58 202 72 192 90 184 C128 212 168 238 200 248 Z"
+      fill="#1D4ED8"
+    />
+    <!-- Left Cyan Page -->
+    <path
+      d="M200 278 C158 274 105 258 64 226 C56 220 54 209 60 201 C68 188 84 176 104 168 C144 200 178 232 200 254 Z"
+      fill="url(#fav-cyan)"
+    />
+    <!-- Right Purple Page -->
+    <path
+      d="M200 278 C242 274 295 258 336 226 C344 220 346 209 340 201 C332 188 316 176 296 168 C256 200 222 232 200 254 Z"
+      fill="url(#fav-purple)"
+    />
 
-  <!-- Stylized Interlocking Wings & Nucleus -->
-  <g filter="url(#fav-glow)">
-    <!-- Left Wing / 'L' Shape -->
-    <path d="M30 42 C30 42 44 28 64 42 C64 56 50 82 36 94 C28 100 20 94 20 84 C20 66 30 42 30 42 Z" fill="url(#fav-grad-primary)" />
-    <!-- Right Wing / 'H' Arc -->
-    <path d="M98 42 C98 42 84 28 64 42 C64 56 78 82 92 94 C100 100 108 94 108 84 C108 66 98 42 98 42 Z" fill="url(#fav-grad-secondary)" />
-    <!-- Center Radiant Core -->
-    <polygon points="64,54 74,68 64,82 54,68" fill="#FFFFFF" />
-    <circle cx="64" cy="68" r="4" fill="#38BDF8" />
+    <!-- Learner Body -->
+    <path
+      d="M200 246 
+         C188 215 168 175 138 144
+         C132 138 138 128 146 130
+         C164 136 178 152 188 170
+         C194 156 206 156 212 170
+         C222 152 236 136 254 130
+         C262 128 268 138 262 144
+         C232 175 212 215 200 246 Z"
+      fill="url(#fav-learner)"
+    />
+    <!-- Learner Head -->
+    <circle cx="200" cy="138" r="16" fill="#38BDF8" />
+
+    <!-- Cap Base -->
+    <path
+      d="M164 96 C164 116 178 128 200 128 C222 128 236 116 236 96 C226 102 214 106 200 106 C186 106 174 102 164 96 Z"
+      fill="#0F172A"
+    />
+    <!-- Cap Mortarboard -->
+    <path d="M200 52 L268 84 L200 106 L132 84 Z" fill="url(#fav-cap)" />
+    <path d="M200 52 L268 84 L200 88 L132 84 Z" fill="#FFFFFF" opacity="0.3" />
+
+    <!-- Tassel -->
+    <path
+      d="M200 84 Q238 88 252 98 Q260 106 260 118"
+      stroke="#38BDF8"
+      stroke-width="3.5"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <circle cx="260" cy="120" r="3.5" fill="#38BDF8" />
+
+    <!-- Star -->
+    <path
+      d="M300 56 
+         Q300 78 318 78 
+         Q300 78 300 100 
+         Q300 78 282 78 
+         Q300 78 300 56 Z"
+      fill="url(#fav-star)"
+    />
   </g>
 </svg>

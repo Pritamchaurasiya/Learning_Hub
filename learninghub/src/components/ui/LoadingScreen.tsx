@@ -1,4 +1,5 @@
 import { cn } from '../../utils/cn'
+import { BrandEmblem } from '../BrandLogo'
 
 interface LoadingScreenProps {
   fullScreen?: boolean
@@ -39,18 +40,25 @@ export function LoadingScreen({ fullScreen = false, className, message }: Loadin
         </div>
         {/* Center logo */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary-500/30">
-            L
-          </div>
+          <BrandEmblem size={44} animate />
         </div>
         {/* Glow effect */}
-        <div className="absolute inset-0 w-20 h-20 rounded-full bg-primary-500/5 blur-xl animate-pulse" />
+        <div className="absolute inset-0 w-20 h-20 rounded-full bg-primary-500/10 blur-xl animate-pulse" />
       </div>
 
-      <div className="space-y-3 text-center">
-        <h2 className="text-lg font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-600 via-purple-600 to-pink-500">
-          LearningHub
+      <div className="space-y-2 text-center">
+        <h2 className="text-xl font-black tracking-tight">
+          <span className="text-slate-900 dark:text-white">Learning</span>
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400">
+            Hub
+          </span>
+          <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 ml-0.5 -mt-2">
+            ™
+          </span>
         </h2>
+        <p className="text-[9px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+          LEARN • PRACTICE • GROW • ACHIEVE
+        </p>
         <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
           {message ?? (fullScreen ? 'Initializing your learning environment...' : 'Loading...')}
         </p>

@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Background Gradient for Squircle -->
+    <linearGradient id="app-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B132B" />
+      <stop offset="50%" stop-color="#060C1F" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Squircle Border Stroke Highlight -->
+    <linearGradient id="app-border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#818CF8" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#C084FC" stop-opacity="0.4" />
+    </linearGradient>
+
+    <!-- Ambient Center Bloom -->
+    <radialGradient id="app-bloom" cx="50%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25" />
+      <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Hub Purple Gradient -->
+    <linearGradient id="hub-text-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7" />
+      <stop offset="50%" stop-color="#C026D3" />
+      <stop offset="100%" stop-color="#E879F9" />
+    </linearGradient>
+
+    <!-- Emblem Gradients -->
+    <linearGradient id="ai-cap-top" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="50%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+
+    <linearGradient id="ai-star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="40%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <linearGradient id="ai-learner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+
+    <linearGradient id="ai-page-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <linearGradient id="ai-page-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+
+    <linearGradient id="ai-page-sun" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+
+    <linearGradient id="ai-page-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#C026D3" />
+    </linearGradient>
+
+    <filter id="app-drop-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base Container -->
+  <rect
+    x="16"
+    y="16"
+    width="480"
+    height="480"
+    rx="108"
+    fill="url(#app-bg-grad)"
+    stroke="url(#app-border-grad)"
+    stroke-width="2.5"
+    filter="url(#app-drop-shadow)"
+  />
+
+  <!-- Ambient Glow Center -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#app-bloom)" />
+
+  <!-- EMBLEM SCALED AND POSITIONED -->
+  <g transform="translate(66, 42) scale(0.95)">
+    <!-- Right Sunburst Page -->
+    <path
+      d="M200 248 C235 220 285 185 328 170 C336 167 344 172 344 180 C344 196 338 214 322 230 C280 248 238 256 200 258 Z"
+      fill="url(#ai-page-sun)"
+    />
+
+    <!-- Left Lower Blue Page -->
+    <path
+      d="M200 270 C160 270 100 258 54 236 C46 232 44 222 49 215 C58 202 72 192 90 184 C128 212 168 238 200 248 Z"
+      fill="url(#ai-page-blue)"
+    />
+
+    <!-- Left Main Swooping Cyan Page -->
+    <path
+      d="M200 278 C158 274 105 258 64 226 C56 220 54 209 60 201 C68 188 84 176 104 168 C144 200 178 232 200 254 Z"
+      fill="url(#ai-page-cyan)"
+    />
+
+    <!-- Right Lower Purple Page -->
+    <path
+      d="M200 270 C240 270 300 258 346 236 C354 232 356 222 351 215 C342 202 328 192 310 184 C272 212 232 238 200 248 Z"
+      fill="#4F46E5"
+    />
+
+    <!-- Right Main Swooping Purple Page -->
+    <path
+      d="M200 278 C242 274 295 258 336 226 C344 220 346 209 340 201 C332 188 316 176 296 168 C256 200 222 232 200 254 Z"
+      fill="url(#ai-page-purple)"
+    />
+
+    <!-- Learner Body -->
+    <path
+      d="M200 246 
+         C188 215 168 175 138 144
+         C132 138 138 128 146 130
+         C164 136 178 152 188 170
+         C194 156 206 156 212 170
+         C222 152 236 136 254 130
+         C262 128 268 138 262 144
+         C232 175 212 215 200 246 Z"
+      fill="url(#ai-learner)"
+    />
+
+    <!-- Learner Head -->
+    <circle cx="200" cy="138" r="16" fill="#38BDF8" />
+
+    <!-- Cap Base -->
+    <path
+      d="M164 96 C164 116 178 128 200 128 C222 128 236 116 236 96 C226 102 214 106 200 106 C186 106 174 102 164 96 Z"
+      fill="#0F172A"
+    />
+
+    <!-- Cap Mortarboard Diamond -->
+    <path d="M200 52 L268 84 L200 106 L132 84 Z" fill="url(#ai-cap-top)" />
+    <path d="M200 52 L268 84 L200 88 L132 84 Z" fill="#FFFFFF" opacity="0.25" />
+    <ellipse cx="200" cy="84" rx="5" ry="3.5" fill="#1E3A8A" />
+
+    <!-- Tassel -->
+    <path
+      d="M200 84 Q238 88 252 98 Q260 106 260 118"
+      stroke="#38BDF8"
+      stroke-width="3"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <circle cx="260" cy="120" r="3" fill="#38BDF8" />
+    <path d="M258 122 L256 138 L264 138 L262 122 Z" fill="#38BDF8" />
+
+    <!-- Golden Sparkle Star -->
+    <path
+      d="M300 56 
+         Q300 78 318 78 
+         Q300 78 300 100 
+         Q300 78 282 78 
+         Q300 78 300 56 Z"
+      fill="url(#ai-star)"
+    />
+    <circle cx="300" cy="78" r="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography: LearningHub -->
+  <g id="app-logo-text">
+    <text
+      x="256"
+      y="410"
+      text-anchor="middle"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif"
+      font-weight="800"
+      font-size="44"
+      letter-spacing="-1"
+    >
+      <tspan fill="#FFFFFF">Learning</tspan><tspan fill="url(#hub-text-grad)">Hub</tspan>
+    </text>
+
+    <!-- Tagline: LEARN • PRACTICE • GROW • ACHIEVE -->
+    <text
+      x="256"
+      y="436"
+      text-anchor="middle"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif"
+      font-weight="600"
+      font-size="12"
+      fill="#94A3B8"
+      letter-spacing="4"
+    >
+      LEARN • PRACTICE • GROW • ACHIEVE
+    </text>
+  </g>
+</svg>

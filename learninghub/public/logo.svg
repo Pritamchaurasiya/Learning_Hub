@@ -1,122 +1,181 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 180" fill="none">
   <defs>
-    <!-- Background Ambient Glow -->
-    <radialGradient id="ambient-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.35" />
-      <stop offset="60%" stop-color="#4F46E5" stop-opacity="0.15" />
-      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Main Shield & Wing Gradient -->
-    <linearGradient id="primary-grad" x1="10%" y1="0%" x2="90%" y2="100%">
-      <stop offset="0%" stop-color="#06B6D4" />
-      <stop offset="35%" stop-color="#3B82F6" />
-      <stop offset="70%" stop-color="#6366F1" />
-      <stop offset="100%" stop-color="#A855F7" />
+    <!-- Cap Gradients -->
+    <linearGradient id="lh-cap-top" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="45%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
     </linearGradient>
 
-    <!-- Secondary Flare Gradient -->
-    <linearGradient id="secondary-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#4F46E5" />
-      <stop offset="45%" stop-color="#8B5CF6" />
-      <stop offset="85%" stop-color="#EC4899" />
-      <stop offset="100%" stop-color="#F43F5E" />
+    <!-- Golden Star Gradient -->
+    <linearGradient id="lh-star-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="40%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
     </linearGradient>
 
-    <!-- Core Star Glow Gradient -->
-    <linearGradient id="core-glow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="40%" stop-color="#A5F3FC" />
-      <stop offset="100%" stop-color="#67E8F9" />
+    <!-- Learner Body & Head -->
+    <linearGradient id="lh-learner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#1D4ED8" />
     </linearGradient>
 
-    <!-- Glass Reflection Highlight -->
-    <linearGradient id="glass-specular" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.6" />
-      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.1" />
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    <!-- Pages Gradients -->
+    <linearGradient id="lh-page-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="40%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#0284C7" />
     </linearGradient>
 
-    <!-- Drop Shadows -->
-    <filter id="shadow-main" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#4F46E5" flood-opacity="0.45" />
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#06B6D4" flood-opacity="0.25" />
-    </filter>
+    <linearGradient id="lh-page-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
 
-    <filter id="neon-bloom" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <linearGradient id="lh-page-sun" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+
+    <linearGradient id="lh-page-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="85%" stop-color="#A855F7" />
+      <stop offset="100%" stop-color="#C026D3" />
+    </linearGradient>
+
+    <!-- Hub Text Purple Gradient -->
+    <linearGradient id="lh-hub-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="50%" stop-color="#9333EA" />
+      <stop offset="100%" stop-color="#C026D3" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="lh-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1E3A8A" flood-opacity="0.2" />
     </filter>
   </defs>
 
-  <!-- Ambient Glow Circle -->
-  <circle cx="256" cy="256" r="230" fill="url(#ambient-glow)" />
+  <!-- ==================== EMBLEM (LEFT) ==================== -->
+  <g transform="translate(10, -8) scale(0.55)" filter="url(#lh-shadow)">
+    <!-- Right Sunburst Page -->
+    <path
+      d="M200 248 C235 220 285 185 328 170 C336 167 344 172 344 180 C344 196 338 214 322 230 C280 248 238 256 200 258 Z"
+      fill="url(#lh-page-sun)"
+    />
 
-  <!-- Outer Protective Hex Ring / Orbital Frame -->
-  <path d="M256 48 L440 148 V364 L256 464 L72 364 V148 Z" 
-        stroke="url(#primary-grad)" 
-        stroke-width="3" 
-        stroke-dasharray="16 10" 
-        opacity="0.35" 
-        fill="none" />
+    <!-- Left Lower Blue Page -->
+    <path
+      d="M200 270 C160 270 100 258 54 236 C46 232 44 222 49 215 C58 202 72 192 90 184 C128 212 168 238 200 248 Z"
+      fill="url(#lh-page-blue)"
+    />
 
-  <!-- Back Left Ascent Wing (The 'L' of Learning) -->
-  <g filter="url(#shadow-main)">
-    <path d="M120 160 C120 160 170 110 256 160 C256 210 200 320 140 370 C110 395 70 380 70 340 C70 270 120 160 120 160 Z" 
-          fill="url(#primary-grad)" />
-    
-    <!-- Left Wing Specular Edge -->
-    <path d="M120 160 C170 110 256 160 256 160 C230 190 190 280 140 370" 
-          stroke="url(#glass-specular)" 
-          stroke-width="5" 
-          stroke-linecap="round" 
-          fill="none" 
-          opacity="0.8" />
+    <!-- Left Main Swooping Cyan Page -->
+    <path
+      d="M200 278 C158 274 105 258 64 226 C56 220 54 209 60 201 C68 188 84 176 104 168 C144 200 178 232 200 254 Z"
+      fill="url(#lh-page-cyan)"
+    />
+
+    <!-- Right Lower Purple Page -->
+    <path
+      d="M200 270 C240 270 300 258 346 236 C354 232 356 222 351 215 C342 202 328 192 310 184 C272 212 232 238 200 248 Z"
+      fill="#4F46E5"
+    />
+
+    <!-- Right Main Swooping Purple Page -->
+    <path
+      d="M200 278 C242 274 295 258 336 226 C344 220 346 209 340 201 C332 188 316 176 296 168 C256 200 222 232 200 254 Z"
+      fill="url(#lh-page-purple)"
+    />
+
+    <!-- Learner Body -->
+    <path
+      d="M200 246 
+         C188 215 168 175 138 144
+         C132 138 138 128 146 130
+         C164 136 178 152 188 170
+         C194 156 206 156 212 170
+         C222 152 236 136 254 130
+         C262 128 268 138 262 144
+         C232 175 212 215 200 246 Z"
+      fill="url(#lh-learner)"
+    />
+
+    <!-- Learner Head -->
+    <circle cx="200" cy="138" r="16" fill="#38BDF8" />
+
+    <!-- Cap Base -->
+    <path
+      d="M164 96 C164 116 178 128 200 128 C222 128 236 116 236 96 C226 102 214 106 200 106 C186 106 174 102 164 96 Z"
+      fill="#0F172A"
+    />
+
+    <!-- Cap Mortarboard Top -->
+    <path d="M200 52 L268 84 L200 106 L132 84 Z" fill="url(#lh-cap-top)" />
+    <path d="M200 52 L268 84 L200 88 L132 84 Z" fill="#FFFFFF" opacity="0.25" />
+    <ellipse cx="200" cy="84" rx="5" ry="3.5" fill="#1E3A8A" />
+
+    <!-- Tassel -->
+    <path
+      d="M200 84 Q238 88 252 98 Q260 106 260 118"
+      stroke="#38BDF8"
+      stroke-width="3"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <circle cx="260" cy="120" r="3" fill="#38BDF8" />
+    <path d="M258 122 L256 138 L264 138 L262 122 Z" fill="#38BDF8" />
+
+    <!-- Star -->
+    <path
+      d="M300 56 
+         Q300 78 318 78 
+         Q300 78 300 100 
+         Q300 78 282 78 
+         Q300 78 300 56 Z"
+      fill="url(#lh-star-grad)"
+    />
+    <circle cx="300" cy="78" r="3" fill="#FFFFFF" />
   </g>
 
-  <!-- Back Right Ascent Wing (The 'H' Arc of Hub) -->
-  <g filter="url(#shadow-main)">
-    <path d="M392 160 C392 160 342 110 256 160 C256 210 312 320 372 370 C402 395 442 380 442 340 C442 270 392 160 392 160 Z" 
-          fill="url(#secondary-grad)" />
+  <!-- ==================== TYPOGRAPHY (RIGHT) ==================== -->
+  <g transform="translate(230, 95)">
+    <!-- Main Headline: LearningHub -->
+    <text
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif"
+      font-weight="900"
+      font-size="62"
+      letter-spacing="-1.5"
+    >
+      <tspan fill="#0F172A">Learning</tspan><tspan fill="url(#lh-hub-grad)">Hub</tspan>
+    </text>
 
-    <!-- Right Wing Specular Edge -->
-    <path d="M392 160 C342 110 256 160 256 160 C282 190 322 280 372 370" 
-          stroke="url(#glass-specular)" 
-          stroke-width="5" 
-          stroke-linecap="round" 
-          fill="none" 
-          opacity="0.8" />
+    <!-- Trademark Symbol (TM) -->
+    <text
+      x="368"
+      y="-26"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif"
+      font-weight="700"
+      font-size="16"
+      fill="#7C3AED"
+    >
+      ™
+    </text>
+
+    <!-- Subtitle Tagline: LEARN • PRACTICE • GROW • ACHIEVE -->
+    <text
+      x="4"
+      y="38"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif"
+      font-weight="700"
+      font-size="14"
+      fill="#64748B"
+      letter-spacing="5"
+    >
+      LEARN • PRACTICE • GROW • ACHIEVE
+    </text>
   </g>
-
-  <!-- Central Interlocking Convergence Nexus (Open Book & AI Node) -->
-  <!-- Left Leaf of Knowledge Book -->
-  <path d="M256 170 C220 220 160 270 130 330 C125 340 135 352 146 350 C186 342 230 310 256 280 Z" 
-        fill="url(#primary-grad)" 
-        opacity="0.9" />
-
-  <!-- Right Leaf of Knowledge Book -->
-  <path d="M256 170 C292 220 352 270 382 330 C387 340 377 352 366 350 C326 342 282 310 256 280 Z" 
-        fill="url(#secondary-grad)" 
-        opacity="0.9" />
-
-  <!-- Lower Anchor Diamond Keel -->
-  <polygon points="256,280 286,340 256,410 226,340" 
-           fill="url(#secondary-grad)" 
-           filter="url(#neon-bloom)" />
-
-  <!-- Core Radiant AI Nucleus (Quantum Sparkle / Star of Mastery) -->
-  <g filter="url(#neon-bloom)">
-    <!-- 4-Point Super Radiant Star -->
-    <path d="M256 190 Q256 230 296 230 Q256 230 256 270 Q256 230 216 230 Q256 230 256 190 Z" 
-          fill="url(#core-glow)" />
-
-    <!-- Central Diamond Gem Core -->
-    <circle cx="256" cy="230" r="14" fill="#FFFFFF" />
-    <circle cx="256" cy="230" r="8" fill="#38BDF8" />
-  </g>
-
-  <!-- Orbiting Satellites / Quantum Micro Nodes -->
-  <circle cx="150" cy="190" r="7" fill="#38BDF8" filter="url(#neon-bloom)" />
-  <circle cx="362" cy="190" r="7" fill="#F43F5E" filter="url(#neon-bloom)" />
-  <circle cx="256" cy="115" r="9" fill="#A855F7" filter="url(#neon-bloom)" />
 </svg>

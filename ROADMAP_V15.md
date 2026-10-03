@@ -75,5 +75,17 @@
   - Frontend Components: [`ProctoringWarningBanner.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/ProctoringWarningBanner.tsx), [`AssessmentIntegrityScorecard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/AssessmentIntegrityScorecard.tsx), and [`AssessmentIntegrityScorecard.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/AssessmentIntegrityScorecard.test.tsx).
   - Page Integration: [`TestsAPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/TestsAPage.tsx) & [`testSlice.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/stores/slices/testSlice.ts).
 
-
-
+### Milestone 7: SuperMemo SM-2+ Spaced Repetition Engine & Smart Revision Hub (Q2 2027) — [COMPLETED & VERIFIED]
+- **Status**: ✅ Shipped & Tested (100% pass across backend pytest suite, frontend vitest suite, tsc typecheck, and Vite PWA production build).
+- **Architecture**:
+  - SuperMemo SM-2+ psychometric spaced repetition scheduling engine calibrated against the Ebbinghaus forgetting curve.
+  - Dynamically calculates repetition intervals ($I_1 = 1, I_2 = 6, I_n = I_{n-1} \times EF$), adaptive ease factors ($EF \ge 1.3$), memory stability ($S$), and retention probability ($R = e^{-t/S}$).
+  - Multi-tier flashcard types: `MISTAKE` (auto-generated from failed assessment items), `FORMULA` (mathematical/statistical identities with KaTeX rendering), `CONCEPT` (core theoretical foundations), and `QUESTION` (targeted practice drills).
+  - 1-Click Automated Ingestion: Automated card generation from test session mistakes (`/api/v1/revision/generate` with source `mistakes`) and bookmarked questions (`source: bookmarks`).
+  - Interactive 3D Study Deck: Animated card flip mechanics with Framer Motion, keyboard accessibility (Space to flip, 1-4 to rate recall), retention probability indicators, and session summary breakdowns.
+  - Retention Analytics Dashboard: Real-time mastery rate tracking, 7-day review forecast, stability distributions, and granular topic-level retention breakdown.
+- **Components**:
+  - Backend Engine & Endpoints: [`spaced_repetition.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/spaced_repetition.py), [`models.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/models.py), [`views.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/views.py), [`urls.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/urls.py), and [`test_spaced_repetition.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/tests/test_spaced_repetition.py).
+  - Frontend Services & Types: [`revision.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/types/revision.ts), [`revisionService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/revisionService.ts), and [`revisionService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/revisionService.test.ts).
+  - Frontend Components: [`SpacedRepetitionCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/SpacedRepetitionCard.tsx), [`RetentionAnalyticsCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/RetentionAnalyticsCard.tsx), and [`RevisionPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.tsx).
+  - Test Suite: [`RevisionPage.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.test.tsx) (100% pass).
