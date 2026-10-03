@@ -17,6 +17,7 @@ import {
   processAdaptiveStep,
   diagnoseMisconception,
   createTest,
+  receiveTestTelemetry,
 } from '../../controllers/testsController'
 import {
   practiceAnswer,
@@ -32,6 +33,7 @@ import {
   createTestSchema,
   bookmarkQuestionSchema,
   removeBookmarkSchema,
+  receiveTestTelemetrySchema,
 } from '../../validations/schemas'
 import {
   bookmarkQuestion,
@@ -102,6 +104,13 @@ router.post(
   testMutationLimiter,
   validate(submitTestSchema),
   submitTest
+)
+router.post(
+  '/:id/telemetry',
+  authenticate,
+  testMutationLimiter,
+  validate(receiveTestTelemetrySchema),
+  receiveTestTelemetry
 )
 router.post('/:id/practice/answer', authenticate, testMutationLimiter, practiceAnswer)
 router.post('/:id/adaptive/step', authenticate, testMutationLimiter, processAdaptiveStep)

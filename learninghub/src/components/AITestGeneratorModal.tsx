@@ -143,10 +143,8 @@ export const AITestGeneratorModal = memo(function AITestGeneratorModal({
         throw new Error((response.data as any)?.error ?? 'Failed to generate test.')
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('AI Test Generation failed:', err)
-      }
-      addToastRef.current({ message: 'Failed to generate AI Test', type: 'error' })
+      const msg = err instanceof Error ? err.message : 'Failed to generate AI Test'
+      addToastRef.current({ message: msg, type: 'error' })
     } finally {
       setIsGenerating(false)
     }

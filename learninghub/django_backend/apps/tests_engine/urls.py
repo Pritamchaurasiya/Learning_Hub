@@ -5,7 +5,8 @@ from .views import (
     AIGenerateTestView, TestAttemptHistoryView, TopicPerformanceView,
     BookmarkQuestionView, AdaptiveNextQuestionView, TestTelemetryView,
     SpacedRepetitionDeckView, SpacedRepetitionReviewView,
-    SpacedRepetitionGenerateView, SpacedRepetitionStatsView
+    SpacedRepetitionGenerateView, SpacedRepetitionStatsView,
+    SkillDAGView, SkillInteractionView, SkillNextActionView
 )
 
 urlpatterns = [
@@ -58,6 +59,14 @@ urlpatterns = [
     path('revision/generate/', SpacedRepetitionGenerateView.as_view(), name='revision-generate-slash'),
     path('revision/stats', SpacedRepetitionStatsView.as_view(), name='revision-stats'),
     path('revision/stats/', SpacedRepetitionStatsView.as_view(), name='revision-stats-slash'),
+
+    # Bayesian Knowledge Tracing & Skill DAG Routes
+    path('skills/graph', SkillDAGView.as_view(), name='skills-graph'),
+    path('skills/graph/', SkillDAGView.as_view(), name='skills-graph-slash'),
+    path('skills/interaction', SkillInteractionView.as_view(), name='skills-interaction'),
+    path('skills/interaction/', SkillInteractionView.as_view(), name='skills-interaction-slash'),
+    path('skills/next-action', SkillNextActionView.as_view(), name='skills-next-action'),
+    path('skills/next-action/', SkillNextActionView.as_view(), name='skills-next-action-slash'),
 ]
 
 

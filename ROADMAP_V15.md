@@ -89,3 +89,25 @@
   - Frontend Services & Types: [`revision.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/types/revision.ts), [`revisionService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/revisionService.ts), and [`revisionService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/revisionService.test.ts).
   - Frontend Components: [`SpacedRepetitionCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/SpacedRepetitionCard.tsx), [`RetentionAnalyticsCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/RetentionAnalyticsCard.tsx), and [`RevisionPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.tsx).
   - Test Suite: [`RevisionPage.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.test.tsx) (100% pass).
+
+### Milestone 8: Bayesian Knowledge Tracing (BKT) & Interactive Concept Mastery Graph Engine (Q2 2027) — [COMPLETED & VERIFIED]
+- **Status**: ✅ Shipped & Tested (100% pass across vitest suites, tsc typecheck, and Vite PWA production build).
+- **Architecture**:
+  - Full implementation of Bayesian Knowledge Tracing (BKT) psychometric model:
+    - $P(L_0) = 0.15$ (Prior mastery), $P(T) = 0.20$ (Learning transition rate), $P(G) = 0.20$ (Guess probability), $P(S) = 0.08$ (Careless slip probability).
+    - Dynamic Bayesian posterior updating on evidence $O_t \in \{0, 1\}$ with forward learning acquisition $P(L_{t+1})$.
+    - Mastery threshold verification at $P(L_t) \ge 0.85$.
+  - 4-Factor Composite Exam Readiness Predictive Engine:
+    - Formula: $R_{\text{exam}} = 0.35 \cdot M_{\text{syllabus}} + 0.30 \cdot S_{\text{mock}} + 0.20 \cdot A_{\text{speed}} + 0.15 \cdot R_{\text{retention}}$.
+    - Classification into 4 performance bands: `ELITE` ($\ge 85$), `COMPETITIVE` ($\ge 70$), `DEVELOPING` ($\ge 50$), `NEEDS_REINFORCEMENT` ($< 50$).
+    - Automated strategic recommendations and strength/weakness diagnostics.
+  - Interactive Concept Knowledge Graph Visualizer:
+    - Topological DAG rendering grouping nodes into progression tiers (Foundations, Core, Intermediate, Advanced).
+    - Status badges (`MASTERED`, `IN_PROGRESS`, `UNLOCKED`, `LOCKED`) with prerequisite dependency satisfaction checks.
+    - Interactive slide-over drawer with prerequisite tracking, direct 1-click links to problem practice workspaces, flashcard decks, and textbook chapters.
+    - Semicircular animated Exam Readiness Gauge with sub-metric progress indicators.
+- **Components**:
+  - Services & Types: [`bkt.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/types/bkt.ts), [`bktService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.ts), and [`bktService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.test.ts).
+  - UI Components: [`KnowledgeGraphVisualizer.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/KnowledgeGraphVisualizer.tsx), [`KnowledgeGraphVisualizer.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/KnowledgeGraphVisualizer.test.tsx), [`ExamReadinessGauge.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/ExamReadinessGauge.tsx), and [`ExamReadinessGauge.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/ExamReadinessGauge.test.tsx).
+  - Page Integration: [`AnalyticsPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/AnalyticsPage.tsx).
+

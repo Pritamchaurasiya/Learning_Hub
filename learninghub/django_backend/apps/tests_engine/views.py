@@ -17,6 +17,7 @@ from .serializers import (
 from .scoring import IRTScoringEngine
 from .telemetry import AssessmentIntegrityEngine
 from .spaced_repetition import SuperMemoEngine
+from .bkt_engine import BayesianKnowledgeTracingEngine
 
 class TestListView(APIView):
     permission_classes = [AllowAny]
@@ -1005,6 +1006,74 @@ class SpacedRepetitionStatsView(APIView):
     def get(self, request):
         stats = SuperMemoEngine.get_retention_analytics(request.user)
         return success_response(data=stats)
+
+
+class SkillDAGView(APIView):
+    """
+    Returns the Curriculum Knowledge Graph DAG with student Bayesian mastery states
+    and topological levels. Open for unauthenticated exploration with default priors,
+    personalized when authenticated.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        dag = BayesianKnowledgeTracingEngine.get_skill_dag(user=user)
+        return success_response(data=dag)
+
+
+class SkillInteractionView(APIView):
+    """
+    Ingests practice events (correct / incorrect answers on test items, DSA problems, or cards)
+    and updates the student's Bayesian Knowledge Tracing posterior P(L_t).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        skill_id = request.data.get('skill_id')
+        is_correct = request.data.get('is_correct')
+
+        if not skill_id:
+            return error_response('skill_id is required', status_code=status.HTTP_400_BAD_REQUEST)
+        if is_correct is None:
+            return error_response('is_correct (boolean) is required', status_code=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = BayesianKnowledgeTracingEngine.record_interaction(
+                user=request.user,
+                skill_id_or_slug=skill_id,
+                is_correct=bool(is_correct)
+            )
+            return success_response(
+                data=result,
+                message=f"BKT mastery updated: {round(result['updated_probability'] * 100, 1)}%"
+            )
+        except Exception as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class SkillNextActionView(APIView):
+    """
+    Identifies the student's Next Best Action (NBA) within their Zone of Proximal Development (ZPD).
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        dag = BayesianKnowledgeTracingEngine.get_skill_dag(user=user)
+        rec_id = dag.get('recommended_concept_id')
+        target_node = None
+        for n in dag.get('nodes', []):
+            if n['id'] == rec_id:
+                target_node = n
+                break
+
+        return success_response(data={
+            'recommended_concept': target_node,
+            'overall_progress_percentage': dag.get('overall_progress_percentage', 0.0),
+            'total_skills': dag.get('total_skills', 0),
+            'mastered_skills': dag.get('mastered_skills', 0),
+        })
 
 
 

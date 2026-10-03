@@ -304,6 +304,36 @@ export const analyticsService = {
   },
 
   async getKnowledgeGraph(): Promise<{ status: string; data: KnowledgeGraphData }> {
+    try {
+      const res = await fetchApi<{ status: string; data: any }>('/api/v1/skills/graph')
+      if (res?.data?.nodes) {
+        const normalizedNodes: ConceptNode[] = res.data.nodes.map((n: any) => ({
+          id: n.id,
+          name: n.name,
+          slug: n.slug || n.id,
+          description: n.description || '',
+          type: n.category || 'DSA',
+          order: n.order ?? 0,
+          level: n.level ?? 0,
+          masteryScore: Math.round((n.probability_mastery ?? n.masteryScore ?? 0) * 100),
+          status: n.status || 'UNLOCKED',
+          prerequisiteIds: n.prerequisite_ids ?? n.prerequisiteIds ?? [],
+          isRecommended: Boolean(n.is_recommended ?? n.isRecommended),
+        }))
+        return {
+          status: 'success',
+          data: {
+            nodes: normalizedNodes,
+            edges: res.data.edges || [],
+            recommendedConceptId: res.data.recommended_concept_id ?? res.data.recommendedConceptId ?? null,
+            overallProgressPercentage: res.data.overall_progress_percentage ?? res.data.overallProgressPercentage ?? 0,
+          },
+        }
+      }
+    } catch {
+      // Fallback to legacy recommendations graph if present
+    }
+
     return fetchApi('/recommendations/knowledge-graph').catch(() => ({
       status: 'error',
       data: {
@@ -312,6 +342,23 @@ export const analyticsService = {
         recommendedConceptId: null,
         overallProgressPercentage: 0,
       },
+    }))
+  },
+
+  async recordSkillInteraction(
+    skillId: string,
+    isCorrect: boolean
+  ): Promise<{ status: string; data: any }> {
+    return fetchApi('/api/v1/skills/interaction', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: skillId, is_correct: isCorrect }),
+    })
+  },
+
+  async getNextBestAction(): Promise<{ status: string; data: any }> {
+    return fetchApi('/api/v1/skills/next-action').catch(() => ({
+      status: 'error',
+      data: { recommended_concept: null, overall_progress_percentage: 0 },
     }))
   },
 }

@@ -241,3 +241,92 @@ class SpacedRepetitionCard(models.Model):
         import math
         return round(math.exp(-elapsed_days / max(self.stability, 0.5)), 4)
 
+
+def generate_skill_id():
+    return f"skill-{uuid.uuid4().hex[:8]}"
+
+
+class ConceptSkill(models.Model):
+    """
+    Curriculum skill node in the Knowledge Graph DAG.
+    """
+    id = models.CharField(primary_key=True, max_length=64, default=generate_skill_id)
+    name = models.CharField(max_length=150, db_index=True)
+    slug = models.SlugField(max_length=150, unique=True)
+    category = models.CharField(max_length=64, default='DSA', db_index=True)
+    description = models.TextField(blank=True, default='')
+    level = models.IntegerField(default=0, db_index=True)
+    order = models.IntegerField(default=0)
+
+    # Bayesian Knowledge Tracing (BKT) Prior Parameters
+    p_init = models.FloatField(default=0.15, help_text="Initial prior probability P(L_0)")
+    p_transit = models.FloatField(default=0.20, help_text="Transition learning rate P(T)")
+    p_guess = models.FloatField(default=0.20, help_text="Guess probability P(G)")
+    p_slip = models.FloatField(default=0.10, help_text="Slip careless mistake probability P(S)")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lh_concept_skills'
+        ordering = ['level', 'order', 'name']
+
+    def __str__(self):
+        return f"{self.name} (L{self.level} - {self.category})"
+
+
+class SkillPrerequisite(models.Model):
+    """
+    Directed edge in the Knowledge Graph prerequisite DAG.
+    parent -> child implies parent is required before learning child.
+    """
+    STRENGTH_CHOICES = (
+        ('HARD', 'Strict Hard Prerequisite'),
+        ('SOFT', 'Recommended Supporting Concept'),
+    )
+
+    skill = models.ForeignKey(ConceptSkill, on_delete=models.CASCADE, related_name='prerequisites_in')
+    prerequisite = models.ForeignKey(ConceptSkill, on_delete=models.CASCADE, related_name='dependents_out')
+    strength = models.CharField(max_length=16, choices=STRENGTH_CHOICES, default='HARD')
+    minimum_mastery = models.FloatField(default=0.70)
+
+    class Meta:
+        db_table = 'lh_skill_prerequisites'
+        unique_together = ('skill', 'prerequisite')
+
+    def __str__(self):
+        return f"{self.prerequisite.name} -> {self.skill.name} [{self.strength}]"
+
+
+class UserSkillMastery(models.Model):
+    """
+    Student mastery state tracked via Bayesian Knowledge Tracing (BKT).
+    """
+    STATUS_CHOICES = (
+        ('LOCKED', 'Prerequisites Incomplete'),
+        ('UNLOCKED', 'Ready for Learning'),
+        ('IN_PROGRESS', 'Actively Practicing'),
+        ('MASTERED', 'Concept Mastered'),
+    )
+
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='skill_masteries')
+    skill = models.ForeignKey(ConceptSkill, on_delete=models.CASCADE, related_name='user_masteries')
+    p_mastery = models.FloatField(default=0.15, db_index=True, help_text="Current posterior P(L_t)")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='LOCKED', db_index=True)
+    practice_count = models.IntegerField(default=0)
+    correct_count = models.IntegerField(default=0)
+    streak = models.IntegerField(default=0)
+    last_practiced_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'lh_user_skill_masteries'
+        unique_together = ('user', 'skill')
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['user', 'p_mastery']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.skill.name}: {round(self.p_mastery * 100, 1)}% ({self.status})"
+

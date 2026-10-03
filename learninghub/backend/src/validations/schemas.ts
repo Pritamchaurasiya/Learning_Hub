@@ -127,6 +127,31 @@ export const submitTestSchema = z.object({
     timesSpent: z
       .record(z.string().max(50), z.number().nonnegative('Time spent must be non-negative'))
       .optional(),
+    violations: z
+      .array(
+        z.object({
+          type: z.string().max(100),
+          timestamp: z.number(),
+          details: z.string().max(1000).optional(),
+        })
+      )
+      .optional(),
+  }),
+})
+
+export const receiveTestTelemetrySchema = z.object({
+  params: z.object({
+    id: idSchema,
+  }),
+  body: z.object({
+    attempt_id: z.string().max(50).optional(),
+    violations: z.array(
+      z.object({
+        type: z.string().max(100),
+        timestamp: z.number(),
+        details: z.string().max(1000).optional(),
+      })
+    ),
   }),
 })
 
@@ -480,6 +505,58 @@ export const generatePracticeTestSchema = z.object({
       exam_context: z.any().optional(),
       time_limit: z.coerce.number().int().min(1).optional(),
       async: z.boolean().optional(),
+      ai_mode: z
+        .enum([
+          'NO_AI',
+          'AI_OPTIONAL',
+          'AI_REQUIRED',
+          'HYBRID',
+          'no_ai',
+          'ai_optional',
+          'ai_required',
+          'hybrid',
+        ])
+        .optional(),
+      aiMode: z
+        .enum([
+          'NO_AI',
+          'AI_OPTIONAL',
+          'AI_REQUIRED',
+          'HYBRID',
+          'no_ai',
+          'ai_optional',
+          'ai_required',
+          'hybrid',
+        ])
+        .optional(),
+      question_source: z
+        .enum([
+          'MANUAL',
+          'DATABASE',
+          'IMPORT',
+          'AI_GENERATED',
+          'HYBRID',
+          'manual',
+          'database',
+          'import',
+          'ai_generated',
+          'hybrid',
+        ])
+        .optional(),
+      questionSource: z
+        .enum([
+          'MANUAL',
+          'DATABASE',
+          'IMPORT',
+          'AI_GENERATED',
+          'HYBRID',
+          'manual',
+          'database',
+          'import',
+          'ai_generated',
+          'hybrid',
+        ])
+        .optional(),
     })
     .transform(body => ({
       ...body,

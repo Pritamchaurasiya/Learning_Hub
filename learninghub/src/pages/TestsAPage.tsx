@@ -331,8 +331,33 @@ const QuestionCard = memo(
                 placeholder={isSectionLocked ? 'Section is locked.' : 'Type your detailed answer here...'}
                 className="w-full min-h-[200px] p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-y disabled:opacity-60 disabled:cursor-not-allowed"
               />
+            ) : !question.options ||
+              question.options.length === 0 ||
+              question.question_type === 'numerical' ||
+              question.type === 'numerical' ||
+              question.question_type === 'fill_blank' ||
+              question.type === 'fill_blank' ? (
+              <div className="space-y-2">
+                <input
+                  type={
+                    question.question_type === 'numerical' || question.type === 'numerical'
+                      ? 'number'
+                      : 'text'
+                  }
+                  value={typeof selectedAnswer === 'string' ? selectedAnswer : ''}
+                  onChange={e => onAnswer(e.target.value)}
+                  disabled={isSectionLocked}
+                  placeholder={isSectionLocked ? 'Section is locked.' : 'Type your answer here...'}
+                  className="w-full p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed font-medium"
+                />
+                <span className="text-xs text-gray-500">
+                  {question.question_type === 'numerical' || question.type === 'numerical'
+                    ? 'Enter a numerical value (1% tolerance applied)'
+                    : 'Enter your answer value'}
+                </span>
+              </div>
             ) : (
-              question.options.map(option => {
+              (question.options ?? []).map(option => {
                 const isMultiSelect =
                   question.question_type === 'multiple_select' || question.type === 'MSQ'
                 const isSelected = Array.isArray(selectedAnswer)
@@ -2862,6 +2887,8 @@ const TestsAPage = memo(() => {
               <option value="practice">Practice</option>
               <option value="mock">Mock</option>
               <option value="timed_challenge">Timed Challenge</option>
+              <option value="adaptive">Adaptive CAT</option>
+              <option value="contest">Contest Arena</option>
             </select>
 
             <select

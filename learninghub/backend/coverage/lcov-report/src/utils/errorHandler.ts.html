@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.52% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/23</span>
+                <span class='fraction'>0/23</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">44.44% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/18</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -119,7 +119,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -127,15 +127,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -154,11 +154,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Error Handling Utilities
  *
@@ -167,7 +167,7 @@
  */
 &nbsp;
 import { Prisma } from '@prisma/client'
-import {
+<span class="cstat-no" title="statement not covered" >import {</span>
   AppError as MiddlewareAppError,
   ErrorCode,
   errorFactory,
@@ -175,15 +175,15 @@ import {
   notFoundHandler,
 } from '../middleware/errorHandler'
 &nbsp;
-export { ErrorCode, errorFactory, notFoundHandler }
+export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >ErrorCode,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >errorFactory,</span> <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >notFoundHandler </span>}</span></span></span>
 &nbsp;
-export class AppError extends MiddlewareAppError {}
+<span class="cstat-no" title="statement not covered" >export class A</span>ppError extends MiddlewareAppError {}
 &nbsp;
-export const errorHandler = middlewareErrorHandler
+export const <span class="cstat-no" title="statement not covered" >errorHandler = middlewareErrorHandler</span>
 &nbsp;
-export { asyncHandler } from '../middleware/asyncHandler'
+<span class="cstat-no" title="statement not covered" >export { <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>syncHandler </span>} from '../middleware/asyncHandler'</span>
 &nbsp;
-export const handlePrismaError = <span class="fstat-no" title="function not covered" >(e</span>rror: Prisma.PrismaClientKnownRequestError): AppError =&gt; {
+export const <span class="cstat-no" title="statement not covered" >handlePrismaError = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>e</span>rror: Prisma.PrismaClientKnownRequestError): AppError =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  switch (error.code) {</span>
     case 'P2002':
       const fields = <span class="cstat-no" title="statement not covered" >error.meta?.target as string[] | undefined</span>
@@ -202,11 +202,11 @@ export const handlePrismaError = <span class="fstat-no" title="function not cove
   }
 }
 &nbsp;
-export const handleValidationError = <span class="fstat-no" title="function not covered" >(e</span>rrors: unknown): AppError =&gt; {
+export const <span class="cstat-no" title="statement not covered" >handleValidationError = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>e</span>rrors: unknown): AppError =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  return errorFactory.validationError('Validation failed', errors)</span>
 }
 &nbsp;
-export default errorHandler
+<span class="cstat-no" title="statement not covered" >export default errorHandler</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -214,7 +214,7 @@ export default errorHandler
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-01T05:13:09.193Z
+                at 2026-10-03T16:33:06.538Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
