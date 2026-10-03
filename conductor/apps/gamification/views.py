@@ -130,10 +130,10 @@ def get_achievements(request):
             .values_list('badge_id', flat=True)
         )
 
+        badges_data = BadgeSerializer(all_badges, many=True).data
         data = []
-        for badge in all_badges:
-            badge_data = BadgeSerializer(badge).data
-            badge_data['isUnlocked'] = badge.id in earned_ids
+        for badge_data in badges_data:
+            badge_data['isUnlocked'] = badge_data['id'] in earned_ids
             data.append(badge_data)
 
         return Response({'status': 'success', 'data': data})

@@ -269,7 +269,7 @@ class EnrollmentService:
     @staticmethod
     def get_course_reviews(course) -> QuerySet:
         """Get approved reviews for a course."""
-        return Review.objects.filter(course=course, is_approved=True).select_related("user")
+        return Review.objects.filter(course=course, is_approved=True).select_related("user").order_by('-created_at')
 
     @staticmethod
     def get_user_enrollments(user) -> QuerySet:
