@@ -90,24 +90,41 @@
   - Frontend Components: [`SpacedRepetitionCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/SpacedRepetitionCard.tsx), [`RetentionAnalyticsCard.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/revision/RetentionAnalyticsCard.tsx), and [`RevisionPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.tsx).
   - Test Suite: [`RevisionPage.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/RevisionPage.test.tsx) (100% pass).
 
-### Milestone 8: Bayesian Knowledge Tracing (BKT) & Interactive Concept Mastery Graph Engine (Q2 2027) — [COMPLETED & VERIFIED]
-- **Status**: ✅ Shipped & Tested (100% pass across vitest suites, tsc typecheck, and Vite PWA production build).
+### Milestone 8: Bayesian Knowledge Tracing (BKT) & Prerequisite Skill DAG Engine (Q2 2027) — [COMPLETED & VERIFIED]
+- **Status**: ✅ Shipped & Tested (100% pass across backend pytest suite [21/21 passed], frontend vitest suite [12/12 passed], tsc typecheck [0 errors], and Vite PWA build).
 - **Architecture**:
-  - Full implementation of Bayesian Knowledge Tracing (BKT) psychometric model:
-    - $P(L_0) = 0.15$ (Prior mastery), $P(T) = 0.20$ (Learning transition rate), $P(G) = 0.20$ (Guess probability), $P(S) = 0.08$ (Careless slip probability).
-    - Dynamic Bayesian posterior updating on evidence $O_t \in \{0, 1\}$ with forward learning acquisition $P(L_{t+1})$.
-    - Mastery threshold verification at $P(L_t) \ge 0.85$.
+  - Full implementation of Bayesian Knowledge Tracing (BKT) psychometric model (Corbett & Anderson):
+    - $P(L_0) = 0.15$ (Initial prior mastery), $P(T) = 0.20$ (Learning transition rate), $P(G) = 0.20$ (Guess probability), $P(S) = 0.10$ (Careless slip probability).
+    - Dynamic Bayesian posterior updating on observation $Obs_t \in \{0, 1\}$:
+      $$P(L_{t-1} \mid Obs_t = 1) = \frac{P(L_{t-1}) \cdot (1 - P(S))}{P(L_{t-1}) \cdot (1 - P(S)) + (1 - P(L_{t-1})) \cdot P(G)}$$
+      $$P(L_{t-1} \mid Obs_t = 0) = \frac{P(L_{t-1}) \cdot P(S)}{P(L_{t-1}) \cdot P(S) + (1 - P(L_{t-1})) \cdot (1 - P(G))}$$
+    - Forward learning acquisition update: $P(L_t) = P(L_{t-1} \mid Obs_t) + (1 - P(L_{t-1} \mid Obs_t)) \cdot P(T)$.
+    - Mastery threshold verification at $P(L_t) \ge 0.85$, with automatic prerequisite unlocking cascades across dependent downstream skills.
+  - Prerequisite Skill Directed Acyclic Graph (DAG):
+    - Dynamic multi-level curriculum graph: `ConceptSkill` nodes and `SkillPrerequisite` edges with status transitions (`LOCKED` $\to$ `UNLOCKED` $\to$ `IN_PROGRESS` $\to$ `MASTERED`).
+    - Automated Next Best Action (NBA) recommender identifying concepts in the student's *Zone of Proximal Development* ($0.25 \le P(L_t) < 0.85$).
   - 4-Factor Composite Exam Readiness Predictive Engine:
     - Formula: $R_{\text{exam}} = 0.35 \cdot M_{\text{syllabus}} + 0.30 \cdot S_{\text{mock}} + 0.20 \cdot A_{\text{speed}} + 0.15 \cdot R_{\text{retention}}$.
     - Classification into 4 performance bands: `ELITE` ($\ge 85$), `COMPETITIVE` ($\ge 70$), `DEVELOPING` ($\ge 50$), `NEEDS_REINFORCEMENT` ($< 50$).
-    - Automated strategic recommendations and strength/weakness diagnostics.
   - Interactive Concept Knowledge Graph Visualizer:
     - Topological DAG rendering grouping nodes into progression tiers (Foundations, Core, Intermediate, Advanced).
-    - Status badges (`MASTERED`, `IN_PROGRESS`, `UNLOCKED`, `LOCKED`) with prerequisite dependency satisfaction checks.
-    - Interactive slide-over drawer with prerequisite tracking, direct 1-click links to problem practice workspaces, flashcard decks, and textbook chapters.
+    - Status badges, interactive slide-over drawer with prerequisite tracking, direct 1-click links to problem practice workspaces, flashcard decks, and textbook chapters.
     - Semicircular animated Exam Readiness Gauge with sub-metric progress indicators.
 - **Components**:
-  - Services & Types: [`bkt.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/types/bkt.ts), [`bktService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.ts), and [`bktService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.test.ts).
-  - UI Components: [`KnowledgeGraphVisualizer.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/KnowledgeGraphVisualizer.tsx), [`KnowledgeGraphVisualizer.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/KnowledgeGraphVisualizer.test.tsx), [`ExamReadinessGauge.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/ExamReadinessGauge.tsx), and [`ExamReadinessGauge.test.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/ExamReadinessGauge.test.tsx).
-  - Page Integration: [`AnalyticsPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/AnalyticsPage.tsx).
+  - Backend Models & Engine: [`models.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/models.py) (`ConceptSkill`, `SkillPrerequisite`, `UserSkillMastery`), migration [`0006_conceptskill_skillprerequisite_userskillmastery.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/migrations/0006_conceptskill_skillprerequisite_userskillmastery.py), [`bkt_engine.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/bkt_engine.py).
+  - Backend Endpoints: [`views.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/views.py) & [`urls.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/apps/tests_engine/urls.py) exposing `GET /api/v1/skills/graph`, `POST /api/v1/skills/interaction`, and `GET /api/v1/skills/next-action`.
+  - Backend Tests: [`test_bkt_engine.py`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/django_backend/tests/test_bkt_engine.py) (7/7 passed).
+  - Frontend Services & Types: [`bkt.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/types/bkt.ts), [`bktService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.ts), [`analyticsService.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/analyticsService.ts), and test suites [`bktService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/bktService.test.ts) & [`analyticsService.test.ts`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/services/analyticsService.test.ts).
+  - Frontend UI Components: [`KnowledgeGraphVisualizer.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/KnowledgeGraphVisualizer.tsx), [`ExamReadinessGauge.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/analytics/ExamReadinessGauge.tsx), and page integrations in [`AnalyticsPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/AnalyticsPage.tsx) and [`StudyPlannerPage.tsx`](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/pages/StudyPlannerPage.tsx).
+
+---
+
+### Milestone 9: Real-time 1v1 Algorithm Duel & Live Arena Mode (Q3 2027) — [PLANNED & READY FOR EXECUTION]
+- **Target**: Competitive real-time peer-to-peer and AI ghost coding duels with Elo / Glicko-2 rating engine.
+- **Capabilities**:
+  1. *Matchmaking Queue*: Instant matchmaking across rating brackets (Beginner, Intermediate, Master, Grandmaster).
+  2. *Synchronous 1v1 Duel Arena*: Side-by-side Monaco code editors with live opponent progress bars (tests passed/failed in real time).
+  3. *Glicko-2 / Elo Rating Engine*: Post-match rating adjustments with volatility damping and win/loss streak bonuses.
+  4. *Anti-Cheat & Time Calibration*: Cryptographic HMAC problem delivery with server-authoritative submission verification.
+  5. *Spectator Live Feed*: Room-based spectator stream with live commentary chat and instant replay timeline.
 
