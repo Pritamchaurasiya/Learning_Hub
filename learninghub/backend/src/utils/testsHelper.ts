@@ -52,10 +52,14 @@ export const mapQuestionSafe = (
       ? deterministicShuffle(q.options, `${attemptSeed}-${q.id}`)
       : q.options
 
+  const normalizedType = (q.type || 'MCQ').toLowerCase()
+  const questionType = normalizedType === 'msq' ? 'multiple_select' : normalizedType
+
   return {
     id: q.id,
     text: q.text,
     type: q.type,
+    question_type: questionType,
     difficulty: q.difficulty ?? 0.5,
     bloom_level: q.bloomLevel ?? 'UNDERSTAND',
     points: q.points,

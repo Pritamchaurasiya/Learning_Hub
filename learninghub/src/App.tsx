@@ -54,6 +54,7 @@ const AITutorPage = lazy(() => import('./pages/AITutorPage'))
 const AlgorithmVisualizerPage = lazy(() => import('./pages/AlgorithmVisualizerPage'))
 const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
 const RevisionPage = lazy(() => import('./pages/RevisionPage'))
+const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -337,6 +338,23 @@ function App() {
                 element={
                   <LazyRoute sectionName="Problems">
                     <ProblemsPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/arena"
+                element={
+                  <LazyRoute sectionName="1v1 Arena Duel">
+                    <ArenaDuelPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/duel" element={<Navigate to="/arena" replace />} />
+              <Route
+                path="/duel/:matchId"
+                element={
+                  <LazyRoute sectionName="1v1 Arena Duel">
+                    <ArenaDuelPage />
                   </LazyRoute>
                 }
               />

@@ -276,4 +276,5 @@ AUDIT_CLASSIFICATION_REPORT.json
 api_endpoint_verification_report.json
 branch_audit_results.json
 fast_branch_records.json
+learninghub/scratch/
 

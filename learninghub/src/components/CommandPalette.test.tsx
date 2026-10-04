@@ -62,4 +62,19 @@ describe('CommandPalette Component', () => {
 
     expect(mockedNavigate).toHaveBeenCalledWith('/ai-tutor')
   })
+
+  it('filters and navigates to 1v1 Arena Duel on duel keyword', () => {
+    render(
+      <MemoryRouter>
+        <CommandPalette />
+      </MemoryRouter>
+    )
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
+    const input = screen.getByPlaceholderText(/Type a command or search/i)
+    fireEvent.change(input, { target: { value: 'duel' } })
+
+    expect(screen.getByText('1v1 Arena Duel')).toBeDefined()
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(mockedNavigate).toHaveBeenCalledWith('/arena')
+  })
 })

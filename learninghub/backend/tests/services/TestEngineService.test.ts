@@ -55,6 +55,15 @@ describe('TestEngineService', () => {
       return callback(mockPrisma)
     })
     service = new TestEngineService()
+    if (mockPrisma.testResult?.findFirst) {
+      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue({
+        id: 'result-1',
+        userId: 'user-1',
+        testId: 'test-1',
+        score: 0,
+        attemptNumber: 1,
+      })
+    }
   })
 
   describe('submitPracticeAnswer', () => {
@@ -187,11 +196,13 @@ describe('TestEngineService', () => {
       ;(mockPrisma.testAttemptAnswer.upsert as jest.Mock).mockResolvedValue({})
       ;(mockPrisma.testResult.update as jest.Mock).mockResolvedValue({})
 
-      // First upsert fails with P2002, second succeeds
+      // First create fails with P2002, second succeeds
       const prismaError = new Error('P2002: Unique constraint violation') as any
       prismaError.code = 'P2002'
 
-      const upsertMock = jest.fn().mockRejectedValueOnce(prismaError).mockResolvedValueOnce({
+      ;(mockPrisma.testResult.findFirst as jest.Mock).mockResolvedValue(null)
+
+      const createMock = jest.fn().mockRejectedValueOnce(prismaError).mockResolvedValueOnce({
         id: 'result-1',
         userId: mockRequest.userId,
         testId: mockRequest.testId,
@@ -199,12 +210,12 @@ describe('TestEngineService', () => {
         attemptNumber: 1,
       })
 
-      ;(mockPrisma.testResult.upsert as jest.Mock) = upsertMock
+      ;(mockPrisma.testResult.create as jest.Mock) = createMock
 
       const result = await service.submitPracticeAnswer(mockRequest)
 
       expect(result.isCorrect).toBe(true)
-      expect(upsertMock).toHaveBeenCalledTimes(2)
+      expect(createMock).toHaveBeenCalledTimes(2)
     })
 
     it('should update topic performance', async () => {

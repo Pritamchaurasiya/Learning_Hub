@@ -5,6 +5,7 @@ import {
   Search,
   BookOpen,
   Code2,
+  Swords,
   Award,
   Layers,
   BarChart3,
@@ -66,6 +67,15 @@ const COMMANDS: CommandItem[] = [
     icon: Code2,
     path: '/problems',
     keywords: ['leetcode', 'code', 'dsa', 'algorithms', 'python', 'javascript', 'cpp'],
+  },
+  {
+    id: 'practice-arena-duel',
+    title: '1v1 Arena Duel',
+    description: 'Real-time 1v1 algorithm battle with Elo rating & live telemetry',
+    category: 'Practice',
+    icon: Swords,
+    path: '/arena',
+    keywords: ['duel', '1v1', 'arena', 'elo', 'versus', 'battle', 'pvp', 'ghost', 'multiplayer'],
   },
   {
     id: 'practice-tests',

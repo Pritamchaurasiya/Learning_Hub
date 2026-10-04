@@ -225,7 +225,7 @@ describe('TestEngineService', () => {
     it('should create a new testResult when none exists for the user/test', async () => {
       ;(prisma.question.findUnique as jest.Mock).mockResolvedValue(baseMockQuestion)
 
-      const mockUpsert = jest.fn().mockResolvedValue({
+      const mockCreate = jest.fn().mockResolvedValue({
         id: 'new-result-1',
         score: 0,
         totalPoints: 0,
@@ -236,7 +236,7 @@ describe('TestEngineService', () => {
           testResult: {
             findFirst: jest.fn().mockResolvedValue(null),
             update: jest.fn().mockResolvedValue({ score: 10, totalPoints: 10 }),
-            upsert: mockUpsert,
+            create: mockCreate,
           },
           testAttemptAnswer: {
             findUnique: jest.fn().mockResolvedValue(null),
@@ -253,9 +253,9 @@ describe('TestEngineService', () => {
         selectedOptionId: 'opt-b',
       })
 
-      expect(mockUpsert).toHaveBeenCalledWith(
+      expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          create: expect.objectContaining({
+          data: expect.objectContaining({
             userId: 'user-1',
             testId: 'test-1',
             status: 'IN_PROGRESS',

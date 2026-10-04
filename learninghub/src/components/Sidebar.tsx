@@ -9,6 +9,7 @@ import {
   Flame,
   X,
   Code2,
+  Swords,
   Brain,
   Trophy,
   Library,
@@ -82,6 +83,7 @@ export default function Sidebar() {
       defaultOpen: true,
       items: [
         { to: '/problems', icon: Code2, label: 'DSA Practice' },
+        { to: '/arena', icon: Swords, label: '1v1 Arena Duel' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

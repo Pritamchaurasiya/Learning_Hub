@@ -29,7 +29,9 @@ async function hasRoomAccess(userId: string, roomId: string): Promise<boolean> {
     roomId.startsWith('contest-') ||
     roomId.startsWith('live-') ||
     roomId.startsWith('collab-') ||
-    roomId.startsWith('dsa-')
+    roomId.startsWith('dsa-') ||
+    roomId.startsWith('duel-') ||
+    roomId.startsWith('arena-')
   ) {
     return true
   }
@@ -342,6 +344,59 @@ export const setupWebSockets = (io: Server) => {
         })
       }
     )
+
+    // ── 1v1 Algorithm Duel & Live Arena Mode (Milestone 9) ───────────
+    socket.on(
+      'duel-progress',
+      (data: { roomId: string; testsPassed: number; totalTests?: number; keystrokes?: number }) => {
+        if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+          return
+        }
+        socket.to(data.roomId).emit('duel-peer-progress', {
+          senderSocketId: socket.id,
+          senderUserId: socket.data.userId,
+          testsPassed: Number(data.testsPassed) || 0,
+          totalTests: Number(data.totalTests) || 5,
+          keystrokes: Number(data.keystrokes) || 0,
+          timestamp: Date.now(),
+        })
+      }
+    )
+
+    socket.on('duel-emote', (data: { roomId: string; emote: string }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        return
+      }
+      const safeEmote = sanitizeInput(data.emote || '').slice(0, 10)
+      if (!safeEmote) return
+
+      socket.to(data.roomId).emit('duel-peer-emote', {
+        senderSocketId: socket.id,
+        senderUserId: socket.data.userId,
+        emote: safeEmote,
+        timestamp: Date.now(),
+      })
+    })
+
+    socket.on('duel-activity', (data: { roomId: string }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        return
+      }
+      socket.to(data.roomId).emit('duel-peer-activity', {
+        senderUserId: socket.data.userId,
+        timestamp: Date.now(),
+      })
+    })
+
+    socket.on('duel-surrender', (data: { roomId: string }) => {
+      if (!isValidRoomId(data.roomId) || !socket.rooms.has(data.roomId)) {
+        return
+      }
+      socket.to(data.roomId).emit('duel-peer-surrendered', {
+        senderUserId: socket.data.userId,
+        timestamp: Date.now(),
+      })
+    })
 
     socket.on('disconnecting', () => {
       // socket.rooms is a Set containing all rooms the socket is currently in

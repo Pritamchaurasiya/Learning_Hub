@@ -68,27 +68,37 @@ export class TestEngineService {
       try {
         const txResult = await prisma.$transaction(
           async (tx: Prisma.TransactionClient) => {
-            const practiceResult = await (tx.testResult as any).upsert({
+            let practiceResult = await tx.testResult.findFirst({
               where: {
-                userId_testId_status: {
-                  userId: req.userId,
-                  testId: req.testId,
-                  status: 'IN_PROGRESS',
-                },
-              } as any,
-              create: {
                 userId: req.userId,
                 testId: req.testId,
-                score: 0,
-                totalPoints: 0,
-                percentage: 0,
-                passed: false,
-                timeTaken: 0,
                 status: 'IN_PROGRESS',
-                attemptNumber: 1,
               },
-              update: {},
+              orderBy: { attemptNumber: 'desc' },
             })
+
+            if (!practiceResult) {
+              const latestAttempt = await tx.testResult.findFirst({
+                where: { userId: req.userId, testId: req.testId },
+                orderBy: { attemptNumber: 'desc' },
+                select: { attemptNumber: true },
+              })
+              const nextAttemptNumber = (latestAttempt?.attemptNumber ?? 0) + 1
+
+              practiceResult = await tx.testResult.create({
+                data: {
+                  userId: req.userId,
+                  testId: req.testId,
+                  score: 0,
+                  totalPoints: 0,
+                  percentage: 0,
+                  passed: false,
+                  timeTaken: 0,
+                  status: 'IN_PROGRESS',
+                  attemptNumber: nextAttemptNumber,
+                },
+              })
+            }
 
             // 1. Upsert TestAttemptAnswer with incremental score update
             const submittedIds = req.selectedOptionId

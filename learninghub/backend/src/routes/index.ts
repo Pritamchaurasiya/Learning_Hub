@@ -34,6 +34,7 @@ import ebooksRoutes from './v1/ebooks.routes'
 import jobsRoutes from './jobs'
 import metricsRoutes from './metrics'
 import searchRoutes from './v1/search.routes'
+import duelRoutes from './v1/duel.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -117,6 +118,7 @@ router.use('/users', usersRoutes)
 router.use('/jobs', jobsRoutes)
 router.use('/prometheus', metricsRoutes)
 router.use('/search', searchRoutes)
+router.use('/duel', duelRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'
