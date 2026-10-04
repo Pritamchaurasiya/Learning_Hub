@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   Calendar,
@@ -80,13 +80,20 @@ export default function StudyPlannerPage() {
   const syncDeadline = searchParams.get('deadline')
   const syncInstitution = searchParams.get('institution')
 
-  // Task creation modal state
+  // Task creation/editing modal state
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDate, setNewTaskDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [newTaskDuration, setNewTaskDuration] = useState(45)
   const [newTaskType, setNewTaskType] = useState<CreateTaskRequest['task_type']>('assignment')
+
+  const handleOpenCreateModal = useCallback(() => {
+    setEditingTaskId(null)
+    setNewTaskTitle('')
+    setIsCreateTaskModalOpen(true)
+  }, [])
 
   // Create Task Mutation
   const createTaskMutation = useMutation({
@@ -96,8 +103,23 @@ export default function StudyPlannerPage() {
       addToast({ message: 'Study task added to schedule!', type: 'success' })
       setIsCreateTaskModalOpen(false)
       setNewTaskTitle('')
+      setEditingTaskId(null)
     },
     onError: () => addToast({ message: 'Failed to create study task', type: 'error' }),
+  })
+
+  // Update Task Mutation
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateTaskRequest> }) =>
+      studyPlannerService.updateTask(id, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['study', 'tasks'] })
+      addToast({ message: 'Study task updated successfully!', type: 'success' })
+      setIsCreateTaskModalOpen(false)
+      setNewTaskTitle('')
+      setEditingTaskId(null)
+    },
+    onError: () => addToast({ message: 'Failed to update study task', type: 'error' }),
   })
 
   // Curriculum Roadmap State & Mutations
@@ -386,7 +408,7 @@ export default function StudyPlannerPage() {
           </Button>
           <Button
             size="lg"
-            onClick={() => setIsCreateTaskModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="rounded-2xl font-black shadow-xl shadow-primary-500/30 hover:scale-105 transition-transform"
             leftIcon={<Plus className="w-5 h-5" />}
           >
@@ -580,6 +602,7 @@ export default function StudyPlannerPage() {
             </div>
             <Button
               variant="outline"
+              onClick={() => setIsRecalibrateModalOpen(true)}
               className="w-full mt-8 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               Modify Targets
@@ -609,7 +632,7 @@ export default function StudyPlannerPage() {
               </div>
             </Card>
             <Button
-              onClick={() => setIsCreateTaskModalOpen(true)}
+              onClick={handleOpenCreateModal}
               variant="primary"
               className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-md shrink-0"
             >
@@ -647,7 +670,7 @@ export default function StudyPlannerPage() {
                   trajectory.
                 </p>
                 <Button
-                  onClick={() => setIsCreateTaskModalOpen(true)}
+                  onClick={handleOpenCreateModal}
                   variant="outline"
                   className="mt-8 rounded-xl font-black uppercase tracking-widest border-2"
                 >
@@ -695,7 +718,24 @@ export default function StudyPlannerPage() {
                               )}
                             </div>
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-gray-400 hover:text-blue-500 transition-colors">
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  setEditingTaskId(task.id)
+                                  setNewTaskTitle(task.title)
+                                  setNewTaskDate(
+                                    task.scheduled_date
+                                      ? new Date(task.scheduled_date).toISOString().slice(0, 10)
+                                      : new Date().toISOString().slice(0, 10)
+                                  )
+                                  setNewTaskPriority(task.priority || 'medium')
+                                  setNewTaskDuration(task.duration_minutes || 45)
+                                  setNewTaskType(task.task_type || 'assignment')
+                                  setIsCreateTaskModalOpen(true)
+                                }}
+                                aria-label={`Edit task ${task.title}`}
+                                className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-gray-400 hover:text-blue-500 transition-colors"
+                              >
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               <button
@@ -749,24 +789,45 @@ export default function StudyPlannerPage() {
 
       {plannerTab === 'graph' && <KnowledgeGraphVisualizer />}
 
-      {/* Create Task Modal */}
+      {/* Create / Edit Task Modal */}
       <Modal
         isOpen={isCreateTaskModalOpen}
-        onClose={() => setIsCreateTaskModalOpen(false)}
-        title="Add Study Task / Goal"
-        description="Schedule a focused preparation protocol or assignment."
+        onClose={() => {
+          setIsCreateTaskModalOpen(false)
+          setEditingTaskId(null)
+          setNewTaskTitle('')
+        }}
+        title={editingTaskId ? 'Edit Study Task' : 'Add Study Task / Goal'}
+        description={
+          editingTaskId
+            ? 'Update your preparation timeline and parameters.'
+            : 'Schedule a focused preparation protocol or assignment.'
+        }
       >
         <form
           onSubmit={e => {
             e.preventDefault()
             if (!newTaskTitle.trim()) return
-            createTaskMutation.mutate({
-              title: newTaskTitle.trim(),
-              task_type: newTaskType,
-              scheduled_date: newTaskDate,
-              priority: newTaskPriority,
-              duration_minutes: newTaskDuration,
-            })
+            if (editingTaskId) {
+              updateTaskMutation.mutate({
+                id: editingTaskId,
+                data: {
+                  title: newTaskTitle.trim(),
+                  task_type: newTaskType,
+                  scheduled_date: newTaskDate,
+                  priority: newTaskPriority,
+                  duration_minutes: newTaskDuration,
+                },
+              })
+            } else {
+              createTaskMutation.mutate({
+                title: newTaskTitle.trim(),
+                task_type: newTaskType,
+                scheduled_date: newTaskDate,
+                priority: newTaskPriority,
+                duration_minutes: newTaskDuration,
+              })
+            }
           }}
           className="space-y-4 py-2"
         >
@@ -842,16 +903,28 @@ export default function StudyPlannerPage() {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setIsCreateTaskModalOpen(false)}
+              onClick={() => {
+                setIsCreateTaskModalOpen(false)
+                setEditingTaskId(null)
+                setNewTaskTitle('')
+              }}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={createTaskMutation.isPending || !newTaskTitle.trim()}
+              disabled={
+                createTaskMutation.isPending ||
+                updateTaskMutation.isPending ||
+                !newTaskTitle.trim()
+              }
             >
-              {createTaskMutation.isPending ? 'Saving...' : 'Add to Schedule'}
+              {createTaskMutation.isPending || updateTaskMutation.isPending
+                ? 'Saving...'
+                : editingTaskId
+                  ? 'Update Task'
+                  : 'Add to Schedule'}
             </Button>
           </div>
         </form>

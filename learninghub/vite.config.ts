@@ -155,6 +155,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    esbuild: mode === 'production' ? { drop: ['console', 'debugger'] } : {},
     build: {
       // 500kB Vite default restored so bundle bloat is reported, not masked.
       // Run `ANALYZE=true npm run build` (visualizer → dist/stats.html) to inspect

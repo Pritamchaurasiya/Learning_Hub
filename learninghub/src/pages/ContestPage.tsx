@@ -221,7 +221,7 @@ export default function ContestPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-2xl w-max">
+      <div className="flex gap-2 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-2xl w-max max-w-full overflow-x-auto no-scrollbar">
         {(['active', 'upcoming', 'results'] as const).map(tab => (
           <button
             key={tab}

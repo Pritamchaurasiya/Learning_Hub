@@ -572,6 +572,42 @@ export class CacheService {
     return this.generateKey('recommendation', 'spaced', userId)
   }
 
+  curriculumKey(userId: string): string {
+    return this.generateKey('curriculum', 'active', userId)
+  }
+
+  revisionDeckKey(userId: string, filter?: string): string {
+    return this.generateKey('revision', 'deck', userId, filter || 'all')
+  }
+
+  skillGraphKey(userId: string, domain?: string): string {
+    return this.generateKey('skills', 'graph', userId, domain || 'all')
+  }
+
+  learningPathsKey(query?: string): string {
+    return this.generateKey('learning-paths', query || 'all')
+  }
+
+  /**
+   * High-performance cache-aside wrapper:
+   * Returns cached value if available, otherwise executes fetcher, caches result, and returns it.
+   */
+  async cacheOrFetch<T>(
+    key: string,
+    ttlSeconds: number,
+    fetcher: () => Promise<T>
+  ): Promise<T> {
+    const cached = await this.get<T>(key)
+    if (cached !== null && cached !== undefined) {
+      return cached
+    }
+    const fresh = await fetcher()
+    if (fresh !== null && fresh !== undefined) {
+      await this.set(key, fresh, ttlSeconds)
+    }
+    return fresh
+  }
+
   isAvailable(): boolean {
     return this.client !== null && this.client.isReady
   }

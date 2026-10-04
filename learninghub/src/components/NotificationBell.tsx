@@ -63,7 +63,7 @@ export function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-80 sm:w-96 z-50"
+            className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm z-50"
           >
             <NotificationPanel onClose={() => setIsOpen(false)} />
           </motion.div>

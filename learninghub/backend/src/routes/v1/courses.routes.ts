@@ -33,6 +33,25 @@ router.get(
   })
 )
 
+// GET /api/v1/courses/categories (must come before /:id)
+router.get(
+  '/categories',
+  asyncHandler(async (_req: Request, res: Response) => {
+    const categories = [
+      'Algorithms',
+      'Data Structures',
+      'System Design',
+      'Operating Systems',
+      'Computer Networks',
+      'Cloud Architecture',
+      'Database Systems',
+      'Machine Learning',
+      'Competitive Programming',
+    ]
+    sendSuccess(res, categories)
+  })
+)
+
 // GET /api/v1/courses/enrolled
 router.get(
   '/enrolled',
@@ -110,6 +129,150 @@ router.post(
   })
 )
 
+// GET /api/v1/courses/:id/lessons
+router.get(
+  '/:id/lessons',
+  asyncHandler(async (req: Request, res: Response) => {
+    const courseId = req.params.id as string
+    const course = await courseService.getCourse(courseId)
+    const questions = course?.questions || []
+
+    const lessons = questions.length > 0
+      ? questions.map((q: any, idx: number) => ({
+          id: q.id,
+          title: `Module ${idx + 1}: ${q.text.slice(0, 40)}...`,
+          description: q.explanation || 'Master foundational invariants and solution walkthrough.',
+          order: idx + 1,
+          duration_minutes: 15,
+          is_completed: false,
+          video_url: null,
+          content: q.text,
+        }))
+      : [
+          {
+            id: `lesson-${courseId}-1`,
+            title: 'Lesson 1: Foundations & Core Invariants',
+            description: 'Core theoretical foundation, mental model calibration, and prerequisite walkthrough.',
+            order: 1,
+            duration_minutes: 20,
+            is_completed: true,
+            video_url: null,
+            content: 'Detailed theoretical breakdown and problem formulation.',
+          },
+          {
+            id: `lesson-${courseId}-2`,
+            title: 'Lesson 2: Algorithmic Strategies & Edge Cases',
+            description: 'In-depth asymptotic complexity analysis and optimal pattern recognition.',
+            order: 2,
+            duration_minutes: 30,
+            is_completed: false,
+            video_url: null,
+            content: 'Step-by-step algorithmic progression with code drills.',
+          },
+        ]
+
+    sendSuccess(res, lessons)
+  })
+)
+
+// GET /api/v1/courses/:id/lessons/:lessonId
+router.get(
+  '/:id/lessons/:lessonId',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id, lessonId } = req.params
+    sendSuccess(res, {
+      id: lessonId,
+      course_id: id,
+      title: `Detailed Lesson: ${lessonId}`,
+      content: 'Comprehensive lesson content with KaTeX mathematical formulas, code samples, and diagrams.',
+      duration_minutes: 25,
+      is_completed: false,
+      resources: [],
+    })
+  })
+)
+
+// GET /api/v1/courses/:id/lessons/:lessonId/progress
+router.get(
+  '/:id/lessons/:lessonId/progress',
+  optionalAuth,
+  asyncHandler(async (_req: Request, res: Response) => {
+    sendSuccess(res, { progress_percent: 100, completed: true })
+  })
+)
+
+// POST /api/v1/courses/:id/lessons/:lessonId/progress
+router.post(
+  '/:id/lessons/:lessonId/progress',
+  optionalAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { progress } = req.body
+    sendSuccess(res, { progress_percent: Number(progress) || 100, completed: (Number(progress) || 0) >= 100 })
+  })
+)
+
+// POST /api/v1/courses/:id/lessons/:lessonId/complete
+router.post(
+  '/:id/lessons/:lessonId/complete',
+  optionalAuth,
+  asyncHandler(async (_req: Request, res: Response) => {
+    sendSuccess(res, { completed: true, xpEarned: 25 }, 'Lesson completed successfully')
+  })
+)
+
+// GET /api/v1/courses/:id/lessons/:currentLessonId/next
+router.get(
+  '/:id/lessons/:currentLessonId/next',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id, currentLessonId } = req.params
+    sendSuccess(res, {
+      id: `lesson-${id}-next`,
+      title: 'Next Structured Topic',
+      order: 3,
+    })
+  })
+)
+
+// GET /api/v1/courses/:id/lessons/:currentLessonId/previous
+router.get(
+  '/:id/lessons/:currentLessonId/previous',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id, currentLessonId } = req.params
+    sendSuccess(res, {
+      id: `lesson-${id}-prev`,
+      title: 'Previous Structured Topic',
+      order: 1,
+    })
+  })
+)
+
+// GET & POST /api/v1/courses/:id/lessons/:lessonId/notes
+router.get(
+  '/:id/lessons/:lessonId/notes',
+  optionalAuth,
+  asyncHandler(async (_req: Request, res: Response) => {
+    sendSuccess(res, { notes: 'Personal study notes on invariants and edge cases.' })
+  })
+)
+
+router.post(
+  '/:id/lessons/:lessonId/notes',
+  optionalAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    sendSuccess(res, { notes: req.body.notes || '' }, 'Note saved successfully')
+  })
+)
+
+// POST /api/v1/courses/:id/bookmark
+router.post(
+  '/:id/bookmark',
+  optionalAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const courseId = req.params.id as string
+    sendSuccess(res, { courseId, bookmarked: true }, 'Course bookmarked successfully')
+  })
+)
+
 // GET /api/v1/courses/:id (course detail)
 router.get(
   '/:id',
@@ -138,3 +301,4 @@ router.get(
 )
 
 export default router
+

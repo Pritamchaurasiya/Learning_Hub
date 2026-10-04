@@ -184,13 +184,28 @@ export function EbookViewer({
       return renderFormattedInline(text, !!settings.bionicReading, 'hl-empty')
     }
 
-    // Sort by start index
+    // Sort by start index and merge overlapping intervals
     matches.sort((a, b) => a.start - b.start)
+
+    const mergedMatches: { start: number; end: number; color: string }[] = []
+    for (const m of matches) {
+      if (mergedMatches.length === 0) {
+        mergedMatches.push({ ...m })
+      } else {
+        const last = mergedMatches[mergedMatches.length - 1]!
+        if (m.start <= last.end) {
+          // Overlapping or touching: extend boundary
+          last.end = Math.max(last.end, m.end)
+        } else {
+          mergedMatches.push({ ...m })
+        }
+      }
+    }
 
     const elements: React.ReactNode[] = []
     let lastIdx = 0
 
-    matches.forEach((m, i) => {
+    mergedMatches.forEach((m, i) => {
       if (m.start > lastIdx) {
         const seg = text.slice(lastIdx, m.start)
         elements.push(renderFormattedInline(seg, !!settings.bionicReading, `seg-${lastIdx}`))

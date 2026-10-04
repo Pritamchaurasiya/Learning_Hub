@@ -21,9 +21,22 @@ import { Card } from '../components/ui/Card'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { useStore } from '../stores/useStore'
+import { wasmSandboxService } from '../services/wasm/WasmSandboxService'
 
 export default function ArenaDuelPage() {
-  const { emit, on, joinRoom } = useWebSocket()
+  const addToast = useStore(state => state.addToast)
+  const { emit, on, joinRoom, connect, disconnect } = useWebSocket()
+
+  // Connect WebSocket on mount for active matchmaking and dueling
+  useEffect(() => {
+    connect?.()
+    return () => {
+      disconnect?.()
+    }
+  }, [connect, disconnect])
+
+  const [duelMobileTab, setDuelMobileTab] = useState<'problem' | 'code' | 'telemetry'>('code')
 
   // Navigation & View state
   const [activeTab, setActiveTab] = useState<'lobby' | 'duel' | 'leaderboard'>('lobby')
@@ -326,27 +339,34 @@ export default function ArenaDuelPage() {
     if (!match) return
     setIsRunningTests(true)
 
-    // Execute test cases client-side sandbox
-    setTimeout(() => {
-      let passedCount = 0
+    try {
+      const sandboxTestCases = match.problem.testCases.map(tc => ({
+        input: tc.input,
+        output: tc.expectedOutput,
+      }))
+
+      const wasmRes = await wasmSandboxService.execute(selectedLanguage, code, {
+        testCases: sandboxTestCases,
+        timeoutMs: 2500,
+      })
+
       const results = match.problem.testCases.map((tc, idx) => {
-        // Safe heuristic evaluation: check if code is modified from starter and syntactically sound
-        const isPassed = code.length > 80 && !code.includes('throw') && idx < 4
-        if (isPassed) passedCount += 1
+        const tr = wasmRes.testResults[idx]
+        const isPassed = tr ? tr.passed : false
         return {
           id: tc.id,
           input: tc.input,
           expected: tc.expectedOutput,
-          actual: isPassed ? tc.expectedOutput : 'undefined',
+          actual: tr ? tr.actualOutput : 'undefined',
           passed: isPassed,
         }
       })
 
+      const passedCount = wasmRes.passedTests
       setTestResults(results)
       setUserTestsPassed(passedCount)
-      setIsRunningTests(false)
 
-      // Broadcast progress
+      // Broadcast progress via live WebSockets
       emit('duel-progress', {
         roomId: `duel-${match.id}`,
         testsPassed: passedCount,
@@ -354,7 +374,22 @@ export default function ArenaDuelPage() {
         keystrokes: keystrokeCountRef.current,
       })
       duelService.updateProgress(match.id, passedCount, keystrokeCountRef.current).catch(() => {})
-    }, 600)
+
+      if (passedCount === match.problem.testCases.length && passedCount > 0) {
+        addToast({
+          message: '⚔️ All test cases passed! Submitting solution for instant victory...',
+          type: 'success',
+        })
+        setTimeout(() => {
+          void handleMatchSolutionSubmit(true)
+        }, 300)
+      }
+    } catch (err) {
+      console.error('[ArenaDuel] Sandbox execution failed:', err)
+      addToast({ message: 'Execution error in sandbox runner', type: 'error' })
+    } finally {
+      setIsRunningTests(false)
+    }
   }
 
   const handleMatchSolutionSubmit = async (forcedWin = false) => {
@@ -817,12 +852,53 @@ export default function ArenaDuelPage() {
             </div>
           </Card>
 
+          {/* Mobile Segmented View Controller (<1024px) */}
+          <div className="lg:hidden flex items-center bg-gray-100 dark:bg-gray-800/90 p-1.5 rounded-2xl gap-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setDuelMobileTab('problem')}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                duelMobileTab === 'problem'
+                  ? 'bg-white dark:bg-gray-700 text-rose-500 shadow-md scale-[1.02]'
+                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Problem
+            </button>
+            <button
+              type="button"
+              onClick={() => setDuelMobileTab('code')}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                duelMobileTab === 'code'
+                  ? 'bg-white dark:bg-gray-700 text-rose-500 shadow-md scale-[1.02]'
+                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Code & Tests
+            </button>
+            <button
+              type="button"
+              onClick={() => setDuelMobileTab('telemetry')}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                duelMobileTab === 'telemetry'
+                  ? 'bg-white dark:bg-gray-700 text-rose-500 shadow-md scale-[1.02]'
+                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Opponent
+            </button>
+          </div>
+
           {/* Arena Dual Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left 2 Cols: Problem Specs & Code Editor */}
             <div className="lg:col-span-2 space-y-6">
               {/* Problem Description Drawer */}
-              <Card className="p-6 border-none shadow-lg bg-white dark:bg-gray-900 space-y-4">
+              <Card
+                className={`p-6 border-none shadow-lg bg-white dark:bg-gray-900 space-y-4 ${
+                  duelMobileTab === 'problem' ? 'block' : 'hidden lg:block'
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black text-gray-900 dark:text-white">
                     {match.problem.title}
@@ -849,7 +925,11 @@ export default function ArenaDuelPage() {
               </Card>
 
               {/* Code Editor */}
-              <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-900 space-y-4">
+              <Card
+                className={`p-6 border-none shadow-xl bg-white dark:bg-gray-900 space-y-4 ${
+                  duelMobileTab === 'code' ? 'block' : 'hidden lg:block'
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Code2 className="w-4 h-4 text-rose-500" />
@@ -914,7 +994,11 @@ export default function ArenaDuelPage() {
 
               {/* Test Results Output */}
               {testResults.length > 0 && (
-                <Card className="p-6 border-none shadow-lg bg-white dark:bg-gray-900 space-y-3">
+                <Card
+                  className={`p-6 border-none shadow-lg bg-white dark:bg-gray-900 space-y-3 ${
+                    duelMobileTab === 'code' ? 'block' : 'hidden lg:block'
+                  }`}
+                >
                   <h4 className="text-sm font-bold flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-purple-500" />
                     Sandbox Execution Results ({userTestsPassed}/{testResults.length} Passed)
@@ -943,7 +1027,7 @@ export default function ArenaDuelPage() {
             </div>
 
             {/* Right Column: Opponent Telemetry HUD & Emotes */}
-            <div className="space-y-6">
+            <div className={`space-y-6 ${duelMobileTab === 'telemetry' ? 'block' : 'hidden lg:block'}`}>
               {/* Opponent Live Telemetry Card */}
               <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-900 space-y-6">
                 <div className="flex items-center justify-between">

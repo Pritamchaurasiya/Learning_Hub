@@ -177,26 +177,40 @@ function useHorizontalResize(initialLeftPercent = 40) {
   const leftPaneRef = useRef<HTMLDivElement>(null)
   const rightPaneRef = useRef<HTMLDivElement>(null)
 
-  const onMouseDown = useCallback(() => {
+  const onMouseDown = useCallback((e?: React.MouseEvent | React.PointerEvent) => {
+    if (e && 'button' in e && e.button !== 0) return
     dragging.current = true
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
   }, [])
 
+  // Responsive cleanup: clear inline width on small screens (<768px) so flex/Tailwind takes over
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-      if (leftPaneRef.current) leftPaneRef.current.style.width = `${initialLeftPercent}%`
-      if (rightPaneRef.current) rightPaneRef.current.style.width = `${100 - initialLeftPercent}%`
+    const handleResize = () => {
+      if (typeof window === 'undefined') return
+      if (window.innerWidth < 768) {
+        if (leftPaneRef.current) leftPaneRef.current.style.width = ''
+        if (rightPaneRef.current) rightPaneRef.current.style.width = ''
+      } else {
+        const pct = leftPercentRef.current || initialLeftPercent
+        if (leftPaneRef.current) leftPaneRef.current.style.width = `${pct}%`
+        if (rightPaneRef.current) rightPaneRef.current.style.width = `${100 - pct}%`
+      }
     }
+
+    handleResize()
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
   }, [initialLeftPercent])
 
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
+    const onMove = (e: MouseEvent | PointerEvent) => {
       if (
         !dragging.current ||
         !containerRef.current ||
         !leftPaneRef.current ||
-        !rightPaneRef.current
+        !rightPaneRef.current ||
+        window.innerWidth < 768
       )
         return
       const rect = containerRef.current.getBoundingClientRect()
@@ -207,22 +221,23 @@ function useHorizontalResize(initialLeftPercent = 40) {
       leftPaneRef.current.style.width = `${clampedPct}%`
       rightPaneRef.current.style.width = `${100 - clampedPct}%`
     }
-    const onMouseUp = (e: MouseEvent) => {
+    const onUp = () => {
       if (!dragging.current) return
       dragging.current = false
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        const pct = ((e.clientX - rect.left) / rect.width) * 100
-        leftPercentRef.current = Math.max(20, Math.min(80, pct))
-      }
     }
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
     return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
     }
   }, [])
 
@@ -583,7 +598,7 @@ ${review.overallFeedback}
 
   // Console vertical resize
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: MouseEvent | PointerEvent) => {
       if (
         !consoleDragging.current ||
         !editorPanelRef.current ||
@@ -599,20 +614,21 @@ ${review.overallFeedback}
       consolePanelRef.current.style.height = `${clampedPct}%`
       codeEditorRef.current.style.height = `${100 - clampedPct}%`
     }
-    const onUp = (e: MouseEvent) => {
+    const onUp = () => {
       if (!consoleDragging.current) return
       consoleDragging.current = false
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
-      if (editorPanelRef.current) {
-        const rect = editorPanelRef.current.getBoundingClientRect()
-        const pct = ((rect.bottom - e.clientY) / rect.height) * 100
-        consoleHeightRef.current = Math.max(10, Math.min(70, pct))
-      }
     }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
     return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
@@ -901,10 +917,11 @@ ${review.overallFeedback}
 
         {/* ─── Drag Handle (horizontal) ─── */}
         <div
-          className="hidden md:block w-1.5 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-col-resize shrink-0 relative group"
+          className="hidden md:block w-1.5 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-col-resize shrink-0 relative group touch-none select-none"
+          onPointerDown={onMouseDown}
           onMouseDown={onMouseDown}
         >
-          <div className="absolute inset-y-0 -left-1 -right-1" /> {/* bigger hit area */}
+          <div className="absolute inset-y-0 -left-1.5 -right-1.5" /> {/* bigger hit area */}
         </div>
 
         {/* ─── Right: Editor + Console ─── */}
@@ -1012,13 +1029,21 @@ ${review.overallFeedback}
             {/* Console Resize Handle */}
             {isConsoleOpen && (
               <div
-                className="h-1 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-row-resize shrink-0"
+                className="h-1.5 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-row-resize shrink-0 touch-none select-none relative group"
+                onPointerDown={e => {
+                  if (e.button !== 0) return
+                  consoleDragging.current = true
+                  document.body.style.cursor = 'row-resize'
+                  document.body.style.userSelect = 'none'
+                }}
                 onMouseDown={() => {
                   consoleDragging.current = true
                   document.body.style.cursor = 'row-resize'
                   document.body.style.userSelect = 'none'
                 }}
-              />
+              >
+                <div className="absolute inset-x-0 -top-1 -bottom-1" />
+              </div>
             )}
 
             {/* Console Panel */}

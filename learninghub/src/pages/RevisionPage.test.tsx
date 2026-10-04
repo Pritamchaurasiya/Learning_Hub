@@ -1,6 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import { RevisionPage } from './RevisionPage'
 import { revisionService } from '../services/revisionService'
 
@@ -95,9 +96,11 @@ describe('RevisionPage', () => {
 
   it('renders page header, filters, and loads cards', async () => {
     render(
-      <BrowserRouter>
-        <RevisionPage />
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <RevisionPage />
+        </BrowserRouter>
+      </HelmetProvider>
     )
 
     expect(screen.getByText('Spaced Revision Hub')).toBeInTheDocument()
@@ -113,9 +116,11 @@ describe('RevisionPage', () => {
 
   it('allows switching filter tabs', async () => {
     render(
-      <BrowserRouter>
-        <RevisionPage />
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <RevisionPage />
+        </BrowserRouter>
+      </HelmetProvider>
     )
 
     const formulasTab = screen.getByText('Key Formulas')
@@ -128,9 +133,11 @@ describe('RevisionPage', () => {
 
   it('opens custom card modal on Create Card button click', async () => {
     render(
-      <BrowserRouter>
-        <RevisionPage />
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <RevisionPage />
+        </BrowserRouter>
+      </HelmetProvider>
     )
 
     const createBtn = screen.getByRole('button', { name: /Create Card/i })

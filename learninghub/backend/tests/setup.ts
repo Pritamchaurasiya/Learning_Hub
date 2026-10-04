@@ -26,6 +26,11 @@ jest.mock('../src/services/CacheService', () => ({
     expire: jest.fn().mockResolvedValue(true),
     getClient: jest.fn().mockReturnValue(null),
     generateKey: jest.fn().mockImplementation((prefix, ...args) => `${prefix}:${args.join(':')}`),
+    curriculumKey: jest.fn().mockImplementation((userId) => `curriculum:active:${userId}`),
+    revisionDeckKey: jest.fn().mockImplementation((userId, filter) => `revision:deck:${userId}:${filter || 'all'}`),
+    skillGraphKey: jest.fn().mockImplementation((userId, domain) => `skills:graph:${userId}:${domain || 'all'}`),
+    learningPathsKey: jest.fn().mockImplementation((query) => `learning-paths:${query || 'all'}`),
+    cacheOrFetch: jest.fn().mockImplementation(async (_key, _ttl, fetcher) => fetcher()),
   },
 }))
 

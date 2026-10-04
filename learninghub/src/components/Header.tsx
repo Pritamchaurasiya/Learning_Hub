@@ -70,30 +70,6 @@ const Header = memo(() => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Ctrl+K / Cmd+K keyboard shortcut for search
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault()
-        const activeTag = document.activeElement?.tagName
-        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
-        // On desktop, focus the existing search input instead of opening mobile overlay
-        if (window.innerWidth >= 768) {
-          const searchInput = document.querySelector(
-            'header input[type="text"]'
-          ) as HTMLInputElement | null
-          if (searchInput) {
-            searchInput.focus()
-            return
-          }
-        }
-        setMobileSearchOpen(true)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
 
   // Escape key handler and focus trap for mobile search overlay

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Check,
@@ -37,6 +38,7 @@ interface NotificationPanelProps {
 }
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
+  const navigate = useNavigate()
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const notifications = useStore(state => state.notifications)
   const markNotificationAsRead = useStore(state => state.markNotificationAsRead)
@@ -197,7 +199,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
           onClick={() => {
             onClose()
             // Navigate to full notifications page
-            window.location.href = '/notifications'
+            navigate('/notifications')
           }}
         >
           View all notifications

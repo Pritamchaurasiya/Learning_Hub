@@ -35,6 +35,10 @@ import jobsRoutes from './jobs'
 import metricsRoutes from './metrics'
 import searchRoutes from './v1/search.routes'
 import duelRoutes from './v1/duel.routes'
+import curriculumRoutes from './v1/curriculum.routes'
+import revisionRoutes from './v1/revision.routes'
+import skillsRoutes from './v1/skills.routes'
+import learningPathsRoutes from './v1/learningPaths.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -119,6 +123,10 @@ router.use('/jobs', jobsRoutes)
 router.use('/prometheus', metricsRoutes)
 router.use('/search', searchRoutes)
 router.use('/duel', duelRoutes)
+router.use('/curriculum', curriculumRoutes)
+router.use('/revision', revisionRoutes)
+router.use('/skills', skillsRoutes)
+router.use('/learning-paths', learningPathsRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

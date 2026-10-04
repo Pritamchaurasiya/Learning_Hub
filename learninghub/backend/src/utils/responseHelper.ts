@@ -85,6 +85,13 @@ export const sendInternalError = (
   code = 'INTERNAL_ERROR'
 ): void => sendError(res, message, 500, code)
 
+export const sendBadRequest = (
+  res: Response,
+  message = 'Bad request',
+  code = 'BAD_REQUEST',
+  details?: unknown
+): void => sendError(res, message, 400, code, details)
+
 export const sendValidationError = (
   res: Response,
   message: string,

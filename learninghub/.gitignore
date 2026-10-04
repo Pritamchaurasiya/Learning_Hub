@@ -12,25 +12,34 @@ dist/
 build/
 *.tsbuildinfo
 
-# Logs
+# Logs and debug outputs
 logs/
 *.log
 npm-debug.log*
+*.txt
+scratch/
+qa-artifacts/
+coverage/
 
-# IDE
+# IDE & Tooling caches
 .vscode/
 .idea/
+.kilo/
+.local/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Playwright
+# Playwright & Testing
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
 
-# Uploads
+# Uploads & local databases
 uploads/
+*.db
+*.sqlite3
+

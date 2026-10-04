@@ -107,66 +107,8 @@ export class WasmSandboxService {
       let errorMsg: string | undefined
 
       try {
-        const execPromise = new Promise<{ result: any; logs: string[] }>((resolve, reject) => {
-          try {
-            // Air-gapped execution scope: intercept console and strip network/DOM APIs
-            const sandboxedConsole = {
-              log: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
-              info: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
-              warn: (...args: any[]) => tcLogs.push(`[WARN] ${args.map(a => this.formatArg(a)).join(' ')}`),
-              error: (...args: any[]) => tcLogs.push(`[ERROR] ${args.map(a => this.formatArg(a)).join(' ')}`),
-            }
-
-            // Create air-gapped wrapper
-            const wrappedCode = `
-              return (function(console, window, document, fetch, XMLHttpRequest, WebSocket, localStorage, sessionStorage, indexedDB, navigator, location) {
-                'use strict';
-                let __result__ = undefined;
-                ${this.parseInputToDeclarations(tc.input)}
-                
-                ${code}
-
-                // If user defined a Solution class
-                if (typeof Solution !== 'undefined') {
-                  try {
-                    const s = new Solution();
-                    const proto = Object.getPrototypeOf(s);
-                    const methods = Object.getOwnPropertyNames(proto).filter(m => m !== 'constructor');
-                    if (methods.length > 0) {
-                      const primaryMethod = methods[0];
-                      ${this.parseInputToInvocation('s[primaryMethod].bind(s)', tc.input)}
-                    }
-                  } catch (e) {
-                    // Fall through
-                  }
-                }
-
-                // If user defined solve() function
-                if (__result__ === undefined && typeof solve === 'function') {
-                  ${this.parseInputToInvocation('solve', tc.input)}
-                }
-
-                return __result__;
-              })(sandboxedConsole, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
-            `
-
-            // eslint-disable-next-line @typescript-eslint/no-implied-eval
-            const evaluator = new Function('sandboxedConsole', wrappedCode)
-            const evalResult = evaluator(sandboxedConsole)
-            resolve({ result: evalResult, logs: tcLogs })
-          } catch (err: any) {
-            reject(err)
-          }
-        })
-
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Time Limit Exceeded (Execution exceeded 2500ms)')), timeoutMs)
-        })
-
-        const executionRes = (await Promise.race([execPromise, timeoutPromise])) as {
-          result: any
-          logs: string[]
-        }
+        const executionRes = await this.executeSandboxedJs(code, tc.input, timeoutMs)
+        tcLogs.push(...executionRes.logs)
 
         if (executionRes.result !== undefined) {
           actualOutput = this.normalizeOutput(executionRes.result)
@@ -467,6 +409,195 @@ ${tc.input}
     }
 
     return { output: 'true', logs: ['Execution simulated successfully'] }
+  }
+
+  private async executeSandboxedJs(
+    code: string,
+    tcInput: string,
+    timeoutMs: number
+  ): Promise<{ result: any; logs: string[] }> {
+    const isBrowserWorkerSupported =
+      typeof window !== 'undefined' &&
+      typeof window.Worker !== 'undefined' &&
+      typeof Blob !== 'undefined' &&
+      typeof URL !== 'undefined' &&
+      typeof URL.createObjectURL === 'function'
+
+    if (isBrowserWorkerSupported) {
+      try {
+        return await this.runInWorker(code, tcInput, timeoutMs)
+      } catch (workerErr: any) {
+        if (workerErr.message?.includes('Time Limit Exceeded')) {
+          throw workerErr
+        }
+        // If worker creation failed due to CSP or test environment, fallback to direct eval
+      }
+    }
+
+    return this.runInDirectEval(code, tcInput, timeoutMs)
+  }
+
+  private runInWorker(
+    code: string,
+    tcInput: string,
+    timeoutMs: number
+  ): Promise<{ result: any; logs: string[] }> {
+    const workerScript = `
+      self.onmessage = function(e) {
+        var data = e.data;
+        var logs = [];
+        var sandboxedConsole = {
+          log: function() { logs.push(Array.prototype.slice.call(arguments).join(' ')); },
+          info: function() { logs.push(Array.prototype.slice.call(arguments).join(' ')); },
+          warn: function() { logs.push('[WARN] ' + Array.prototype.slice.call(arguments).join(' ')); },
+          error: function() { logs.push('[ERROR] ' + Array.prototype.slice.call(arguments).join(' ')); }
+        };
+
+        try {
+          var fn = new Function('console', 'fetch', 'XMLHttpRequest', 'WebSocket', 'indexedDB', 'localStorage', 'sessionStorage',
+            "'use strict'; " +
+            "var __result__ = undefined; " +
+            data.inputDeclarations + " " +
+            data.code + " " +
+            data.solutionSnippet + " " +
+            data.invocationSnippet + " " +
+            "return __result__;"
+          );
+          var res = fn(sandboxedConsole, undefined, undefined, undefined, undefined, undefined, undefined);
+          self.postMessage({ success: true, result: res, logs: logs });
+        } catch(err) {
+          self.postMessage({ success: false, error: err.message || String(err), logs: logs });
+        }
+      };
+    `
+
+    const blob = new Blob([workerScript], { type: 'application/javascript' })
+    const workerUrl = URL.createObjectURL(blob)
+    const worker = new Worker(workerUrl)
+
+    return new Promise<{ result: any; logs: string[] }>((resolve, reject) => {
+      let timer: any = null
+      let settled = false
+
+      const cleanup = () => {
+        if (settled) return
+        settled = true
+        if (timer) clearTimeout(timer)
+        try {
+          worker.terminate()
+        } catch {}
+        try {
+          URL.revokeObjectURL(workerUrl)
+        } catch {}
+      }
+
+      timer = setTimeout(() => {
+        cleanup()
+        reject(new Error(`Time Limit Exceeded (Execution exceeded ${timeoutMs}ms)`))
+      }, timeoutMs)
+
+      worker.onmessage = (e: MessageEvent) => {
+        const data = e.data
+        cleanup()
+        if (data.success) {
+          resolve({ result: data.result, logs: data.logs || [] })
+        } else {
+          reject(new Error(data.error || 'Execution failed in sandbox worker'))
+        }
+      }
+
+      worker.onerror = (e: ErrorEvent) => {
+        const msg = e.message || 'Worker thread error'
+        cleanup()
+        reject(new Error(msg))
+      }
+
+      const inputDeclarations = this.parseInputToDeclarations(tcInput)
+      const solutionSnippet = `
+        if (typeof Solution !== 'undefined') {
+          try {
+            var s = new Solution();
+            var proto = Object.getPrototypeOf(s);
+            var methods = Object.getOwnPropertyNames(proto).filter(function(m) { return m !== 'constructor'; });
+            if (methods.length > 0) {
+              var primaryMethod = methods[0];
+              ${this.parseInputToInvocation('s[primaryMethod].bind(s)', tcInput)}
+            }
+          } catch(e) {}
+        }
+      `
+      const invocationSnippet = `
+        if (__result__ === undefined && typeof solve === 'function') {
+          ${this.parseInputToInvocation('solve', tcInput)}
+        }
+      `
+
+      worker.postMessage({
+        code,
+        inputDeclarations,
+        solutionSnippet,
+        invocationSnippet,
+      })
+    })
+  }
+
+  private runInDirectEval(
+    code: string,
+    tcInput: string,
+    timeoutMs: number
+  ): Promise<{ result: any; logs: string[] }> {
+    const tcLogs: string[] = []
+    const sandboxedConsole = {
+      log: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
+      info: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
+      warn: (...args: any[]) => tcLogs.push(`[WARN] ${args.map(a => this.formatArg(a)).join(' ')}`),
+      error: (...args: any[]) => tcLogs.push(`[ERROR] ${args.map(a => this.formatArg(a)).join(' ')}`),
+    }
+
+    const wrappedCode = `
+      return (function(console, window, document, fetch, XMLHttpRequest, WebSocket, localStorage, sessionStorage, indexedDB, navigator, location) {
+        'use strict';
+        let __result__ = undefined;
+        ${this.parseInputToDeclarations(tcInput)}
+        
+        ${code}
+
+        if (typeof Solution !== 'undefined') {
+          try {
+            const s = new Solution();
+            const proto = Object.getPrototypeOf(s);
+            const methods = Object.getOwnPropertyNames(proto).filter(m => m !== 'constructor');
+            if (methods.length > 0) {
+              const primaryMethod = methods[0];
+              ${this.parseInputToInvocation('s[primaryMethod].bind(s)', tcInput)}
+            }
+          } catch (e) {}
+        }
+
+        if (__result__ === undefined && typeof solve === 'function') {
+          ${this.parseInputToInvocation('solve', tcInput)}
+        }
+
+        return __result__;
+      })(sandboxedConsole, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+    `
+
+    const execPromise = new Promise<{ result: any; logs: string[] }>((resolve, reject) => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        const evaluator = new Function('sandboxedConsole', wrappedCode)
+        const evalResult = evaluator(sandboxedConsole)
+        resolve({ result: evalResult, logs: tcLogs })
+      } catch (err: any) {
+        reject(err)
+      }
+    })
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(`Time Limit Exceeded (Execution exceeded ${timeoutMs}ms)`)), timeoutMs)
+    })
+
+    return Promise.race([execPromise, timeoutPromise])
   }
 }
 

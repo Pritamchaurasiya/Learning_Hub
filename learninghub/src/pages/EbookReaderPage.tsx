@@ -103,7 +103,7 @@ export default function EbookReaderPage() {
 
   const handleSelectChapter = (newChapterId: string) => {
     setActiveChapterId(newChapterId)
-    navigate(`/ebooks/${id}/${newChapterId}`, { replace: true })
+    navigate(`/ebook/${id}/${newChapterId}`, { replace: true })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -225,18 +225,20 @@ export default function EbookReaderPage() {
         />
 
         {/* Chapter Navigation Footer */}
-        <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-slate-800 pb-20">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 border-t border-gray-200 dark:border-slate-800 pb-20">
           {prevChapter ? (
             <button
               onClick={() => handleSelectChapter(prevChapter.id)}
-              className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-white font-bold text-xs flex items-center gap-2 hover:border-indigo-500 shadow-sm transition-all"
+              className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-white font-bold text-xs flex items-center justify-between sm:justify-start gap-2 hover:border-indigo-500 shadow-sm transition-all"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <div className="text-left">
-                <span className="text-[10px] text-gray-400 block font-normal">
-                  Previous Chapter
-                </span>
-                <span className="truncate max-w-[160px] block">{prevChapter.title}</span>
+              <div className="flex items-center gap-2">
+                <ChevronLeft className="w-4 h-4" />
+                <div className="text-left">
+                  <span className="text-[10px] text-gray-400 block font-normal">
+                    Previous Chapter
+                  </span>
+                  <span className="truncate max-w-[160px] sm:max-w-[200px] block">{prevChapter.title}</span>
+                </div>
               </div>
             </button>
           ) : (
@@ -246,11 +248,11 @@ export default function EbookReaderPage() {
           {nextChapter && (
             <button
               onClick={() => handleSelectChapter(nextChapter.id)}
-              className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all"
+              className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-between sm:justify-end gap-2 shadow-lg shadow-indigo-600/20 transition-all"
             >
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <span className="text-[10px] text-indigo-200 block font-normal">Next Chapter</span>
-                <span className="truncate max-w-[160px] block">{nextChapter.title}</span>
+                <span className="truncate max-w-[160px] sm:max-w-[200px] block">{nextChapter.title}</span>
               </div>
               <ChevronRight className="w-4 h-4" />
             </button>

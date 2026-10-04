@@ -103,10 +103,17 @@ export default function ProblemsPage() {
   >('ALL')
   const [showFilters, setShowFilters] = useState(false)
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
-  // Native keyboard shortcuts listener
+  // Native keyboard shortcuts listener (? toggles shortcuts, Esc closes)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const activeTag = (document.activeElement?.tagName || '').toUpperCase()
+      const isInput =
+        activeTag === 'INPUT' ||
+        activeTag === 'TEXTAREA' ||
+        (document.activeElement as HTMLElement)?.isContentEditable
+      if (isInput) return
+
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault()
         setShowKeyboardShortcuts(prev => !prev)
       } else if (e.key === 'Escape') {
@@ -224,7 +231,7 @@ export default function ProblemsPage() {
             aria-label="Keyboard shortcuts"
           >
             <Keyboard className="w-4 h-4" />
-            <span className="hidden sm:inline">Shortcuts</span>
+            <span className="hidden sm:inline">Shortcuts (?)</span>
           </Button>
         </div>
       </div>
@@ -479,7 +486,10 @@ export default function ProblemsPage() {
                 Compete with top engineers in a real-time system design simulation. Starts in 14
                 hours.
               </p>
-              <Button className="w-full bg-white hover:bg-gray-100 text-gray-900 border-none font-black transition-colors">
+              <Button
+                onClick={() => navigate('/contest')}
+                className="w-full bg-white hover:bg-gray-100 text-gray-900 border-none font-black transition-colors"
+              >
                 Register Event
               </Button>
             </div>
@@ -514,6 +524,10 @@ export default function ProblemsPage() {
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">?</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Toggle shortcuts</span>
+                  </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘K</kbd>
                     <span className="text-gray-600 dark:text-gray-400">Open command palette</span>

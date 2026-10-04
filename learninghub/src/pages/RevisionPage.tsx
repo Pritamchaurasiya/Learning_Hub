@@ -19,6 +19,8 @@ import { SpacedRepetitionCard } from '../components/revision/SpacedRepetitionCar
 import { RetentionAnalyticsCard } from '../components/revision/RetentionAnalyticsCard'
 import { Card } from '../components/ui/Card'
 import { useToast } from '../components/ui/Toast'
+import { ErrorState } from '../components/ui/ErrorState'
+import { SEO } from '../components/SEO'
 
 export const RevisionPage: React.FC = () => {
   const { addToast } = useToast()
@@ -31,6 +33,7 @@ export const RevisionPage: React.FC = () => {
   const [retentionStats, setRetentionStats] = useState<RetentionStats | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'DUE' | 'MISTAKE' | 'FORMULA' | 'CONCEPT' | 'QUESTION'>('DUE')
   const [sessionCompleted, setSessionCompleted] = useState(false)
@@ -48,6 +51,7 @@ export const RevisionPage: React.FC = () => {
   // Load Deck & Stats
   const loadData = useCallback(async () => {
     setIsLoading(true)
+    setError(null)
     try {
       const typeParam = ['MISTAKE', 'FORMULA', 'CONCEPT', 'QUESTION'].includes(selectedFilter)
         ? selectedFilter
@@ -75,7 +79,9 @@ export const RevisionPage: React.FC = () => {
       setSessionCompleted(false)
     } catch (err) {
       console.error('[RevisionPage] Failed to load deck:', err)
-      addToastRef.current('Failed to load revision deck', 'error')
+      const msg = err instanceof Error ? err.message : 'Failed to load revision deck'
+      setError(msg)
+      addToastRef.current(msg, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -159,6 +165,10 @@ export const RevisionPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Spaced Revision & Flashcards | LearningHub"
+        description="Master key concepts and practice mistake remediation with intelligent FSRS spaced repetition flashcards."
+      />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -300,6 +310,16 @@ export const RevisionPage: React.FC = () => {
                 Review Deck Again
               </button>
             </div>
+          </Card>
+        ) : error ? (
+          /* Error State with Retry */
+          <Card className="p-8 text-center max-w-lg mx-auto rounded-3xl border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-gray-900 shadow-xl">
+            <ErrorState
+              title="Unable to Load Revision Deck"
+              message={error}
+              onRetry={loadData}
+              showHome={false}
+            />
           </Card>
         ) : cards.length === 0 ? (
           /* Empty Deck State */

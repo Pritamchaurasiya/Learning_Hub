@@ -481,6 +481,22 @@ function App() {
                 }
               />
               <Route
+                path="/ebooks/:id"
+                element={
+                  <LazyRoute sectionName="Ebook Reader">
+                    <EbookReaderPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/ebooks/:id/:chapterId"
+                element={
+                  <LazyRoute sectionName="Ebook Reader">
+                    <EbookReaderPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
                 path="/live-class"
                 element={
                   <LazyRoute sectionName="Live Classes">

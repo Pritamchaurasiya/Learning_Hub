@@ -63,6 +63,8 @@ vi.mock('../services/duelService', () => ({
 // Mock useWebSocket
 vi.mock('../hooks/useWebSocket', () => ({
   useWebSocket: () => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
     emit: vi.fn(),
     on: vi.fn(() => () => {}),
     joinRoom: vi.fn(),

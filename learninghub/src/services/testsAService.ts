@@ -60,9 +60,12 @@ export interface TestQuestion {
     id: string
     text: string
     order: number
+    is_correct?: boolean
+    isCorrect?: boolean
   }[]
   order: number
   marks: number
+  explanation?: string
 }
 
 export interface TestAttempt {
