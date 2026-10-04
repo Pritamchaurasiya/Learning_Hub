@@ -30,6 +30,11 @@ import { Input } from '../components/ui/Input'
 import KnowledgeGraphVisualizer from '../components/KnowledgeGraphVisualizer'
 import { studyPlannerService, type CreateTaskRequest } from '../services/studyPlannerService'
 import { studyGoalsService } from '../services/studyGoalsService'
+import { CurriculumRoadmapView } from '../components/curriculum/CurriculumRoadmapView'
+import { CurriculumGeneratorModal } from '../components/curriculum/CurriculumGeneratorModal'
+import { PacingRecalibrationModal } from '../components/curriculum/PacingRecalibrationModal'
+import { curriculumService, FALLBACK_DEMO_PLAN } from '../services/curriculumService'
+import type { GenerateCurriculumInput, CurriculumModule } from '../types/curriculum'
 import { useStore } from '../stores/useStore'
 
 function playChime() {
@@ -94,6 +99,66 @@ export default function StudyPlannerPage() {
     },
     onError: () => addToast({ message: 'Failed to create study task', type: 'error' }),
   })
+
+  // Curriculum Roadmap State & Mutations
+  const [plannerTab, setPlannerTab] = useState<'tasks' | 'curriculum' | 'graph'>('tasks')
+  const [isGeneratorModalOpen, setIsGeneratorModalOpen] = useState(false)
+  const [isRecalibrateModalOpen, setIsRecalibrateModalOpen] = useState(false)
+
+  const { data: curriculumPlan } = useQuery({
+    queryKey: ['curriculum', 'plan'],
+    queryFn: () => curriculumService.getPlan().then(res => res.data.plan),
+    staleTime: 60 * 1000,
+  })
+
+  const generateCurriculumMutation = useMutation({
+    mutationFn: (input: GenerateCurriculumInput) => curriculumService.generatePlan(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['curriculum', 'plan'] })
+      addToast({ message: 'Dynamic syllabus synthesized successfully!', type: 'success' })
+      setPlannerTab('curriculum')
+    },
+    onError: () => addToast({ message: 'Failed to synthesize curriculum', type: 'error' }),
+  })
+
+  const recalibrateMutation = useMutation({
+    mutationFn: ({ accuracy, hours }: { accuracy: number; hours?: number }) =>
+      curriculumService.recalibratePlan(accuracy, hours),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['curriculum', 'plan'] })
+      addToast({ message: 'Pacing engine recalibrated!', type: 'success' })
+    },
+    onError: () => addToast({ message: 'Failed to recalibrate pacing', type: 'error' }),
+  })
+
+  const toggleConceptMutation = useMutation({
+    mutationFn: ({ moduleId, conceptId }: { moduleId: string; conceptId: string }) =>
+      curriculumService.toggleConcept(moduleId, conceptId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['curriculum', 'plan'] })
+    },
+  })
+
+  const handleSyncModuleToPlanner = async (module: CurriculumModule) => {
+    try {
+      for (const concept of module.concepts) {
+        await createTaskMutation.mutateAsync({
+          title: `[W${module.weekNumber}] ${concept.name}`,
+          description: `Target mastery: ${concept.targetMastery}% • Domain: ${module.domain}`,
+          task_type: 'practice',
+          scheduled_date: new Date().toISOString().slice(0, 10),
+          duration_minutes: concept.estimatedMinutes,
+          priority: 'high',
+        })
+      }
+      addToast({
+        message: `Synced ${module.concepts.length} concepts from Week ${module.weekNumber} into Daily Tasks!`,
+        type: 'success',
+      })
+    } catch {
+      addToast({ message: 'Could not sync all module tasks', type: 'error' })
+    }
+  }
 
   // Auto-sync notice deadline when arriving via URL parameters
   const syncedRef = useRef<string | null>(null)
@@ -309,16 +374,74 @@ export default function StudyPlannerPage() {
             </p>
           </div>
         </div>
-        <Button
-          size="lg"
-          className="rounded-2xl font-black shadow-xl shadow-primary-500/30 hover:scale-105 transition-transform"
-          leftIcon={<Plus className="w-5 h-5" />}
-        >
-          New Protocol
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => setIsGeneratorModalOpen(true)}
+            className="rounded-2xl font-black border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:scale-105 transition-transform"
+            leftIcon={<Sparkles className="w-5 h-5" />}
+          >
+            AI Curriculum
+          </Button>
+          <Button
+            size="lg"
+            onClick={() => setIsCreateTaskModalOpen(true)}
+            className="rounded-2xl font-black shadow-xl shadow-primary-500/30 hover:scale-105 transition-transform"
+            leftIcon={<Plus className="w-5 h-5" />}
+          >
+            New Protocol
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* View Switcher Tabs */}
+      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/60 rounded-2xl w-fit">
+        <button
+          type="button"
+          onClick={() => setPlannerTab('tasks')}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            plannerTab === 'tasks'
+              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Calendar className="w-4 h-4 text-primary-500" />
+          Daily Protocols & Tasks
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setPlannerTab('curriculum')}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            plannerTab === 'curriculum'
+              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-indigo-500" />
+          AI Curriculum Roadmap
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-extrabold">
+            M10
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setPlannerTab('graph')}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            plannerTab === 'graph'
+              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Target className="w-4 h-4 text-emerald-500" />
+          Neural Skill Graph
+        </button>
+      </div>
+
+      {plannerTab === 'tasks' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Progress & Goals */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="p-8 border-none shadow-xl bg-gradient-to-br from-orange-500 to-rose-600 text-white overflow-hidden relative group rounded-3xl">
@@ -609,6 +732,22 @@ export default function StudyPlannerPage() {
           </div>
         </div>
       </div>
+      )}
+
+      {plannerTab === 'curriculum' && (
+        <CurriculumRoadmapView
+          plan={curriculumPlan || FALLBACK_DEMO_PLAN}
+          onToggleConcept={async (mId, cId) => {
+            await toggleConceptMutation.mutateAsync({ moduleId: mId, conceptId: cId })
+          }}
+          onOpenGenerator={() => setIsGeneratorModalOpen(true)}
+          onOpenRecalibrate={() => setIsRecalibrateModalOpen(true)}
+          onSyncToPlanner={handleSyncModuleToPlanner}
+          isLoading={generateCurriculumMutation.isPending || recalibrateMutation.isPending}
+        />
+      )}
+
+      {plannerTab === 'graph' && <KnowledgeGraphVisualizer />}
 
       {/* Create Task Modal */}
       <Modal
@@ -718,8 +857,26 @@ export default function StudyPlannerPage() {
         </form>
       </Modal>
 
-      {/* Neural Concept Knowledge Graph Visualizer */}
-      <KnowledgeGraphVisualizer />
+      {/* Curriculum Generator Wizard Modal */}
+      <CurriculumGeneratorModal
+        isOpen={isGeneratorModalOpen}
+        onClose={() => setIsGeneratorModalOpen(false)}
+        onGenerate={async input => {
+          await generateCurriculumMutation.mutateAsync(input)
+        }}
+        isLoading={generateCurriculumMutation.isPending}
+      />
+
+      {/* Pacing Recalibration Modal */}
+      <PacingRecalibrationModal
+        isOpen={isRecalibrateModalOpen}
+        onClose={() => setIsRecalibrateModalOpen(false)}
+        onRecalibrate={async (accuracy, hours) => {
+          await recalibrateMutation.mutateAsync({ accuracy, hours })
+        }}
+        currentWeeklyHours={curriculumPlan?.weeklyStudyHours || 15}
+        isLoading={recalibrateMutation.isPending}
+      />
     </AnimatedPage>
   )
 }

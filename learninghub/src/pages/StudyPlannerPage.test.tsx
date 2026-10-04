@@ -175,4 +175,20 @@ describe('StudyPlannerPage Component', () => {
       )
     })
   })
+
+  it('switches to AI Curriculum Roadmap tab and renders synthesized syllabus', async () => {
+    render(<StudyPlannerPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/AI Curriculum Roadmap/i)).toBeInTheDocument()
+    })
+
+    const curriculumTabBtn = screen.getByText(/AI Curriculum Roadmap/i)
+    fireEvent.click(curriculumTabBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText('Exam Readiness Score')).toBeInTheDocument()
+      expect(screen.getByText(/Asymptotic Complexity/i)).toBeInTheDocument()
+    })
+  })
 })

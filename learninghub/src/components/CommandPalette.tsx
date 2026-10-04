@@ -57,7 +57,7 @@ const COMMANDS: CommandItem[] = [
     category: 'Navigation',
     icon: Calendar,
     path: '/study-planner',
-    keywords: ['schedule', 'tasks', 'roadmap', 'calendar'],
+    keywords: ['schedule', 'tasks', 'roadmap', 'calendar', 'curriculum', 'syllabus', 'pacing'],
   },
   {
     id: 'practice-problems',
