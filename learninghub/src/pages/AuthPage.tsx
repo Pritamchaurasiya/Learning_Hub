@@ -175,7 +175,7 @@ const AuthPage = memo(function AuthPage() {
     setMfaLoading(true)
     setMfaError(null)
     try {
-      const response = await fetchApi('/auth/mfa/login', {
+      const response = await fetchApi('/auth/mfa/verify-login', {
         method: 'POST',
         body: JSON.stringify({
           mfaSessionToken,
