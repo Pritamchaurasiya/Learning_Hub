@@ -636,3 +636,30 @@ async function handleNonRetryable(
 
   throw new Error(errorMessage)
 }
+
+export const api = {
+  get: <T = any>(endpoint: string, options?: FetchApiOptions) =>
+    fetchApi<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T = any>(endpoint: string, body?: any, options?: FetchApiOptions) =>
+    fetchApi<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.headers || {}),
+      },
+    }),
+  put: <T = any>(endpoint: string, body?: any, options?: FetchApiOptions) =>
+    fetchApi<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.headers || {}),
+      },
+    }),
+  delete: <T = any>(endpoint: string, options?: FetchApiOptions) =>
+    fetchApi<T>(endpoint, { ...options, method: 'DELETE' }),
+}

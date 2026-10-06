@@ -30,6 +30,7 @@ import {
   CreditCard,
   Cpu,
   BellRing,
+  FileText,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -85,6 +86,7 @@ export default function Sidebar() {
         { to: '/problems', icon: Code2, label: 'DSA Practice' },
         { to: '/arena', icon: Swords, label: '1v1 Arena Duel' },
         { to: '/interview', icon: Bot, label: 'AI Mock Interview' },
+        { to: '/resume', icon: FileText, label: 'Verifiable AI Resume' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

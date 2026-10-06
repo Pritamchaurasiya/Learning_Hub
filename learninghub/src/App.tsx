@@ -55,6 +55,7 @@ const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
 const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
 const InterviewSimulatorPage = lazy(() => import('./pages/InterviewSimulatorPage'))
+const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -371,6 +372,22 @@ function App() {
                 element={
                   <LazyRoute sectionName="AI Technical Interview Simulator">
                     <InterviewSimulatorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/resume"
+                element={
+                  <LazyRoute sectionName="Verifiable AI Resume & Portfolio">
+                    <ResumePortfolioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/portfolio"
+                element={
+                  <LazyRoute sectionName="Verifiable AI Resume & Portfolio">
+                    <ResumePortfolioPage />
                   </LazyRoute>
                 }
               />

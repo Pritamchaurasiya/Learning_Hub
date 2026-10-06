@@ -23,6 +23,7 @@ import {
   BellRing,
   Bookmark,
   Trophy,
+  FileText,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -107,6 +108,15 @@ const COMMANDS: CommandItem[] = [
     icon: Sparkles,
     path: '/interview',
     keywords: ['interview', 'mock', 'faang', 'system design', 'alex', 'sophia', 'rubric', 'audio', 'voice'],
+  },
+  {
+    id: 'tool-verifiable-resume',
+    title: 'Verifiable AI Resume & Career Portfolio',
+    description: 'ATS-optimized career resume synthesizing Arena Elo, BKT mastery & W3C DID credentials',
+    category: 'Practice',
+    icon: FileText,
+    path: '/resume',
+    keywords: ['resume', 'cv', 'ats', 'portfolio', 'did', 'w3c', 'career', 'credentials', 'hiring', 'verifiable'],
   },
   {
     id: 'practice-revision',
