@@ -16,6 +16,7 @@ import { offlineAssessmentService } from '../services/OfflineAssessmentService'
 import { adaptiveAssessmentEngine } from '../engines/test/AdaptiveAssessmentEngine'
 import { socraticDiagnosticService } from '../services/ai/SocraticDiagnosticService'
 import { cacheService as queryCache } from '../services/CacheService'
+import { aiTestService } from '../services/AITestService'
 import { asyncHandler } from '../utils/errorHandler'
 
 import {
@@ -611,6 +612,8 @@ export const getTestResults = asyncHandler(async (req: Request, res: Response): 
     selected_options: ans.selectedOptions.map((id: any) => ({ id })),
     time_spent: ans.timeSpent,
     explanation: ans.aiFeedback,
+    ai_feedback: ans.aiFeedback,
+    text_answer: ans.textAnswer,
   }))
   const { correctCount, incorrectCount, unansweredCount } = countQuestionResults(qr)
 
@@ -1234,4 +1237,201 @@ export const createTest = asyncHandler(async (req: Request, res: Response): Prom
 
   sendCreated(res, newTest, 'Test created successfully')
 })
+
+export const gradeSubjectiveAnswerEndpoint = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const testId = req.params.id as string
+    const { questionId, testResultId, answerText } = req.body
+
+    // 1. Fetch test and question
+    const test = await prisma.test.findUnique({
+      where: { id: testId },
+      include: {
+        questions: {
+          where: { id: questionId },
+        },
+      },
+    })
+
+    if (!test) {
+      sendNotFound(res, 'Test not found')
+      return
+    }
+
+    const question = test.questions[0]
+    if (!question) {
+      sendNotFound(res, 'Question not found in test')
+      return
+    }
+
+    // 2. Resolve target testResult and student answer
+    let targetResult: any = null
+    if (testResultId) {
+      targetResult = await prisma.testResult.findUnique({
+        where: { id: testResultId },
+        include: {
+          attemptAnswers: {
+            where: { questionId },
+          },
+        },
+      })
+      if (!targetResult) {
+        sendNotFound(res, 'Test result not found')
+        return
+      }
+      if (
+        targetResult.userId !== userId &&
+        req.user?.role !== 'ADMIN' &&
+        req.user?.role !== 'INSTRUCTOR'
+      ) {
+        sendForbidden(res, 'Access denied to this test result')
+        return
+      }
+    } else {
+      // Find latest testResult for this test and user
+      targetResult = await prisma.testResult.findFirst({
+        where: { testId, userId },
+        orderBy: { completedAt: 'desc' },
+        include: {
+          attemptAnswers: {
+            where: { questionId },
+          },
+        },
+      })
+    }
+
+    const existingAnswerRecord = targetResult?.attemptAnswers?.[0]
+    const resolvedAnswerText =
+      (typeof answerText === 'string' && answerText.trim()) ||
+      existingAnswerRecord?.textAnswer ||
+      ''
+
+    const maxPoints = question.points ?? 10
+
+    // If answer is completely empty
+    if (!resolvedAnswerText.trim()) {
+      sendValidationError(
+        res,
+        'Subjective answer cannot be empty',
+        'VALIDATION_ERROR',
+        [{ field: 'answerText', message: 'Subjective answer cannot be empty' }]
+      )
+      return
+    }
+
+    // 3. Call AI Rubric Evaluation Engine
+    const grading = await aiTestService.gradeSubjectiveAnswer(
+      question.text,
+      resolvedAnswerText,
+      maxPoints
+    )
+
+    const isCorrect = grading.score >= maxPoints * 0.5
+    const marksObtained = Math.round(Math.min(maxPoints, Math.max(0, grading.score)))
+
+    // Structure serialized feedback containing rich rubric breakdown
+    const serializedFeedback = JSON.stringify({
+      feedback: grading.feedback,
+      rubric: grading.rubric,
+      strengths: grading.strengths,
+      improvements: grading.improvements,
+    })
+
+    let newTotalScore: number | undefined
+    let percentage: number | undefined
+    let passed: boolean | undefined
+
+    // 4. If testResult exists, update database and recalculate
+    if (targetResult) {
+      await prisma.testAttemptAnswer.upsert({
+        where: {
+          testResultId_questionId: {
+            testResultId: targetResult.id,
+            questionId,
+          },
+        },
+        create: {
+          testResultId: targetResult.id,
+          questionId,
+          textAnswer: resolvedAnswerText,
+          selectedOptions: [],
+          marksObtained,
+          isCorrect,
+          aiFeedback: serializedFeedback,
+        },
+        update: {
+          textAnswer: resolvedAnswerText,
+          marksObtained,
+          isCorrect,
+          aiFeedback: serializedFeedback,
+        },
+      })
+
+      // Recalculate total test result score
+      const allAnswers = await prisma.testAttemptAnswer.findMany({
+        where: { testResultId: targetResult.id },
+        select: { marksObtained: true },
+      })
+
+      const computedScore = allAnswers.reduce(
+        (sum: number, a: { marksObtained: number | null }) => sum + (a.marksObtained ?? 0),
+        0
+      )
+      newTotalScore = computedScore
+      const totalPossible = test.totalMarks || maxPoints
+      percentage = totalPossible > 0 ? (computedScore / totalPossible) * 100 : 0
+      passed = percentage >= (test.passingScore ?? 0)
+
+      await prisma.testResult.update({
+        where: { id: targetResult.id },
+        data: {
+          score: newTotalScore,
+          percentage,
+          passed,
+        },
+      })
+
+      // Emit real-time WebSocket notification if service is active
+      try {
+        const { webSocketService } = await import('../services/WebSocketService')
+        webSocketService.notifyUser(userId, 'subjective_grade_completed', {
+          testResultId: targetResult.id,
+          questionId,
+          marksObtained,
+          isCorrect,
+          aiFeedback: grading.feedback,
+          rubric: grading.rubric,
+          strengths: grading.strengths,
+          improvements: grading.improvements,
+          newTotalScore,
+          percentage,
+          passed,
+        })
+      } catch {
+        // Non-blocking WebSocket delivery
+      }
+    }
+
+    sendSuccess(
+      res,
+      {
+        questionId,
+        testResultId: targetResult?.id,
+        score: grading.score,
+        marksObtained,
+        maxPoints,
+        isCorrect,
+        feedback: grading.feedback,
+        rubric: grading.rubric,
+        strengths: grading.strengths,
+        improvements: grading.improvements,
+        newTotalScore,
+        percentage,
+        passed,
+      },
+      'Subjective answer graded successfully'
+    )
+  }
+)
 

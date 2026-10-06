@@ -84,6 +84,7 @@ export default function Sidebar() {
       items: [
         { to: '/problems', icon: Code2, label: 'DSA Practice' },
         { to: '/arena', icon: Swords, label: '1v1 Arena Duel' },
+        { to: '/interview', icon: Bot, label: 'AI Mock Interview' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

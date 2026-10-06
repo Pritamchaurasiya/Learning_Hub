@@ -284,12 +284,22 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
         return state
       }
 
+      const serializedFeedback = payload.rubric
+        ? JSON.stringify({
+            feedback: payload.aiFeedback,
+            rubric: payload.rubric,
+            strengths: payload.strengths,
+            improvements: payload.improvements,
+          })
+        : payload.aiFeedback
+
       const newQuestionResults = state.testsA.results.question_results.map(qr => {
         if (qr.question_id === payload.questionId) {
           return {
             ...qr,
             marks_obtained: payload.marksObtained,
             is_correct: payload.isCorrect,
+            ai_feedback: serializedFeedback || qr.ai_feedback,
             explanation: payload.aiFeedback || qr.explanation,
           }
         }
@@ -301,7 +311,8 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
           ...state.testsA,
           results: {
             ...state.testsA.results,
-            score: payload.percentage, // Score in UI is percentage
+            score: payload.newTotalScore ?? state.testsA.results.score,
+            percentage: payload.percentage,
             passed: payload.passed,
             question_results: newQuestionResults,
           },

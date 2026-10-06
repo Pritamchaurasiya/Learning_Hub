@@ -37,7 +37,7 @@ export class AICouncilService {
    * Consults the full 3-Agent Collaborative Council
    */
   async consultCouncil(params: ConsultCouncilRequest): Promise<CouncilConsultationResult> {
-    const res = await fetchApi('/api/v1/ai/council/consult', {
+    const res = await fetchApi('/ai/council/consult', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -52,7 +52,7 @@ export class AICouncilService {
     role: AgentRole,
     params: ConsultCouncilRequest
   ): Promise<AgentPerspective> {
-    const res = await fetchApi('/api/v1/ai/council/specialist', {
+    const res = await fetchApi('/ai/council/specialist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...params, role }),

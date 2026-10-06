@@ -13,6 +13,10 @@ import {
   Sparkles,
   AlertTriangle,
   Activity,
+  Check,
+  Lightbulb,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
@@ -24,6 +28,243 @@ import { MistakeRemediationModal } from './MistakeRemediationModal'
 import { analyzeMistakes } from '../../services/remediationService'
 import { testsAService, type TestResult } from '../../services/testsAService'
 import { useStore } from '../../stores/useStore'
+
+interface ParsedRubric {
+  feedback: string
+  rubric: Array<{ name: string; score: number; maxScore: number; comment?: string }>
+  strengths: string[]
+  improvements: string[]
+}
+
+const parseSubjectiveFeedback = (raw?: string): ParsedRubric | null => {
+  if (!raw) return null
+  const trimmed = raw.trim()
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (parsed && (parsed.rubric || parsed.rubricBreakdown || parsed.feedback)) {
+        const rawRubric = parsed.rubric || parsed.rubricBreakdown || []
+        return {
+          feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+          rubric: Array.isArray(rawRubric)
+            ? rawRubric.map((r: any) => ({
+                name: r.name || r.criterion || 'Criterion',
+                score: typeof r.score === 'number' ? r.score : 0,
+                maxScore: typeof r.maxScore === 'number' && r.maxScore > 0 ? r.maxScore : 1,
+                comment: r.comment || r.feedback || '',
+              }))
+            : [],
+          strengths: Array.isArray(parsed.strengths) ? parsed.strengths.filter(Boolean) : [],
+          improvements: Array.isArray(parsed.improvements)
+            ? parsed.improvements.filter(Boolean)
+            : [],
+        }
+      }
+    } catch {
+      // Fallback to plain string if parse fails
+    }
+  }
+  return null
+}
+
+const SubjectiveRubricScorecard = ({
+  rawFeedback,
+  marksObtained,
+  totalPoints,
+  onGrade,
+  isGrading,
+}: {
+  rawFeedback?: string
+  marksObtained: number | null
+  totalPoints: number
+  onGrade: () => void
+  isGrading: boolean
+}) => {
+  const parsed = useMemo(() => parseSubjectiveFeedback(rawFeedback), [rawFeedback])
+  const score = marksObtained ?? 0
+  const pct = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0
+
+  if (!rawFeedback) {
+    return (
+      <div className="p-4 rounded-xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 shadow-xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
+            <BrainCircuit className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+              Subjective AI Rubric Evaluation
+            </h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+              Grade this response across conceptual accuracy, depth, clarity, and reasoning.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={onGrade}
+          disabled={isGrading}
+          className="shrink-0 flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs px-4 py-2 shadow-xs transition-all"
+        >
+          {isGrading ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Evaluating Rubric...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>⚡ Grade with AI Rubric</span>
+            </>
+          )}
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 sm:p-5 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/90 dark:border-purple-850/60 flex flex-col gap-4 mt-4 shadow-xs">
+      {/* Header bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-purple-200/60 dark:border-purple-800/40">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+            <BrainCircuit className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-sm font-bold text-purple-950 dark:text-purple-200">
+              AI Rubric Evaluation
+            </span>
+            <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-200/70 dark:bg-purple-900/60 text-purple-800 dark:text-purple-300">
+              {score} / {totalPoints} pts ({pct}%)
+            </span>
+          </div>
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onGrade}
+          disabled={isGrading}
+          className="flex items-center gap-1.5 text-xs text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 px-3 py-1.5 h-auto transition-colors"
+        >
+          {isGrading ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Re-evaluating...</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="w-3 h-3" />
+              <span>Re-evaluate</span>
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Multi-dimensional criteria bars if available */}
+      {parsed && parsed.rubric.length > 0 && (
+        <div className="space-y-3">
+          <h5 className="text-xs font-bold uppercase tracking-wider text-purple-900/80 dark:text-purple-300/80">
+            Dimensional Rubric Breakdown
+          </h5>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {parsed.rubric.map((crit, idx) => {
+              const critPct = Math.round((crit.score / crit.maxScore) * 100)
+              const barColor =
+                critPct >= 80
+                  ? 'bg-emerald-500'
+                  : critPct >= 50
+                    ? 'bg-indigo-500'
+                    : 'bg-amber-500'
+
+              return (
+                <div
+                  key={crit.name || idx}
+                  className="p-3 rounded-lg bg-white/90 dark:bg-gray-800/80 border border-purple-100 dark:border-purple-900/40 flex flex-col justify-between gap-1.5"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-gray-800 dark:text-gray-200 truncate pr-2">
+                      {crit.name}
+                    </span>
+                    <span className="text-purple-700 dark:text-purple-300 shrink-0 font-mono">
+                      {crit.score} / {crit.maxScore}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                      style={{ width: `${Math.min(100, Math.max(0, critPct))}%` }}
+                    />
+                  </div>
+                  {crit.comment && (
+                    <p className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                      {crit.comment}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Strengths & Improvements */}
+      {parsed && (parsed.strengths.length > 0 || parsed.improvements.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {parsed.strengths.length > 0 && (
+            <div className="p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/40">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Demonstrated Strengths</span>
+              </div>
+              <ul className="space-y-1">
+                {parsed.strengths.map((str, sIdx) => (
+                  <li
+                    key={sIdx}
+                    className="text-xs text-emerald-900 dark:text-emerald-200/90 leading-snug flex items-start gap-1.5"
+                  >
+                    <span className="text-emerald-500">•</span>
+                    <span>{str}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {parsed.improvements.length > 0 && (
+            <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 mb-1.5">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Actionable Recommendations</span>
+              </div>
+              <ul className="space-y-1">
+                {parsed.improvements.map((imp, iIdx) => (
+                  <li
+                    key={iIdx}
+                    className="text-xs text-amber-900 dark:text-amber-200/90 leading-snug flex items-start gap-1.5"
+                  >
+                    <span className="text-amber-500">•</span>
+                    <span>{imp}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Summary prose feedback */}
+      <div className="pt-1">
+        <span className="text-xs font-bold text-purple-900/90 dark:text-purple-300/90 block mb-1">
+          Detailed Evaluator Summary:
+        </span>
+        <div className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap bg-white/70 dark:bg-gray-800/50 p-3 rounded-lg border border-purple-100 dark:border-purple-900/30">
+          {parsed?.feedback || rawFeedback}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export interface ResultsViewProps {
   result: TestResult
@@ -54,6 +295,35 @@ export const ResultsView = memo(
       correctOptionText: string
     } | null>(null)
     const addToast = useStore(state => state.addToast)
+    const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
+    const [gradingQuestionId, setGradingQuestionId] = useState<string | null>(null)
+
+    const handleGradeSubjective = async (questionId: string, answerText?: string) => {
+      if (!questionId || gradingQuestionId) return
+      setGradingQuestionId(questionId)
+      try {
+        const response = await testsAService.gradeSubjectiveAnswer(result.test_id, {
+          questionId,
+          testResultId: result.attempt_id,
+          answerText,
+        })
+
+        if (response.data) {
+          updateSubjectiveGrade(response.data as any)
+          addToast({
+            message: '⚡ AI Rubric evaluation complete!',
+            type: 'success',
+          })
+        }
+      } catch (err) {
+        addToast({
+          message: err instanceof Error ? err.message : 'Failed to grade subjective answer',
+          type: 'error',
+        })
+      } finally {
+        setGradingQuestionId(null)
+      }
+    }
 
     const handleToggleBookmark = async (questionId: string) => {
       if (!questionId) return
@@ -451,50 +721,51 @@ export const ResultsView = memo(
 
                   <div className="pl-11 space-y-4">
                     {/* Options */}
-                    <div className="space-y-2">
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row sm:items-start gap-3">
-                        <div className="mt-0.5">
-                          <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
-                            Your Answer:
-                          </span>
-                        </div>
-                        <div className="text-gray-700 dark:text-gray-300">
-                          {q.question_type === 'subjective' ? (
-                            <MathRenderer text={q.text_answer ?? 'No answer provided'} />
-                          ) : (
-                            <MathRenderer text={q.selected_options?.[0]?.text || 'No answer'} />
+                    {(() => {
+                      const isSubjective =
+                        String(q.question_type || '').toLowerCase() === 'subjective'
+                      return (
+                        <div className="space-y-2">
+                          <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row sm:items-start gap-3">
+                            <div className="mt-0.5">
+                              <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
+                                Your Answer:
+                              </span>
+                            </div>
+                            <div className="text-gray-700 dark:text-gray-300">
+                              {isSubjective ? (
+                                <MathRenderer text={q.text_answer ?? 'No answer provided'} />
+                              ) : (
+                                <MathRenderer text={q.selected_options?.[0]?.text || 'No answer'} />
+                              )}
+                            </div>
+                          </div>
+
+                          {!q.is_correct && !isSubjective && (
+                            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
+                              <div className="mt-0.5">
+                                <span className="text-sm font-medium text-green-600 dark:text-green-500">
+                                  Correct Answer:
+                                </span>
+                              </div>
+                              <div className="text-gray-700 dark:text-gray-300">
+                                <MathRenderer text={q.correct_options?.[0]?.text || 'Not available'} />
+                              </div>
+                            </div>
+                          )}
+
+                          {isSubjective && (
+                            <SubjectiveRubricScorecard
+                              rawFeedback={q.ai_feedback}
+                              marksObtained={q.marks_obtained}
+                              totalPoints={(q as { points?: number }).points ?? 10}
+                              onGrade={() => handleGradeSubjective(q.question_id, q.text_answer)}
+                              isGrading={gradingQuestionId === q.question_id}
+                            />
                           )}
                         </div>
-                      </div>
-
-                      {!q.is_correct && q.question_type !== 'subjective' && (
-                        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
-                          <div className="mt-0.5">
-                            <span className="text-sm font-medium text-green-600 dark:text-green-500">
-                              Correct Answer:
-                            </span>
-                          </div>
-                          <div className="text-gray-700 dark:text-gray-300">
-                            <MathRenderer text={q.correct_options?.[0]?.text || 'Not available'} />
-                          </div>
-                        </div>
-                      )}
-
-                      {q.question_type === 'subjective' && q.ai_feedback && (
-                        <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-900/30 flex flex-col gap-2 mt-4">
-                          <div className="flex items-center gap-2">
-                            <BrainCircuit className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                            <span className="text-sm font-bold text-purple-700 dark:text-purple-400">
-                              AI Feedback (Score: {q.marks_obtained ?? 0} /{' '}
-                              {(q as { points?: number }).points ?? 10})
-                            </span>
-                          </div>
-                          <div className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">
-                            {q.ai_feedback}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      )
+                    })()}
 
                     {/* Confidence */}
                     {q.confidence && (

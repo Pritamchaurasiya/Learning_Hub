@@ -775,6 +775,23 @@ export const testsAService = {
       status: res.status ?? 'success',
       data: res.data,
     })),
+
+  // On-demand AI Rubric grading for subjective / free-text / coding questions
+  gradeSubjectiveAnswer: (
+    testId: string,
+    payload: {
+      questionId: string
+      testResultId?: string
+      answerText?: string
+    }
+  ) =>
+    fetchApi(`/tests/${testId}/grade-subjective`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
 }
 
 export default testsAService

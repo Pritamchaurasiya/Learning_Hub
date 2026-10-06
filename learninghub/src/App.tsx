@@ -19,14 +19,13 @@ import { CodeCopyHandler } from './components/CodeCopyHandler'
 import { useQueryClient } from '@tanstack/react-query'
 import './index.css'
 
-// Critical pages — exactly 4 eager for LCP (Home/Auth/Profile/TestsA).
-// Every other route is lazy + Suspense + ErrorBoundary via LazyRoute (public)
-// or ProtectedLayout's Suspense + SectionErrorBoundary (protected). Do not add
-// more eager imports without measuring LCP impact.
+// Critical entry pages — Home/Auth/Profile are eager for instant LCP.
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import ProfilePage from './pages/ProfilePage'
-import TestsAPage from './pages/TestsAPage'
+
+// Lazy-loaded page components
+const TestsAPage = lazy(() => import('./pages/TestsAPage'))
 
 // Lazy-loaded page components
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
@@ -55,6 +54,7 @@ const AlgorithmVisualizerPage = lazy(() => import('./pages/AlgorithmVisualizerPa
 const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
 const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
+const InterviewSimulatorPage = lazy(() => import('./pages/InterviewSimulatorPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -359,6 +359,22 @@ function App() {
                 }
               />
               <Route
+                path="/interview"
+                element={
+                  <LazyRoute sectionName="AI Technical Interview Simulator">
+                    <InterviewSimulatorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/interview/:sessionId"
+                element={
+                  <LazyRoute sectionName="AI Technical Interview Simulator">
+                    <InterviewSimulatorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
                 path="/visualizer"
                 element={
                   <LazyRoute sectionName="Algorithm Visualizer">
@@ -417,8 +433,22 @@ function App() {
                   </LazyRoute>
                 }
               />
-              <Route path="/tests-a" element={<TestsAPage />} />
-              <Route path="/tests-a/:testId" element={<TestsAPage />} />
+              <Route
+                path="/tests-a"
+                element={
+                  <LazyRoute sectionName="Adaptive Tests">
+                    <TestsAPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/tests-a/:testId"
+                element={
+                  <LazyRoute sectionName="Adaptive Tests">
+                    <TestsAPage />
+                  </LazyRoute>
+                }
+              />
               <Route
                 path="/tests-a-history"
                 element={

@@ -18,6 +18,7 @@ import {
   diagnoseMisconception,
   createTest,
   receiveTestTelemetry,
+  gradeSubjectiveAnswerEndpoint,
 } from '../../controllers/testsController'
 import {
   practiceAnswer,
@@ -34,6 +35,7 @@ import {
   bookmarkQuestionSchema,
   removeBookmarkSchema,
   receiveTestTelemetrySchema,
+  gradeSubjectiveAnswerSchema,
 } from '../../validations/schemas'
 import {
   bookmarkQuestion,
@@ -115,6 +117,13 @@ router.post(
 router.post('/:id/practice/answer', authenticate, testMutationLimiter, practiceAnswer)
 router.post('/:id/adaptive/step', authenticate, testMutationLimiter, processAdaptiveStep)
 router.post('/:id/offline-sync', authenticate, testMutationLimiter, submitOfflineSync)
+router.post(
+  '/:id/grade-subjective',
+  authenticate,
+  testMutationLimiter,
+  validate(gradeSubjectiveAnswerSchema),
+  gradeSubjectiveAnswerEndpoint
+)
 router.get('/:id/result', authenticate, getTestResults)
 
 export default router

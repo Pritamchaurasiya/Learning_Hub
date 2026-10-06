@@ -76,6 +76,20 @@ export interface TestSlice {
     marksObtained: number
     isCorrect: boolean
     aiFeedback?: string
+    rubric?:
+      | Array<{
+          name?: string
+          criterion?: string
+          score?: number
+          maxScore?: number
+          comment?: string
+          feedback?: string
+        }>
+      | Record<string, unknown>
+      | unknown[]
+    strengths?: string[]
+    improvements?: string[]
+    newTotalScore?: number
     percentage: number
     passed: boolean
   }) => void
@@ -617,12 +631,22 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
         return state
       }
 
+      const serializedFeedback = payload.rubric
+        ? JSON.stringify({
+            feedback: payload.aiFeedback,
+            rubric: payload.rubric,
+            strengths: payload.strengths,
+            improvements: payload.improvements,
+          })
+        : payload.aiFeedback
+
       const newQuestionResults = state.test.results.question_results.map(qr => {
         if (qr.question_id === payload.questionId) {
           return {
             ...qr,
             marks_obtained: payload.marksObtained,
             is_correct: payload.isCorrect,
+            ai_feedback: serializedFeedback || qr.ai_feedback,
             explanation: payload.aiFeedback || qr.explanation,
           }
         }
@@ -634,7 +658,8 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
           ...state.test,
           results: {
             ...state.test.results,
-            score: payload.percentage, // Score in UI is percentage
+            score: payload.newTotalScore ?? state.test.results.score,
+            percentage: payload.percentage,
             passed: payload.passed,
             question_results: newQuestionResults,
           },

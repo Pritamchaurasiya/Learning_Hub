@@ -84,6 +84,12 @@ vi.mock('virtual:pwa-register/react', () => ({
   }),
 }))
 
+// Mock react-helmet-async globally to prevent missing HelmetProvider context in component tests
+vi.mock('react-helmet-async', () => ({
+  Helmet: () => null,
+  HelmetProvider: ({ children }: { children?: unknown }) => children ?? null,
+}))
+
 // Suppress console errors in tests unless explicitly testing errors
 const originalConsoleError = console.error
 console.error = (...args: unknown[]) => {

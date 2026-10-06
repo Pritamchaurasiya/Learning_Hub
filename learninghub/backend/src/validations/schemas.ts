@@ -155,6 +155,17 @@ export const receiveTestTelemetrySchema = z.object({
   }),
 })
 
+export const gradeSubjectiveAnswerSchema = z.object({
+  params: z.object({
+    id: idSchema,
+  }),
+  body: z.object({
+    questionId: idSchema,
+    testResultId: idSchema.optional(),
+    answerText: z.string().max(10000).optional(),
+  }),
+})
+
 export const createTestSchema = z.object({
   body: z.object({
     title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),

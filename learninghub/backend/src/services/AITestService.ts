@@ -78,10 +78,37 @@ const aiResponseSchema = z.object({
   questions: z.array(aiQuestionSchema),
 })
 
+export interface RubricCriterion {
+  name: string
+  score: number
+  maxScore: number
+  comment: string
+}
+
+export interface SubjectiveGradeResult {
+  score: number
+  maxPoints: number
+  feedback: string
+  rubricBreakdown?: RubricCriterion[]
+  rubric?: RubricCriterion[]
+  strengths?: string[]
+  improvements?: string[]
+}
+
+const rubricCriterionSchema = z.object({
+  name: z.string(),
+  score: z.number(),
+  maxScore: z.number(),
+  comment: z.string(),
+})
+
 const aiGradeSchema = z
   .object({
     score: z.number(),
     feedback: z.string(),
+    rubricBreakdown: z.array(rubricCriterionSchema).optional(),
+    strengths: z.array(z.string()).optional(),
+    improvements: z.array(z.string()).optional(),
   })
   .passthrough()
 
@@ -244,7 +271,7 @@ Respond with ONLY valid JSON:
 
   subjective_grading: (questionText: string, answerText: string, maxPoints: number) => `
 <trusted_instructions>
-You are an expert academic evaluator.
+You are an expert academic evaluator and university-level assessment examiner.
 
 Grade the following subjective answer provided by a student.
 Max Points Possible: ${maxPoints}
@@ -258,7 +285,14 @@ STRICT REQUIREMENTS:
 Respond with ONLY valid JSON:
 {
   "score": 8,
-  "feedback": "Your explanation is good but misses the core technical nuance."
+  "feedback": "Your explanation is good but misses the core technical nuance.",
+  "rubricBreakdown": [
+    { "name": "Conceptual Correctness", "score": 4, "maxScore": 4, "comment": "Accurate coverage of key concepts." },
+    { "name": "Technical Depth", "score": 2, "maxScore": 3, "comment": "Good discussion but missed formal technical details." },
+    { "name": "Clarity & Structure", "score": 2, "maxScore": 3, "comment": "Clear organization." }
+  ],
+  "strengths": ["Clear explanation of core principles"],
+  "improvements": ["Include more domain-specific technical terminology"]
 }
 </trusted_instructions>
 
@@ -811,7 +845,11 @@ export class AITestService {
   /**
    * Grade a subjective answer using the AI Agent.
    */
-  async gradeSubjectiveAnswer(questionText: string, answerText: string, maxPoints: number) {
+  async gradeSubjectiveAnswer(
+    questionText: string,
+    answerText: string,
+    maxPoints: number
+  ): Promise<SubjectiveGradeResult> {
     try {
       // 1. Sanitize and trim token usage for safety
       const safeQuestion = sanitizeInput(questionText, 2000)
@@ -823,7 +861,11 @@ export class AITestService {
       let retries = 0
       const maxRetries = 2
       let success = false
-      let finalGrade = { score: 0, feedback: 'Failed to grade via AI. Needs manual review.' }
+      let finalGrade: SubjectiveGradeResult = {
+        score: 0,
+        maxPoints,
+        feedback: 'Failed to grade via AI. Needs manual review.',
+      }
 
       while (retries <= maxRetries && !success) {
         try {
@@ -833,7 +875,42 @@ export class AITestService {
           )
 
           const validated = aiGradeSchema.parse(jsonResponse)
-          finalGrade = { score: validated.score, feedback: validated.feedback }
+          const boundedScore = Math.min(maxPoints, Math.max(0, validated.score))
+
+          // Generate default rubric breakdown if model returned raw score
+          const breakdown =
+            validated.rubricBreakdown && validated.rubricBreakdown.length > 0
+              ? validated.rubricBreakdown
+              : [
+                  {
+                    name: 'Conceptual Correctness',
+                    score: Math.round(boundedScore * 0.45 * 10) / 10,
+                    maxScore: Math.round(maxPoints * 0.45 * 10) / 10,
+                    comment: 'Evaluates core concepts and factual accuracy.',
+                  },
+                  {
+                    name: 'Technical Nuance',
+                    score: Math.round(boundedScore * 0.35 * 10) / 10,
+                    maxScore: Math.round(maxPoints * 0.35 * 10) / 10,
+                    comment: 'Evaluates domain terminology and technical depth.',
+                  },
+                  {
+                    name: 'Clarity & Structure',
+                    score: Math.round(boundedScore * 0.2 * 10) / 10,
+                    maxScore: Math.round(maxPoints * 0.2 * 10) / 10,
+                    comment: 'Evaluates organizational clarity and conciseness.',
+                  },
+                ]
+
+          finalGrade = {
+            score: boundedScore,
+            maxPoints,
+            feedback: validated.feedback,
+            rubricBreakdown: breakdown,
+            rubric: breakdown,
+            strengths: validated.strengths || ['Demonstrates understanding of core question principles.'],
+            improvements: validated.improvements || ['Incorporate more domain-specific technical terminology.'],
+          }
           success = true
         } catch (err) {
           retries++
@@ -855,7 +932,11 @@ export class AITestService {
         '[AITestService] Failed to grade subjective answer',
         error instanceof Error ? error : new Error(String(error))
       )
-      return { score: 0, feedback: 'Failed to grade via AI. Needs manual review.' }
+      return {
+        score: 0,
+        maxPoints,
+        feedback: 'Failed to grade via AI. Needs manual review.',
+      }
     }
   }
 

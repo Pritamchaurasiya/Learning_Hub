@@ -182,6 +182,8 @@ export default defineConfig(({ mode }) => {
               )
                 return 'markdown'
               if (id.includes('recharts')) return 'charts'
+              if (id.includes('katex')) return 'katex'
+              if (id.includes('@google/generative-ai')) return 'vendor-ai'
               if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-export'
               if (id.includes('@sentry')) return 'sentry'
               if (id.includes('stripe') || id.includes('@stripe')) return 'payments'

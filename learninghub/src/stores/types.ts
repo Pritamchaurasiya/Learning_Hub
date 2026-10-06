@@ -238,9 +238,22 @@ export interface TestsASlice {
     marksObtained: number
     isCorrect: boolean
     aiFeedback?: string
-    newTotalScore?: number
     percentage: number
     passed: boolean
+    rubric?:
+      | Array<{
+          name?: string
+          criterion?: string
+          score?: number
+          maxScore?: number
+          comment?: string
+          feedback?: string
+        }>
+      | Record<string, unknown>
+      | unknown[]
+    strengths?: string[]
+    improvements?: string[]
+    newTotalScore?: number
   }) => void
 }
 
@@ -307,6 +320,20 @@ export interface TestSlice {
     aiFeedback?: string
     percentage: number
     passed: boolean
+    rubric?:
+      | Array<{
+          name?: string
+          criterion?: string
+          score?: number
+          maxScore?: number
+          comment?: string
+          feedback?: string
+        }>
+      | Record<string, unknown>
+      | unknown[]
+    strengths?: string[]
+    improvements?: string[]
+    newTotalScore?: number
   }) => void
   setAssessmentMode: (
     mode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice'

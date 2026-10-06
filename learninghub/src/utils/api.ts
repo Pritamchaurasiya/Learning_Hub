@@ -388,11 +388,12 @@ export async function fetchApi<T = any>(
   options: FetchApiOptions = {}
 ): Promise<T> {
   const responseType = options.responseType ?? 'json'
-  // Strip duplicate API_URL or /api/v1 prefix if already supplied by caller
+  // Strip duplicate API_URL or /api/v1 prefixes if already supplied by caller
   let cleanEndpoint = endpoint
-  if (cleanEndpoint.startsWith(API_URL)) {
+  while (API_URL && cleanEndpoint.startsWith(API_URL)) {
     cleanEndpoint = cleanEndpoint.slice(API_URL.length)
-  } else if (cleanEndpoint.startsWith('/api/v1')) {
+  }
+  while (cleanEndpoint.startsWith('/api/v1')) {
     cleanEndpoint = cleanEndpoint.slice(7)
   }
   if (!cleanEndpoint.startsWith('/')) {

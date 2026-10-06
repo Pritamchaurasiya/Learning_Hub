@@ -270,6 +270,14 @@ class JobQueueService {
 
       const grading = await aiTestService.gradeSubjectiveAnswer(questionText, answerText, points)
       const isCorrect = grading.score >= points * 0.5
+      const marksObtained = Math.round(Math.min(points, Math.max(0, grading.score)))
+
+      const serializedFeedback = JSON.stringify({
+        feedback: grading.feedback,
+        rubric: grading.rubric,
+        strengths: grading.strengths,
+        improvements: grading.improvements,
+      })
 
       // Update the attempt answer with graded score
       await prisma.testAttemptAnswer.update({
@@ -280,9 +288,9 @@ class JobQueueService {
           },
         },
         data: {
-          marksObtained: Math.min(points, Math.max(0, grading.score)),
+          marksObtained,
           isCorrect,
-          aiFeedback: grading.feedback,
+          aiFeedback: serializedFeedback,
         },
       })
 
@@ -321,9 +329,12 @@ class JobQueueService {
       webSocketService.notifyUser(data.userId, 'subjective_grade_completed', {
         testResultId,
         questionId,
-        marksObtained: grading.score,
+        marksObtained,
         isCorrect,
         aiFeedback: grading.feedback,
+        rubric: grading.rubric,
+        strengths: grading.strengths,
+        improvements: grading.improvements,
         newTotalScore: newScore,
         percentage,
         passed,
