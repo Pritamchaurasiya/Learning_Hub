@@ -24,6 +24,7 @@ import {
   Bookmark,
   Trophy,
   FileText,
+  Cpu,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -144,6 +145,15 @@ const COMMANDS: CommandItem[] = [
     icon: Zap,
     path: '/contest',
     keywords: ['contest', 'competition', 'live', 'ranking', 'leaderboard'],
+  },
+  {
+    id: 'tool-edge-ai',
+    title: 'Edge AI Offline Studio',
+    description: '100% on-device private micro-inference powered by WebGPU compute shaders',
+    category: 'Tools',
+    icon: Cpu,
+    path: '/edge-ai',
+    keywords: ['edge', 'webgpu', 'offline', 'local', 'air-gapped', 'slm', 'qwen', 'llama', 'phi', 'smollm'],
   },
   {
     id: 'tool-ai-tutor',

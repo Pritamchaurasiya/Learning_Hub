@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { VerifiableResumePayload } from '../../types/resume'
 import { resumeService } from '../../services/resumeService'
-import { Download, FileText, Code, Printer, Copy, Check, Share2 } from 'lucide-react'
+import { FileText, Code, Printer, Copy, Check, Share2 } from 'lucide-react'
 
 interface ResumeExportActionsProps {
   resume: VerifiableResumePayload

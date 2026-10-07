@@ -3,6 +3,8 @@ import { IAIAgent, AIProviderOptions, AIGenerationResult, AIMessage } from './AI
 import { GeminiAdapter } from './GeminiAdapter'
 import { OpenAIAdapter } from './OpenAIAdapter'
 import { AnthropicAdapter } from './AnthropicAdapter'
+import { GroqAdapter } from './GroqAdapter'
+import { OllamaAdapter } from './OllamaAdapter'
 import { MockAIAdapter } from './MockAIAdapter'
 import logger from '../../utils/logger'
 
@@ -13,7 +15,7 @@ interface CacheEntry {
 
 export class AIRouter implements IAIAgent {
   private providers: Map<string, IAIAgent> = new Map()
-  private providerPriority: string[] = ['gemini', 'openai', 'anthropic', 'mock']
+  private providerPriority: string[] = ['groq', 'gemini', 'openai', 'anthropic', 'ollama', 'mock']
   private cache: Map<string, CacheEntry> = new Map()
   private maxCacheSize: number = 1000
   private defaultTtlMs: number = 60 * 60 * 1000 // 1 hour
@@ -26,7 +28,17 @@ export class AIRouter implements IAIAgent {
   }
 
   private initializeProviders(): void {
-    // 1. Gemini
+    // 1. Groq (Free Tier, Ultra Fast: DeepSeek-R1, Llama 3.3 70B, Llama 3.1 8B)
+    if (process.env.GROQ_API_KEY) {
+      try {
+        this.providers.set('groq', new GroqAdapter())
+        logger.info('[AIRouter] Registered Groq provider (Ultra-Fast DeepSeek R1 / Llama 3.3)')
+      } catch (err) {
+        logger.warn('[AIRouter] Failed to register Groq provider:', { error: String(err) })
+      }
+    }
+
+    // 2. Gemini
     if (process.env.GEMINI_API_KEY) {
       try {
         this.providers.set('gemini', new GeminiAdapter())
@@ -36,7 +48,7 @@ export class AIRouter implements IAIAgent {
       }
     }
 
-    // 2. OpenAI
+    // 3. OpenAI
     if (process.env.OPENAI_API_KEY) {
       try {
         this.providers.set('openai', new OpenAIAdapter())
@@ -46,7 +58,7 @@ export class AIRouter implements IAIAgent {
       }
     }
 
-    // 3. Anthropic
+    // 4. Anthropic
     if (process.env.ANTHROPIC_API_KEY) {
       try {
         this.providers.set('anthropic', new AnthropicAdapter())
@@ -56,7 +68,17 @@ export class AIRouter implements IAIAgent {
       }
     }
 
-    // 4. Mock (Always available)
+    // 5. Ollama (Local 100% Free / Offline AI daemon)
+    if (process.env.OLLAMA_ENABLED !== 'false') {
+      try {
+        this.providers.set('ollama', new OllamaAdapter())
+        logger.info('[AIRouter] Registered Ollama local provider (Offline DeepSeek R1 / Qwen / Llama)')
+      } catch (err) {
+        logger.warn('[AIRouter] Failed to register Ollama provider:', { error: String(err) })
+      }
+    }
+
+    // 6. Mock (Always available)
     this.providers.set('mock', new MockAIAdapter())
     logger.info('[AIRouter] Registered Mock provider as safety fallback')
   }

@@ -2,11 +2,13 @@ import { IAIAgent } from './AIAgent'
 import { GeminiAdapter } from './GeminiAdapter'
 import { OpenAIAdapter } from './OpenAIAdapter'
 import { AnthropicAdapter } from './AnthropicAdapter'
+import { GroqAdapter } from './GroqAdapter'
+import { OllamaAdapter } from './OllamaAdapter'
 import { MockAIAdapter } from './MockAIAdapter'
 import { AIRouter } from './AIRouter'
 import logger from '../../utils/logger'
 
-export type AIProviderName = 'router' | 'gemini' | 'openai' | 'anthropic' | 'mock'
+export type AIProviderName = 'router' | 'gemini' | 'groq' | 'ollama' | 'openai' | 'anthropic' | 'mock'
 
 export class AIServiceFactory {
   private static instance?: IAIAgent
@@ -48,6 +50,30 @@ export class AIServiceFactory {
       switch (this.provider) {
         case 'router':
           this.instance = new AIRouter()
+          break
+
+        case 'groq':
+          try {
+            this.instance = new GroqAdapter()
+          } catch (e) {
+            logger.warn(
+              `[AIServiceFactory] Failed to initialize GroqAdapter, falling back to mock:`,
+              { error: e instanceof Error ? e.message : String(e) }
+            )
+            this.instance = new MockAIAdapter()
+          }
+          break
+
+        case 'ollama':
+          try {
+            this.instance = new OllamaAdapter()
+          } catch (e) {
+            logger.warn(
+              `[AIServiceFactory] Failed to initialize OllamaAdapter, falling back to mock:`,
+              { error: e instanceof Error ? e.message : String(e) }
+            )
+            this.instance = new MockAIAdapter()
+          }
           break
 
         case 'openai':

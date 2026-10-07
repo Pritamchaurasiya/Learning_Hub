@@ -274,10 +274,7 @@ export const ResumePortfolioPage: React.FC = () => {
                 </button>
               </div>
               <pre className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-mono text-xs whitespace-pre-wrap max-h-[600px] overflow-y-auto select-all">
-                {resumeService.downloadATSPlainText ? (
-                  // Display parsed plaintext
-                  `ALEX MORGAN\n${resume.roleTitle.toUpperCase()}\n${resume.profile.email} | ${resume.profile.location}\n\nPROFESSIONAL SUMMARY\n${resume.summary}\n\nCORE SKILLS\n${resume.skillsMatrix.languages.join(', ')}\n\nPROJECTS\n${resume.projects.map(p => `${p.title}: ${p.bulletPoints.map(b => b.text).join(' ')}`).join('\n\n')}`
-                ) : null}
+                {`ALEX MORGAN\n${resume.roleTitle.toUpperCase()}\n${resume.profile.email} | ${resume.profile.location}\n\nPROFESSIONAL SUMMARY\n${resume.summary}\n\nCORE SKILLS\n${resume.skillsMatrix.languages.join(', ')}\n\nPROJECTS\n${resume.projects.map(p => `${p.title}: ${p.bulletPoints.map(b => b.text).join(' ')}`).join('\n\n')}`}
               </pre>
             </div>
           )}

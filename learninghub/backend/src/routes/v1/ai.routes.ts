@@ -17,6 +17,7 @@ import {
   reviewCodeSubmission,
   consultCouncil,
   consultSpecialist,
+  getAvailableAIModels,
 } from '../../controllers/aiController'
 import {
   analyzeLearningPathSchema,
@@ -106,4 +107,8 @@ router.post(
   ebooksController.explainParagraphAI
 )
 
+// AI Models Catalog (Free & Multi-Provider)
+router.get('/models', getAvailableAIModels)
+
 export default router
+

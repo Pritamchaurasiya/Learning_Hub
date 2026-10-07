@@ -107,6 +107,7 @@ export default function Sidebar() {
       label: 'AI & Tools',
       defaultOpen: true,
       items: [
+        { to: '/edge-ai', icon: Cpu, label: 'Edge AI Studio' },
         { to: '/ai-tutor', icon: Bot, label: 'AI Tutor' },
         { to: '/study-planner', icon: Calendar, label: 'Study Planner' },
         { to: '/analytics', icon: BarChart3, label: 'Analytics' },

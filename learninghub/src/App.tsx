@@ -56,6 +56,7 @@ const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
 const InterviewSimulatorPage = lazy(() => import('./pages/InterviewSimulatorPage'))
 const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
+const EdgeAIPage = lazy(() => import('./pages/EdgeAIPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -388,6 +389,22 @@ function App() {
                 element={
                   <LazyRoute sectionName="Verifiable AI Resume & Portfolio">
                     <ResumePortfolioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/edge-ai"
+                element={
+                  <LazyRoute sectionName="Edge AI Offline Studio">
+                    <EdgeAIPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/offline-tutor"
+                element={
+                  <LazyRoute sectionName="Edge AI Offline Studio">
+                    <EdgeAIPage />
                   </LazyRoute>
                 }
               />

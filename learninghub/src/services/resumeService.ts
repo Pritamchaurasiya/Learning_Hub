@@ -42,12 +42,10 @@ class ResumeService {
     statusMessage: string
   }> {
     try {
-      const response = await api.post<{ data: { isValid: boolean; verifiedAt: string; statusMessage: string } }>(
-        '/api/v1/resume/verify',
-        { digest, signature }
-      )
-      if (response?.data?.data) {
-        return response.data.data
+      const response = await api.post<any>('/api/v1/resume/verify', { digest, signature })
+      const payload = response?.data?.data || response?.data || response
+      if (payload && typeof payload.isValid === 'boolean') {
+        return payload
       }
     } catch {
       // Fallback verification check

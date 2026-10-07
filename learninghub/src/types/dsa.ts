@@ -137,3 +137,47 @@ export interface DSAStats {
   total_medium: number
   total_hard: number
 }
+
+export interface EditorialApproach {
+  id: string
+  title: string
+  difficulty: 'BRUTE_FORCE' | 'BETTER' | 'OPTIMAL'
+  intuition: string
+  algorithm: string
+  timeComplexity: string
+  spaceComplexity: string
+  code: Record<string, string>
+}
+
+export interface ProblemEditorial {
+  problemSlug: string
+  overview: string
+  approaches: EditorialApproach[]
+  keyTakeaways: string[]
+}
+
+export interface ProblemHints {
+  problemSlug: string
+  hints: string[]
+  pseudocode?: string
+  pitfalls?: string[]
+}
+
+export interface TestCaseRunResult {
+  caseIndex: number
+  input: string
+  expectedOutput: string
+  actualOutput: string
+  passed: boolean
+  executionTimeMs?: number
+  stdout?: string
+}
+
+export interface CuratedTrack {
+  id: string
+  title: string
+  slug: string
+  description: string
+  problemSlugs: string[]
+  color: string
+}
