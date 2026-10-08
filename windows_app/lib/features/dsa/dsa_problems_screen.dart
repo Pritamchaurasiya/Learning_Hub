@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
+import 'package:learning_hub/core/services/api_client.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/data/models/dsa_problem.dart';
 import 'package:learning_hub/features/dsa/dsa_problem_detail_screen.dart';
@@ -40,9 +40,9 @@ class DsaProblemsState {
 
 /// Notifier for DSA problems
 class DsaProblemsNotifier extends StateNotifier<DsaProblemsState> {
-  final Dio _dio;
+  final ApiClient _apiClient;
 
-  DsaProblemsNotifier(this._dio) : super(const DsaProblemsState()) {
+  DsaProblemsNotifier(this._apiClient) : super(const DsaProblemsState()) {
     loadProblems();
   }
 
@@ -50,7 +50,7 @@ class DsaProblemsNotifier extends StateNotifier<DsaProblemsState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final queryParams = <String, String>{};
+      final queryParams = <String, dynamic>{};
       if (state.selectedDifficulty != null) {
         queryParams['difficulty'] = state.selectedDifficulty!;
       }
@@ -58,12 +58,22 @@ class DsaProblemsNotifier extends StateNotifier<DsaProblemsState> {
         queryParams['tag'] = state.selectedTag!;
       }
 
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/api/v1/dsa/problems/',
+      final response = await _apiClient.get<dynamic>(
+        '/dsa/problems/',
         queryParameters: queryParams,
       );
 
-      final results = response.data?['results'] as List<dynamic>? ?? [];
+      List<dynamic> results = [];
+      if (response.success && response.data != null) {
+        if (response.data is Map && (response.data as Map).containsKey('results')) {
+          results = (response.data as Map)['results'] as List<dynamic>? ?? [];
+        } else if (response.data is Map && (response.data as Map).containsKey('data')) {
+          results = (response.data as Map)['data'] as List<dynamic>? ?? [];
+        } else if (response.data is List) {
+          results = response.data as List<dynamic>;
+        }
+      }
+
       final problems = results
           .map((e) => DsaProblem.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -91,11 +101,7 @@ class DsaProblemsNotifier extends StateNotifier<DsaProblemsState> {
 /// Provider for DSA problems
 final dsaProblemsProvider =
     StateNotifierProvider<DsaProblemsNotifier, DsaProblemsState>((ref) {
-  final dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:5000',
-    connectTimeout: const Duration(seconds: 10),
-  ));
-  return DsaProblemsNotifier(dio);
+  return DsaProblemsNotifier(ApiClient.instance);
 });
 
 /// DSA Problems Screen

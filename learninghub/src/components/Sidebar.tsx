@@ -31,6 +31,7 @@ import {
   Cpu,
   BellRing,
   FileText,
+  PenTool,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -108,6 +109,8 @@ export default function Sidebar() {
       defaultOpen: true,
       items: [
         { to: '/edge-ai', icon: Cpu, label: 'Edge AI Studio' },
+        { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
+        { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },
         { to: '/ai-tutor', icon: Bot, label: 'AI Tutor' },
         { to: '/study-planner', icon: Calendar, label: 'Study Planner' },
         { to: '/analytics', icon: BarChart3, label: 'Analytics' },

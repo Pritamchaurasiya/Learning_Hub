@@ -15,11 +15,17 @@ from concurrent.futures import ThreadPoolExecutor
 import queue
 try:
     import numpy as np
-    import torch
-    import onnxruntime as ort
 except ImportError:
     np = None
+
+try:
+    import torch
+except ImportError:
     torch = None
+
+try:
+    import onnxruntime as ort
+except ImportError:
     ort = None
 from prometheus_client import Counter, Histogram, Gauge
 import redis.asyncio as redis

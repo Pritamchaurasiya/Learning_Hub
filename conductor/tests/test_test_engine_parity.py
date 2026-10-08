@@ -26,8 +26,11 @@ def api_client():
 
 @pytest.fixture
 def student_user(db):
+    import uuid
+    uid = uuid.uuid4().hex[:6]
     return User.objects.create_user(
-        email="teststudent@example.com",
+        username=f"teststudent_{uid}",
+        email=f"teststudent_{uid}@example.com",
         password="TestPassword123!",
         first_name="Test",
         last_name="Student",

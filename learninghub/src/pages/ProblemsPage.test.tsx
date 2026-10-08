@@ -8,6 +8,11 @@ vi.mock('../services/problemService', () => ({
   problemService: {
     getDsaStats: vi.fn(),
     getProblems: vi.fn(),
+    getBookmarks: vi.fn().mockReturnValue([]),
+    getCuratedTracks: vi.fn().mockReturnValue([]),
+    getDailyChallenge: vi.fn().mockResolvedValue(null),
+    getRandomProblemSlug: vi.fn().mockResolvedValue('two-sum'),
+    toggleBookmark: vi.fn().mockReturnValue(true),
   },
 }))
 

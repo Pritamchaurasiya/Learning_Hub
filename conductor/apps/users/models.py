@@ -26,6 +26,9 @@ class UserManager(BaseUserManager):
 
         # Normalize and lowercase entire email address
         email = self.normalize_email(email.lower())
+        if not extra_fields.get("username"):
+            base_username = email.split("@")[0][:30] if email else "user"
+            extra_fields["username"] = f"{base_username}_{uuid.uuid4().hex[:8]}"
         user = cast(User, self.model(email=email, **extra_fields))
         user.set_password(password)
         user.save(using=self._db)

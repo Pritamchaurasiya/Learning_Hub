@@ -419,3 +419,9 @@ class AttemptAnswer(models.Model):
 
     def __str__(self):
         return f"{self.attempt.user.email} - Q{self.question.text[:30]}..."
+
+
+# Disable pytest test runner collection for Django models with 'Test*' prefix
+Test.__test__ = False
+TestQuestion.__test__ = False
+TestAttempt.__test__ = False

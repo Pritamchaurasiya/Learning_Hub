@@ -20,6 +20,11 @@ import threading
 from collections import OrderedDict
 import weakref
 
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
 logger = logging.getLogger(__name__)
 
 class CacheLevel(Enum):

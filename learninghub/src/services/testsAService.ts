@@ -142,7 +142,19 @@ export interface TestResult {
     is_flagged: boolean
     topic?: string
     confidence?: string
+    max_marks?: number
+    time_spent_seconds?: number
   }>
+  submitted_at?: string
+  is_passed?: boolean
+  max_score?: number
+  passing_score?: number
+  correct_answers_count?: number
+  incorrect_answers_count?: number
+  total_questions?: number
+  time_taken_seconds?: number
+  adaptive_diagnostics?: { finalTheta?: number; [key: string]: any }
+  telemetry_digest?: { integrityScore?: number; riskLevel?: string; tabSwitches?: number; [key: string]: any }
 }
 
 const normalizeEnum = (value: unknown, fallback: string): string =>

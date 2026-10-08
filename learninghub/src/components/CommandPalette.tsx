@@ -25,6 +25,7 @@ import {
   Trophy,
   FileText,
   Cpu,
+  PenTool,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -154,6 +155,24 @@ const COMMANDS: CommandItem[] = [
     icon: Cpu,
     path: '/edge-ai',
     keywords: ['edge', 'webgpu', 'offline', 'local', 'air-gapped', 'slm', 'qwen', 'llama', 'phi', 'smollm'],
+  },
+  {
+    id: 'tool-multimodal-studio',
+    title: 'Voice, Vision & Interactive Canvas Studio',
+    description: 'Multi-modal AI tutoring with LaTeX math parsing, sub-300ms audio dialogue, and gaze tracking',
+    category: 'Tools',
+    icon: Sparkles,
+    path: '/multimodal-studio',
+    keywords: ['multimodal', 'voice', 'vision', 'canvas', 'whiteboard', 'gaze', 'latex', 'math', 'ocr', 'audio'],
+  },
+  {
+    id: 'tool-canvas-studio',
+    title: 'Interactive Canvas & AI Proctor Studio',
+    description: 'Vector whiteboard, LaTeX OCR math recognition, and live vision/audio proctoring',
+    category: 'Tools',
+    icon: PenTool,
+    path: '/canvas',
+    keywords: ['canvas', 'whiteboard', 'blackboard', 'math', 'latex', 'ocr', 'graph', 'proctor', 'vision', 'drawing'],
   },
   {
     id: 'tool-ai-tutor',

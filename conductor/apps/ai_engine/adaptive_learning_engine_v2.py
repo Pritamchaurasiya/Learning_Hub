@@ -18,11 +18,14 @@ import redis.asyncio as redis
 
 try:
     import numpy as np
+except ImportError:
+    np = None
+
+try:
     from sklearn.cluster import KMeans
     from sklearn.preprocessing import StandardScaler
     import joblib
 except ImportError:
-    np = None
     KMeans = None
     StandardScaler = None
     joblib = None

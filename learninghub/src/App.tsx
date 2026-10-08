@@ -57,6 +57,8 @@ const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
 const InterviewSimulatorPage = lazy(() => import('./pages/InterviewSimulatorPage'))
 const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
 const EdgeAIPage = lazy(() => import('./pages/EdgeAIPage'))
+const CanvasStudioPage = lazy(() => import('./pages/CanvasStudioPage'))
+const MultiModalStudioPage = lazy(() => import('./pages/MultiModalStudioPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -405,6 +407,38 @@ function App() {
                 element={
                   <LazyRoute sectionName="Edge AI Offline Studio">
                     <EdgeAIPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/canvas"
+                element={
+                  <LazyRoute sectionName="Interactive Canvas & AI Proctor Studio">
+                    <CanvasStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/canvas-studio"
+                element={
+                  <LazyRoute sectionName="Interactive Canvas & AI Proctor Studio">
+                    <CanvasStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/multimodal-studio"
+                element={
+                  <LazyRoute sectionName="Multi-Modal Voice, Vision & Canvas Studio">
+                    <MultiModalStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/multimodal"
+                element={
+                  <LazyRoute sectionName="Multi-Modal Voice, Vision & Canvas Studio">
+                    <MultiModalStudioPage />
                   </LazyRoute>
                 }
               />

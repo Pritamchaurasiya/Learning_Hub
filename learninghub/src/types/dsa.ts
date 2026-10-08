@@ -27,6 +27,12 @@ export interface Problem {
   total_submissions?: number
   user_status?: 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED'
   starterCode?: string | Record<string, string> | null
+  starter_code?: string | Record<string, string> | null
+  sample_cases?: Array<{
+    input: string
+    output: string
+    explanation?: string
+  }>
 }
 
 export interface TestCase {

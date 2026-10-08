@@ -55,7 +55,10 @@ class AIModelMonitor:
     def stop_timer(self, start_time: float) -> float:
         return (time.perf_counter() - start_time) * 1000  # Convert to ms
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from django.db.models import QuerySet
 
 class DriftDetector:

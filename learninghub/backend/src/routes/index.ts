@@ -42,6 +42,8 @@ import learningPathsRoutes from './v1/learningPaths.routes'
 import interviewRoutes from './v1/interview.routes'
 import resumeRoutes from './v1/resume.routes'
 import edgeAIRoutes from './v1/edgeAI.routes'
+import proctoringRoutes from './v1/proctoring.routes'
+import multimodalRoutes from './v1/multimodal.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -133,6 +135,8 @@ router.use('/learning-paths', learningPathsRoutes)
 router.use('/interview', interviewRoutes)
 router.use('/resume', resumeRoutes)
 router.use('/edge-ai', edgeAIRoutes)
+router.use('/proctoring', proctoringRoutes)
+router.use('/multimodal', multimodalRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

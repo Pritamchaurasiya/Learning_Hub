@@ -21,7 +21,6 @@ import {
   ShieldCheck,
   Activity,
   RefreshCw,
-  X,
   Plus,
   Layers,
   Lock,
@@ -37,7 +36,6 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
-import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -51,6 +49,9 @@ import {
   SocraticReviewModal,
   ProctoringWarningBanner,
   QuestionBankImportModal,
+  TestSubmitModal,
+  TestQuestionPalette,
+  OfflineStationBanner,
 } from '../components/test'
 import { useProctoring } from '../hooks/useProctoring'
 import { playExamChime } from '../utils/soundEffects'
@@ -1473,72 +1474,13 @@ const TestsAPage = memo(() => {
             </div>
           )}
 
-          <div className="flex flex-nowrap gap-1 sm:gap-2 mb-3 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
-            {test.questions.map((q, index) => {
-              const isAnswered = test.answers[q.id] !== undefined && test.answers[q.id] !== ''
-              const isCurrentFlagged = test.flaggedQuestions.includes(q.id)
-              const isCurrent = index === test.currentQuestionIndex
-
-              let btnClass =
-                'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200'
-              if (isCurrent) {
-                btnClass =
-                  'bg-blue-600 text-white ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 font-bold shadow-sm'
-              } else if (isAnswered && isCurrentFlagged) {
-                btnClass =
-                  'bg-purple-100 text-purple-900 border-2 border-amber-400 dark:bg-purple-950/60 dark:text-purple-300 font-semibold'
-              } else if (isAnswered) {
-                btnClass =
-                  'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 font-medium'
-              } else if (isCurrentFlagged) {
-                btnClass =
-                  'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400 font-medium'
-              }
-
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => navigateToQuestion(index)}
-                  aria-label={`Go to question ${index + 1}: ${isAnswered ? 'answered' : 'unanswered'}${isCurrentFlagged ? ', flagged' : ''}${isCurrent ? ', current' : ''}`}
-                  aria-current={isCurrent ? 'true' : undefined}
-                  className={`w-10 h-10 rounded-lg text-sm transition-all relative ${btnClass}`}
-                  title={`Question ${index + 1}: ${isAnswered ? 'Answered' : 'Unanswered'}${isCurrentFlagged ? ' (Flagged)' : ''}`}
-                >
-                  {index + 1}
-                  {isCurrentFlagged && !isCurrent && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white dark:border-gray-900" />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-6 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-blue-600" /> Current
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-emerald-500" /> Answered (
-              {Object.values(test.answers).filter(v => v !== undefined && v !== '').length})
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-amber-400" /> Flagged (
-              {test.flaggedQuestions.length})
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-purple-500 border border-amber-400" /> Flagged &
-              Answered
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-gray-300 dark:bg-gray-700" /> Unanswered (
-              {Math.max(
-                0,
-                test.questions.length -
-                  Object.values(test.answers).filter(v => v !== undefined && v !== '').length
-              )}
-              )
-            </span>
-          </div>
+          <TestQuestionPalette
+            questions={test.questions}
+            currentIndex={test.currentQuestionIndex}
+            answers={test.answers}
+            flaggedQuestions={test.flaggedQuestions}
+            onSelectQuestion={navigateToQuestion}
+          />
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -1641,88 +1583,25 @@ const TestsAPage = memo(() => {
           />
         )}
 
-        {isSubmitModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 space-y-6"
-            >
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <CheckCircle className="w-6 h-6 text-blue-600" /> Confirm Submission
-                </h3>
-                <button
-                  onClick={() => setIsSubmitModalOpen(false)}
-                  aria-label="Close submit confirmation dialog"
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                >
-                  <X className="w-5 h-5" aria-hidden="true" />
-                </button>
-              </div>
-
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Are you sure you want to submit your test? Once submitted, your answers will be
-                graded deterministically.
-              </p>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center">
-                  <span className="block text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                    {Object.values(test.answers).filter(v => v !== undefined && v !== '').length}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Attempted</span>
-                </div>
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center">
-                  <span className="block text-2xl font-bold text-gray-700 dark:text-gray-300">
-                    {Math.max(
-                      0,
-                      test.questions.length -
-                        Object.values(test.answers).filter(v => v !== undefined && v !== '').length
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Unanswered</span>
-                </div>
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-center">
-                  <span className="block text-2xl font-bold text-amber-600 dark:text-amber-400">
-                    {test.flaggedQuestions.length}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Flagged</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg">
-                <span>Time Remaining:</span>
-                <span className="font-mono font-bold text-gray-800 dark:text-gray-200">
-                  {Math.floor(test.timeRemaining / 60)}m{' '}
-                  {String(test.timeRemaining % 60).padStart(2, '0')}s
-                </span>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsSubmitModalOpen(false)}
-                  className="flex-1"
-                  disabled={isSubmitting}
-                >
-                  Return to Test
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setIsSubmitModalOpen(false)
-                    void handleSubmit()
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Confirm Submit'}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+        <TestSubmitModal
+          isOpen={isSubmitModalOpen}
+          onClose={() => setIsSubmitModalOpen(false)}
+          onSubmit={() => {
+            setIsSubmitModalOpen(false)
+            void handleSubmit()
+          }}
+          isSubmitting={isSubmitting}
+          attemptedCount={
+            Object.values(test.answers).filter(v => v !== undefined && v !== '').length
+          }
+          unansweredCount={Math.max(
+            0,
+            test.questions.length -
+              Object.values(test.answers).filter(v => v !== undefined && v !== '').length
+          )}
+          flaggedCount={test.flaggedQuestions.length}
+          timeRemaining={test.timeRemaining}
+        />
       </div>
     )
   }
@@ -1811,44 +1690,13 @@ const TestsAPage = memo(() => {
         </div>
 
         {/* Offline Assessment Station Bar */}
-        {(localPendingSyncCount > 0 || offlineBundles.length > 0 || !isOnline) && (
-          <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                <WifiOff className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  Offline Assessment Station
-                  {offlineBundles.length > 0 && (
-                    <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 text-[10px]">
-                      {offlineBundles.length} Bundles Cached
-                    </Badge>
-                  )}
-                </h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {localPendingSyncCount > 0
-                    ? `${localPendingSyncCount} completed assessment submissions buffered locally, awaiting server reconciliation.`
-                    : 'Download assessments now to practice or test on the go with zero network latency.'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {localPendingSyncCount > 0 && (
-                <Button
-                  onClick={handleManualSync}
-                  disabled={isSyncingQueue || !isOnline}
-                  size="sm"
-                  variant="primary"
-                  className="text-xs bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingQueue ? 'animate-spin' : ''}`} />
-                  <span>Sync Now ({localPendingSyncCount})</span>
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+        <OfflineStationBanner
+          isOnline={isOnline}
+          offlineBundlesCount={offlineBundles.length}
+          localPendingSyncCount={localPendingSyncCount}
+          isSyncingQueue={isSyncingQueue}
+          onSync={handleManualSync}
+        />
 
         {hasAccess === false && (
           <motion.div

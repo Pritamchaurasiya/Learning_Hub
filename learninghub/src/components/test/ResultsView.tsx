@@ -17,6 +17,7 @@ import {
   Lightbulb,
   RefreshCw,
   Loader2,
+  Download,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
@@ -27,6 +28,7 @@ import { SocraticReviewModal } from './SocraticReviewModal'
 import { MistakeRemediationModal } from './MistakeRemediationModal'
 import { analyzeMistakes } from '../../services/remediationService'
 import { testsAService, type TestResult } from '../../services/testsAService'
+import { scorecardPdfService } from '../../services/scorecardPdfService'
 import { useStore } from '../../stores/useStore'
 
 interface ParsedRubric {
@@ -294,9 +296,26 @@ export const ResultsView = memo(
       selectedOptionText: string
       correctOptionText: string
     } | null>(null)
+    const user = useStore(state => state.auth?.user)
     const addToast = useStore(state => state.addToast)
     const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
     const [gradingQuestionId, setGradingQuestionId] = useState<string | null>(null)
+    const [isExportingScorecard, setIsExportingScorecard] = useState(false)
+
+    const handleExportScorecard = async () => {
+      try {
+        setIsExportingScorecard(true)
+        await scorecardPdfService.downloadScorecard(result, 'Academic Assessment', {
+          candidateName: user?.username || 'LearningHub Scholar',
+          candidateEmail: user?.email,
+        })
+        addToast({ message: 'Official Scorecard downloaded successfully!', type: 'success' })
+      } catch {
+        addToast({ message: 'Failed to generate scorecard PDF.', type: 'error' })
+      } finally {
+        setIsExportingScorecard(false)
+      }
+    }
 
     const handleGradeSubjective = async (questionId: string, answerText?: string) => {
       if (!questionId || gradingQuestionId) return
@@ -540,6 +559,19 @@ export const ResultsView = memo(
                 Remediate Weak Topics ({weakTopics.length})
               </Button>
             )}
+            <Button
+              onClick={handleExportScorecard}
+              disabled={isExportingScorecard}
+              variant="secondary"
+              className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white border border-slate-700 shadow-md font-medium"
+            >
+              {isExportingScorecard ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 text-indigo-400" />
+              )}
+              <span>{isExportingScorecard ? 'Generating PDF...' : 'Download Scorecard (PDF)'}</span>
+            </Button>
             <Button
               onClick={onRetry}
               variant="primary"

@@ -18,8 +18,12 @@ from apps.gamification.services import GamificationService
 
 @pytest.fixture
 def user_xp(db, user):
-    """Create XP record for test user."""
+    """Create or reset XP record for test user."""
     xp, _ = UserXP.objects.get_or_create(user=user)
+    xp.total_xp = 0
+    xp.weekly_xp = 0
+    xp.level = 1
+    xp.save()
     return xp
 
 
@@ -178,10 +182,12 @@ class TestGamificationService:
 
     def test_award_xp(self, user):
         """Test awarding XP to user."""
+        xp = UserXP.objects.get(user=user)
+        initial_xp = xp.total_xp
         GamificationService.award_xp(user, 100)
         
-        xp = UserXP.objects.get(user=user)
-        assert xp.total_xp == 100
+        xp.refresh_from_db()
+        assert xp.total_xp == initial_xp + 100
 
     def test_get_leaderboard_empty(self):
         """Test leaderboard returns empty list when no users."""

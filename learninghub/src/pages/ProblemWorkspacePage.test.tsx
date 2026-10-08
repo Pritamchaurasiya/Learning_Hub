@@ -41,6 +41,45 @@ vi.mock('../services/problemService', () => ({
         feedback: 'All test cases passed cleanly!',
       },
     }),
+    getEditorial: vi.fn().mockResolvedValue({
+      problemSlug: 'two-sum',
+      overview: 'Two sum editorial overview',
+      approaches: [
+        {
+          id: 'app-1',
+          title: 'Hash Map Optimal',
+          difficulty: 'OPTIMAL',
+          intuition: 'Store complement in map',
+          algorithm: 'One pass hash table',
+          timeComplexity: 'O(N)',
+          spaceComplexity: 'O(N)',
+          code: { javascript: 'function twoSum() { return [0, 1]; }' },
+        },
+      ],
+      keyTakeaways: ['Use hash map for O(N) runtime'],
+    }),
+    getHints: vi.fn().mockResolvedValue({
+      problemSlug: 'two-sum',
+      hints: ['Try using a hash map', 'Check if complement exists', 'Store element with index'],
+      pseudocode: 'seen = {}\nfor i, x in enumerate(nums):...',
+    }),
+    getSubmissions: vi.fn().mockResolvedValue({
+      status: 'success',
+      data: [
+        {
+          id: 'sub-1',
+          problem: 'prob-1',
+          language: 'javascript',
+          code: 'function twoSum() { return [0, 1]; }',
+          status: 'ACCEPTED',
+          execution_time_ms: 22,
+          memory_kb: 1024,
+          passed_tests: 10,
+          total_tests: 10,
+          created_at: '2026-10-07T12:00:00Z',
+        },
+      ],
+    }),
   },
 }))
 
@@ -193,5 +232,69 @@ describe('ProblemWorkspacePage Component', () => {
       expect(screen.getByText('Create Collaborative Room')).toBeInTheDocument()
     })
   })
+
+  it('navigates to Editorial tab and displays approaches with complexity', async () => {
+    renderWorkspace()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Two Sum/i)).toBeInTheDocument()
+    })
+
+    const editorialBtn = screen.getByRole('button', { name: /Editorial/i })
+    fireEvent.click(editorialBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Official Engineering Editorial/i)).toBeInTheDocument()
+      expect(screen.getByText('Hash Map Optimal')).toBeInTheDocument()
+      expect(screen.getByText(/One pass hash table/i)).toBeInTheDocument()
+      expect(screen.getAllByText('O(N)')[0]).toBeInTheDocument()
+    })
+  })
+
+  it('navigates to Submissions tab and allows restoring historical code', async () => {
+    renderWorkspace()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Two Sum/i)).toBeInTheDocument()
+    })
+
+    const submissionsTabBtn = screen.getByRole('button', { name: /Submissions/i })
+    fireEvent.click(submissionsTabBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Submission History/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Restore Code/i })).toBeInTheDocument()
+    })
+
+    const restoreBtn = screen.getByRole('button', { name: /Restore Code/i })
+    fireEvent.click(restoreBtn)
+
+    const editor = screen.getByTestId('codemirror-mock') as HTMLTextAreaElement
+    expect(editor.value).toContain('function twoSum() { return [0, 1]; }')
+  })
+
+  it('navigates to AI Hints tab and progressively reveals hints', async () => {
+    renderWorkspace()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Two Sum/i)).toBeInTheDocument()
+    })
+
+    const hintsBtn = screen.getByRole('button', { name: /AI Hints/i })
+    fireEvent.click(hintsBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Progressive AI Hints/i)).toBeInTheDocument()
+      expect(screen.getByText(/Hint is locked/i)).toBeInTheDocument()
+    })
+
+    const unlockBtns = screen.getAllByRole('button', { name: /Unlock Hint/i })
+    fireEvent.click(unlockBtns[0])
+
+    await waitFor(() => {
+      expect(screen.getByText(/Try using a hash map/i)).toBeInTheDocument()
+    })
+  })
 })
+
 

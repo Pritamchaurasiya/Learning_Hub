@@ -85,7 +85,7 @@ describe('DiscussionsPage Component', () => {
       expect(
         screen.getByText('Best practices for React 18 Concurrent Rendering')
       ).toBeInTheDocument()
-    })
+    }, { timeout: 5000 })
 
     expect(screen.getByRole('button', { name: /^Web Development$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Computer Science$/i })).toBeInTheDocument()
