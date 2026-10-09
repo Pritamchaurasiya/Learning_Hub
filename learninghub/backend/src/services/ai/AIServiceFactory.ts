@@ -54,6 +54,9 @@ export class AIServiceFactory {
           try {
             this.instance = new OpenAIAdapter()
           } catch (e) {
+            if (process.env.NODE_ENV === 'production') {
+              throw new Error(`AI Provider initialization failed in production: ${e instanceof Error ? e.message : String(e)}`)
+            }
             logger.warn(
               `[AIServiceFactory] Failed to initialize OpenAIAdapter, falling back to mock:`,
               { error: e instanceof Error ? e.message : String(e) }
@@ -66,6 +69,9 @@ export class AIServiceFactory {
           try {
             this.instance = new AnthropicAdapter()
           } catch (e) {
+            if (process.env.NODE_ENV === 'production') {
+              throw new Error(`AI Provider initialization failed in production: ${e instanceof Error ? e.message : String(e)}`)
+            }
             logger.warn(
               `[AIServiceFactory] Failed to initialize AnthropicAdapter, falling back to mock:`,
               { error: e instanceof Error ? e.message : String(e) }
@@ -78,6 +84,9 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
+            if (process.env.NODE_ENV === 'production') {
+              throw new Error(`AI Provider initialization failed in production: ${e instanceof Error ? e.message : String(e)}`)
+            }
             logger.warn(
               `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
               { error: e instanceof Error ? e.message : String(e) }
@@ -87,6 +96,9 @@ export class AIServiceFactory {
           break
 
         case 'mock':
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error(`AI Provider mock is not allowed in production`)
+          }
           this.instance = new MockAIAdapter()
           break
 
@@ -97,6 +109,9 @@ export class AIServiceFactory {
           try {
             this.instance = new GeminiAdapter()
           } catch (e) {
+            if (process.env.NODE_ENV === 'production') {
+              throw new Error(`AI Provider initialization failed in production: ${e instanceof Error ? e.message : String(e)}`)
+            }
             logger.warn(
               `[AIServiceFactory] Failed to initialize GeminiAdapter, falling back to mock:`,
               { error: e instanceof Error ? e.message : String(e) }
