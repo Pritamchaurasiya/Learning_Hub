@@ -1,5 +1,6 @@
 import logging
 import re
+import hashlib
 
 from django.db.models import Avg, QuerySet, Q, F
 from django.db import transaction
@@ -61,9 +62,10 @@ class CourseService:
         # Input validation: limit query length to prevent abuse
         query = query[:200].strip()
 
-        # Generate safe cache key — strip anything that isn't alphanumeric/space/dash
-        safe_query = re.sub(r'[^a-zA-Z0-9 _-]', '', query[:50])
-        cache_key = f"course_search:{safe_query}"
+        # Generate safe cache key — hash query and strip whitespace to prevent memcached CacheKeyWarning
+        query_hash = hashlib.sha256(query.encode('utf-8')).hexdigest()[:16]
+        safe_query = re.sub(r'[^a-zA-Z0-9_-]', '_', query[:30]).strip('_')
+        cache_key = f"course_search:{safe_query}_{query_hash}" if safe_query else f"course_search:{query_hash}"
         cached = cache.get(cache_key)
         if cached is not None:
             # Cached value is a list of sorted course IDs

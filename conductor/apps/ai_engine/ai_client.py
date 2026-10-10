@@ -175,7 +175,10 @@ class AIClient:
         from django.core.cache import cache
         
         code_hash = hashlib.md5(code.encode()).hexdigest()
-        cache_key = f"ai_review_v2:{problem_title}:{code_hash}"
+        import re
+        safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', (problem_title or "code").strip())[:40].strip('_')
+        title_hash = hashlib.md5(problem_title.encode()).hexdigest()[:8]
+        cache_key = f"ai_review_v2:{safe_title}_{title_hash}:{code_hash}" if safe_title else f"ai_review_v2:{title_hash}:{code_hash}"
         try:
             cached = cache.get(cache_key)
             if cached:
@@ -379,7 +382,10 @@ class AIClient:
         from django.core.cache import cache
 
         content_hash = hashlib.md5(replies_text.encode()).hexdigest()
-        cache_key = f"ai_summary_v2:{thread_title}:{content_hash}"
+        import re
+        safe_thread = re.sub(r'[^a-zA-Z0-9_-]', '_', (thread_title or "thread").strip())[:40].strip('_')
+        thread_hash = hashlib.md5(thread_title.encode()).hexdigest()[:8]
+        cache_key = f"ai_summary_v2:{safe_thread}_{thread_hash}:{content_hash}" if safe_thread else f"ai_summary_v2:{thread_hash}:{content_hash}"
         try:
             cached = cache.get(cache_key)
             if cached:

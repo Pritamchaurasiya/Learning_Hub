@@ -42,7 +42,10 @@ def global_search(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     # Cache key
-    cache_key = f"search:{query}:{search_type}:{category_slug}:{level}:{sort_by}"
+    import hashlib, re
+    query_hash = hashlib.sha256(query.encode('utf-8')).hexdigest()[:12]
+    safe_query = re.sub(r'[^a-zA-Z0-9_-]', '_', query[:30]).strip('_')
+    cache_key = f"search:{safe_query}_{query_hash}:{search_type}:{category_slug}:{level}:{sort_by}" if safe_query else f"search:{query_hash}:{search_type}:{category_slug}:{level}:{sort_by}"
     cached_result = cache.get(cache_key)
     if cached_result:
         return Response(cached_result)
@@ -146,7 +149,10 @@ def search_suggestions(request):
         return Response({'suggestions': []})
     
     # Cache key
-    cache_key = f"search_suggestions:{query}:{limit}"
+    import hashlib, re
+    query_hash = hashlib.sha256(query.encode('utf-8')).hexdigest()[:12]
+    safe_query = re.sub(r'[^a-zA-Z0-9_-]', '_', query[:30]).strip('_')
+    cache_key = f"search_suggestions:{safe_query}_{query_hash}:{limit}" if safe_query else f"search_suggestions:{query_hash}:{limit}"
     cached = cache.get(cache_key)
     if cached:
         return Response(cached)
