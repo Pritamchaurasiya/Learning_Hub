@@ -87,6 +87,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const CourseDetailsPage = lazy(() => import('./pages/CourseDetailsPage'))
 const LessonPlayerPage = lazy(() => import('./pages/LessonPlayerPage'))
 const VerifyCertificatePage = lazy(() => import('./pages/VerifyCertificatePage'))
+const VerifyScorecardPage = lazy(() => import('./pages/VerifyScorecardPage'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const StudentUpdatesPage = lazy(() =>
   import('./pages/StudentUpdatesPage').then(m => ({ default: m.StudentUpdatesPage }))
@@ -301,6 +302,22 @@ function App() {
               element={
                 <LazyRoute sectionName="Verify Certificate">
                   <VerifyCertificatePage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path="/verify-scorecard"
+              element={
+                <LazyRoute sectionName="Verify Scorecard">
+                  <VerifyScorecardPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path="/verify-scorecard/:code"
+              element={
+                <LazyRoute sectionName="Verify Scorecard">
+                  <VerifyScorecardPage />
                 </LazyRoute>
               }
             />

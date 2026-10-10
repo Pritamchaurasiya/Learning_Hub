@@ -71,11 +71,14 @@ const TestsAPage = memo(() => {
     remoteProctorWarning,
     dismissRemoteProctorWarning,
     isWsConnected: isProctorWsConnected,
+    webcamStream,
+    isWebcamActive,
     dismissWarning: dismissProctorWarning,
     resetViolations: resetProctorViolations,
   } = useProctoring({
     isActive: Boolean(test.isActive && test.questions.length > 0 && !test.results),
     attemptId: test.attempt?.attemptId || (test.testInfo?.testId ? `attempt-${test.testInfo.testId}` : undefined),
+    enableWebcam: test.assessmentMode === 'contest',
     strictMode: true,
     requireFullscreen: false,
     onProctorWarning: msg => {
@@ -1225,6 +1228,8 @@ const TestsAPage = memo(() => {
         remoteProctorWarning={remoteProctorWarning}
         dismissRemoteProctorWarning={dismissRemoteProctorWarning}
         isWsConnected={isProctorWsConnected}
+        webcamStream={webcamStream}
+        isWebcamActive={isWebcamActive}
         activeSection={activeSection}
         isCurrentSectionLocked={isCurrentSectionLocked}
         practiceChecked={practiceChecked}

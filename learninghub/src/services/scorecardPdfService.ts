@@ -47,8 +47,13 @@ export class ScorecardPdfService {
    */
   static generateVerificationAudit(
     result: TestResult,
-    baseUrl: string = 'https://learninghub.com/verify-scorecard'
+    baseUrl?: string
   ): VerificationAuditMetadata {
+    const resolvedBaseUrl =
+      baseUrl ||
+      (typeof window !== 'undefined' && window.location?.origin
+        ? `${window.location.origin}/verify-scorecard`
+        : 'https://learninghub.com/verify-scorecard')
     const issuedAt = result.submitted_at || new Date().toISOString()
     const verificationHash = computeAuditDigest(
       result.attempt_id,
@@ -58,7 +63,7 @@ export class ScorecardPdfService {
     )
     return {
       verificationHash,
-      verificationUrl: `${baseUrl}?code=${encodeURIComponent(verificationHash)}&attempt=${encodeURIComponent(result.attempt_id)}`,
+      verificationUrl: `${resolvedBaseUrl}?code=${encodeURIComponent(verificationHash)}&attempt=${encodeURIComponent(result.attempt_id)}`,
       issuedAt,
     }
   }

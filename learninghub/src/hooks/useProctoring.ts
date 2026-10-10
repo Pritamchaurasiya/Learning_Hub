@@ -70,6 +70,7 @@ interface UseProctoringOptions {
   strictMode?: boolean
   requireFullscreen?: boolean
   attemptId?: string
+  enableWebcam?: boolean
   onProctorWarning?: (warning: string) => void
   onProctorTimeExtension?: (seconds: number) => void
   onProctorForceSubmit?: (reason: string) => void
@@ -81,6 +82,7 @@ export function useProctoring({
   strictMode = true,
   requireFullscreen = false,
   attemptId,
+  enableWebcam = false,
   onProctorWarning,
   onProctorTimeExtension,
   onProctorForceSubmit,
@@ -91,6 +93,8 @@ export function useProctoring({
   const [remoteProctorWarning, setRemoteProctorWarning] = useState<string | null>(null)
   const [addedTimeSeconds, setAddedTimeSeconds] = useState(0)
   const [isWsConnected, setIsWsConnected] = useState(false)
+  const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null)
+  const [webcamError, setWebcamError] = useState<string | null>(null)
   const isBlurredRef = useRef(false)
 
   const onViolationRef = useRef(onViolation)
@@ -248,6 +252,71 @@ export function useProctoring({
     }
   }, [isActive, strictMode, requireFullscreen, recordViolation])
 
+  // Manage on-device webcam video stream if enabled
+  useEffect(() => {
+    if (!isActive || !enableWebcam) {
+      if (webcamStream) {
+        try {
+          webcamStream.getTracks().forEach(track => track.stop())
+        } catch {
+          // ignore cleanup errors
+        }
+        setWebcamStream(null)
+      }
+      return
+    }
+
+    let isCancelled = false
+    let currentStream: MediaStream | null = null
+
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { max: 15 } },
+          audio: false,
+        })
+        .then(stream => {
+          if (isCancelled) {
+            stream.getTracks().forEach(track => track.stop())
+            return
+          }
+          currentStream = stream
+          setWebcamStream(stream)
+          setWebcamError(null)
+
+          if (attemptId) {
+            examStationWebSocketService.sendTelemetry('webcam_stream_active', 'low', {
+              tracksCount: stream.getVideoTracks().length,
+            })
+          }
+
+          stream.getVideoTracks().forEach(track => {
+            track.onended = () => {
+              recordViolation('NO_FACE', 'Webcam video stream disconnected or terminated.')
+            }
+          })
+        })
+        .catch(err => {
+          if (!isCancelled) {
+            const msg = err?.message || 'Webcam permission denied.'
+            setWebcamError(msg)
+            recordViolation('NO_FACE', `Webcam initialization failed: ${msg}`)
+          }
+        })
+    }
+
+    return () => {
+      isCancelled = true
+      if (currentStream) {
+        try {
+          currentStream.getTracks().forEach(track => track.stop())
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, [isActive, enableWebcam, attemptId, recordViolation])
+
   const dismissWarning = useCallback(() => {
     setIsWarningVisible(false)
   }, [])
@@ -274,6 +343,9 @@ export function useProctoring({
     dismissRemoteProctorWarning: () => setRemoteProctorWarning(null),
     addedTimeSeconds,
     isWsConnected,
+    webcamStream,
+    webcamError,
+    isWebcamActive: Boolean(webcamStream && webcamStream.active),
     dismissWarning,
     resetViolations,
   }

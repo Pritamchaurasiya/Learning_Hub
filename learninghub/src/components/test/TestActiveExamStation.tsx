@@ -55,6 +55,8 @@ export interface TestActiveExamStationProps {
   remoteProctorWarning?: string | null
   dismissRemoteProctorWarning?: () => void
   isWsConnected?: boolean
+  webcamStream?: MediaStream | null
+  isWebcamActive?: boolean
 }
 
 export const TestActiveExamStation = memo(function TestActiveExamStation({
@@ -88,6 +90,8 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   remoteProctorWarning,
   dismissRemoteProctorWarning,
   isWsConnected = false,
+  webcamStream,
+  isWebcamActive,
 }: TestActiveExamStationProps) {
   const currentQuestion = test.questions[test.currentQuestionIndex]
   const selectedAnswer = currentQuestion ? test.answers[currentQuestion.id] ?? null : null
@@ -274,6 +278,29 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         flaggedCount={test.flaggedQuestions.length}
         timeRemaining={test.timeRemaining}
       />
+
+      {webcamStream && (
+        <div className="fixed bottom-4 right-4 z-40 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700 shadow-xl backdrop-blur-md flex flex-col items-center">
+          <video
+            ref={videoRef => {
+              if (videoRef && videoRef.srcObject !== webcamStream) {
+                videoRef.srcObject = webcamStream
+                videoRef.play().catch(() => {})
+              }
+            }}
+            autoPlay
+            playsInline
+            muted
+            className="w-28 h-20 object-cover rounded-lg bg-black"
+          />
+          <div className="flex items-center gap-1.5 mt-1 text-[10px] text-emerald-400 font-semibold">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${isWebcamActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}
+            />
+            AI Proctor Feed {isWebcamActive ? 'Active' : 'Standby'}
+          </div>
+        </div>
+      )}
     </div>
   )
 })

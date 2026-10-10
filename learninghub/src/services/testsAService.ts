@@ -804,6 +804,15 @@ export const testsAService = {
       status: res.status ?? 'success',
       data: res.data,
     })),
+
+  // Verify an official academic scorecard via cryptographic checksum
+  verifyScorecard: (payload: { code: string; attemptId?: string }) =>
+    fetchApi(
+      `/tests/verify-scorecard?code=${encodeURIComponent(payload.code)}${payload.attemptId ? `&attempt=${encodeURIComponent(payload.attemptId)}` : ''}`
+    ).then(res => ({
+      status: res.status ?? 'success',
+      data: res.data,
+    })),
 }
 
 export default testsAService
