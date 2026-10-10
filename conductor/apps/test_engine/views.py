@@ -548,6 +548,33 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    @extend_schema(
+        description='Verify official academic scorecard via cryptographic checksum',
+        responses={200: dict},
+    )
+    @action(detail=False, methods=['get', 'post'], permission_classes=[AllowAny], url_path='verify-scorecard')
+    def verify_scorecard(self, request):
+        """Public endpoint to verify an official academic scorecard."""
+        code = (
+            request.query_params.get('code')
+            or request.data.get('code')
+            or request.query_params.get('verification_code')
+            or request.data.get('verification_code')
+        )
+        attempt_id = (
+            request.query_params.get('attempt')
+            or request.data.get('attempt')
+            or request.query_params.get('attempt_id')
+            or request.data.get('attempt_id')
+        )
+
+        result = TestSessionManager.verify_scorecard(code=code, attempt_id=attempt_id)
+        status_code = status.HTTP_200_OK if result.get('valid') else status.HTTP_400_BAD_REQUEST
+        return Response({
+            'status': 'success' if result.get('valid') else 'error',
+            'data': result,
+        }, status=status_code)
+
     def _get_device_info(self, request):
         return {
             'user_agent': request.META.get('HTTP_USER_AGENT', ''),
