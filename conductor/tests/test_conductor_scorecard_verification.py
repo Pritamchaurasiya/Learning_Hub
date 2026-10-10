@@ -26,10 +26,8 @@ def verification_setup(db):
     )
     country = Country.objects.create(name='India', code='IN')
     exam = Exam.objects.create(country=country, name='National Entrance Exam', code='NEE_2026')
-    subject = Subject.objects.create(exam=exam, name='Mathematics', code='MATH')
     test = Test.objects.create(
         exam=exam,
-        subject=subject,
         title='National Mathematics Invitational',
         mode='mock',
         time_limit_minutes=60,
