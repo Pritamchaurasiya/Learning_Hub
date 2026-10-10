@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" href="/logo.svg" />
-    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
@@ -15,19 +15,38 @@
     />
     <meta
       name="keywords"
-      content="software engineering, learning platform, web development, computer science, programming courses, react, typescript"
+      content="software engineering, learning platform, web development, computer science, programming courses, react, typescript, DSA practice, mock tests"
     />
     <meta name="author" content="LearningHub Team" />
     <meta name="robots" content="index, follow" />
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="%VITE_APP_URL%/" />
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="%VITE_GOOGLE_SITE_VERIFICATION%" />
 
     <!-- Resource Hints for Performance -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Non-Blocking Google Fonts Loading (Improves LCP) -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
+      />
+    </noscript>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -38,37 +57,26 @@
       content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 5 phases."
     />
     <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content="LearningHub" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="%VITE_APP_URL%/" />
-    <meta property="twitter:title" content="LearningHub - Complete Software Engineering Path" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@learninghub_app" />
+    <meta name="twitter:url" content="%VITE_APP_URL%/" />
+    <meta name="twitter:title" content="LearningHub - Complete Software Engineering Path" />
     <meta
-      property="twitter:description"
+      name="twitter:description"
       content="Master software engineering from fundamentals to cutting-edge technologies. 70+ courses across 5 phases."
     />
-    <meta property="twitter:image" content="/og-image.png" />
+    <meta name="twitter:image" content="/og-image.png" />
 
     <meta name="theme-color" content="#3b82f6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* Prevent FOIT: swap ensures text remains visible during font load */
-      @font-face {
-        font-family: 'Inter';
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'Fira Code';
-        font-display: swap;
-      }
-    </style>
 
     <title>LearningHub - Complete Software Engineering Learning Platform</title>
     <script>

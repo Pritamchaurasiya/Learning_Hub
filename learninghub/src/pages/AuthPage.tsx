@@ -255,6 +255,7 @@ const AuthPage = memo(function AuthPage() {
             ? 'Sign in to access your LearningHub dashboard'
             : 'Join LearningHub to master your skills'
         }
+        noindex={true}
       />
       <div className="min-h-[80vh] flex items-center justify-center px-4 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

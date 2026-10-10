@@ -481,6 +481,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.test_engine.tasks.recalculate_question_stats",
         "schedule": 86400,  # Daily IRT logit calibration
     },
+    "calibrate-question-bank-irt-parameters": {
+        "task": "apps.test_engine.tasks.calibrate_question_bank_irt_parameters",
+        "schedule": 86400,  # Daily empirical 2PL/3PL IRT parameter estimation
+    },
     # Gamification Tasks
     "check-achievements-batch": {
         "task": "apps.gamification.tasks.check_achievements_task",

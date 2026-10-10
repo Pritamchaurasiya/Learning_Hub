@@ -1,4 +1,59 @@
+# ==========================================
+# LearningHub Production robots.txt
+# Strict Crawl Gateway & SEO Directives
+# ==========================================
+
 User-agent: *
 Allow: /
+Allow: /library
+Allow: /course/
+Allow: /problems
+Allow: /problem/
+Allow: /tests-a
+Allow: /visualizer
+Allow: /updates
+Allow: /pricing
+Allow: /terms
+Allow: /privacy
+Allow: /verify-certificate
+Allow: /assets/
+Allow: /img/
 
-Sitemap: https://learninghub.com/sitemap.xml
+# Disallow Administrative & Monitoring Panels
+Disallow: /admin/
+Disallow: /god-admin/
+Disallow: /monitoring/
+Disallow: /_health
+
+# Disallow API Gateways, Real-time WebSockets & Raw Uploads
+Disallow: /api/
+Disallow: /socket.io/
+Disallow: /ws/
+Disallow: /uploads/
+
+# Disallow Private Student Sessions & Authenticated State
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /settings
+Disallow: /cart
+Disallow: /bookmarks
+Disallow: /notifications
+Disallow: /downloads
+Disallow: /analytics
+Disallow: /payment-success
+Disallow: /tests-a-history
+Disallow: /lesson-player/
+Disallow: /auth
+Disallow: /forgot-password
+
+# Rate-limit High Volume AI Scrapers
+User-agent: GPTBot
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard
+
+User-agent: CCBot
+Crawl-delay: 10
+
+# Canonical Sitemap
+Sitemap: https://learninghub.app/sitemap.xml

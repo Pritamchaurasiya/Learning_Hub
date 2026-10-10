@@ -139,6 +139,7 @@ export default function CartPage() {
       <SEO
         title="Shopping Cart | LearningHub"
         description="Review your selected courses and proceed to secure checkout."
+        noindex={true}
       />
 
       <div className="max-w-7xl mx-auto space-y-8">

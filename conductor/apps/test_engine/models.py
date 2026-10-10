@@ -154,6 +154,7 @@ class Test(models.Model):
         ('timed_challenge', 'Timed Challenge (strict timer, leaderboard)'),
         ('adaptive', 'Adaptive Test (difficulty adjusts in real-time)'),
         ('review', 'Review Mode (see answers and explanations)'),
+        ('offline', 'Offline Mode (completed locally and reconciled)'),
     ]
 
     DIFFICULTIES = [

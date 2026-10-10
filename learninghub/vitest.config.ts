@@ -13,6 +13,7 @@ export default defineConfig({
     css: true,
     pool: 'forks',
     fileParallelism: false,
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

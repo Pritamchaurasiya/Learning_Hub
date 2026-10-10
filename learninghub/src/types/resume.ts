@@ -134,4 +134,26 @@ export interface VerifiableResumePayload {
     didAnchor: string
     verificationUrl: string
   }
+  anchor?: {
+    ipfsCid: string
+    polygonTxHash: string
+    blockNumber: number
+    anchoredAt: string
+    explorerUrl: string
+  }
 }
+
+export interface ResumeAnchorResult {
+  ipfsCid: string
+  polygonTxHash: string
+  blockNumber: number
+  anchoredAt: string
+  explorerUrl: string
+}
+
+export interface LinkedInImportResult {
+  profile: Partial<ResumeCandidateProfile>
+  importedSkills: string[]
+  importedHighlights: string[]
+}
+

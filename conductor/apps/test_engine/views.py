@@ -22,7 +22,7 @@ from .serializers import (
     AttemptResultSerializer,
     QuestionDetailSerializer,
 )
-from .services import TestSessionManager
+from .services import TestSessionManager, AdaptiveAssessmentEngine
 
 logger = logging.getLogger(__name__)
 
@@ -399,8 +399,80 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
     @extend_schema(description='Reconcile offline test sync')
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='offline-sync')
     def offline_sync(self, request, pk=None):
-        """Submit and reconcile offline test attempt."""
+        """Submit and reconcile offline test attempt(s)."""
         test = self.get_object()
+        sync_data = request.data.get('sync_data')
+
+        # Handle batch submission if sync_data is a list
+        if isinstance(sync_data, list):
+            results = []
+            for item in sync_data:
+                try:
+                    rec = TestSessionManager.reconcile_offline_attempt(
+                        user=request.user,
+                        test=test,
+                        submission_data=item,
+                    )
+                    results.append({
+                        'reconciled': True,
+                        'attempt_id': str(rec['attempt'].id),
+                        'is_duplicate': rec['is_duplicate'],
+                        'score': rec['attempt'].score,
+                        'percentage': rec['attempt'].percentage,
+                        'passed': rec['attempt'].passed,
+                        'result': rec['result'],
+                    })
+                except Exception as ex:
+                    logger.warning(f"Failed to reconcile item in batch offline sync: {ex}")
+                    results.append({
+                        'reconciled': False,
+                        'error': str(ex),
+                    })
+
+            return Response({
+                'status': 'success',
+                'data': {
+                    'reconciled': True,
+                    'test_id': str(test.id),
+                    'batch_count': len(results),
+                    'results': results,
+                    'synced_at': timezone.now().isoformat(),
+                }
+            })
+
+        # Single submission payload
+        answers = request.data.get('answers')
+        client_attempt_id = request.data.get('attemptId') or request.data.get('attempt_id')
+
+        if answers is not None or client_attempt_id is not None:
+            try:
+                rec = TestSessionManager.reconcile_offline_attempt(
+                    user=request.user,
+                    test=test,
+                    submission_data=request.data,
+                )
+                return Response({
+                    'status': 'success',
+                    'data': {
+                        'reconciled': True,
+                        'test_id': str(test.id),
+                        'attempt_id': str(rec['attempt'].id),
+                        'is_duplicate': rec['is_duplicate'],
+                        'score': rec['attempt'].score,
+                        'percentage': rec['attempt'].percentage,
+                        'passed': rec['attempt'].passed,
+                        'synced_at': timezone.now().isoformat(),
+                        'result': rec['result'],
+                    }
+                })
+            except Exception as ex:
+                logger.error(f"Failed to reconcile offline submission: {ex}", exc_info=True)
+                return Response({
+                    'status': 'error',
+                    'message': str(ex),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fallback / ping sync response
         return Response({
             'status': 'success',
             'data': {
@@ -413,34 +485,68 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
     @extend_schema(description='Process single adaptive step')
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='adaptive/step')
     def adaptive_step(self, request, pk=None):
-        """Submit single adaptive step and fetch next question."""
+        """Submit single adaptive step, calibrate theta via Bayesian EAP, and fetch next item."""
         test = self.get_object()
         attempt_id = request.data.get('attempt_id')
         question_id = request.data.get('question_id')
         selected_option_id = request.data.get('selected_option_id')
         time_spent = request.data.get('time_spent_seconds', 0)
 
-        if attempt_id and question_id:
+        attempt = None
+        if attempt_id:
             attempt = TestAttempt.objects.filter(id=attempt_id, user=request.user).first()
-            if attempt:
-                selected_opts = selected_option_id if isinstance(selected_option_id, list) else ([selected_option_id] if selected_option_id else [])
-                try:
-                    TestSessionManager.autosave_answer(
-                        attempt=attempt,
-                        question_id=question_id,
-                        answer_data={'selected_options': selected_opts, 'time_spent': time_spent}
-                    )
-                except Exception:
-                    pass
 
-        return Response({
-            'status': 'success',
-            'data': {
-                'test_id': str(test.id),
-                'next_question': None,
-                'is_completed': True,
-            }
-        })
+        # If attempt is missing, attempt to find active in-progress attempt for this test
+        if not attempt:
+            attempt = TestAttempt.objects.filter(
+                test=test, user=request.user, status='in_progress'
+            ).order_by('-started_at').first()
+
+        if not attempt:
+            return Response({
+                'status': 'success',
+                'data': {
+                    'test_id': str(test.id),
+                    'isCompleted': True,
+                    'is_completed': True,
+                    'nextQuestion': None,
+                    'next_question': None,
+                    'currentTheta': 0.0,
+                    'current_theta': 0.0,
+                    'sem': 1.0,
+                    'normalizedScore': 50.0,
+                    'normalized_score': 50.0,
+                    'diagnostics': {
+                        'abilityBand': 'Competent',
+                        'stoppingReason': 'No active attempt found',
+                    }
+                }
+            })
+
+        if not question_id:
+            return Response(
+                {'status': 'error', 'message': 'question_id is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            step_result = AdaptiveAssessmentEngine.process_step(
+                test=test,
+                attempt=attempt,
+                question_id=question_id,
+                selected_option_id=selected_option_id,
+                time_spent_seconds=time_spent,
+            )
+            return Response({
+                'status': 'success',
+                'data': step_result,
+            })
+        except Exception as e:
+            logger.exception(f"Adaptive step processing failed: {e}")
+            return Response(
+                {'status': 'error', 'message': str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def _get_device_info(self, request):
         return {
@@ -687,6 +793,39 @@ class TestAttemptViewSet(viewsets.ReadOnlyModelViewSet):
             'status': 'success',
             'data': result,
         })
+
+    @extend_schema(description='Submit adaptive step for an attempt')
+    @action(detail=True, methods=['post'], url_path='adaptive-step')
+    def adaptive_step(self, request, pk=None):
+        """Submit single adaptive step on attempt."""
+        attempt = self._get_attempt_or_active(pk, request.user)
+        if not attempt:
+            return Response(
+                {'status': 'error', 'message': 'Attempt not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        question_id = request.data.get('question_id')
+        selected_option_id = request.data.get('selected_option_id')
+        time_spent = request.data.get('time_spent_seconds', 0)
+
+        if not question_id:
+            return Response(
+                {'status': 'error', 'message': 'question_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            step_result = AdaptiveAssessmentEngine.process_step(
+                test=attempt.test,
+                attempt=attempt,
+                question_id=question_id,
+                selected_option_id=selected_option_id,
+                time_spent_seconds=time_spent,
+            )
+            return Response({'status': 'success', 'data': step_result})
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def _get_test_or_404(self, pk):
         try:

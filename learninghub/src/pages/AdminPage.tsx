@@ -180,7 +180,7 @@ export default function AdminPage() {
 
   return (
     <AnimatedPage>
-      <SEO title="Admin Dashboard - LearningHub" />
+      <SEO title="Admin Dashboard - LearningHub" noindex={true} />
 
       <div className="space-y-8 pb-12 pt-4">
         {/* Header */}

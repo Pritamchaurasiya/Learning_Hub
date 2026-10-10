@@ -7,6 +7,19 @@ This script performs runtime checks to verify all imports and configurations are
 import sys
 import os
 
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+try:
+    import django
+    django.setup()
+except Exception as e:
+    pass
+
 def check_imports():
     """Verify all critical imports are working."""
     errors = []
@@ -144,6 +157,8 @@ def check_websocket_consumers():
         ("apps.core.websocket_handlers", "AIHintConsumer"),
         ("apps.core.websocket_handlers", "LearningProgressConsumer"),
         ("apps.core.websocket_handlers", "SocialConsumer"),
+        ("apps.test_engine.consumers", "ExamStationConsumer"),
+        ("apps.test_engine.consumers", "ExamProctorConsumer"),
     ]
     
     for module_name, class_name in consumers_to_check:

@@ -1,31 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Clock,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  Timer,
-  Target,
-  RotateCcw,
-  Filter,
-  Search,
-  Star,
-  Sparkles,
-  BrainCircuit,
-  WifiOff,
-  DownloadCloud,
-  Trophy,
-  ShieldCheck,
-  Activity,
-  RefreshCw,
-  Plus,
-  Layers,
-  Lock,
-  UploadCloud,
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { AlertTriangle, Star } from 'lucide-react'
 import { testsAService, TestA, TestQuestion } from '../services/testsAService'
 import {
   offlineAssessmentManager,
@@ -37,21 +13,17 @@ import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
-import { ProgressBar } from '../components/ui/ProgressBar'
 import { EmptyState } from '../components/ui/EmptyState'
 import { AITestGeneratorModal } from '../components/AITestGeneratorModal'
 import { ManualTestCreationModal } from '../components/ManualTestCreationModal'
 import {
-  TestCard,
-  QuestionCard,
   ResultsView,
-  IRTThetaGauge,
-  SocraticReviewModal,
-  ProctoringWarningBanner,
   QuestionBankImportModal,
-  TestSubmitModal,
-  TestQuestionPalette,
   OfflineStationBanner,
+  TestFilterBar,
+  TestCatalogHeader,
+  TestCatalogCardGrid,
+  TestActiveExamStation,
 } from '../components/test'
 import { useProctoring } from '../hooks/useProctoring'
 import { playExamChime } from '../utils/soundEffects'
@@ -84,7 +56,7 @@ const TestsAPage = memo(() => {
   const [tests, setTests] = useState<TestA[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState({ mode: '', difficulty: '', aiMode: '' })
+  const [filter, setFilter] = useState({ mode: '', difficulty: '', aiMode: '', exam: '' })
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
@@ -1120,6 +1092,11 @@ const TestsAPage = memo(() => {
     }
   }, [test.timeRemaining, test.isActive, test.isSubmitting, handleSubmit])
 
+  const availableExams = useMemo(
+    () => Array.from(new Set(tests.map(t => t.exam_name).filter(Boolean))),
+    [tests]
+  )
+
   const filteredTests = useMemo(
     () =>
       tests.filter(test => {
@@ -1140,6 +1117,9 @@ const TestsAPage = memo(() => {
         return (
           (filter.mode === '' || test.mode === filter.mode) &&
           (filter.difficulty === '' || test.difficulty === filter.difficulty) &&
+          (!filter.exam ||
+            (test.exam_name || '').toLowerCase() === filter.exam.toLowerCase() ||
+            (test.exam_code || '').toLowerCase() === filter.exam.toLowerCase()) &&
           (filter.aiMode === '' ||
             (test.ai_mode || (test.is_ai_generated ? 'ai_optional' : 'no_ai')).toLowerCase() ===
               filter.aiMode.toLowerCase()) &&
@@ -1209,400 +1189,44 @@ const TestsAPage = memo(() => {
   }
 
   if (test.isActive && test.questions.length > 0) {
-    const currentQuestion = test.questions[test.currentQuestionIndex]
-    const selectedAnswer = test.answers[currentQuestion?.id] ?? null
-    const isFlagged = test.flaggedQuestions.includes(currentQuestion?.id)
-
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
-
-        {!isOnline && (
-          <div className="bg-amber-500 text-slate-950 font-bold px-4 py-2 text-xs flex items-center justify-center gap-2 shadow-md">
-            <WifiOff className="w-4 h-4" />
-            <span>
-              Working Offline: Your answers are safely buffered locally. Reconnect before
-              submitting.
-            </span>
-          </div>
-        )}
-
-        <ProctoringWarningBanner
-          isWarningVisible={isProctorWarningVisible}
-          lastViolation={proctorLastViolation}
-          onDismiss={dismissProctorWarning}
-          violationCount={proctorViolationCount}
-        />
-
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                {test.testInfo?.testTitle}
-              </h1>
-              <div className="flex items-center gap-4">
-                {test.assessmentMode === 'adaptive' && (
-                  <div className="hidden sm:block">
-                    <IRTThetaGauge theta={test.adaptiveTheta} sem={test.adaptiveSem} />
-                  </div>
-                )}
-                {test.assessmentMode === 'contest' && (
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-xs font-bold shadow-sm">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Contest Arena</span>
-                  </div>
-                )}
-                {test.assessmentMode === 'practice' && (
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800 text-xs font-bold shadow-sm">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Practice Mode</span>
-                  </div>
-                )}
-                <div
-                  role="timer"
-                  aria-live="polite"
-                  aria-atomic="true"
-                  aria-label={`Time remaining ${Math.floor(test.timeRemaining / 60)} minutes ${String(test.timeRemaining % 60).padStart(2, '0')} seconds`}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
-                    test.timeRemaining < 60
-                      ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800 animate-pulse'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
-                  }`}
-                >
-                  <Timer className="w-4 h-4" aria-hidden="true" />
-                  <span className="font-mono font-medium" aria-hidden="true">
-                    {Math.floor(test.timeRemaining / 60)}:
-                    {String(test.timeRemaining % 60).padStart(2, '0')}
-                  </span>
-                </div>
-                {tabSwitchCount > 0 && (
-                  <div
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs font-semibold"
-                    title="Number of tab / window switch events detected"
-                  >
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                    <span>Switches: {tabSwitchCount}</span>
-                  </div>
-                )}
-                <div className="text-xs hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
-                  {test.autosaveStatus === 'saving' ? (
-                    <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
-                      Saving...
-                    </span>
-                  ) : test.autosaveStatus === 'retrying' ? (
-                    <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-                      <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                      Retrying...
-                    </span>
-                  ) : !isOnline || test.autosaveStatus === 'offline' ? (
-                    <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-                      <WifiOff className="w-3.5 h-3.5" />
-                      Offline (Saved locally)
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {test.lastAutosavedAt
-                        ? `Saved ${new Date(test.lastAutosavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                        : 'Autosave Active'}
-                    </span>
-                  )}
-                </div>
-                <Button
-                  onClick={() => setIsSubmitModalOpen(true)}
-                  variant="primary"
-                  size="sm"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-400">
-              <span className="hidden md:inline font-mono">
-                Shortcuts:{' '}
-                <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-sans">
-                  ←
-                </kbd>{' '}
-                <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-sans">
-                  →
-                </kbd>{' '}
-                Navigate •{' '}
-                <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-sans">
-                  1-4
-                </kbd>{' '}
-                Answer •{' '}
-                <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-sans">
-                  F
-                </kbd>{' '}
-                Flag
-              </span>
-              <span className="font-medium ml-auto">
-                Question {test.currentQuestionIndex + 1} of {test.questions.length}
-              </span>
-            </div>
-
-            <div className="mt-2" aria-live="polite">
-              <ProgressBar
-                progress={((test.currentQuestionIndex + 1) / test.questions.length) * 100}
-                className="h-2"
-                label={`Question ${test.currentQuestionIndex + 1} of ${test.questions.length}, ${Math.round(((test.currentQuestionIndex + 1) / test.questions.length) * 100)}% complete, ${Math.floor(test.timeRemaining / 60)} minutes remaining`}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          {test.sections && test.sections.length > 0 && (
-            <div className="mb-4 bg-white dark:bg-gray-800/90 rounded-2xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm backdrop-blur-xl">
-              <div className="flex items-center justify-between mb-2.5 px-1">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
-                    <Layers className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200">
-                      Exam Sections ({test.sections.length})
-                    </h3>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Switch between subjects or focus section questions
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {activeSection?.is_timed && activeSection.duration_minutes && (
-                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/60 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      Section Limit: {activeSection.duration_minutes}m
-                    </span>
-                  )}
-                  {activeSection && !isCurrentSectionLocked && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Lock section "${activeSection.title}"? Answers in this section cannot be edited once locked.`
-                          )
-                        ) {
-                          lockSection(activeSection.id)
-                          addToast({
-                            message: `🔒 Section "${activeSection.title}" locked. Advanced to next section.`,
-                            type: 'info',
-                          })
-                        }
-                      }}
-                      className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 flex items-center gap-1 transition-colors"
-                    >
-                      <Lock className="w-3 h-3" />
-                      <span>Lock Section</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {test.sections.map((section, idx) => {
-                  const sectionQuestions = test.questions.filter(
-                    q => (q.section_id || q.sectionId) === section.id
-                  )
-                  const totalSecQuestions = sectionQuestions.length || section.question_count || 0
-                  const answeredSecCount = sectionQuestions.filter(
-                    q => test.answers[q.id] !== undefined && test.answers[q.id] !== ''
-                  ).length
-                  const isSelected =
-                    activeSection?.id === section.id || test.activeSectionId === section.id
-                  const isSecLocked = Boolean(test.lockedSectionIds?.includes(section.id))
-                  const canNavigate = !isSecLocked || section.allow_backward_navigation !== false
-
-                  return (
-                    <button
-                      key={section.id || idx}
-                      onClick={() => {
-                        if (!canNavigate) {
-                          addToast({
-                            message: `🔒 Section "${section.title}" is locked. Backward navigation is disabled.`,
-                            type: 'warning',
-                          })
-                          return
-                        }
-                        setActiveSection(section.id)
-                        const firstIndex = test.questions.findIndex(
-                          q => (q.section_id || q.sectionId) === section.id
-                        )
-                        if (firstIndex !== -1) {
-                          navigateToQuestion(firstIndex)
-                        }
-                      }}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                        isSelected
-                          ? 'bg-purple-600 text-white shadow-md shadow-purple-500/25 ring-2 ring-purple-500/30'
-                          : isSecLocked
-                            ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:hover:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40'
-                            : 'bg-gray-100 hover:bg-gray-200/80 text-gray-700 dark:bg-gray-700/60 dark:hover:bg-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {isSecLocked && <Lock className="w-3 h-3 text-amber-500" />}
-                      <span>{section.title || `Section ${idx + 1}`}</span>
-                      <span
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          isSelected
-                            ? 'bg-purple-700 text-purple-100'
-                            : isSecLocked
-                              ? 'bg-amber-200 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200'
-                              : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                        }`}
-                      >
-                        {answeredSecCount} / {totalSecQuestions}
-                      </span>
-                      {isSecLocked && (
-                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
-                          Locked
-                        </span>
-                      )}
-                      {section.is_timed && section.duration_minutes && !isSecLocked && (
-                        <span className="text-[10px] opacity-80 flex items-center gap-0.5">
-                          <Clock className="w-2.5 h-2.5" />
-                          {section.duration_minutes}m
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          <TestQuestionPalette
-            questions={test.questions}
-            currentIndex={test.currentQuestionIndex}
-            answers={test.answers}
-            flaggedQuestions={test.flaggedQuestions}
-            onSelectQuestion={navigateToQuestion}
-          />
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={test.currentQuestionIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <QuestionCard
-                question={currentQuestion}
-                currentIndex={test.currentQuestionIndex}
-                totalQuestions={test.questions.length}
-                selectedAnswer={selectedAnswer}
-                confidence={test.confidences[currentQuestion.id]}
-                isFlagged={isFlagged}
-                sectionTitle={activeSection?.title}
-                isSectionLocked={isCurrentSectionLocked}
-                onAnswer={optionId => answerQuestion(currentQuestion.id, optionId)}
-                onConfidenceChange={level => setConfidence(currentQuestion.id, level)}
-                onFlag={() => flagQuestion(currentQuestion.id)}
-                onUnflag={() => unflagQuestion(currentQuestion.id)}
-                assessmentMode={test.assessmentMode}
-                practiceChecked={Boolean(practiceChecked[currentQuestion.id])}
-                onCheckPracticeAnswer={() => {
-                  setPracticeChecked(prev => ({ ...prev, [currentQuestion.id]: true }))
-                }}
-                onDiagnoseMisconception={() => {
-                  const selOpt = currentQuestion.options?.find(o => o.id === selectedAnswer)
-                  const corrOpt = currentQuestion.options?.find(o => o.id !== selectedAnswer)
-                  setSocraticModalQuestion({
-                    questionText: currentQuestion.text,
-                    selectedOptionText: selOpt?.text || 'Your selected choice',
-                    correctOptionText: corrOpt?.text || 'Conceptual ground truth',
-                  })
-                }}
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          {test.assessmentMode === 'adaptive' ? (
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 gap-4">
-              <div className="flex items-center gap-2 text-xs font-semibold text-purple-700 dark:text-purple-300">
-                <Activity className="w-4 h-4 text-purple-500 animate-pulse" />
-                <span>
-                  CAT Algorithm Active: Ability estimated via Bayesian EAP; next item maximizes
-                  Fisher Information.
-                </span>
-              </div>
-              <Button
-                onClick={handleAdaptiveStep}
-                disabled={adaptiveStepLoading || !selectedAnswer}
-                variant="primary"
-                className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 shadow-md w-full sm:w-auto justify-center"
-              >
-                {adaptiveStepLoading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Evaluating θ...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Confirm & Next Adaptive Item</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between mt-8">
-              <Button
-                onClick={() => navigateToQuestion(test.currentQuestionIndex - 1)}
-                disabled={test.currentQuestionIndex === 0}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous Question
-              </Button>
-              <Button
-                onClick={() => navigateToQuestion(test.currentQuestionIndex + 1)}
-                disabled={test.currentQuestionIndex === test.questions.length - 1}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                Next Question
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {socraticModalQuestion && (
-          <SocraticReviewModal
-            isOpen={Boolean(socraticModalQuestion)}
-            onClose={() => setSocraticModalQuestion(null)}
-            questionText={socraticModalQuestion.questionText}
-            selectedOptionText={socraticModalQuestion.selectedOptionText}
-            correctOptionText={socraticModalQuestion.correctOptionText}
-          />
-        )}
-
-        <TestSubmitModal
-          isOpen={isSubmitModalOpen}
-          onClose={() => setIsSubmitModalOpen(false)}
-          onSubmit={() => {
-            setIsSubmitModalOpen(false)
-            void handleSubmit()
-          }}
-          isSubmitting={isSubmitting}
-          attemptedCount={
-            Object.values(test.answers).filter(v => v !== undefined && v !== '').length
+      <TestActiveExamStation
+        test={test}
+        isOnline={isOnline}
+        isSubmitting={isSubmitting}
+        isSubmitModalOpen={isSubmitModalOpen}
+        setIsSubmitModalOpen={setIsSubmitModalOpen}
+        tabSwitchCount={tabSwitchCount}
+        isProctorWarningVisible={isProctorWarningVisible}
+        proctorLastViolation={proctorLastViolation}
+        proctorViolationCount={proctorViolationCount}
+        dismissProctorWarning={dismissProctorWarning}
+        activeSection={activeSection}
+        isCurrentSectionLocked={isCurrentSectionLocked}
+        practiceChecked={practiceChecked}
+        onCheckPracticeAnswer={qId => setPracticeChecked(prev => ({ ...prev, [qId]: true }))}
+        adaptiveStepLoading={adaptiveStepLoading}
+        socraticModalQuestion={socraticModalQuestion}
+        setSocraticModalQuestion={setSocraticModalQuestion}
+        onNavigateToQuestion={navigateToQuestion}
+        onSelectSection={(sectionId, firstIndex) => {
+          setActiveSection(sectionId)
+          if (firstIndex !== undefined && firstIndex !== -1) {
+            navigateToQuestion(firstIndex)
           }
-          unansweredCount={Math.max(
-            0,
-            test.questions.length -
-              Object.values(test.answers).filter(v => v !== undefined && v !== '').length
-          )}
-          flaggedCount={test.flaggedQuestions.length}
-          timeRemaining={test.timeRemaining}
-        />
-      </div>
+        }}
+        onLockSection={lockSection}
+        onAnswerQuestion={answerQuestion}
+        onConfidenceChange={setConfidence}
+        onFlagQuestion={flagQuestion}
+        onUnflagQuestion={unflagQuestion}
+        onAdaptiveStep={handleAdaptiveStep}
+        onSubmit={() => {
+          setIsSubmitModalOpen(false)
+          void handleSubmit()
+        }}
+        onToast={addToast}
+      />
     )
   }
 
@@ -1654,40 +1278,11 @@ const TestsAPage = memo(() => {
       <SEO title="Tests A+" description="Take practice tests and improve your skills" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tests A+</h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Practice with our comprehensive test collection and track your progress
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              onClick={() => setIsImportModalOpen(true)}
-              variant="outline"
-              className="flex items-center gap-2 border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 shadow-sm"
-            >
-              <UploadCloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              Import Questions (CSV/JSON)
-            </Button>
-            <Button
-              onClick={() => setIsManualModalOpen(true)}
-              variant="outline"
-              className="flex items-center gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm"
-            >
-              <Plus className="w-4 h-4 text-blue-600" />
-              Create Custom Test
-            </Button>
-            <Button
-              onClick={() => setIsAIModalOpen(true)}
-              variant="primary"
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25"
-            >
-              <Sparkles className="w-5 h-5" />
-              AI Custom Mock
-            </Button>
-          </div>
-        </div>
+        <TestCatalogHeader
+          onOpenImportModal={() => setIsImportModalOpen(true)}
+          onOpenManualModal={() => setIsManualModalOpen(true)}
+          onOpenAIModal={() => setIsAIModalOpen(true)}
+        />
 
         {/* Offline Assessment Station Bar */}
         <OfflineStationBanner
@@ -1731,139 +1326,31 @@ const TestsAPage = memo(() => {
           </div>
         )}
 
-        {/* 6-Mode Platform Filter Selector */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-6">
-          {[
-            { id: 'all', label: 'All Modes', icon: Target, mode: '', ai: '' },
-            {
-              id: 'adaptive',
-              label: 'Adaptive CAT (2PL/3PL)',
-              icon: Activity,
-              mode: 'adaptive',
-              ai: '',
-            },
-            { id: 'contest', label: 'Contest Arena', icon: Trophy, mode: 'contest', ai: '' },
-            {
-              id: 'practice',
-              label: 'Practice & Socratic',
-              icon: Sparkles,
-              mode: 'practice',
-              ai: '',
-            },
-            { id: 'ai', label: 'AI Generative', icon: BrainCircuit, mode: '', ai: 'ai_required' },
-            {
-              id: 'non_ai',
-              label: 'Native Bank (Zero Latency)',
-              icon: ShieldCheck,
-              mode: '',
-              ai: 'no_ai',
-            },
-            {
-              id: 'offline',
-              label: `Offline Ready (${offlineBundles.length})`,
-              icon: DownloadCloud,
-              mode: '',
-              ai: '',
-            },
-          ].map(m => (
-            <button
-              key={m.id}
-              onClick={() => {
-                setSelectedModePill(m.id)
-                setFilter(prev => ({
-                  ...prev,
-                  mode: m.mode,
-                  aiMode: m.ai,
-                }))
-              }}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
-                selectedModePill === m.id
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-500/50 font-bold'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 border border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              <m.icon className="w-3.5 h-3.5" />
-              <span>{m.label}</span>
-            </button>
-          ))}
-        </div>
+        <TestFilterBar
+          selectedModePill={selectedModePill}
+          onSelectModePill={(pillId, updates) => {
+            setSelectedModePill(pillId)
+            setFilter(prev => ({
+              ...prev,
+              mode: updates.mode,
+              aiMode: updates.aiMode,
+            }))
+          }}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filter={filter}
+          onFilterChange={updates => setFilter(prev => ({ ...prev, ...updates }))}
+          offlineCount={offlineBundles.length}
+          availableExams={availableExams}
+        />
 
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search tests..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <select
-              value={filter.mode}
-              onChange={e => setFilter({ ...filter, mode: e.target.value })}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              aria-label="Filter by mode"
-            >
-              <option value="">All Modes</option>
-              <option value="practice">Practice</option>
-              <option value="mock">Mock</option>
-              <option value="timed_challenge">Timed Challenge</option>
-              <option value="adaptive">Adaptive CAT</option>
-              <option value="contest">Contest Arena</option>
-            </select>
-
-            <select
-              value={filter.difficulty}
-              onChange={e => setFilter({ ...filter, difficulty: e.target.value })}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              aria-label="Filter by difficulty"
-            >
-              <option value="">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-
-            <select
-              value={filter.aiMode}
-              onChange={e => setFilter({ ...filter, aiMode: e.target.value })}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              aria-label="Filter by AI Policy"
-            >
-              <option value="">All Engines</option>
-              <option value="no_ai">Native Question Bank (No AI)</option>
-              <option value="ai_optional">AI Optional</option>
-              <option value="hybrid">Hybrid</option>
-              <option value="ai_required">AI Required</option>
-            </select>
-          </div>
-        </div>
-
-        {filteredTests.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTests.map(test => (
-              <TestCard
-                key={test.id}
-                test={test}
-                onStart={() => handleStartTest(test)}
-                isOfflineBundle={offlineBundles.some(b => b.testId === test.id)}
-                isDownloadingOffline={downloadingTestIds.has(test.id)}
-                onDownloadOffline={() => handleDownloadOffline(test)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-12 text-center">
-            <Filter className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No tests found
-            </h3>
-            <p className="text-gray-500">Try adjusting your filters or search query</p>
-          </Card>
-        )}
+        <TestCatalogCardGrid
+          tests={filteredTests}
+          offlineBundles={offlineBundles}
+          downloadingTestIds={downloadingTestIds}
+          onStartTest={test => void handleStartTest(test)}
+          onDownloadOffline={test => void handleDownloadOffline(test)}
+        />
       </div>
 
       <AITestGeneratorModal

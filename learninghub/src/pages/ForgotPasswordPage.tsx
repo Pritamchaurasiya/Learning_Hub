@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AnimatedPage>
-      <SEO title="Forgot Password - LearningHub" />
+      <SEO title="Forgot Password - LearningHub" noindex={true} />
       <div className="min-h-[80vh] flex items-center justify-center px-4 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div

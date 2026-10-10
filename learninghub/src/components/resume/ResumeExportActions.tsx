@@ -15,6 +15,10 @@ export const ResumeExportActions: React.FC<ResumeExportActionsProps> = ({ resume
     resumeService.downloadATSPlainText(resume)
   }
 
+  const handleDownloadLaTeX = () => {
+    resumeService.downloadLatexResume(resume)
+  }
+
   const handleDownloadJSON = () => {
     resumeService.downloadJSONResume(resume)
   }
@@ -79,6 +83,15 @@ export const ResumeExportActions: React.FC<ResumeExportActionsProps> = ({ resume
       >
         <FileText className="w-3.5 h-3.5 text-emerald-400" />
         ATS Plain Text (.txt)
+      </button>
+
+      <button
+        type="button"
+        onClick={handleDownloadLaTeX}
+        className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors"
+      >
+        <Code className="w-3.5 h-3.5 text-cyan-400" />
+        LaTeX Source (.tex)
       </button>
 
       <button

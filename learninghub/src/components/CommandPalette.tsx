@@ -26,6 +26,9 @@ import {
   FileText,
   Cpu,
   PenTool,
+  Activity,
+  Bug,
+  Gauge,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -155,6 +158,33 @@ const COMMANDS: CommandItem[] = [
     icon: Cpu,
     path: '/edge-ai',
     keywords: ['edge', 'webgpu', 'offline', 'local', 'air-gapped', 'slm', 'qwen', 'llama', 'phi', 'smollm'],
+  },
+  {
+    id: 'tool-neuro-flow',
+    title: 'Neuro-Adaptive Flow State Optimizer',
+    description: 'Biometric cognitive load estimation, keystroke cadence dynamics & autonomic micro-breaks',
+    category: 'Tools',
+    icon: Activity,
+    path: '/neuro-study',
+    keywords: ['neuro', 'flow', 'biofeedback', 'cognitive', 'fatigue', 'sweller', 'keystroke', 'cadence', 'load'],
+  },
+  {
+    id: 'tool-time-travel-debugger',
+    title: 'Time-Travel Execution Debugger',
+    description: 'Omniscient step-by-step memory trace scrubber, live call stack inspection, and invariant detection',
+    category: 'Tools',
+    icon: Bug,
+    path: '/debugger',
+    keywords: ['debugger', 'time travel', 'trace', 'heap', 'stack', 'variables', 'inspect', 'invariants', 'step'],
+  },
+  {
+    id: 'tool-complexity-profiler',
+    title: 'Empirical Complexity & Big-O Benchmark Lab',
+    description: 'Empirical algorithm scaling profiler, non-linear regression curves, bottleneck detection, and SLA projections',
+    category: 'Tools',
+    icon: Gauge,
+    path: '/profiler',
+    keywords: ['complexity', 'profiler', 'big o', 'asymptotic', 'benchmark', 'latency', 'sla', 'regression', 'scale'],
   },
   {
     id: 'tool-multimodal-studio',
@@ -295,6 +325,18 @@ export function CommandPalette() {
       const matchCategory = cmd.category.toLowerCase().includes(q)
       const matchKeywords = cmd.keywords?.some(k => k.toLowerCase().includes(q))
       return matchTitle || matchDesc || matchCategory || matchKeywords
+    }).sort((a, b) => {
+      // Prioritize exact or prefix title matches
+      const score = (cmd: CommandItem) => {
+        const titleLower = cmd.title.toLowerCase()
+        if (titleLower === q) return 100
+        if (titleLower.startsWith(q)) return 80
+        if (titleLower.includes(q)) return 60
+        if (cmd.keywords?.some(k => k.toLowerCase() === q)) return 50
+        if (cmd.keywords?.some(k => k.toLowerCase().includes(q))) return 40
+        return 20
+      }
+      return score(b) - score(a)
     })
   }, [query])
 

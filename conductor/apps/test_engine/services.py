@@ -4,6 +4,7 @@ Test engine services: session management, scoring, autosave, timeout handling.
 import uuid
 import logging
 import json
+import math
 from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction, IntegrityError
@@ -576,3 +577,591 @@ class TestSessionManager:
             'unanswered_count': unanswered,
             'question_results': question_results,
         }
+
+    @classmethod
+    @transaction.atomic
+    def reconcile_offline_attempt(cls, user, test, submission_data):
+        """
+        Reconcile and grade an offline test attempt.
+        Supports single submission payload with idempotency,
+        anti-tampering metadata preservation, question answer grading,
+        scoring, and user analytics updates.
+        """
+        client_attempt_id = str(
+            submission_data.get('attemptId')
+            or submission_data.get('attempt_id')
+            or submission_data.get('id')
+            or ''
+        ).strip()
+        bundle_id = str(submission_data.get('bundleId') or submission_data.get('bundle_id') or '').strip()
+        bundle_signature = str(submission_data.get('bundleSignature') or submission_data.get('bundle_signature') or '').strip()
+        checksum = str(submission_data.get('checksum') or '').strip()
+        answers = submission_data.get('answers') or {}
+        confidences = submission_data.get('confidences') or {}
+        times_spent = submission_data.get('timesSpent') or submission_data.get('times_spent') or {}
+        total_elapsed = submission_data.get('totalElapsedSeconds') or submission_data.get('total_elapsed_seconds') or submission_data.get('time_taken_seconds') or 0
+        try:
+            total_elapsed = float(total_elapsed)
+        except (ValueError, TypeError):
+            total_elapsed = 0.0
+
+        client_started_at = submission_data.get('clientStartedAt') or submission_data.get('client_started_at')
+        client_completed_at = submission_data.get('clientCompletedAt') or submission_data.get('client_completed_at')
+        device_info = submission_data.get('deviceInfo') or submission_data.get('device_info') or {}
+
+        # 1. Idempotency / Duplicate Attempt Check
+        existing_attempt = None
+        if client_attempt_id:
+            try:
+                existing_attempt = TestAttempt.objects.select_related('test').get(id=client_attempt_id, user=user)
+            except (TestAttempt.DoesNotExist, ValueError):
+                pass
+
+            if not existing_attempt:
+                existing_attempt = TestAttempt.objects.select_related('test').filter(
+                    user=user, test=test, metadata__client_attempt_id=client_attempt_id
+                ).first()
+
+        if existing_attempt and existing_attempt.status in ('submitted', 'expired'):
+            logger.info(f"Duplicate offline submission detected for attempt {existing_attempt.id}. Returning existing result.")
+            result = cls.get_attempt_result(existing_attempt)
+            return {
+                'status': 'synced',
+                'is_duplicate': True,
+                'attempt': existing_attempt,
+                'result': result,
+                'correct_count': existing_attempt.correct_count,
+                'incorrect_count': existing_attempt.incorrect_count,
+            }
+
+        # 2. Timing anomaly detection
+        if isinstance(times_spent, dict) and times_spent:
+            sum_times = sum(
+                max(0.0, float(t))
+                for t in times_spent.values()
+                if isinstance(t, (int, float, str)) and str(t).replace('.', '', 1).isdigit()
+            )
+            if sum_times > 0 and total_elapsed > 0 and sum_times > total_elapsed * 2.5:
+                logger.warning(
+                    f"Offline sync timing anomaly for user {user.id} test {test.id}: "
+                    f"sumTimesSpent={sum_times} vs totalElapsed={total_elapsed}"
+                )
+
+        # 3. Timestamps parsing
+        now = timezone.now()
+        started_at = None
+        if client_started_at:
+            try:
+                from datetime import datetime
+                started_at = datetime.fromisoformat(str(client_started_at).replace('Z', '+00:00'))
+                if timezone.is_naive(started_at):
+                    started_at = timezone.make_aware(started_at)
+            except Exception:
+                try:
+                    from dateutil import parser as date_parser
+                    started_at = date_parser.parse(str(client_started_at))
+                    if timezone.is_naive(started_at):
+                        started_at = timezone.make_aware(started_at)
+                except Exception:
+                    started_at = None
+
+        if not started_at:
+            if total_elapsed > 0:
+                started_at = now - timedelta(seconds=total_elapsed)
+            else:
+                started_at = now
+
+        submitted_at = None
+        if client_completed_at:
+            try:
+                from datetime import datetime
+                submitted_at = datetime.fromisoformat(str(client_completed_at).replace('Z', '+00:00'))
+                if timezone.is_naive(submitted_at):
+                    submitted_at = timezone.make_aware(submitted_at)
+            except Exception:
+                try:
+                    from dateutil import parser as date_parser
+                    submitted_at = date_parser.parse(str(client_completed_at))
+                    if timezone.is_naive(submitted_at):
+                        submitted_at = timezone.make_aware(submitted_at)
+                except Exception:
+                    submitted_at = None
+
+        if not submitted_at:
+            submitted_at = now
+
+        # 4. Create or reuse in-progress attempt
+        if existing_attempt and existing_attempt.status == 'in_progress':
+            attempt = existing_attempt
+        else:
+            last_attempt = TestAttempt.objects.filter(
+                user=user, test=test
+            ).order_by('-attempt_number').first()
+            attempt_number = (last_attempt.attempt_number + 1) if last_attempt else 1
+
+            total_marks = test.total_marks or TestQuestion.objects.filter(test=test).aggregate(total=Sum('marks'))['total'] or 0
+
+            meta = {
+                'client_attempt_id': client_attempt_id,
+                'bundle_id': bundle_id,
+                'bundle_signature': bundle_signature,
+                'checksum': checksum,
+                'synced_offline': True,
+                'confidences': confidences,
+            }
+
+            attempt = TestAttempt.objects.create(
+                user=user,
+                test=test,
+                session_token=uuid.uuid4().hex + uuid.uuid4().hex[:32],
+                status='in_progress',
+                mode='offline',
+                total_marks=total_marks,
+                attempt_number=attempt_number,
+                device_info=device_info,
+                metadata=meta,
+            )
+            TestAttempt.objects.filter(id=attempt.id).update(started_at=started_at)
+            attempt.started_at = started_at
+            Test.objects.filter(id=test.id).update(attempt_count=F('attempt_count') + 1)
+
+        # 5. Process answers & grade each question
+        total_obtained = 0.0
+        total_negative = 0.0
+        correct_count = 0
+        incorrect_count = 0
+
+        test_questions = {
+            str(tq.question_id): tq
+            for tq in TestQuestion.objects.select_related('question').filter(test=test)
+        }
+
+        if isinstance(answers, dict):
+            for q_id_str, raw_answer in answers.items():
+                tq = test_questions.get(str(q_id_str))
+                if not tq:
+                    continue
+                question = tq.question
+
+                time_spent = 0
+                if isinstance(times_spent, dict):
+                    t_val = times_spent.get(str(q_id_str)) or times_spent.get(q_id_str) or 0
+                    try:
+                        time_spent = max(0, int(t_val))
+                    except (ValueError, TypeError):
+                        time_spent = 0
+
+                selected_ids = []
+                text_ans = ""
+                if isinstance(raw_answer, list):
+                    selected_ids = [str(x) for x in raw_answer]
+                elif isinstance(raw_answer, dict):
+                    selected_ids = [str(x) for x in raw_answer.get('selected_options', [])]
+                    if not selected_ids and raw_answer.get('selected_option_id'):
+                        selected_ids = [str(raw_answer.get('selected_option_id'))]
+                    text_ans = str(raw_answer.get('text_answer', '') or '')
+                elif isinstance(raw_answer, str):
+                    if Option.objects.filter(id=raw_answer, question=question).exists():
+                        selected_ids = [raw_answer]
+                    else:
+                        text_ans = raw_answer
+                elif raw_answer is not None:
+                    text_ans = str(raw_answer)
+
+                ans_record, _ = AttemptAnswer.objects.get_or_create(
+                    attempt=attempt,
+                    question=question,
+                )
+                ans_record.time_spent_seconds = time_spent
+                ans_record.answered_at = submitted_at
+                if text_ans:
+                    ans_record.text_answer = text_ans
+                if selected_ids:
+                    valid_opts = Option.objects.filter(id__in=selected_ids, question=question)
+                    ans_record.selected_options.set(valid_opts)
+
+                grading = cls._grade_answer_for_submission(ans_record, test)
+                if grading.get('is_correct'):
+                    total_obtained += grading.get('marks', tq.marks)
+                    correct_count += 1
+                elif grading.get('is_wrong'):
+                    neg = getattr(test, 'negative_marks_per_question', 0.0) or 0.0
+                    total_negative += neg
+                    incorrect_count += 1
+
+        # Derive total_marks if zero
+        if not attempt.total_marks or attempt.total_marks == 0:
+            derived = TestQuestion.objects.filter(test=test).aggregate(total=Sum('marks'))['total'] or 0
+            attempt.total_marks = derived
+
+        final_score = max(0.0, total_obtained - total_negative)
+        percentage = (final_score / attempt.total_marks * 100.0) if attempt.total_marks > 0 else 0.0
+
+        attempt.score = round(final_score, 2)
+        attempt.percentage = round(percentage, 2)
+        passing_score = test.passing_score or 60.0
+        attempt.passed = percentage >= passing_score
+        attempt.status = 'submitted'
+        attempt.submitted_at = submitted_at
+        attempt.time_taken_seconds = max(1, int(total_elapsed if total_elapsed > 0 else (submitted_at - started_at).total_seconds()))
+        attempt.save()
+
+        # 6. Update user analytics
+        try:
+            cls._queue_analytics_update(attempt)
+        except Exception as e:
+            logger.error(f"Failed to queue analytics update for offline attempt {attempt.id}: {e}")
+
+        logger.info(
+            f"Successfully reconciled offline attempt {attempt.id} for user {user.id}: "
+            f"score={attempt.score}, percentage={attempt.percentage}%, passed={attempt.passed}"
+        )
+
+        result = cls.get_attempt_result(attempt)
+        return {
+            'status': 'synced',
+            'is_duplicate': False,
+            'attempt': attempt,
+            'result': result,
+            'correct_count': correct_count,
+            'incorrect_count': incorrect_count,
+        }
+
+
+class AdaptiveAssessmentEngine:
+    """
+    Computerized Adaptive Testing (CAT) Engine utilizing Item Response Theory (IRT).
+    Implements:
+    - 2PL / 3PL Item Response Model: P_i(theta) = c_i + (1 - c_i) / (1 + exp(-a_i * (theta - b_i)))
+    - Fisher Information evaluation: I_i(theta) = a_i^2 * (P_i - c_i)^2 * (1 - P_i) / ((1 - c_i)^2 * P_i)
+    - Bayesian Expected A Posteriori (EAP) ability estimation with N(0, 1) prior
+    - Confidence intervals: [theta - 1.96 * SEM, theta + 1.96 * SEM]
+    - Dynamic next-item selection maximizing Fisher Information
+    - Stopping criteria based on target SEM precision (SEM <= 0.35) or length constraints
+    """
+
+    @staticmethod
+    def calculate_3pl_probability(theta: float, a: float = 1.0, b: float = 0.5, c: float = 0.25) -> float:
+        """
+        Calculate 3-parameter logistic (3PL) probability:
+        P(theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
+        """
+        try:
+            exp_term = math.exp(-max(-20.0, min(20.0, a * (theta - b))))
+            return c + (1.0 - c) / (1.0 + exp_term)
+        except OverflowError:
+            return 1.0 if (theta - b) > 0 else c
+
+    @staticmethod
+    def fisher_information(theta: float, a: float = 1.0, b: float = 0.5, c: float = 0.25) -> float:
+        """
+        Calculate Fisher Information for a 3PL item at latent ability theta.
+        """
+        p = AdaptiveAssessmentEngine.calculate_3pl_probability(theta, a, b, c)
+        if p <= c or p >= 1.0:
+            return 0.001
+        q = 1.0 - p
+        numerator = ((p - c) ** 2) * q
+        denominator = ((1.0 - c) ** 2) * p
+        return (a ** 2) * (numerator / max(1e-5, denominator))
+
+    @staticmethod
+    def estimate_ability_eap(responses: list, item_params: list) -> tuple:
+        """
+        Estimate latent ability theta and posterior Standard Error of Measurement (SEM)
+        using Bayesian Expected A Posteriori (EAP) numerical quadrature over N(0, 1) prior.
+
+        Args:
+            responses: List of binary outcomes (1 for correct, 0 for incorrect)
+            item_params: List of dicts [{'a': float, 'b': float, 'c': float}, ...]
+
+        Returns:
+            (theta_eap: float, sem: float)
+        """
+        if not responses or not item_params or len(responses) != len(item_params):
+            return 0.0, 1.0
+
+        # Quadrature grid: 61 points between -3.0 and +3.0 (step = 0.1)
+        grid_points = [round(-3.0 + i * 0.1, 2) for i in range(61)]
+        log_prior = [-0.5 * (x ** 2) for x in grid_points]  # Standard normal log-density up to constant
+
+        # Compute log-likelihood across quadrature points
+        log_posteriors = []
+        for x in grid_points:
+            log_l = 0.0
+            for u, prm in zip(responses, item_params):
+                a = prm.get('a', 1.0)
+                b = prm.get('b', 0.5)
+                c = prm.get('c', 0.25)
+                p = AdaptiveAssessmentEngine.calculate_3pl_probability(x, a, b, c)
+                p = max(1e-6, min(1.0 - 1e-6, p))
+                log_l += math.log(p) if u == 1 else math.log(1.0 - p)
+            log_posteriors.append(log_l)
+
+        # Numerical stabilization via log-sum-exp
+        log_weights = [lp + lpr for lp, lpr in zip(log_posteriors, log_prior)]
+        max_log_w = max(log_weights)
+        weights = [math.exp(lw - max_log_w) for lw in log_weights]
+        total_w = sum(weights)
+        if total_w <= 0:
+            return 0.0, 1.0
+
+        norm_weights = [w / total_w for w in weights]
+
+        # Mean (EAP estimate)
+        theta_eap = sum(x * w for x, w in zip(grid_points, norm_weights))
+
+        # Posterior variance and SEM
+        variance = sum(((x - theta_eap) ** 2) * w for x, w in zip(grid_points, norm_weights))
+        sem = math.sqrt(max(0.01, variance))
+
+        return round(max(-3.0, min(3.0, theta_eap)), 3), round(max(0.15, sem), 3)
+
+    @staticmethod
+    def theta_to_normalized_score(theta: float) -> float:
+        """Map theta (-3.0 to +3.0) to normalized score (0 to 100) using logistic function."""
+        score = 100.0 / (1.0 + math.exp(-max(-15.0, min(15.0, 0.9 * theta))))
+        return round(score, 1)
+
+    @staticmethod
+    def theta_to_percentile(theta: float) -> float:
+        """Map latent ability theta to percentile (0 to 100) using normal CDF."""
+        cdf = 0.5 * (1.0 + math.erf(theta / math.sqrt(2.0)))
+        return round(max(0.1, min(99.9, cdf * 100.0)), 1)
+
+    @staticmethod
+    def get_ability_band(theta: float) -> str:
+        """Derive qualitative assessment mastery band from theta score."""
+        if theta >= 2.0:
+            return 'Advanced Master'
+        if theta >= 1.0:
+            return 'Proficient / Competitive'
+        if theta >= 0.0:
+            return 'Competent'
+        if theta >= -1.0:
+            return 'Developing'
+        return 'Foundational'
+
+    @classmethod
+    @transaction.atomic
+    def process_step(cls, test, attempt, question_id, selected_option_id=None, time_spent_seconds=0):
+        """
+        Process single adaptive step:
+        1. Evaluate and persist candidate's response.
+        2. Recalculate latent ability theta and measurement precision (SEM) using Bayesian EAP.
+        3. Check convergence stopping criteria.
+        4. Select next optimal question maximizing Fisher Information if not terminated.
+
+        Returns dual-cased structured dictionary payload compatible with frontend contracts.
+        """
+        # Validate question belongs to test
+        try:
+            test_question = TestQuestion.objects.select_related('question').get(
+                test=test, question_id=question_id
+            )
+        except TestQuestion.DoesNotExist:
+            raise ValueError(f"Question {question_id} not found in test {test.id}")
+
+        question = test_question.question
+
+        # Normalize selected options input
+        if isinstance(selected_option_id, list):
+            selected_ids = [str(x) for x in selected_option_id if x]
+        elif selected_option_id:
+            selected_ids = [str(selected_option_id)]
+        else:
+            selected_ids = []
+
+        # Evaluate correctness
+        correct_option_ids = set(
+            str(x) for x in question.options.filter(is_correct=True).values_list('id', flat=True)
+        )
+        submitted_set = set(selected_ids)
+
+        if question.question_type in ('multiple_select', 'msq'):
+            is_correct = (submitted_set == correct_option_ids) and len(submitted_set) > 0
+        elif question.question_type == 'numerical':
+            is_correct = False
+            # Check numerical tolerance against first correct option
+            corr_opt = question.options.filter(is_correct=True).first()
+            if corr_opt and selected_ids:
+                try:
+                    user_val = float(selected_ids[0].strip())
+                    corr_val = float(corr_opt.text.strip())
+                    is_correct = abs(user_val - corr_val) <= (abs(corr_val) * 0.01)
+                except (ValueError, TypeError):
+                    is_correct = False
+        else:
+            # Default MCQ / True-False
+            is_correct = bool(submitted_set & correct_option_ids) if submitted_set else False
+
+        marks_obtained = test.marks_per_correct if is_correct else (
+            -test.negative_marks_per_question if getattr(test, 'negative_marking', False) else 0.0
+        )
+
+        # Upsert AttemptAnswer record
+        answer, _ = AttemptAnswer.objects.get_or_create(attempt=attempt, question=question)
+        if selected_ids:
+            matched_opts = Option.objects.filter(id__in=selected_ids, question=question)
+            answer.selected_options.set(matched_opts)
+        answer.is_correct = is_correct
+        answer.marks_obtained = marks_obtained
+        answer.time_spent_seconds = (answer.time_spent_seconds or 0) + int(time_spent_seconds or 0)
+        answer.answered_at = timezone.now()
+        answer.save()
+
+        # Gather all answered questions in this attempt
+        all_answers = attempt.answers.select_related('question').filter(is_correct__isnull=False)
+        answered_q_ids = set()
+        responses = []
+        item_params = []
+
+        for ans in all_answers:
+            q = ans.question
+            answered_q_ids.add(str(q.id))
+            responses.append(1 if ans.is_correct else 0)
+            item_params.append({
+                'a': getattr(q, 'discrimination', 1.0) or 1.0,
+                'b': getattr(q, 'difficulty', 0.5) if getattr(q, 'difficulty', None) is not None else 0.5,
+                'c': getattr(q, 'guess_factor', 0.25) if getattr(q, 'guess_factor', None) is not None else 0.25,
+            })
+
+        # Recalculate theta & SEM via Bayesian EAP
+        theta, sem = cls.estimate_ability_eap(responses, item_params)
+        normalized_score = cls.theta_to_normalized_score(theta)
+        percentile = cls.theta_to_percentile(theta)
+        ability_band = cls.get_ability_band(theta)
+
+        total_test_questions = TestQuestion.objects.filter(test=test).count()
+        pool_remaining = TestQuestion.objects.filter(test=test).exclude(
+            question_id__in=answered_q_ids
+        ).select_related('question').prefetch_related('question__options')
+
+        MIN_QUESTIONS = min(5, total_test_questions)
+        MAX_QUESTIONS = min(15, total_test_questions)
+        TARGET_SEM = 0.35
+
+        is_precision_reached = len(responses) >= MIN_QUESTIONS and sem <= TARGET_SEM
+        is_cap_reached = len(responses) >= MAX_QUESTIONS or not pool_remaining.exists()
+        is_completed = is_precision_reached or is_cap_reached
+
+        confidence_interval = [
+            round(theta - 1.96 * sem, 2),
+            round(theta + 1.96 * sem, 2),
+        ]
+
+        # Update metadata on attempt
+        meta = attempt.metadata or {}
+        meta['adaptive'] = {
+            'current_theta': theta,
+            'current_sem': sem,
+            'ability_band': ability_band,
+            'confidence_interval': confidence_interval,
+            'responses_count': len(responses),
+            'normalized_score': normalized_score,
+            'percentile': percentile,
+        }
+        attempt.metadata = meta
+
+        if is_completed:
+            stopping_reason = (
+                f"Statistical convergence reached with high measurement precision (SEM: {sem:.3f} <= {TARGET_SEM})"
+                if is_precision_reached
+                else f"Assessment completed ({len(responses)} questions evaluated)"
+            )
+            meta['adaptive']['stopping_reason'] = stopping_reason
+            meta['adaptive']['is_completed'] = True
+            attempt.save(update_fields=['metadata'])
+
+            # Complete and score attempt
+            try:
+                TestSessionManager.submit_attempt(attempt.id)
+            except Exception as ex:
+                logger.warning(f"Adaptive completion submit_attempt failed: {ex}")
+                attempt.status = 'submitted'
+                attempt.submitted_at = timezone.now()
+                attempt.save(update_fields=['status', 'submitted_at'])
+
+            return {
+                'isCompleted': True,
+                'is_completed': True,
+                'isCorrect': is_correct,
+                'is_correct': is_correct,
+                'currentTheta': theta,
+                'current_theta': theta,
+                'sem': sem,
+                'normalizedScore': normalized_score,
+                'normalized_score': normalized_score,
+                'percentile': percentile,
+                'questionsAnswered': len(responses),
+                'questions_answered': len(responses),
+                'totalQuestionsPool': total_test_questions,
+                'nextQuestion': None,
+                'next_question': None,
+                'diagnostics': {
+                    'abilityBand': ability_band,
+                    'ability_band': ability_band,
+                    'confidenceInterval': confidence_interval,
+                    'confidence_interval': confidence_interval,
+                    'stoppingReason': stopping_reason,
+                    'stopping_reason': stopping_reason,
+                },
+            }
+
+        attempt.save(update_fields=['metadata'])
+
+        # Select next question maximizing Fisher Information at current theta
+        candidates = []
+        for tq in pool_remaining:
+            q = tq.question
+            a = getattr(q, 'discrimination', 1.0) or 1.0
+            b = getattr(q, 'difficulty', 0.5) if getattr(q, 'difficulty', None) is not None else 0.5
+            c = getattr(q, 'guess_factor', 0.25) if getattr(q, 'guess_factor', None) is not None else 0.25
+            info = cls.fisher_information(theta, a, b, c)
+            candidates.append((info, tq))
+
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        best_tq = candidates[0][1]
+        best_q = best_tq.question
+
+        next_question_data = {
+            'id': str(best_q.id),
+            'text': best_q.text,
+            'type': best_q.question_type,
+            'difficulty': best_q.difficulty,
+            'bloom_level': best_q.bloom_level,
+            'points': getattr(best_tq, 'marks', 1.0),
+            'options': [
+                {
+                    'id': str(opt.id),
+                    'text': opt.text,
+                    'order': opt.order,
+                }
+                for opt in best_q.options.all().order_by('order')
+            ],
+        }
+
+        return {
+            'isCompleted': False,
+            'is_completed': False,
+            'isCorrect': is_correct,
+            'is_correct': is_correct,
+            'currentTheta': theta,
+            'current_theta': theta,
+            'sem': sem,
+            'normalizedScore': normalized_score,
+            'normalized_score': normalized_score,
+            'percentile': percentile,
+            'questionsAnswered': len(responses),
+            'questions_answered': len(responses),
+            'totalQuestionsPool': total_test_questions,
+            'nextQuestion': next_question_data,
+            'next_question': next_question_data,
+            'diagnostics': {
+                'abilityBand': ability_band,
+                'ability_band': ability_band,
+                'confidenceInterval': confidence_interval,
+                'confidence_interval': confidence_interval,
+            },
+        }
+

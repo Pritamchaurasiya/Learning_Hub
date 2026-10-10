@@ -27,24 +27,14 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-900 to-slate-950">
-      {/* Dynamic Animated Ambient Orbs */}
-      <motion.div
-        animate={{
-          scale: [1, 1.25, 1],
-          x: [0, 40, 0],
-          y: [0, -30, 0],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 -left-24 w-96 h-96 bg-primary-500/25 rounded-full blur-3xl pointer-events-none"
+      {/* Dynamic Animated Ambient Orbs (GPU-Accelerated Pure CSS for 0ms INP) */}
+      <div
+        className="absolute top-1/4 -left-24 w-96 h-96 bg-primary-500/25 rounded-full blur-3xl pointer-events-none animate-orb-1"
+        aria-hidden="true"
       />
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          x: [0, -50, 0],
-          y: [0, 40, 0],
-        }}
-        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-12 right-12 w-[480px] h-[480px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none"
+      <div
+        className="absolute bottom-12 right-12 w-[480px] h-[480px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none animate-orb-2"
+        aria-hidden="true"
       />
 
       {/* Background Pattern */}

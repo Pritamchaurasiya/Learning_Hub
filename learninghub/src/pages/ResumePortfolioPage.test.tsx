@@ -137,5 +137,12 @@ describe('ResumePortfolioPage (Milestone 12 Anti-Gravity Resume)', () => {
     fireEvent.click(jsonTab)
 
     expect(screen.getByText(/Schema.org \/ JSON Resume Standard/i)).toBeInTheDocument()
+
+    // Click LaTeX Template tab
+    const latexTab = screen.getByRole('button', { name: /LaTeX Template/i })
+    fireEvent.click(latexTab)
+
+    expect(screen.getByText(/Compile-Ready LaTeX Document/i)).toBeInTheDocument()
   })
 })
+

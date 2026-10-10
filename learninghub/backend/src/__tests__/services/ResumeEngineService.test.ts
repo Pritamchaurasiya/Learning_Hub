@@ -132,6 +132,11 @@ describe('ResumeEngineService (Milestone 12 Anti-Gravity Resume)', () => {
     const verificationFailed = resumeEngineService.verifyResumeDigest(forgedDigest, signatureHmac)
     expect(verificationFailed.isValid).toBe(false)
     expect(verificationFailed.statusMessage).toContain('Failed')
+
+    // Malformed/short signature verification should not throw RangeError
+    const shortSigVerification = resumeEngineService.verifyResumeDigest(canonicalDigestSha256, 'deadbeef')
+    expect(shortSigVerification.isValid).toBe(false)
+    expect(shortSigVerification.statusMessage).toContain('Failed')
   })
 
   it('should export ATS plain text format parser string with all standard sections', () => {
@@ -169,4 +174,64 @@ describe('ResumeEngineService (Milestone 12 Anti-Gravity Resume)', () => {
     expect(jsonResume.certificates.length).toBeGreaterThanOrEqual(2)
     expect(jsonResume.meta.canonicalDigest).toBe(resume.cryptographicProof.canonicalDigestSha256)
   })
+
+  it('should format a compile-ready ATS LaTeX resume document with escaping and watermark', () => {
+    const resume = resumeEngineService.generateResume({
+      userId,
+      targetRole: 'SYSTEMS_ARCHITECT',
+      telemetryOverride: customTelemetry,
+    })
+
+    const latex = resumeEngineService.formatLatexResume(resume)
+
+    expect(latex).toContain('\\documentclass[letterpaper,10pt]{article}')
+    expect(latex).toContain('\\begin{document}')
+    expect(latex).toContain('Staff Systems Architect')
+    expect(latex).toContain('\\section{Technical Skills}')
+    expect(latex).toContain('\\section{Key Projects \\& Architecture}')
+    expect(latex).toContain('Tamper-Proof Cryptographic Verification Digest')
+    expect(latex).toContain('\\end{document}')
+  })
+
+  it('should parse LinkedIn profile data from raw text or JSON and extract skills', () => {
+    const rawText = `Jane Doe
+Staff Engineer at TechCorp
+jane.doe@example.com
+https://linkedin.com/in/janedoe
+Experienced in TypeScript, Python, Kubernetes, and Distributed Systems.`
+
+    const parsedFromText = resumeEngineService.importLinkedInProfile({ rawText })
+    expect(parsedFromText.profile.fullName).toBe('Jane Doe')
+    expect(parsedFromText.profile.email).toBe('jane.doe@example.com')
+    expect(parsedFromText.profile.linkedinUrl).toBe('https://linkedin.com/in/janedoe')
+    expect(parsedFromText.importedSkills).toContain('TypeScript')
+    expect(parsedFromText.importedSkills).toContain('Kubernetes')
+    expect(parsedFromText.importedSkills).toContain('Distributed Systems')
+
+    const parsedFromJson = resumeEngineService.importLinkedInProfile({
+      linkedInJson: {
+        name: 'Jane Doe',
+        headline: 'Principal Architect',
+        skills: ['Rust', 'PostgreSQL', 'Docker'],
+      },
+    })
+    expect(parsedFromJson.profile.fullName).toBe('Jane Doe')
+    expect(parsedFromJson.profile.headline).toBe('Principal Architect')
+    expect(parsedFromJson.importedSkills).toEqual(['Rust', 'PostgreSQL', 'Docker'])
+  })
+
+  it('should anchor resume to IPFS CIDv1 and Polygon PoS with cryptographic transaction hash', () => {
+    const resume = resumeEngineService.generateResume({
+      userId,
+      targetRole: 'FULL_STACK_LEAD',
+    })
+
+    const anchor = resumeEngineService.anchorToIpfsAndChain(resume)
+
+    expect(anchor.ipfsCid).toMatch(/^bafybeig/)
+    expect(anchor.polygonTxHash).toMatch(/^0x[a-f0-9]{64}$/)
+    expect(anchor.blockNumber).toBeGreaterThan(58000000)
+    expect(anchor.explorerUrl).toContain('https://polygonscan.com/tx/0x')
+  })
 })
+

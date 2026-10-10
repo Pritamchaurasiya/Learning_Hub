@@ -4,6 +4,9 @@ import {
   verifyResume,
   exportATSPlainText,
   exportJSONResume,
+  exportLatexResume,
+  importLinkedIn,
+  anchorResumeToIpfs,
 } from '../../controllers/resumeController'
 import { optionalAuth } from '../../middleware/authMiddleware'
 import { createRateLimiter } from '../../middleware/rateLimiter'
@@ -21,11 +24,16 @@ router.use(resumeLimiter)
 // Synthesis & Tailoring
 router.get('/generate', optionalAuth, generateResume)
 
-// Cryptographic Verification
+// Cryptographic Verification & On-Chain IPFS Anchoring
 router.post('/verify', verifyResume)
+router.post('/anchor-ipfs', optionalAuth, anchorResumeToIpfs)
 
-// Standard Exports
+// Multi-Format Exports
 router.get('/export/ats-text', optionalAuth, exportATSPlainText)
 router.get('/export/json', optionalAuth, exportJSONResume)
+router.get('/export/latex', optionalAuth, exportLatexResume)
+
+// Professional Profile Ingestion
+router.post('/import/linkedin', optionalAuth, importLinkedIn)
 
 export default router

@@ -67,3 +67,44 @@ export const exportJSONResume = asyncHandler(async (req: Request, res: Response)
   res.setHeader('Content-Disposition', `attachment; filename="resume_${targetRole.toLowerCase()}_schema.json"`)
   res.status(200).json(jsonResume)
 })
+
+export const exportLatexResume = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId || 'student-candidate-001'
+  const targetRole = (req.query.targetRole as TargetRole) || 'FULL_STACK_LEAD'
+
+  const resume = resumeEngineService.generateResume({
+    userId,
+    targetRole,
+  })
+
+  const latexContent = resumeEngineService.formatLatexResume(resume)
+  res.setHeader('Content-Type', 'text/x-tex; charset=utf-8')
+  res.setHeader('Content-Disposition', `attachment; filename="resume_${targetRole.toLowerCase()}.tex"`)
+  res.status(200).send(latexContent)
+})
+
+export const importLinkedIn = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { rawText, linkedInJson } = req.body
+
+  if (!rawText && !linkedInJson) {
+    sendValidationError(res, 'Either "rawText" or "linkedInJson" payload must be provided for LinkedIn profile import')
+    return
+  }
+
+  const result = resumeEngineService.importLinkedInProfile({ rawText, linkedInJson })
+  sendSuccess(res, result, 'LinkedIn profile data successfully parsed and enriched')
+})
+
+export const anchorResumeToIpfs = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId || 'student-candidate-001'
+  const targetRole = (req.body?.targetRole as TargetRole) || 'FULL_STACK_LEAD'
+
+  const resume = resumeEngineService.generateResume({
+    userId,
+    targetRole,
+  })
+
+  const anchorResult = resumeEngineService.anchorToIpfsAndChain(resume)
+  sendSuccess(res, { resumeId: resume.id, ...anchorResult }, 'Resume cryptographically anchored to IPFS CIDv1 and Polygon PoS')
+})
+

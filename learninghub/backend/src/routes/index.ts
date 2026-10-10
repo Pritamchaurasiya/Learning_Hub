@@ -44,6 +44,9 @@ import resumeRoutes from './v1/resume.routes'
 import edgeAIRoutes from './v1/edgeAI.routes'
 import proctoringRoutes from './v1/proctoring.routes'
 import multimodalRoutes from './v1/multimodal.routes'
+import neuroAdaptiveRoutes from './v1/neuroAdaptive.routes'
+import debuggerRoutes from './v1/debugger.routes'
+import complexityRoutes from './v1/complexity.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -137,6 +140,9 @@ router.use('/resume', resumeRoutes)
 router.use('/edge-ai', edgeAIRoutes)
 router.use('/proctoring', proctoringRoutes)
 router.use('/multimodal', multimodalRoutes)
+router.use('/neuro-adaptive', neuroAdaptiveRoutes)
+router.use('/debugger', debuggerRoutes)
+router.use('/complexity', complexityRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

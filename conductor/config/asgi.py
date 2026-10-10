@@ -20,6 +20,7 @@ for app_routing in [
     "apps.live_sessions.routing",
     "apps.study_groups.routing",
     "apps.metaverse.routing",
+    "apps.test_engine.routing",
 ]:
     app_name = app_routing.rsplit(".", 1)[0]
     if hasattr(settings, "INSTALLED_APPS") and app_name not in settings.INSTALLED_APPS:

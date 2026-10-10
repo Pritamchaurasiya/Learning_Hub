@@ -32,6 +32,8 @@ import {
   BellRing,
   FileText,
   PenTool,
+  Activity,
+  Bug,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -109,6 +111,9 @@ export default function Sidebar() {
       defaultOpen: true,
       items: [
         { to: '/edge-ai', icon: Cpu, label: 'Edge AI Studio' },
+        { to: '/debugger', icon: Bug, label: 'Time-Travel Debugger' },
+        { to: '/profiler', icon: Gauge, label: 'Complexity Profiler' },
+        { to: '/neuro-study', icon: Activity, label: 'Neuro Flow State' },
         { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
         { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },
         { to: '/ai-tutor', icon: Bot, label: 'AI Tutor' },

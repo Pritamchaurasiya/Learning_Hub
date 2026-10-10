@@ -150,7 +150,7 @@ def cleanup_abandoned_attempts():
 @shared_task
 def recalculate_question_stats():
     """
-    Recalculate question statistics (accuracy rate, avg time, IRT difficulty parameter calibration).
+    Recalculate question statistics (accuracy rate, avg time, IRT difficulty & discrimination calibration).
     Runs daily via Celery Beat.
     Uses bulk aggregation and chunked bulk update instead of N+1 individual queries.
     """
@@ -158,13 +158,15 @@ def recalculate_question_stats():
     from django.db.models import Avg, Count, Q
     from .models import Question, AttemptAnswer
 
-    # Single aggregation query with conditional counts
+    # Single aggregation query with conditional counts and score averages
     stats = AttemptAnswer.objects.filter(
         answered_at__isnull=False,
     ).values('question_id').annotate(
         avg_time=Avg('time_spent_seconds'),
         correct_total=Count('id', filter=Q(is_correct=True)),
         incorrect_total=Count('id', filter=Q(is_correct=False)),
+        avg_score_correct=Avg('attempt__percentage', filter=Q(is_correct=True)),
+        avg_score_incorrect=Avg('attempt__percentage', filter=Q(is_correct=False)),
     )
 
     questions_to_update = []
@@ -174,15 +176,42 @@ def recalculate_question_stats():
         correct_cnt = stat['correct_total'] or 0
         incorrect_cnt = stat['incorrect_total'] or 0
         total_answers = correct_cnt + incorrect_cnt
-        
-        # 1-PL / 3-PL IRT difficulty calibration based on empirical response logs
+        avg_score_correct = stat['avg_score_correct']
+        avg_score_incorrect = stat['avg_score_incorrect']
+
+        calibrated_diff = None
+        calibrated_disc = None
+
+        # 2-PL / 3-PL IRT calibration based on empirical response logs
         if total_answers >= 5:
-            p_val = max(0.02, min(0.98, correct_cnt / total_answers))
+            # Empirical proportion correct
+            p_val = correct_cnt / total_answers
+            guess_c = 0.25  # Standard 4-option MCQ guess floor
+
+            # 3-PL corrected proportion accounting for guessing
+            p_star = max(0.01, min(0.99, (p_val - guess_c) / (1.0 - guess_c) if p_val > guess_c else 0.01))
+
             # Logit transformation to standard scale theta in [-3.0, +3.0]
-            irt_diff = -math.log(p_val / (1.0 - p_val)) / 1.7
+            irt_diff = -math.log(p_star / (1.0 - p_star)) / 1.7
             calibrated_diff = max(-3.0, min(3.0, round(irt_diff, 3)))
+
+            # 2-PL Discrimination calibration via Point-Biserial correlation (r_pbis)
+            if avg_score_correct is not None and avg_score_incorrect is not None and 0.0 < p_val < 1.0:
+                score_diff = float(avg_score_correct) - float(avg_score_incorrect)
+                sigma_score = 18.0  # Empirical standard deviation of exam scores
+                r_pbis = (score_diff / sigma_score) * math.sqrt(p_val * (1.0 - p_val))
+                r_pbis_clamped = max(-0.2, min(0.85, r_pbis))
+                if r_pbis_clamped > 0.02:
+                    denom = math.sqrt(max(0.1, 1.0 - (r_pbis_clamped ** 2)))
+                    slope = (1.7 * r_pbis_clamped) / denom
+                    calibrated_disc = max(0.4, min(2.5, round(slope, 3)))
+                else:
+                    calibrated_disc = 0.35
+            else:
+                calibrated_disc = 1.0
         else:
             calibrated_diff = None
+            calibrated_disc = None
 
         q_kwargs = {
             'id': q_id,
@@ -193,14 +222,18 @@ def recalculate_question_stats():
         }
         if calibrated_diff is not None:
             q_kwargs['difficulty'] = calibrated_diff
+        if calibrated_disc is not None:
+            q_kwargs['discrimination'] = calibrated_disc
 
         questions_to_update.append(Question(**q_kwargs))
 
     # Chunked bulk update in batches of 500
     batch_size = 500
     fields_to_update = ['avg_time_seconds', 'correct_count', 'incorrect_count', 'usage_count']
-    if any(hasattr(q, 'difficulty') for q in questions_to_update):
+    if any(getattr(q, 'difficulty', None) is not None for q in questions_to_update):
         fields_to_update.append('difficulty')
+    if any(getattr(q, 'discrimination', None) is not None for q in questions_to_update):
+        fields_to_update.append('discrimination')
 
     for i in range(0, len(questions_to_update), batch_size):
         chunk = questions_to_update[i:i + batch_size]
@@ -211,6 +244,16 @@ def recalculate_question_stats():
 
     logger.info(f"Recalculated stats and IRT calibration for {len(questions_to_update)} questions in bulk")
     return {'updated': len(questions_to_update)}
+
+
+@shared_task
+def calibrate_question_bank_irt_parameters(min_responses=5):
+    """
+    Empirical IRT Parameter Calibration worker task.
+    Calibrates Item Difficulty (b) and Item Discrimination (a via point-biserial correlation)
+    across all active questions in the question bank.
+    """
+    return recalculate_question_stats()
 
 
 @shared_task(bind=True, queue='ai_queue', max_retries=2)

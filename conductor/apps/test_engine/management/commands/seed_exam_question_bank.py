@@ -276,7 +276,7 @@ class Command(BaseCommand):
                 "difficulty": 0.68,
                 "discrimination": 1.5,
                 "bloom_level": "analyze",
-                "explanation": "Shortest distance formula: $d = \\frac{|(\\vec{a}_2 - \\vec{a}_1) \\cdot (\\vec{b}_1 \\times \\vec{b}_2)|}{|\\vec{b}_1 \\times \\vec{b}_2|}$. Here $\\vec{b}_1 \\times \\vec{b}_2 = (2,-1,1) \\times (3,-5,2) = (3, -1, -7)$. Magnitude is $\\sqrt{3^2 + (-1)^2 + (-7)^2} = \\sqrt{59}$. Point vector difference is $\\vec{a}_2 - \\vec{a}_1 = (1, 0, -2)$. Dot product is $1(3) + 0(-1) - 2(-7) = 17$. Thus $d = \\frac{17}{\\sqrt{59}}$ or $\\frac{10}{\\sqrt{59}}$. Let's compute precisely: $(1)(3) + 0 + (-2)(-7) = 3 + 14 = 17$. $d = \\frac{17}{\\sqrt{59}} = \\frac{10}{\\sqrt{3}}$ in standard unit.",
+                "explanation": "Shortest distance between skew lines formula: $d = \\frac{|(\\vec{a}_2 - \\vec{a}_1) \\cdot (\\vec{b}_1 \\times \\vec{b}_2)|}{|\\vec{b}_1 \\times \\vec{b}_2|}$. Here $\\vec{a}_1 = (1, 1, 0)$, $\\vec{a}_2 = (2, 1, -1) \\implies \\vec{a}_2 - \\vec{a}_1 = (1, 0, -1)$. The cross product of direction vectors is $\\vec{b}_1 \\times \\vec{b}_2 = (2,-1,1) \\times (3,-5,2) = (3, -1, -7)$ with magnitude $|\\vec{b}_1 \\times \\vec{b}_2| = \\sqrt{3^2 + (-1)^2 + (-7)^2} = \\sqrt{59}$. The scalar projection is $(\\vec{a}_2 - \\vec{a}_1) \\cdot (\\vec{b}_1 \\times \\vec{b}_2) = (1)(3) + (0)(-1) + (-1)(-7) = 3 + 7 = 10$. Thus $d = \\frac{10}{\\sqrt{59}}$.",
                 "solution_steps": [
                     "Compute cross product of direction vectors: $\\vec{b}_1 \\times \\vec{b}_2$",
                     "Compute displacement vector between points: $\\vec{a}_2 - \\vec{a}_1$",

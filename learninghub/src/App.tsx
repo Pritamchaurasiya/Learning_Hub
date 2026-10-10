@@ -59,6 +59,15 @@ const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
 const EdgeAIPage = lazy(() => import('./pages/EdgeAIPage'))
 const CanvasStudioPage = lazy(() => import('./pages/CanvasStudioPage'))
 const MultiModalStudioPage = lazy(() => import('./pages/MultiModalStudioPage'))
+const NeuroStudyOptimizerPage = lazy(() =>
+  import('./pages/NeuroStudyOptimizerPage').then(m => ({ default: m.NeuroStudyOptimizerPage }))
+)
+const TimeTravelDebuggerPage = lazy(() =>
+  import('./pages/TimeTravelDebuggerPage').then(m => ({ default: m.TimeTravelDebuggerPage }))
+)
+const ComplexityProfilerPage = lazy(() =>
+  import('./pages/ComplexityProfilerPage').then(m => ({ default: m.ComplexityProfilerPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -442,6 +451,35 @@ function App() {
                   </LazyRoute>
                 }
               />
+              <Route
+                path="/neuro-study"
+                element={
+                  <LazyRoute sectionName="Neuro-Adaptive Study State Optimizer">
+                    <NeuroStudyOptimizerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/flow" element={<Navigate to="/neuro-study" replace />} />
+              <Route path="/biofeedback" element={<Navigate to="/neuro-study" replace />} />
+              <Route
+                path="/debugger"
+                element={
+                  <LazyRoute sectionName="Time-Travel Execution Debugger">
+                    <TimeTravelDebuggerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/time-travel" element={<Navigate to="/debugger" replace />} />
+              <Route
+                path="/profiler"
+                element={
+                  <LazyRoute sectionName="Empirical Complexity Profiler">
+                    <ComplexityProfilerPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/complexity" element={<Navigate to="/profiler" replace />} />
+              <Route path="/big-o" element={<Navigate to="/profiler" replace />} />
               <Route
                 path="/visualizer"
                 element={
