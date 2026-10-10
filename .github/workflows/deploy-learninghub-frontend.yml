@@ -1,0 +1,60 @@
+name: Deploy LearningHub Frontend to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "learninghub/**"
+      - ".github/workflows/deploy-learninghub-frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learninghub-cloudflare-pages-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy React frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learninghub
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: learninghub/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Build production frontend
+        run: npm run build
+        env:
+          # Set the GitHub Actions repository variable VITE_API_URL to your
+          # deployed API base URL, e.g. https://api.example.com/api/v1.
+          # The fallback publishes the SPA but does not create an API backend.
+          VITE_API_URL: ${{ vars.VITE_API_URL || '/api/v1' }}
+          VITE_ENABLE_DEBUG: "false"
+          VITE_ENABLE_MOCK_API: "false"
+          VITE_BUILD_MODE: production
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub repository Actions secrets."
+            exit 1
+          fi
+          npx --yes wrangler@latest pages deploy dist --project-name=learninghub-frontend --branch=main
