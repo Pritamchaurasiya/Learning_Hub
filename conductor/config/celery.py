@@ -61,6 +61,10 @@ app.conf.update(
             "task": "apps.test_engine.tasks.recalculate_question_stats",
             "schedule": 86400.0,
         },
+        "calibrate-question-bank-irt-parameters-daily": {
+            "task": "apps.test_engine.tasks.calibrate_question_bank_irt_parameters",
+            "schedule": 86400.0,
+        },
         "check-achievements-batch": {
             "task": "apps.gamification.tasks.check_achievements_task",
             "schedule": 21600.0,
