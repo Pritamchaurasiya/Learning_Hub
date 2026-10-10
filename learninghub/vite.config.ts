@@ -6,7 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 // Separate configuration for cleaner structure
 const pwaConfig = VitePWA({
   registerType: 'autoUpdate',
-  includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+  includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
   manifest: {
     name: 'LearningHub',
     short_name: 'LearningHub',
