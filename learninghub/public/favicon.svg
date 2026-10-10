@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LearningHub">
+  <rect width="64" height="64" rx="14" fill="#2563eb"/>
+  <rect x="7" y="7" width="50" height="50" rx="11" fill="#1d4ed8"/>
+  <path d="M15 22.5 30 25.5 31.5 46 17.5 42.5Z" fill="#fff"/>
+  <path d="M33 25.5 49 22.5 46.5 42.5 33 46Z" fill="#eff6ff"/>
+  <path d="M32 26v21" stroke="#bfdbfe" stroke-width="2" stroke-linecap="round"/>
+  <path d="m19 29 8 1.5M19 34l8 1.5M37 30.5l8-1.5M37 35.5l8-1.5" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="47" cy="15" r="3" fill="#facc15"/>
+</svg>
