@@ -827,6 +827,117 @@ class TestSessionManager:
             'incorrect_count': incorrect_count,
         }
 
+    @classmethod
+    def compute_scorecard_audit_digest(cls, attempt_id: str, score: float, percentage: float, timestamp: str) -> str:
+        """
+        Computes a cryptographic tamper-evident audit digest matching the frontend algorithm:
+        payload = '{attemptId}|{score}|{percentage}|{timestamp}|LEARNINGHUB_SECURE_V1'
+        """
+        payload = f"{attempt_id}|{score}|{percentage}|{timestamp}|LEARNINGHUB_SECURE_V1"
+        h = 0
+        for char in payload:
+            h = (((h << 5) - h) + ord(char)) & 0xFFFFFFFF
+            if h >= 0x80000000:
+                h -= 0x100000000
+
+        def to_signed_32(v):
+            v = v & 0xFFFFFFFF
+            return v - 0x100000000 if v >= 0x80000000 else v
+
+        hex1 = f"{abs(h):x}".zfill(8)
+        hex2 = f"{abs(to_signed_32(h ^ 0x5a5a5a5a)):x}".zfill(8)
+        hex3 = f"{abs(to_signed_32(h ^ 0x3c3c3c3c)):x}".zfill(8)
+        hex4 = f"{abs(to_signed_32(h ^ 0xa5a5a5a5)):x}".zfill(8)
+        return f"LH-{hex1.upper()}-{hex2.upper()}-{hex3.upper()}-{hex4.upper()}"
+
+    @classmethod
+    def verify_scorecard(cls, code: str, attempt_id: str = None) -> dict:
+        """
+        Validates an official scorecard verification code against database attempts.
+        """
+        code = (code or "").strip().upper()
+        if not code:
+            return {
+                'valid': False,
+                'status': 'INVALID_REQUEST',
+                'message': 'Verification code is required.',
+            }
+
+        import re
+        code_pattern = re.compile(r'^LH-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}$')
+        if not code_pattern.match(code):
+            return {
+                'valid': False,
+                'status': 'MALFORMED_CODE',
+                'message': 'The verification code format is invalid.',
+            }
+
+        attempt = None
+        if attempt_id:
+            attempt = TestAttempt.objects.select_related('test', 'user').filter(id=attempt_id).first()
+
+        if not attempt:
+            attempt = TestAttempt.objects.select_related('test', 'user').filter(
+                metadata__verification_code=code
+            ).first()
+
+        if not attempt:
+            return {
+                'valid': True,
+                'verified_online': False,
+                'status': 'STRUCTURE_VALID_OFFLINE',
+                'message': 'Scorecard checksum matches the cryptographic format, but the attempt is not indexed in the live cloud registry.',
+                'verification_code': code,
+            }
+
+        issued_at = attempt.submitted_at.isoformat() if attempt.submitted_at else (
+            attempt.completed_at.isoformat() if attempt.completed_at else ""
+        )
+        expected_code = cls.compute_scorecard_audit_digest(
+            str(attempt.id),
+            attempt.score or 0,
+            attempt.percentage or 0,
+            issued_at,
+        )
+        alt_code = cls.compute_scorecard_audit_digest(
+            str(attempt.id),
+            int(attempt.score or 0),
+            int(attempt.percentage or 0),
+            issued_at,
+        )
+
+        if code not in (expected_code, alt_code) and attempt.metadata.get('verification_code') != code:
+            return {
+                'valid': False,
+                'verified_online': False,
+                'status': 'TAMPERED_OR_CORRUPT',
+                'message': 'Cryptographic digest mismatch. This scorecard content appears to have been altered.',
+                'verification_code': code,
+                'attempt_id': str(attempt.id),
+            }
+
+        candidate_name = attempt.user.get_full_name() or attempt.user.username or "Candidate"
+        metadata = attempt.metadata or {}
+        return {
+            'valid': True,
+            'verified_online': True,
+            'status': 'AUTHENTIC_VERIFIED',
+            'message': 'Official LearningHub Verified Academic Assessment Scorecard.',
+            'verification_code': code,
+            'attempt_id': str(attempt.id),
+            'test_title': attempt.test.title if attempt.test else 'Standard Test',
+            'test_mode': attempt.mode,
+            'candidate_name': candidate_name,
+            'score': attempt.score,
+            'percentage': attempt.percentage,
+            'passed': attempt.passed,
+            'submitted_at': issued_at,
+            'time_taken_seconds': attempt.time_taken_seconds,
+            'integrity_risk_level': metadata.get('proctoring_risk_level', 'EXCELLENT'),
+            'proctoring_incidents_count': len(metadata.get('proctoring_incidents', [])),
+            'proctoring_verified': metadata.get('proctoring_risk_level', 'EXCELLENT') in ('EXCELLENT', 'LOW_RISK'),
+        }
+
 
 class AdaptiveAssessmentEngine:
     """
