@@ -59,4 +59,4 @@ jobs:
             echo "::error::Add CLOUDFLARE_API_TOKEN in GitHub repository Actions secrets."
             exit 1
           fi
-          npx --yes wrangler@latest pages deploy dist --project-name=learninghub-frontend --branch=main
+          npx --yes wrangler@latest pages deploy dist --project-name=learninghub --branch=main
