@@ -35,6 +35,8 @@ import {
   Activity,
   Bug,
   Server,
+  Wand2,
+  Layers,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -116,6 +118,8 @@ export default function Sidebar() {
         { to: '/profiler', icon: Gauge, label: 'Complexity Profiler' },
         { to: '/system-design', icon: Server, label: 'System Design Lab' },
         { to: '/zkp', icon: Shield, label: 'ZK Attestation & SBT' },
+        { to: '/self-healing', icon: Wand2, label: 'Self-Healing Code' },
+        { to: '/crdt', icon: Layers, label: 'P2P Collab Canvas' },
         { to: '/neuro-study', icon: Activity, label: 'Neuro Flow State' },
         { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
         { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },

@@ -74,6 +74,12 @@ const SystemDesignSimulatorPage = lazy(() =>
 const ZkAttestationPage = lazy(() =>
   import('./pages/ZkAttestationPage').then(m => ({ default: m.ZkAttestationPage }))
 )
+const SelfHealingCodePage = lazy(() =>
+  import('./pages/SelfHealingCodePage').then(m => ({ default: m.SelfHealingCodePage }))
+)
+const P2PCollabCanvasPage = lazy(() =>
+  import('./pages/P2PCollabCanvasPage').then(m => ({ default: m.P2PCollabCanvasPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -523,6 +529,26 @@ function App() {
               />
               <Route path="/zk-attestation" element={<Navigate to="/zkp" replace />} />
               <Route path="/soulbound" element={<Navigate to="/zkp" replace />} />
+              <Route
+                path="/self-healing"
+                element={
+                  <LazyRoute sectionName="Autonomous AI Self-Healing Code Studio">
+                    <SelfHealingCodePage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/refactor" element={<Navigate to="/self-healing" replace />} />
+              <Route path="/security-audit" element={<Navigate to="/self-healing" replace />} />
+              <Route
+                path="/crdt"
+                element={
+                  <LazyRoute sectionName="Real-Time P2P CRDT Collaborative Canvas">
+                    <P2PCollabCanvasPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/whiteboard" element={<Navigate to="/crdt" replace />} />
+              <Route path="/collab-canvas" element={<Navigate to="/crdt" replace />} />
               <Route
                 path="/visualizer"
                 element={

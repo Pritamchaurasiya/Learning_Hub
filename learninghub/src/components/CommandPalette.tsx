@@ -30,6 +30,7 @@ import {
   Bug,
   Gauge,
   Server,
+  Wand2,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -204,6 +205,24 @@ const COMMANDS: CommandItem[] = [
     icon: Shield,
     path: '/zkp',
     keywords: ['zkp', 'zero knowledge', 'snark', 'groth16', 'soulbound', 'sbt', 'erc5192', 'attestation', 'proof', 'bn128', 'web3'],
+  },
+  {
+    id: 'tool-self-healing',
+    title: 'Autonomous AI Self-Healing Code Studio',
+    description: 'Static AST anti-pattern scanner, automated N+1 query and SQLi patch synthesis, and regression verifier',
+    category: 'Tools',
+    icon: Wand2,
+    path: '/self-healing',
+    keywords: ['self healing', 'refactor', 'patch', 'ast', 'n+1', 'sqli', 'memory leak', 'owasp', 'security', 'clean code'],
+  },
+  {
+    id: 'tool-crdt-collab',
+    title: 'P2P CRDT Collaborative Whiteboard & Canvas',
+    description: 'Decentralized peer-to-peer real-time whiteboard, Lamport vector clocks, and WebRTC collaboration',
+    category: 'Tools',
+    icon: Layers,
+    path: '/crdt',
+    keywords: ['crdt', 'collab', 'whiteboard', 'canvas', 'webrtc', 'p2p', 'lamport', 'decentralized', 'drawing', 'code'],
   },
   {
     id: 'tool-multimodal-studio',
