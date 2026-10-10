@@ -2,7 +2,7 @@ name: Deploy LearningHub Frontend to Cloudflare Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - "learninghub/**"
       - ".github/workflows/deploy-learninghub-frontend.yml"
@@ -39,6 +39,10 @@ jobs:
         # resolves the manifest and lockfile together until the lockfile is regenerated locally.
         run: npm install --no-audit --no-fund
 
+      - name: Warn when backend API is not configured
+        if: ${{ !vars.VITE_API_URL }}
+        run: echo "::warning::VITE_API_URL is not configured. Static pages can deploy, but API-powered features require a deployed backend URL."
+
       - name: Build production frontend
         run: npm run build
         env:
@@ -59,4 +63,4 @@ jobs:
             echo "::error::Add CLOUDFLARE_API_TOKEN in GitHub repository Actions secrets."
             exit 1
           fi
-          npx --yes wrangler@latest pages deploy dist --project-name=learninghub --branch=main
+          npx --yes wrangler@latest pages deploy dist --project-name=learninghub --branch="${{ github.ref_name }}"
