@@ -225,6 +225,15 @@ const COMMANDS: CommandItem[] = [
     keywords: ['crdt', 'collab', 'whiteboard', 'canvas', 'webrtc', 'p2p', 'lamport', 'decentralized', 'drawing', 'code'],
   },
   {
+    id: 'tool-agent-debate',
+    title: 'Autonomous Multi-Agent AI Debate & RFC Council',
+    description: 'Adversarial architectural dialectical review, Pareto frontier consensus & signed RFC generator',
+    category: 'Tools',
+    icon: MessageSquare,
+    path: '/debate',
+    keywords: ['debate', 'council', 'rfc', 'architecture', 'pareto', 'consensus', 'byzantine', 'review', 'tradeoff'],
+  },
+  {
     id: 'tool-multimodal-studio',
     title: 'Voice, Vision & Interactive Canvas Studio',
     description: 'Multi-modal AI tutoring with LaTeX math parsing, sub-300ms audio dialogue, and gaze tracking',

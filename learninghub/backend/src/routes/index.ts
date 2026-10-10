@@ -51,6 +51,7 @@ import systemDesignRoutes from './v1/systemDesign.routes'
 import zkpRoutes from './v1/zkp.routes'
 import crdtCollabRoutes from './v1/crdtCollab.routes'
 import selfHealingRoutes from './v1/selfHealing.routes'
+import agentDebateRoutes from './v1/agentDebate.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -151,6 +152,7 @@ router.use('/system-design', systemDesignRoutes)
 router.use('/zkp', zkpRoutes)
 router.use('/collab', crdtCollabRoutes)
 router.use('/self-healing', selfHealingRoutes)
+router.use('/debate', agentDebateRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

@@ -80,6 +80,9 @@ const SelfHealingCodePage = lazy(() =>
 const P2PCollabCanvasPage = lazy(() =>
   import('./pages/P2PCollabCanvasPage').then(m => ({ default: m.P2PCollabCanvasPage }))
 )
+const AgentDebateArenaPage = lazy(() =>
+  import('./pages/AgentDebateArenaPage').then(m => ({ default: m.AgentDebateArenaPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -549,6 +552,16 @@ function App() {
               />
               <Route path="/whiteboard" element={<Navigate to="/crdt" replace />} />
               <Route path="/collab-canvas" element={<Navigate to="/crdt" replace />} />
+              <Route
+                path="/debate"
+                element={
+                  <LazyRoute sectionName="Multi-Agent AI Debate & RFC Council">
+                    <AgentDebateArenaPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/council" element={<Navigate to="/debate" replace />} />
+              <Route path="/rfc-arena" element={<Navigate to="/debate" replace />} />
               <Route
                 path="/visualizer"
                 element={

@@ -120,6 +120,7 @@ export default function Sidebar() {
         { to: '/zkp', icon: Shield, label: 'ZK Attestation & SBT' },
         { to: '/self-healing', icon: Wand2, label: 'Self-Healing Code' },
         { to: '/crdt', icon: Layers, label: 'P2P Collab Canvas' },
+        { to: '/debate', icon: MessageSquare, label: 'AI Debate Council' },
         { to: '/neuro-study', icon: Activity, label: 'Neuro Flow State' },
         { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
         { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },
