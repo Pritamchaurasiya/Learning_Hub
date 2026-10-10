@@ -68,12 +68,30 @@ const TestsAPage = memo(() => {
     violationCount: proctorViolationCount,
     isWarningVisible: isProctorWarningVisible,
     lastViolation: proctorLastViolation,
+    remoteProctorWarning,
+    dismissRemoteProctorWarning,
+    isWsConnected: isProctorWsConnected,
     dismissWarning: dismissProctorWarning,
     resetViolations: resetProctorViolations,
   } = useProctoring({
     isActive: Boolean(test.isActive && test.questions.length > 0 && !test.results),
+    attemptId: test.attempt?.attemptId || (test.testInfo?.testId ? `attempt-${test.testInfo.testId}` : undefined),
     strictMode: true,
     requireFullscreen: false,
+    onProctorWarning: msg => {
+      addToast({
+        message: `⚠️ Proctor Notice: ${msg}`,
+        type: 'warning',
+        duration: 6000,
+      })
+    },
+    onProctorTimeExtension: seconds => {
+      addToast({
+        message: `⏱️ Extra Time Granted: ${Math.round(seconds / 60)} minutes added by proctor.`,
+        type: 'info',
+        duration: 5000,
+      })
+    },
     onViolation: v => {
       recordProctorViolation()
       if (v.type === 'TAB_SWITCH') {
@@ -81,6 +99,9 @@ const TestsAPage = memo(() => {
       }
     },
   })
+  void remoteProctorWarning
+  void dismissRemoteProctorWarning
+  void isProctorWsConnected
 
   // 6-Mode Platform States
   const [offlineBundles, setOfflineBundles] = useState<CachedOfflineBundle[]>([])
@@ -1201,6 +1222,9 @@ const TestsAPage = memo(() => {
         proctorLastViolation={proctorLastViolation}
         proctorViolationCount={proctorViolationCount}
         dismissProctorWarning={dismissProctorWarning}
+        remoteProctorWarning={remoteProctorWarning}
+        dismissRemoteProctorWarning={dismissRemoteProctorWarning}
+        isWsConnected={isProctorWsConnected}
         activeSection={activeSection}
         isCurrentSectionLocked={isCurrentSectionLocked}
         practiceChecked={practiceChecked}

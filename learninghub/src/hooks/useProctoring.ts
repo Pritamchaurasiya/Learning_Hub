@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { examStationWebSocketService } from '../services/examStationWebSocketService'
 
 export interface ProctoringViolation {
   type:
@@ -68,6 +69,10 @@ interface UseProctoringOptions {
   onViolation?: (violation: ProctoringViolation) => void
   strictMode?: boolean
   requireFullscreen?: boolean
+  attemptId?: string
+  onProctorWarning?: (warning: string) => void
+  onProctorTimeExtension?: (seconds: number) => void
+  onProctorForceSubmit?: (reason: string) => void
 }
 
 export function useProctoring({
@@ -75,14 +80,63 @@ export function useProctoring({
   onViolation,
   strictMode = true,
   requireFullscreen = false,
+  attemptId,
+  onProctorWarning,
+  onProctorTimeExtension,
+  onProctorForceSubmit,
 }: UseProctoringOptions) {
   const [violations, setViolations] = useState<ProctoringViolation[]>([])
   const [isWarningVisible, setIsWarningVisible] = useState(false)
   const [lastViolation, setLastViolation] = useState<ProctoringViolation | null>(null)
+  const [remoteProctorWarning, setRemoteProctorWarning] = useState<string | null>(null)
+  const [addedTimeSeconds, setAddedTimeSeconds] = useState(0)
+  const [isWsConnected, setIsWsConnected] = useState(false)
   const isBlurredRef = useRef(false)
 
   const onViolationRef = useRef(onViolation)
   onViolationRef.current = onViolation
+
+  const onProctorWarningRef = useRef(onProctorWarning)
+  onProctorWarningRef.current = onProctorWarning
+
+  const onProctorTimeExtensionRef = useRef(onProctorTimeExtension)
+  onProctorTimeExtensionRef.current = onProctorTimeExtension
+
+  const onProctorForceSubmitRef = useRef(onProctorForceSubmit)
+  onProctorForceSubmitRef.current = onProctorForceSubmit
+
+  // Manage WebSocket connection to Conductor ExamStationConsumer
+  useEffect(() => {
+    if (!isActive || !attemptId) {
+      if (examStationWebSocketService.isConnected()) {
+        examStationWebSocketService.disconnect()
+      }
+      setIsWsConnected(false)
+      return
+    }
+
+    examStationWebSocketService.connect(attemptId, {
+      onStatusChange: connected => {
+        setIsWsConnected(connected)
+      },
+      onProctorWarning: payload => {
+        setRemoteProctorWarning(payload.message)
+        onProctorWarningRef.current?.(payload.message)
+      },
+      onProctorTimeExtension: payload => {
+        setAddedTimeSeconds(prev => prev + (payload.secondsAdded || 0))
+        onProctorTimeExtensionRef.current?.(payload.secondsAdded || 0)
+      },
+      onProctorForceSubmit: payload => {
+        onProctorForceSubmitRef.current?.(payload.reason)
+      },
+    })
+
+    return () => {
+      examStationWebSocketService.disconnect()
+      setIsWsConnected(false)
+    }
+  }, [isActive, attemptId])
 
   const recordViolation = useCallback(
     (type: ProctoringViolation['type'], details?: string) => {
@@ -98,11 +152,19 @@ export function useProctoring({
       setLastViolation(violation)
       setIsWarningVisible(true)
 
+      // Stream telemetry incident immediately over WebSocket to Conductor
+      if (attemptId) {
+        examStationWebSocketService.sendTelemetry(type.toLowerCase(), 'medium', {
+          details,
+          timestamp: violation.timestamp,
+        })
+      }
+
       if (onViolationRef.current) {
         onViolationRef.current(violation)
       }
     },
-    [isActive]
+    [isActive, attemptId]
   )
 
   useEffect(() => {
@@ -208,6 +270,10 @@ export function useProctoring({
     integrityScore: integrityProfile.score,
     riskLevel: integrityProfile.riskLevel,
     violationCounts: integrityProfile.counts,
+    remoteProctorWarning,
+    dismissRemoteProctorWarning: () => setRemoteProctorWarning(null),
+    addedTimeSeconds,
+    isWsConnected,
     dismissWarning,
     resetViolations,
   }

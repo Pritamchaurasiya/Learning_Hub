@@ -52,6 +52,9 @@ export interface TestActiveExamStationProps {
   onAdaptiveStep: () => void
   onSubmit: () => void
   onToast: (toast: { message: string; type: 'info' | 'warning' | 'error' | 'success' }) => void
+  remoteProctorWarning?: string | null
+  dismissRemoteProctorWarning?: () => void
+  isWsConnected?: boolean
 }
 
 export const TestActiveExamStation = memo(function TestActiveExamStation({
@@ -82,6 +85,9 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   onAdaptiveStep,
   onSubmit,
   onToast,
+  remoteProctorWarning,
+  dismissRemoteProctorWarning,
+  isWsConnected = false,
 }: TestActiveExamStationProps) {
   const currentQuestion = test.questions[test.currentQuestionIndex]
   const selectedAnswer = currentQuestion ? test.answers[currentQuestion.id] ?? null : null
@@ -91,12 +97,41 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
 
+      {isWsConnected && (
+        <span className="sr-only" data-testid="live-ws-indicator">WebSocket Connected</span>
+      )}
+
       {!isOnline && (
         <div className="bg-amber-500 text-slate-950 font-bold px-4 py-2 text-xs flex items-center justify-center gap-2 shadow-md">
           <WifiOff className="w-4 h-4" />
           <span>
             Working Offline: Your answers are safely buffered locally. Reconnect before submitting.
           </span>
+        </div>
+      )}
+
+      {remoteProctorWarning && (
+        <div
+          className="bg-rose-600 text-white font-medium px-4 py-3 flex items-center justify-between gap-3 shadow-lg"
+          role="alert"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <span className="font-bold uppercase tracking-wider text-xs block opacity-90">
+                Live Proctor Intervention
+              </span>
+              <span className="text-sm">{remoteProctorWarning}</span>
+            </div>
+          </div>
+          {dismissRemoteProctorWarning && (
+            <button
+              onClick={dismissRemoteProctorWarning}
+              className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-md font-semibold transition"
+            >
+              Acknowledge
+            </button>
+          )}
         </div>
       )}
 

@@ -68,6 +68,12 @@ const TimeTravelDebuggerPage = lazy(() =>
 const ComplexityProfilerPage = lazy(() =>
   import('./pages/ComplexityProfilerPage').then(m => ({ default: m.ComplexityProfilerPage }))
 )
+const SystemDesignSimulatorPage = lazy(() =>
+  import('./pages/SystemDesignSimulatorPage').then(m => ({ default: m.SystemDesignSimulatorPage }))
+)
+const ZkAttestationPage = lazy(() =>
+  import('./pages/ZkAttestationPage').then(m => ({ default: m.ZkAttestationPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -480,6 +486,26 @@ function App() {
               />
               <Route path="/complexity" element={<Navigate to="/profiler" replace />} />
               <Route path="/big-o" element={<Navigate to="/profiler" replace />} />
+              <Route
+                path="/system-design"
+                element={
+                  <LazyRoute sectionName="Distributed System Design Simulator">
+                    <SystemDesignSimulatorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/architecture" element={<Navigate to="/system-design" replace />} />
+              <Route path="/chaos" element={<Navigate to="/system-design" replace />} />
+              <Route
+                path="/zkp"
+                element={
+                  <LazyRoute sectionName="Zero-Knowledge Skill Attestation">
+                    <ZkAttestationPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/zk-attestation" element={<Navigate to="/zkp" replace />} />
+              <Route path="/soulbound" element={<Navigate to="/zkp" replace />} />
               <Route
                 path="/visualizer"
                 element={

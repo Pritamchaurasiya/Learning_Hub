@@ -142,4 +142,48 @@ describe('TestActiveExamStation Component', () => {
 
     expect(screen.getByText(/Working Offline:/i)).toBeInTheDocument()
   })
+
+  it('renders remote proctor intervention banner when alert received', () => {
+    const mockState = createMockTestState()
+    const dismissRemoteProctorWarning = vi.fn()
+
+    render(
+      <TestActiveExamStation
+        test={mockState}
+        isOnline={true}
+        isSubmitting={false}
+        isSubmitModalOpen={false}
+        setIsSubmitModalOpen={vi.fn()}
+        tabSwitchCount={0}
+        isProctorWarningVisible={false}
+        proctorLastViolation={null}
+        proctorViolationCount={0}
+        dismissProctorWarning={vi.fn()}
+        remoteProctorWarning="Maintain video feed centered at all times."
+        dismissRemoteProctorWarning={dismissRemoteProctorWarning}
+        isWsConnected={true}
+        activeSection={mockState.sections?.[0] || null}
+        isCurrentSectionLocked={false}
+        practiceChecked={{}}
+        onCheckPracticeAnswer={vi.fn()}
+        adaptiveStepLoading={false}
+        socraticModalQuestion={null}
+        setSocraticModalQuestion={vi.fn()}
+        onNavigateToQuestion={vi.fn()}
+        onSelectSection={vi.fn()}
+        onLockSection={vi.fn()}
+        onAnswerQuestion={vi.fn()}
+        onConfidenceChange={vi.fn()}
+        onFlagQuestion={vi.fn()}
+        onUnflagQuestion={vi.fn()}
+        onAdaptiveStep={vi.fn()}
+        onSubmit={vi.fn()}
+        onToast={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText(/Live Proctor Intervention/i)).toBeInTheDocument()
+    expect(screen.getByText('Maintain video feed centered at all times.')).toBeInTheDocument()
+  })
 })
+

@@ -29,6 +29,7 @@ import {
   Activity,
   Bug,
   Gauge,
+  Server,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -185,6 +186,24 @@ const COMMANDS: CommandItem[] = [
     icon: Gauge,
     path: '/profiler',
     keywords: ['complexity', 'profiler', 'big o', 'asymptotic', 'benchmark', 'latency', 'sla', 'regression', 'scale'],
+  },
+  {
+    id: 'tool-system-design',
+    title: 'Distributed System Design & Chaos Simulator',
+    description: 'Interactive C4 topology canvas, Little’s Law queueing dynamics, CAP theorem audits, and fault injection',
+    category: 'Tools',
+    icon: Server,
+    path: '/system-design',
+    keywords: ['system design', 'architecture', 'chaos', 'distributed', 'c4', 'topology', 'spof', 'latency', 'cap', 'redis', 'kafka', 'database'],
+  },
+  {
+    id: 'tool-zkp-attestation',
+    title: 'Zero-Knowledge Skill Attestation & Soulbound Tokens',
+    description: 'BN128 Groth16 zero-knowledge proofs, private threshold verification & ERC-5192 Soulbound Tokens',
+    category: 'Tools',
+    icon: Shield,
+    path: '/zkp',
+    keywords: ['zkp', 'zero knowledge', 'snark', 'groth16', 'soulbound', 'sbt', 'erc5192', 'attestation', 'proof', 'bn128', 'web3'],
   },
   {
     id: 'tool-multimodal-studio',

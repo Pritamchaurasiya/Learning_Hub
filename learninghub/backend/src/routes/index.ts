@@ -47,6 +47,8 @@ import multimodalRoutes from './v1/multimodal.routes'
 import neuroAdaptiveRoutes from './v1/neuroAdaptive.routes'
 import debuggerRoutes from './v1/debugger.routes'
 import complexityRoutes from './v1/complexity.routes'
+import systemDesignRoutes from './v1/systemDesign.routes'
+import zkpRoutes from './v1/zkp.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -143,6 +145,8 @@ router.use('/multimodal', multimodalRoutes)
 router.use('/neuro-adaptive', neuroAdaptiveRoutes)
 router.use('/debugger', debuggerRoutes)
 router.use('/complexity', complexityRoutes)
+router.use('/system-design', systemDesignRoutes)
+router.use('/zkp', zkpRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'
