@@ -10,7 +10,7 @@ const pwaConfig = VitePWA({
   manifest: {
     name: 'LearningHub',
     short_name: 'LearningHub',
-    description: 'Your personal learning journey platform',
+    description: 'LearningHub — learn programming, practise with quizzes, and track your progress.',
     theme_color: '#3b82f6',
     background_color: '#ffffff',
     display: 'standalone',
