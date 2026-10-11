@@ -235,3 +235,7 @@ Before deploying to production:
 - **[docs/MASTER_PROMPT_CANONICAL_V2.md](docs/MASTER_PROMPT_CANONICAL_V2.md)** — Canonical orchestrator prompt
 - **[docs/DEEP_PLANNING_BLUEPRINT.md](docs/DEEP_PLANNING_BLUEPRINT.md)** — Planning WBS + wave template + gate
 - **[docs/MIGRATION_PARITY_REPORT.md](docs/MIGRATION_PARITY_REPORT.md)** — Node↔Django parity matrix
+
+## Cloudflare Pages Frontend Deployment
+
+The React/Vite frontend deployment, required GitHub Actions secret, environment variables, branch previews, custom-domain setup, and rollback instructions are documented in [Cloudflare Pages Operations](docs/CLOUDFLARE_PAGES.md).

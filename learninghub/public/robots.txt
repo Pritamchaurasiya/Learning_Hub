@@ -55,5 +55,6 @@ Disallow: /dashboard
 User-agent: CCBot
 Crawl-delay: 10
 
-# Canonical Sitemap
+# Canonical Sitemaps
 Sitemap: https://learninghub.app/sitemap.xml
+Sitemap: https://learninghub-385.pages.dev/sitemap.xml
