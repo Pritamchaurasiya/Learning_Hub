@@ -162,7 +162,7 @@ export default function SettingsPage() {
     try {
       setMfaVerifying(true)
       setMfaError(null)
-      await fetchApi('/auth/mfa/verify', {
+      await fetchApi('/auth/mfa/verify-enable', {
         method: 'POST',
         body: JSON.stringify({ token: mfaToken }),
       })

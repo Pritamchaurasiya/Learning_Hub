@@ -113,7 +113,7 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
     })
   })
 
-  it('submits MFA 6-digit code to /auth/mfa/login and completes authentication', async () => {
+  it('submits MFA 6-digit code to /auth/mfa/verify-login and completes authentication', async () => {
     vi.mocked(apiModule.fetchApi)
       .mockResolvedValueOnce({
         data: {
@@ -162,7 +162,7 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
     fireEvent.click(verifyBtn)
 
     await waitFor(() => {
-      expect(apiModule.fetchApi).toHaveBeenCalledWith('/auth/mfa/login', {
+      expect(apiModule.fetchApi).toHaveBeenCalledWith('/auth/mfa/verify-login', {
         method: 'POST',
         body: JSON.stringify({
           mfaSessionToken: 'session-jwt-token-456',

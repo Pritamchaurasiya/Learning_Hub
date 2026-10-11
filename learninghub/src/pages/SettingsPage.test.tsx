@@ -172,7 +172,7 @@ describe('SettingsPage Component', () => {
           },
         }
       }
-      if (url === '/auth/mfa/verify') {
+      if (url === '/auth/mfa/verify-enable') {
         return { data: { success: true } }
       }
       return { data: [] }
@@ -198,7 +198,7 @@ describe('SettingsPage Component', () => {
     fireEvent.click(verifyBtn)
 
     await waitFor(() => {
-      expect(apiModule.fetchApi).toHaveBeenCalledWith('/auth/mfa/verify', {
+      expect(apiModule.fetchApi).toHaveBeenCalledWith('/auth/mfa/verify-enable', {
         method: 'POST',
         body: JSON.stringify({ token: '123456' }),
       })
