@@ -31,6 +31,7 @@ import {
   Gauge,
   Server,
   Wand2,
+  Flame,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -196,6 +197,15 @@ const COMMANDS: CommandItem[] = [
     icon: Server,
     path: '/system-design',
     keywords: ['system design', 'architecture', 'chaos', 'distributed', 'c4', 'topology', 'spof', 'latency', 'cap', 'redis', 'kafka', 'database'],
+  },
+  {
+    id: 'tool-chaos-cluster',
+    title: 'Chaos Engineering Sandbox & Cluster Fault Injection',
+    description: 'Simulate network partitions, latency spikes, packet loss, thread exhaustion, and circuit breakers',
+    category: 'Tools',
+    icon: Flame,
+    path: '/chaos',
+    keywords: ['chaos', 'fault injection', 'network partition', 'circuit breaker', 'resilience', 'sre', 'cluster', 'slo'],
   },
   {
     id: 'tool-zkp-attestation',

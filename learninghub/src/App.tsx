@@ -83,6 +83,9 @@ const P2PCollabCanvasPage = lazy(() =>
 const AgentDebateArenaPage = lazy(() =>
   import('./pages/AgentDebateArenaPage').then(m => ({ default: m.AgentDebateArenaPage }))
 )
+const ChaosClusterSandboxPage = lazy(() =>
+  import('./pages/ChaosClusterSandboxPage').then(m => ({ default: m.ChaosClusterSandboxPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -521,7 +524,16 @@ function App() {
                 }
               />
               <Route path="/architecture" element={<Navigate to="/system-design" replace />} />
-              <Route path="/chaos" element={<Navigate to="/system-design" replace />} />
+              <Route
+                path="/chaos"
+                element={
+                  <LazyRoute sectionName="Chaos Engineering Simulation Studio">
+                    <ChaosClusterSandboxPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
+              <Route path="/cluster-chaos" element={<Navigate to="/chaos" replace />} />
               <Route
                 path="/zkp"
                 element={
@@ -562,6 +574,16 @@ function App() {
               />
               <Route path="/council" element={<Navigate to="/debate" replace />} />
               <Route path="/rfc-arena" element={<Navigate to="/debate" replace />} />
+              <Route
+                path="/chaos"
+                element={
+                  <LazyRoute sectionName="Chaos Engineering & Resilient Cluster Simulator">
+                    <ChaosClusterSandboxPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
+              <Route path="/resilience" element={<Navigate to="/chaos" replace />} />
               <Route
                 path="/visualizer"
                 element={

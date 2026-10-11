@@ -117,6 +117,7 @@ export default function Sidebar() {
         { to: '/debugger', icon: Bug, label: 'Time-Travel Debugger' },
         { to: '/profiler', icon: Gauge, label: 'Complexity Profiler' },
         { to: '/system-design', icon: Server, label: 'System Design Lab' },
+        { to: '/chaos', icon: Flame, label: 'Chaos Engineering Lab' },
         { to: '/zkp', icon: Shield, label: 'ZK Attestation & SBT' },
         { to: '/self-healing', icon: Wand2, label: 'Self-Healing Code' },
         { to: '/crdt', icon: Layers, label: 'P2P Collab Canvas' },
