@@ -56,6 +56,16 @@ describe('CodeSandboxService', () => {
       })
       expect(reqResult.status).toBe('runtime_error')
     })
+
+    it('blocks constructor and prototype navigation reflection tokens', async () => {
+      const protoResult = await CodeSandboxService.execute({
+        code: 'const f = this.constructor.constructor("return process")()',
+        language: 'javascript',
+        testCases: [{ input: '', output: '' }],
+      })
+      expect(protoResult.status).toBe('runtime_error')
+      expect(protoResult.message).toContain('Unauthorized execution tokens detected')
+    })
   })
 
   describe('Local JavaScript execution fallback', () => {

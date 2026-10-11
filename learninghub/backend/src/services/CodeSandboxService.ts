@@ -99,7 +99,7 @@ export class CodeSandboxService {
     const testCases =
       req.testCases && req.testCases.length > 0 ? req.testCases : [{ input: '', output: '' }]
 
-    // Security screening: block unauthorized process / reflection / module access tokens
+    // Security screening: block unauthorized process / reflection / prototype navigation tokens
     const FORBIDDEN_TOKENS = [
       /\bprocess\b/,
       /\bchild_process\b/,
@@ -107,6 +107,11 @@ export class CodeSandboxService {
       /\beval\s*\(/,
       /\bFunction\s*\(/,
       /\bimport\s*\(/,
+      /\bconstructor\b/,
+      /\b__proto__\b/,
+      /\bprototype\b/,
+      /\bglobalThis\b/,
+      /\bglobal\b/,
     ]
     if (FORBIDDEN_TOKENS.some(regex => regex.test(req.code))) {
       return {
@@ -114,7 +119,7 @@ export class CodeSandboxService {
         executionTime: 0,
         memoryUsed: 0,
         message:
-          'Unauthorized execution tokens detected: access to process, child_process, eval, require is prohibited.',
+          'Unauthorized execution tokens detected: access to process, child_process, eval, require, or prototype reflection is prohibited.',
         testCasesPassed: 0,
         testCasesTotal: testCases.length,
       }
@@ -415,8 +420,8 @@ export class CodeSandboxService {
     for (let i = 0; i < testCases.length; i++) {
       const tc = testCases[i]!
       const logs: string[] = []
-      const sandbox = {
-        console: {
+      const sandbox = Object.assign(Object.create(null), {
+        console: Object.freeze({
           log: (...args: any[]) => {
             logs.push(
               args
@@ -436,7 +441,7 @@ export class CodeSandboxService {
             )
           },
           warn: () => {},
-        },
+        }),
         JSON,
         Math,
         parseInt,
@@ -448,7 +453,7 @@ export class CodeSandboxService {
         Boolean,
         Map,
         Set,
-      }
+      })
 
       const ctx = vm.createContext(sandbox)
       const t0 = Date.now()
