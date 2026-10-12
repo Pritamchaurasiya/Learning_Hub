@@ -40,7 +40,7 @@ const dbLogger = winston.createLogger({
 })
 
 // Global Prisma client instance for connection pooling
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const globalForPrisma = global as unknown as { prisma?: ExtendedPrismaClient }
 
 /**
  * Get connection pool configuration based on environment
@@ -328,7 +328,7 @@ export class ExtendedPrismaClient extends PrismaClient {
 }
 
 // Create base singleton instance
-const basePrisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions)
+const basePrisma: ExtendedPrismaClient = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions)
 
 const replicaUrl = process.env.DATABASE_URL_REPLICA
 let replicaClient: PrismaClient | undefined
