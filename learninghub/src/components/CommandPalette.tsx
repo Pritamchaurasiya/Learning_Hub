@@ -32,6 +32,7 @@ import {
   Server,
   Wand2,
   Flame,
+  Bot,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -242,6 +243,15 @@ const COMMANDS: CommandItem[] = [
     icon: MessageSquare,
     path: '/debate',
     keywords: ['debate', 'council', 'rfc', 'architecture', 'pareto', 'consensus', 'byzantine', 'review', 'tradeoff'],
+  },
+  {
+    id: 'tool-swe-studio',
+    title: 'Autonomous SWE Studio & Software Agent Arena',
+    description: 'Autonomous issue triage, Ochiai SBFL fault localization, reproduction tests, and cryptographically sealed PRs',
+    category: 'Tools',
+    icon: Bot,
+    path: '/swe-studio',
+    keywords: ['swe', 'swe-bench', 'autonomous agent', 'ochiai', 'sbfl', 'patch', 'pull request', 'bug fix', 'diff'],
   },
   {
     id: 'tool-multimodal-studio',

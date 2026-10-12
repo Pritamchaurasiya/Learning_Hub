@@ -37,6 +37,7 @@ import {
   Server,
   Wand2,
   Layers,
+  Terminal,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -122,6 +123,7 @@ export default function Sidebar() {
         { to: '/self-healing', icon: Wand2, label: 'Self-Healing Code' },
         { to: '/crdt', icon: Layers, label: 'P2P Collab Canvas' },
         { to: '/debate', icon: MessageSquare, label: 'AI Debate Council' },
+        { to: '/swe-studio', icon: Terminal, label: 'Autonomous SWE Studio' },
         { to: '/neuro-study', icon: Activity, label: 'Neuro Flow State' },
         { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
         { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },

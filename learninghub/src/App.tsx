@@ -86,6 +86,9 @@ const AgentDebateArenaPage = lazy(() =>
 const ChaosClusterSandboxPage = lazy(() =>
   import('./pages/ChaosClusterSandboxPage').then(m => ({ default: m.ChaosClusterSandboxPage }))
 )
+const SweStudioPage = lazy(() =>
+  import('./pages/SweStudioPage').then(m => ({ default: m.SweStudioPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -584,6 +587,16 @@ function App() {
               />
               <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
               <Route path="/resilience" element={<Navigate to="/chaos" replace />} />
+              <Route
+                path="/swe-studio"
+                element={
+                  <LazyRoute sectionName="Autonomous SWE Studio & Software Agent Arena">
+                    <SweStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/swe-bench" element={<Navigate to="/swe-studio" replace />} />
+              <Route path="/autonomous-swe" element={<Navigate to="/swe-studio" replace />} />
               <Route
                 path="/visualizer"
                 element={
