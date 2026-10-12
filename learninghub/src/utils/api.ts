@@ -161,6 +161,10 @@ export const initCsrfToken = async (forceRefresh = false): Promise<string | null
         credentials: 'include',
       })
       if (response.ok) {
+        const contentType = response.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          return null
+        }
         const body = await response.json()
         const csrfToken = body?.data?.csrfToken ?? body?.csrfToken
         if (csrfToken) {
@@ -451,6 +455,10 @@ export async function fetchApi<T = any>(
 
         if (response.ok) {
           if (responseType === 'blob') return response.blob()
+          const contentType = response.headers.get('content-type') || ''
+          if (contentType.includes('text/html')) {
+            throw new Error(`Backend API returned HTML instead of JSON for ${normalizedEndpoint}. Backend may be offline or unattached.`)
+          }
           const data = await response.json()
           if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache)
             setCachedData(fullUrl, data, options)

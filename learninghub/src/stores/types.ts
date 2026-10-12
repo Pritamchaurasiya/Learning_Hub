@@ -174,6 +174,13 @@ export interface UISlice {
   setHasSeenOnboarding: (seen: boolean) => void
 }
 
+export interface LevelUpCelebrationState {
+  isOpen: boolean
+  previousLevel: number
+  newLevel: number
+  xpGained: number
+}
+
 export interface ProgressSlice {
   progress: UserProgress
   completeCourse: (courseId: string, xp: number) => Promise<void>
@@ -201,6 +208,9 @@ export interface ProgressSlice {
   addNotification: (
     notification: Omit<Notification, 'id' | 'createdAt'> & { id?: string; createdAt?: string }
   ) => void
+  levelUpState: LevelUpCelebrationState | null
+  showLevelUpModal: (state: Omit<LevelUpCelebrationState, 'isOpen'>) => void
+  closeLevelUpModal: () => void
 }
 
 // Tests A+ Slice (Deprecated - use TestSlice instead)

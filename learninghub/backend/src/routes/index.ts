@@ -54,6 +54,9 @@ import selfHealingRoutes from './v1/selfHealing.routes'
 import agentDebateRoutes from './v1/agentDebate.routes'
 import chaosClusterRoutes from './v1/chaosCluster.routes'
 import sweStudioRoutes from './v1/sweStudio.routes'
+import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
+import canaryRoutes from './v1/canary.routes'
+import catRoutes from './v1/cat.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -157,6 +160,9 @@ router.use('/self-healing', selfHealingRoutes)
 router.use('/debate', agentDebateRoutes)
 router.use('/chaos', chaosClusterRoutes)
 router.use('/swe-studio', sweStudioRoutes)
+router.use('/career', careerOrchestratorRoutes)
+router.use('/deployments/canary', canaryRoutes)
+router.use('/cat', catRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

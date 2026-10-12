@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
+import type { User as UserType } from '../types/user'
 import {
   Lock,
   Mail,
@@ -10,7 +11,6 @@ import {
   Eye,
   EyeOff,
   Shield,
-  User,
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react'
@@ -211,20 +211,29 @@ const AuthPage = memo(function AuthPage() {
     }
   }
 
-  // Development-only quick fill credentials - not included in production build
-  const quickFillAdmin = import.meta.env.DEV
-    ? () => {
-        setEmail('admin@learninghub.com')
-        setPassword('Admin@123!')
-      }
-    : undefined
-
-  const quickFillStudent = import.meta.env.DEV
-    ? () => {
-        setEmail('student@learninghub.com')
-        setPassword('Student@123!')
-      }
-    : undefined
+  const handleInstantDemo = (role: 'STUDENT' | 'ADMIN' = 'STUDENT') => {
+    const demoUser: UserType = {
+      id: role === 'ADMIN' ? 'usr-demo-admin' : 'usr-demo-student',
+      email: role === 'ADMIN' ? 'admin@learninghub.com' : 'alex.chen@learninghub.com',
+      username: role === 'ADMIN' ? 'Admin Officer' : 'Alex Chen',
+      avatar:
+        role === 'ADMIN'
+          ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=256'
+          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+      xp: role === 'ADMIN' ? 9999 : 2850,
+      level: role === 'ADMIN' ? 25 : 7,
+      streak: 14,
+      lastActive: new Date().toISOString(),
+      role: role,
+      is_active: true,
+    }
+    setAuth('lh-demo-jwt-token-2026', 'lh-demo-refresh-token', demoUser)
+    addToast({
+      message: `Welcome ${demoUser.username}! Exploring in Instant Demo Mode.`,
+      type: 'success',
+    })
+    navigate(from, { replace: true })
+  }
 
   const fieldClass = (field: keyof FieldErrors) => {
     // eslint-disable-next-line security/detect-object-injection
@@ -568,43 +577,44 @@ const AuthPage = memo(function AuthPage() {
             </Button>
           </form>
 
-          {isLogin && import.meta.env.DEV && (
+          {isLogin && (
             <motion.div
               className="mt-6 relative z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.5 }}
             >
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200 dark:border-gray-700" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
-                    Quick Login
+                  <span className="bg-white dark:bg-gray-800 px-2.5 text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
+                    Instant Demo Preview
                   </span>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
                 <motion.button
-                  onClick={quickFillAdmin!}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 text-sm font-medium hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={() => handleInstantDemo('STUDENT')}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-primary-500/40 bg-primary-50/50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300 text-xs font-bold hover:bg-primary-100/70 dark:hover:bg-primary-900/40 shadow-sm transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <Shield className="h-4 w-4" />
-                  <User className="h-4 w-4" />
-                  Admin Login
+                  <Sparkles className="h-4 w-4 text-primary-500" />
+                  <span>Demo Student</span>
                 </motion.button>
                 <motion.button
-                  onClick={quickFillStudent!}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={() => handleInstantDemo('ADMIN')}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold hover:bg-amber-100/70 dark:hover:bg-amber-900/40 shadow-sm transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <User className="h-4 w-4" />
-                  Student Login
+                  <Shield className="h-4 w-4 text-amber-500" />
+                  <span>Demo Admin</span>
                 </motion.button>
               </div>
             </motion.div>

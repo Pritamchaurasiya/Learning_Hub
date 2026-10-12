@@ -38,6 +38,7 @@ import {
   Wand2,
   Layers,
   Terminal,
+  Briefcase,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -94,6 +95,7 @@ export default function Sidebar() {
         { to: '/arena', icon: Swords, label: '1v1 Arena Duel' },
         { to: '/interview', icon: Bot, label: 'AI Mock Interview' },
         { to: '/resume', icon: FileText, label: 'Verifiable AI Resume' },
+        { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },
@@ -124,6 +126,7 @@ export default function Sidebar() {
         { to: '/crdt', icon: Layers, label: 'P2P Collab Canvas' },
         { to: '/debate', icon: MessageSquare, label: 'AI Debate Council' },
         { to: '/swe-studio', icon: Terminal, label: 'Autonomous SWE Studio' },
+        { to: '/canary', icon: Zap, label: 'GitOps Canary Studio' },
         { to: '/neuro-study', icon: Activity, label: 'Neuro Flow State' },
         { to: '/multimodal-studio', icon: Sparkles, label: 'Voice & Vision Studio' },
         { to: '/canvas', icon: PenTool, label: 'Canvas Blackboard' },

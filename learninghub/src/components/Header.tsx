@@ -23,6 +23,8 @@ import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 import { BrandLogo } from './BrandLogo'
+import { LevelProgressionModal } from './gamification/LevelProgressionModal'
+import { LevelUpCelebrationModal } from './gamification/LevelUpCelebrationModal'
 
 const Header = memo(() => {
   const navigate = useNavigate()
@@ -58,6 +60,7 @@ const Header = memo(() => {
   const [searchInput, setSearchInput] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [progressionModalOpen, setProgressionModalOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(userMenuRef, () => setUserMenuOpen(false))
@@ -262,29 +265,37 @@ const Header = memo(() => {
 
         {/* XP & Level badges */}
         <div className="hidden sm:flex items-center gap-2" role="status" aria-live="polite">
-          <motion.div
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setProgressionModalOpen(true)}
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40"
-            aria-label={`${progress.xp} experience points`}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 cursor-pointer hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-colors"
+            title="Click to view Cognitive Level & Progression Matrix"
+            aria-label={`${progress.xp} experience points. Click to view level progression.`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
               {progress.xp}
             </span>
-          </motion.div>
-          <motion.div
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setProgressionModalOpen(true)}
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200/60 dark:border-purple-800/40"
-            aria-label={`Level ${progress.level}`}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200/60 dark:border-purple-800/40 cursor-pointer hover:bg-purple-100/60 dark:hover:bg-purple-900/30 transition-colors"
+            title="Click to view Cognitive Level & Progression Matrix"
+            aria-label={`Level ${progress.level}. Click to view level progression.`}
           >
             <Trophy className="w-3.5 h-3.5 text-purple-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
               Lv.{progress.level}
             </span>
-          </motion.div>
+          </motion.button>
         </div>
 
         {/* Theme toggle */}
@@ -434,6 +445,15 @@ const Header = memo(() => {
           </div>
         )}
       </div>
+
+      {/* Progression & Level Up Modals */}
+      <LevelProgressionModal
+        isOpen={progressionModalOpen}
+        onClose={() => setProgressionModalOpen(false)}
+        currentXp={progress.xp}
+        streak={progress.streak}
+      />
+      <LevelUpCelebrationModal />
     </header>
   )
 })

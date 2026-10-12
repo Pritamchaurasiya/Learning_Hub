@@ -27,6 +27,7 @@ import { Env, ExecutionContext } from './types'
 const ALLOWED_ORIGINS = [
   'https://learninghub.app',
   'https://www.learninghub.app',
+  'https://learninghub-385.pages.dev',
   'http://localhost:3000',
   'http://localhost:5173',
 ]

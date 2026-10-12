@@ -33,6 +33,7 @@ import {
   Wand2,
   Flame,
   Bot,
+  Briefcase,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -126,6 +127,15 @@ const COMMANDS: CommandItem[] = [
     icon: FileText,
     path: '/resume',
     keywords: ['resume', 'cv', 'ats', 'portfolio', 'did', 'w3c', 'career', 'credentials', 'hiring', 'verifiable'],
+  },
+  {
+    id: 'practice-career-orchestrator',
+    title: 'Autonomous Job Matching & Recruiter Grid',
+    description: 'Multi-agent recruiter simulation, frontier job match affinity & live salary negotiation',
+    category: 'Practice',
+    icon: Briefcase,
+    path: '/career',
+    keywords: ['job', 'jobs', 'career', 'recruiter', 'negotiation', 'salary', 'matching', 'hiring', 'offer'],
   },
   {
     id: 'practice-revision',
@@ -252,6 +262,15 @@ const COMMANDS: CommandItem[] = [
     icon: Bot,
     path: '/swe-studio',
     keywords: ['swe', 'swe-bench', 'autonomous agent', 'ochiai', 'sbfl', 'patch', 'pull request', 'bug fix', 'diff'],
+  },
+  {
+    id: 'tool-canary-console',
+    title: 'Autonomous GitOps Canary Deployment & Progressive Delivery Studio',
+    description: 'Canary traffic shifting, real-time SLI error budget tracking, statistical Z-score anomaly detection & automated rollback',
+    category: 'Tools',
+    icon: Zap,
+    path: '/canary',
+    keywords: ['canary', 'deploy', 'gitops', 'progressive delivery', 'sli', 'slo', 'traffic shift', 'rollback', 'sre', 'devops'],
   },
   {
     id: 'tool-multimodal-studio',

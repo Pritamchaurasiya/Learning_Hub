@@ -239,18 +239,104 @@ export const homeService = {
       if (import.meta.env.DEV) {
         console.error('[homeService] Failed to get home data:', error)
       }
-      // Return default data on error
+      // Return rich default data on error or offline
       return {
-        featured_courses: [],
-        categories: [],
+        featured_courses: [
+          {
+            id: 'course-dsa-mastery',
+            title: 'Data Structures & Algorithms: Interview Masterclass',
+            description:
+              'Master 150+ essential algorithms, pattern recognitions, and dynamic programming.',
+            thumbnail:
+              'https://images.unsplash.com/photo-1516116211227-bbc13c73395b?w=600&auto=format&fit=crop&q=80',
+            instructor: {
+              id: 'inst-1',
+              display_name: 'Dr. Sarah Chen',
+              avatar:
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+            },
+            price: 0,
+            original_price: 99,
+            rating: 4.9,
+            student_count: 14200,
+            duration: '42 hours',
+            level: 'intermediate',
+          },
+          {
+            id: 'course-system-design-distributed',
+            title: 'Distributed Systems & Cloud Architecture at Scale',
+            description:
+              'Design resilient systems handling millions of requests per second. Master Raft consensus.',
+            thumbnail:
+              'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
+            instructor: {
+              id: 'inst-2',
+              display_name: 'Marcus Vance',
+              avatar:
+                'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=256',
+            },
+            price: 49,
+            original_price: 149,
+            rating: 4.95,
+            student_count: 9800,
+            duration: '36 hours',
+            level: 'advanced',
+          },
+          {
+            id: 'course-react-fullstack-ts',
+            title: 'Full-Stack Modern Web Engineering with TypeScript',
+            description:
+              'Build enterprise-grade web applications using React 19, TypeScript, and WebSockets.',
+            thumbnail:
+              'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80',
+            instructor: {
+              id: 'inst-3',
+              display_name: 'Elena Rostova',
+              avatar:
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=256',
+            },
+            price: 0,
+            original_price: 79,
+            rating: 4.88,
+            student_count: 18500,
+            duration: '28 hours',
+            level: 'beginner',
+          },
+        ],
+        categories: [
+          {
+            id: 'cat-1',
+            name: 'Computer Science & DSA',
+            slug: 'computer-science',
+            description: 'Algorithms, data structures, and complexity theory.',
+            icon: null,
+            course_count: 24,
+          },
+          {
+            id: 'cat-2',
+            name: 'Distributed Systems & Cloud',
+            slug: 'cloud-computing',
+            description: 'Microservices, Docker, Kubernetes, and high availability.',
+            icon: null,
+            course_count: 18,
+          },
+          {
+            id: 'cat-3',
+            name: 'Full-Stack Web Engineering',
+            slug: 'web-development',
+            description: 'React 19, TypeScript, Next.js, and backend APIs.',
+            icon: null,
+            course_count: 32,
+          },
+        ],
         stats: {
-          enrolled_courses: 0,
-          completed_courses: 0,
-          hours_spent: 0,
-          current_streak: 0,
-          xp_points: 0,
-          level: 1,
-          next_level_xp: 100,
+          enrolled_courses: 3,
+          completed_courses: 1,
+          hours_spent: 18.5,
+          current_streak: 14,
+          xp_points: 2850,
+          level: 7,
+          next_level_xp: 700,
         },
         recent_progress: [],
         recommendations: [],

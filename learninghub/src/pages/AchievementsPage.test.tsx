@@ -86,4 +86,17 @@ describe('AchievementsPage Component', () => {
 
     expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('First Blood'))
   })
+
+  it('opens LevelProgressionModal when level or XP stat is clicked', async () => {
+    render(<AchievementsPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('First Blood')).toBeInTheDocument()
+    })
+
+    const xpButton = screen.getAllByTitle('Click to view Cognitive Level & Progression Matrix')[0]
+    fireEvent.click(xpButton)
+
+    expect(screen.getByText('Cognitive Mastery Matrix')).toBeInTheDocument()
+  })
 })

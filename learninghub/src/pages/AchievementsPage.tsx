@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
 import { Award, Lock, CheckCircle, Share2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react'
+import { LevelProgressionModal } from '../components/gamification/LevelProgressionModal'
 
 interface Achievement {
   id: string
@@ -17,6 +19,7 @@ interface Achievement {
 }
 
 export default function AchievementsPage() {
+  const [progressionModalOpen, setProgressionModalOpen] = useState(false)
   const progress = useStore(state => state.progress)
   const addToast = useStore(state => state.addToast)
 
@@ -187,16 +190,24 @@ export default function AchievementsPage() {
             </div>
           </div>
           <div className="flex gap-8 text-center">
-            <div>
-              <p className="text-2xl font-bold text-amber-500 tabular-nums">{progress.xp}</p>
+            <button
+              onClick={() => setProgressionModalOpen(true)}
+              className="text-center group p-1.5 -m-1.5 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
+              title="Click to view Cognitive Level & Progression Matrix"
+            >
+              <p className="text-2xl font-bold text-amber-500 tabular-nums group-hover:scale-105 transition-transform">{progress.xp}</p>
               <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">XP</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-500 tabular-nums">{progress.level}</p>
+            </button>
+            <button
+              onClick={() => setProgressionModalOpen(true)}
+              className="text-center group p-1.5 -m-1.5 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-colors"
+              title="Click to view Cognitive Level & Progression Matrix"
+            >
+              <p className="text-2xl font-bold text-purple-500 tabular-nums group-hover:scale-105 transition-transform">{progress.level}</p>
               <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
                 Level
               </p>
-            </div>
+            </button>
             <div>
               <p className="text-2xl font-bold text-orange-500 tabular-nums">{progress.streak}</p>
               <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
@@ -263,6 +274,13 @@ export default function AchievementsPage() {
           </div>
         ))}
       </div>
+
+      <LevelProgressionModal
+        isOpen={progressionModalOpen}
+        onClose={() => setProgressionModalOpen(false)}
+        currentXp={progress.xp}
+        streak={progress.streak}
+      />
     </AnimatedPage>
   )
 }

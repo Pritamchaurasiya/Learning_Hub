@@ -89,6 +89,12 @@ const ChaosClusterSandboxPage = lazy(() =>
 const SweStudioPage = lazy(() =>
   import('./pages/SweStudioPage').then(m => ({ default: m.SweStudioPage }))
 )
+const CanaryConsolePage = lazy(() =>
+  import('./pages/CanaryConsolePage').then(m => ({ default: m.CanaryConsolePage }))
+)
+const CareerOrchestratorPage = lazy(() =>
+  import('./pages/CareerOrchestratorPage').then(m => ({ default: m.CareerOrchestratorPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -442,6 +448,16 @@ function App() {
                 }
               />
               <Route
+                path="/career"
+                element={
+                  <LazyRoute sectionName="Autonomous Career & Recruiter Simulation Grid">
+                    <CareerOrchestratorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/career-match" element={<Navigate to="/career" replace />} />
+              <Route path="/jobs" element={<Navigate to="/career" replace />} />
+              <Route
                 path="/edge-ai"
                 element={
                   <LazyRoute sectionName="Edge AI Offline Studio">
@@ -597,6 +613,26 @@ function App() {
               />
               <Route path="/swe-bench" element={<Navigate to="/swe-studio" replace />} />
               <Route path="/autonomous-swe" element={<Navigate to="/swe-studio" replace />} />
+              <Route
+                path="/canary"
+                element={
+                  <LazyRoute sectionName="Autonomous GitOps Progressive Delivery & Canary Console">
+                    <CanaryConsolePage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/deployments" element={<Navigate to="/canary" replace />} />
+              <Route path="/canary-console" element={<Navigate to="/canary" replace />} />
+              <Route
+                path="/career"
+                element={
+                  <LazyRoute sectionName="Autonomous Career Engine & Recruiter Simulation">
+                    <CareerOrchestratorPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/career-match" element={<Navigate to="/career" replace />} />
+              <Route path="/recruiter-sim" element={<Navigate to="/career" replace />} />
               <Route
                 path="/visualizer"
                 element={

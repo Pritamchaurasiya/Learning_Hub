@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { fetchApi } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
+import { calculateLevel } from '../../utils/number'
 import type { AppState, ProgressSlice, Achievement, Notification } from '../types'
 
 const defaultProgress = {
@@ -57,18 +58,41 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
         body: JSON.stringify({ courseId }),
       })
       const awardedXp = res?.data?.xp_awarded ?? xp
+      const currentXp = get().progress.xp
+      const previousLevel = calculateLevel(currentXp)
+      const nextXp = currentXp + awardedXp
+      const newLevel = calculateLevel(nextXp)
+      const didLevelUp = newLevel > previousLevel
 
       set(state => ({
         progress: {
           ...state.progress,
           completedCourses: [...state.progress.completedCourses, courseId],
-          xp: state.progress.xp + awardedXp,
-          level: Math.floor((state.progress.xp + awardedXp) / 100) + 1,
+          xp: nextXp,
+          level: newLevel,
         },
         loading: { ...state.loading, isLoading: false },
+        ...(didLevelUp
+          ? {
+              levelUpState: {
+                isOpen: true,
+                previousLevel,
+                newLevel,
+                xpGained: awardedXp,
+              },
+            }
+          : {}),
       }))
 
-      get().addToast({ message: `Course completed! +${awardedXp} XP`, type: 'success' })
+      if (didLevelUp) {
+        get().addToast({
+          message: `LEVEL UP! You advanced to Level ${newLevel}! 🎉`,
+          type: 'success',
+          duration: 6000,
+        })
+      } else {
+        get().addToast({ message: `Course completed! +${awardedXp} XP`, type: 'success' })
+      }
       trackEvent('course_completed', { course_id: courseId, xp: awardedXp })
 
       if (isFirstCourse) get().unlockAchievement('first-course')
@@ -292,5 +316,13 @@ export const createProgressSlice: StateCreator<AppState, [], [], ProgressSlice> 
       type: notification.type === 'achievement' ? 'success' : 'info',
       duration: 5000,
     })
+  },
+
+  levelUpState: null,
+  showLevelUpModal: state => {
+    set({ levelUpState: { ...state, isOpen: true } })
+  },
+  closeLevelUpModal: () => {
+    set({ levelUpState: null })
   },
 })
