@@ -35,8 +35,8 @@ jobs:
           cache-dependency-path: learninghub/package-lock.json
 
       - name: Install dependencies
-        # The repository lockfile contains an esbuild version mismatch; npm install
-        # resolves the manifest and lockfile together until the lockfile is regenerated locally.
+        # The repository lockfile has an esbuild version mismatch; npm install resolves
+        # the manifest and lockfile together until the lockfile is regenerated locally.
         run: npm install --no-audit --no-fund
 
       - name: Warn when backend API is not configured
@@ -46,8 +46,7 @@ jobs:
       - name: Build production frontend
         run: npm run build
         env:
-          # Set the GitHub Actions repository variable VITE_API_URL to your
-          # deployed API base URL, e.g. https://api.example.com/api/v1.
+          # Use the real deployed API base URL, including its version prefix.
           # The fallback publishes the SPA but does not create an API backend.
           VITE_API_URL: ${{ vars.VITE_API_URL || '/api/v1' }}
           VITE_ENABLE_DEBUG: "false"
@@ -64,3 +63,36 @@ jobs:
             exit 1
           fi
           npx --yes wrangler@latest pages deploy dist --project-name=learninghub --branch="${{ github.ref_name }}"
+
+      - name: Smoke test deployed frontend
+        shell: bash
+        env:
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$DEPLOY_BRANCH" == "main" ]]; then
+            SITE_URL="https://learninghub-385.pages.dev"
+          else
+            SITE_URL="https://${DEPLOY_BRANCH}.learninghub-385.pages.dev"
+          fi
+
+          echo "Checking deployed site: $SITE_URL"
+          curl --fail --location --silent --show-error \
+            --retry 8 --retry-delay 3 --retry-all-errors \
+            "$SITE_URL/" --output /tmp/learninghub-index.html
+
+          grep -qi 'LearningHub' /tmp/learninghub-index.html
+          grep -Eqi 'id="root"' /tmp/learninghub-index.html
+
+          ASSET_PATH="$(grep -oE '/assets/[^" ]+\.js' /tmp/learninghub-index.html | head -n 1 || true)"
+          if [[ -z "$ASSET_PATH" ]]; then
+            echo "::error::No compiled JavaScript asset reference was found in the deployed HTML."
+            exit 1
+          fi
+
+          curl --fail --location --silent --show-error \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "$SITE_URL$ASSET_PATH" --output /dev/null
+
+          echo "Smoke test passed: HTML and a compiled JavaScript asset are reachable."
