@@ -32,7 +32,6 @@ export const getBookmarks = asyncHandler(async (req: Request, res: Response) => 
             type: true,
             difficulty: true,
             points: true,
-            createdAt: true,
           },
         },
       },
