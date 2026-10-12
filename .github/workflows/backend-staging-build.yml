@@ -1,0 +1,43 @@
+name: LearningHub Express Staging Build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "learninghub/backend/**"
+      - ".github/workflows/backend-staging-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: express-staging-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Prisma Generate & TypeScript Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learninghub/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: learninghub/backend/package-lock.json
+
+      - name: Install dependencies (same strategy as Render staging)
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build backend
+        run: npm run build
