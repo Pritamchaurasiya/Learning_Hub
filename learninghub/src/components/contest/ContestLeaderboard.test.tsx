@@ -17,9 +17,10 @@ describe('ContestLeaderboard Component', () => {
     description: 'Competitive programming tournament',
     start_time: '2026-05-01T10:00:00Z',
     end_time: '2026-05-01T12:00:00Z',
-    duration_minutes: 120,
+    duration: 120,
     status: 'active',
-    participant_count: 50,
+    participants: 50,
+    problem_count: 4,
   }
 
   const mockAllContests: Contest[] = [mockContest]
