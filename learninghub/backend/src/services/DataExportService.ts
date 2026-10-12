@@ -21,7 +21,7 @@ export class DataExportService {
             test: {
               select: {
                 title: true,
-                subjectId: true,
+                examId: true,
                 timeLimit: true,
                 passingScore: true,
               },
@@ -61,7 +61,7 @@ export class DataExportService {
       testHistory: scrubbedUser.testResults.map((result: any) => ({
         testId: result.testId,
         testTitle: result.test.title,
-        subjectId: result.test.subjectId,
+        examId: result.test.examId,
         status: result.status,
         score: result.score,
         percentage: result.percentage,
