@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { render } from '../test/test-utils'
@@ -12,6 +13,29 @@ vi.mock('../utils/api', () => ({
 vi.mock('../components/AILearningEngine', () => ({
   default: () => <div data-testid="ai-learning-engine">AILearningEngine</div>,
 }))
+
+// Mock recharts to avoid ResizeObserver issues in test environment
+vi.mock('recharts', () => {
+  return {
+    ResponsiveContainer: ({ children }: { children: ReactNode }) => (
+      <div data-testid="responsive-container">{children}</div>
+    ),
+    AreaChart: ({ children }: { children: ReactNode }) => (
+      <div data-testid="area-chart">{children}</div>
+    ),
+    RadarChart: ({ children }: { children: ReactNode }) => (
+      <div data-testid="radar-chart">{children}</div>
+    ),
+    Area: () => null,
+    Radar: () => null,
+    XAxis: () => null,
+    YAxis: () => null,
+    CartesianGrid: () => null,
+    Tooltip: () => null,
+    PolarGrid: () => null,
+    PolarAngleAxis: () => null,
+  }
+})
 
 describe('Dashboard Component', () => {
   const mockProfileResponse = {
@@ -36,6 +60,14 @@ describe('Dashboard Component', () => {
           passed: true,
           completedAt: '2026-03-01T12:00:00Z',
           test: { title: 'Algorithms & Data Structures Assessment' },
+        },
+        {
+          id: 'att-2',
+          status: 'COMPLETED',
+          score: 45,
+          passed: false,
+          completedAt: '2026-02-28T10:00:00Z',
+          test: { title: 'Dynamic Programming Deep Dive' },
         },
       ],
     },
@@ -114,5 +146,46 @@ describe('Dashboard Component', () => {
     await waitFor(() => {
       expect(screen.getByText('AI Dynamic Test Generation')).toBeInTheDocument()
     })
+  })
+
+  it('renders recent test results including passed and failed assessments', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Algorithms & Data Structures Assessment/i)).toBeInTheDocument()
+    })
+
+    // Check that the pass/fail statuses are rendered
+    expect(screen.getByText('85%')).toBeInTheDocument()
+    expect(screen.getByText('45%')).toBeInTheDocument()
+    expect(screen.getByText(/Dynamic Programming Deep Dive/i)).toBeInTheDocument()
+  })
+
+  it('renders all four core stat tiles with correct data', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome back/i)).toBeInTheDocument()
+    })
+
+    // Assessments taken
+    expect(screen.getByText('Assessments Taken')).toBeInTheDocument()
+    // Pass rate
+    expect(screen.getByText('Overall Accuracy Rate')).toBeInTheDocument()
+    // XP (appears in stat tile, level progress, and next action card)
+    expect(screen.getAllByText(/XP/i).length).toBeGreaterThanOrEqual(1)
+    // Streak
+    expect(screen.getByText('Continuous Study Streak')).toBeInTheDocument()
+  })
+
+  it('renders the AI Learning Engine and 7-day area chart section', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome back/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId('ai-learning-engine')).toBeInTheDocument()
+    expect(screen.getByText(/7-Day Accuracy/i)).toBeInTheDocument()
   })
 })

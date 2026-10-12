@@ -26,12 +26,14 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Skeleton } from '../components/ui/Skeleton'
 import { contestService, type Contest } from '../services/contestService'
+import ContestLeaderboard from '../components/contest/ContestLeaderboard'
 
 export default function ContestPage() {
   useDocumentTitle('Contests')
   const navigate = useNavigate()
   const addToast = useStore(state => state.addToast)
   const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'results'>('active')
+  const [selectedContestId, setSelectedContestId] = useState<string>('')
 
   // Use React Query for contests
   const {
@@ -71,6 +73,15 @@ export default function ContestPage() {
     if (activeTab === 'upcoming') return c.status === 'upcoming'
     return false
   })
+
+  const currentContestId =
+    selectedContestId ||
+    apiContests.find((c: Contest) => c.status === 'active')?.contest_id ||
+    apiContests[0]?.contest_id ||
+    ''
+
+  const selectedContest =
+    apiContests.find((c: Contest) => c.contest_id === currentContestId) || null
 
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty?.toLowerCase()) {
@@ -306,6 +317,11 @@ export default function ContestPage() {
                           </div>
                           <Button
                             variant="outline"
+                            onClick={() => {
+                              setSelectedContestId(result.contestId)
+                              const el = document.getElementById('contest-leaderboard-section')
+                              el?.scrollIntoView({ behavior: 'smooth' })
+                            }}
                             className="shrink-0 rounded-xl font-black uppercase tracking-widest text-[10px] border-2"
                             rightIcon={<ArrowRight className="w-4 h-4" />}
                           >
@@ -379,27 +395,41 @@ export default function ContestPage() {
                       </div>
                     )}
 
-                    <Button
-                      onClick={() => handleParticipate(contest)}
-                      className={`w-full py-5 rounded-[1.25rem] font-black uppercase tracking-widest text-[10px] shadow-lg transition-transform hover:scale-[1.02] ${
-                        contest.status === 'active'
-                          ? 'bg-primary-600 hover:bg-primary-700 shadow-primary-500/30 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 shadow-none'
-                      }`}
-                      leftIcon={
-                        contest.status === 'active' ? (
-                          <Play className="w-4 h-4" />
-                        ) : (
-                          <Calendar className="w-4 h-4" />
-                        )
-                      }
-                    >
-                      {contest.status === 'active'
-                        ? 'Initiate Combat'
-                        : contest.status === 'upcoming'
-                          ? 'Set Reminder'
-                          : 'Review Analytics'}
-                    </Button>
+                    <div className="flex gap-2.5">
+                      <Button
+                        onClick={() => handleParticipate(contest)}
+                        className={`flex-1 py-5 rounded-[1.25rem] font-black uppercase tracking-widest text-[10px] shadow-lg transition-transform hover:scale-[1.01] ${
+                          contest.status === 'active'
+                            ? 'bg-primary-600 hover:bg-primary-700 shadow-primary-500/30 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 shadow-none'
+                        }`}
+                        leftIcon={
+                          contest.status === 'active' ? (
+                            <Play className="w-4 h-4" />
+                          ) : (
+                            <Calendar className="w-4 h-4" />
+                          )
+                        }
+                      >
+                        {contest.status === 'active'
+                          ? 'Initiate Combat'
+                          : contest.status === 'upcoming'
+                            ? 'Set Reminder'
+                            : 'Review Analytics'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedContestId(contest.contest_id)
+                          const el = document.getElementById('contest-leaderboard-section')
+                          el?.scrollIntoView({ behavior: 'smooth' })
+                        }}
+                        className="px-4 py-5 rounded-[1.25rem] font-black uppercase tracking-widest text-[10px] border-2 shrink-0 hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:border-amber-400"
+                        aria-label={`View Live Board for ${contest.title}`}
+                      >
+                        <Trophy className="w-4 h-4 text-amber-500" />
+                      </Button>
+                    </div>
                   </Card>
                 </motion.div>
               ))}
@@ -426,25 +456,19 @@ export default function ContestPage() {
             </motion.div>
           )}
 
-          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900 mt-8">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-3">
-              <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <Star className="w-4 h-4 text-yellow-500" />
-              </div>
-              Global Elite Top 5
-            </h2>
-            <div className="space-y-3">
-              {contests.length > 0 ? (
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                  Select an active arena to analyze its leaderboard
-                </p>
-              ) : (
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                  Insufficient data for elite ranking calculation
-                </p>
-              )}
-            </div>
-          </Card>
+          {/* Live Contest Arena Leaderboard */}
+          <div id="contest-leaderboard-section" className="mt-10">
+            <ContestLeaderboard
+              selectedContest={selectedContest}
+              allContests={apiContests}
+              onSelectContest={id => setSelectedContestId(id)}
+              onNavigateToCombat={id => {
+                const c = apiContests.find((item: Contest) => item.contest_id === id)
+                if (c) handleParticipate(c)
+                else navigate(`/problems?contest=${id}`)
+              }}
+            />
+          </div>
         </motion.div>
       </AnimatePresence>
     </AnimatedPage>

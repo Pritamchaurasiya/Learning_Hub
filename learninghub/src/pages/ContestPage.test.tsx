@@ -2,12 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { render } from '../test/test-utils'
 import ContestPage from './ContestPage'
-import { contestService, type Contest } from '../services/contestService'
+import {
+  contestService,
+  type Contest,
+  type ContestLeaderboardEntry,
+} from '../services/contestService'
 
 vi.mock('../services/contestService', () => ({
   contestService: {
     getContests: vi.fn(),
     getContestResults: vi.fn(),
+    getLeaderboard: vi.fn(),
     participate: vi.fn(),
   },
 }))
@@ -42,14 +47,44 @@ describe('ContestPage Component', () => {
     },
   ]
 
+  const mockLeaderboard: ContestLeaderboardEntry[] = [
+    {
+      rank: 1,
+      user: 'AlphaCoder',
+      score: 1000,
+      problems_solved: 4,
+      finish_time: '1800',
+    },
+    {
+      rank: 2,
+      user: 'BetaByte',
+      score: 850,
+      problems_solved: 3,
+      finish_time: '2400',
+    },
+    {
+      rank: 3,
+      user: 'GammaGladiator',
+      score: 700,
+      problems_solved: 3,
+      finish_time: '2900',
+    },
+    {
+      rank: 4,
+      user: 'DeltaDev',
+      score: 500,
+      problems_solved: 2,
+      finish_time: '3200',
+    },
+  ]
+
   const mockResults = [
     {
       contestId: 'cnt-1',
       rank: 1,
-      username: 'AlgoGod',
       score: 400,
-      time_taken: 3200,
-      problems_solved: 4,
+      time: 3200,
+      solved: 4,
     },
   ]
 
@@ -63,6 +98,10 @@ describe('ContestPage Component', () => {
       data: mockResults,
       status: 'success',
     } as any)
+    vi.mocked(contestService.getLeaderboard).mockResolvedValue({
+      data: mockLeaderboard,
+      status: 'success',
+    } as any)
   })
 
   it('renders contests title, active contest cards, and tabs', async () => {
@@ -70,7 +109,7 @@ describe('ContestPage Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Combat Arena')).toBeInTheDocument()
-      expect(screen.getByText('Weekly Algorithmic Clash #42')).toBeInTheDocument()
+      expect(screen.getAllByText('Weekly Algorithmic Clash #42').length).toBeGreaterThan(0)
     })
 
     expect(screen.getByRole('button', { name: /^active$/i })).toBeInTheDocument()
@@ -82,15 +121,86 @@ describe('ContestPage Component', () => {
     render(<ContestPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Weekly Algorithmic Clash #42')).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: 'Weekly Algorithmic Clash #42' })
+      ).toBeInTheDocument()
     })
 
     const upcomingTab = screen.getByRole('button', { name: /^upcoming$/i })
     fireEvent.click(upcomingTab)
 
     await waitFor(() => {
-      expect(screen.getByText('Grand Dynamic Programming Marathon')).toBeInTheDocument()
-      expect(screen.queryByText('Weekly Algorithmic Clash #42')).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: 'Grand Dynamic Programming Marathon' })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { name: 'Weekly Algorithmic Clash #42' })
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('renders live combat leaderboard with top gladiators and telemetry', async () => {
+    render(<ContestPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Combat Telemetry & Leaderboard/i)).toBeInTheDocument()
+      expect(screen.getAllByText('AlphaCoder').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('BetaByte').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('GammaGladiator').length).toBeGreaterThan(0)
+      expect(screen.getByText('DeltaDev')).toBeInTheDocument()
+    })
+
+    // Check scores
+    expect(screen.getAllByText(/1000 pts/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/850 pts/i).length).toBeGreaterThan(0)
+  })
+
+  it('filters leaderboard entries by competitor search query', async () => {
+    render(<ContestPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('DeltaDev')).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByPlaceholderText(/Search gladiator/i)
+    fireEvent.change(searchInput, { target: { value: 'Delta' } })
+
+    await waitFor(() => {
+      expect(screen.getByText('DeltaDev')).toBeInTheDocument()
+      expect(screen.queryByText('AlphaCoder')).not.toBeInTheDocument()
+    })
+  })
+
+  it('toggles live stream status between active and paused', async () => {
+    render(<ContestPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Live Stream Active/i)).toBeInTheDocument()
+    })
+
+    const liveToggleBtn = screen.getByRole('button', { name: /Toggle Live Sync/i })
+    fireEvent.click(liveToggleBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Live Sync Paused/i)).toBeInTheDocument()
+    })
+  })
+
+  it('triggers manual refetch when Sync Now is clicked', async () => {
+    render(<ContestPage />)
+
+    // Wait for initial fetch to finish so Sync Now button is enabled
+    await waitFor(() => {
+      expect(screen.getByText('Sync Now')).toBeInTheDocument()
+      expect(contestService.getLeaderboard).toHaveBeenCalledWith('cnt-1')
+    })
+
+    const syncBtn = screen.getByRole('button', { name: /Refresh Leaderboard/i })
+    expect(syncBtn).not.toBeDisabled()
+    fireEvent.click(syncBtn)
+
+    await waitFor(() => {
+      expect(contestService.getLeaderboard).toHaveBeenCalledTimes(2)
     })
   })
 })

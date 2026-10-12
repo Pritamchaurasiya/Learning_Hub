@@ -35,6 +35,8 @@ import { ErrorState } from '../components/ui/ErrorState'
 import { EmptyState } from '../components/ui/EmptyState'
 import AnimatedPage from '../components/AnimatedPage'
 import { useStore } from '../stores/useStore'
+import { LiveSessionNotesPanel } from '../components/liveclass/LiveSessionNotesPanel'
+import { SessionElapsedTimer } from '../components/liveclass/SessionElapsedTimer'
 
 // ─── Interactive Whiteboard Component ─────────────────────────────────
 function WhiteboardCanvas() {
@@ -277,7 +279,7 @@ function LiveClassRoomStudio({ sessionId }: { sessionId: string }) {
   const addToast = useStore(state => state.addToast)
 
   const [activeTab, setActiveTab] = useState<'stage' | 'whiteboard' | 'code'>('stage')
-  const [sidebarTab, setSidebarTab] = useState<'chat' | 'qa' | 'people'>('chat')
+  const [sidebarTab, setSidebarTab] = useState<'chat' | 'qa' | 'people' | 'notes'>('chat')
   const [isMicOn, setIsMicOn] = useState(false)
   const [isVideoOn, setIsVideoOn] = useState(true)
   const [isScreenSharing, setIsScreenSharing] = useState(false)
@@ -427,6 +429,11 @@ function LiveClassRoomStudio({ sessionId }: { sessionId: string }) {
 
         {/* Action Controls & Leave */}
         <div className="flex items-center gap-3">
+          <SessionElapsedTimer
+            startTime={session.scheduledAt}
+            durationMinutes={session.durationMinutes}
+          />
+
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-bold bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-700">
             <Users className="w-3.5 h-3.5 text-indigo-400" />
             <span className="tabular-nums font-black text-slate-200">
@@ -642,6 +649,16 @@ def dijkstra(graph, start_node):
             >
               People
             </button>
+            <button
+              onClick={() => setSidebarTab('notes')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                sidebarTab === 'notes'
+                  ? 'bg-slate-800 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Notes
+            </button>
           </div>
 
           {/* Chat Panel */}
@@ -712,6 +729,14 @@ def dijkstra(graph, start_node):
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Notes Panel */}
+          {sidebarTab === 'notes' && (
+            <LiveSessionNotesPanel
+              sessionId={sessionId}
+              sessionTitle={session.title}
+            />
           )}
 
           {/* People Panel */}

@@ -171,16 +171,16 @@ export default defineConfig(({ mode }) => {
               if (id.includes('lucide-react')) return 'icons'
               if (id.includes('highlight.js')) return 'highlight'
               if (
-                id.includes('marked') ||
-                id.includes('dompurify') ||
                 id.includes('react-markdown') ||
                 id.includes('remark') ||
                 id.includes('micromark') ||
                 id.includes('unist') ||
                 id.includes('vfile') ||
-                id.includes('mdast')
+                id.includes('mdast') ||
+                id.includes('marked') ||
+                id.includes('dompurify')
               )
-                return 'markdown'
+                return 'vendor'
               if (id.includes('recharts')) return 'charts'
               if (id.includes('katex')) return 'katex'
               if (id.includes('@google/generative-ai')) return 'vendor-ai'

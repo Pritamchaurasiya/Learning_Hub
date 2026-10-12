@@ -29,6 +29,8 @@ import { ContestCountdownWidget } from '../components/dashboard/ContestCountdown
 import { DashboardScratchpadWidget } from '../components/dashboard/DashboardScratchpadWidget'
 import { WeeklyStudyAreaChart } from '../components/dashboard/WeeklyStudyAreaChart'
 import { StreakMultiplierBadge } from '../components/dashboard/StreakMultiplierBadge'
+import { TopicMasteryRadar } from '../components/dashboard/TopicMasteryRadar'
+import { SpeedTrendWidget } from '../components/dashboard/SpeedTrendWidget'
 
 interface DashboardStats {
   testsAttempted: number
@@ -380,6 +382,11 @@ const Dashboard = memo(function Dashboard() {
             </div>
           </Card>
 
+          {/* Topic Mastery Radar */}
+          {analyticsData?.topicMastery && Object.keys(analyticsData.topicMastery).length > 0 && (
+            <TopicMasteryRadar topicMastery={analyticsData.topicMastery} />
+          )}
+
           {/* AI Learning Recommendations */}
           <AILearningEngine />
         </div>
@@ -391,6 +398,11 @@ const Dashboard = memo(function Dashboard() {
 
           {/* Contest Countdown */}
           <ContestCountdownWidget />
+
+          {/* Speed Trend */}
+          {analyticsData?.speedTrend && analyticsData.speedTrend.length > 0 && (
+            <SpeedTrendWidget data={analyticsData.speedTrend} />
+          )}
 
           {/* Level Progress */}
           <Card className="p-5 space-y-3">

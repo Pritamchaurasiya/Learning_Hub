@@ -30,6 +30,19 @@ vi.mock('../services/liveClassService', () => ({
       ],
       count: 2,
     }),
+    getSession: vi.fn().mockResolvedValue({
+      status: 'success',
+      data: {
+        id: 'session-1',
+        title: 'Graph Theory & Dijkstra Algorithm Workshop',
+        instructorName: 'Dr. Sarah Chen',
+        scheduledAt: new Date().toISOString(),
+        durationMinutes: 90,
+        status: 'live',
+        maxParticipants: 100,
+        currentParticipants: 45,
+      },
+    }),
   },
 }))
 
@@ -76,4 +89,27 @@ describe('LiveClassPage Component', () => {
     expect(screen.getByText(/Graph Theory & Dijkstra Algorithm Workshop/i)).toBeInTheDocument()
     expect(screen.queryByText(/Dynamic Programming Masterclass/i)).not.toBeInTheDocument()
   })
+
+  it('renders header banner with Join Active Live Room button', async () => {
+    render(<LiveClassPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Live Interactive Classrooms')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Join Active Live Room')).toBeInTheDocument()
+  })
+
+  it('displays session card metadata including duration and participant count', async () => {
+    render(<LiveClassPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Graph Theory & Dijkstra Algorithm Workshop/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/90 min Studio Session/i)).toBeInTheDocument()
+    expect(screen.getByText(/45\/100 participants/i)).toBeInTheDocument()
+    expect(screen.getByText(/Dr. Sarah Chen/i)).toBeInTheDocument()
+  })
 })
+
