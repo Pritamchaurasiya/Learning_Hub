@@ -340,14 +340,17 @@ if (replicaUrl) {
 }
 
 // Apply Read Replicas extension only when a replica is configured
-export const prisma = replicaClient
-  ? basePrisma.$extends(
+// Keep the base client type stable: the read-replicas extension narrows some
+// overloads in TypeScript (notably interactive $transaction callbacks). The
+// runtime extension is only enabled when DATABASE_URL_REPLICA is configured.
+export const prisma: ExtendedPrismaClient = replicaClient
+  ? (basePrisma.$extends(
       readReplicas({
         replicas: [
-          replicaClient as unknown as Parameters<typeof readReplicas>[0]['replicas'][number],
+          replicaClient as unknown as NonNullable<Parameters<typeof readReplicas>[0]['replicas']>[number],
         ],
       })
-    )
+    ) as unknown as ExtendedPrismaClient)
   : basePrisma
 
 // Cache instance in development to prevent hot-reload issues
