@@ -192,7 +192,7 @@ export const runSolution = asyncHandler(async (req: Request, res: Response): Pro
     code,
     language: resolvedLanguage,
     testCases: sampleTestCases,
-    timeLimit: 5,
+    timeLimit: 5000,
     memoryLimit: 256,
   })
 
@@ -297,7 +297,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     code,
     language,
     testCases,
-    timeLimit: 5,
+    timeLimit: 5000,
     memoryLimit: 256,
   })
 
