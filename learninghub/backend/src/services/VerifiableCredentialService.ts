@@ -126,8 +126,8 @@ const VC_SECRET =
   process.env.JWT_SECRET ||
   'learninghub-did-vc-signing-key-production-change'
 
-const ISSUER_POLYGON_ADDRESS = '0x71C665C1e78451bEE7065CA80f5338749b75F9B7'
-const CREDENTIAL_REGISTRY_CONTRACT = '0x882aE2D8504B67D3a14603B64FaA95318F832168'
+const ISSUER_POLYGON_ADDRESS = '0x71C665C1e78451bEE7065CA80f5338749b75F9B7' // gitleaks:allow — public issuer address, not a secret
+const CREDENTIAL_REGISTRY_CONTRACT = '0x882aE2D8504B67D3a14603B64FaA95318F832168' // gitleaks:allow — public contract address, not a secret
 
 export const LEARNINGHUB_ISSUER: W3CIssuer = {
   id: `did:polygon:${ISSUER_POLYGON_ADDRESS}`,
