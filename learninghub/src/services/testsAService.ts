@@ -800,7 +800,21 @@ export const testsAService = {
     })),
 
   // Submit and reconcile offline test attempt
-  submitOfflineSync: (testId: string, payload: unknown) =>
+  submitOfflineSync: (
+    testId: string,
+    payload: {
+      bundleId: string
+      attemptId: string
+      answers: Record<string, string | string[]>
+      confidences: Record<string, string>
+      timesSpent: Record<string, number>
+      clientStartedAt: string
+      clientCompletedAt: string
+      totalElapsedSeconds: number
+      bundleSignature: string
+      checksum: string
+    }
+  ) =>
     fetchApi(`/tests/${testId}/offline-sync`, {
       method: 'POST',
       body: JSON.stringify(payload),

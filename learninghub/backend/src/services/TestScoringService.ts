@@ -418,7 +418,7 @@ export class TestScoringService {
       questions: Array<{ id: string; tags: string[]; points: number; difficulty?: number }>
     },
     testResultId: string,
-    questionResults: Array<{ question_id: string; is_correct: boolean; time_spent?: number }>,
+    questionResults: Array<{ question_id: string; is_correct?: boolean | null; time_spent?: number }>,
     passed: boolean,
     timeTakenSeconds: number,
     score: number
@@ -430,7 +430,7 @@ export class TestScoringService {
         questionId: qr.question_id,
         topicName: q?.tags?.[0] ?? 'General',
         subjectName: test.subjectId ?? undefined,
-        isCorrect: qr.is_correct,
+        isCorrect: Boolean(qr.is_correct),
         timeSpentSeconds: qr.time_spent ?? 0,
       }
     })

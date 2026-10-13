@@ -54,6 +54,11 @@ class Course(models.Model):
     class Meta:
         db_table = 'lh_courses'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_published', '-created_at']),
+            models.Index(fields=['is_published', 'category']),
+            models.Index(fields=['created_at']),
+        ]
 
     def __str__(self):
         return self.title

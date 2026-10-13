@@ -23,6 +23,7 @@ import { SEO } from '../components/SEO'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useStore } from '../stores/useStore'
 import { wasmSandboxService } from '../services/wasm/WasmSandboxService'
+import { playRewardChime } from '../utils/soundEffects'
 
 export default function ArenaDuelPage() {
   const addToast = useStore(state => state.addToast)
@@ -66,6 +67,7 @@ export default function ArenaDuelPage() {
   const [floatingEmotes, setFloatingEmotes] = useState<
     Array<{ id: string; emote: string; sender: string }>
   >([])
+  const [matchIntroCountdown, setMatchIntroCountdown] = useState<number | null>(null)
 
   // Keystroke telemetry throttle
   const keystrokeCountRef = useRef(0)
@@ -132,6 +134,24 @@ export default function ArenaDuelPage() {
     }, 1000)
     return () => clearInterval(interval)
   }, [match])
+
+  // ── Match Intro 3-Second Versus Countdown Effect ─────────────
+  useEffect(() => {
+    if (matchIntroCountdown === null) return
+    if (matchIntroCountdown > 0) {
+      playRewardChime('xp-gain')
+      const timer = setTimeout(() => {
+        setMatchIntroCountdown(prev => (prev !== null ? prev - 1 : null))
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else {
+      playRewardChime('milestone')
+      const timer = setTimeout(() => {
+        setMatchIntroCountdown(null)
+      }, 700)
+      return () => clearTimeout(timer)
+    }
+  }, [matchIntroCountdown])
 
   // ── WebSocket Room & Live Telemetry ───────────────────────────
   useEffect(() => {
@@ -314,6 +334,7 @@ export default function ArenaDuelPage() {
     // eslint-disable-next-line security/detect-object-injection
     setCode(m.problem.starterCode[selectedLanguage] || m.problem.starterCode.javascript || '')
     setActiveTab('duel')
+    setMatchIntroCountdown(3)
   }
 
   // ── Code Editing & Telemetry Sync ─────────────────────────────
@@ -1274,6 +1295,113 @@ export default function ArenaDuelPage() {
           </div>
         </Card>
       )}
+
+      {/* ── Match Intro Versus Countdown Overlay (Glassmorphic) ────── */}
+      <AnimatePresence>
+        {matchIntroCountdown !== null && match && (
+          <motion.div
+            data-testid="arena-versus-countdown-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl"
+          >
+            <div className="relative w-full max-w-2xl flex flex-col items-center text-center">
+              {/* Problem Preview Badge */}
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold mb-6 shadow-inner"
+              >
+                <Swords className="w-4 h-4 text-rose-400 animate-pulse" />
+                <span>Duel Challenge: {match.problem.title} ({match.problem.difficulty})</span>
+              </motion.div>
+
+              {/* Matchup Showcase: Player 1 VS Player 2 */}
+              <div className="grid grid-cols-5 items-center gap-4 w-full mb-8">
+                {/* Player 1 Card */}
+                <motion.div
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="col-span-2 p-5 rounded-2xl bg-gradient-to-br from-indigo-950/60 to-slate-900/80 border border-indigo-500/30 shadow-2xl backdrop-blur-md flex flex-col items-center"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-2xl mb-3 shadow-lg ring-2 ring-indigo-500/20">
+                    👨‍💻
+                  </div>
+                  <h3 className="text-base font-bold text-white truncate max-w-[140px]">
+                    {playerProfile.username}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-xs font-semibold text-indigo-400">{playerProfile.tier}</span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs font-black text-rose-400">{playerProfile.elo} Elo</span>
+                  </div>
+                  <div className="mt-3 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Win: +26 Elo
+                  </div>
+                </motion.div>
+
+                {/* VS Emblem & Pulsing Countdown */}
+                <div className="col-span-1 flex flex-col items-center justify-center">
+                  <motion.div
+                    key={matchIntroCountdown}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: [1.2, 1], opacity: 1 }}
+                    exit={{ scale: 1.4, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="relative flex items-center justify-center"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-xl shadow-rose-500/30 ring-4 ring-rose-500/20">
+                      <span className="text-3xl font-black tracking-wider">
+                        {matchIntroCountdown > 0 ? matchIntroCountdown : 'GO!'}
+                      </span>
+                    </div>
+                  </motion.div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">
+                    {matchIntroCountdown > 0 ? 'READY' : 'DUEL!'}
+                  </span>
+                </div>
+
+                {/* Opponent Card */}
+                <motion.div
+                  initial={{ x: 40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="col-span-2 p-5 rounded-2xl bg-gradient-to-br from-rose-950/60 to-slate-900/80 border border-rose-500/30 shadow-2xl backdrop-blur-md flex flex-col items-center"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-2xl mb-3 shadow-lg ring-2 ring-rose-500/20">
+                    {opponentState?.avatar || '🤖'}
+                  </div>
+                  <h3 className="text-base font-bold text-white truncate max-w-[140px]">
+                    {opponentState?.username || 'Opponent'}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-xs font-semibold text-rose-400">{opponentState?.tier || 'SILVER'}</span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs font-black text-amber-400">{opponentState?.elo || 1250} Elo</span>
+                  </div>
+                  <div className="mt-3 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    Loss: -14 Elo
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Stakes & Action Buttons */}
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setMatchIntroCountdown(null)}
+                  className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-xs transition-all shadow-md active:scale-95"
+                >
+                  Skip Countdown →
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatedPage>
   )
 }

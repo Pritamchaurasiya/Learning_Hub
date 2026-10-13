@@ -6,12 +6,14 @@ import {
   getDatabaseStatus,
   getCacheStatus,
   getProcesses,
+  getPrometheusMetrics,
 } from '../../controllers/monitoringController'
 
 const router = Router()
 
 router.get('/health', optionalAuth, deepHealthCheck)
-router.get('/metrics', authenticate, authorizeAdmin, getMetrics)
+router.get('/metrics', optionalAuth, getMetrics)
+router.get('/metrics/prometheus', optionalAuth, getPrometheusMetrics)
 router.get('/database', authenticate, authorizeAdmin, getDatabaseStatus)
 router.get('/cache', authenticate, authorizeAdmin, getCacheStatus)
 router.get('/processes', authenticate, authorizeAdmin, getProcesses)

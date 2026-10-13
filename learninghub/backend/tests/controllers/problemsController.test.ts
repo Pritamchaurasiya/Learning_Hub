@@ -157,7 +157,7 @@ describe('ProblemsController', () => {
         expect.objectContaining({
           code: 'console.log("hello")',
           language: 'javascript',
-          timeLimit: 5,
+          timeLimit: 5000,
           memoryLimit: 256,
         })
       )

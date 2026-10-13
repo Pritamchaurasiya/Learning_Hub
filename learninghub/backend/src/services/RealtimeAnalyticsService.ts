@@ -88,12 +88,12 @@ export class RealtimeAnalyticsService {
         errorsResult
       ] = await Promise.all([
         // DAU: unique users with activity in last 24h
-        prisma.activityLog.count({
+        prisma.activityLog.groupBy({
+          by: ['userId'],
           where: {
             createdAt: { gte: oneDayAgo },
-            userId: { not: null }
           }
-        }),
+        }).then((r: Array<{ userId: string }>) => r.length),
         // Active tests currently in progress
         prisma.testResult.count({
           where: {
@@ -106,13 +106,12 @@ export class RealtimeAnalyticsService {
           by: ['userId'],
           where: {
             createdAt: { gte: oneHourAgo },
-            userId: { not: null }
           }
-        }).then((r: Array<{ userId: string | null }>) => r.length),
-        // Revenue (completed orders)
+        }).then((r: Array<{ userId: string }>) => r.length),
+        // Revenue (paid orders)
         prisma.order.aggregate({
           where: {
-            status: 'COMPLETED',
+            status: 'PAID',
             createdAt: { gte: oneDayAgo }
           },
           _sum: { totalAmount: true }
@@ -138,10 +137,10 @@ export class RealtimeAnalyticsService {
           _sum: { cost: true }
         }),
         // Error count (5xx) in last hour
-        prisma.activityLog.count({
+        prisma.auditLog.count({
           where: {
             createdAt: { gte: oneHourAgo },
-            action: { contains: 'ERROR' }
+            severity: 'ERROR'
           }
         })
       ]);
@@ -151,10 +150,10 @@ export class RealtimeAnalyticsService {
         dau: dauResult,
         activeTests: activeTestsResult,
         activeUsers: activeUsersResult,
-        revenue: Number(revenueResult._sum.totalAmount || 0),
+        revenue: Number(revenueResult._sum?.totalAmount || 0),
         testCompletions: completionsResult,
-        avgScore: Number(avgScoreResult._avg.percentage || 0),
-        aiCost: Number(aiCostResult._sum.cost || 0),
+        avgScore: Number(avgScoreResult._avg?.percentage || 0),
+        aiCost: Number(aiCostResult._sum?.cost || 0),
         errors: errorsResult
       };
     } catch (error) {
@@ -214,15 +213,17 @@ export class RealtimeAnalyticsService {
     metadata?: Record<string, any>;
   }): Promise<void> {
     try {
-      await prisma.activityLog.create({
-        data: {
-          userId: event.userId || null,
-          action: event.type,
-          metadata: event.metadata || {},
-          ipAddress: '',
-          userAgent: ''
-        }
-      });
+      if (event.userId) {
+        await prisma.activityLog.create({
+          data: {
+            userId: event.userId,
+            activityType: (event.type as any) || 'SETTINGS_UPDATE',
+            metadata: event.metadata || {},
+            ipAddress: '',
+            userAgent: ''
+          }
+        });
+      }
     } catch (error) {
       console.error('[RealtimeAnalytics] Error tracking event:', error);
     }

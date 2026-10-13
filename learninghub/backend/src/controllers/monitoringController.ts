@@ -5,6 +5,7 @@ import os from 'os'
 import { sendSuccess, sendError } from '../utils/responseHelper'
 import { cacheService } from '../services/CacheService'
 import { asyncHandler } from '../utils/errorHandler'
+import { register } from '../utils/metrics'
 
 async function checkDatabase(): Promise<{
   status: string
@@ -203,3 +204,9 @@ export const getProcesses = asyncHandler(async (req: Request, res: Response): Pr
     ],
   })
 })
+
+export const getPrometheusMetrics = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  res.setHeader('Content-Type', register.contentType)
+  res.send(await register.metrics())
+})
+

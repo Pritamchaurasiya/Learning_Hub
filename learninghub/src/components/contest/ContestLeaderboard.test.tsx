@@ -10,6 +10,18 @@ vi.mock('../../services/contestService', () => ({
   },
 }))
 
+vi.mock('../../hooks/useWebSocket', () => ({
+  useWebSocket: () => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    on: vi.fn().mockReturnValue(vi.fn()),
+    emit: vi.fn(),
+    joinRoom: vi.fn(),
+    leaveRoom: vi.fn(),
+    isConnected: true,
+  }),
+}))
+
 describe('ContestLeaderboard Component', () => {
   const mockContest: Contest = {
     contest_id: 'cnt-101',

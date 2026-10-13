@@ -19,6 +19,8 @@ COPY --from=builder --chown=appuser:appgroup /app/dist ./dist
 COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
 COPY --from=builder --chown=appuser:appgroup /app/prisma ./prisma
 COPY --from=builder --chown=appuser:appgroup /app/package.json ./
+COPY --chown=appuser:appgroup docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
 
 # Ensure uploads directory exists and is owned by appuser
 RUN mkdir -p /app/uploads && chown -R appuser:appgroup /app/uploads
@@ -27,5 +29,4 @@ USER appuser
 EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget -qO- http://localhost:5000/api/v1/health || exit 1
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["sh", "-c", "if [ -f dist/src/server.js ]; then node dist/src/server.js; else node dist/server.js; fi"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "./docker-entrypoint.sh"]

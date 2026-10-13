@@ -10,9 +10,12 @@ import { useStore } from '../stores/useStore'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SectionErrorBoundary } from './SectionErrorBoundary'
 import { AnnouncerRegions } from './a11y/LiveAnnouncer'
-import { CommandPalette } from './CommandPalette'
-import { Suspense, ReactNode } from 'react'
+import { Suspense, ReactNode, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+
+const CommandPalette = lazy(() =>
+  import('./CommandPalette').then(m => ({ default: m.CommandPalette }))
+)
 
 interface LayoutProps {
   children?: ReactNode
@@ -88,7 +91,9 @@ export default function Layout({ children }: LayoutProps) {
       <MobileNav />
       <ScrollToTop />
       <AnnouncerRegions />
-      <CommandPalette />
+      <Suspense fallback={null}>
+        <CommandPalette />
+      </Suspense>
     </div>
   )
 }

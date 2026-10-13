@@ -300,16 +300,26 @@ describe('OfflineAssessmentManager', () => {
         retryCount: 0,
       })
 
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true }),
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('csrf-token')) {
+          return Promise.resolve({
+            ok: true,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ csrfToken: 'mock-csrf' }),
+          })
+        }
+        return Promise.resolve({
+          ok: true,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ success: true }),
+        })
       })
       vi.stubGlobal('fetch', mockFetch)
 
       await offlineAssessmentManager.syncPendingQueue()
 
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/v1/tests/test-sync-1/offline-sync',
+        expect.stringContaining('/api/v1/tests/test-sync-1/offline-sync'),
         expect.objectContaining({
           method: 'POST',
         })

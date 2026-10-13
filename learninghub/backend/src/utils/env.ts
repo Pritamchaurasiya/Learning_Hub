@@ -16,7 +16,10 @@ const envSchema = z.object({
   // Database Configuration
   DB_PROVIDER: z.enum(['sqlite', 'postgresql']).default('postgresql'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  DIRECT_URL: z.string().min(1, 'DIRECT_URL is required'),
+  DIRECT_URL: z
+    .string()
+    .optional()
+    .default(() => process.env.DATABASE_URL || ''),
 
   // JWT Configuration
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),

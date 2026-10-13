@@ -7,12 +7,12 @@ import { createHash } from 'crypto'
 export interface Experiment {
   id: string
   name: string
-  description: string
-  status: 'draft' | 'running' | 'paused' | 'completed' | 'archived'
+  description?: string | null
+  status: 'draft' | 'running' | 'paused' | 'completed' | 'archived' | string
   trafficAllocation: number // percentage 0-100
   variants: ExperimentVariant[]
-  startDate?: Date
-  endDate?: Date
+  startDate?: Date | null
+  endDate?: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -20,9 +20,9 @@ export interface Experiment {
 export interface ExperimentVariant {
   id: string
   name: string
-  description: string
+  description?: string | null
   trafficWeight: number // percentage of allocated traffic
-  config: Record<string, any>
+  config: Record<string, any> | any
   isControl: boolean
 }
 
@@ -434,23 +434,25 @@ export class ABTestingService {
    * Get all experiments
    */
   static async getAllExperiments(): Promise<Experiment[]> {
-    return prisma.experiment.findMany({
+    const experiments = await prisma.experiment.findMany({
       include: { variants: true },
       orderBy: { createdAt: 'desc' },
     })
+    return experiments as unknown as Experiment[]
   }
 
   /**
    * Update experiment
    */
   static async updateExperiment(experimentId: string, data: Partial<Experiment>): Promise<Experiment> {
+    const { variants, ...updateData } = data
     const experiment = await prisma.experiment.update({
       where: { id: experimentId },
-      data: { ...data, updatedAt: new Date() },
+      data: { ...updateData, updatedAt: new Date() } as any,
       include: { variants: true },
     })
     await cacheService.delete('experiments:active')
-    return experiment
+    return experiment as unknown as Experiment
   }
 
   /**

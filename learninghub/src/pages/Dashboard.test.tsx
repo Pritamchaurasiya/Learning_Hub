@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { screen, waitFor, fireEvent, within } from '@testing-library/react'
 import { render } from '../test/test-utils'
 import Dashboard from './Dashboard'
 import * as apiModule from '../utils/api'
@@ -188,4 +188,91 @@ describe('Dashboard Component', () => {
     expect(screen.getByTestId('ai-learning-engine')).toBeInTheDocument()
     expect(screen.getByText(/7-Day Accuracy/i)).toBeInTheDocument()
   })
+
+  it('renders Pro upsell conversion banner with flash offer discount and upgrade CTA', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-upsell-banner')).toBeInTheDocument()
+      expect(screen.getByText(/Scholar Pro Flash Offer • 40% OFF/i)).toBeInTheDocument()
+      expect(screen.getByText(/Unlock All 15\+ Advanced AI Simulators/i)).toBeInTheDocument()
+      expect(screen.getByText(/Claim 40% Off & Upgrade/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders Daily Momentum Quests with habit checklist and interactive progress tracking', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('daily-momentum-quest-widget')).toBeInTheDocument()
+      expect(screen.getByText(/Daily Momentum Quests/i)).toBeInTheDocument()
+      expect(screen.getByText(/Run 1 Adaptive Diagnostic Test/i)).toBeInTheDocument()
+      expect(screen.getByText(/Complete 1 Pomodoro Deep Work Sprint/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders Career ROI & Placement Value calculator with role benchmarks', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('career-roi-calculator-widget')).toBeInTheDocument()
+      expect(screen.getByText(/Career ROI & Placement Value Calculator/i)).toBeInTheDocument()
+      expect(screen.getByText(/Projected Median Comp/i)).toBeInTheDocument()
+      expect(screen.getByText(/Accelerate Readiness/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders Live Peer Activity ticker with active learner presence', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('live-peer-activity-ticker')).toBeInTheDocument()
+      expect(screen.getByText(/1,842 learners active now/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders Scholar Onboarding Tour Card with endowed progress and triggers AI modal on action', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('scholar-onboarding-tour-card')).toBeInTheDocument()
+      expect(screen.getByText(/Fast-Track Orientation/i)).toBeInTheDocument()
+      expect(screen.getByText(/Launch First AI Test/i)).toBeInTheDocument()
+    })
+
+    const launchButton = screen.getByText(/Launch First AI Test/i)
+    fireEvent.click(launchButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('AI Dynamic Test Generation')).toBeInTheDocument()
+    })
+  })
+
+  it('opens Milestone Reward Modal when Claim Loot is clicked and equips rewards', async () => {
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Claim Loot/i)).toBeInTheDocument()
+    })
+
+    const claimLootBtn = screen.getByText(/Claim Loot/i)
+    fireEvent.click(claimLootBtn)
+
+    await waitFor(() => {
+      const modal = screen.getByTestId('milestone-reward-modal')
+      expect(modal).toBeInTheDocument()
+      expect(within(modal).getByText(/Scholar Prestige Rewards/i)).toBeInTheDocument()
+      expect(within(modal).getByText(/2.0x Double XP/i)).toBeInTheDocument()
+      expect(within(modal).getByText(/1-Week Streak Shield/i)).toBeInTheDocument()
+    })
+
+    const equipBtn = screen.getByRole('button', { name: /equip rewards & continue/i })
+    fireEvent.click(equipBtn)
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('milestone-reward-modal')).not.toBeInTheDocument()
+    })
+  })
 })
+
+

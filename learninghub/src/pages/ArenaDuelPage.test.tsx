@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
@@ -119,4 +119,45 @@ describe('ArenaDuelPage', () => {
     expect(await screen.findByText('Searching for Worthy Opponent...')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /cancel matchmaking/i })).toBeInTheDocument()
   })
+
+  it('displays versus countdown overlay when match starts and allows skipping', async () => {
+    const mockMatch = {
+      id: 'match-123',
+      status: 'IN_PROGRESS',
+      problem: {
+        id: 'duel-p-01',
+        title: 'Two Sum',
+        slug: 'two-sum',
+        difficulty: 'EASY',
+        category: 'Array / Hash Table',
+        description: 'Two sum description',
+        starterCode: { javascript: 'function twoSum() {}' },
+        testCases: [{ id: 'tc-1', input: '[2,7], 9', expectedOutput: '[0,1]' }],
+      },
+      player1: { userId: 'test-user', username: 'ApexDuelist', elo: 1350, tier: 'SILVER', testsPassed: 0, totalTests: 1, status: 'DRAFTING', keystrokes: 0 },
+      player2: { userId: 'ghost-ada', username: 'AdaLovelace_AI', elo: 1250, tier: 'SILVER', isGhost: true, testsPassed: 0, totalTests: 1, status: 'DRAFTING', keystrokes: 0 },
+      startedAt: Date.now(),
+      durationSeconds: 600,
+    }
+    const { duelService } = await import('../services/duelService')
+    vi.mocked(duelService.joinQueue).mockResolvedValueOnce({
+      status: 'success',
+      data: { match: mockMatch as any, queued: false },
+    })
+
+    renderComponent()
+    const instantGhostBtn = screen.getByRole('button', { name: /instant ai ghost duel/i })
+    fireEvent.click(instantGhostBtn)
+
+    expect(await screen.findByTestId('arena-versus-countdown-overlay')).toBeInTheDocument()
+    expect(screen.getByText(/Duel Challenge: Two Sum/i)).toBeInTheDocument()
+    expect(screen.getByText('Skip Countdown →')).toBeInTheDocument()
+
+    // Clicking skip countdown dismisses the overlay
+    fireEvent.click(screen.getByText('Skip Countdown →'))
+    await waitFor(() => {
+      expect(screen.queryByTestId('arena-versus-countdown-overlay')).not.toBeInTheDocument()
+    })
+  })
 })
+

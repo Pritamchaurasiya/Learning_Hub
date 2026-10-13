@@ -2,6 +2,26 @@ import React, { useMemo } from 'react'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 
+const katexCache = new Map<string, string>()
+
+function getCachedKatex(content: string, displayMode: boolean): string {
+  const cacheKey = `${displayMode ? 'B:' : 'I:'}${content}`
+  const cached = katexCache.get(cacheKey)
+  if (cached) return cached
+
+  const rendered = katex.renderToString(content, {
+    displayMode,
+    throwOnError: false,
+    trust: false,
+  })
+  if (katexCache.size > 2000) {
+    const firstKey = katexCache.keys().next().value
+    if (firstKey) katexCache.delete(firstKey)
+  }
+  katexCache.set(cacheKey, rendered)
+  return rendered
+}
+
 interface MathRendererProps {
   text: string
   className?: string
@@ -74,11 +94,7 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
 
         const isBlock = seg.type === 'block-math'
         try {
-          const html = katex.renderToString(seg.content, {
-            displayMode: isBlock,
-            throwOnError: false,
-            trust: false,
-          })
+          const html = getCachedKatex(seg.content, isBlock)
           return (
             <span
               key={idx}

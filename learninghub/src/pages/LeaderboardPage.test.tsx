@@ -111,4 +111,27 @@ describe('LeaderboardPage Component', () => {
       expect(leaderboardService.getLeaderboard).toHaveBeenCalledWith('weekly', 50)
     })
   })
+
+  it('opens and closes league division rules modal when clicked', async () => {
+    render(<LeaderboardPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Global Ranks')).toBeInTheDocument()
+    })
+
+    const leagueRulesBtn = screen.getByText('League Rules')
+    fireEvent.click(leagueRulesBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText('Global League Division Rules')).toBeInTheDocument()
+      expect(screen.getByText('Grandmaster Tier (Top 1–3)')).toBeInTheDocument()
+    })
+
+    const understoodBtn = screen.getByText('Understood')
+    fireEvent.click(understoodBtn)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Global League Division Rules')).not.toBeInTheDocument()
+    })
+  })
 })

@@ -19,12 +19,12 @@ import { CodeCopyHandler } from './components/CodeCopyHandler'
 import { useQueryClient } from '@tanstack/react-query'
 import './index.css'
 
-// Critical entry pages — Home/Auth/Profile are eager for instant LCP.
+// Critical entry pages — Home and Auth are eager for instant LCP.
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
-import ProfilePage from './pages/ProfilePage'
 
 // Lazy-loaded page components
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const TestsAPage = lazy(() => import('./pages/TestsAPage'))
 
 // Lazy-loaded page components
@@ -145,8 +145,17 @@ function App() {
       // Clear all cached queries to prevent stale user data after logout
       queryClient.clear()
       void logout()
-      const publicPaths = ['/', '/pricing', '/offline', '/terms', '/privacy', '/auth', '/forgot-password']
-      const isPublicPath = publicPaths.includes(location.pathname) || location.pathname.startsWith('/auth')
+      const publicPaths = [
+        '/',
+        '/pricing',
+        '/offline',
+        '/terms',
+        '/privacy',
+        '/auth',
+        '/forgot-password',
+      ]
+      const isPublicPath =
+        publicPaths.includes(location.pathname) || location.pathname.startsWith('/auth')
       if (!isPublicPath) {
         addToast({ message: 'Session expired. Please log in again.', type: 'warning' })
         navigate('/auth', { replace: true, state: { from: location } })
@@ -313,7 +322,14 @@ function App() {
                 path="/payment-success"
                 element={<Navigate to="/dashboard" replace state={{ paymentSuccess: true }} />}
               />
-              <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/profile"
+                element={
+                  <LazyRoute sectionName="Profile">
+                    <ProfilePage />
+                  </LazyRoute>
+                }
+              />
               <Route
                 path="/search"
                 element={

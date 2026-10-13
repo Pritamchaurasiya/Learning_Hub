@@ -319,11 +319,11 @@
   }
 }
 
-/* Touch target minimum size for mobile */
+/* Touch target minimum size for mobile interactive elements */
 @media (pointer: coarse) {
-  button,
-  [role='button'],
-  a,
+  button:not(.btn-inline):not(.badge),
+  [role='button']:not(.btn-inline),
+  a:not(p a):not(.prose a):not(.inline-link):not(.badge-link),
   input,
   select,
   textarea {
@@ -368,11 +368,9 @@
   0%,
   100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.05);
+    opacity: 0.65;
   }
 }
 

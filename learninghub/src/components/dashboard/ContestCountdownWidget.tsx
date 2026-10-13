@@ -89,7 +89,7 @@ export function ContestCountdownWidget({
 
       <button
         onClick={() => navigate(`/contest`)}
-        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition-all"
+        className="w-full py-2.5 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-900 dark:text-white border border-gray-200/80 dark:border-slate-700/80 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
       >
         <span>Enter Contest Hall</span>
         <ArrowRight className="w-3.5 h-3.5" />

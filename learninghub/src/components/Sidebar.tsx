@@ -36,6 +36,7 @@ import {
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
 import BrandLogo from './BrandLogo'
+import { calculateLevel, calculateXpForLevel } from '../utils/number'
 
 interface NavSection {
   label: string
@@ -50,11 +51,11 @@ export default function Sidebar() {
   const auth = useStore(s => s.auth)
   const isDesktop = useBreakpoint('lg') // Synced with lg (>=1024px) for desktop docked sidebar
 
-  // Collapsible sections state
+  // Collapsible sections state - default secondary sections to collapsed to avoid overwhelming 20+ item clutter
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     Practice: true,
-    Community: true,
-    'AI & Tools': true,
+    Community: false,
+    'AI & Tools': false,
     Account: false,
   })
 
@@ -99,7 +100,7 @@ export default function Sidebar() {
     },
     {
       label: 'Community',
-      defaultOpen: true,
+      defaultOpen: false,
       items: [
         { to: '/discussions', icon: MessageSquare, label: 'Discussions' },
         { to: '/live-class', icon: Video, label: 'Live Classes' },
@@ -107,7 +108,7 @@ export default function Sidebar() {
     },
     {
       label: 'AI & Tools',
-      defaultOpen: true,
+      defaultOpen: false,
       items: [
         { to: '/ai-tutor', icon: Bot, label: 'Interactive Mentor' },
         { to: '/study-planner', icon: Calendar, label: 'Study Planner' },
@@ -139,9 +140,13 @@ export default function Sidebar() {
     }
   }
 
-  const xpForNextLevel = Math.max(1, progress.level * 100)
-  const xpInLevel = progress.xp % xpForNextLevel
-  const xpProgress = Math.min(100, (xpInLevel / xpForNextLevel) * 100)
+  const currentXp = progress.xp || 0
+  const currentLevel = calculateLevel(currentXp)
+  const currentLevelBaseXp = calculateXpForLevel(currentLevel)
+  const nextLevelBaseXp = calculateXpForLevel(currentLevel + 1)
+  const xpNeededForLevel = Math.max(1, nextLevelBaseXp - currentLevelBaseXp)
+  const xpInLevel = Math.max(0, currentXp - currentLevelBaseXp)
+  const xpProgress = Math.min(100, Math.round((xpInLevel / xpNeededForLevel) * 100))
 
   return (
     <>
@@ -374,7 +379,7 @@ export default function Sidebar() {
                 {auth.user?.username ?? 'Learner'}
               </p>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                Level {progress.level}
+                Level {currentLevel}
               </p>
             </div>
           </NavLink>
@@ -387,7 +392,7 @@ export default function Sidebar() {
                 {progress.xp} XP
               </span>
               <span>
-                {xpInLevel}/{xpForNextLevel} to Lv.{progress.level + 1}
+                {xpInLevel}/{xpNeededForLevel} to Lv.{currentLevel + 1}
               </span>
             </div>
             <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">

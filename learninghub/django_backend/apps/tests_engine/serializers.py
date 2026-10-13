@@ -33,7 +33,7 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'prompt', 'question_type', 'topic', 'marks', 'negative_marks', 'explanation', 'order', 'section_id', 'options']
 
 class TestListSerializer(serializers.ModelSerializer):
-    question_count = serializers.IntegerField(source='questions.count', read_only=True)
+    question_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Test
@@ -43,6 +43,11 @@ class TestListSerializer(serializers.ModelSerializer):
             'negative_marking', 'is_adaptive', 'shuffle_questions',
             'shuffle_options', 'question_count'
         ]
+
+    def get_question_count(self, obj):
+        if hasattr(obj, 'question_count'):
+            return obj.question_count
+        return obj.questions.count()
 
 class TestDetailSerializer(TestListSerializer):
     questions = QuestionSerializer(many=True, read_only=True)

@@ -22,12 +22,18 @@ import {
   Lock,
   QrCode,
   CheckCircle2,
+  Volume2,
+  VolumeX,
+  Smartphone,
+  Sliders,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import AnimatedPage from '../components/AnimatedPage'
 import { fetchApi } from '../utils/api'
+import { triggerHaptic, isHapticSupported } from '../utils/haptics'
+import { playRewardChime } from '../utils/soundEffects'
 
 interface SettingsState {
   theme: 'light' | 'dark' | 'system'
@@ -295,6 +301,39 @@ export default function SettingsPage() {
       message: !isLowPerformance
         ? 'Low performance mode engaged.'
         : 'Low performance mode disabled.',
+      type: 'info',
+    })
+  }
+
+  const isSoundEnabled = globalSettings?.soundEffects ?? true
+  const isHapticEnabled = globalSettings?.hapticFeedback ?? true
+  const isCompactMode = globalSettings?.compactMode ?? false
+
+  const handleSoundToggle = () => {
+    const next = !isSoundEnabled
+    updateSettings({ soundEffects: next })
+    if (next) playRewardChime('xp-gain')
+    addToast({
+      message: next ? 'Synthesized audio cues enabled.' : 'Audio cues muted.',
+      type: 'info',
+    })
+  }
+
+  const handleHapticToggle = () => {
+    const next = !isHapticEnabled
+    updateSettings({ hapticFeedback: next })
+    if (next) triggerHaptic('success')
+    addToast({
+      message: next ? 'Tactile haptic feedback enabled.' : 'Haptic feedback disabled.',
+      type: 'info',
+    })
+  }
+
+  const handleCompactToggle = () => {
+    const next = !isCompactMode
+    updateSettings({ compactMode: next })
+    addToast({
+      message: next ? 'High-density compact mode enabled.' : 'Standard layout mode enabled.',
       type: 'info',
     })
   }
@@ -770,6 +809,58 @@ export default function SettingsPage() {
                 label="Batch Summary"
                 description="Weekly telemetry compilation"
                 icon={BellOff}
+              />
+            </div>
+          </Card>
+
+          {/* Adaptive Sensory & Accessibility */}
+          <Card className="p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase tracking-tight text-gray-900 dark:text-white">
+              <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                <Sliders className="w-5 h-5 text-violet-500" />
+              </div>
+              Sensory & Accessibility
+            </h2>
+            <div className="space-y-2">
+              <Switch
+                checked={isSoundEnabled}
+                onChange={handleSoundToggle}
+                label="Audio Cues"
+                description="Synthesized feedback for test & arena events"
+                icon={isSoundEnabled ? Volume2 : VolumeX}
+              />
+              <Switch
+                checked={isHapticEnabled}
+                onChange={handleHapticToggle}
+                label="Haptic Vibrations"
+                description="Tactile pulses on test submissions & alerts"
+                icon={Smartphone}
+              />
+              {isHapticSupported() && (
+                <div className="px-4 py-2.5 flex items-center justify-between text-xs rounded-xl bg-gray-50 dark:bg-gray-800/40">
+                  <span className="text-gray-500 dark:text-gray-400 font-medium">Tactile Engine: Active</span>
+                  <button
+                    type="button"
+                    onClick={() => triggerHaptic('success')}
+                    className="px-3 py-1 rounded-xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 font-semibold text-xs hover:bg-violet-100 transition-colors"
+                  >
+                    Test Tactile Tap
+                  </button>
+                </div>
+              )}
+              <Switch
+                checked={isLowPerformance}
+                onChange={handleLowPerformanceToggle}
+                label="Reduced Motion Mode"
+                description="Optimize framerates & disable complex blur shaders"
+                icon={Monitor}
+              />
+              <Switch
+                checked={isCompactMode}
+                onChange={handleCompactToggle}
+                label="High-Density Compact View"
+                description="Tighten spacing & data grids for power users"
+                icon={BookOpen}
               />
             </div>
           </Card>

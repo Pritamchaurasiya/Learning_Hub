@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useMemo, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy,
@@ -19,6 +19,7 @@ import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Skeleton } from '../ui/Skeleton'
 import { useStore } from '../../stores/useStore'
+import { useWebSocket } from '../../hooks/useWebSocket'
 import {
   contestService,
   type Contest,
@@ -39,6 +40,7 @@ export default function ContestLeaderboard({
   onNavigateToCombat,
 }: ContestLeaderboardProps) {
   const currentUser = useStore(state => state.auth?.user)
+  const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [rankFilter, setRankFilter] = useState<'all' | 'top10' | 'top50'>('all')
   const [isLiveSync, setIsLiveSync] = useState(true)
@@ -47,6 +49,58 @@ export default function ContestLeaderboard({
   )
 
   const contestId = selectedContest?.contest_id ?? ''
+  const { isConnected, connect, disconnect, on, joinRoom, leaveRoom } = useWebSocket()
+
+  // Connect WebSocket stream for instantaneous leaderboard telemetry
+  useEffect(() => {
+    if (!isLiveSync || !contestId || selectedContest?.status !== 'active') {
+      return
+    }
+
+    connect()
+    const roomId = `contest-${contestId}`
+    joinRoom(roomId)
+
+    const handleLeaderboardUpdate = (
+      payload: { leaderboard?: ContestLeaderboardEntry[] } | ContestLeaderboardEntry[]
+    ) => {
+      const incomingList = Array.isArray(payload) ? payload : payload?.leaderboard
+      if (incomingList && incomingList.length > 0) {
+        queryClient.setQueryData(['contests', 'leaderboard', contestId], incomingList)
+        setLastUpdated(
+          new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+        )
+      } else {
+        void refetch()
+      }
+    }
+
+    const unsubLeaderboard = on('contest_leaderboard_update', handleLeaderboardUpdate)
+    const unsubRanking = on('ranking_update', () => {
+      void refetch()
+    })
+
+    return () => {
+      leaveRoom(roomId)
+      unsubLeaderboard()
+      unsubRanking()
+      disconnect()
+    }
+  }, [
+    isLiveSync,
+    contestId,
+    selectedContest?.status,
+    connect,
+    disconnect,
+    joinRoom,
+    leaveRoom,
+    on,
+    queryClient,
+  ])
 
   // Fetch leaderboard data
   const {
@@ -71,7 +125,7 @@ export default function ContestLeaderboard({
     },
     enabled: Boolean(contestId),
     refetchInterval:
-      isLiveSync && selectedContest?.status === 'active' ? 10000 : false,
+      isLiveSync && selectedContest?.status === 'active' && !isConnected ? 10000 : false,
     staleTime: 5000,
   })
 
@@ -139,11 +193,11 @@ export default function ContestLeaderboard({
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                 Combat Telemetry & Leaderboard
                 <Sparkles className="w-4 h-4 text-amber-500" />
               </h2>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 Real-time multi-agent ranking & algorithmic execution matrix
               </p>
             </div>
@@ -156,10 +210,10 @@ export default function ContestLeaderboard({
             type="button"
             onClick={() => setIsLiveSync(prev => !prev)}
             aria-label="Toggle Live Sync"
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
               isLiveSync
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-700'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             <Radio
@@ -174,7 +228,7 @@ export default function ContestLeaderboard({
             onClick={handleManualRefresh}
             disabled={isFetching}
             aria-label="Refresh Leaderboard"
-            className="rounded-xl border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase tracking-widest px-3 py-1.5"
+            className="rounded-xl border-gray-200 dark:border-gray-700 text-xs font-semibold px-3 py-1.5"
             leftIcon={
               <RefreshCw
                 className={`w-3.5 h-3.5 text-primary-500 ${isFetching ? 'animate-spin' : ''}`}
@@ -184,7 +238,7 @@ export default function ContestLeaderboard({
             {isFetching ? 'Syncing...' : 'Sync Now'}
           </Button>
 
-          <span className="text-[9px] font-mono text-gray-400 hidden sm:inline-block">
+          <span className="text-xs font-mono text-gray-500 dark:text-gray-400 hidden sm:inline-block">
             Synced: {lastUpdated}
           </span>
         </div>
@@ -193,7 +247,7 @@ export default function ContestLeaderboard({
       {/* Contest selector pills if multiple contests exist */}
       {allContests.length > 0 && (
         <div className="py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 shrink-0 mr-1 flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0 mr-1 flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5" />
             Arena:
           </span>
@@ -204,7 +258,7 @@ export default function ContestLeaderboard({
                 key={c.contest_id}
                 type="button"
                 onClick={() => onSelectContest(c.contest_id)}
-                className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
                   isSelected
                     ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -223,7 +277,7 @@ export default function ContestLeaderboard({
       {/* Top 3 Podium (Shown when entries >= 3 and no search active) */}
       {!searchQuery && topThree.length === 3 && !isLoading && (
         <div className="pt-8 pb-4">
-          <h3 className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-6">
+          <h3 className="text-center text-xs font-bold uppercase tracking-wider text-gray-400 mb-6">
             Sector Vanguard • Top 3 Champions
           </h3>
 
@@ -238,19 +292,19 @@ export default function ContestLeaderboard({
               >
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-300 dark:ring-slate-600 mb-3 relative">
                   <Medal className="w-6 h-6 md:w-8 md:h-8 text-slate-600 dark:text-slate-200" />
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-500 text-white text-[10px] font-black flex items-center justify-center shadow">
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-500 text-white text-xs font-black flex items-center justify-center shadow">
                     2
                   </span>
                 </div>
                 <div className="text-center w-full px-2 py-3 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-700/60">
-                  <p className="font-black text-xs md:text-sm text-gray-900 dark:text-white truncate">
+                  <p className="font-bold text-xs md:text-sm text-gray-900 dark:text-white truncate">
                     {topThree[0].user}
                   </p>
-                  <p className="text-[10px] font-black text-slate-600 dark:text-slate-300 mt-1 flex items-center justify-center gap-1">
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1 flex items-center justify-center gap-1">
                     <Zap className="w-3 h-3 text-amber-500" />
                     {topThree[0].score} pts
                   </p>
-                  <span className="text-[9px] font-bold text-gray-400 mt-0.5 block">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">
                     {topThree[0].problems_solved} solved
                   </span>
                 </div>
@@ -278,7 +332,7 @@ export default function ContestLeaderboard({
                     <Zap className="w-3.5 h-3.5 text-amber-500" />
                     {topThree[1].score} pts
                   </p>
-                  <span className="text-[9px] font-black text-amber-600/80 dark:text-amber-400/80 mt-0.5 block">
+                  <span className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 block font-medium">
                     {topThree[1].problems_solved} solved
                   </span>
                 </div>
@@ -295,19 +349,19 @@ export default function ContestLeaderboard({
               >
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center shadow-lg ring-2 ring-amber-600/40 mb-3 relative">
                   <Award className="w-6 h-6 md:w-8 md:h-8 text-amber-200" />
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-amber-700 text-white text-[10px] font-black flex items-center justify-center shadow">
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-amber-700 text-white text-xs font-black flex items-center justify-center shadow">
                     3
                   </span>
                 </div>
                 <div className="text-center w-full px-2 py-3 bg-amber-900/5 dark:bg-amber-900/10 rounded-2xl border border-amber-800/30 dark:border-amber-700/30">
-                  <p className="font-black text-xs md:text-sm text-gray-900 dark:text-white truncate">
+                  <p className="font-bold text-xs md:text-sm text-gray-900 dark:text-white truncate">
                     {topThree[2].user}
                   </p>
-                  <p className="text-[10px] font-black text-amber-700 dark:text-amber-400 mt-1 flex items-center justify-center gap-1">
+                  <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-1 flex items-center justify-center gap-1">
                     <Zap className="w-3 h-3 text-amber-500" />
                     {topThree[2].score} pts
                   </p>
-                  <span className="text-[9px] font-bold text-gray-400 mt-0.5 block">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">
                     {topThree[2].problems_solved} solved
                   </span>
                 </div>
@@ -336,7 +390,7 @@ export default function ContestLeaderboard({
               key={f}
               type="button"
               onClick={() => setRankFilter(f)}
-              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
                 rankFilter === f
                   ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -365,7 +419,7 @@ export default function ContestLeaderboard({
               variant="outline"
               size="sm"
               onClick={handleManualRefresh}
-              className="rounded-xl border-rose-300 text-rose-600 font-black uppercase text-[10px]"
+              className="rounded-xl border-rose-300 text-rose-600 font-semibold text-xs"
             >
               Retry Sync
             </Button>
@@ -373,10 +427,10 @@ export default function ContestLeaderboard({
         ) : filteredEntries.length === 0 ? (
           <div className="text-center py-16 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
             <Trophy className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-            <h4 className="font-black text-sm uppercase tracking-wider text-gray-900 dark:text-white mb-1">
+            <h4 className="font-bold text-sm text-gray-900 dark:text-white mb-1">
               {searchQuery ? 'No gladiators match search' : 'No Combat Records Found'}
             </h4>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest max-w-sm mx-auto">
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
               {searchQuery
                 ? 'Try a different username search query'
                 : 'Be the first contender to submit code and claim the throne!'}
@@ -386,7 +440,7 @@ export default function ContestLeaderboard({
                 variant="primary"
                 size="sm"
                 onClick={() => onNavigateToCombat(selectedContest.contest_id)}
-                className="mt-4 rounded-xl font-black uppercase text-[10px] tracking-wider shadow-md shadow-primary-500/20"
+                className="mt-4 rounded-xl font-bold text-xs tracking-wide shadow-md shadow-primary-500/20"
                 rightIcon={<ArrowUpRight className="w-3.5 h-3.5" />}
               >
                 Launch Solution Now
@@ -396,7 +450,7 @@ export default function ContestLeaderboard({
         ) : (
           <div className="space-y-2.5">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">
               <span className="col-span-2 sm:col-span-1">Rank</span>
               <span className="col-span-5 sm:col-span-5">Gladiator</span>
               <span className="col-span-2 sm:col-span-2 text-right">Points</span>
@@ -460,7 +514,7 @@ export default function ContestLeaderboard({
                             {entry.user}
                           </span>
                           {isCurrentUser && (
-                            <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-primary-600 text-white">
+                            <span className="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-primary-600 text-white">
                               YOU
                             </span>
                           )}
@@ -478,7 +532,7 @@ export default function ContestLeaderboard({
 
                     {/* Problems Solved */}
                     <div className="col-span-3 sm:col-span-2 flex items-center justify-center gap-1">
-                      <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-lg">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-lg">
                         <CheckCircle2 className="w-3 h-3" />
                         {entry.problems_solved}{' '}
                         {selectedContest?.problem_count
@@ -488,8 +542,8 @@ export default function ContestLeaderboard({
                     </div>
 
                     {/* Time */}
-                    <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-[10px] font-mono text-gray-500 dark:text-gray-400 gap-1">
-                      <Clock className="w-3 h-3 text-gray-400" />
+                    <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-xs font-mono text-gray-500 dark:text-gray-400 gap-1">
+                      <Clock className="w-3.5 h-3.5 text-gray-400" />
                       {formatFinishTime(entry.finish_time)}
                     </div>
                   </motion.div>
@@ -504,17 +558,17 @@ export default function ContestLeaderboard({
       {selectedContest?.status === 'active' && onNavigateToCombat && (
         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl">
           <div className="text-center sm:text-left">
-            <p className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">
+            <p className="text-xs font-bold text-gray-900 dark:text-white">
               Arena Operation in Progress: {selectedContest.title}
             </p>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               Every solved problem shifts your rank instantaneously in the global matrix
             </p>
           </div>
           <Button
             variant="primary"
             onClick={() => onNavigateToCombat(selectedContest.contest_id)}
-            className="rounded-xl px-5 py-2.5 font-black uppercase tracking-wider text-[10px] shadow-lg shadow-primary-500/25 shrink-0"
+            className="rounded-xl px-5 py-2.5 font-bold text-xs shadow-lg shadow-primary-500/25 shrink-0"
             rightIcon={<ArrowUpRight className="w-4 h-4" />}
           >
             Enter Combat Arena

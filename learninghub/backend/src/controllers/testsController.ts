@@ -736,9 +736,9 @@ export const getTestAttemptDetails = asyncHandler(
       id: attempt.test.id,
       title: attempt.test.title,
       description: attempt.test.description,
-      duration: attempt.test.duration,
-      totalQuestions: attempt.test.totalQuestions,
-      totalPoints: attempt.test.totalPoints,
+      duration: attempt.test.timeLimit,
+      totalQuestions: attempt.test.questions?.length ?? 0,
+      totalPoints: attempt.test.totalMarks,
       passingScore: attempt.test.passingScore,
       questions: attempt.test.questions.map((q: any) => ({
         id: q.id,
@@ -838,36 +838,31 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     const entries = Object.entries(answers)
-    let savedCount = 0
-    // Use sequential processing to avoid concurrent upsert race conditions on the same
-    // (testResultId, questionId) composite key. Promise.all would race within a single
-    // transaction and could leave stale data if two entries target the same question.
-    for (const [qId, ans] of entries) {
-      if (lockedQuestionIds.has(qId)) {
-        continue // Skip modifying answers belonging to finalized/locked sections
-      }
-      const submittedIds = ans ? (Array.isArray(ans) ? ans : [ans]) : []
-      await tx.testAttemptAnswer.upsert({
-        where: {
-          testResultId_questionId: {
+    const validEntries = entries.filter(([qId]) => !lockedQuestionIds.has(qId))
+    await Promise.all(
+      validEntries.map(([qId, ans]) => {
+        const submittedIds = ans ? (Array.isArray(ans) ? ans : [ans]) : []
+        return tx.testAttemptAnswer.upsert({
+          where: {
+            testResultId_questionId: {
+              testResultId: attempt.id,
+              questionId: qId,
+            },
+          },
+          update: {
+            selectedOptions: submittedIds,
+            textAnswer: typeof ans === 'string' ? ans : null,
+          },
+          create: {
             testResultId: attempt.id,
             questionId: qId,
+            selectedOptions: submittedIds,
+            textAnswer: typeof ans === 'string' ? ans : null,
           },
-        },
-        update: {
-          selectedOptions: submittedIds,
-          textAnswer: typeof ans === 'string' ? ans : null,
-        },
-        create: {
-          testResultId: attempt.id,
-          questionId: qId,
-          selectedOptions: submittedIds,
-          textAnswer: typeof ans === 'string' ? ans : null,
-        },
+        })
       })
-      savedCount++
-    }
-    return savedCount
+    )
+    return validEntries.length
   })
 
   if (result === null) {

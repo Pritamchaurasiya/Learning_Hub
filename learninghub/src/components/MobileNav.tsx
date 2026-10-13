@@ -134,9 +134,7 @@ export default function MobileNav() {
   }, [drawerOpen])
 
   // Determine if a "More" item is currently active
-  const isMoreItemActive = moreFeatureItems.some(item =>
-    location.pathname.startsWith(item.to)
-  )
+  const isMoreItemActive = moreFeatureItems.some(item => location.pathname.startsWith(item.to))
 
   if (!isAuthenticated) {
     return (
@@ -324,7 +322,7 @@ export default function MobileNav() {
               to={to}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 max-w-[72px] relative group',
+                  'flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 max-w-[68px] relative group',
                   isActive
                     ? 'text-primary-600 dark:text-primary-400'
                     : 'text-gray-400 dark:text-gray-500 active:text-gray-600 dark:active:text-gray-300'
@@ -382,7 +380,7 @@ export default function MobileNav() {
           <button
             onClick={() => setDrawerOpen(prev => !prev)}
             className={cn(
-              'flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 max-w-[72px] relative group',
+              'flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 max-w-[68px] relative group',
               isMoreItemActive || drawerOpen
                 ? 'text-primary-600 dark:text-primary-400 font-bold'
                 : 'text-gray-400 dark:text-gray-500 active:text-gray-600 dark:active:text-gray-300'
@@ -392,7 +390,7 @@ export default function MobileNav() {
           >
             {(isMoreItemActive || drawerOpen) && (
               <motion.div
-                layoutId="mobile-nav-bg"
+                layoutId="mobile-nav-more-bg"
                 className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 rounded-2xl"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               />

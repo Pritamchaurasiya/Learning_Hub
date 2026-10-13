@@ -16,35 +16,32 @@ export function NextBestActionCard({ action }: Props) {
         <Sparkles className="w-36 h-36 text-indigo-400" />
       </div>
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2 max-w-xl">
+        <div className="space-y-2.5 max-w-2xl">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-indigo-300" />
-              AI Next Best Action
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/25 text-indigo-200 border border-indigo-400/30 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+              AI Recommended Action
             </span>
             {action.multiplierBonus && (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
-                <Zap className="w-3 h-3 text-amber-300" />
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-300" />
                 {action.multiplierBonus}
               </span>
             )}
+            <span className="text-xs font-medium text-indigo-200/80 flex items-center gap-1">
+              • Est. {action.estimatedMinutes} mins
+            </span>
           </div>
-          <h3 className="text-lg md:text-xl font-black text-white tracking-tight">
+          <h2 className="text-lg md:text-xl font-bold text-white tracking-tight">
             {action.title}
-          </h3>
-          <p className="text-xs text-indigo-200/80 font-medium leading-relaxed">{action.reason}</p>
+          </h2>
+          <p className="text-xs text-indigo-200/90 font-normal leading-relaxed">{action.reason}</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-          <div className="text-right hidden md:block">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-300 block">
-              Est. Time
-            </span>
-            <span className="text-sm font-black text-white">{action.estimatedMinutes} mins</span>
-          </div>
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
           <button
             onClick={() => navigate(action.actionUrl)}
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/30 transition-all hover:scale-102 active:scale-98"
           >
             <Target className="w-4 h-4" />
             <span>{action.actionLabel}</span>

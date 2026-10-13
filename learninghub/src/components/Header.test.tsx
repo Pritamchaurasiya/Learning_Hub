@@ -126,14 +126,14 @@ describe('Header Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders XP and level badges and opens LevelProgressionModal on click', () => {
+  it('renders XP and level badges and opens LevelProgressionModal on click', async () => {
     renderHeader()
     expect(screen.getByText('100')).toBeInTheDocument()
     expect(screen.getByText('Lv.5')).toBeInTheDocument()
 
     const levelBadge = screen.getByLabelText(/Level 5. Click to view level progression./i)
     fireEvent.click(levelBadge)
-    expect(screen.getByText('Cognitive Mastery Matrix')).toBeInTheDocument()
+    expect(await screen.findByText('Cognitive Mastery Matrix')).toBeInTheDocument()
   })
 
   it('shows theme toggle button', () => {

@@ -271,10 +271,11 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 z-40 pointer-events-auto"
           >
             <Button
               onClick={() => setIsOpen(true)}
+              aria-label="Open AI Tutor Chat"
               className="w-14 h-14 rounded-full shadow-2xl bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white flex items-center justify-center group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 transition-transform rounded-full origin-center" />

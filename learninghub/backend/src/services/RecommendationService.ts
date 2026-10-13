@@ -303,7 +303,7 @@ export class RecommendationService {
               difficulty: test.difficulty,
               mode: test.mode,
               questionCount: test._count.questions,
-              estimatedTime: test.timeLimit,
+              estimatedTime: test.timeLimit ?? 15,
               matchScore,
             }
           }

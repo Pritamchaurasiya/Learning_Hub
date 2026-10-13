@@ -224,7 +224,7 @@ export class ExamEngine {
         data: {
           status: 'COMPLETED',
           completedAt: new Date(),
-          score: Math.round(percentage),
+          metadata: { score: Math.round(percentage) },
         },
       })
     } catch {

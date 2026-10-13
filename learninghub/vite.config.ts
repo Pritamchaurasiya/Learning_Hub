@@ -177,16 +177,20 @@ export default defineConfig(({ mode }) => {
                 id.includes('unist') ||
                 id.includes('vfile') ||
                 id.includes('mdast') ||
-                id.includes('marked') ||
-                id.includes('dompurify')
+                id.includes('marked')
               )
-                return 'vendor'
-              if (id.includes('recharts')) return 'charts'
+                return 'vendor-markdown'
+              if (id.includes('dompurify')) return 'vendor-dompurify'
+              if (id.includes('recharts') || id.includes('victory-vendor') || id.includes('d3-'))
+                return 'charts'
               if (id.includes('katex')) return 'katex'
               if (id.includes('@google/generative-ai')) return 'vendor-ai'
-              if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf-export'
+              if (id.includes('jspdf')) return 'pdf-jspdf'
+              if (id.includes('html2canvas')) return 'pdf-canvas'
               if (id.includes('@sentry')) return 'sentry'
               if (id.includes('stripe') || id.includes('@stripe')) return 'payments'
+              if (id.includes('lodash')) return 'vendor-utils'
+              if (id.includes('zod')) return 'vendor-validation'
 
               // Code editor - only load on DSA pages
               if (
@@ -197,42 +201,30 @@ export default defineConfig(({ mode }) => {
                 return 'editor'
 
               // Core libraries
-              if (id.includes('/node_modules/zustand/')) return 'store'
-              if (
-                id.includes('/node_modules/react-router-dom/') ||
-                id.includes('/node_modules/react-router/')
-              )
-                return 'router'
-              if (
-                id.includes('/node_modules/@tanstack/react-query/') ||
-                id.includes('/node_modules/@tanstack/query-core/')
-              )
+              if (id.includes('zustand')) return 'store'
+              if (id.includes('react-router-dom') || id.includes('react-router')) return 'router'
+              if (id.includes('@tanstack/react-query') || id.includes('@tanstack/query-core'))
                 return 'query'
               if (
-                id.includes('/node_modules/react/') ||
-                id.includes('/node_modules/react-dom/') ||
-                id.includes('/node_modules/scheduler/')
+                id.includes('/react/') ||
+                id.includes('\\react\\') ||
+                id.includes('/react-dom/') ||
+                id.includes('\\react-dom\\') ||
+                id.includes('scheduler')
               )
                 return 'react-core'
-              if (id.includes('/node_modules/socket.io-client/')) return 'socket'
-              if (
-                id.includes('/node_modules/i18next/') ||
-                id.includes('/node_modules/react-i18next/')
-              )
-                return 'i18n'
+              if (id.includes('socket.io-client')) return 'socket'
+              if (id.includes('i18next')) return 'i18n'
 
               // Additional library splits for better caching
-              if (id.includes('/node_modules/fuse.js/')) return 'search'
-              if (
-                id.includes('/node_modules/react-virtuoso/') ||
-                id.includes('/node_modules/@tanstack/react-virtual/')
-              )
+              if (id.includes('fuse.js')) return 'search'
+              if (id.includes('react-virtuoso') || id.includes('@tanstack/react-virtual'))
                 return 'virtualization'
-              if (id.includes('/node_modules/react-helmet-async/')) return 'seo'
+              if (id.includes('react-helmet-async')) return 'seo'
               if (
-                id.includes('/node_modules/class-variance-authority/') ||
-                id.includes('/node_modules/clsx/') ||
-                id.includes('/node_modules/tailwind-merge/')
+                id.includes('class-variance-authority') ||
+                id.includes('clsx') ||
+                id.includes('tailwind-merge')
               )
                 return 'styling-utils'
 

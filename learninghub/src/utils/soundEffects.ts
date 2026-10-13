@@ -95,3 +95,148 @@ export function playExamChime(type: 'warning-5m' | 'warning-1m' | 'time-up'): vo
     osc.stop(now + 0.7)
   }
 }
+
+/**
+ * Play a synthesized positive reward / dopamine chime
+ */
+export function playRewardChime(type: 'quest-complete' | 'xp-gain' | 'milestone'): void {
+  const ctx = getAudioContext()
+  if (!ctx) return
+
+  const now = ctx.currentTime
+
+  if (type === 'quest-complete') {
+    // Upbeat major triad arpeggio (C5 -> E5 -> G5)
+    const notes = [523.25, 659.25, 783.99]
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const start = now + idx * 0.08
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, start)
+
+      gain.gain.setValueAtTime(0.001, start)
+      gain.gain.exponentialRampToValueAtTime(0.12, start + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(start)
+      osc.stop(start + 0.35)
+    })
+  } else if (type === 'xp-gain') {
+    // Quick two-note ascending sparkle (G5 -> C6)
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(783.99, now)
+    osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.12)
+
+    gain.gain.setValueAtTime(0.001, now)
+    gain.gain.exponentialRampToValueAtTime(0.1, now + 0.03)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + 0.28)
+  } else if (type === 'milestone') {
+    // Celebratory 4-note fanfare (C5 -> G5 -> C6 -> E6)
+    const notes = [523.25, 783.99, 1046.5, 1318.51]
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const start = now + idx * 0.1
+
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(freq, start)
+
+      gain.gain.setValueAtTime(0.001, start)
+      gain.gain.exponentialRampToValueAtTime(0.14, start + 0.03)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.5)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(start)
+      osc.stop(start + 0.5)
+    })
+  }
+}
+
+/**
+ * Play a synthesized competitive arena chime using Web Audio API
+ */
+export function playArenaChime(type: 'submission-accepted' | 'rank-up' | 'duel-start'): void {
+  const ctx = getAudioContext()
+  if (!ctx) return
+
+  const now = ctx.currentTime
+
+  if (type === 'submission-accepted') {
+    // Crisp ascending triad indicating all test cases passed (F5 -> A5 -> C6)
+    const notes = [698.46, 880.0, 1046.5]
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const start = now + idx * 0.07
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, start)
+
+      gain.gain.setValueAtTime(0.001, start)
+      gain.gain.exponentialRampToValueAtTime(0.12, start + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.3)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(start)
+      osc.stop(start + 0.3)
+    })
+  } else if (type === 'rank-up') {
+    // Resonant trumpet fanfare (C5 -> E5 -> G5 -> C6)
+    const notes = [523.25, 659.25, 783.99, 1046.5]
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const start = now + idx * 0.09
+
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(freq, start)
+
+      gain.gain.setValueAtTime(0.001, start)
+      gain.gain.exponentialRampToValueAtTime(0.15, start + 0.03)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.45)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(start)
+      osc.stop(start + 0.45)
+    })
+  } else if (type === 'duel-start') {
+    // Dynamic cybernetic alert cue (double punch at 440Hz -> 880Hz)
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(440, now)
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15)
+
+    gain.gain.setValueAtTime(0.001, now)
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.03)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(now)
+    osc.stop(now + 0.35)
+  }
+}
+

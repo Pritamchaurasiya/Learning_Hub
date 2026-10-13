@@ -32,6 +32,10 @@ class Problem(models.Model):
     class Meta:
         db_table = 'lh_problems'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['category', 'difficulty']),
+            models.Index(fields=['created_at']),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.difficulty})"

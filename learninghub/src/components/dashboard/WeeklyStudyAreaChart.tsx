@@ -26,7 +26,7 @@ export function WeeklyStudyAreaChart({ data }: Props) {
             <h3 className="font-bold text-sm text-gray-900 dark:text-white">
               7-Day Accuracy & Mastery Trajectory
             </h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Chronological accuracy trend across recent tests
             </p>
           </div>

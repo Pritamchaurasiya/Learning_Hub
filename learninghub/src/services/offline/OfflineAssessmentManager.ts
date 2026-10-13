@@ -9,6 +9,7 @@
  *  - Cryptographic client-side SHA-256 hash chains
  * */
 import { testsAService } from '../testsAService'
+import { triggerHaptic } from '../../utils/haptics'
 
 export interface CachedOfflineBundle {
   bundleId: string
@@ -324,15 +325,30 @@ class OfflineAssessmentManager {
             tx.oncomplete = () => resolve()
             tx.onerror = () => reject(tx.error)
           })
+
+          triggerHaptic('success')
         } catch (err) {
           await new Promise<void>((resolve, reject) => {
             const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
+            const isConflict =
+              err instanceof Error &&
+              (err.message.includes('already submitted') || err.message.includes('Conflict'))
+
             item.status = 'FAILED'
             item.retryCount += 1
-            item.errorMessage = err instanceof Error ? err.message : 'Sync failed'
+            item.errorMessage = isConflict
+              ? 'Conflict: Attempt already recorded on server'
+              : err instanceof Error
+                ? err.message
+                : 'Sync failed'
+
             tx.objectStore(STORE_SYNC_QUEUE).put(item)
             tx.oncomplete = () => resolve()
             tx.onerror = () => reject(tx.error)
+
+            if (isConflict) {
+              triggerHaptic('warning')
+            }
           })
         }
       }

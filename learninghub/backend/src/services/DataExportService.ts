@@ -21,7 +21,7 @@ export class DataExportService {
             test: {
               select: {
                 title: true,
-                subjectId: true,
+                examId: true,
                 timeLimit: true,
                 passingScore: true,
               },
@@ -58,10 +58,10 @@ export class DataExportService {
         streak: scrubbedUser.streak,
         loginCount: scrubbedUser.loginCount,
       },
-      testHistory: scrubbedUser.testResults.map((result: any) => ({
+      testHistory: (scrubbedUser as any).testResults?.map((result: any) => ({
         testId: result.testId,
         testTitle: result.test.title,
-        subjectId: result.test.subjectId,
+        examId: result.test.examId,
         status: result.status,
         score: result.score,
         percentage: result.percentage,
@@ -71,29 +71,29 @@ export class DataExportService {
         completedAt: result.completedAt,
       })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      topicPerformance: scrubbedUser.topicPerformances.map((tp: any) => ({
+      topicPerformance: (scrubbedUser as any).topicPerformances?.map((tp: any) => ({
         topicName: tp.topicName,
         subjectName: tp.subjectName,
         totalAttempts: tp.totalAttempts,
         accuracy: tp.accuracy,
         lastAttemptAt: tp.lastAttemptAt,
         avgTimePerQuestionSeconds: tp.avgTimeSeconds,
-      })),
+      })) ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      achievements: scrubbedUser.achievements.map((ach: any) => ({
+      achievements: (scrubbedUser as any).achievements?.map((ach: any) => ({
         achievementId: ach.achievementId,
         name: ach.name,
         description: ach.description,
         unlockedAt: ach.unlockedAt,
-      })),
+      })) ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      experimentEvents: scrubbedUser.experimentEvents.map((exp: any) => ({
+      experimentEvents: (scrubbedUser as any).experimentEvents?.map((exp: any) => ({
         experimentId: exp.experimentId,
         variant: exp.variant,
         event: exp.event,
         value: exp.value,
         createdAt: exp.createdAt,
-      })),
+      })) ?? [],
     }
   }
 }

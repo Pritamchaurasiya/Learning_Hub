@@ -77,7 +77,9 @@ const TestsAPage = memo(() => {
     resetViolations: resetProctorViolations,
   } = useProctoring({
     isActive: Boolean(test.isActive && test.questions.length > 0 && !test.results),
-    attemptId: test.attempt?.attemptId || (test.testInfo?.testId ? `attempt-${test.testInfo.testId}` : undefined),
+    attemptId:
+      test.attempt?.attemptId ||
+      (test.testInfo?.testId ? `attempt-${test.testInfo.testId}` : undefined),
     enableWebcam: test.assessmentMode === 'contest',
     strictMode: true,
     requireFullscreen: false,
@@ -193,8 +195,6 @@ const TestsAPage = memo(() => {
       unsub()
     }
   }, [setPendingSyncCount])
-
-
 
   // Keyboard navigation shortcuts during active exam
   useEffect(() => {
@@ -678,9 +678,11 @@ const TestsAPage = memo(() => {
                     },
                   ],
                   correct_options:
-                    q.options?.filter(o => (o as any).is_correct || (o as any).isCorrect).map(o => ({ id: o.id, text: o.text })) || [],
+                    q.options
+                      ?.filter(o => (o as any).is_correct || (o as any).isCorrect)
+                      .map(o => ({ id: o.id, text: o.text })) || [],
                   is_correct: isCorrect,
-                  marks_obtained: isCorrect ? (q.marks || 1) : 0,
+                  marks_obtained: isCorrect ? q.marks || 1 : 0,
                   explanation:
                     (q as any).explanation ||
                     'Adaptive item calibrated with 2PL IRT discrimination & item difficulty parameter.',
@@ -977,24 +979,26 @@ const TestsAPage = memo(() => {
       } finally {
         setIsSubmitting(false)
       }
-    }, [
-    isSubmitting,
-    isOnline,
-    test.isOfflineMode,
-    test.testInfo,
-    test.attempt,
-    test.timeRemaining,
-    test.answers,
-    test.confidences,
-    test.questions,
-    test.flaggedQuestions,
-    offlineBundles,
-    proctorViolations,
-    submitTest,
-    setTestResults,
-    addToast,
-    setPendingSyncCount,
-  ])
+    },
+    [
+      isSubmitting,
+      isOnline,
+      test.isOfflineMode,
+      test.testInfo,
+      test.attempt,
+      test.timeRemaining,
+      test.answers,
+      test.confidences,
+      test.questions,
+      test.flaggedQuestions,
+      offlineBundles,
+      proctorViolations,
+      submitTest,
+      setTestResults,
+      addToast,
+      setPendingSyncCount,
+    ]
+  )
 
   // Client countdown anchored to Date.now()+timeRemaining, corrected by server
   // heartbeat for contest mode. Deps include timeRemaining + attemptId to avoid
@@ -1020,9 +1024,10 @@ const TestsAPage = memo(() => {
       return
     }
 
-    if (!targetEndTimeRef.current && test.timeRemaining > 0) {
-      targetEndTimeRef.current = Date.now() + test.timeRemaining * 1000
-    } else if (targetEndTimeRef.current && test.timeRemaining === 0) {
+    const currentRemaining = useStore.getState().test.timeRemaining
+    if (!targetEndTimeRef.current && currentRemaining > 0) {
+      targetEndTimeRef.current = Date.now() + currentRemaining * 1000
+    } else if (targetEndTimeRef.current && currentRemaining === 0) {
       // handle ref reset when truthy check fails (recovered time_remaining was 0 or reset)
       targetEndTimeRef.current = null
     }
@@ -1059,7 +1064,7 @@ const TestsAPage = memo(() => {
         timerRef.current = undefined
       }
     }
-  }, [test.isActive, test.isSubmitting, test.timeRemaining, test.attempt?.attemptId, addToast])
+  }, [test.isActive, test.isSubmitting, test.attempt?.attemptId, addToast])
 
   // Server heartbeat: every 60s during contest mode, reconcile client clock
   // drift against authoritative server time so auto-submit matches backend.
@@ -1190,12 +1195,7 @@ const TestsAPage = memo(() => {
   }, [test.isActive, test.isSubmitting, test.attempt?.attemptId, setPendingSyncCount])
 
   useEffect(() => {
-    if (
-      test.timeRemaining === 0 &&
-      test.isActive &&
-      !test.isSubmitting &&
-      !isSubmitting
-    ) {
+    if (test.timeRemaining === 0 && test.isActive && !test.isSubmitting && !isSubmitting) {
       void handleSubmit(true)
     }
   }, [test.timeRemaining, test.isActive, test.isSubmitting, isSubmitting, handleSubmit])

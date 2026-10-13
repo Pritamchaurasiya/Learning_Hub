@@ -13,7 +13,11 @@ describe('courseService', () => {
   })
 
   it('getCourses calls fetchApi with correct endpoint', async () => {
-    const mockData = { status: 'success', data: [{ id: '1', title: 'Test Course' }] }
+    const mockData = {
+      status: 'success',
+      data: [{ id: '1', title: 'Test Course' }],
+      pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(fetchApi as any).mockResolvedValue(mockData)
 

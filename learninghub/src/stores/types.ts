@@ -149,6 +149,7 @@ export interface UISlice {
     autoplay?: boolean
     compactMode?: boolean
     lowPerformanceMode?: boolean
+    hapticFeedback?: boolean
     // Privacy flags
     showProfile?: boolean
     showProgress?: boolean
@@ -165,6 +166,7 @@ export interface UISlice {
       autoplay: boolean
       compactMode: boolean
       lowPerformanceMode: boolean
+      hapticFeedback: boolean
       showProfile: boolean
       showProgress: boolean
       showStreak: boolean

@@ -17,7 +17,7 @@ export function StreakMultiplierBadge({ streak }: Props) {
           : { name: 'Bronze Explorer', color: 'from-orange-400 to-amber-600', multiplier: '1.25x' }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
       <div
         className={`px-3 py-1 rounded-full bg-gradient-to-r ${tier.color} text-white font-black text-xs flex items-center gap-1.5 shadow-md`}
       >

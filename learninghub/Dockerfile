@@ -28,5 +28,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expose frontend port
 EXPOSE 80
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget -qO- http://localhost:80/_health || exit 1
+
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

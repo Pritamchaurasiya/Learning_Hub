@@ -23,6 +23,7 @@ import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { useStore } from '../stores/useStore'
 import { renderMarkdown } from '../utils/markdown'
+import { playRewardChime } from '../utils/soundEffects'
 import {
   Play,
   Send,
@@ -266,7 +267,9 @@ export default function ProblemWorkspacePage() {
   const addToast = useStore(state => state.addToast)
 
   // Navigation & Tabs State
-  const [leftTab, setLeftTab] = useState<'description' | 'editorial' | 'submissions' | 'hints'>('description')
+  const [leftTab, setLeftTab] = useState<'description' | 'editorial' | 'submissions' | 'hints'>(
+    'description'
+  )
   const [mobileTab, setMobileTab] = useState<'description' | 'editor'>('description')
 
   // Code & Language State
@@ -274,6 +277,7 @@ export default function ProblemWorkspacePage() {
   const [code, setCode] = useState(DEFAULT_CODE.javascript)
   const [fontSize, setFontSize] = useState<number>(14)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const codeMirrorExtensions = useMemo(() => [getLanguageExtension(language)], [language])
 
   // Console & Runner State
   const [output, setOutput] = useState<string | null>(null)
@@ -358,8 +362,7 @@ export default function ProblemWorkspacePage() {
   const handleStartCollabSession = useCallback(
     (customId?: string) => {
       const roomId =
-        customId ||
-        `collab-dsa-${slug || 'challenge'}-${Math.floor(1000 + Math.random() * 9000)}`
+        customId || `collab-dsa-${slug || 'challenge'}-${Math.floor(1000 + Math.random() * 9000)}`
       setCollabRoomId(roomId)
       addToast({ message: `Collaborative session started: ${roomId}`, type: 'success' })
     },
@@ -391,14 +394,16 @@ export default function ProblemWorkspacePage() {
   // Editorial Query
   const { data: editorial } = useQuery({
     queryKey: ['editorial', slug],
-    queryFn: () => (problemService.getEditorial ? problemService.getEditorial(slug!) : Promise.resolve(null)),
+    queryFn: () =>
+      problemService.getEditorial ? problemService.getEditorial(slug!) : Promise.resolve(null),
     enabled: !!slug,
   })
 
   // Hints Query
   const { data: hintsData } = useQuery({
     queryKey: ['hints', slug],
-    queryFn: () => (problemService.getHints ? problemService.getHints(slug!) : Promise.resolve(null)),
+    queryFn: () =>
+      problemService.getHints ? problemService.getHints(slug!) : Promise.resolve(null),
     enabled: !!slug,
   })
 
@@ -521,6 +526,9 @@ export default function ProblemWorkspacePage() {
       if (collabRoomId) {
         sendTestResults(formatted, 'passed')
       }
+      if (isAccepted) {
+        playRewardChime('quest-complete')
+      }
     },
     onError: error => {
       const msg = error instanceof Error ? error.message : 'Execution failed'
@@ -561,6 +569,7 @@ export default function ProblemWorkspacePage() {
       }
 
       if (isAccepted) {
+        playRewardChime('milestone')
         addToast({ message: '🎉 Solution Accepted! +100 XP', type: 'success' })
       } else {
         addToast({
@@ -647,6 +656,7 @@ export default function ProblemWorkspacePage() {
         }
 
         if (res.overallPassed) {
+          playRewardChime('quest-complete')
           addToast({
             message: `⚡ All ${res.passedTests}/${res.totalTests} WASM test cases passed in ${res.totalExecutionTimeMs}ms!`,
             type: 'success',
@@ -837,7 +847,10 @@ ${review.overallFeedback}
     )
     if (tagsLower.some((t: string) => t.includes('sort'))) return 'sorting'
     if (tagsLower.some((t: string) => t.includes('tree') || t.includes('bst'))) return 'trees'
-    if (tagsLower.some((t: string) => t.includes('graph') || t.includes('bfs') || t.includes('dfs'))) return 'pathfinding'
+    if (
+      tagsLower.some((t: string) => t.includes('graph') || t.includes('bfs') || t.includes('dfs'))
+    )
+      return 'pathfinding'
     if (tagsLower.some((t: string) => t.includes('dynamic') || t.includes('dp'))) return 'dp'
     if (tagsLower.some((t: string) => t.includes('array') || t.includes('search'))) return 'sorting'
     return null
@@ -903,7 +916,9 @@ ${review.overallFeedback}
 
           {/* Interview Stopwatch Timer */}
           <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 bg-gray-900 border border-gray-800 rounded-lg text-xs font-mono text-gray-300">
-            <Timer className={`w-3.5 h-3.5 ${isTimerRunning ? 'text-emerald-400 animate-pulse' : 'text-gray-400'}`} />
+            <Timer
+              className={`w-3.5 h-3.5 ${isTimerRunning ? 'text-emerald-400 animate-pulse' : 'text-gray-400'}`}
+            />
             <span>{formatTimer(timerSeconds)}</span>
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -926,10 +941,10 @@ ${review.overallFeedback}
         </div>
 
         {/* Mobile View Toggle */}
-        <div className="flex md:hidden items-center bg-gray-900 rounded-lg p-0.5 border border-gray-800">
+        <div className="flex lg:hidden items-center bg-gray-900 rounded-lg p-0.5 border border-gray-800">
           <button
             onClick={() => setMobileTab('description')}
-            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+            className={`min-h-[36px] px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
               mobileTab === 'description'
                 ? 'bg-primary-600 text-white shadow-sm'
                 : 'text-gray-400 hover:text-gray-200'
@@ -939,7 +954,7 @@ ${review.overallFeedback}
           </button>
           <button
             onClick={() => setMobileTab('editor')}
-            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+            className={`min-h-[36px] px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
               mobileTab === 'editor'
                 ? 'bg-primary-600 text-white shadow-sm'
                 : 'text-gray-400 hover:text-gray-200'
@@ -1062,12 +1077,12 @@ ${review.overallFeedback}
       </header>
 
       {/* ═══ Main Split Workspace ═══ */}
-      <div ref={containerRef} className="flex-1 flex flex-col md:flex-row min-h-0 relative">
+      <div ref={containerRef} className="flex-1 flex flex-col lg:flex-row min-h-0 relative">
         {/* ─── Left Pane: Tabs & Content ─── */}
         <div
           ref={leftPaneRef}
-          className={`h-full flex flex-col min-w-0 border-b md:border-b-0 md:border-r border-gray-800/60 bg-gray-950 ${
-            mobileTab === 'description' ? 'flex w-full' : 'hidden md:flex'
+          className={`h-full flex flex-col min-w-0 border-b lg:border-b-0 lg:border-r border-gray-800/60 bg-gray-950 ${
+            mobileTab === 'description' ? 'flex w-full' : 'hidden lg:flex'
           }`}
           style={{ width: undefined }}
         >
@@ -1170,7 +1185,7 @@ ${review.overallFeedback}
                       const tagKey =
                         typeof tag === 'string'
                           ? `str-tag-${idx}-${tag}`
-                          : (tag?.id || tag?.slug || `obj-tag-${idx}`)
+                          : tag?.id || tag?.slug || `obj-tag-${idx}`
                       return (
                         <span
                           key={tagKey}
@@ -1215,11 +1230,15 @@ ${review.overallFeedback}
                       >
                         <div>
                           <span className="text-gray-500 text-xs font-medium">Input:</span>
-                          <pre className="text-gray-300 mt-1 font-mono text-xs whitespace-pre-wrap">{ex.input}</pre>
+                          <pre className="text-gray-300 mt-1 font-mono text-xs whitespace-pre-wrap">
+                            {ex.input}
+                          </pre>
                         </div>
                         <div>
                           <span className="text-gray-500 text-xs font-medium">Output:</span>
-                          <pre className="text-gray-300 mt-1 font-mono text-xs whitespace-pre-wrap">{ex.output}</pre>
+                          <pre className="text-gray-300 mt-1 font-mono text-xs whitespace-pre-wrap">
+                            {ex.output}
+                          </pre>
                         </div>
                         {ex.explanation && (
                           <div>
@@ -1272,8 +1291,8 @@ ${review.overallFeedback}
                                 app.difficulty === 'OPTIMAL'
                                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                   : app.difficulty === 'BETTER'
-                                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                                  : 'bg-gray-800 text-gray-400 border-gray-700'
+                                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                    : 'bg-gray-800 text-gray-400 border-gray-700'
                               }`}
                             >
                               {app.difficulty.replace('_', ' ')}
@@ -1302,12 +1321,20 @@ ${review.overallFeedback}
                           {/* Complexity Badges */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                             <div className="p-2.5 rounded bg-gray-950 border border-gray-800">
-                              <span className="text-[10px] text-gray-500 font-bold uppercase">Time Complexity</span>
-                              <p className="font-mono text-emerald-400 font-semibold mt-0.5">{app.timeComplexity}</p>
+                              <span className="text-[10px] text-gray-500 font-bold uppercase">
+                                Time Complexity
+                              </span>
+                              <p className="font-mono text-emerald-400 font-semibold mt-0.5">
+                                {app.timeComplexity}
+                              </p>
                             </div>
                             <div className="p-2.5 rounded bg-gray-950 border border-gray-800">
-                              <span className="text-[10px] text-gray-500 font-bold uppercase">Space Complexity</span>
-                              <p className="font-mono text-blue-400 font-semibold mt-0.5">{app.spaceComplexity}</p>
+                              <span className="text-[10px] text-gray-500 font-bold uppercase">
+                                Space Complexity
+                              </span>
+                              <p className="font-mono text-blue-400 font-semibold mt-0.5">
+                                {app.spaceComplexity}
+                              </p>
                             </div>
                           </div>
 
@@ -1321,10 +1348,14 @@ ${review.overallFeedback}
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => {
-                                      const solutionCode = app.code[language] || Object.values(app.code)[0]
+                                      const solutionCode =
+                                        app.code[language] || Object.values(app.code)[0]
                                       if (solutionCode) {
                                         setCode(solutionCode)
-                                        addToast({ message: 'Loaded reference solution into editor', type: 'success' })
+                                        addToast({
+                                          message: 'Loaded reference solution into editor',
+                                          type: 'success',
+                                        })
                                       }
                                     }}
                                     className="text-[11px] text-primary-400 hover:text-primary-300 font-semibold transition-colors"
@@ -1333,7 +1364,8 @@ ${review.overallFeedback}
                                   </button>
                                   <button
                                     onClick={() => {
-                                      const solutionCode = app.code[language] || Object.values(app.code)[0]
+                                      const solutionCode =
+                                        app.code[language] || Object.values(app.code)[0]
                                       if (solutionCode) {
                                         handleCopyCode(`app-${idx}`, solutionCode)
                                       }
@@ -1364,7 +1396,9 @@ ${review.overallFeedback}
                     <div>
                       <h4 className="text-sm font-bold text-gray-200">Editorial Analysis</h4>
                       <p className="text-xs text-gray-400 mt-1 max-w-md mx-auto">
-                        This challenge tests fundamental asymptotic trade-offs. Strive for optimal time complexity by using hash mapping, two pointers, or dynamic state memoization.
+                        This challenge tests fundamental asymptotic trade-offs. Strive for optimal
+                        time complexity by using hash mapping, two pointers, or dynamic state
+                        memoization.
                       </p>
                     </div>
                   </div>
@@ -1440,9 +1474,7 @@ ${review.overallFeedback}
                                   {sub.execution_time_ms} ms
                                 </span>
                               )}
-                              {sub.memory_kb != null && (
-                                <span>{sub.memory_kb} KB</span>
-                              )}
+                              {sub.memory_kb != null && <span>{sub.memory_kb} KB</span>}
                               <span>
                                 {sub.passed_tests != null
                                   ? `${sub.passed_tests}/${sub.total_tests ?? sub.passed_tests} test cases`
@@ -1472,9 +1504,12 @@ ${review.overallFeedback}
                   <div className="p-8 rounded-xl border border-gray-800 bg-gray-900/30 text-center space-y-3">
                     <History className="w-8 h-8 text-gray-600 mx-auto" />
                     <div>
-                      <h4 className="text-sm font-bold text-gray-300">No Submissions Recorded Yet</h4>
+                      <h4 className="text-sm font-bold text-gray-300">
+                        No Submissions Recorded Yet
+                      </h4>
                       <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                        Complete your code in the editor and click <strong>Submit</strong> to evaluate against all edge cases and record your first benchmark.
+                        Complete your code in the editor and click <strong>Submit</strong> to
+                        evaluate against all edge cases and record your first benchmark.
                       </p>
                     </div>
                   </div>
@@ -1625,7 +1660,7 @@ ${review.overallFeedback}
 
         {/* ─── Drag Handle (horizontal) ─── */}
         <div
-          className="hidden md:block w-1.5 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-col-resize shrink-0 relative group touch-none select-none"
+          className="hidden lg:block w-1.5 bg-gray-800/60 hover:bg-primary-500/40 transition-colors cursor-col-resize shrink-0 relative group touch-none select-none"
           onPointerDown={onMouseDown}
           onMouseDown={onMouseDown}
         >
@@ -1636,7 +1671,7 @@ ${review.overallFeedback}
         <div
           ref={rightPaneRef}
           className={`h-full flex flex-col min-w-0 bg-gray-950 ${
-            mobileTab === 'editor' ? 'flex w-full' : 'hidden md:flex'
+            mobileTab === 'editor' ? 'flex w-full' : 'hidden lg:flex'
           }`}
           style={{ width: undefined }}
         >
@@ -1737,7 +1772,7 @@ ${review.overallFeedback}
                     value={code}
                     height="100%"
                     theme={oneDark}
-                    extensions={[getLanguageExtension(language)]}
+                    extensions={codeMirrorExtensions}
                     onChange={handleCodeChange}
                     className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:!overflow-auto text-sm"
                     basicSetup={{
@@ -1886,13 +1921,12 @@ ${review.overallFeedback}
                               }`}
                             >
                               <span>Case {idx + 1}</span>
-                              {res && (
-                                res.passed ? (
+                              {res &&
+                                (res.passed ? (
                                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                                 ) : (
                                   <XCircle className="w-3 h-3 text-rose-400" />
-                                )
-                              )}
+                                ))}
                             </button>
                           )
                         })}
@@ -1926,7 +1960,8 @@ ${review.overallFeedback}
                                   Actual Output
                                 </span>
                                 <span className="text-[10px] text-gray-500">
-                                  Runtime: {testCaseResults[activeCaseIndex].executionTimeMs ?? 15} ms
+                                  Runtime: {testCaseResults[activeCaseIndex].executionTimeMs ?? 15}{' '}
+                                  ms
                                 </span>
                               </div>
                               <div
@@ -1946,8 +1981,8 @@ ${review.overallFeedback}
                   )}
 
                   {/* TAB 2: WEBASSEMBLY SANDBOX */}
-                  {consoleTab === 'wasm' && (
-                    wasmResult ? (
+                  {consoleTab === 'wasm' &&
+                    (wasmResult ? (
                       <WasmTestResultsView result={wasmResult} />
                     ) : (
                       <div className="text-gray-500 space-y-2 font-sans">
@@ -1956,11 +1991,12 @@ ${review.overallFeedback}
                           <span>⚡ WebAssembly Native Sandbox Ready</span>
                         </div>
                         <p className="text-xs text-gray-400">
-                          Click <strong>Run (WASM)</strong> to evaluate your solution in-browser with 0ms server latency, zero cloud cost, and complete air-gapped security.
+                          Click <strong>Run (WASM)</strong> to evaluate your solution in-browser
+                          with 0ms server latency, zero cloud cost, and complete air-gapped
+                          security.
                         </p>
                       </div>
-                    )
-                  )}
+                    ))}
 
                   {/* TAB 3: CUSTOM TESTCASE INPUT */}
                   {consoleTab === 'custom' && (
@@ -1986,7 +2022,7 @@ ${review.overallFeedback}
                   )}
 
                   {/* TAB 4: STDOUT / CONSOLE OUTPUT */}
-                  {consoleTab === 'output' && (
+                  {consoleTab === 'output' &&
                     (output ?? (
                       <div className="text-gray-500 space-y-2">
                         <p className="italic text-gray-400">Ready to execute.</p>
@@ -2026,8 +2062,7 @@ ${review.overallFeedback}
                           </div>
                         </div>
                       </div>
-                    ))
-                  )}
+                    ))}
                 </div>
               )}
             </div>

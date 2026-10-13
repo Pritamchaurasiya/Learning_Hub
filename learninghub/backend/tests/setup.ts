@@ -24,6 +24,7 @@ jest.mock('../src/services/CacheService', () => ({
     increment: jest.fn().mockResolvedValue(1),
     incrementWithExpiry: jest.fn().mockResolvedValue(1),
     expire: jest.fn().mockResolvedValue(true),
+    isAvailable: jest.fn().mockReturnValue(true),
     getClient: jest.fn().mockReturnValue(null),
     generateKey: jest.fn().mockImplementation((prefix, ...args) => `${prefix}:${args.join(':')}`),
     curriculumKey: jest.fn().mockImplementation((userId) => `curriculum:active:${userId}`),

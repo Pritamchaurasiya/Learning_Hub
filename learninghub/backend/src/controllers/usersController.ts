@@ -31,8 +31,7 @@ export const getBookmarks = asyncHandler(async (req: Request, res: Response) => 
             text: true,
             type: true,
             difficulty: true,
-            marks: true,
-            createdAt: true,
+            points: true,
           },
         },
       },
@@ -46,7 +45,7 @@ export const getBookmarks = asyncHandler(async (req: Request, res: Response) => 
         title: b.question.text.substring(0, 100),
         type: b.question.type,
         difficulty: b.question.difficulty,
-        totalMarks: b.question.marks,
+        totalMarks: b.question.points,
         notes: b.notes,
         createdAt: b.createdAt,
       }))

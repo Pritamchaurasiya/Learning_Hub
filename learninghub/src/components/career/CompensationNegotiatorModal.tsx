@@ -4,6 +4,7 @@ import {
   SimulatedJobListing,
 } from '../../types/career'
 import { careerService } from '../../services/careerService'
+import { playRewardChime } from '../../utils/soundEffects'
 import {
   X,
   CheckCircle,
@@ -56,6 +57,9 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
         },
       })
 
+      if (result.verdict === 'ACCEPTED' || result.verdict === 'PARTIALLY_ACCEPTED') {
+        playRewardChime('milestone')
+      }
       setEvaluationResult({
         verdict: result.verdict,
         feedbackNote: result.feedbackNote,

@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Count
 from apps.core.responses import success_response, error_response
 from .models import (
     Test, Question, Option, TestAttempt, AttemptAnswer,
@@ -23,7 +23,7 @@ class TestListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        queryset = Test.objects.filter(is_published=True).prefetch_related('questions')
+        queryset = Test.objects.filter(is_published=True).annotate(question_count=Count('questions'))
         category = request.query_params.get('category')
         search = request.query_params.get('search') or request.query_params.get('q')
 

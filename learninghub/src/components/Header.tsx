@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -23,8 +23,15 @@ import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 import { BrandLogo } from './BrandLogo'
-import { LevelProgressionModal } from './gamification/LevelProgressionModal'
-import { LevelUpCelebrationModal } from './gamification/LevelUpCelebrationModal'
+
+const LevelProgressionModal = lazy(() =>
+  import('./gamification/LevelProgressionModal').then(m => ({ default: m.LevelProgressionModal }))
+)
+const LevelUpCelebrationModal = lazy(() =>
+  import('./gamification/LevelUpCelebrationModal').then(m => ({
+    default: m.LevelUpCelebrationModal,
+  }))
+)
 
 const Header = memo(() => {
   const navigate = useNavigate()
@@ -33,9 +40,7 @@ const Header = memo(() => {
   const searchPlaceholder = isUpdatesPage
     ? 'Search student updates, circulars, exams...'
     : 'Search courses...'
-  const searchAriaLabel = isUpdatesPage
-    ? 'Search student updates and notices'
-    : 'Search courses'
+  const searchAriaLabel = isUpdatesPage ? 'Search student updates and notices' : 'Search courses'
   const {
     theme,
     toggleDarkMode,
@@ -303,7 +308,7 @@ const Header = memo(() => {
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
           onClick={toggleDarkMode}
-          className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200 min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center"
           aria-label={themeLabel()}
           title={themeLabel()}
         >
@@ -319,7 +324,7 @@ const Header = memo(() => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/cart')}
-            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center relative"
+            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center relative"
             aria-label="View shopping cart"
           >
             <ShoppingBag className="w-5 h-5" />
@@ -446,14 +451,20 @@ const Header = memo(() => {
         )}
       </div>
 
-      {/* Progression & Level Up Modals */}
-      <LevelProgressionModal
-        isOpen={progressionModalOpen}
-        onClose={() => setProgressionModalOpen(false)}
-        currentXp={progress.xp}
-        streak={progress.streak}
-      />
-      <LevelUpCelebrationModal />
+      {/* Progression & Level Up Modals (Lazy Loaded) */}
+      {progressionModalOpen && (
+        <Suspense fallback={null}>
+          <LevelProgressionModal
+            isOpen={progressionModalOpen}
+            onClose={() => setProgressionModalOpen(false)}
+            currentXp={progress.xp}
+            streak={progress.streak}
+          />
+        </Suspense>
+      )}
+      <Suspense fallback={null}>
+        <LevelUpCelebrationModal />
+      </Suspense>
     </header>
   )
 })

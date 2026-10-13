@@ -29,4 +29,6 @@ export interface User {
   examPreference?: UserExamPreference | null
   role?: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPERADMIN'
   mfaEnabled?: boolean
+  isPro?: boolean
+  tier?: 'free' | 'pro' | 'enterprise'
 }

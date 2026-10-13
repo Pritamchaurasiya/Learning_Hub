@@ -79,6 +79,7 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get)
     autoplay: false,
     compactMode: false,
     lowPerformanceMode: false,
+    hapticFeedback: true,
     showProfile: true,
     showProgress: true,
     showStreak: true,

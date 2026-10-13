@@ -67,6 +67,7 @@ class User(AbstractUser):
         indexes = [
             models.Index(fields=['email']),
             models.Index(fields=['role']),
+            models.Index(fields=['is_active', '-xp']),
         ]
 
     def __str__(self):

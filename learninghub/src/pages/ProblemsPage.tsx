@@ -31,6 +31,7 @@ import {
   Layers,
 } from 'lucide-react'
 import { ProblemCard } from '../components/ui/ProblemCard'
+import { Pagination } from '../components/ui/Pagination'
 import { problemService } from '../services/problemService'
 import type { Problem, CuratedTrack } from '../types/dsa'
 import { useStore } from '../stores/useStore'
@@ -121,14 +122,25 @@ export default function ProblemsPage() {
 
   // Filters & Views
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>('ALL')
-  const [selectedStatus, setSelectedStatus] = useState<'ALL' | 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED'>('ALL')
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>(
+    'ALL'
+  )
+  const [selectedStatus, setSelectedStatus] = useState<
+    'ALL' | 'SOLVED' | 'ATTEMPTED' | 'UNATTEMPTED'
+  >('ALL')
   const [selectedTopic, setSelectedTopic] = useState('ALL')
   const [selectedTrack, setSelectedTrack] = useState('all')
-  const [sortBy, setSortBy] = useState<'default' | 'difficulty-asc' | 'difficulty-desc' | 'acceptance' | 'points'>('default')
+  const [sortBy, setSortBy] = useState<
+    'default' | 'difficulty-asc' | 'difficulty-desc' | 'acceptance' | 'points'
+  >('default')
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [onlyBookmarked, setOnlyBookmarked] = useState(false)
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => problemService.getBookmarks?.() ?? [])
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(
+    () => problemService.getBookmarks?.() ?? []
+  )
+  const bookmarkedSet = useMemo(() => new Set(bookmarkedIds), [bookmarkedIds])
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 24
   const [isPickingRandom, setIsPickingRandom] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
@@ -172,7 +184,8 @@ export default function ProblemsPage() {
   // Fetch Daily Challenge
   const { data: dailyChallengeData } = useQuery({
     queryKey: ['dsaDailyChallenge'],
-    queryFn: () => (problemService.getDailyChallenge ? problemService.getDailyChallenge() : Promise.resolve(null)),
+    queryFn: () =>
+      problemService.getDailyChallenge ? problemService.getDailyChallenge() : Promise.resolve(null),
     staleTime: 30 * 60 * 1000,
   })
 
@@ -260,7 +273,7 @@ export default function ProblemsPage() {
       }
 
       // Bookmarked only
-      if (onlyBookmarked && !bookmarkedIds.includes(problem.id)) {
+      if (onlyBookmarked && !bookmarkedSet.has(problem.id)) {
         return false
       }
 
@@ -270,10 +283,14 @@ export default function ProblemsPage() {
     // Sorting
     if (sortBy === 'difficulty-asc') {
       const diffOrder = { EASY: 1, MEDIUM: 2, HARD: 3 }
-      list = [...list].sort((a, b) => (diffOrder[a.difficulty] || 2) - (diffOrder[b.difficulty] || 2))
+      list = [...list].sort(
+        (a, b) => (diffOrder[a.difficulty] || 2) - (diffOrder[b.difficulty] || 2)
+      )
     } else if (sortBy === 'difficulty-desc') {
       const diffOrder = { EASY: 1, MEDIUM: 2, HARD: 3 }
-      list = [...list].sort((a, b) => (diffOrder[b.difficulty] || 2) - (diffOrder[a.difficulty] || 2))
+      list = [...list].sort(
+        (a, b) => (diffOrder[b.difficulty] || 2) - (diffOrder[a.difficulty] || 2)
+      )
     } else if (sortBy === 'acceptance') {
       list = [...list].sort((a, b) => (b.acceptance_rate ?? 0) - (a.acceptance_rate ?? 0))
     } else if (sortBy === 'points') {
@@ -290,9 +307,27 @@ export default function ProblemsPage() {
     selectedTrack,
     tracks,
     onlyBookmarked,
-    bookmarkedIds,
+    bookmarkedSet,
     sortBy,
   ])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchQuery,
+    selectedDifficulty,
+    selectedStatus,
+    selectedTopic,
+    selectedTrack,
+    onlyBookmarked,
+    sortBy,
+  ])
+
+  const totalPages = Math.ceil(filteredProblems.length / ITEMS_PER_PAGE)
+  const paginatedProblems = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredProblems.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredProblems, currentPage])
 
   const progress = useMemo(() => {
     if (!statsData) return null
@@ -443,8 +478,8 @@ export default function ProblemsPage() {
                     dailyChallengeData.problem.difficulty === 'EASY'
                       ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
                       : dailyChallengeData.problem.difficulty === 'MEDIUM'
-                      ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
-                      : 'text-rose-400 bg-rose-500/10 border-rose-500/30'
+                        ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+                        : 'text-rose-400 bg-rose-500/10 border-rose-500/30'
                   )}
                 >
                   {dailyChallengeData.problem.difficulty}
@@ -496,15 +531,14 @@ export default function ProblemsPage() {
                     : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-primary-500/40'
                 )}
               >
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: track.color }}
-                />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: track.color }} />
                 <span>{track.title}</span>
                 <span
                   className={cn(
                     'text-[10px] px-1.5 py-0.2 rounded-md font-mono',
-                    isActive ? 'bg-white/20 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                   )}
                 >
                   {track.problemSlugs.length}
@@ -573,9 +607,16 @@ export default function ProblemsPage() {
                 >
                   <Filter className="w-4 h-4" />
                   <span>Filters</span>
-                  <ChevronDown className={cn('w-4 h-4 transition-transform', showFilters && 'rotate-180')} />
+                  <ChevronDown
+                    className={cn('w-4 h-4 transition-transform', showFilters && 'rotate-180')}
+                  />
                 </button>
-                <div className={cn('flex flex-wrap items-center gap-2', showFilters ? 'flex w-full sm:w-auto' : 'hidden sm:flex')}>
+                <div
+                  className={cn(
+                    'flex flex-wrap items-center gap-2',
+                    showFilters ? 'flex w-full sm:w-auto' : 'hidden sm:flex'
+                  )}
+                >
                   <select
                     value={selectedDifficulty}
                     onChange={e => setSelectedDifficulty(e.target.value as any)}
@@ -700,7 +741,12 @@ export default function ProblemsPage() {
                   <p className="text-gray-500 font-medium text-sm">
                     Try adjusting your topic tags, difficulty filters, or search terms.
                   </p>
-                  {(searchQuery || selectedDifficulty !== 'ALL' || selectedStatus !== 'ALL' || selectedTopic !== 'ALL' || selectedTrack !== 'all' || onlyBookmarked) && (
+                  {(searchQuery ||
+                    selectedDifficulty !== 'ALL' ||
+                    selectedStatus !== 'ALL' ||
+                    selectedTopic !== 'ALL' ||
+                    selectedTrack !== 'all' ||
+                    onlyBookmarked) && (
                     <Button
                       variant="ghost"
                       className="mt-6 font-bold"
@@ -727,7 +773,7 @@ export default function ProblemsPage() {
                 className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
+                  <table className="min-w-[620px] w-full text-left text-sm border-collapse">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-800/40 text-[11px] font-black uppercase tracking-wider text-gray-400">
                         <th className="py-3 px-4 w-12 text-center">Status</th>
@@ -739,10 +785,10 @@ export default function ProblemsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 font-medium">
-                      {filteredProblems.map(p => {
+                      {paginatedProblems.map(p => {
                         const isSolved = p.user_status === 'SOLVED'
                         const isAttempted = p.user_status === 'ATTEMPTED'
-                        const isBookmarked = bookmarkedIds.includes(p.id)
+                        const isBookmarked = bookmarkedSet.has(p.id)
                         return (
                           <tr
                             key={p.id}
@@ -785,15 +831,17 @@ export default function ProblemsPage() {
                                   p.difficulty === 'EASY'
                                     ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
                                     : p.difficulty === 'MEDIUM'
-                                    ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40'
-                                    : 'text-rose-500 bg-rose-50 dark:bg-rose-950/40'
+                                      ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40'
+                                      : 'text-rose-500 bg-rose-50 dark:bg-rose-950/40'
                                 )}
                               >
                                 {p.difficulty}
                               </span>
                             </td>
                             <td className="py-3.5 px-4 text-xs font-mono text-gray-500">
-                              {p.acceptance_rate != null ? `${Math.round(p.acceptance_rate)}%` : '—'}
+                              {p.acceptance_rate != null
+                                ? `${Math.round(p.acceptance_rate)}%`
+                                : '—'}
                             </td>
                             <td className="py-3.5 px-4 text-xs font-bold text-amber-500">
                               {p.points} XP
@@ -818,18 +866,28 @@ export default function ProblemsPage() {
                 animate={{ opacity: 1 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {filteredProblems.map((p: Problem, idx: number) => (
+                {paginatedProblems.map((p: Problem, idx: number) => (
                   <ProblemCard
                     key={p.id}
                     problem={p}
                     index={idx}
-                    isBookmarked={bookmarkedIds.includes(p.id)}
+                    isBookmarked={bookmarkedSet.has(p.id)}
                     onToggleBookmark={handleToggleBookmark}
                   />
                 ))}
               </motion.div>
             )}
           </AnimatePresence>
+
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
 
         {/* Right Column: Mastery & Goals */}
@@ -905,7 +963,8 @@ export default function ProblemsPage() {
               </div>
               <h3 className="font-black text-xl leading-tight">Weekly System Design Arena</h3>
               <p className="text-sm text-gray-400 leading-relaxed font-medium">
-                Compete with top engineers in a real-time system design simulation. Starts in 14 hours.
+                Compete with top engineers in a real-time system design simulation. Starts in 14
+                hours.
               </p>
               <Button
                 onClick={() => navigate('/contest')}
@@ -927,7 +986,10 @@ export default function ProblemsPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="absolute inset-0 bg-black/50" onClick={() => setShowKeyboardShortcuts(false)} />
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowKeyboardShortcuts(false)}
+            />
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -935,7 +997,9 @@ export default function ProblemsPage() {
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative z-10"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Keyboard Shortcuts
+                </h3>
                 <button
                   onClick={() => setShowKeyboardShortcuts(false)}
                   className="p-2 text-gray-400 hover:text-white transition-colors"
@@ -946,23 +1010,33 @@ export default function ProblemsPage() {
               <div className="p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">?</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                      ?
+                    </kbd>
                     <span className="text-gray-600 dark:text-gray-400">Toggle shortcuts</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘K</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                      ⌘K
+                    </kbd>
                     <span className="text-gray-600 dark:text-gray-400">Command palette</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘S</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                      ⌘S
+                    </kbd>
                     <span className="text-gray-600 dark:text-gray-400">Save draft</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">⌘Enter</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                      ⌘Enter
+                    </kbd>
                     <span className="text-gray-600 dark:text-gray-400">Run code</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Esc</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                      Esc
+                    </kbd>
                     <span className="text-gray-600 dark:text-gray-400">Close modal</span>
                   </div>
                 </div>

@@ -49,7 +49,7 @@ export function SpeedTrendWidget({ data }: Props) {
             <h3 className="font-bold text-xs text-gray-900 dark:text-white">
               Solving Speed
             </h3>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Avg seconds per question
             </p>
           </div>
