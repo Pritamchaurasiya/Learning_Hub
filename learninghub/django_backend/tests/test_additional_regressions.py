@@ -54,7 +54,7 @@ class TestAdditionalRegressions:
         assert add_res.status_code == status.HTTP_200_OK, add_res.data
 
         checkout_url = reverse("checkout")
-        idem_key = "test-idempotency-key"
+        idem_key = "test-idem-key-12345"
 
         # First checkout
         res1 = self.client.post(
@@ -278,7 +278,7 @@ class TestAdditionalRegressions:
         )
 
         # Case 1: With secret set, fake signature must yield 400
-        with patch.dict(os.environ, {"PAYMENT_WEBHOOK_SECRET": "unit-test-webhook-secret", "DJANGO_DEBUG": "True"}):
+        with patch.dict(os.environ, {"PAYMENT_WEBHOOK_SECRET": "whsec_test_secret_for_ci_123", "DJANGO_DEBUG": "True"}):
             res = anon_client.post(
                 url,
                 data=payload,
