@@ -43,8 +43,8 @@ jobs:
       # This resolves the verified npm ci drift without changing package.json or touching production data.
       - name: Regenerate frontend and backend lockfiles
         run: |
-          npm install --package-lock-only --legacy-peer-deps --prefix ..
-          npm install --package-lock-only --legacy-peer-deps
+          npm install --package-lock-only --legacy-peer-deps --ignore-scripts --prefix ..
+          npm install --package-lock-only --legacy-peer-deps --ignore-scripts
 
       - name: Commit synchronized lockfiles on repair branch
         env:
