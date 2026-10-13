@@ -9,6 +9,10 @@
 # See learninghub/docs/ARCHITECTURE.md §8.1 for the canonical port table.
 name: CI
 
+permissions:
+  contents: read
+  pull-requests: read
+
 on:
   push:
     branches: [main, develop]
@@ -16,9 +20,64 @@ on:
     branches: [main, develop]
 
 jobs:
+  changes:
+    name: Detect changed components
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend || steps.push-defaults.outputs.frontend }}
+      node-backend: ${{ steps.filter.outputs.node-backend || steps.push-defaults.outputs.node-backend }}
+      django-backend: ${{ steps.filter.outputs.django-backend || steps.push-defaults.outputs.django-backend }}
+      security: ${{ steps.filter.outputs.security || steps.push-defaults.outputs.security }}
+      e2e: ${{ steps.filter.outputs.e2e || steps.push-defaults.outputs.e2e }}
+    steps:
+      - name: Run full component checks for branch pushes
+        id: push-defaults
+        if: github.event_name == 'push'
+        run: |
+          echo "frontend=true" >> "$GITHUB_OUTPUT"
+          echo "node-backend=true" >> "$GITHUB_OUTPUT"
+          echo "django-backend=true" >> "$GITHUB_OUTPUT"
+          echo "security=true" >> "$GITHUB_OUTPUT"
+          echo "e2e=true" >> "$GITHUB_OUTPUT"
+
+      - name: Filter changed paths for pull requests
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'learninghub/src/**'
+              - 'learninghub/public/**'
+              - 'learninghub/index.html'
+              - 'learninghub/package.json'
+              - 'learninghub/package-lock.json'
+              - 'learninghub/vite.config.*'
+              - 'learninghub/tsconfig*.json'
+              - 'learninghub/playwright.config.*'
+              - 'learninghub/tests/**'
+              - 'learninghub/e2e/**'
+            node-backend:
+              - 'learninghub/backend/**'
+            django-backend:
+              - 'learninghub/django_backend/**'
+            security:
+              - 'learninghub/**'
+              - 'conductor/**'
+              - '.github/workflows/**'
+              - '.gitleaks*'
+            e2e:
+              - 'learninghub/src/**'
+              - 'learninghub/public/**'
+              - 'learninghub/django_backend/**'
+              - 'learninghub/playwright.config.*'
+              - 'learninghub/tests/e2e/**'
+
   # Frontend CI — React + Vite + Vitest + Playwright
   frontend:
     name: Frontend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.frontend == 'true')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -61,6 +120,8 @@ jobs:
   # Node Backend CI — Express + Prisma + Jest
   node-backend:
     name: Node Backend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.node-backend == 'true')
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -135,6 +196,8 @@ jobs:
   # Django Backend CI — Django + DRF + Channels + pytest
   django-backend:
     name: Django Backend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.django-backend == 'true')
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -213,6 +276,8 @@ jobs:
   # Security Scanning
   security:
     name: Security Scan
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.security == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -239,8 +304,8 @@ jobs:
   e2e:
     name: E2E (Live Backend)
     runs-on: ubuntu-latest
-    needs: [frontend, django-backend]
-    if: always()
+    needs: [changes, frontend, django-backend]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.e2e == 'true')
     services:
       postgres:
         image: postgres:16
