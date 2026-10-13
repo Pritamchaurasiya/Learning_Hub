@@ -102,11 +102,11 @@ curl -X POST http://localhost:8787/api/auth/login \
 
 # 2. Use token to access admin endpoints
 curl http://localhost:8787/api/admin/users \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 
 # 3. View analytics
 curl http://localhost:8787/api/admin/analytics \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ## Security Features
