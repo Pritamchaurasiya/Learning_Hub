@@ -294,7 +294,29 @@ jobs:
           sudo install /tmp/gitleaks /usr/local/bin/gitleaks
 
       - name: Scan checked-out source for secrets
-        run: gitleaks dir --redact --exit-code 2 --report-format sarif --report-path results.sarif .
+        shell: bash
+        run: |
+          set +e
+          gitleaks dir --redact --exit-code 2 --report-format json --report-path /tmp/gitleaks-report.json .
+          scan_exit=$?
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = Path('/tmp/gitleaks-report.json')
+          if not report.exists():
+              print('Gitleaks produced no report file.')
+              raise SystemExit(0)
+          findings = json.loads(report.read_text() or '[]')
+          print(f'Redacted Gitleaks findings: {len(findings)}')
+          for item in findings:
+              print('Rule={rule} File={file}:{line} Commit={commit}'.format(
+                  rule=item.get('RuleID', 'unknown'),
+                  file=item.get('File', 'unknown'),
+                  line=item.get('StartLine', '?'),
+                  commit=(item.get('Commit', '')[:12] or 'working-tree'),
+              ))
+          PY
+          exit "$scan_exit"
 
       - name: Run npm audit (frontend)
         working-directory: learninghub
