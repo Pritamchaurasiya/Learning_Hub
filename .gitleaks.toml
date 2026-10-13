@@ -1,0 +1,13 @@
+title = "LearningHub gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Deterministic test fixture values in payment regression tests are not credentials"
+paths = ['''learninghub/django_backend/tests/test_additional_regressions\.py''']
+regexTarget = "line"
+regexes = [
+  '''idem_key\s*=\s*["'][^"']+["']''',
+  '''PAYMENT_WEBHOOK_SECRET["']?\s*:\s*["'][^"']+["']''',
+]
