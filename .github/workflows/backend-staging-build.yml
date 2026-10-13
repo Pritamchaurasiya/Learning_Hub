@@ -10,7 +10,7 @@ on:
       - ".github/workflows/backend-staging-build.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: express-staging-build-${{ github.event.pull_request.number }}
@@ -18,19 +18,15 @@ concurrency:
 
 jobs:
   build:
-    name: Sync Node lockfiles, Prisma generate & TypeScript build
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/backend-staging-prisma-drift'
+    name: Sync lockfiles, Prisma generate & TypeScript build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: learninghub/backend
 
     steps:
-      - name: Checkout repair branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          persist-credentials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,26 +35,22 @@ jobs:
           cache: npm
           cache-dependency-path: learninghub/backend/package-lock.json
 
-      # Regenerate lockfiles using the package manifests, then commit only lockfiles to this repair branch.
-      # This resolves the verified npm ci drift without changing package.json or touching production data.
+      # The checked-in lockfiles are out of sync with package.json. Regenerate them
+      # from manifests, artifact them for review, and validate npm ci against the results.
       - name: Regenerate frontend and backend lockfiles
         run: |
           npm install --package-lock-only --legacy-peer-deps --ignore-scripts --prefix ..
           npm install --package-lock-only --legacy-peer-deps --ignore-scripts
 
-      - name: Commit synchronized lockfiles on repair branch
-        env:
-          GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ../package-lock.json package-lock.json
-          if git diff --cached --quiet; then
-            echo "Lockfiles are already synchronized."
-          else
-            git commit -m "fix(ci): synchronize Node lockfiles"
-            git push origin "HEAD:${GITHUB_HEAD_REF}"
-          fi
+      - name: Upload generated lockfiles for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: learninghub-node-lockfiles
+          path: |
+            learninghub/package-lock.json
+            learninghub/backend/package-lock.json
+          if-no-files-found: error
+          retention-days: 3
 
       - name: Verify clean install for frontend
         run: npm ci --legacy-peer-deps --prefix ..
