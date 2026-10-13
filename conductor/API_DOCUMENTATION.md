@@ -27,8 +27,8 @@ POST /api/v1/auth/login/
 **Response:**
 ```json
 {
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "access": "YOUR_ACCESS_TOKEN",
+  "refresh": "YOUR_REFRESH_TOKEN",
   "user": {
     "id": 1,
     "email": "user@example.com",
@@ -41,7 +41,7 @@ POST /api/v1/auth/login/
 ### Use Token
 Include in header:
 ```http
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
 ### Refresh Token
@@ -52,7 +52,7 @@ POST /api/v1/auth/refresh/
 **Request Body:**
 ```json
 {
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+  "refresh": "YOUR_REFRESH_TOKEN"
 }
 ```
 
@@ -655,7 +655,7 @@ curl "https://api.yourdomain.com/api/v1/courses/courses/?search=python&level=beg
 
 # Create course
 curl -X POST https://api.yourdomain.com/api/v1/courses/courses/ \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title": "New Course", "price": 49.99}'
 ```
@@ -664,11 +664,11 @@ curl -X POST https://api.yourdomain.com/api/v1/courses/courses/ \
 ```bash
 # Enroll
 curl -X POST https://api.yourdomain.com/api/v1/courses/courses/1/enroll/ \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 
 # Get my enrollments
 curl https://api.yourdomain.com/api/v1/enrollments/ \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ---
