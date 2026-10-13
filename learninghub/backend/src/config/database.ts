@@ -343,15 +343,19 @@ if (replicaUrl) {
 // Keep the base client type stable: the read-replicas extension narrows some
 // overloads in TypeScript (notably interactive $transaction callbacks). The
 // runtime extension is only enabled when DATABASE_URL_REPLICA is configured.
-export const prisma: ExtendedPrismaClient = replicaClient
-  ? (basePrisma.$extends(
-      readReplicas({
-        replicas: [
-          replicaClient as unknown as NonNullable<Parameters<typeof readReplicas>[0]['replicas']>[number],
-        ],
-      })
-    ) as unknown as ExtendedPrismaClient)
-  : basePrisma
+let configuredPrismaClient: ExtendedPrismaClient = basePrisma
+
+if (replicaClient) {
+  configuredPrismaClient = basePrisma.$extends(
+    readReplicas({
+      replicas: [
+        replicaClient as unknown as NonNullable<Parameters<typeof readReplicas>[0]['replicas']>[number],
+      ],
+    })
+  ) as unknown as ExtendedPrismaClient
+}
+
+export const prisma: ExtendedPrismaClient = configuredPrismaClient
 
 // Cache instance in development to prevent hot-reload issues
 if (process.env.NODE_ENV !== 'production') {

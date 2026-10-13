@@ -144,7 +144,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login/ \
 
 # Use token in requests
 curl http://localhost:8000/api/v1/courses/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ### Core Endpoints

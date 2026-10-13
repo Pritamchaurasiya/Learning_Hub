@@ -200,7 +200,7 @@ export class AdminEngine {
     try {
       const res = await prisma.notification.deleteMany({
         where: {
-          read: true,
+          isRead: true,
           createdAt: { lt: cutoffDate },
         },
       })

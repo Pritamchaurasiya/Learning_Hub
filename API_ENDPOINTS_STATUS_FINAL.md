@@ -154,18 +154,18 @@ curl -X POST http://localhost:8000/api/v1/auth/login/ \
 
 # Response:
 {
-  "access": "eyJ0eXAiOiJKV1...",
-  "refresh": "eyJ0eXAiOiJKV1...",
+  "access": "<access-token-from-login-response>",
+  "refresh": "<refresh-token-from-login-response>",
   "user": { ... }
 }
 
 # 2. Use token in requests
 curl -X GET http://localhost:8000/api/v1/courses/ \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1..."
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 
 # 3. Get user profile
 curl -X GET http://localhost:8000/api/v1/auth/me/ \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1..."
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ---

@@ -736,9 +736,9 @@ export const getTestAttemptDetails = asyncHandler(
       id: attempt.test.id,
       title: attempt.test.title,
       description: attempt.test.description,
-      duration: attempt.test.duration,
-      totalQuestions: attempt.test.totalQuestions,
-      totalPoints: attempt.test.totalPoints,
+      duration: attempt.test.timeLimit,
+      totalQuestions: attempt.test.questions.length,
+      totalPoints: attempt.test.questions.reduce((sum, question) => sum + question.points, 0),
       passingScore: attempt.test.passingScore,
       questions: attempt.test.questions.map((q: any) => ({
         id: q.id,

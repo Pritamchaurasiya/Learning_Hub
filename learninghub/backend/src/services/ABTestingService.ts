@@ -11,8 +11,8 @@ export interface Experiment {
   status: 'draft' | 'running' | 'paused' | 'completed' | 'archived'
   trafficAllocation: number // percentage 0-100
   variants: ExperimentVariant[]
-  startDate?: Date
-  endDate?: Date
+  startDate: Date | null
+  endDate: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -20,9 +20,9 @@ export interface Experiment {
 export interface ExperimentVariant {
   id: string
   name: string
-  description: string
+  description: string | null
   trafficWeight: number // percentage of allocated traffic
-  config: Record<string, any>
+  config: Prisma.JsonValue
   isControl: boolean
 }
 
@@ -66,9 +66,9 @@ interface ExperimentVariantModel {
   id: string
   experimentId: string
   name: string
-  description: string
+  description: string | null
   trafficWeight: number
-  config: Prisma.InputJsonValue
+  config: Prisma.JsonValue
   isControl: boolean
   createdAt: Date
   updatedAt: Date
@@ -84,7 +84,13 @@ export class ABTestingService {
     name: string
     description: string
     trafficAllocation: number
-    variants: Omit<ExperimentVariant, 'id'>[]
+    variants: Array<{
+      name: string
+      description?: string | null
+      trafficWeight: number
+      config: Prisma.InputJsonValue
+      isControl: boolean
+    }>
     startDate?: Date
     endDate?: Date
   }): Promise<Experiment> {
@@ -104,7 +110,7 @@ export class ABTestingService {
             createMany: {
               data: variants.map(v => ({
                 ...v,
-                config: JSON.stringify(v.config),
+                config: v.config,
               })),
             },
           },
@@ -443,7 +449,10 @@ export class ABTestingService {
   /**
    * Update experiment
    */
-  static async updateExperiment(experimentId: string, data: Partial<Experiment>): Promise<Experiment> {
+  static async updateExperiment(
+    experimentId: string,
+    data: Partial<Omit<Experiment, 'id' | 'variants' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Experiment> {
     const experiment = await prisma.experiment.update({
       where: { id: experimentId },
       data: { ...data, updatedAt: new Date() },

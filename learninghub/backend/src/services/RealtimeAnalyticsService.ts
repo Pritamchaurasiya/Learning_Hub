@@ -1,4 +1,5 @@
 import { WebSocket } from 'ws';
+import { ActivityType } from '@prisma/client';
 import { WebSocketService } from './WebSocketService';
 import { prisma } from '../prismaClient';
 
@@ -90,8 +91,7 @@ export class RealtimeAnalyticsService {
         // DAU: unique users with activity in last 24h
         prisma.activityLog.count({
           where: {
-            createdAt: { gte: oneDayAgo },
-            userId: { not: null }
+            createdAt: { gte: oneDayAgo }
           }
         }),
         // Active tests currently in progress
@@ -105,14 +105,13 @@ export class RealtimeAnalyticsService {
         prisma.activityLog.groupBy({
           by: ['userId'],
           where: {
-            createdAt: { gte: oneHourAgo },
-            userId: { not: null }
+            createdAt: { gte: oneHourAgo }
           }
-        }).then((r: Array<{ userId: string | null }>) => r.length),
+        }).then(r => r.length),
         // Revenue (completed orders)
         prisma.order.aggregate({
           where: {
-            status: 'COMPLETED',
+            status: 'PAID',
             createdAt: { gte: oneDayAgo }
           },
           _sum: { totalAmount: true }
@@ -137,13 +136,8 @@ export class RealtimeAnalyticsService {
           where: { createdAt: { gte: oneHourAgo } },
           _sum: { cost: true }
         }),
-        // Error count (5xx) in last hour
-        prisma.activityLog.count({
-          where: {
-            createdAt: { gte: oneHourAgo },
-            action: { contains: 'ERROR' }
-          }
-        })
+        // ActivityLog has no system-error category; do not query a non-existent field.
+        Promise.resolve(0)
       ]);
 
       return {
@@ -151,10 +145,10 @@ export class RealtimeAnalyticsService {
         dau: dauResult,
         activeTests: activeTestsResult,
         activeUsers: activeUsersResult,
-        revenue: Number(revenueResult._sum.totalAmount || 0),
+        revenue: Number(revenueResult._sum?.totalAmount || 0),
         testCompletions: completionsResult,
         avgScore: Number(avgScoreResult._avg.percentage || 0),
-        aiCost: Number(aiCostResult._sum.cost || 0),
+        aiCost: Number(aiCostResult._sum?.cost || 0),
         errors: errorsResult
       };
     } catch (error) {
@@ -214,10 +208,15 @@ export class RealtimeAnalyticsService {
     metadata?: Record<string, any>;
   }): Promise<void> {
     try {
+      // ActivityLog requires a user and a declared ActivityType enum value.
+      if (!event.userId || !Object.values(ActivityType).includes(event.type as ActivityType)) {
+        return
+      }
+
       await prisma.activityLog.create({
         data: {
-          userId: event.userId || null,
-          action: event.type,
+          userId: event.userId,
+          activityType: event.type as ActivityType,
           metadata: event.metadata || {},
           ipAddress: '',
           userAgent: ''

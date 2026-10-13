@@ -74,7 +74,7 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
         body: JSON.stringify({
           status: 'success',
           data: {
-            secret: 'HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ',
+            secret: 'test-mfa-secret',
             qrCodeUrl:
               'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="black"/></svg>',
           },

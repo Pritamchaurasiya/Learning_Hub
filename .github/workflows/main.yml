@@ -3,9 +3,18 @@ name: Production Pipeline
 on:
   push:
     branches: ["main", "master"]
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
   pull_request:
     branches: ["main", "master"]
-
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
 jobs:
   backend-quality:
     runs-on: ubuntu-latest

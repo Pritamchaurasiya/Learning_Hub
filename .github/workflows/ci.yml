@@ -9,6 +9,10 @@
 # See learninghub/docs/ARCHITECTURE.md §8.1 for the canonical port table.
 name: CI
 
+permissions:
+  contents: read
+  pull-requests: read
+
 on:
   push:
     branches: [main, develop]
@@ -16,15 +20,72 @@ on:
     branches: [main, develop]
 
 jobs:
+  changes:
+    name: Detect changed components
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend || steps.push-defaults.outputs.frontend }}
+      node-backend: ${{ steps.filter.outputs.node-backend || steps.push-defaults.outputs.node-backend }}
+      django-backend: ${{ steps.filter.outputs.django-backend || steps.push-defaults.outputs.django-backend }}
+      security: ${{ steps.filter.outputs.security || steps.push-defaults.outputs.security }}
+      e2e: ${{ steps.filter.outputs.e2e || steps.push-defaults.outputs.e2e }}
+    steps:
+      - name: Run full component checks for branch pushes
+        id: push-defaults
+        if: github.event_name == 'push'
+        run: |
+          echo "frontend=true" >> "$GITHUB_OUTPUT"
+          echo "node-backend=true" >> "$GITHUB_OUTPUT"
+          echo "django-backend=true" >> "$GITHUB_OUTPUT"
+          echo "security=true" >> "$GITHUB_OUTPUT"
+          echo "e2e=true" >> "$GITHUB_OUTPUT"
+
+      - name: Filter changed paths for pull requests
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'learninghub/src/**'
+              - 'learninghub/public/**'
+              - 'learninghub/index.html'
+              - 'learninghub/package.json'
+              - 'learninghub/package-lock.json'
+              - 'learninghub/vite.config.*'
+              - 'learninghub/tsconfig*.json'
+              - 'learninghub/playwright.config.*'
+              - 'learninghub/tests/**'
+              - 'learninghub/e2e/**'
+            node-backend:
+              - 'learninghub/backend/**'
+            django-backend:
+              - 'learninghub/django_backend/**'
+            security:
+              - 'learninghub/**'
+              - 'conductor/**'
+              - '.github/workflows/**'
+              - '.gitleaks*'
+            e2e:
+              - 'learninghub/src/**'
+              - 'learninghub/public/**'
+              - 'learninghub/django_backend/**'
+              - 'learninghub/playwright.config.*'
+              - 'learninghub/tests/e2e/**'
+
   # Frontend CI — React + Vite + Vitest + Playwright
   frontend:
     name: Frontend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.frontend == 'true')
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: learninghub
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,7 +95,7 @@ jobs:
           cache-dependency-path: learninghub/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -61,6 +122,8 @@ jobs:
   # Node Backend CI — Express + Prisma + Jest
   node-backend:
     name: Node Backend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.node-backend == 'true')
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -97,7 +160,7 @@ jobs:
           cache-dependency-path: learninghub/backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -135,6 +198,8 @@ jobs:
   # Django Backend CI — Django + DRF + Channels + pytest
   django-backend:
     name: Django Backend
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.django-backend == 'true')
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -213,14 +278,45 @@ jobs:
   # Security Scanning
   security:
     name: Security Scan
+    needs: changes
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.security == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=8.24.3
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install /tmp/gitleaks /usr/local/bin/gitleaks
+
+      - name: Scan checked-out source for secrets
+        shell: bash
+        run: |
+          set +e
+          gitleaks dir --redact --exit-code 2 --report-format json --report-path /tmp/gitleaks-report.json .
+          scan_exit=$?
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = Path('/tmp/gitleaks-report.json')
+          if not report.exists():
+              print('Gitleaks produced no report file.')
+              raise SystemExit(0)
+          findings = json.loads(report.read_text() or '[]')
+          print(f'Redacted Gitleaks findings: {len(findings)}')
+          for item in findings:
+              print('Rule={rule} File={file}:{line} Commit={commit}'.format(
+                  rule=item.get('RuleID', 'unknown'),
+                  file=item.get('File', 'unknown'),
+                  line=item.get('StartLine', '?'),
+                  commit=(item.get('Commit', '')[:12] or 'working-tree'),
+              ))
+          PY
+          exit "$scan_exit"
 
       - name: Run npm audit (frontend)
         working-directory: learninghub
@@ -231,16 +327,16 @@ jobs:
         run: npm audit --audit-level=high || echo "npm audit found issues"
 
       - name: Run pip-audit (Django)
-        uses: pypa/gh-action-pip-audit@v1
+        uses: pypa/gh-action-pip-audit@v1.1.0
         with:
-          requirements-file: learninghub/django_backend/requirements.txt
+          inputs: learninghub/django_backend/requirements.txt
 
   # E2E Live-Backend — enabled for CI health 80% → 95% (live E2E on every push)
   e2e:
     name: E2E (Live Backend)
     runs-on: ubuntu-latest
-    needs: [frontend, django-backend]
-    if: always()
+    needs: [changes, frontend, django-backend]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.e2e == 'true')
     services:
       postgres:
         image: postgres:16
@@ -281,7 +377,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: learninghub
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install Playwright browsers
         working-directory: learninghub

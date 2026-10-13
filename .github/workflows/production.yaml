@@ -3,9 +3,18 @@ name: Production CI/CD Pipeline
 on:
   push:
     branches: ["main", "master"]
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
   pull_request:
     branches: ["main", "master"]
-
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
 jobs:
   backend-tests:
     runs-on: ubuntu-latest

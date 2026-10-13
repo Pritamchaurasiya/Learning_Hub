@@ -1,0 +1,83 @@
+name: LearningHub Express Staging Build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "learninghub/backend/**"
+      - "learninghub/package.json"
+      - "learninghub/package-lock.json"
+      - ".github/workflows/backend-staging-build.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: express-staging-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Sync lockfiles, Prisma generate & TypeScript build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/backend-staging-prisma-drift'
+    defaults:
+      run:
+        working-directory: learninghub/backend
+
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: learninghub/backend/package-lock.json
+
+      # The checked-in lockfiles are out of sync with package.json. Regenerate them
+      # from manifests, artifact them for review, and validate npm ci against the results.
+      - name: Regenerate frontend and backend lockfiles
+        run: |
+          npm install --package-lock-only --legacy-peer-deps --ignore-scripts --prefix ..
+          npm install --package-lock-only --legacy-peer-deps --ignore-scripts
+
+      - name: Upload generated lockfiles for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: learninghub-node-lockfiles
+          path: |
+            learninghub/package-lock.json
+            learninghub/backend/package-lock.json
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Verify clean install for frontend
+        run: npm ci --legacy-peer-deps --prefix ..
+
+      - name: Verify clean install for backend
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Commit only synchronized lockfiles to repair branch
+        if: success()
+        env:
+          GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ../package-lock.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "Lockfiles already match package manifests."
+          else
+            git commit -m "fix(ci): synchronize frontend and backend Node lockfiles"
+            git push origin "HEAD:${GITHUB_HEAD_REF}"
+          fi

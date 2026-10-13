@@ -658,32 +658,33 @@ export class SearchService {
       const textResults = await prisma.canonicalQuestion.findMany({
         where: {
           OR: [
-            { questionText: { contains: query, mode: 'insensitive' } },
+            { stem: { contains: query, mode: 'insensitive' } },
             { explanation: { contains: query, mode: 'insensitive' } },
           ],
-          isActive: true,
+          status: 'PUBLISHED',
+          deletedAt: null,
         },
         take: limit * 2,
         select: {
           id: true,
-          questionText: true,
+          stem: true,
           explanation: true,
           difficulty: true,
           tags: true,
-          category: true,
+          bank: { select: { name: true } },
         },
       })
 
       return textResults.map((item: any) => ({
         id: item.id,
         type: 'canonical_question' as const,
-        title: item.questionText.substring(0, 100),
+        title: item.stem.substring(0, 100),
         content: item.explanation || '',
-        score: this.calculateTextScore(query, item.questionText + ' ' + (item.explanation || '')),
+        score: this.calculateTextScore(query, item.stem + ' ' + (item.explanation || '')),
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
-          category: item.category,
+          category: item.bank?.name ?? null,
         },
       }))
     } catch {
@@ -699,7 +700,7 @@ export class SearchService {
             { text: { contains: query, mode: 'insensitive' } },
             { explanation: { contains: query, mode: 'insensitive' } },
           ],
-          isActive: true,
+          test: { isPublished: true, deletedAt: null },
         },
         take: limit * 2,
         select: {
@@ -708,7 +709,7 @@ export class SearchService {
           explanation: true,
           difficulty: true,
           tags: true,
-          category: true,
+          topic: { select: { name: true } },
         },
       })
 
@@ -721,7 +722,7 @@ export class SearchService {
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
-          category: item.category,
+          category: item.topic?.name ?? item.tags?.[0] ?? null,
         },
       }))
     } catch {
@@ -737,7 +738,7 @@ export class SearchService {
             { title: { contains: query, mode: 'insensitive' } },
             { description: { contains: query, mode: 'insensitive' } },
           ],
-          isActive: true,
+          deletedAt: null,
         },
         take: limit * 2,
         select: {
@@ -746,7 +747,7 @@ export class SearchService {
           description: true,
           difficulty: true,
           tags: true,
-          difficultyLevel: true,
+          category: true,
         },
       })
 
@@ -759,7 +760,7 @@ export class SearchService {
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
-          difficultyLevel: item.difficultyLevel,
+          category: item.category,
         },
       }))
     } catch {

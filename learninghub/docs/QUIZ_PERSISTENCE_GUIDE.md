@@ -110,21 +110,21 @@ curl -X POST http://localhost:8787/api/auth/login \
 
 # 2. Start quiz (save the attempt_id from response)
 curl -X POST http://localhost:8787/api/tests/test-001/start \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 
 # 3. Submit answers
 curl -X POST http://localhost:8787/api/tests/test-001/submit \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"answers":{"q-1":0,"q-2":1,"q-3":2}}'
 
 # 4. Get results
 curl http://localhost:8787/api/tests/test-001/results \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 
 # 5. Get my results across all tests
 curl http://localhost:8787/api/tests/my-results \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ## Next Steps

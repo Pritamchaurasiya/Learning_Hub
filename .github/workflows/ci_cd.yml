@@ -3,9 +3,18 @@ name: Learning Hub CI/CD
 on:
   push:
     branches: ["main", "dev"]
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
   pull_request:
     branches: ["main"]
-
+    paths:
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
+      - "my_flutter_app/**"
 jobs:
   backend-test:
     runs-on: ubuntu-latest

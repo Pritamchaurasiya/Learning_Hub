@@ -4,16 +4,9 @@
 # delete once the team confirms no runner references it.
 name: LearningHub Unified CI (DEPRECATED)
 
+# Retained for manual diagnosis only; canonical CI is .github/workflows/ci.yml.
 on:
-  push:
-    branches: ["main", "develop"]
-  pull_request:
-    branches: ["main"]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+  workflow_dispatch:
 jobs:
   frontend:
     name: 🌐 React Frontend (Build & Vitest)

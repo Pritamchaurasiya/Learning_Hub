@@ -280,7 +280,7 @@ export class RecommendationService {
             title: string
             difficulty: string
             mode: string
-            timeLimit: number | null
+            timeLimit: number
             _count: { questions: number }
             questions: Array<{ tags: string[]; id: string }>
           }) => {

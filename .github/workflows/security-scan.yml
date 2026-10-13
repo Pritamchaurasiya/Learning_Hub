@@ -2,12 +2,15 @@ name: Security Scan
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - "learninghub/backend/**"
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - "learninghub/backend/**"
   schedule:
-    - cron: '0 0 * * 1'  # Weekly on Monday
-
+    - cron: '0 0 * * 1'
 jobs:
   security-scan:
     runs-on: ubuntu-latest
@@ -18,12 +21,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           
       - name: Install dependencies
         run: |
           cd learninghub/backend
-          npm ci
+          npm ci --legacy-peer-deps
           
       - name: Run npm audit
         run: |
@@ -37,17 +40,19 @@ jobs:
           path: ./
           base: main
           
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@v0.4.0
+      - name: Run Snyk security scan (CLI)
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --severity-threshold=high --sarif-file-output=snyk.sarif
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::warning::SNYK_TOKEN is not configured; npm audit and TruffleHog still run."
+            exit 0
+          fi
+          npx --yes snyk test --severity-threshold=high --sarif-file-output=snyk.sarif
         continue-on-error: true
           
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('snyk.sarif') != ''
         with:
           sarif_file: snyk.sarif

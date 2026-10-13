@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { prisma } from '../../prismaClient'
 import logger from '../../utils/logger'
 import crypto from 'crypto'
@@ -219,12 +220,30 @@ export class ExamEngine {
 
     // Try updating session in DB if available (only from IN_PROGRESS state)
     try {
+      const storedSession = await prisma.testSession.findUnique({
+        where: { id: sessionId },
+        select: { metadata: true },
+      })
+      const storedMetadata = storedSession?.metadata
+      const priorMetadata =
+        storedMetadata && typeof storedMetadata === 'object' && !Array.isArray(storedMetadata)
+          ? storedMetadata
+          : {}
+
       await prisma.testSession.updateMany({
         where: { id: sessionId, status: 'IN_PROGRESS' },
         data: {
           status: 'COMPLETED',
           completedAt: new Date(),
-          score: Math.round(percentage),
+          metadata: {
+            ...priorMetadata,
+            score: Math.round(percentage),
+            rawScore,
+            totalQuestions,
+            scaledScore,
+            integrityHash,
+            verificationStatus,
+          } as Prisma.InputJsonObject,
         },
       })
     } catch {

@@ -5,7 +5,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
   const originalApiKey = process.env.GROQ_API_KEY
 
   beforeEach(() => {
-    process.env.GROQ_API_KEY = 'gsk_test_mock_key'
+    process.env.GROQ_API_KEY = 'test-api-key-placeholder'
   })
 
   afterEach(() => {
@@ -40,7 +40,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('gsk_test_mock_key', 'deepseek-r1-distill-llama-70b')
+    const adapter = new GroqAdapter('test-groq-key-not-a-secret', 'deepseek-r1-distill-llama-70b')
     const result = await adapter.generateText('Explain binary search')
 
     expect(result.text).toContain('Optimal O(N log N) solution')
@@ -51,7 +51,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          Authorization: 'Bearer gsk_test_mock_key',
+          Authorization: 'Bearer test-api-key-placeholder',
         }),
       })
     )
@@ -74,7 +74,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('gsk_test_mock_key', 'llama-3.3-70b-versatile')
+    const adapter = new GroqAdapter('test-api-key-placeholder', 'llama-3.3-70b-versatile')
     const result = await adapter.generateChat([
       { role: 'user', content: 'How do I invert a binary tree?' },
     ])
@@ -100,7 +100,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('gsk_test_mock_key')
+    const adapter = new GroqAdapter('test-api-key-placeholder')
     const result = await adapter.generateJSON<{ concepts: string[]; difficulty: string }>(
       'Return graph algorithms in json'
     )
