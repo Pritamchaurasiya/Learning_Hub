@@ -296,9 +296,9 @@ jobs:
         run: npm audit --audit-level=high || echo "npm audit found issues"
 
       - name: Run pip-audit (Django)
-        uses: pypa/gh-action-pip-audit@v1
+        uses: pypa/gh-action-pip-audit@v1.1.0
         with:
-          requirements-file: learninghub/django_backend/requirements.txt
+          inputs: learninghub/django_backend/requirements.txt
 
   # E2E Live-Backend — enabled for CI health 80% → 95% (live E2E on every push)
   e2e:
