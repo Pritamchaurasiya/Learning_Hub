@@ -93,7 +93,7 @@ export const ResumePortfolioPage: React.FC = () => {
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-sm font-medium text-slate-400">
-            Synthesizing Anti-Gravity Verifiable AI Resume...
+            Synthesizing Verifiable Engineering Resume...
           </p>
         </div>
       </div>
@@ -109,7 +109,7 @@ export const ResumePortfolioPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 12
             </span>
-            <span className="text-xs text-slate-400 font-mono">Anti-Gravity AI Career Engine</span>
+            <span className="text-xs text-slate-400 font-mono">Enterprise Career Engine</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
             Verifiable AI Resume & Career Portfolio

@@ -56,42 +56,6 @@ const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
 const InterviewSimulatorPage = lazy(() => import('./pages/InterviewSimulatorPage'))
 const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
-const EdgeAIPage = lazy(() => import('./pages/EdgeAIPage'))
-const CanvasStudioPage = lazy(() => import('./pages/CanvasStudioPage'))
-const MultiModalStudioPage = lazy(() => import('./pages/MultiModalStudioPage'))
-const NeuroStudyOptimizerPage = lazy(() =>
-  import('./pages/NeuroStudyOptimizerPage').then(m => ({ default: m.NeuroStudyOptimizerPage }))
-)
-const TimeTravelDebuggerPage = lazy(() =>
-  import('./pages/TimeTravelDebuggerPage').then(m => ({ default: m.TimeTravelDebuggerPage }))
-)
-const ComplexityProfilerPage = lazy(() =>
-  import('./pages/ComplexityProfilerPage').then(m => ({ default: m.ComplexityProfilerPage }))
-)
-const SystemDesignSimulatorPage = lazy(() =>
-  import('./pages/SystemDesignSimulatorPage').then(m => ({ default: m.SystemDesignSimulatorPage }))
-)
-const ZkAttestationPage = lazy(() =>
-  import('./pages/ZkAttestationPage').then(m => ({ default: m.ZkAttestationPage }))
-)
-const SelfHealingCodePage = lazy(() =>
-  import('./pages/SelfHealingCodePage').then(m => ({ default: m.SelfHealingCodePage }))
-)
-const P2PCollabCanvasPage = lazy(() =>
-  import('./pages/P2PCollabCanvasPage').then(m => ({ default: m.P2PCollabCanvasPage }))
-)
-const AgentDebateArenaPage = lazy(() =>
-  import('./pages/AgentDebateArenaPage').then(m => ({ default: m.AgentDebateArenaPage }))
-)
-const ChaosClusterSandboxPage = lazy(() =>
-  import('./pages/ChaosClusterSandboxPage').then(m => ({ default: m.ChaosClusterSandboxPage }))
-)
-const SweStudioPage = lazy(() =>
-  import('./pages/SweStudioPage').then(m => ({ default: m.SweStudioPage }))
-)
-const CanaryConsolePage = lazy(() =>
-  import('./pages/CanaryConsolePage').then(m => ({ default: m.CanaryConsolePage }))
-)
 const CareerOrchestratorPage = lazy(() =>
   import('./pages/CareerOrchestratorPage').then(m => ({ default: m.CareerOrchestratorPage }))
 )
@@ -457,182 +421,46 @@ function App() {
               />
               <Route path="/career-match" element={<Navigate to="/career" replace />} />
               <Route path="/jobs" element={<Navigate to="/career" replace />} />
-              <Route
-                path="/edge-ai"
-                element={
-                  <LazyRoute sectionName="Edge AI Offline Studio">
-                    <EdgeAIPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/offline-tutor"
-                element={
-                  <LazyRoute sectionName="Edge AI Offline Studio">
-                    <EdgeAIPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/canvas"
-                element={
-                  <LazyRoute sectionName="Interactive Canvas & AI Proctor Studio">
-                    <CanvasStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/canvas-studio"
-                element={
-                  <LazyRoute sectionName="Interactive Canvas & AI Proctor Studio">
-                    <CanvasStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/multimodal-studio"
-                element={
-                  <LazyRoute sectionName="Multi-Modal Voice, Vision & Canvas Studio">
-                    <MultiModalStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/multimodal"
-                element={
-                  <LazyRoute sectionName="Multi-Modal Voice, Vision & Canvas Studio">
-                    <MultiModalStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/neuro-study"
-                element={
-                  <LazyRoute sectionName="Neuro-Adaptive Study State Optimizer">
-                    <NeuroStudyOptimizerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/flow" element={<Navigate to="/neuro-study" replace />} />
-              <Route path="/biofeedback" element={<Navigate to="/neuro-study" replace />} />
-              <Route
-                path="/debugger"
-                element={
-                  <LazyRoute sectionName="Time-Travel Execution Debugger">
-                    <TimeTravelDebuggerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/time-travel" element={<Navigate to="/debugger" replace />} />
-              <Route
-                path="/profiler"
-                element={
-                  <LazyRoute sectionName="Empirical Complexity Profiler">
-                    <ComplexityProfilerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/complexity" element={<Navigate to="/profiler" replace />} />
-              <Route path="/big-o" element={<Navigate to="/profiler" replace />} />
-              <Route
-                path="/system-design"
-                element={
-                  <LazyRoute sectionName="Distributed System Design Simulator">
-                    <SystemDesignSimulatorPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/architecture" element={<Navigate to="/system-design" replace />} />
-              <Route
-                path="/chaos"
-                element={
-                  <LazyRoute sectionName="Chaos Engineering Simulation Studio">
-                    <ChaosClusterSandboxPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
-              <Route path="/cluster-chaos" element={<Navigate to="/chaos" replace />} />
-              <Route
-                path="/zkp"
-                element={
-                  <LazyRoute sectionName="Zero-Knowledge Skill Attestation">
-                    <ZkAttestationPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/zk-attestation" element={<Navigate to="/zkp" replace />} />
-              <Route path="/soulbound" element={<Navigate to="/zkp" replace />} />
-              <Route
-                path="/self-healing"
-                element={
-                  <LazyRoute sectionName="Autonomous AI Self-Healing Code Studio">
-                    <SelfHealingCodePage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/refactor" element={<Navigate to="/self-healing" replace />} />
-              <Route path="/security-audit" element={<Navigate to="/self-healing" replace />} />
-              <Route
-                path="/crdt"
-                element={
-                  <LazyRoute sectionName="Real-Time P2P CRDT Collaborative Canvas">
-                    <P2PCollabCanvasPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/whiteboard" element={<Navigate to="/crdt" replace />} />
-              <Route path="/collab-canvas" element={<Navigate to="/crdt" replace />} />
-              <Route
-                path="/debate"
-                element={
-                  <LazyRoute sectionName="Multi-Agent AI Debate & RFC Council">
-                    <AgentDebateArenaPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/council" element={<Navigate to="/debate" replace />} />
-              <Route path="/rfc-arena" element={<Navigate to="/debate" replace />} />
-              <Route
-                path="/chaos"
-                element={
-                  <LazyRoute sectionName="Chaos Engineering & Resilient Cluster Simulator">
-                    <ChaosClusterSandboxPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
-              <Route path="/resilience" element={<Navigate to="/chaos" replace />} />
-              <Route
-                path="/swe-studio"
-                element={
-                  <LazyRoute sectionName="Autonomous SWE Studio & Software Agent Arena">
-                    <SweStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/swe-bench" element={<Navigate to="/swe-studio" replace />} />
-              <Route path="/autonomous-swe" element={<Navigate to="/swe-studio" replace />} />
-              <Route
-                path="/canary"
-                element={
-                  <LazyRoute sectionName="Autonomous GitOps Progressive Delivery & Canary Console">
-                    <CanaryConsolePage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/deployments" element={<Navigate to="/canary" replace />} />
-              <Route path="/canary-console" element={<Navigate to="/canary" replace />} />
-              <Route
-                path="/career"
-                element={
-                  <LazyRoute sectionName="Autonomous Career Engine & Recruiter Simulation">
-                    <CareerOrchestratorPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/career-match" element={<Navigate to="/career" replace />} />
               <Route path="/recruiter-sim" element={<Navigate to="/career" replace />} />
+              {/* Removed engineering lab routes -> redirect to dashboard */}
+              <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canvas" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canvas-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/multimodal-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/multimodal" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/neuro-study" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/flow" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/biofeedback" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/debugger" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/time-travel" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/profiler" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/complexity" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/big-o" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/system-design" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/architecture" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/chaos" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/chaos-sandbox" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/cluster-chaos" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/resilience" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/zkp" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/zk-attestation" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/soulbound" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/self-healing" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/refactor" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/security-audit" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/crdt" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/whiteboard" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/collab-canvas" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/debate" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/council" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/rfc-arena" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/swe-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/swe-bench" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/autonomous-swe" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canary" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/deployments" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canary-console" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/visualizer"
                 element={

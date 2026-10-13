@@ -52,15 +52,17 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
       data-testid="test-exam-header"
       className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
     >
-      <div className="max-w-4xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <h1
-            data-testid="exam-header-title"
-            className="text-lg font-semibold text-gray-900 dark:text-white truncate"
-          >
-            {title}
-          </h1>
-          <div className="flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="min-w-0 flex-1">
+            <h1
+              data-testid="exam-header-title"
+              className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate"
+            >
+              {title}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {assessmentMode === 'adaptive' && (
               <div className="hidden sm:block" data-testid="adaptive-gauge-wrapper">
                 <IRTThetaGauge theta={adaptiveTheta} sem={adaptiveSem} />
@@ -86,17 +88,17 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
             )}
             <div
               role="timer"
-              aria-live="polite"
+              aria-live="off"
               aria-atomic="true"
               aria-label={`Time remaining ${minutes} minutes ${seconds} seconds`}
               data-testid="exam-countdown-timer"
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-colors ${
                 timeRemaining < 60
                   ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800 animate-pulse'
                   : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
               }`}
             >
-              <Timer className="w-4 h-4" aria-hidden="true" />
+              <Timer className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="font-mono font-medium" aria-hidden="true">
                 {minutes}:{seconds}
               </span>

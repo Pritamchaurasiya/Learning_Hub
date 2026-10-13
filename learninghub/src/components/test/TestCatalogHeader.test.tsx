@@ -39,7 +39,7 @@ describe('TestCatalogHeader Component', () => {
     fireEvent.click(manualBtn)
     expect(handleManual).toHaveBeenCalledTimes(1)
 
-    const aiBtn = screen.getByRole('button', { name: /AI Custom Mock/i })
+    const aiBtn = screen.getByRole('button', { name: /Adaptive Custom Mock|AI Custom Mock/i })
     fireEvent.click(aiBtn)
     expect(handleAI).toHaveBeenCalledTimes(1)
   })

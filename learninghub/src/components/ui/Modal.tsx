@@ -140,7 +140,7 @@ export function Modal({
               aria-describedby={description ? 'modal-description' : undefined}
               className={cn(
                 'relative w-full bg-white/95 dark:bg-gray-900/90 rounded-3xl shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-gray-800/50',
-                'overflow-hidden',
+                'max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden',
                 // eslint-disable-next-line security/detect-object-injection
                 sizeClasses[size],
                 className
@@ -183,7 +183,7 @@ export function Modal({
               )}
 
               {/* Content */}
-              <div className="px-6 py-4">{children}</div>
+              <div className="px-6 py-4 flex-1 overflow-y-auto overscroll-contain">{children}</div>
 
               {/* Footer */}
               {footer && (

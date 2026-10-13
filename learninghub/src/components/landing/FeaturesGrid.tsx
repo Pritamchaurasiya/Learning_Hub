@@ -83,9 +83,9 @@ const features = [
     icon: TrendingUp,
     title: 'Weak Area Analysis',
     description:
-      'AI-powered analysis identifies your weak topics and recommends targeted practice sessions.',
+      'Adaptive diagnostic analysis identifies your weak topics and recommends targeted practice sessions.',
     color: 'bg-teal-500',
-    benefits: ['Smart analysis', 'Targeted practice', 'Improvement tracking'],
+    benefits: ['Diagnostic analysis', 'Targeted practice', 'Improvement tracking'],
   },
   {
     icon: BrainCircuit,

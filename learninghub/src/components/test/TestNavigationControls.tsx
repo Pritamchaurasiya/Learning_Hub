@@ -60,26 +60,31 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
   }
 
   return (
-    <div data-testid="standard-nav-controls" className="flex items-center justify-between mt-8">
+    <div
+      data-testid="standard-nav-controls"
+      className="flex items-center justify-between gap-3 mt-8 pt-4 border-t border-gray-100 dark:border-gray-800"
+    >
       <Button
         data-testid="prev-question-btn"
         onClick={onPreviousQuestion}
         disabled={currentIndex === 0}
         variant="outline"
-        className="flex items-center gap-2"
+        className="flex items-center gap-1.5 px-3 sm:px-4 min-h-[44px] text-xs sm:text-sm"
+        aria-label="Navigate to previous question"
       >
-        <ChevronLeft className="w-4 h-4" />
-        Previous Question
+        <ChevronLeft className="w-4 h-4 shrink-0" />
+        <span>Previous<span className="hidden sm:inline"> Question</span></span>
       </Button>
       <Button
         data-testid="next-question-btn"
         onClick={onNextQuestion}
         disabled={totalQuestions <= 0 || currentIndex === totalQuestions - 1}
         variant="outline"
-        className="flex items-center gap-2"
+        className="flex items-center gap-1.5 px-3 sm:px-4 min-h-[44px] text-xs sm:text-sm"
+        aria-label="Navigate to next question"
       >
-        Next Question
-        <ChevronRight className="w-4 h-4" />
+        <span>Next<span className="hidden sm:inline"> Question</span></span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
       </Button>
     </div>
   )

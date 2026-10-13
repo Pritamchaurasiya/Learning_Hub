@@ -88,12 +88,20 @@ export class ScorecardPdfService {
     const contentWidth = pageWidth - margin * 2
 
     const audit = this.generateVerificationAudit(result, options.verificationBaseUrl)
-    const isPassed = Boolean(result.is_passed)
+    const isPassed = Boolean(result.passed ?? result.is_passed)
     const percentage = Math.round(result.percentage ?? 0)
-    const correctCount = result.correct_answers_count ?? 0
-    const incorrectCount = result.incorrect_answers_count ?? 0
-    const totalQuestions = result.total_questions ?? correctCount + incorrectCount
-    const timeTakenSeconds = result.time_taken_seconds ?? 0
+    const correctCount =
+      result.correct_count ??
+      result.correct_answers_count ??
+      (result.question_results?.filter(q => q.is_correct === true).length ?? 0)
+    const incorrectCount =
+      result.incorrect_count ??
+      result.incorrect_answers_count ??
+      (result.question_results?.filter(q => q.is_correct === false).length ?? 0)
+    const totalQuestions =
+      result.total_questions ??
+      (result.question_results?.length || (correctCount + incorrectCount))
+    const timeTakenSeconds = result.time_taken ?? result.time_taken_seconds ?? 0
     const minutes = Math.floor(timeTakenSeconds / 60)
     const seconds = timeTakenSeconds % 60
     const formattedDuration = `${minutes}m ${seconds}s`
@@ -285,9 +293,20 @@ export class ScorecardPdfService {
 
     currentY += 4
 
-    const integrityScore = result.telemetry_digest?.integrityScore ?? 100
-    const riskLevel = result.telemetry_digest?.riskLevel ?? 'LOW_RISK'
-    const tabSwitches = result.telemetry_digest?.tabSwitches ?? 0
+    const integrityScore =
+      result.telemetry_digest?.integrityScore ??
+      result.telemetry_summary?.integrity_score ??
+      result.integrity_score ??
+      100
+    const riskLevel =
+      result.telemetry_digest?.riskLevel ??
+      result.telemetry_summary?.risk_level ??
+      result.integrity_risk ??
+      'LOW_RISK'
+    const tabSwitches =
+      result.telemetry_digest?.tabSwitches ??
+      result.telemetry_summary?.total_violations ??
+      0
 
     doc.setFillColor(248, 250, 252)
     doc.setDrawColor(226, 232, 240)

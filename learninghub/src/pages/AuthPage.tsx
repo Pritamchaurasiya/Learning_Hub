@@ -88,8 +88,8 @@ const AuthPage = memo(function AuthPage() {
 
     if (!password) {
       errors.password = 'Password is required'
-    } else {
-      // Always validate password strength, regardless of login/signup mode
+    } else if (!isLogin) {
+      // Validate password strength during signup
       if (password.length < 8) {
         errors.password = 'Must be at least 8 characters'
       } else if (!/[A-Z]/.test(password)) {
@@ -303,7 +303,7 @@ const AuthPage = memo(function AuthPage() {
             transition={{ delay: 0.2, duration: 0.4 }}
           >
             <div className="mb-3">
-              <BrandLogo size="lg" variant="vertical" subtitle="Next-Gen AI Learning OS" animated />
+              <BrandLogo size="lg" variant="vertical" subtitle="Interactive Engineering Platform" animated />
             </div>
 
             <motion.div

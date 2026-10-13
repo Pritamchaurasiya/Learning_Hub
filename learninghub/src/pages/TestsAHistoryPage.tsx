@@ -64,12 +64,14 @@ const TestsAHistoryPage = () => {
         setLoading(true)
         const [historyResponse, badgesResponse] = await Promise.all([
           testsAService.getMyResults(),
-          badgeService.getUserBadges(),
+          badgeService
+            .getUserBadges()
+            .catch(() => ({ status: 'success', data: { badges: [] } })),
         ])
         if (historyResponse.status === 'success') {
           setHistory(Array.isArray(historyResponse.data) ? historyResponse.data : [])
         }
-        if (badgesResponse.status === 'success') {
+        if (badgesResponse?.status === 'success' && badgesResponse.data?.badges) {
           setBadges(badgesResponse.data.badges)
         }
       } catch (err) {

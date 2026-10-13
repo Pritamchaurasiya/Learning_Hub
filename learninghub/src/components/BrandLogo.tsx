@@ -298,7 +298,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showTagline = false,
   tagline = 'LEARN • PRACTICE • GROW • ACHIEVE',
   showBadge = false,
-  badgeText = 'AI OS',
+  badgeText = 'PRO',
   subtitle,
   animate: propAnimate = true,
   animated: propAnimated,

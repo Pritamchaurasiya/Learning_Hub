@@ -123,7 +123,7 @@ export default function LibraryPage() {
     <AnimatedPage className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <SEO
         title="Knowledge Library: Courses & Interactive Ebooks | LearningHub"
-        description="Access 70+ engineering masterclasses, interactive digital textbooks with AI tutors, and high-yield revision kits for DSA, system design, and algorithms."
+        description="Access 70+ engineering masterclasses, interactive digital textbooks with expert mentors, and high-yield revision kits for DSA, system design, and algorithms."
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
@@ -141,7 +141,7 @@ export default function LibraryPage() {
             Knowledge & Study Library
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Access curated video courses, interactive digital textbooks with AI tutors, and
+            Access curated video courses, interactive digital textbooks with dedicated mentors, and
             high-yield revision kits.
           </p>
         </div>

@@ -232,7 +232,7 @@ export interface TestsASlice {
     questions: TestQuestion[],
     testInfo: TestInfo,
     attemptId: string,
-    initialAnswers?: Record<string, string>,
+    initialAnswers?: Record<string, string | string[]>,
     timeRemaining?: number
   ) => void
   submitTest: (

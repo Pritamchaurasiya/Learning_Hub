@@ -44,12 +44,19 @@ export const useStore = create<AppState>()(
           state.test.isActive && state.test.attempt?.attemptId
             ? {
                 mode: state.test.mode,
+                assessmentMode: state.test.assessmentMode,
+                isContestMode: state.test.isContestMode,
+                isOfflineMode: state.test.isOfflineMode,
                 isActive: state.test.isActive,
                 currentQuestionIndex: state.test.currentQuestionIndex,
                 questions: [], // Excluded from localStorage to prevent QuotaExceededError
                 answers: state.test.answers,
                 confidences: state.test.confidences,
                 flaggedQuestions: state.test.flaggedQuestions,
+                lockedSectionIds: state.test.lockedSectionIds,
+                activeSectionId: state.test.activeSectionId,
+                adaptiveTheta: state.test.adaptiveTheta,
+                adaptiveSem: state.test.adaptiveSem,
                 timeRemaining: state.test.timeRemaining,
                 testInfo: state.test.testInfo
                   ? {
@@ -65,12 +72,19 @@ export const useStore = create<AppState>()(
               }
             : {
                 mode: 'tests-a',
+                assessmentMode: 'ai',
+                isContestMode: false,
+                isOfflineMode: false,
                 isActive: false,
                 currentQuestionIndex: 0,
                 questions: [],
                 answers: {},
                 confidences: {},
                 flaggedQuestions: [],
+                lockedSectionIds: [],
+                activeSectionId: null,
+                adaptiveTheta: 0,
+                adaptiveSem: 1,
                 timeRemaining: 0,
                 testInfo: null,
                 attempt: null,

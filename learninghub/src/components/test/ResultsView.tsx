@@ -538,32 +538,32 @@ export const ResultsView = memo(
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center items-center mt-6">
             {mistakeSummary.totalMistakes > 0 && (
               <Button
                 onClick={() => setIsMistakeModalOpen(true)}
                 variant="secondary"
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 shadow-md font-semibold"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 shadow-md font-semibold text-xs sm:text-sm min-h-[44px]"
               >
                 <BrainCircuit className="w-4 h-4" />
-                Mistake Diagnostics ({mistakeSummary.totalMistakes})
+                <span>Mistake Diagnostics ({mistakeSummary.totalMistakes})</span>
               </Button>
             )}
             {weakTopics.length > 0 && onRemediate && (
               <Button
                 onClick={() => onRemediate(weakTopics.map(t => t.topic))}
                 variant="secondary"
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0 shadow-md font-medium"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0 shadow-md font-medium text-xs sm:text-sm min-h-[44px]"
               >
                 <Target className="w-4 h-4" />
-                Remediate Weak Topics ({weakTopics.length})
+                <span>Remediate Weak Topics ({weakTopics.length})</span>
               </Button>
             )}
             <Button
               onClick={handleExportScorecard}
               disabled={isExportingScorecard}
               variant="secondary"
-              className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white border border-slate-700 shadow-md font-medium"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white border border-slate-700 shadow-md font-medium text-xs sm:text-sm min-h-[44px]"
             >
               {isExportingScorecard ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -575,18 +575,18 @@ export const ResultsView = memo(
             <Button
               onClick={onRetry}
               variant="primary"
-              className="flex items-center justify-center gap-2"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 min-h-[44px] text-xs sm:text-sm"
             >
               <RotateCcw className="w-4 h-4" />
-              Retry Test
+              <span>Retry Test</span>
             </Button>
             <Button
               onClick={onBack}
               variant="outline"
-              className="flex items-center justify-center gap-2"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 min-h-[44px] text-xs sm:text-sm"
             >
               <BarChart3 className="w-4 h-4" />
-              Back to Tests
+              <span>Back to Tests</span>
             </Button>
           </div>
         </Card>

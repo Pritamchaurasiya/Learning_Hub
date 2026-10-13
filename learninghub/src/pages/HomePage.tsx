@@ -39,7 +39,7 @@ const HomePage = memo(function HomePage() {
     <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col">
       <SEO
         title="LearningHub: India's Top Exam Practice & PYQ Platform"
-        description="Master JEE, NEET & BITSAT with 100,000+ chapter-wise PYQs, step-by-step AI solutions, and real-time weak area analytics. Start your free practice session today!"
+        description="Master JEE, NEET & BITSAT with 100,000+ chapter-wise PYQs, step-by-step expert solutions, and real-time weak area analytics. Start your free practice session today!"
         keywords="JEE Main, JEE Advanced, NEET, BITSAT, previous year questions, competitive exam preparation, online practice, DSA practice, software engineering"
         jsonLd={homeSchemas}
       />

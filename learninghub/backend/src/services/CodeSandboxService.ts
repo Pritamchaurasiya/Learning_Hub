@@ -108,10 +108,15 @@ export class CodeSandboxService {
       /\bFunction\s*\(/,
       /\bimport\s*\(/,
       /\bconstructor\b/,
-      /\b__proto__\b/,
+      /__proto__/,
       /\bprototype\b/,
       /\bglobalThis\b/,
       /\bglobal\b/,
+      /\bReflect\b/,
+      /\bProxy\b/,
+      /\bfetch\s*\(/,
+      /\bXMLHttpRequest\b/,
+      /\bWebSocket\b/,
     ]
     if (FORBIDDEN_TOKENS.some(regex => regex.test(req.code))) {
       return {
@@ -414,6 +419,17 @@ export class CodeSandboxService {
     testCases: Array<{ input: string; output: string }>,
     timeLimit: number
   ): ExecutionResult {
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        status: 'runtime_error',
+        executionTime: 0,
+        memoryUsed: 0,
+        message: 'Direct host execution disabled in production. Isolated Piston runner required.',
+        testCasesPassed: 0,
+        testCasesTotal: testCases.length,
+      }
+    }
+
     let passed = 0
     let totalTime = 0
 
@@ -458,7 +474,7 @@ export class CodeSandboxService {
       const ctx = vm.createContext(sandbox)
       const t0 = Date.now()
       try {
-        vm.runInContext(code, ctx, { timeout: Math.min(timeLimit, 2000) })
+        vm.runInContext(code, ctx, { timeout: Math.min(timeLimit, 5000) })
         const elapsed = Date.now() - t0
         totalTime += elapsed
         const actualOutput = logs.join('\n').trim()

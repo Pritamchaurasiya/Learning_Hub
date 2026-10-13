@@ -145,6 +145,10 @@ export class OfflineAssessmentService {
       clientCompletedAt,
     } = payload
 
+    if (!bundleSignature || typeof bundleSignature !== 'string') {
+      throw new AppError('Offline submission missing bundle signature', 400)
+    }
+
     if (!answers || Object.keys(answers).length === 0) {
       throw new AppError('Offline submission contains no answers', 400)
     }

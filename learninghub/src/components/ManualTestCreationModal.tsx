@@ -608,7 +608,7 @@ export const ManualTestCreationModal: React.FC<ManualTestCreationModalProps> = (
                             <button
                               type="button"
                               onClick={() => handleOptionCorrectToggle(opt.id)}
-                              className={`w-5 h-5 rounded-${qType === 'MSQ' ? 'md' : 'full'} border flex items-center justify-center shrink-0 transition-colors ${
+                              className={`w-5 h-5 ${qType === 'MSQ' ? 'rounded-md' : 'rounded-full'} border flex items-center justify-center shrink-0 transition-colors ${
                                 opt.isCorrect
                                   ? 'bg-emerald-500 border-emerald-500 text-white'
                                   : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'

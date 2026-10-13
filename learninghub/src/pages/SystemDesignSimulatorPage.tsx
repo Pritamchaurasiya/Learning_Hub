@@ -135,7 +135,7 @@ export const SystemDesignSimulatorPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 18
             </span>
-            <span className="text-xs text-slate-400 font-mono">Anti-Gravity Systems Lab</span>
+            <span className="text-xs text-slate-400 font-mono">High-Scale Architecture Lab</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
             Distributed System Design & Chaos Engineering Simulator

@@ -148,7 +148,12 @@ export default function NotificationsPage() {
 
   const handleAction = (notification: Notification) => {
     if (notification.metadata?.link) {
-      navigate(notification.metadata.link)
+      const link = notification.metadata.link
+      if (link.startsWith('http://') || link.startsWith('https://')) {
+        window.open(link, '_blank', 'noopener,noreferrer')
+      } else {
+        navigate(link)
+      }
     } else if (notification.metadata?.courseId) {
       navigate(`/course/${notification.metadata.courseId}`)
     }

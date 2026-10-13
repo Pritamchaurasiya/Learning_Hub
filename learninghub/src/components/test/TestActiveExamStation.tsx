@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { WifiOff } from 'lucide-react'
 import { SEO } from '../SEO'
@@ -93,12 +93,13 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   webcamStream,
   isWebcamActive,
 }: TestActiveExamStationProps) {
+  const [isWebcamMinimized, setIsWebcamMinimized] = useState(false)
   const currentQuestion = test.questions[test.currentQuestionIndex]
   const selectedAnswer = currentQuestion ? test.answers[currentQuestion.id] ?? null : null
   const isFlagged = currentQuestion ? test.flaggedQuestions.includes(currentQuestion.id) : false
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16">
       <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
 
       {isWsConnected && (
@@ -162,95 +163,129 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         onSubmitClick={() => setIsSubmitModalOpen(true)}
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <TestSectionTabBar
-          sections={test.sections || []}
-          questions={test.questions}
-          answers={test.answers}
-          activeSectionId={activeSection?.id || test.activeSectionId || undefined}
-          lockedSectionIds={test.lockedSectionIds}
-          isCurrentSectionLocked={isCurrentSectionLocked}
-          onSelectSection={(sectionId, firstIndex) => {
-            onSelectSection(sectionId, firstIndex)
-          }}
-          onLockSection={sectionId => {
-            onLockSection(sectionId)
-            onToast({
-              message: `🔒 Section "${activeSection?.title || 'Section'}" locked. Advanced to next section.`,
-              type: 'info',
-            })
-          }}
-          onWarning={message => {
-            onToast({
-              message,
-              type: 'warning',
-            })
-          }}
-        />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Main Question Workspace (8 cols on lg+) */}
+          <div className="lg:col-span-8 space-y-6">
+            <TestSectionTabBar
+              sections={test.sections || []}
+              questions={test.questions}
+              answers={test.answers}
+              activeSectionId={activeSection?.id || test.activeSectionId || undefined}
+              lockedSectionIds={test.lockedSectionIds}
+              isCurrentSectionLocked={isCurrentSectionLocked}
+              onSelectSection={(sectionId, firstIndex) => {
+                onSelectSection(sectionId, firstIndex)
+              }}
+              onLockSection={sectionId => {
+                onLockSection(sectionId)
+                onToast({
+                  message: `🔒 Section "${activeSection?.title || 'Section'}" locked. Advanced to next section.`,
+                  type: 'info',
+                })
+              }}
+              onWarning={message => {
+                onToast({
+                  message,
+                  type: 'warning',
+                })
+              }}
+            />
 
-        <TestQuestionPalette
-          questions={test.questions}
-          currentIndex={test.currentQuestionIndex}
-          answers={test.answers}
-          flaggedQuestions={test.flaggedQuestions}
-          onSelectQuestion={onNavigateToQuestion}
-        />
-
-        {currentQuestion && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={test.currentQuestionIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <QuestionCard
-                question={currentQuestion}
+            {/* Mobile/Tablet Inline Palette (hidden on lg+ desktop) */}
+            <div className="block lg:hidden">
+              <TestQuestionPalette
+                questions={test.questions}
                 currentIndex={test.currentQuestionIndex}
-                totalQuestions={test.questions.length}
-                selectedAnswer={selectedAnswer}
-                confidence={test.confidences[currentQuestion.id]}
-                isFlagged={isFlagged}
-                sectionTitle={activeSection?.title}
-                isSectionLocked={isCurrentSectionLocked}
-                onAnswer={optionId => onAnswerQuestion(currentQuestion.id, optionId)}
-                onConfidenceChange={level => onConfidenceChange(currentQuestion.id, level)}
-                onFlag={() => onFlagQuestion(currentQuestion.id)}
-                onUnflag={() => onUnflagQuestion(currentQuestion.id)}
-                assessmentMode={test.assessmentMode}
-                practiceChecked={Boolean(practiceChecked[currentQuestion.id])}
-                onCheckPracticeAnswer={() => onCheckPracticeAnswer(currentQuestion.id)}
-                onDiagnoseMisconception={() => {
-                  const selVal = Array.isArray(selectedAnswer)
-                    ? selectedAnswer[0]
-                    : selectedAnswer
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const selOpt = currentQuestion.options?.find((o: any) => o.id === selVal)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const corrOpt = currentQuestion.options?.find((o: any) => o.id !== selVal)
-                  setSocraticModalQuestion({
-                    questionText: currentQuestion.text,
-                    selectedOptionText: selOpt?.text || 'Your selected choice',
-                    correctOptionText: corrOpt?.text || 'Conceptual ground truth',
-                  })
-                }}
+                answers={test.answers}
+                flaggedQuestions={test.flaggedQuestions}
+                onSelectQuestion={onNavigateToQuestion}
               />
-            </motion.div>
-          </AnimatePresence>
-        )}
+            </div>
 
-        <TestNavigationControls
-          assessmentMode={test.assessmentMode}
-          currentIndex={test.currentQuestionIndex}
-          totalQuestions={test.questions.length}
-          hasSelectedAnswer={Boolean(selectedAnswer)}
-          adaptiveStepLoading={adaptiveStepLoading}
-          onPreviousQuestion={() => onNavigateToQuestion(test.currentQuestionIndex - 1)}
-          onNextQuestion={() => onNavigateToQuestion(test.currentQuestionIndex + 1)}
-          onAdaptiveStep={onAdaptiveStep}
-        />
-      </div>
+            {currentQuestion && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={test.currentQuestionIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <QuestionCard
+                    question={currentQuestion}
+                    currentIndex={test.currentQuestionIndex}
+                    totalQuestions={test.questions.length}
+                    selectedAnswer={selectedAnswer}
+                    confidence={test.confidences[currentQuestion.id]}
+                    isFlagged={isFlagged}
+                    sectionTitle={activeSection?.title}
+                    isSectionLocked={isCurrentSectionLocked}
+                    onAnswer={optionId => onAnswerQuestion(currentQuestion.id, optionId)}
+                    onConfidenceChange={level => onConfidenceChange(currentQuestion.id, level)}
+                    onFlag={() => onFlagQuestion(currentQuestion.id)}
+                    onUnflag={() => onUnflagQuestion(currentQuestion.id)}
+                    assessmentMode={test.assessmentMode}
+                    practiceChecked={Boolean(practiceChecked[currentQuestion.id])}
+                    onCheckPracticeAnswer={() => onCheckPracticeAnswer(currentQuestion.id)}
+                    onDiagnoseMisconception={() => {
+                      const selVal = Array.isArray(selectedAnswer)
+                        ? selectedAnswer[0]
+                        : selectedAnswer
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const selOpt = currentQuestion.options?.find((o: any) => o.id === selVal)
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const corrOpt = currentQuestion.options?.find((o: any) => o.is_correct || o.isCorrect) ||
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        currentQuestion.options?.find((o: any) => o.id !== selVal)
+                      setSocraticModalQuestion({
+                        questionText: currentQuestion.text,
+                        selectedOptionText: selOpt?.text || 'Your selected choice',
+                        correctOptionText: corrOpt?.text || 'Conceptual ground truth',
+                      })
+                    }}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            )}
+
+            <TestNavigationControls
+              assessmentMode={test.assessmentMode}
+              currentIndex={test.currentQuestionIndex}
+              totalQuestions={test.questions.length}
+              hasSelectedAnswer={Boolean(selectedAnswer)}
+              adaptiveStepLoading={adaptiveStepLoading}
+              onPreviousQuestion={() => onNavigateToQuestion(test.currentQuestionIndex - 1)}
+              onNextQuestion={() => onNavigateToQuestion(test.currentQuestionIndex + 1)}
+              onAdaptiveStep={onAdaptiveStep}
+            />
+          </div>
+
+          {/* Sticky Palette Sidebar on Widescreen (4 cols on lg+) */}
+          <aside
+            aria-label="Question Navigation & Exam Palette"
+            className="hidden lg:block lg:col-span-4 sticky top-20 space-y-6"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Question Palette ({test.questions.length})
+                </h3>
+                <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                  Q {test.currentQuestionIndex + 1} / {test.questions.length}
+                </span>
+              </div>
+              <TestQuestionPalette
+                questions={test.questions}
+                currentIndex={test.currentQuestionIndex}
+                answers={test.answers}
+                flaggedQuestions={test.flaggedQuestions}
+                onSelectQuestion={onNavigateToQuestion}
+              />
+            </div>
+          </aside>
+        </div>
+      </main>
 
       {socraticModalQuestion && (
         <SocraticReviewModal
@@ -280,26 +315,55 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
       />
 
       {webcamStream && (
-        <div className="fixed bottom-4 right-4 z-40 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700 shadow-xl backdrop-blur-md flex flex-col items-center">
-          <video
-            ref={videoRef => {
-              if (videoRef && videoRef.srcObject !== webcamStream) {
-                videoRef.srcObject = webcamStream
-                videoRef.play().catch(() => {})
-              }
-            }}
-            autoPlay
-            playsInline
-            muted
-            className="w-28 h-20 object-cover rounded-lg bg-black"
-          />
-          <div className="flex items-center gap-1.5 mt-1 text-[10px] text-emerald-400 font-semibold">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${isWebcamActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}
-            />
-            AI Proctor Feed {isWebcamActive ? 'Active' : 'Standby'}
+        <aside
+          aria-label="Live Proctoring Camera Feed"
+          className={`fixed z-40 transition-all duration-300 shadow-2xl backdrop-blur-md bg-slate-900/95 border border-slate-700/80 rounded-2xl flex flex-col items-center ${
+            isWebcamMinimized
+              ? 'bottom-20 right-4 p-2'
+              : 'bottom-20 sm:bottom-4 right-4 p-2 max-w-[140px] sm:max-w-[160px]'
+          }`}
+        >
+          <div className="flex items-center justify-between w-full mb-1 px-1">
+            <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold tracking-tight">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isWebcamActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                }`}
+                aria-hidden="true"
+              />
+              <span className="hidden sm:inline">Proctor</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsWebcamMinimized(prev => !prev)}
+              aria-label={isWebcamMinimized ? 'Expand proctor camera feed' : 'Minimize proctor camera feed'}
+              className="text-slate-400 hover:text-white p-0.5 rounded text-[10px] transition ml-2"
+            >
+              {isWebcamMinimized ? '▲ Expand' : '▼ Minimize'}
+            </button>
           </div>
-        </div>
+
+          {!isWebcamMinimized && (
+            <>
+              <video
+                ref={videoRef => {
+                  if (videoRef && videoRef.srcObject !== webcamStream) {
+                    videoRef.srcObject = webcamStream
+                    videoRef.play().catch(() => {})
+                  }
+                }}
+                autoPlay
+                playsInline
+                muted
+                aria-label="Candidate webcam stream"
+                className="w-28 h-20 sm:w-32 sm:h-24 object-cover rounded-xl bg-black border border-slate-800"
+              />
+              <span className="mt-1 text-[9px] font-mono text-slate-400">
+                {isWebcamActive ? 'AI Guard Active' : 'Standby'}
+              </span>
+            </>
+          )}
+        </aside>
       )}
     </div>
   )

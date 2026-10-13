@@ -60,7 +60,7 @@ export interface TestSlice {
     questions: TestQuestion[],
     testInfo: TestInfo,
     attemptId: string,
-    initialAnswers?: Record<string, string>,
+    initialAnswers?: Record<string, string | string[]>,
     timeRemaining?: number,
     sections?: TestSection[]
   ) => void

@@ -149,6 +149,8 @@ export const QuestionCard = memo(
                 return (
                   <motion.button
                     key={option.id}
+                    aria-pressed={isSelected}
+                    aria-disabled={isSectionLocked}
                     whileHover={isSectionLocked ? undefined : { scale: 1.01 }}
                     whileTap={isSectionLocked ? undefined : { scale: 0.99 }}
                     onClick={handleSelect}
@@ -161,7 +163,7 @@ export const QuestionCard = memo(
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-6 h-6 rounded-${isMultiSelect ? 'md' : 'full'} border-2 flex items-center justify-center transition-colors ${
+                        className={`w-6 h-6 ${isMultiSelect ? 'rounded-md' : 'rounded-full'} border-2 flex items-center justify-center transition-colors ${
                           isSelected
                             ? 'border-blue-500 bg-blue-500'
                             : 'border-gray-300 dark:border-gray-600'
@@ -220,7 +222,7 @@ export const QuestionCard = memo(
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               How confident are you in this answer?
             </h4>
-            <div className="flex gap-3">
+            <div role="radiogroup" aria-label="Confidence Level" className="flex gap-3">
               {[
                 {
                   level: 'LOW',
@@ -249,6 +251,8 @@ export const QuestionCard = memo(
               ].map(({ level, label, color, activeColor }) => (
                 <button
                   key={level}
+                  role="radio"
+                  aria-checked={confidence === level}
                   disabled={isSectionLocked}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => !isSectionLocked && onConfidenceChange(level as any)}

@@ -221,7 +221,7 @@ class ResumeService {
         .replace(/\^/g, '\\textasciicircum{}')
 
     let tex = `%--------------------------------------------------------------------------------\n`
-    tex += `% Anti-Gravity Verifiable AI Resume — LearningHub\n`
+    tex += `% Cryptographically Verifiable Resume — LearningHub Professional\n`
     tex += `% W3C DID: ${resume.profile.didIdentifier}\n`
     tex += `% Canonical Digest: ${resume.cryptographicProof.canonicalDigestSha256}\n`
     tex += `%--------------------------------------------------------------------------------\n`

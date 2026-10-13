@@ -35,7 +35,7 @@ export const EdgeAIPage: React.FC = () => {
       id: 'welcome-msg',
       role: 'assistant',
       content:
-        '👋 Welcome to the **Anti-Gravity Edge AI Studio**!\n\n' +
+        '👋 Welcome to the **Edge Compute Studio**!\n\n' +
         'I am running **100% locally on your machine via WebGPU compute shaders**.\n' +
         'Your code, prompts, and notes never leave your browser: **zero cloud latency, zero token costs, and 100% air-gapped privacy**.\n\n' +
         'Choose a tutoring mode above, enter a question or paste code, and let us dissect the problem together!',
@@ -191,7 +191,7 @@ export const EdgeAIPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 13
             </span>
-            <span className="text-xs text-slate-400 font-mono">Edge AI Micro-Inference Engine</span>
+            <span className="text-xs text-slate-400 font-mono">WebGPU Client Inference Engine</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
             Edge AI Offline Tutor & Local WebGPU Studio

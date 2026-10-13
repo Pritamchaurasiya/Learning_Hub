@@ -115,13 +115,13 @@ export const createTestsASlice: StateCreator<AppState & TestsASlice, [], [], Tes
 
   setTestQuestions: (questions, testInfo, attemptId, initialAnswers = {}, timeRemaining) => {
     // Merge any localStorage-backed answers with server-provided answers
-    let mergedAnswers = { ...initialAnswers }
+    let mergedAnswers: Record<string, string | string[]> = { ...initialAnswers }
     if (typeof window !== 'undefined') {
       try {
         const backupKey = `lh_testsA_answers_${attemptId}`
         const backup = localStorage.getItem(backupKey)
         if (backup) {
-          const parsed = JSON.parse(backup) as Record<string, string>
+          const parsed = JSON.parse(backup) as Record<string, string | string[]>
           // Backup wins for keys not already in server answers (server is fresher)
           mergedAnswers = { ...parsed, ...initialAnswers }
         }

@@ -14,7 +14,7 @@ export function PublicFooter() {
             <BrandLogo size="md" variant="full" />
           </Link>
           <p className="text-sm text-gray-400 max-w-sm leading-relaxed">
-            Next-Generation Software Engineering & Exam Practice OS. Master Data Structures, System Design, JEE & NEET with 100,000+ chapter-wise PYQs, interactive workspaces, and Socratic AI mentoring.
+            Comprehensive Software Engineering & Exam Practice Platform. Master Data Structures, System Design, JEE & NEET with 100,000+ chapter-wise PYQs, interactive workspaces, and structured mentor guidance.
           </p>
           <div className="flex items-center gap-3 pt-2 text-xs text-gray-400">
             <span className="flex items-center gap-1.5 text-emerald-400 font-medium">

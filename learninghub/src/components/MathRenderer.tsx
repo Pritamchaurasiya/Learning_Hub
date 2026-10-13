@@ -82,7 +82,12 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
           return (
             <span
               key={idx}
-              className={isBlock ? 'block my-2 overflow-x-auto text-center' : 'inline-block px-1'}
+              className={
+                isBlock
+                  ? 'block my-2 overflow-x-auto text-center max-w-full'
+                  : 'inline-block max-w-full overflow-x-auto align-middle px-1'
+              }
+              aria-label={`Formula: ${seg.content}`}
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )

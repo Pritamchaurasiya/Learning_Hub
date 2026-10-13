@@ -141,7 +141,7 @@ export const CareerOrchestratorPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 26
             </span>
-            <span className="text-xs text-slate-400 font-mono">Anti-Gravity Autonomous Career Engine</span>
+            <span className="text-xs text-slate-400 font-mono">Career Intelligence Grid</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
             Autonomous Job Matching & Recruiter Simulation Grid

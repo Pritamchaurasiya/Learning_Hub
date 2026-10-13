@@ -75,7 +75,7 @@ export default function AILearningEngine() {
               <div className="p-8 text-center bg-white/5 rounded-3xl border border-white/10">
                 <p className="text-sm font-bold text-white/70">No immediate recommendations.</p>
                 <p className="text-xs text-white/50 mt-1">
-                  Keep learning, we are analyzing your neural patterns.
+                  Complete more practice sessions to unlock personalized recommendations.
                 </p>
               </div>
             )}

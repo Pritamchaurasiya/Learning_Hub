@@ -529,7 +529,7 @@ class EdgeAIService {
           id: `msg-${Date.now()}`,
           role: 'assistant',
           content:
-            'Welcome to Anti-Gravity Multi-Model Edge AI! You can run ultra-fast reasoning with **DeepSeek R1 (Free Groq)**, connect to your **Local Ollama**, or execute private SLMs directly in your browser with **WebGPU**.',
+            'Welcome to LearningHub Multi-Model Edge Studio! You can run ultra-fast reasoning with **DeepSeek R1**, connect to your **Local Ollama**, or execute private models directly in your browser with **WebGPU**.',
           timestamp: new Date().toISOString(),
           modelId,
           systemRole,
@@ -568,7 +568,7 @@ class EdgeAIService {
               id: 'msg-1',
               role: 'assistant',
               content:
-                'Welcome to Anti-Gravity Multi-Model Edge AI! You can run ultra-fast reasoning with **DeepSeek R1 (Free Groq)**, connect to your **Local Ollama**, or execute private SLMs directly in your browser with **WebGPU**.',
+                'Welcome to LearningHub Multi-Model Edge Studio! You can run ultra-fast reasoning with **DeepSeek R1**, connect to your **Local Ollama**, or execute private models directly in your browser with **WebGPU**.',
               timestamp: new Date().toISOString(),
             },
           ],

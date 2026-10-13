@@ -63,7 +63,7 @@ export function HeroSection({ onStartFree, onViewDemo }: HeroSectionProps) {
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
               >
                 <BrandLogo size="xs" variant="icon-only" animated />
-                <span className="text-xs font-bold text-white tracking-wider uppercase">LearningHub AI 2.0</span>
+                <span className="text-xs font-bold text-white tracking-wider uppercase">LearningHub Enterprise</span>
                 <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
               </motion.div>
 

@@ -26,7 +26,7 @@ const faqs = [
   {
     question: 'How does the weak area analysis work?',
     answer:
-      'Our AI-powered system tracks your performance across all chapters and identifies topics where your accuracy is below 60%. It then recommends targeted practice sessions and provides personalized study plans to help you improve in those areas.',
+      'Our adaptive diagnostic system tracks your performance across all chapters and identifies topics where your accuracy is below 60%. It then recommends targeted practice sessions and provides personalized study plans to help you improve in those areas.',
   },
   {
     question: 'What is the daily streak feature?',

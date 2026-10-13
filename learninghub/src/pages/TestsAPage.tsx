@@ -98,7 +98,20 @@ const TestsAPage = memo(() => {
     onViolation: v => {
       recordProctorViolation()
       if (v.type === 'TAB_SWITCH') {
-        setTabSwitchCount(prev => prev + 1)
+        setTabSwitchCount(prev => {
+          const next = prev + 1
+          if (test.assessmentMode === 'contest' && test.testInfo?.testId) {
+            void testsAService.logProctorEvent(test.testInfo.testId, 'TAB_SWITCH', {
+              switchCount: next,
+            })
+          }
+          addToast({
+            message: `⚠️ Proctoring Notice: Window/tab switch detected (${next}). Logged to integrity audit trail.`,
+            type: 'warning',
+            duration: 4000,
+          })
+          return next
+        })
       }
     },
   })
@@ -181,40 +194,7 @@ const TestsAPage = memo(() => {
     }
   }, [setPendingSyncCount])
 
-  // Proctoring: Detect tab switches during active exams and audit for contests
-  useEffect(() => {
-    if (!test.isActive || test.isSubmitting) return
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setTabSwitchCount(prev => {
-          const next = prev + 1
-          recordProctorViolation()
-          if (test.assessmentMode === 'contest' && test.testInfo?.testId) {
-            void testsAService.logProctorEvent(test.testInfo.testId, 'TAB_SWITCH', {
-              switchCount: next,
-            })
-          }
-          addToast({
-            message: `⚠️ Proctoring Notice: Window/tab switch detected (${next}). Logged to integrity audit trail.`,
-            type: 'warning',
-            duration: 4000,
-          })
-          return next
-        })
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [
-    test.isActive,
-    test.isSubmitting,
-    test.assessmentMode,
-    test.testInfo?.testId,
-    recordProctorViolation,
-    addToast,
-  ])
 
   // Keyboard navigation shortcuts during active exam
   useEffect(() => {
@@ -374,13 +354,66 @@ const TestsAPage = memo(() => {
 
     if (!testId && !test.isActive && !attemptQueryId) {
       void loadAccessAndTests()
+    } else if (testId && !test.isActive) {
+      // Direct navigation to /tests-a/:testId (e.g. bookmarks or retake links)
+      const loadAndStartDirectTest = async () => {
+        try {
+          setLoading(true)
+          setHasAccess(true)
+          const [testDetailsRes, startRes] = await Promise.all([
+            testsAService.getTest(testId).catch(() => null),
+            testsAService.startTest(testId),
+          ])
+
+          if (startRes.status === 'success' && startRes.data) {
+            const data = startRes.data
+            const testTitle = testDetailsRes?.data?.title ?? 'Assessment'
+            const timeLimit = data.time_limit ?? testDetailsRes?.data?.time_limit_minutes ?? 30
+            const sections = data.sections ?? testDetailsRes?.data?.sections
+
+            setTestQuestions(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (data.questions ?? []).map((q: any) => ({
+                id: q.id,
+                text: q.text ?? '',
+                question_type: q.type ?? q.question_type ?? 'mcq',
+                difficulty: q.difficulty ?? 0.5,
+                bloom_level: q.bloom_level ?? 'understand',
+                options: q.options ?? [],
+                order: q.order ?? 0,
+                marks: q.points ?? q.marks ?? 1,
+                section_id: q.section_id ?? q.sectionId ?? null,
+                sectionId: q.sectionId ?? q.section_id ?? null,
+              })),
+              {
+                testId,
+                testTitle,
+                totalQuestions: data.questions?.length ?? 0,
+                timeLimit,
+                sections,
+              },
+              data.attempt_id ?? data.attemptId ?? '',
+              data.answers ?? {},
+              data.time_remaining_seconds,
+              sections
+            )
+          } else {
+            setError('Failed to start test session.')
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to start test')
+        } finally {
+          setLoading(false)
+        }
+      }
+      void loadAndStartDirectTest()
     } else {
       setHasAccess(true)
       if (test.isActive && test.questions.length > 0) {
         setLoading(false)
       }
     }
-  }, [filter, testId, test.isActive, test.questions.length, attemptQueryId])
+  }, [filter, testId, test.isActive, test.questions.length, attemptQueryId, setTestQuestions])
 
   // Recover missing questions for active tests (e.g. after page reload)
   useEffect(() => {
@@ -422,6 +455,41 @@ const TestsAPage = memo(() => {
             resetTestState()
           }
         } catch (err) {
+          if (!navigator.onLine || test.isOfflineMode) {
+            try {
+              const bundle = await offlineAssessmentManager.getTestBundle(test.testInfo.testId)
+              if (bundle && bundle.questions.length > 0) {
+                setTestQuestions(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  bundle.questions.map((q: any) => ({
+                    id: q.id,
+                    text: q.text ?? '',
+                    question_type: q.type ?? 'mcq',
+                    difficulty: q.difficulty ?? 0.5,
+                    bloom_level: q.bloomLevel ?? 'understand',
+                    options: q.options ?? [],
+                    order: q.order ?? 0,
+                    marks: q.points ?? 1,
+                  })),
+                  {
+                    testId: test.testInfo.testId,
+                    testTitle: test.testInfo.testTitle,
+                    totalQuestions: bundle.questions.length,
+                    timeLimit: bundle.timeLimitMinutes,
+                    sections: test.sections,
+                  },
+                  test.attempt?.attemptId || `offline_${Date.now()}`,
+                  (test.answers || {}) as Record<string, string>,
+                  test.timeRemaining,
+                  test.sections
+                )
+                setLoading(false)
+                return
+              }
+            } catch {
+              // fallback below
+            }
+          }
           setError(err instanceof Error ? err.message : 'Failed to recover test')
           resetTestState()
         } finally {
@@ -759,7 +827,7 @@ const TestsAPage = memo(() => {
               timeLimit: data.time_limit ?? testItem.time_limit_minutes,
               sections: data.sections ?? testItem.sections,
             },
-            data.attempt_id ?? '',
+            data.attempt_id ?? data.attemptId ?? '',
             data.answers ?? {},
             data.time_remaining_seconds,
             data.sections ?? testItem.sections
@@ -818,95 +886,98 @@ const TestsAPage = memo(() => {
     [startTest, setTestQuestions, navigate]
   )
 
-  const handleSubmit = useCallback(async () => {
-    if (isSubmitting || submitAttempted.current) return
-    submitAttempted.current = true
-    setIsSubmitting(true)
+  const handleSubmit = useCallback(
+    async (isAutoSubmit = false) => {
+      if (isSubmitting || (!isAutoSubmit && submitAttempted.current)) return
+      submitAttempted.current = true
+      setIsSubmitting(true)
 
-    try {
-      if (!isOnline || test.isOfflineMode) {
-        const bundle = offlineBundles.find(b => b.testId === test.testInfo?.testId)
-        const attemptId = test.attempt?.attemptId || `offline_${Date.now()}`
-        const totalElapsedSeconds = Math.max(
-          0,
-          (test.testInfo?.timeLimit ?? 30) * 60 - test.timeRemaining
-        )
+      try {
+        if (!isOnline || test.isOfflineMode) {
+          const bundle = offlineBundles.find(b => b.testId === test.testInfo?.testId)
+          const attemptId = test.attempt?.attemptId || `offline_${Date.now()}`
+          const totalElapsedSeconds = Math.max(
+            0,
+            (test.testInfo?.timeLimit ?? 30) * 60 - test.timeRemaining
+          )
 
-        await offlineAssessmentManager.queueOfflineSubmission({
-          testId: test.testInfo?.testId || '',
-          bundleId: bundle?.bundleId || `bundle_${test.testInfo?.testId}`,
-          attemptId,
-          answers: test.answers,
-          confidences: test.confidences,
-          timesSpent: {},
-          clientStartedAt: test.attempt?.startedAt || new Date().toISOString(),
-          clientCompletedAt: new Date().toISOString(),
-          totalElapsedSeconds,
-          bundleSignature: bundle?.signature || 'offline_signature',
-        })
+          await offlineAssessmentManager.queueOfflineSubmission({
+            testId: test.testInfo?.testId || '',
+            bundleId: bundle?.bundleId || `bundle_${test.testInfo?.testId}`,
+            attemptId,
+            answers: test.answers,
+            confidences: test.confidences,
+            timesSpent: {},
+            clientStartedAt: test.attempt?.startedAt || new Date().toISOString(),
+            clientCompletedAt: new Date().toISOString(),
+            totalElapsedSeconds,
+            bundleSignature: bundle?.signature || 'offline_signature',
+          })
 
-        const count = await offlineAssessmentManager.getPendingSyncCount()
-        setLocalPendingSyncCount(count)
-        setPendingSyncCount(count)
+          const count = await offlineAssessmentManager.getPendingSyncCount()
+          setLocalPendingSyncCount(count)
+          setPendingSyncCount(count)
 
-        const totalQ = Math.max(1, test.questions.length)
-        const ansCount = Object.keys(test.answers).length
+          const totalQ = Math.max(1, test.questions.length)
+          const ansCount = Object.keys(test.answers).length
 
-        setTestResults({
-          test_id: test.testInfo?.testId || '',
-          attempt_id: attemptId,
-          test_title: test.testInfo?.testTitle || 'Offline Assessment',
-          mode: 'offline',
-          score: ansCount * 5,
-          total_marks: totalQ * 5,
-          percentage: Math.round((ansCount / totalQ) * 100),
-          passed: true,
-          correct_count: ansCount,
-          incorrect_count: Math.max(0, totalQ - ansCount),
-          unanswered_count: Math.max(0, totalQ - ansCount),
-          time_limit: test.testInfo?.timeLimit || 30,
-          time_taken: totalElapsedSeconds,
-          is_mock: false,
-          question_results: test.questions.map(q => ({
-            question_id: q.id,
-            question_text: q.text,
-            question_type: q.question_type,
-            selected_options: [
-              {
-                id: String(test.answers[q.id] || ''),
-                text: String(test.answers[q.id] || 'Answered offline'),
-              },
-            ],
-            correct_options: [{ id: 'offline', text: 'Verification Pending Reconnect' }],
-            is_correct: true,
-            marks_obtained: 5,
-            explanation:
-              'Submission sealed with cryptographic HMAC-SHA256 signature. Awaiting auto-sync.',
-            time_spent: 30,
-            is_flagged: test.flaggedQuestions.includes(q.id),
-            confidence: test.confidences[q.id],
-          })),
-        })
+          setTestResults({
+            test_id: test.testInfo?.testId || '',
+            attempt_id: attemptId,
+            test_title: test.testInfo?.testTitle || 'Offline Assessment',
+            mode: 'offline',
+            score: ansCount * 5,
+            total_marks: totalQ * 5,
+            percentage: Math.round((ansCount / totalQ) * 100),
+            passed: true,
+            correct_count: ansCount,
+            incorrect_count: Math.max(0, totalQ - ansCount),
+            unanswered_count: Math.max(0, totalQ - ansCount),
+            time_limit: test.testInfo?.timeLimit || 30,
+            time_taken: totalElapsedSeconds,
+            is_mock: false,
+            question_results: test.questions.map(q => ({
+              question_id: q.id,
+              question_text: q.text,
+              question_type: q.question_type,
+              selected_options: [
+                {
+                  id: String(test.answers[q.id] || ''),
+                  text: String(test.answers[q.id] || 'Answered offline'),
+                },
+              ],
+              correct_options: [{ id: 'offline', text: 'Verification Pending Reconnect' }],
+              is_correct: true,
+              marks_obtained: 5,
+              explanation:
+                'Submission sealed with cryptographic HMAC-SHA256 signature. Awaiting auto-sync.',
+              time_spent: 30,
+              is_flagged: test.flaggedQuestions.includes(q.id),
+              confidence: test.confidences[q.id],
+            })),
+          })
 
-        addToast({
-          message:
-            '⚡ Submission sealed offline! Will automatically sync once network is restored.',
-          type: 'success',
-          duration: 6000,
-        })
-        return
+          addToast({
+            message:
+              '⚡ Submission sealed offline! Will automatically sync once network is restored.',
+            type: 'success',
+            duration: 6000,
+          })
+          return
+        }
+
+        const result = await submitTest(proctorViolations)
+        if (!result.success) {
+          submitAttempted.current = false
+          setError('Failed to submit test. Please try again.')
+        }
+      } catch (err) {
+        submitAttempted.current = false
+        setError(err instanceof Error ? err.message : 'Failed to submit test')
+      } finally {
+        setIsSubmitting(false)
       }
-
-      const result = await submitTest(proctorViolations)
-      if (!result.success) {
-        setError('Failed to submit test. Please try again.')
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit test')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [
+    }, [
     isSubmitting,
     isOnline,
     test.isOfflineMode,
@@ -1086,9 +1157,25 @@ const TestsAPage = memo(() => {
       const attemptId = attemptIdRef.current
       const lockedSectionIds = lockedSectionsRef.current || []
       if (testInfo?.testId && attemptId && Object.keys(answers).length > 0) {
-        void testsAService
-          .batchAutosave(testInfo.testId, answers, attemptId, lockedSectionIds)
-          .catch(() => undefined)
+        const payload = JSON.stringify({
+          answers,
+          attempt_id: attemptId,
+          locked_section_ids: lockedSectionIds,
+        })
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          try {
+            const blob = new Blob([payload], { type: 'application/json' })
+            navigator.sendBeacon(`/api/v1/tests/${testInfo.testId}/autosave`, blob)
+          } catch {
+            void testsAService
+              .batchAutosave(testInfo.testId, answers, attemptId, lockedSectionIds)
+              .catch(() => undefined)
+          }
+        } else {
+          void testsAService
+            .batchAutosave(testInfo.testId, answers, attemptId, lockedSectionIds)
+            .catch(() => undefined)
+        }
       }
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
@@ -1107,14 +1194,11 @@ const TestsAPage = memo(() => {
       test.timeRemaining === 0 &&
       test.isActive &&
       !test.isSubmitting &&
-      !submitAttempted.current
+      !isSubmitting
     ) {
-      // Atomic check-and-set to prevent race conditions
-      if (submitAttempted.current) return
-      submitAttempted.current = true
-      void handleSubmit()
+      void handleSubmit(true)
     }
-  }, [test.timeRemaining, test.isActive, test.isSubmitting, handleSubmit])
+  }, [test.timeRemaining, test.isActive, test.isSubmitting, isSubmitting, handleSubmit])
 
   const availableExams = useMemo(
     () => Array.from(new Set(tests.map(t => t.exam_name).filter(Boolean))),

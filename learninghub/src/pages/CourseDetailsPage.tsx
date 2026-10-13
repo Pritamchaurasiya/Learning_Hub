@@ -121,10 +121,16 @@ export default function CourseDetailsPage() {
           setCourse(normalized)
           if (normalized.sections && normalized.sections.length > 0) {
             setActiveSection(normalized.sections[0]!.id)
+          } else {
+            setActiveSection('')
           }
         } else {
           setCourse(fallbackCourse)
-          setActiveSection(fallbackCourse.sections[0]!.id)
+          if (fallbackCourse.sections && fallbackCourse.sections.length > 0) {
+            setActiveSection(fallbackCourse.sections[0]!.id)
+          } else {
+            setActiveSection('')
+          }
         }
       })
       .catch(() => {

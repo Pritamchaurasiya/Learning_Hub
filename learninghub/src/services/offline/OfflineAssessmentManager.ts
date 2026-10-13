@@ -7,8 +7,8 @@
  *  - Offline test bundle caching
  *  - Tamper-evident monotonic answer buffering
  *  - Cryptographic client-side SHA-256 hash chains
- *  - Automatic background synchronization on network reconnect
- */
+ * */
+import { testsAService } from '../testsAService'
 
 export interface CachedOfflineBundle {
   bundleId: string
@@ -304,49 +304,36 @@ class OfflineAssessmentManager {
 
       for (const item of pending) {
         try {
-          const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-          const response = await fetch(`/api/v1/tests/${item.testId}/offline-sync`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              bundleId: item.bundleId,
-              attemptId: item.attemptId,
-              answers: item.answers,
-              confidences: item.confidences,
-              timesSpent: item.timesSpent,
-              clientStartedAt: item.clientStartedAt,
-              clientCompletedAt: item.clientCompletedAt,
-              totalElapsedSeconds: item.totalElapsedSeconds,
-              bundleSignature: item.bundleSignature,
-              checksum: item.checksum,
-            }),
+          await testsAService.submitOfflineSync(item.testId, {
+            bundleId: item.bundleId,
+            attemptId: item.attemptId,
+            answers: item.answers,
+            confidences: item.confidences,
+            timesSpent: item.timesSpent,
+            clientStartedAt: item.clientStartedAt,
+            clientCompletedAt: item.clientCompletedAt,
+            totalElapsedSeconds: item.totalElapsedSeconds,
+            bundleSignature: item.bundleSignature,
+            checksum: item.checksum,
           })
 
-          if (response.ok) {
-            // Delete from queue on success
-            await new Promise<void>((resolve, reject) => {
-              const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
-              tx.objectStore(STORE_SYNC_QUEUE).delete(item.id)
-              tx.oncomplete = () => resolve()
-              tx.onerror = () => reject(tx.error)
-            })
-          } else {
-            const errJson = await response.json().catch(() => ({}))
-            await new Promise<void>((resolve, reject) => {
-              const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
-              item.status = 'FAILED'
-              item.retryCount += 1
-              item.errorMessage = errJson.message || 'Sync failed'
-              tx.objectStore(STORE_SYNC_QUEUE).put(item)
-              tx.oncomplete = () => resolve()
-              tx.onerror = () => reject(tx.error)
-            })
-          }
-        } catch (e) {
-          console.warn('[OfflineAssessmentManager] Network error during item sync', e)
+          // Delete from queue on success
+          await new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
+            tx.objectStore(STORE_SYNC_QUEUE).delete(item.id)
+            tx.oncomplete = () => resolve()
+            tx.onerror = () => reject(tx.error)
+          })
+        } catch (err) {
+          await new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
+            item.status = 'FAILED'
+            item.retryCount += 1
+            item.errorMessage = err instanceof Error ? err.message : 'Sync failed'
+            tx.objectStore(STORE_SYNC_QUEUE).put(item)
+            tx.oncomplete = () => resolve()
+            tx.onerror = () => reject(tx.error)
+          })
         }
       }
     } catch (e) {
