@@ -4,8 +4,14 @@ name: Ultimate God Mode CI/CD
 on:
   push:
     branches: ["main"]
+    paths:
+      - "conductor/**"
+      - "my_flutter_app/**"
   pull_request:
     branches: ["main"]
+    paths:
+      - "conductor/**"
+      - "my_flutter_app/**"
 
 jobs:
   # 1. Backend Validation
