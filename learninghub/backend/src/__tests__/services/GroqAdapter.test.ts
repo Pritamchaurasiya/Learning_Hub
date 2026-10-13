@@ -40,7 +40,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('gsk_test_mock_key', 'deepseek-r1-distill-llama-70b')
+    const adapter = new GroqAdapter('test-groq-key-not-a-secret', 'deepseek-r1-distill-llama-70b')
     const result = await adapter.generateText('Explain binary search')
 
     expect(result.text).toContain('Optimal O(N log N) solution')
