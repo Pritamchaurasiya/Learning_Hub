@@ -12,7 +12,6 @@ on:
     paths:
       - "conductor/**"
       - "my_flutter_app/**"
-
 jobs:
   # 1. Backend Validation
   backend-test:
