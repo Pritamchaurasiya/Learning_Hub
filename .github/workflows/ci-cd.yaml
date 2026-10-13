@@ -4,12 +4,16 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "conductor/**"
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
       - "my_flutter_app/**"
   pull_request:
     branches: ["main"]
     paths:
-      - "conductor/**"
+      - "conductor/**/*.py"
+      - "conductor/requirements/**"
+      - "conductor/manage.py"
       - "my_flutter_app/**"
 jobs:
   backend-test:
