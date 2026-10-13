@@ -2,12 +2,15 @@ name: Security Scan
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - "learninghub/backend/**"
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - "learninghub/backend/**"
   schedule:
-    - cron: '0 0 * * 1'  # Weekly on Monday
-
+    - cron: '0 0 * * 1'
 jobs:
   security-scan:
     runs-on: ubuntu-latest
