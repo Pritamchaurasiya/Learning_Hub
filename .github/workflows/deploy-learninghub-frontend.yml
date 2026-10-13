@@ -4,7 +4,17 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - "learninghub/**"
+      - "learninghub/src/**"
+      - "learninghub/public/**"
+      - "learninghub/index.html"
+      - "learninghub/package.json"
+      - "learninghub/package-lock.json"
+      - "learninghub/vite.config.*"
+      - "learninghub/tsconfig*.json"
+      - "learninghub/postcss.config.*"
+      - "learninghub/tailwind.config.*"
+      - "learninghub/eslint.config.*"
+      - "learninghub/playwright.config.*"
       - ".github/workflows/deploy-learninghub-frontend.yml"
   workflow_dispatch:
 
@@ -35,9 +45,7 @@ jobs:
           cache-dependency-path: learninghub/package-lock.json
 
       - name: Install dependencies
-        # The repository lockfile has an esbuild version mismatch; npm install resolves
-        # the manifest and lockfile together until the lockfile is regenerated locally.
-        run: npm install --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Warn when backend API is not configured
         if: ${{ !vars.VITE_API_URL }}
