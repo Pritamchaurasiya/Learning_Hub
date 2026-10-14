@@ -5,7 +5,6 @@ import { OpenAIAdapter } from './OpenAIAdapter'
 import { AnthropicAdapter } from './AnthropicAdapter'
 import { GroqAdapter } from './GroqAdapter'
 import { OllamaAdapter } from './OllamaAdapter'
-import { MockAIAdapter } from './MockAIAdapter'
 import logger from '../../utils/logger'
 
 interface CacheEntry {
@@ -15,7 +14,7 @@ interface CacheEntry {
 
 export class AIRouter implements IAIAgent {
   private providers: Map<string, IAIAgent> = new Map()
-  private providerPriority: string[] = ['groq', 'gemini', 'openai', 'anthropic', 'ollama', 'mock']
+  private providerPriority: string[] = ['groq', 'gemini', 'openai', 'anthropic', 'ollama']
   private cache: Map<string, CacheEntry> = new Map()
   private maxCacheSize: number = 1000
   private defaultTtlMs: number = 60 * 60 * 1000 // 1 hour
@@ -77,10 +76,6 @@ export class AIRouter implements IAIAgent {
         logger.warn('[AIRouter] Failed to register Ollama provider:', { error: String(err) })
       }
     }
-
-    // 6. Mock (Always available)
-    this.providers.set('mock', new MockAIAdapter())
-    logger.info('[AIRouter] Registered Mock provider as safety fallback')
   }
 
   /**
@@ -190,7 +185,7 @@ export class AIRouter implements IAIAgent {
           latencyMs: Date.now() - startTime,
         }
 
-        if (cacheKey && providerName !== 'mock') {
+        if (cacheKey) {
           this.saveToCache(cacheKey, enriched)
         }
 
@@ -239,7 +234,7 @@ export class AIRouter implements IAIAgent {
           latencyMs: Date.now() - startTime,
         }
 
-        if (cacheKey && providerName !== 'mock') {
+        if (cacheKey) {
           this.saveToCache(cacheKey, enriched)
         }
 
