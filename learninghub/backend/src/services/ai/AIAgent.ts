@@ -9,7 +9,7 @@ export interface AIProviderOptions {
   maxTokens?: number
   task?: 'chat' | 'code_review' | 'test_generation' | 'socratic' | 'irt'
   skipCache?: boolean
-  preferredProvider?: 'gemini' | 'openai' | 'anthropic' | 'groq' | 'ollama' | 'mock'
+  preferredProvider?: 'gemini' | 'openai' | 'anthropic' | 'groq' | 'ollama'
 }
 
 export interface AIGenerationResult {

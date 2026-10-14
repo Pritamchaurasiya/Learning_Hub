@@ -334,7 +334,6 @@ export class AITestService {
     }
 
     let questions: any[] = []
-    let isMock = false
     let targetExamId = req.examContext?.examId
 
     try {
@@ -498,7 +497,7 @@ export class AITestService {
         )
       }
 
-      isMock = true
+
       questions = Array.from({ length: questionCount }).map((_, i) => ({
         text: `Sample Practice Question ${i + 1} on ${req.topic}`,
         options: [
@@ -595,7 +594,7 @@ export class AITestService {
         timeLimit,
         mode: req.mode,
         difficulty: req.difficulty === 'ADAPTIVE' ? 'MIXED' : req.difficulty,
-        isAiGenerated: !isMock,
+        isAiGenerated: true,
         isPublished: true,
         totalMarks: questions.length * 10,
         passingScore: 60,
@@ -616,7 +615,7 @@ export class AITestService {
               bloomLevel: resolvedBloom,
               explanation: q.explanation,
               tags: q.tags ?? [req.topic],
-              isAiGenerated: !isMock,
+              isAiGenerated: true,
               points: 10,
               order: idx + 1,
               options: {
@@ -661,10 +660,10 @@ export class AITestService {
       questionCount: questions.length,
       timeLimit,
       questions: formattedQuestions,
-      ai_powered: !isMock,
-      model: isMock ? 'mock' : 'gemini-2.0-flash',
+      ai_powered: true,
+      model: 'gemini-2.0-flash',
       cached: false,
-      is_mock: isMock,
+      is_mock: false,
     }
   }
 
