@@ -153,7 +153,7 @@ export default function AITutorPage() {
       const title = sessionList.find(s => s.id === activeSessionId)?.title || 'AI Tutor Session'
       let mdContent = `# ${title}\n\n*Exported from LearningHub AI Tutor on ${new Date().toLocaleString()}*\n\n---\n\n`
       currentMessages.forEach(msg => {
-        const roleLabel = msg.role === 'assistant' ? '🤖 AI Tutor' : '👤 User'
+        const roleLabel = msg.role === 'assistant' ? '🎓 Socratic Mentor' : '👤 Student'
         mdContent += `### ${roleLabel} (${new Date(msg.createdAt).toLocaleTimeString()})\n\n${msg.content}\n\n---\n\n`
       })
 
@@ -593,9 +593,9 @@ export default function AITutorPage() {
           <Bot className="w-10 h-10 text-primary-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
         <div className="text-center">
-          <p className="font-black text-xl tracking-tight uppercase">Syncing with AI Core</p>
+          <p className="font-black text-xl tracking-tight uppercase">Connecting to Mentorship Workspace</p>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse mt-1">
-            Initializing neural environment...
+            Retrieving curriculum syllabus and session history...
           </p>
         </div>
       </div>
@@ -706,12 +706,12 @@ export default function AITutorPage() {
                 </div>
                 <div>
                   <h2 className="font-black text-sm uppercase tracking-tight leading-none text-gray-900 dark:text-white">
-                    Neural Tutor
+                    Socratic Mentor
                   </h2>
                   <div className="flex items-center gap-2 mt-1.5">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
                     <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                      Engine Online v4.5
+                      Pedagogical Mode Active
                     </span>
                   </div>
                 </div>
@@ -894,7 +894,7 @@ export default function AITutorPage() {
                         <p
                           className={`text-[9px] font-black uppercase tracking-widest px-4 ${message.role === 'user' ? 'text-right text-gray-400' : 'text-gray-400'}`}
                         >
-                          {message.role === 'assistant' ? 'AI Core' : 'User'} •{' '}
+                          {message.role === 'assistant' ? 'Socratic Mentor' : 'Student'} •{' '}
                           {formatTime(message.createdAt)}
                         </p>
                       </div>
@@ -1055,7 +1055,7 @@ export default function AITutorPage() {
                 </div>
               </div>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center mt-5 opacity-60">
-                System Advisory: Neural net responses are predictive. Verify critical algorithms.
+                Academic Advisory: Mentorship guidance is designed to foster derivation and first-principles reasoning. Always verify complex proofs.
               </p>
             </div>
           </Card>

@@ -702,7 +702,7 @@ export default function ProblemWorkspacePage() {
     if (!problem || !code.trim()) return
     setIsReviewing(true)
     setOutput(
-      '⏳ Initiating Deep ML Code Analysis...\n\nScanning for Time/Space Complexity and Logic Flaws...'
+      '⏳ Running Static Complexity & Edge-Case Audit...\n\nEvaluating Asymptotic Bounds and Boundary Condition Coverage...'
     )
     setIsConsoleOpen(true)
     setConsoleTab('output')
@@ -711,7 +711,7 @@ export default function ProblemWorkspacePage() {
       if (response.status === 'success') {
         const review = response.data
         const formattedOutput = `
-🤖 AI Code Review Complete
+🔍 Static Complexity & Correctness Review Complete
 
 ⏱ Time Complexity: ${review.timeComplexity}
 💾 Space Complexity: ${review.spaceComplexity}
@@ -727,10 +727,10 @@ ${review.overallFeedback}
 `
         setOutput(formattedOutput.trim())
       } else {
-        setOutput('❌ AI Review Failed: Unable to analyze code.')
+        setOutput('❌ Code Review Failed: Unable to analyze code syntax.')
       }
     } catch {
-      setOutput('❌ Error contacting ML Engine.')
+      setOutput('❌ Error contacting Code Analysis Service.')
     } finally {
       setIsReviewing(false)
     }
@@ -1040,7 +1040,7 @@ ${review.overallFeedback}
             leftIcon={<BrainCircuit className="w-3.5 h-3.5" />}
             className="bg-indigo-900/20 border-indigo-500/40 hover:bg-indigo-800/30 text-indigo-300 text-xs h-8 hidden sm:inline-flex font-semibold"
           >
-            AI Review
+            Review & Complexity
           </Button>
 
           <Button

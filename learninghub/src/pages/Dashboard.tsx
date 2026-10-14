@@ -281,10 +281,10 @@ const Dashboard = memo(function Dashboard() {
 
         <button
           onClick={() => setIsAIModalOpen(true)}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 transition-all hover:scale-105 active:scale-95 shrink-0"
+          className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
         >
-          <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>Generate Custom AI Test</span>
+          <Sparkles className="w-4 h-4 text-slate-950" />
+          <span>Generate Custom AI Test & Diagnostic</span>
         </button>
       </div>
 

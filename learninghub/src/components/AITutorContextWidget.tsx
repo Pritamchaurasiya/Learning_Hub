@@ -2,15 +2,15 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send,
-  Bot,
   User,
-  Sparkles,
   Loader2,
   ChevronDown,
   Lightbulb,
   Code2,
   BookOpen,
   GraduationCap,
+  ShieldCheck,
+  Compass,
 } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Input } from './ui/Input'
@@ -50,7 +50,7 @@ function useActiveContext() {
         isReview: false,
         bannerText: currentQ
           ? `Question ${testsA.currentQuestionIndex + 1} of ${testsA.questions.length}`
-          : 'Active Test',
+          : 'Active Test Session',
         bannerSubtext: currentQ?.text?.substring(0, 80) ?? '',
         payload: {
           course_id: testsA.testInfo?.testId,
@@ -67,8 +67,8 @@ function useActiveContext() {
       return {
         type: 'review' as const,
         isReview: true,
-        bannerText: 'Reviewing Test Results',
-        bannerSubtext: testsA.testInfo?.testTitle ?? 'Completed Test',
+        bannerText: 'Reviewing Test Diagnostic',
+        bannerSubtext: testsA.testInfo?.testTitle ?? 'Completed Assessment',
         payload: {
           course_id: testsA.testInfo?.testId,
           is_review: true,
@@ -81,8 +81,8 @@ function useActiveContext() {
       return {
         type: 'problem' as const,
         isReview: false,
-        bannerText: 'Coding Workspace',
-        bannerSubtext: 'Ask about your current problem',
+        bannerText: 'Coding Problem Workspace',
+        bannerSubtext: 'Ask for algorithmic hints or complexity bounds',
         payload: {
           is_review: false,
         },
@@ -107,7 +107,8 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Hi! I am your AI Tutor. How can I help you with this topic?',
+      content:
+        'Welcome to Socratic Mentorship. I am your teaching assistant, here to guide you step-by-step through first-principles reasoning without spoiling the solution. What concept or derivation step would you like to explore?',
       createdAt: new Date().toISOString(),
     },
   ])
@@ -131,7 +132,7 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
 
   useEffect(() => {
     if (isOpen && !sessionId) {
-      void aiTutorService.createChatSession(context?.topic ?? 'Contextual Help').then(res => {
+      void aiTutorService.createChatSession(context?.topic ?? 'Socratic Guidance').then(res => {
         if (res.status === 'success') {
           setSessionId(res.data.id)
         }
@@ -175,13 +176,13 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
           throw new Error('Failed to get response')
         }
       } catch {
-        addToast({ message: 'Failed to connect to AI Tutor', type: 'error' })
+        addToast({ message: 'Mentorship connection timeout. Retrying...', type: 'warning' })
         setMessages(prev => [
           ...prev,
           {
             id: `err-${Date.now()}`,
             role: 'assistant',
-            content: 'Sorry, I am having trouble connecting right now. Please try again later.',
+            content: 'Mentorship engine is briefly reconnecting. Please submit your question again.',
             createdAt: new Date().toISOString(),
           },
         ])
@@ -199,26 +200,22 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
     }
   }
 
-  /** Quick-action pill handler — sends a pre-built prompt */
-  const handleQuickAction = (action: string) => {
-    void handleSend(action)
+  const handleQuickAction = (promptText: string) => {
+    void handleSend(promptText)
   }
 
-  /** Compute which quick-action pills to display */
   const quickActions = useMemo(() => {
-    if (!activeContext) return []
-
-    if (activeContext.isReview) {
+    if (!activeContext) {
       return [
         {
-          label: 'Explain Solution',
-          icon: GraduationCap,
-          prompt: 'Explain the correct solution for this question step by step.',
+          label: 'Study Roadmap',
+          icon: Compass,
+          prompt: 'Help me review the high-yield topics for competitive entrance and system design.',
         },
         {
-          label: 'Explain Concept',
-          icon: BookOpen,
-          prompt: 'Explain the underlying concept behind this question.',
+          label: 'Concept Clarity',
+          icon: Lightbulb,
+          prompt: 'I want to review core mathematical formulas and derivation methods.',
         },
       ]
     }
@@ -226,14 +223,35 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
     if (activeContext.type === 'test') {
       return [
         {
-          label: 'Get a Hint',
+          label: 'Socratic Hint',
           icon: Lightbulb,
-          prompt: 'Give me a hint for this question without revealing the answer.',
+          prompt:
+            'Can you give me a first-principles conceptual hint without revealing the final answer?',
         },
         {
-          label: 'Explain Concept',
+          label: 'Underlying Formula',
           icon: BookOpen,
-          prompt: 'Explain the concept behind this question so I can solve it myself.',
+          prompt: 'What physical laws, theorems, or data structures govern this question?',
+        },
+        {
+          label: 'Common Pitfalls',
+          icon: ShieldCheck,
+          prompt: 'What are the typical sign errors or edge-case traps students fall into here?',
+        },
+      ]
+    }
+
+    if (activeContext.type === 'review') {
+      return [
+        {
+          label: 'Root Cause Analysis',
+          icon: GraduationCap,
+          prompt: 'Help me analyze why I missed this problem and what concept I should review.',
+        },
+        {
+          label: 'Alternative Proof',
+          icon: BookOpen,
+          prompt: 'Is there a faster shortcut or alternate calculus derivation for this solution?',
         },
       ]
     }
@@ -241,20 +259,20 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
     if (activeContext.type === 'problem') {
       return [
         {
-          label: 'Analyze my Code',
+          label: 'Analyze Invariants',
           icon: Code2,
           prompt:
-            'Analyze my current code draft and point out any issues or areas for improvement.',
+            'Analyze my current approach and discuss optimal loop invariants and edge cases.',
         },
         {
-          label: 'Get a Hint',
+          label: 'Algorithmic Hint',
           icon: Lightbulb,
-          prompt: 'Give me a hint for solving this problem without giving away the full solution.',
+          prompt: 'Give me a hint for solving this problem without giving away the complete code.',
         },
         {
-          label: 'Explain Concept',
+          label: 'Time & Space Bounds',
           icon: BookOpen,
-          prompt: 'Explain the algorithm or data structure concept needed for this problem.',
+          prompt: 'What are the theoretical lower bounds for time and space complexity on this problem?',
         },
       ]
     }
@@ -275,21 +293,20 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
           >
             <Button
               onClick={() => setIsOpen(true)}
-              aria-label="Open AI Tutor Chat"
-              className="w-14 h-14 rounded-full shadow-2xl bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white flex items-center justify-center group relative overflow-hidden"
+              aria-label="Open Socratic Teaching Assistant"
+              className="w-14 h-14 rounded-full shadow-2xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-amber-400 hover:text-amber-300 flex items-center justify-center group relative overflow-hidden transition-all shadow-slate-950/60"
             >
-              <div className="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 transition-transform rounded-full origin-center" />
-              <Sparkles className="w-6 h-6 absolute animate-ping opacity-20" />
-              <Bot className="w-6 h-6 relative z-10" />
+              <div className="absolute inset-0 bg-amber-400/10 scale-0 group-hover:scale-100 transition-transform rounded-full origin-center" />
+              <GraduationCap className="w-6 h-6 relative z-10" />
             </Button>
             {/* Contextual badge */}
             {activeContext && (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -left-1 w-5 h-5 bg-amber-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center shadow-lg"
+                className="absolute -top-1 -left-1 w-5 h-5 bg-amber-500 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-lg"
               >
-                <Lightbulb className="w-3 h-3 text-white" />
+                <Lightbulb className="w-3 h-3 text-slate-950 font-bold" />
               </motion.div>
             )}
           </motion.div>
@@ -304,24 +321,24 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[380px] h-[80vh] sm:h-[600px] max-h-[100dvh] bg-white dark:bg-gray-900 sm:rounded-3xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[380px] h-[80vh] sm:h-[600px] max-h-[100dvh] bg-slate-950 sm:rounded-2xl shadow-2xl border-t sm:border border-slate-800 flex flex-col overflow-hidden text-white"
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-primary-600 to-purple-600 text-white flex items-center justify-between shrink-0">
+            <div className="p-4 bg-slate-900 border-b border-slate-800 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <Bot className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm leading-tight">AI Tutor</h3>
+                  <h3 className="font-bold text-sm leading-tight text-white">Socratic Mentor</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-[10px] uppercase tracking-wider font-medium text-white/80">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] uppercase font-mono tracking-wider font-semibold text-slate-400">
                       {activeContext
                         ? activeContext.isReview
-                          ? 'Review Mode'
-                          : 'Context Active'
-                        : 'Online'}
+                          ? 'Review Session'
+                          : 'Context Synced'
+                        : 'Office Hours Active'}
                     </span>
                   </div>
                 </div>
@@ -329,7 +346,7 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
-                  className="text-white hover:bg-white/20 w-8 h-8 rounded-full p-0"
+                  className="text-slate-400 hover:text-white hover:bg-slate-800 w-8 h-8 rounded-lg p-0"
                   onClick={() => setIsOpen(false)}
                 >
                   <ChevronDown className="w-5 h-5" />
@@ -342,60 +359,58 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
-                className="px-4 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-b border-amber-100 dark:border-amber-900/40 shrink-0"
+                className="px-4 py-2.5 bg-slate-900/60 border-b border-slate-800 shrink-0"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 rounded bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                     {activeContext.type === 'test' ? (
-                      <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    ) : activeContext.type === 'problem' ? (
-                      <Code2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                     ) : (
-                      <GraduationCap className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <Code2 className="w-3.5 h-3.5 text-blue-400" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                    <p className="text-xs font-semibold text-white truncate">
                       {activeContext.bannerText}
                     </p>
-                    {activeContext.bannerSubtext && (
-                      <p className="text-xs text-amber-600/80 dark:text-amber-400/70 truncate mt-0.5">
-                        {activeContext.bannerSubtext}
-                      </p>
-                    )}
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {activeContext.bannerSubtext}
+                    </p>
                   </div>
                 </div>
               </motion.div>
             )}
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/50">
+            <div className="flex-1 p-4 overflow-y-auto space-y-4">
               {messages.map(msg => (
                 <motion.div
+                  key={msg.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  key={msg.id}
-                  className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex gap-2.5 ${
+                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 shrink-0 flex items-center justify-center shadow-sm">
-                      <Bot className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0 flex items-center justify-center">
+                      <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
                     </div>
                   )}
 
                   <div
-                    className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-sm ${
+                    className={`px-3.5 py-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-primary-600 text-white rounded-br-sm shadow-md shadow-primary-600/20'
-                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-sm border border-gray-100 dark:border-gray-700 shadow-sm'
+                        ? 'bg-amber-400 text-slate-950 font-medium rounded-br-none shadow-sm'
+                        : 'bg-slate-900 text-slate-200 rounded-bl-none border border-slate-800'
                     }`}
                   >
                     {msg.content}
                   </div>
 
                   {msg.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0 flex items-center justify-center shadow-sm">
-                      <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <div className="w-7 h-7 rounded-lg bg-slate-800 shrink-0 flex items-center justify-center">
+                      <User className="w-3.5 h-3.5 text-slate-300" />
                     </div>
                   )}
                 </motion.div>
@@ -404,22 +419,22 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex gap-3 justify-start"
+                  className="flex gap-2.5 justify-start"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 shrink-0 flex items-center justify-center shadow-sm">
-                    <Bot className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 shrink-0 flex items-center justify-center">
+                    <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
                   </div>
-                  <div className="px-4 py-3 rounded-2xl bg-white dark:bg-gray-800 rounded-bl-sm border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-2">
+                  <div className="px-4 py-2.5 rounded-xl bg-slate-900 rounded-bl-none border border-slate-800 flex items-center gap-1.5">
                     <span
-                      className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
                       style={{ animationDelay: '0ms' }}
                     />
                     <span
-                      className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
                       style={{ animationDelay: '150ms' }}
                     />
                     <span
-                      className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
                       style={{ animationDelay: '300ms' }}
                     />
                   </div>
@@ -430,21 +445,18 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
 
             {/* Quick Action Pills */}
             {quickActions.length > 0 && !isLoading && (
-              <div className="px-4 pt-2 pb-1 bg-white dark:bg-gray-900 border-t border-gray-50 dark:border-gray-800/50 flex gap-2 overflow-x-auto shrink-0 scrollbar-hide">
+              <div className="px-4 pt-2 pb-1 bg-slate-950 border-t border-slate-800/80 flex gap-2 overflow-x-auto shrink-0 scrollbar-none">
                 {quickActions.map(action => {
                   const Icon = action.icon
                   return (
                     <button
                       key={action.label}
                       onClick={() => handleQuickAction(action.prompt)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
-                        bg-gradient-to-r from-primary-50 to-purple-50 dark:from-primary-950/30 dark:to-purple-950/30
-                        text-primary-700 dark:text-primary-300
-                        border border-primary-200/60 dark:border-primary-800/40
-                        hover:from-primary-100 hover:to-purple-100 dark:hover:from-primary-950/50 dark:hover:to-purple-950/50
-                        transition-all duration-200 hover:shadow-sm active:scale-95"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap
+                        bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 hover:text-white
+                        transition-all duration-150 active:scale-95"
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-3 h-3 text-amber-400" />
                       {action.label}
                     </button>
                   )
@@ -453,31 +465,31 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
             )}
 
             {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0">
-              <div className="flex items-end gap-2 bg-gray-50 dark:bg-gray-800 p-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-primary-500/50 focus-within:border-primary-500 transition-all">
+            <div className="p-3 bg-slate-900 border-t border-slate-800 shrink-0">
+              <div className="flex items-end gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 focus-within:border-amber-400 transition-all">
                 <Input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask your AI Tutor..."
-                  className="flex-1 bg-transparent border-none focus:ring-0 px-3 py-2 text-sm max-h-32 resize-none"
+                  placeholder="Ask a question or request a derivation hint..."
+                  className="flex-1 bg-transparent border-none focus:ring-0 px-2.5 py-1.5 text-xs text-white placeholder:text-slate-500 max-h-32 resize-none"
                   disabled={isLoading}
                 />
                 <Button
                   onClick={() => void handleSend()}
                   disabled={!input.trim() || isLoading}
-                  className="w-10 h-10 rounded-xl bg-primary-600 hover:bg-primary-700 text-white shrink-0 p-0 flex items-center justify-center shadow-md shadow-primary-600/20"
+                  className="w-8 h-8 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold shrink-0 p-0 flex items-center justify-center shadow-sm"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4 ml-0.5" />
+                    <Send className="w-3.5 h-3.5" />
                   )}
                 </Button>
               </div>
               <div className="mt-2 text-center">
-                <span className="text-[10px] text-gray-400 font-medium tracking-wide">
-                  Powered by Gemini Flash 2.0
+                <span className="text-[10px] text-slate-500 font-mono">
+                  Socratic Pedagogical Assistant • Verified Faculty Methodology
                 </span>
               </div>
             </div>
@@ -487,3 +499,5 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
     </>
   )
 }
+
+export default AITutorContextWidget

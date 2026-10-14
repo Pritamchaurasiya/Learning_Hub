@@ -107,7 +107,7 @@ export default function Sidebar() {
       ],
     },
     {
-      label: 'AI & Tools',
+      label: 'Study Tools & Mentorship',
       defaultOpen: false,
       items: [
         { to: '/ai-tutor', icon: Bot, label: 'Interactive Mentor' },
