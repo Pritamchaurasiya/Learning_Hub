@@ -23,7 +23,6 @@ import { AITestGeneratorModal } from '../components/AITestGeneratorModal'
 import AILearningEngine from '../components/AILearningEngine'
 import type { TestQuestion } from '../services/testsAService'
 import { dashboardService, type NextBestAction } from '../services/dashboardService'
-import { analyticsService } from '../services/analyticsService'
 import { NextBestActionCard } from '../components/dashboard/NextBestActionCard'
 import { DashboardPomodoroWidget } from '../components/dashboard/DashboardPomodoroWidget'
 import { ContestCountdownWidget } from '../components/dashboard/ContestCountdownWidget'
@@ -50,23 +49,6 @@ interface TestAttemptRecord {
   score?: number
   passed?: boolean
   test?: { title?: string }
-}
-
-interface SkillNextActionResponse {
-  status?: string
-  data?: {
-    recommendation?: {
-      skillId?: string
-      skillName?: string
-      category?: string
-      currentMastery?: number
-      targetMastery?: number
-      urgency?: string
-      reason?: string
-      practiceUrl?: string
-      ebookUrl?: string
-    }
-  }
 }
 
 function DashboardSkeleton() {
@@ -186,14 +168,6 @@ const Dashboard = memo(function Dashboard() {
     staleTime: 30 * 1000,
   })
 
-  const { data: nextActionResponse } = useQuery<SkillNextActionResponse>({
-    queryKey: ['dashboard-next-action', auth.user?.id ?? auth.user?.username ?? 'guest'],
-    queryFn: () => analyticsService.getNextBestAction(),
-    enabled: auth.isAuthenticated,
-    retry: 1,
-    staleTime: 60 * 1000,
-  })
-
   const { data: analyticsData } = useQuery({
     queryKey: ['dashboard-analytics-telemetry', auth.user?.id ?? auth.user?.username ?? 'guest'],
     queryFn: () => dashboardService.getDashboardAnalytics(),
@@ -218,20 +192,22 @@ const Dashboard = memo(function Dashboard() {
       ? Math.round((stats.testsPassed / stats.testsCompleted) * 100)
       : null
 
-  const recommendation = nextActionResponse?.data?.recommendation
-  const hasPersonalizedAction = Boolean(recommendation?.skillName)
-  const nextAction: NextBestAction = recommendation?.skillName
+  // Recommend a weak topic only when enough real attempts exist to reduce noisy suggestions.
+  const weakestTopic = Object.values(analyticsData?.topicMastery ?? {})
+    .filter(topic => Number.isFinite(topic.accuracy) && topic.totalAttempts >= 3)
+    .sort((a, b) => a.accuracy - b.accuracy || b.totalAttempts - a.totalAttempts)[0]
+
+  const hasPersonalizedAction = Boolean(weakestTopic)
+  const nextAction: NextBestAction = weakestTopic
     ? {
-        id: recommendation.skillId ?? recommendation.skillName,
-        title: `Recommended focus: ${recommendation.skillName}`,
-        reason:
-          recommendation.reason ??
-          'A short, targeted practice session can help strengthen this skill.',
+        id: `review-${weakestTopic.topicName}`,
+        title: `Recommended focus: ${weakestTopic.topicName}`,
+        reason: `Your recent results show ${Math.round(weakestTopic.accuracy)}% accuracy across ${weakestTopic.totalAttempts} attempts. A focused practice session can help strengthen this topic.`,
         type: 'weak_topic',
-        actionUrl: recommendation.practiceUrl || '/tests-a',
-        actionLabel: 'Practice this skill',
+        actionUrl: '/tests-a',
+        actionLabel: 'Open practice hub',
         estimatedMinutes: 10,
-        priority: recommendation.urgency === 'HIGH' ? 'HIGH' : 'MEDIUM',
+        priority: weakestTopic.accuracy < 50 ? 'HIGH' : 'MEDIUM',
       }
     : {
         id: 'start-diagnostic',
