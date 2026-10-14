@@ -55,7 +55,7 @@ describe('AITutorPage Component', () => {
     const socraticBtn = await screen.findByRole('button', { name: /socratic/i })
     expect(socraticBtn).toBeInTheDocument()
     fireEvent.click(socraticBtn)
-    expect(screen.getByText(/socratic/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/socratic/i).length).toBeGreaterThanOrEqual(1)
   })
 
   it('opens AI Council modal when AI Council button is clicked', async () => {

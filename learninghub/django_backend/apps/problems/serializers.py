@@ -7,12 +7,33 @@ class TestCaseSerializer(serializers.ModelSerializer):
         fields = ['id', 'input_data', 'expected_output', 'is_hidden', 'order']
 
 class ProblemListSerializer(serializers.ModelSerializer):
+    user_status = serializers.SerializerMethodField()
+
     class Meta:
         model = Problem
         fields = [
             'id', 'title', 'slug', 'difficulty', 'category',
-            'acceptance_rate', 'submissions_count'
+            'acceptance_rate', 'submissions_count', 'user_status'
         ]
+
+    def get_user_status(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return 'UNATTEMPTED'
+        solved_ids = self.context.get('solved_problem_ids')
+        attempted_ids = self.context.get('attempted_problem_ids')
+        if solved_ids is not None:
+            if obj.id in solved_ids:
+                return 'SOLVED'
+            elif attempted_ids is not None and obj.id in attempted_ids:
+                return 'ATTEMPTED'
+            return 'UNATTEMPTED'
+        subs = ProblemSubmission.objects.filter(user=request.user, problem=obj)
+        if subs.filter(status='Accepted').exists():
+            return 'SOLVED'
+        elif subs.exists():
+            return 'ATTEMPTED'
+        return 'UNATTEMPTED'
 
 class ProblemDetailSerializer(serializers.ModelSerializer):
     test_cases = serializers.SerializerMethodField()

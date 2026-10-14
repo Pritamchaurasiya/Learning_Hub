@@ -13,7 +13,7 @@ def success_response(data=None, message=None, status_code=status.HTTP_200_OK, me
         payload['meta'] = meta
     return Response(payload, status=status_code)
 
-def error_response(message='An error occurred', status_code=status.HTTP_400_BAD_REQUEST, code=None, errors=None):
+def error_response(message='An error occurred', status_code=status.HTTP_400_BAD_REQUEST, code=None, errors=None, details=None, **kwargs):
     payload = {
         'status': 'error',
         'message': message,
@@ -22,4 +22,8 @@ def error_response(message='An error occurred', status_code=status.HTTP_400_BAD_
         payload['code'] = code
     if errors is not None:
         payload['errors'] = errors
+    if details is not None:
+        payload['details'] = details
+    for k, v in kwargs.items():
+        payload[k] = v
     return Response(payload, status=status_code)

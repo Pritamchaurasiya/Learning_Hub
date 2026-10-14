@@ -60,9 +60,33 @@ class EnrollCourseView(APIView):
         if not course:
             return error_response('Course not found', status_code=status.HTTP_404_NOT_FOUND)
 
+        # Validate course prerequisites if specified
+        if course.prerequisites and isinstance(course.prerequisites, list):
+            missing_prereqs = []
+            for prereq in course.prerequisites:
+                prereq_key = prereq.get('course_id') if isinstance(prereq, dict) else str(prereq)
+                min_progress = float(prereq.get('minimum_progress', 70.0)) if isinstance(prereq, dict) else 70.0
+                prereq_course = Course.objects.filter(Q(pk=prereq_key) | Q(slug=prereq_key)).first()
+                if prereq_course:
+                    prereq_enrollment = Enrollment.objects.filter(user=request.user, course=prereq_course).first()
+                    if not prereq_enrollment or prereq_enrollment.progress < min_progress:
+                        missing_prereqs.append({
+                            'id': str(prereq_course.id),
+                            'title': prereq_course.title,
+                            'required_progress': min_progress,
+                            'current_progress': prereq_enrollment.progress if prereq_enrollment else 0.0
+                        })
+            if missing_prereqs:
+                return error_response(
+                    'Prerequisite requirements not met. Please complete prerequisite courses before enrolling.',
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    code='PREREQUISITE_NOT_MET',
+                    details={'missing_prerequisites': missing_prereqs}
+                )
+
         enrollment, created = Enrollment.objects.get_or_create(user=request.user, course=course)
         if created:
-            Course.objects.filter(pk=target_id).update(student_count=F('student_count') + 1)
+            Course.objects.filter(pk=course.pk).update(student_count=F('student_count') + 1)
             course.refresh_from_db(fields=['student_count'])
 
         return success_response(

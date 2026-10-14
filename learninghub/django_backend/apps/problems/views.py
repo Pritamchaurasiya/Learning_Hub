@@ -20,10 +20,25 @@ class ProblemListView(APIView):
             queryset = queryset.filter(difficulty__iexact=difficulty)
         if category and category != 'All':
             queryset = queryset.filter(category__iexact=category)
-        if search:
-            queryset = queryset.filter(title__icontains=search) | queryset.filter(description__icontains=search)
+        context = {'request': request}
+        if request.user and request.user.is_authenticated:
+            user_subs = ProblemSubmission.objects.filter(user=request.user)
+            context['solved_problem_ids'] = set(user_subs.filter(status='Accepted').values_list('problem_id', flat=True))
+            context['attempted_problem_ids'] = set(user_subs.values_list('problem_id', flat=True))
 
-        serializer = ProblemListSerializer(queryset, many=True)
+        if search:
+            from apps.core.search import TokenizedSearchEngine
+            problems = TokenizedSearchEngine.search_and_rank(
+                queryset=queryset,
+                query=search,
+                title_field='title',
+                desc_field='description',
+                limit=100
+            )
+            serializer = ProblemListSerializer(problems, many=True, context=context)
+            return success_response(data=serializer.data, meta={'count': len(serializer.data), 'query': search})
+
+        serializer = ProblemListSerializer(queryset, many=True, context=context)
         return success_response(data=serializer.data, meta={'count': len(serializer.data)})
 
 class ProblemDetailView(APIView):
@@ -102,7 +117,10 @@ class SubmitProblemView(APIView):
                     passed_cases += 1
                 else:
                     final_status = 'Wrong Answer'
-                    last_stdout = f"Output: {actual_out}\nExpected: {expected_out}"
+                    if tc.is_hidden:
+                        last_stdout = f"Test case {tc.order} failed (hidden test case)."
+                    else:
+                        last_stdout = f"Output: {actual_out}\nExpected: {expected_out}"
                     break
 
         avg_runtime = int(total_runtime / max(1, total_cases))
@@ -124,10 +142,16 @@ class SubmitProblemView(APIView):
         problem.submissions_count += 1
         problem.save(update_fields=['submissions_count'])
 
-        # Award XP for first accepted submission
+        # Award XP only for first accepted submission of this problem
         if final_status == 'Accepted':
-            request.user.xp += 25
-            request.user.save(update_fields=['xp'])
+            already_solved = ProblemSubmission.objects.filter(
+                user=request.user,
+                problem=problem,
+                status='Accepted'
+            ).exclude(pk=submission.pk).exists()
+            if not already_solved:
+                request.user.xp += 25
+                request.user.save(update_fields=['xp'])
 
         return success_response(
             data=ProblemSubmissionSerializer(submission).data,
@@ -144,3 +168,29 @@ class ProblemSubmissionsListView(APIView):
         submissions = ProblemSubmission.objects.filter(problem_id=problem_id, user=request.user)
         serializer = ProblemSubmissionSerializer(submissions, many=True)
         return success_response(data=serializer.data, meta={'count': len(serializer.data)})
+
+
+class ProblemRecommendationsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from .recommendations import DSARecommendationEngine
+        try:
+            limit = int(request.query_params.get('limit', 6))
+        except (ValueError, TypeError):
+            limit = 6
+        try:
+            category_cap = int(request.query_params.get('category_cap', 2))
+        except (ValueError, TypeError):
+            category_cap = 2
+
+        user = request.user if (request.user and request.user.is_authenticated) else None
+        recs = DSARecommendationEngine.get_recommendations(
+            user=user,
+            limit=limit,
+            category_cap=category_cap
+        )
+        return success_response(
+            data=recs,
+            meta={'count': len(recs), 'engine': 'DSA-Next-Best-Action-v1'}
+        )

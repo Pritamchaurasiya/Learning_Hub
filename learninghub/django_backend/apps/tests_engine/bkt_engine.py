@@ -1,6 +1,7 @@
 import math
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
+from django.db import transaction
 from .models import ConceptSkill, SkillPrerequisite, UserSkillMastery
 
 
@@ -13,6 +14,8 @@ class BayesianKnowledgeTracingEngine:
 
     MASTERY_THRESHOLD = 0.85
     UNLOCKED_THRESHOLD = 0.70
+    MIN_PRACTICE_COUNT = 3
+    MIN_STREAK = 2
 
     @staticmethod
     def update_knowledge_probability(
@@ -63,43 +66,50 @@ class BayesianKnowledgeTracingEngine:
         except ConceptSkill.DoesNotExist:
             skill = ConceptSkill.objects.get(slug=skill_id_or_slug)
 
-        mastery, created = UserSkillMastery.objects.get_or_create(
-            user=user,
-            skill=skill,
-            defaults={
-                'p_mastery': skill.p_init,
-                'status': 'IN_PROGRESS',
-            }
-        )
+        with transaction.atomic():
+            mastery, created = UserSkillMastery.objects.select_for_update().get_or_create(
+                user=user,
+                skill=skill,
+                defaults={
+                    'p_mastery': skill.p_init,
+                    'status': 'IN_PROGRESS',
+                }
+            )
 
-        p_old = mastery.p_mastery
-        p_new = cls.update_knowledge_probability(
-            p_prev=p_old,
-            is_correct=is_correct,
-            p_transit=skill.p_transit,
-            p_guess=skill.p_guess,
-            p_slip=skill.p_slip,
-        )
+            p_old = mastery.p_mastery
+            p_new = cls.update_knowledge_probability(
+                p_prev=p_old,
+                is_correct=is_correct,
+                p_transit=skill.p_transit,
+                p_guess=skill.p_guess,
+                p_slip=skill.p_slip,
+            )
 
-        mastery.p_mastery = p_new
-        mastery.practice_count += 1
-        if is_correct:
-            mastery.correct_count += 1
-            mastery.streak += 1
-        else:
-            mastery.streak = 0
+            mastery.p_mastery = p_new
+            mastery.practice_count += 1
+            if is_correct:
+                mastery.correct_count += 1
+                mastery.streak += 1
+            else:
+                mastery.streak = 0
 
-        # Update status
-        if p_new >= cls.MASTERY_THRESHOLD:
-            mastery.status = 'MASTERED'
-        else:
-            mastery.status = 'IN_PROGRESS'
+            # Statistical sample size floor: require threshold, minimum practice observations, and streak
+            if (p_new >= cls.MASTERY_THRESHOLD and 
+                mastery.practice_count >= cls.MIN_PRACTICE_COUNT and 
+                mastery.streak >= cls.MIN_STREAK):
+                mastery.status = 'MASTERED'
+            else:
+                mastery.status = 'IN_PROGRESS'
 
-        mastery.last_practiced_at = timezone.now()
-        mastery.save()
+            mastery.last_practiced_at = timezone.now()
+            mastery.save()
 
-        # Cascade unlocking to dependent skills
-        unlocked_dependents = cls.evaluate_dependent_unlocks(user, skill)
+            # Uncertainty modeling: Bernoulli variance and standard error of estimate
+            uncertainty_variance = round(p_new * (1.0 - p_new), 4)
+            standard_error = round(math.sqrt(uncertainty_variance / max(1, mastery.practice_count)), 4)
+
+            # Cascade unlocking to dependent skills
+            unlocked_dependents = cls.evaluate_dependent_unlocks(user, skill)
 
         return {
             'skill_id': skill.id,
@@ -107,6 +117,8 @@ class BayesianKnowledgeTracingEngine:
             'previous_probability': p_old,
             'updated_probability': p_new,
             'delta': round(p_new - p_old, 4),
+            'uncertainty_variance': uncertainty_variance,
+            'standard_error': standard_error,
             'status': mastery.status,
             'streak': mastery.streak,
             'practice_count': mastery.practice_count,
@@ -139,8 +151,10 @@ class BayesianKnowledgeTracingEngine:
                         user=user,
                         skill=p.prerequisite
                     ).first()
-                    current_prob = prereq_mastery.p_mastery if prereq_mastery else p.prerequisite.p_init
-                    if current_prob < p.minimum_mastery:
+                    # Require that prerequisite was actually practiced and met minimum threshold
+                    if (not prereq_mastery or 
+                        prereq_mastery.practice_count == 0 or 
+                        prereq_mastery.p_mastery < p.minimum_mastery):
                         all_satisfied = False
                         break
 

@@ -109,7 +109,9 @@ class TestAttempt(models.Model):
     STATUS_CHOICES = (
         ('IN_PROGRESS', 'In Progress'),
         ('SUBMITTED', 'Submitted'),
+        ('TIMEOUT', 'Timed Out'),
         ('EXPIRED', 'Expired'),
+        ('ABANDONED', 'Abandoned'),
     )
 
     id = models.CharField(primary_key=True, max_length=64, default=generate_attempt_id)
@@ -126,6 +128,9 @@ class TestAttempt(models.Model):
     predicted_rank = models.IntegerField(null=True, blank=True)
     irt_ability_theta = models.FloatField(default=0.0)
     time_spent_seconds = models.IntegerField(default=0)
+    integrity_score = models.FloatField(default=100.0, null=True, blank=True)
+    risk_level = models.CharField(max_length=32, default='EXCELLENT', blank=True)
+    telemetry_audit_hash = models.CharField(max_length=128, blank=True, default='')
 
     class Meta:
         db_table = 'lh_test_attempts'

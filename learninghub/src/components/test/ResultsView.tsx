@@ -24,6 +24,9 @@ import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { MathRenderer } from '../MathRenderer'
 import { AssessmentIntegrityScorecard } from './AssessmentIntegrityScorecard'
+import { CompetitiveScoringBreakdownCard } from './CompetitiveScoringBreakdownCard'
+import { PeerPercentileBellCurve } from './PeerPercentileBellCurve'
+import { SpeedAccuracyScatterChart } from './SpeedAccuracyScatterChart'
 import { SocraticReviewModal } from './SocraticReviewModal'
 import { MistakeRemediationModal } from './MistakeRemediationModal'
 import { analyzeMistakes } from '../../services/remediationService'
@@ -590,6 +593,18 @@ export const ResultsView = memo(
             </Button>
           </div>
         </Card>
+
+        {/* NTA CBT Competitive Scoring Breakdown (+4 / -1) & National Rank Calibration */}
+        <CompetitiveScoringBreakdownCard result={result} />
+
+        {/* Cohort Bell Curve Benchmark */}
+        <PeerPercentileBellCurve
+          userScore={Math.round(percentage)}
+          userPercentile={Math.min(99.9, Math.max(1.0, Math.round((percentage / 100) * 98 * 10) / 10))}
+        />
+
+        {/* Speed vs. Accuracy 4-Quadrant Diagnostic */}
+        <SpeedAccuracyScatterChart />
 
         {/* Assessment Integrity Shield Card */}
         <AssessmentIntegrityScorecard result={result} />

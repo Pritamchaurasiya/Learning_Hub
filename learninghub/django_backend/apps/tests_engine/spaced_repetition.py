@@ -135,9 +135,30 @@ class SuperMemoEngine:
     def record_card_review(cls, user, card_id: str, quality: int) -> Dict[str, Any]:
         """
         Executes a SuperMemo review on a card, updating DB state atomically.
+        Guarded with idempotency cooldown to prevent accidental double-tap interval inflation.
         """
         with transaction.atomic():
             card = SpacedRepetitionCard.objects.select_for_update().get(id=card_id, user=user)
+
+            # Idempotency / rapid-fire double review protection:
+            # If the exact same quality was submitted within a 2-second debounce window, return existing card
+            if card.last_reviewed_at and card.last_quality == quality:
+                elapsed_sec = (timezone.now() - card.last_reviewed_at).total_seconds()
+                if elapsed_sec < 2.0:
+                    return {
+                        'card': cls.serialize_card(card),
+                        'review_result': {
+                            'quality': card.last_quality,
+                            'interval_days': card.interval_days,
+                            'ease_factor': card.ease_factor,
+                            'repetitions': card.repetitions,
+                            'is_lapse': False,
+                            'stability': card.stability,
+                            'next_review_at': card.next_review_at,
+                            'last_reviewed_at': card.last_reviewed_at,
+                            'idempotent_skip': True,
+                        },
+                    }
 
             result = cls.calculate_review(
                 quality=quality,

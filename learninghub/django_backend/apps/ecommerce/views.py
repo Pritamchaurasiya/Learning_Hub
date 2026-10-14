@@ -23,7 +23,14 @@ def get_or_create_cart(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
     else:
-        session_id = request.headers.get('x-session-id', 'guest-session')
+        session_id = request.headers.get('x-session-id')
+        if not session_id or session_id == 'guest-session':
+            if hasattr(request, 'session'):
+                if not request.session.session_key:
+                    request.session.create()
+                session_id = request.session.session_key
+            if not session_id:
+                session_id = f"guest-{uuid.uuid4().hex[:16]}"
         cart, _ = Cart.objects.get_or_create(session_id=session_id)
     return cart
 

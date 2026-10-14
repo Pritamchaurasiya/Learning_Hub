@@ -114,6 +114,17 @@ class StartTestView(APIView):
                     in_progress.submitted_at = timezone.now()
                     in_progress.time_spent_seconds = duration_seconds
                     in_progress.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
+                    saved_answers_data = [
+                        {
+                            'questionId': ans.question_id,
+                            'selectedOptionId': ans.selected_option_id,
+                            'selectedOptionIds': ans.selected_option_ids,
+                            'timeSpentSeconds': ans.time_spent_sec
+                        }
+                        for ans in in_progress.answers.all()
+                    ]
+                    if saved_answers_data:
+                        IRTScoringEngine.calculate_score_and_irt(in_progress, saved_answers_data)
                     return error_response(
                         'This test session has expired and was automatically closed.',
                         status_code=status.HTTP_400_BAD_REQUEST,
@@ -219,24 +230,57 @@ class TestAutosaveView(APIView):
         attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
         if attempt_id:
             attempt = TestAttempt.objects.filter(pk=attempt_id, user=request.user).first()
+            if not attempt:
+                return error_response('Attempt not found', status_code=status.HTTP_404_NOT_FOUND)
         else:
             attempt = TestAttempt.objects.filter(user=request.user, test=test, status='IN_PROGRESS').first()
 
         if not attempt:
+            # Check maximum attempt limit before creating
+            existing_count = TestAttempt.objects.filter(user=request.user, test=test).count()
+            if existing_count >= test.max_attempts:
+                return error_response('Maximum attempts reached for this test', status_code=status.HTTP_400_BAD_REQUEST, code='MAX_ATTEMPTS_REACHED')
+
             attempt = TestAttempt.objects.create(
                 user=request.user,
                 test=test,
-                attempt_number=TestAttempt.objects.filter(user=request.user, test=test).count() + 1,
+                attempt_number=existing_count + 1,
                 status='IN_PROGRESS',
                 started_at=timezone.now()
             )
+
+        # Enforce attempt terminal state protection
+        if attempt.status in ('SUBMITTED', 'TIMEOUT', 'EXPIRED', 'ABANDONED'):
+            return error_response(
+                'Cannot modify answers: test attempt has already been finalized.',
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code='ATTEMPT_FINALIZED'
+            )
+
+        # Enforce server-authoritative timer
+        if test.duration_minutes > 0 and attempt.started_at:
+            elapsed_seconds = int((timezone.now() - attempt.started_at).total_seconds())
+            duration_seconds = test.duration_minutes * 60
+            if elapsed_seconds >= duration_seconds:
+                attempt.status = 'TIMEOUT'
+                attempt.submitted_at = timezone.now()
+                attempt.time_spent_seconds = duration_seconds
+                attempt.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
+                return error_response(
+                    'This test session has expired and was automatically closed.',
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    code='TEST_EXPIRED'
+                )
 
         answers_data = request.data.get('answers', {})
         saved_count = 0
         if isinstance(answers_data, dict):
             for q_id, opt_id in answers_data.items():
                 try:
-                    q = Question.objects.get(pk=q_id)
+                    # Scope question strictly to this test
+                    q = Question.objects.filter(pk=q_id, test=test).first()
+                    if not q:
+                        continue
                     selected_opt = None
                     selected_ids = []
                     text_ans = ''
@@ -264,8 +308,6 @@ class TestAutosaveView(APIView):
                 except Exception:
                     continue
 
-        # Canonical contract: include both `saved: true` (boolean) and `saved_count` (number)
-        # so frontend TypeScript types align with backend response.
         return success_response(
             data={'saved': True, 'saved_count': saved_count, 'attempt_id': attempt.id},
             message='Answers autosaved successfully'
@@ -291,10 +333,13 @@ class SubmitTestView(APIView):
                 attempt = TestAttempt.objects.select_for_update().filter(user=user, test=test, status='IN_PROGRESS').first()
 
             if not attempt:
+                existing_count = TestAttempt.objects.filter(user=user, test=test).count()
+                if existing_count >= test.max_attempts:
+                    return error_response('Maximum attempts reached for this test', status_code=status.HTTP_400_BAD_REQUEST, code='MAX_ATTEMPTS_REACHED')
                 attempt = TestAttempt.objects.create(
                     user=user,
                     test=test,
-                    attempt_number=TestAttempt.objects.filter(user=user, test=test).count() + 1,
+                    attempt_number=existing_count + 1,
                     status='IN_PROGRESS',
                     started_at=timezone.now()
                 )
@@ -429,7 +474,7 @@ class SubmitTestView(APIView):
             'test_title': test.title,
             'mode': 'mock',
             # Canonical status: reflect actual attempt status (TIMEOUT if over time)
-            'status': attempt.status if not already_submitted else 'SUBMITTED',
+            'status': attempt.status,
             'score': scoring_result['score'],
             'total_marks': scoring_result['totalMarks'],
             'totalMarks': scoring_result['totalMarks'],
@@ -457,6 +502,12 @@ class SubmitTestView(APIView):
             violations_data,
             attempt_id=attempt.id
         )
+        # Persist integrity audit metrics to database model
+        attempt.integrity_score = integrity_report.get('integrity_score', 100.0)
+        attempt.risk_level = integrity_report.get('risk_level', 'EXCELLENT')
+        attempt.telemetry_audit_hash = integrity_report.get('audit_hash', '')
+        attempt.save(update_fields=['integrity_score', 'risk_level', 'telemetry_audit_hash'])
+
         response_data.update({
             'integrity_score': integrity_report['integrity_score'],
             'integrityScore': integrity_report['integrity_score'],
@@ -812,12 +863,24 @@ class AdaptiveNextQuestionView(APIView):
             max_questions = max(1, min(100, int(request.data.get('max_questions', 10))))
         except (ValueError, TypeError):
             max_questions = 10
-        next_q = IRTScoringEngine.get_next_adaptive_question(attempt, max_questions=max_questions)
+
+        # Check psychometric convergence criteria (SEM <= 0.35 with min 5 questions)
+        converged = IRTScoringEngine.has_converged(attempt, target_sem=0.35, min_questions=5, max_questions=max_questions)
+        next_q = None if converged else IRTScoringEngine.get_next_adaptive_question(attempt, max_questions=max_questions)
+
+        # Compute current SEM for observability
+        total_info = 0.0
+        for ans in attempt.answers.select_related('question').all():
+            q = ans.question
+            a = getattr(q, 'discrimination', 1.0) or 1.0
+            b = getattr(q, 'difficulty', 0.0) or 0.0
+            total_info += IRTScoringEngine.fisher_information(attempt.irt_ability_theta, a, b)
+        current_sem = IRTScoringEngine.calculate_sem(total_info)
 
         if not next_q:
             # Test complete! Finalize scoring
             answers_data = [
-                {'questionId': ans.question_id, 'selectedOptionId': ans.selected_option_id, 'timeSpentSeconds': ans.time_spent_sec}
+                {'questionId': ans.question_id, 'selectedOptionId': ans.selected_option_id, 'selectedOptionIds': ans.selected_option_ids, 'timeSpentSeconds': ans.time_spent_sec}
                 for ans in attempt.answers.all()
             ]
             scoring_res = IRTScoringEngine.calculate_score_and_irt(attempt, answers_data)
@@ -825,16 +888,18 @@ class AdaptiveNextQuestionView(APIView):
                 data={
                     'is_complete': True,
                     'ability_theta': attempt.irt_ability_theta,
+                    'sem': current_sem,
                     'questions_answered': attempt.answers.count(),
                     'result': scoring_res
                 },
-                message='Adaptive test complete'
+                message='Adaptive test complete (converged)' if converged else 'Adaptive test complete'
             )
 
         return success_response(
             data={
                 'is_complete': False,
                 'ability_theta': attempt.irt_ability_theta,
+                'sem': current_sem,
                 'questions_answered': attempt.answers.count(),
                 'next_question': {
                     'id': next_q.id,

@@ -1,4 +1,5 @@
 import math
+import random
 from django.utils import timezone
 from .models import Test, Question, Option, TestAttempt, AttemptAnswer, TopicPerformance
 
@@ -46,12 +47,16 @@ class IRTScoringEngine:
             else:
                 marks = 0.0
 
+            # Validate selected_opt_id against question options to prevent FK integrity errors
+            valid_opt_id = selected_opt_id if any(o.id == selected_opt_id for o in question.options.all()) else None
+
             # Store answer
             AttemptAnswer.objects.update_or_create(
                 attempt=attempt,
                 question=question,
                 defaults={
-                    'selected_option_id': selected_opt_id,
+                    'selected_option_id': valid_opt_id,
+                    'selected_option_ids': selected_opt_ids or ([] if not valid_opt_id else [valid_opt_id]),
                     'is_correct': is_correct,
                     'marks_awarded': marks,
                     'time_spent_sec': time_spent
@@ -155,7 +160,9 @@ class IRTScoringEngine:
 
         # Dampened step size to prevent wild oscillation
         learning_rate = 1.0 / math.sqrt(max(1, step))
-        delta = learning_rate * (1.0 if is_correct else 0.0 - p) / (info + 0.2)
+        # Mathematically correct residual: (u_i - P_i(theta))
+        residual = (1.0 - p) if is_correct else (0.0 - p)
+        delta = learning_rate * residual / (info + 0.2)
 
         # Bound step delta to +/- 1.0 per question
         delta = max(-1.0, min(1.0, delta))
@@ -186,19 +193,22 @@ class IRTScoringEngine:
             return None
 
         theta = attempt.irt_ability_theta
-        # Rank by maximum Fisher Information (or closest difficulty b to theta)
-        best_q = None
-        max_info = -1.0
-
+        candidates = []
         for q in unanswered_qs:
-            a = q.discrimination or 1.0
-            b = q.difficulty or 0.0
+            a = getattr(q, 'discrimination', 1.0) or 1.0
+            b = getattr(q, 'difficulty', 0.0) or 0.0
             info = IRTScoringEngine.fisher_information(theta, a, b)
-            if info > max_info:
-                max_info = info
-                best_q = q
+            candidates.append((info, q))
 
-        return best_q or unanswered_qs.first()
+        if not candidates:
+            return None
+
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        max_info = candidates[0][0]
+        # Top cluster within 10% of maximum information (exposure control)
+        top_cluster = [q for info, q in candidates if info >= max_info * 0.90]
+        rng = random.Random(f"{attempt.id}-{len(answered_ids)}")
+        return rng.choice(top_cluster)
 
     @staticmethod
     def calculate_sem(total_information: float) -> float:
