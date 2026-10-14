@@ -34,6 +34,7 @@ import { SpeedTrendWidget } from '../components/dashboard/SpeedTrendWidget'
 
 interface DashboardStats {
   testsAttempted: number
+  testsCompleted: number
   testsPassed: number
   totalXp: number
   currentStreak: number
@@ -123,7 +124,7 @@ const Dashboard = memo(function Dashboard() {
     isLoading,
     error: dashboardError,
   } = useQuery<DashboardStats | null>({
-    queryKey: ['dashboard-stats'],
+    queryKey: ['dashboard-stats', auth.user?.id ?? auth.user?.username ?? 'guest'],
     queryFn: async ({ signal }) => {
       if (!auth.isAuthenticated) return null
       const [profileRes, testsRes] = await Promise.all([
@@ -155,62 +156,72 @@ const Dashboard = memo(function Dashboard() {
         }))
 
       return {
-        testsAttempted: testResults.length || 14,
-        testsPassed: passedTests.length || 12,
-        totalXp: (profile?.xp as number) ?? progress.xp ?? 1450,
-        currentStreak: (profile?.streak as number) ?? progress.streak ?? 5,
-        level: (profile?.level as number) ?? progress.level ?? 3,
-        recentTests:
-          recentTestsList.length > 0
-            ? recentTestsList
-            : [
-                {
-                  id: 't-1',
-                  title: 'Data Structures & Algorithms Diagnostic',
-                  score: 88,
-                  passed: true,
-                },
-                {
-                  id: 't-2',
-                  title: 'System Design & Scalability Master Test',
-                  score: 82,
-                  passed: true,
-                },
-                {
-                  id: 't-3',
-                  title: 'Dynamic Programming & Recurrences Challenge',
-                  score: 61,
-                  passed: false,
-                },
-              ],
+        testsAttempted: testResults.length,
+        testsCompleted: completedTests.length,
+        testsPassed: passedTests.length,
+        totalXp: (profile?.xp as number) ?? progress.xp ?? 0,
+        currentStreak: (profile?.streak as number) ?? progress.streak ?? 0,
+        level: (profile?.level as number) ?? progress.level ?? 1,
+        recentTests: recentTestsList,
       }
     },
     staleTime: 30 * 1000,
   })
 
-  const { data: nextAction } = useQuery<NextBestAction>({
-    queryKey: ['dashboard-next-action'],
-    queryFn: () => dashboardService.getNextBestAction(),
-  })
-
   const { data: analyticsData } = useQuery({
-    queryKey: ['dashboard-analytics-telemetry'],
+    queryKey: ['dashboard-analytics-telemetry', auth.user?.id ?? auth.user?.username ?? 'guest'],
     queryFn: () => dashboardService.getDashboardAnalytics(),
+    enabled: auth.isAuthenticated,
+    staleTime: 5 * 60 * 1000,
   })
 
   if (isLoading) return <DashboardSkeleton />
 
   const stats = dashboardData ?? {
-    testsAttempted: 14,
-    testsPassed: 12,
-    totalXp: progress.xp || 1450,
-    currentStreak: progress.streak || 5,
-    level: progress.level || 3,
+    testsAttempted: 0,
+    testsCompleted: 0,
+    testsPassed: 0,
+    totalXp: progress.xp ?? auth.user?.xp ?? 0,
+    currentStreak: progress.streak ?? auth.user?.streak ?? 0,
+    level: progress.level ?? auth.user?.level ?? 1,
     recentTests: [],
   }
 
   const passRate =
-    stats.testsAttempted > 0 ? Math.round((stats.testsPassed / stats.testsAttempted) * 100) : 88
+    stats.testsCompleted > 0
+      ? Math.round((stats.testsPassed / stats.testsCompleted) * 100)
+      : null
+
+  // Recommend a weak topic only when enough real attempts exist to reduce noisy suggestions.
+  const weakestTopic = Object.values(analyticsData?.topicMastery ?? {})
+    .filter(topic => Number.isFinite(topic.accuracy) && topic.totalAttempts >= 3)
+    .sort((a, b) => a.accuracy - b.accuracy || b.totalAttempts - a.totalAttempts)[0]
+
+  const hasPersonalizedAction = Boolean(weakestTopic)
+  const nextAction: NextBestAction = weakestTopic
+    ? {
+        id: `review-${weakestTopic.topicName}`,
+        title: `Recommended focus: ${weakestTopic.topicName}`,
+        reason: `Your recent results show ${Math.round(weakestTopic.accuracy)}% accuracy across ${weakestTopic.totalAttempts} attempts. A focused practice session can help strengthen this topic.`,
+        type: 'weak_topic',
+        actionUrl: '/tests-a',
+        actionLabel: 'Open practice hub',
+        estimatedMinutes: 10,
+        priority: weakestTopic.accuracy < 50 ? 'HIGH' : 'MEDIUM',
+      }
+    : {
+        id: 'start-diagnostic',
+        title: stats.testsCompleted > 0 ? 'Keep your learning momentum going' : 'Build your learning baseline',
+        reason:
+          stats.testsCompleted > 0
+            ? 'A short practice session reinforces what you know and gives LearningHub fresh data to guide your next steps.'
+            : 'Complete a short practice assessment to establish your baseline and unlock useful progress insights.',
+        type: 'daily_goal',
+        actionUrl: '/tests-a',
+        actionLabel: stats.testsCompleted > 0 ? 'Start a practice session' : 'Take a diagnostic',
+        estimatedMinutes: 10,
+        priority: 'MEDIUM',
+      }
 
   const currentLevel = stats.level
   const xpInCurrentLevel = stats.totalXp % 1000
@@ -231,11 +242,13 @@ const Dashboard = memo(function Dashboard() {
             <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
               Welcome back, {auth.user?.username || 'Scholar'}
             </h1>
-            <StreakMultiplierBadge streak={stats.currentStreak} longestStreak={12} />
+            <StreakMultiplierBadge
+              streak={stats.currentStreak}
+              longestStreak={analyticsData?.summary?.longestStreak}
+            />
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Your personalized learning roadmap is calibrated. Today is day {stats.currentStreak} of
-            your streak!
+            Every focused session counts. Choose one small action and build momentum toward your goal.
           </p>
         </div>
 
@@ -251,12 +264,12 @@ const Dashboard = memo(function Dashboard() {
       {dashboardError && (
         <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>Note: Using offline cached telemetry while synchronizing with cloud server.</span>
+          <span>Some dashboard data couldn’t be refreshed. Saved XP and streak are shown where available.</span>
         </div>
       )}
 
       {/* Spotlight: AI Next Best Action */}
-      {nextAction && <NextBestActionCard action={nextAction} />}
+      <NextBestActionCard action={nextAction} personalized={hasPersonalizedAction} />
 
       {/* 4 Core Stat Tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -280,9 +293,9 @@ const Dashboard = memo(function Dashboard() {
           </div>
           <div>
             <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-              {passRate}%
+              {passRate === null ? '—' : `${passRate}%`}
             </div>
-            <div className="text-xs font-bold text-gray-400">Overall Accuracy Rate</div>
+            <div className="text-xs font-bold text-gray-400">Pass Rate</div>
           </div>
         </Card>
 
@@ -318,18 +331,7 @@ const Dashboard = memo(function Dashboard() {
         {/* Left Column (Main Analytics & Recent Activity) - Span 2 */}
         <div className="lg:col-span-2 min-w-0 space-y-6">
           {/* 7-Day Area Chart */}
-          <WeeklyStudyAreaChart
-            data={
-              analyticsData?.accuracyTrend || [
-                { date: 'Mon', accuracy: 78, testsCompleted: 2 },
-                { date: 'Tue', accuracy: 82, testsCompleted: 3 },
-                { date: 'Wed', accuracy: 80, testsCompleted: 2 },
-                { date: 'Thu', accuracy: 85, testsCompleted: 4 },
-                { date: 'Fri', accuracy: 88, testsCompleted: 3 },
-                { date: 'Sat', accuracy: 91, testsCompleted: 2 },
-                { date: 'Sun', accuracy: 89, testsCompleted: 3 },
-              ]
-            }
+          <WeeklyStudyAreaChart data={analyticsData?.accuracyTrend ?? []}
           />
 
           {/* Recent Tests Table */}
@@ -348,37 +350,61 @@ const Dashboard = memo(function Dashboard() {
             </div>
 
             <div className="space-y-2">
-              {stats.recentTests.map(test => (
-                <div
-                  key={test.id}
-                  onClick={() => navigate('/tests-a-history')}
-                  className="p-3.5 rounded-2xl bg-gray-50 dark:bg-slate-900/50 hover:bg-indigo-50/50 dark:hover:bg-slate-800/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-xl text-xs font-black ${
-                        test.passed
-                          ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                      }`}
-                    >
-                      {test.score}%
+              {stats.recentTests.length > 0 ? (
+                stats.recentTests.map(test => (
+                  <button
+                    key={test.id}
+                    type="button"
+                    onClick={() => navigate('/tests-a-history')}
+                    aria-label={`Review ${test.title}`}
+                    className="w-full p-3.5 rounded-2xl bg-gray-50 dark:bg-slate-900/50 hover:bg-indigo-50/50 dark:hover:bg-slate-800/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between gap-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`p-2 rounded-xl text-xs font-black shrink-0 ${
+                          test.passed
+                            ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
+                        }`}
+                      >
+                        {test.score}%
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                          {test.title}
+                        </h4>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {test.passed ? 'Passed' : 'Review recommended'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                        {test.title}
-                      </h4>
-                      <p className="text-[10px] text-gray-400">
-                        {test.passed ? 'Benchmark Achieved' : 'Review Recommended'}
-                      </p>
-                    </div>
-                  </div>
 
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                    Review <ArrowRight className="w-3 h-3" />
-                  </span>
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 shrink-0">
+                      Review <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-gray-300 dark:border-slate-700 px-5 py-7 text-center">
+                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+                    <Brain className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                    No completed assessments yet
+                  </h4>
+                  <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                    Your first scorecard and learning insights will appear here after you finish a practice test.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/tests-a')}
+                    className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                  >
+                    Start your first practice test
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </Card>
 
@@ -417,7 +443,7 @@ const Dashboard = memo(function Dashboard() {
             <ProgressBar progress={levelProgress} className="h-2" />
             <p className="text-[10px] text-gray-400">
               Earn {xpForNextLevel - xpInCurrentLevel} more XP to reach Level {currentLevel + 1} and
-              unlock advanced adaptive mock tests.
+              keep building your learning momentum.
             </p>
           </Card>
 

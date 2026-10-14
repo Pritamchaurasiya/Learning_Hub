@@ -1,39 +1,36 @@
-import { Flame, ShieldCheck, Zap } from 'lucide-react'
+import { Award, Flame } from 'lucide-react'
 
 interface Props {
   streak: number
-  longestStreak: number
+  longestStreak?: number
 }
 
-export function StreakMultiplierBadge({ streak }: Props) {
-  // Determine Tier
-  const tier =
+export function StreakMultiplierBadge({ streak, longestStreak }: Props) {
+  const tone =
     streak >= 30
-      ? { name: 'Diamond Legend', color: 'from-cyan-500 to-blue-600', multiplier: '2.0x' }
+      ? 'from-cyan-600 to-blue-700'
       : streak >= 14
-        ? { name: 'Gold Champion', color: 'from-amber-400 to-orange-500', multiplier: '1.75x' }
+        ? 'from-amber-500 to-orange-600'
         : streak >= 7
-          ? { name: 'Silver Scholar', color: 'from-slate-300 to-slate-500', multiplier: '1.5x' }
-          : { name: 'Bronze Explorer', color: 'from-orange-400 to-amber-600', multiplier: '1.25x' }
+          ? 'from-indigo-500 to-violet-600'
+          : 'from-slate-500 to-slate-600'
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <div
-        className={`px-3 py-1 rounded-full bg-gradient-to-r ${tier.color} text-white font-black text-xs flex items-center gap-1.5 shadow-md`}
+        className={`inline-flex min-h-7 items-center gap-1.5 rounded-full bg-gradient-to-r px-3 py-1 text-xs font-bold text-white shadow-sm ${tone}`}
+        aria-label={streak > 0 ? `${streak} day study streak` : 'No current study streak'}
       >
-        <Flame className="w-3.5 h-3.5 fill-white" />
-        <span>{streak} Day Streak</span>
+        <Flame className="h-3.5 w-3.5" aria-hidden="true" />
+        <span>{streak > 0 ? `${streak}-day streak` : 'Start a streak today'}</span>
       </div>
 
-      <div className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-black flex items-center gap-1">
-        <Zap className="w-3 h-3" />
-        <span>{tier.multiplier} XP Boost</span>
-      </div>
-
-      <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-full border border-emerald-500/20">
-        <ShieldCheck className="w-3.5 h-3.5" />
-        <span>Protected</span>
-      </div>
+      {typeof longestStreak === 'number' && longestStreak > 0 && (
+        <div className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300">
+          <Award className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
+          <span>Best: {longestStreak} days</span>
+        </div>
+      )}
     </div>
   )
 }
