@@ -116,6 +116,25 @@ describe('Dashboard Component', () => {
     vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
       if (url.includes('/auth/me')) return mockProfileResponse
       if (url.includes('/tests/attempts')) return mockAttemptsResponse
+      if (url.includes('/api/v1/skills/next-action')) {
+        return {
+          status: 'success',
+          data: {
+            recommendation: {
+              skillId: 'skill-binary-search',
+              skillName: 'Binary Search on Answer Spaces',
+              category: 'Algorithms',
+              currentMastery: 0.65,
+              targetMastery: 0.85,
+              urgency: 'HIGH',
+              reason: 'You are at 65% mastery. A short practice sprint can strengthen these patterns.',
+              practiceUrl: '/problems/koko-eating-bananas',
+              ebookUrl: '/ebooks/algorithms/chapter-3',
+            },
+            readinessSummary: {},
+          },
+        }
+      }
       if (url.includes('/recommendations')) return mockRecommendations
       return { data: null }
     })
@@ -171,14 +190,15 @@ describe('Dashboard Component', () => {
     // Assessments taken
     expect(screen.getByText('Assessments Taken')).toBeInTheDocument()
     // Pass rate
-    expect(screen.getByText('Overall Accuracy Rate')).toBeInTheDocument()
+    expect(screen.getByText('Pass Rate')).toBeInTheDocument()
+    expect(screen.getByText('50%')).toBeInTheDocument()
     // XP (appears in stat tile, level progress, and next action card)
     expect(screen.getAllByText(/XP/i).length).toBeGreaterThanOrEqual(1)
     // Streak
     expect(screen.getByText('Continuous Study Streak')).toBeInTheDocument()
   })
 
-  it('renders the AI Learning Engine and 7-day area chart section', async () => {
+  it('renders the AI Learning Engine and weekly accuracy section', async () => {
     render(<Dashboard />)
 
     await waitFor(() => {
@@ -186,6 +206,24 @@ describe('Dashboard Component', () => {
     })
 
     expect(screen.getByTestId('ai-learning-engine')).toBeInTheDocument()
-    expect(screen.getByText(/7-Day Accuracy/i)).toBeInTheDocument()
+    expect(screen.getByText(/Weekly Accuracy Trend/i)).toBeInTheDocument()
+  })
+
+  it('shows an honest first-assessment state when no tests are completed', async () => {
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url.includes('/auth/me')) return mockProfileResponse
+      if (url.includes('/tests/attempts')) return { data: { results: [] } }
+      return { data: null }
+    })
+
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/No completed assessments yet/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('button', { name: /Start your first practice test/i })).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.queryByText(/Dynamic Programming Deep Dive/i)).not.toBeInTheDocument()
   })
 })
