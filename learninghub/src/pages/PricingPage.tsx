@@ -34,9 +34,9 @@ const FAQS: FAQItem[] = [
       'Yes, absolutely. You can cancel your subscription with 1-click inside your Account Settings. Your premium access remains active until the end of the current billing cycle with zero penalty.',
   },
   {
-    question: 'What is included in the 15+ Advanced AI Simulators?',
+    question: 'What is included in the Practice Labs & Engineering Simulators?',
     answer:
-      'Pro and Elite scholars get unlimited access to the Socratic AI Tutor, AST Code Sandbox, System Design Distributed Simulator, Adaptive 3PL IRT Mock Exams, and AI Recruiter Dialogue Simulator.',
+      'Pro and Elite scholars get unlimited access to the Socratic Mentor Workspace, AST Browser Sandbox, Distributed System Design Canvas, Adaptive 3PL IRT Mock Exams, and Technical Interview Simulator.',
   },
   {
     question: 'Are the certificates and blockchain attestations verifiable by employers?',
