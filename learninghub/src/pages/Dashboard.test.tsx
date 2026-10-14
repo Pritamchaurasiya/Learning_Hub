@@ -116,25 +116,6 @@ describe('Dashboard Component', () => {
     vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
       if (url.includes('/auth/me')) return mockProfileResponse
       if (url.includes('/tests/attempts')) return mockAttemptsResponse
-      if (url.includes('/api/v1/skills/next-action')) {
-        return {
-          status: 'success',
-          data: {
-            recommendation: {
-              skillId: 'skill-binary-search',
-              skillName: 'Binary Search on Answer Spaces',
-              category: 'Algorithms',
-              currentMastery: 0.65,
-              targetMastery: 0.85,
-              urgency: 'HIGH',
-              reason: 'You are at 65% mastery. A short practice sprint can strengthen these patterns.',
-              practiceUrl: '/problems/koko-eating-bananas',
-              ebookUrl: '/ebooks/algorithms/chapter-3',
-            },
-            readinessSummary: {},
-          },
-        }
-      }
       if (url.includes('/recommendations')) return mockRecommendations
       return { data: null }
     })
@@ -207,6 +188,59 @@ describe('Dashboard Component', () => {
 
     expect(screen.getByTestId('ai-learning-engine')).toBeInTheDocument()
     expect(screen.getByText(/Weekly Accuracy Trend/i)).toBeInTheDocument()
+  })
+
+  it('recommends a weak topic only when real analytics contain enough attempts', async () => {
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url.includes('/auth/me')) return mockProfileResponse
+      if (url.includes('/tests/attempts')) return mockAttemptsResponse
+      if (url.includes('/user-analytics/me')) {
+        return {
+          status: 'success',
+          data: {
+            summary: {
+              totalTestsCompleted: 2,
+              totalQuestionsAnswered: 20,
+              overallAccuracy: 61,
+              averageScore: 65,
+              passRate: 50,
+              totalStudyTimeMinutes: 30,
+              currentStreak: 7,
+              longestStreak: 10,
+            },
+            accuracyTrend: [
+              { date: 'Mon', accuracy: 45, testsCompleted: 1 },
+              { date: 'Tue', accuracy: 61, testsCompleted: 1 },
+            ],
+            speedTrend: [],
+            topicMastery: {
+              'dynamic-programming': {
+                topicName: 'Dynamic Programming',
+                accuracy: 42,
+                totalAttempts: 6,
+              },
+              'arrays': { topicName: 'Arrays', accuracy: 78, totalAttempts: 12 },
+            },
+            growth: {
+              growthScore: 22,
+              accuracyDelta: -3,
+              speedDelta: 0,
+              consistencyScore: 60,
+            },
+          },
+        }
+      }
+      return { data: null }
+    })
+
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Recommended focus: Dynamic Programming/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/42% accuracy across 6 attempts/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open practice hub/i })).toBeInTheDocument()
   })
 
   it('shows an honest first-assessment state when no tests are completed', async () => {
