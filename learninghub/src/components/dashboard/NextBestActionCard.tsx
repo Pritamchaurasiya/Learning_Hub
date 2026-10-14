@@ -1,54 +1,48 @@
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, ArrowRight, Zap, Target } from 'lucide-react'
+import { Sparkles, ArrowRight, Target, Clock } from 'lucide-react'
 import { Card } from '../ui/Card'
 import type { NextBestAction } from '../../services/dashboardService'
 
 interface Props {
   action: NextBestAction
+  personalized?: boolean
 }
 
-export function NextBestActionCard({ action }: Props) {
+export function NextBestActionCard({ action, personalized = false }: Props) {
   const navigate = useNavigate()
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-indigo-900 via-indigo-950 to-purple-950 text-white relative overflow-hidden shadow-2xl border border-indigo-500/30">
-      <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-        <Sparkles className="w-36 h-36 text-indigo-400" />
+    <Card className="relative overflow-hidden border border-indigo-500/25 bg-gradient-to-br from-indigo-950 via-slate-950 to-violet-950 p-5 text-white shadow-xl shadow-indigo-950/10 sm:p-6">
+      <div className="pointer-events-none absolute -right-4 -top-7 opacity-[0.08]" aria-hidden="true">
+        <Sparkles className="h-36 w-36 text-indigo-300" />
       </div>
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2 max-w-xl">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-indigo-300" />
-              AI Next Best Action
-            </span>
-            {action.multiplierBonus && (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
-                <Zap className="w-3 h-3 text-amber-300" />
-                {action.multiplierBonus}
-              </span>
-            )}
+      <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0 max-w-2xl space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/20 bg-indigo-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-100">
+            <Sparkles className="h-3.5 w-3.5 text-violet-200" aria-hidden="true" />
+            {personalized ? 'Skill-based recommendation' : 'Suggested next step'}
           </div>
-          <h3 className="text-lg md:text-xl font-black text-white tracking-tight">
-            {action.title}
-          </h3>
-          <p className="text-xs text-indigo-200/80 font-medium leading-relaxed">{action.reason}</p>
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-extrabold leading-snug tracking-tight text-white sm:text-xl">
+              {action.title}
+            </h3>
+            <p className="max-w-xl text-sm leading-relaxed text-indigo-100/80">{action.reason}</p>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-          <div className="text-right hidden md:block">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-300 block">
-              Est. Time
-            </span>
-            <span className="text-sm font-black text-white">{action.estimatedMinutes} mins</span>
+        <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center md:flex-col md:items-stretch">
+          <div className="inline-flex items-center justify-center gap-1.5 self-start rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-indigo-100 sm:self-center md:self-auto">
+            <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+            About {action.estimatedMinutes} minutes
           </div>
           <button
+            type="button"
             onClick={() => navigate(action.actionUrl)}
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-indigo-950 shadow-lg shadow-black/10 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-950"
           >
-            <Target className="w-4 h-4" />
+            <Target className="h-4 w-4" aria-hidden="true" />
             <span>{action.actionLabel}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
