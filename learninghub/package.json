@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc && vite build",
-    "build:analyze": "set ANALYZE=true&& npm run build",
+    "build:analyze": "npm run build && node scripts/analyze-bundle.js",
+    "analyze:bundle": "node scripts/analyze-bundle.js",
     "preview": "vite preview",
     "test": "node --max-old-space-size=4096 ./node_modules/vitest/vitest.mjs run",
     "test:watch": "vitest",

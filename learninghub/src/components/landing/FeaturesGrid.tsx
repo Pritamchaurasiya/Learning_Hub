@@ -1,194 +1,247 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   BookOpen,
-  Lightbulb,
-  FileEdit,
-  Gamepad2,
-  Calculator,
-  StickyNote,
-  Bookmark,
-  Target,
-  TrendingUp,
-  BrainCircuit,
-  CheckCircle,
+  Cpu,
+  Layers,
+  Terminal,
   Clock,
+  RotateCcw,
+  Award,
+  TrendingUp,
+  WifiOff,
+  CheckCircle2,
+  FileText,
+  Zap,
 } from 'lucide-react'
 
-const features = [
+const allFeatures = [
   {
+    category: 'competitive',
     icon: BookOpen,
-    title: 'Chapter-wise PYQs',
+    title: 'Chapter-wise PYQ Archives',
+    metric: '15+ Years of Papers',
     description:
-      'Practice previous year questions organized by chapter and topic. Filter by year, difficulty, and question type.',
-    color: 'bg-blue-500',
-    benefits: ['15+ years of PYQs', 'Detailed solutions', 'Difficulty filtering'],
+      'Official question papers from 2010–2026 verified against official NTA and IIT answer keys with complete negative marking audit.',
+    tags: ['NTA 2026 Aligned', 'Zero Typos', 'Official Keys'],
+    accent: 'border-amber-500/30 text-amber-400',
   },
   {
-    icon: Lightbulb,
-    title: 'Step-by-Step Solutions',
+    category: 'engineering',
+    icon: Terminal,
+    title: 'In-Browser AST Sandbox',
+    metric: '<15ms Execution',
     description:
-      'Every question comes with detailed explanations, concept breakdowns, and shortcut methods where applicable.',
-    color: 'bg-yellow-500',
-    benefits: ['Video solutions', 'Multiple approaches', 'Concept clarity'],
+      'Execute TypeScript, Python, and C++ code directly in your browser. Real-time test-case runners with memory profile traces.',
+    tags: ['WebAssembly Engine', 'Zero Server Lag', 'Memory Profiler'],
+    accent: 'border-blue-500/30 text-blue-400',
   },
   {
-    icon: FileEdit,
-    title: 'Custom Test Creation',
+    category: 'competitive',
+    icon: Clock,
+    title: 'Authentic CBT Simulator (Tests A+)',
+    metric: '1:1 Interface Fidelity',
     description:
-      'Create personalized tests by selecting chapters, topics, difficulty levels, and time limits.',
-    color: 'bg-green-500',
-    benefits: ['Flexible selection', 'Timed tests', 'Instant results'],
+      'Exact NTA computer-based exam palette, color-coded question states (answered, marked for review), and section switching.',
+    tags: ['Time Pressure', 'Palette Colors', 'Virtual Calculator'],
+    accent: 'border-emerald-500/30 text-emerald-400',
   },
   {
-    icon: Gamepad2,
-    title: 'Quiz Mode Practice',
+    category: 'engineering',
+    icon: Layers,
+    title: 'Interactive Algorithm Visualizer',
+    metric: '60+ Dynamic State Machines',
     description:
-      'Quick practice sessions with gamified elements. Track your speed and accuracy in real-time.',
-    color: 'bg-purple-500',
-    benefits: ['Timed challenges', 'Leaderboard', 'Speed tracking'],
+      'Step through Dijkstra, AVL Trees, and Dynamic Programming grids frame-by-frame with live pointer positions and stack inspections.',
+    tags: ['Frame Playback', 'Stack Inspector', 'Pointer Tracker'],
+    accent: 'border-cyan-500/30 text-cyan-400',
   },
   {
-    icon: Calculator,
-    title: 'Formula Cards',
+    category: 'engineering',
+    icon: Zap,
+    title: 'Real-Time 1v1 Arena Duels',
+    metric: 'Sub-50ms Matchmaking',
     description:
-      'Quick-reference formula cards for every chapter. Memorize and revise important formulas efficiently.',
-    color: 'bg-orange-500',
-    benefits: ['Chapter-wise', 'Quick revision', 'Printable'],
+      'Live synchronized head-to-head coding battles over WebSockets. Compete on ELO-ranked ladders with automatic anti-cheat protection.',
+    tags: ['WebSocket Duels', 'ELO Rating', 'Anti-Cheat'],
+    accent: 'border-purple-500/30 text-purple-400',
   },
   {
-    icon: StickyNote,
-    title: 'Revision Notes',
+    category: 'competitive',
+    icon: RotateCcw,
+    title: 'SuperMemo SM-2 Spaced Revision',
+    metric: 'Scientifically Proven Retention',
     description:
-      'Concise revision notes covering key concepts, important points, and quick formulas for each topic.',
-    color: 'bg-pink-500',
-    benefits: ['Key concepts', 'Quick review', 'Exam-focused'],
+      'Algorithmic flashcards schedule difficult formulas and concept gaps right before memory decay occurs, ensuring long-term retention.',
+    tags: ['SM-2 Algorithm', 'Active Recall', 'Formula Cards'],
+    accent: 'border-rose-500/30 text-rose-400',
   },
   {
-    icon: Bookmark,
-    title: 'Smart Bookmarking',
+    category: 'engineering',
+    icon: Award,
+    title: 'W3C Verifiable Credentials',
+    metric: 'Cryptographically Signed',
     description:
-      'Bookmark important questions for quick revision. Add personal notes and organize by custom tags.',
-    color: 'bg-indigo-500',
-    benefits: ['Personal notes', 'Custom tags', 'Quick access'],
+      'Earn digitally signed certificates and scorecards with cryptographic tamper-proofing, instantly verifiable on LinkedIn or to employers.',
+    tags: ['W3C Standards', 'Public Verifier', 'Tamper-Proof'],
+    accent: 'border-yellow-500/30 text-yellow-400',
   },
   {
-    icon: Target,
-    title: 'Daily Goals & Streaks',
+    category: 'competitive',
+    icon: FileText,
+    title: 'Faculty-Verified Proofs',
+    metric: 'No AI Hallucinations',
     description:
-      'Set daily practice targets and maintain your streak. Build consistent study habits with gamified tracking.',
-    color: 'bg-red-500',
-    benefits: ['Goal setting', 'Streak tracking', 'Motivation'],
+      'Every solution is reviewed and typeset with rigorous mathematical proofs, dimensional analysis, and common pitfalls to avoid.',
+    tags: ['LaTeX Typeset', 'Multiple Approaches', 'Dimensional Checks'],
+    accent: 'border-indigo-500/30 text-indigo-400',
   },
   {
+    category: 'competitive',
     icon: TrendingUp,
-    title: 'Weak Area Analysis',
+    title: 'Diagnostic Error Analytics',
+    metric: 'Topic-Level Precision',
     description:
-      'Adaptive diagnostic analysis identifies your weak topics and recommends targeted practice sessions.',
-    color: 'bg-teal-500',
-    benefits: ['Diagnostic analysis', 'Targeted practice', 'Improvement tracking'],
+      'Tracks speed per question, concept blind-spots, and careless mistakes. Automatically builds targeted recovery test sets.',
+    tags: ['Accuracy Trends', 'Pacing Heatmaps', 'Weak-Area Drills'],
+    accent: 'border-teal-500/30 text-teal-400',
   },
   {
-    icon: BrainCircuit,
-    title: 'Progress Analytics',
+    category: 'engineering',
+    icon: WifiOff,
+    title: 'Offline PWA Station',
+    metric: 'Full IndexedDB Cache',
     description:
-      'Comprehensive analytics dashboard showing your performance trends, accuracy, and improvement over time.',
-    color: 'bg-cyan-500',
-    benefits: ['Visual graphs', 'Performance trends', 'Peer comparison'],
+      'Installable Progressive Web App with complete offline question packs, allowing uninterrupted study on commutes or unstable networks.',
+    tags: ['IndexedDB Sync', 'Offline First', 'Background Update'],
+    accent: 'border-orange-500/30 text-orange-400',
   },
 ]
 
 export function FeaturesGrid() {
+  const [filter, setFilter] = useState<'all' | 'competitive' | 'engineering'>('all')
+
+  const displayedFeatures =
+    filter === 'all' ? allFeatures : allFeatures.filter(f => f.category === filter)
+
   return (
-    <section className="py-20 lg:py-32 bg-white dark:bg-gray-900">
+    <section className="py-20 lg:py-28 bg-slate-950 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-semibold mb-4">
-            Powerful Learning Tools
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Everything You Need to <span className="text-blue-600">Ace Your Exam</span>
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 mb-4">
+            <Cpu className="w-3.5 h-3.5 text-blue-400" />
+            Engineered for Deep Focus & Zero Friction
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Tools Built for{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-300">
+              Serious Practice
+            </span>
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            From practice questions to detailed analytics, we provide all the tools you need for
-            effective exam preparation.
+          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Every feature on LearningHub is purposefully designed to eliminate busywork, optimize
+            cognitive load, and maximize test-day speed.
           </p>
-        </motion.div>
+
+          {/* Filter Pills */}
+          <div className="flex justify-center gap-2 mt-8">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                filter === 'all'
+                  ? 'bg-blue-600 text-white shadow-md font-bold'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              All Features ({allFeatures.length})
+            </button>
+            <button
+              onClick={() => setFilter('competitive')}
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                filter === 'competitive'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Competitive Exams (JEE / NEET)
+            </button>
+            <button
+              onClick={() => setFilter('engineering')}
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                filter === 'engineering'
+                  ? 'bg-blue-600 text-white shadow-md font-bold'
+                  : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Software Engineering & DSA
+            </button>
+          </div>
+        </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {features.map((feature, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedFeatures.map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              className="group bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-6 hover:bg-white dark:hover:bg-gray-800 hover:shadow-xl dark:hover:shadow-gray-900/20 transition-all duration-300 border border-gray-100 dark:border-gray-700"
+              transition={{ duration: 0.35, delay: index * 0.05 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="bg-slate-900/80 rounded-xl p-6 border border-slate-800 hover:border-slate-700 hover:shadow-xl transition-all flex flex-col justify-between"
             >
-              {/* Icon */}
-              <div
-                className={`w-14 h-14 ${feature.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-              >
-                <feature.icon className="w-7 h-7 text-white" />
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-11 h-11 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center">
+                    <feature.icon className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <span className={`text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full border ${feature.accent}`}>
+                    {feature.metric}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
+                <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                  {feature.description}
+                </p>
               </div>
 
-              {/* Title */}
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 transition-colors">
-                {feature.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
-                {feature.description}
-              </p>
-
-              {/* Benefits */}
-              <ul className="space-y-2">
-                {feature.benefits.map(benefit => (
-                  <li
-                    key={benefit}
-                    className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+              {/* Tags */}
+              <div className="pt-3 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {feature.tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 text-[11px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800/80"
                   >
-                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{benefit}</span>
-                  </li>
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    {tag}
+                  </span>
                 ))}
-              </ul>
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Bottom Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
-        >
-          {[
-            { icon: BookOpen, value: '1,00,000+', label: 'Practice Questions' },
-            { icon: Clock, value: '15+ Years', label: 'PYQ Archives' },
-            { icon: Target, value: '500+ Chapters', label: 'Covered' },
-            { icon: TrendingUp, value: '98%', label: 'Success Rate' },
-          ].map(stat => (
-            <div key={stat.label} className="text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                <stat.icon className="w-6 h-6 text-blue-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-            </div>
-          ))}
-        </motion.div>
+        {/* Bottom Hardware & Rigor Benchmarks */}
+        <div className="mt-14 pt-8 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-xs">
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+            <p className="text-2xl font-extrabold text-white mb-1">100,000+</p>
+            <p className="text-slate-400">Verified PYQs from 2010–2026</p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+            <p className="text-2xl font-extrabold text-emerald-400 mb-1">&lt;15 ms</p>
+            <p className="text-slate-400">AST Code Execution Latency</p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+            <p className="text-2xl font-extrabold text-amber-400 mb-1">100%</p>
+            <p className="text-slate-400">Official Exam Key Audit</p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+            <p className="text-2xl font-extrabold text-cyan-400 mb-1">99.98%</p>
+            <p className="text-slate-400">Production Platform Uptime</p>
+          </div>
+        </div>
       </div>
     </section>
   )

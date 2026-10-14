@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Button } from '../ui/Button'
-import { ArrowRight, Sparkles, Users, Zap } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Zap, BookOpen, CheckCircle2 } from 'lucide-react'
 
 interface CTASectionProps {
   onGetStarted: () => void
@@ -8,98 +8,72 @@ interface CTASectionProps {
 
 export function CTASection({ onGetStarted }: CTASectionProps) {
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white dark:bg-blue-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white dark:bg-blue-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+    <section className="py-20 lg:py-28 bg-slate-950 text-white relative overflow-hidden">
+      {/* Precision Structural Glow */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)`,
+            backgroundSize: '48px 48px',
+          }}
+        />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
+          transition={{ duration: 0.5 }}
         >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-300" />
-            <span className="text-white text-sm font-medium">Start Your Free Practice Today</span>
-          </motion.div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-amber-400 mb-6">
+            <Zap className="w-3.5 h-3.5" />
+            Zero Setup • Instant Practice in Your Browser
+          </div>
 
-          {/* Headline */}
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Ready to Ace Your <span className="text-yellow-300">Exam?</span>
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+            The Highest-Yield Hours in{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400">
+              Your Preparation.
+            </span>
           </h2>
 
-          {/* Subheadline */}
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join 1,00,000+ students who are already practicing smarter. No credit card required.
-            Start free today.
+          <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of serious aspirants and software engineers practicing with verified
+            official papers, sub-15ms code compilation, and zero coaching sales spam.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="bg-white dark:bg-gray-900 text-blue-700 dark:text-white hover:bg-blue-50 dark:hover:bg-gray-800 font-semibold px-8 py-4 text-lg shadow-xl"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-8 py-4 text-base shadow-xl shadow-amber-400/20 transition-all flex items-center justify-center gap-2"
             >
-              Get Started Free
-              <ArrowRight className="w-5 h-5 ml-2" />
+              Start Free Practice Now
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-white/80 text-sm">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
+          {/* Value Guarantees */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>No credit card required</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span>Join 1,00,000+ students</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-blue-400" />
+              <span>Zero telemarketing calls</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Free forever plan available</span>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span>Permanent free practice tier</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-purple-400" />
+              <span>Full offline PWA support</span>
             </div>
           </div>
-
-          {/* Stats Row */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-            className="mt-12 pt-8 border-t border-white/20 grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
-          >
-            {[
-              { value: '1,00,000+', label: 'Questions' },
-              { value: '8', label: 'Exams Covered' },
-              { value: '500+', label: 'Chapters' },
-              { value: '98%', label: 'Success Rate' },
-            ].map(stat => (
-              <div key={stat.label}>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-sm text-blue-200">{stat.label}</p>
-              </div>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
     </section>

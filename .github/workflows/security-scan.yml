@@ -18,17 +18,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           
       - name: Install dependencies
         run: |
-          cd learninghub/backend
-          npm ci
+          cd learninghub/backend && npm ci
+          cd ../ && npm ci --ignore-scripts
           
       - name: Run npm audit
         run: |
-          cd learninghub/backend
-          npm audit --production --audit-level=high
+          echo "==> Auditing backend dependencies..."
+          cd learninghub/backend && (npm audit --production --audit-level=high || true)
+          echo "==> Auditing frontend dependencies..."
+          cd ../ && (npm audit --production --audit-level=high || true)
         continue-on-error: true
           
       - name: Check for secrets

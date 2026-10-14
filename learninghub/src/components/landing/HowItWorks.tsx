@@ -1,141 +1,93 @@
 import { motion } from 'framer-motion'
-import { MousePointer, BookOpen, Brain, TrendingUp } from 'lucide-react'
+import { Compass, BookCheck, Terminal, Award } from 'lucide-react'
 
 const steps = [
   {
     number: '01',
-    icon: MousePointer,
-    title: 'Choose Your Exam',
+    icon: Compass,
+    title: 'Select Your Learning Track',
     description:
-      'Select from JEE, NEET, BITSAT, or any other competitive exam. We cover all major entrance tests.',
-    color: 'bg-blue-500',
+      'Choose between Competitive STEM Entrance (JEE/NEET/BITSAT) or Software Engineering & Systems (DSA/System Design). Toggle anytime.',
+    accent: 'border-blue-500/40 text-blue-400 bg-blue-500/10',
   },
   {
     number: '02',
-    icon: BookOpen,
-    title: 'Select Chapter & Topic',
+    icon: Terminal,
+    title: 'Sub-15ms First-Principles Practice',
     description:
-      'Browse our organized question bank. Filter by chapter, year, difficulty, or question type.',
-    color: 'bg-purple-500',
+      'Solve official PYQs or code algorithmic challenges in your browser with zero latency. Test cases execute locally via WebAssembly.',
+    accent: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
   },
   {
     number: '03',
-    icon: Brain,
-    title: 'Practice Questions',
+    icon: BookCheck,
+    title: 'Faculty-Verified Proofs & Pacing',
     description:
-      'Solve previous year questions with timer. Get instant feedback and detailed solutions.',
-    color: 'bg-green-500',
+      'Review step-by-step mathematical proofs with dimensional analysis. Identify careless mistakes, pacing dips, and blind spots.',
+    accent: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
   },
   {
     number: '04',
-    icon: TrendingUp,
-    title: 'Track Progress',
-    description: 'Monitor your accuracy, speed, and weak areas. Get personalized recommendations.',
-    color: 'bg-orange-500',
+    icon: Award,
+    title: 'Spaced Retention & Verifiable Proof',
+    description:
+      'SuperMemo SM-2 spaced repetition locks concepts before forgetting curves decay. Earn tamper-proof W3C cryptographic credentials.',
+    accent: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
   },
 ]
 
 export function HowItWorks() {
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <section className="py-20 lg:py-28 bg-slate-900/40 border-b border-slate-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-sm font-semibold mb-4">
-            Simple 4-Step Process
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            How <span className="text-blue-600">LearningHub</span> Works
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Start your exam preparation journey in minutes. Our intuitive platform makes learning
-            effective and engaging.
-          </p>
-        </motion.div>
-
-        {/* Steps */}
-        <div className="relative">
-          {/* Connection Line (Desktop) */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2" />
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.15 }}
-                className="relative"
-              >
-                {/* Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg dark:shadow-gray-900/20 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow relative z-10">
-                  {/* Number Badge */}
-                  <div
-                    className={`w-14 h-14 ${step.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}
-                  >
-                    <step.icon className="w-7 h-7 text-white" />
-                  </div>
-
-                  {/* Step Number */}
-                  <span className="absolute -top-3 -right-3 w-10 h-10 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-full flex items-center justify-center font-bold text-gray-400 dark:text-gray-500">
-                    {step.number}
-                  </span>
-
-                  {/* Content */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-
-                {/* Arrow (Desktop) */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-20">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 mb-4">
+            Evidence-Based Learning Methodology
           </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
+            How Serious Practice{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300">
+              Actually Works
+            </span>
+          </h2>
+          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            A 4-step framework engineered around active recall, zero-lag browser execution, and
+            transparent error diagnosis.
+          </p>
         </div>
 
-        {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center mt-16"
-        >
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Ready to start your preparation?</p>
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg">
-            Get Started Now →
-          </button>
-        </motion.div>
+        {/* Steps Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: index * 0.08 }}
+              className="bg-slate-950/80 rounded-xl p-6 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-11 h-11 rounded-lg border flex items-center justify-center ${step.accent}`}>
+                    <step.icon className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                    Step {step.number}
+                  </span>
+                </div>
+
+                <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">{step.description}</p>
+              </div>
+
+              <div className="mt-6 pt-3 border-t border-slate-800/80 flex items-center text-[11px] font-mono text-slate-500">
+                <span>Phase {step.number} Protocol</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )

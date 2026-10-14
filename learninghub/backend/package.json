@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --coverage",
     "test:ci": "jest --ci --coverage --reporters=default",
+    "lint": "npx eslint src --quiet",
     "test:watch": "jest --watch",
     "test:specific": "jest --testPathPattern",
     "test:e2e": "tsx src/server.ts",

@@ -48,4 +48,23 @@ describe('AITutorPage Component', () => {
     fireEvent.change(textarea, { target: { value: 'Explain quicksort in detail' } })
     expect((textarea as HTMLTextAreaElement).value).toBe('Explain quicksort in detail')
   })
+
+  it('toggles Socratic mode when Socratic button is clicked', async () => {
+    render(<AITutorPage />)
+
+    const socraticBtn = await screen.findByRole('button', { name: /socratic/i })
+    expect(socraticBtn).toBeInTheDocument()
+    fireEvent.click(socraticBtn)
+    expect(screen.getByText(/socratic/i)).toBeInTheDocument()
+  })
+
+  it('opens AI Council modal when AI Council button is clicked', async () => {
+    render(<AITutorPage />)
+
+    const councilBtn = await screen.findByRole('button', { name: /ai council/i })
+    expect(councilBtn).toBeInTheDocument()
+    fireEvent.click(councilBtn)
+
+    expect(await screen.findByText(/Multi-Agent Collaborative Tutor/i)).toBeInTheDocument()
+  })
 })

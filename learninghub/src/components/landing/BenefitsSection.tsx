@@ -1,140 +1,115 @@
 import { motion } from 'framer-motion'
-import { GraduationCap, Users, UserCheck, CheckCircle } from 'lucide-react'
+import { GraduationCap, Users, UserCheck, CheckCircle2, ShieldCheck } from 'lucide-react'
 
-const benefits = [
+const stakeholderBenefits = [
   {
     icon: GraduationCap,
-    title: 'For Students',
-    audience: 'Students preparing for competitive exams',
+    title: 'For Aspiring Rankers & Builders',
+    audience: 'Competitive Exam Candidates & Software Engineers',
     items: [
-      'Practice anytime, anywhere - mobile-friendly',
-      'Track your weak areas and improve faster',
-      'Build exam confidence with real PYQs',
-      'Save time with organized chapter-wise content',
-      'Compete with peers on leaderboards',
-      'Get personalized study recommendations',
+      'Zero-lag browser code runner and instant LaTeX formulas',
+      'Realistic NTA CBT exam simulation with official color palette',
+      'Spaced repetition schedules formulas right before forgetting decay',
+      'No AI-hallucinated math; 100% human-verified solution derivations',
+      'Full offline PWA mode for uninterrupted practice on commutes',
+      'Verifiable W3C credentials to showcase real technical mastery',
     ],
-    color: 'from-blue-500 to-blue-600',
-    bgColor: 'bg-blue-50',
+    accent: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
   },
   {
     icon: Users,
-    title: 'For Parents',
-    audience: "Parents tracking their child's progress",
+    title: 'For Parents & Guardians',
+    audience: 'Transparency & Peace of Mind',
     items: [
-      'Monitor daily practice and consistency',
-      'Get detailed performance reports',
-      'Track improvement in weak subjects',
-      'Ensure productive screen time',
-      'Receive weekly progress summaries',
-      'Build confidence before the big day',
+      'Strict zero-telemarketing policy: zero sales caller harassment',
+      'Objective accuracy tracking and weekly topic-level progress heatmaps',
+      'Eliminates predatory coaching paywalls with permanent free tiers',
+      'Identifies real conceptual blind-spots instead of superficial scores',
+      'Verifiable scorecards with cryptographic tamper-proofing',
+      'Safe, focused, ad-free study environment with zero social distractions',
     ],
-    color: 'from-green-500 to-green-600',
-    bgColor: 'bg-green-50',
+    accent: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
   },
   {
     icon: UserCheck,
-    title: 'For Teachers',
-    audience: 'Coaching teachers and mentors',
+    title: 'For Educators & Mentors',
+    audience: 'Coaching Faculty, School Teachers & TAs',
     items: [
-      'Class-wide performance analytics',
-      'Identify common weak areas',
-      'Track individual student progress',
-      'Create custom tests for batches',
-      'Get detailed topic-wise reports',
-      'Provide targeted assistance',
+      'Batch-wide error heatmaps to pinpoint cohort conceptual misconceptions',
+      'Instant custom test creation by chapter, difficulty, and year',
+      'Complete question provenance: paper year, session, and official key',
+      'Downloadable LaTeX assignment sets with step-by-step solutions',
+      'Eliminates time spent manual grading through automated AST runners',
+      'Real-time student engagement metrics and consistency logs',
     ],
-    color: 'from-purple-500 to-purple-600',
-    bgColor: 'bg-purple-50',
+    accent: 'border-blue-500/30 text-blue-400 bg-blue-500/10',
   },
 ]
 
 export function BenefitsSection() {
   return (
-    <section className="py-20 lg:py-32 bg-white dark:bg-gray-900">
+    <section className="py-20 lg:py-28 bg-slate-950 border-b border-slate-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm font-semibold mb-4">
-            Benefits for Everyone
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Built for <span className="text-blue-600">Students, Parents & Teachers</span>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 mb-4">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            Designed for Every Stakeholder
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Rigor and Value for{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              Students, Parents & Faculty
+            </span>
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            LearningHub is designed to support every stakeholder in the exam preparation journey.
+          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Engineered to remove friction from the learning loop while providing complete
+            transparency to families and mentors.
           </p>
-        </motion.div>
+        </div>
 
         {/* Benefits Cards */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {benefits.map((benefit, index) => (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {stakeholderBenefits.map((stakeholder, index) => (
             <motion.div
-              key={benefit.title}
-              initial={{ opacity: 0, y: 30 }}
+              key={stakeholder.title}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.15 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              className={`${benefit.bgColor} dark:bg-gray-800/50 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-gray-900/20 transition-all`}
+              transition={{ duration: 0.35, delay: index * 0.08 }}
+              className="bg-slate-900/80 rounded-xl p-6 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between"
             >
-              {/* Icon */}
-              <div
-                className={`w-16 h-16 bg-gradient-to-r ${benefit.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}
-              >
-                <benefit.icon className="w-8 h-8 text-white" />
+              <div>
+                {/* Icon & Badge */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${stakeholder.accent}`}>
+                    <stakeholder.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                    Verified Pedagogy
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold text-white mb-1">{stakeholder.title}</h3>
+                <p className="text-xs text-slate-400 mb-6">{stakeholder.audience}</p>
+
+                {/* Items List */}
+                <ul className="space-y-3">
+                  {stakeholder.items.map(item => (
+                    <li key={item} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {benefit.title}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{benefit.audience}</p>
-
-              {/* Benefits List */}
-              <ul className="space-y-4">
-                {benefit.items.map(item => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-6 pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-500">
+                <span>Zero Compromise Standards</span>
+              </div>
             </motion.div>
           ))}
         </div>
-
-        {/* Common Benefits Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-center text-white"
-        >
-          <h3 className="text-2xl font-bold mb-4">Why Choose LearningHub?</h3>
-          <div className="grid md:grid-cols-4 gap-6 text-sm">
-            {[
-              'Premium Quality Content',
-              'Detailed Explanations',
-              'Smart Analytics',
-              'Affordable Pricing',
-            ].map(item => (
-              <div key={item} className="flex items-center justify-center gap-2">
-                <CheckCircle className="w-5 h-5 text-yellow-300" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </section>
   )

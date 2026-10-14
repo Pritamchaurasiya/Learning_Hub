@@ -113,7 +113,7 @@ export default defineConfig(({ mode }) => {
       pwaConfig,
       process.env.ANALYZE === 'true' &&
         visualizer({
-          open: true,
+          open: false,
           gzipSize: true,
           brotliSize: true,
           filename: 'dist/stats.html',
@@ -227,6 +227,7 @@ export default defineConfig(({ mode }) => {
                 id.includes('tailwind-merge')
               )
                 return 'styling-utils'
+              if (id.includes('workbox')) return 'pwa-workbox'
 
               // Everything else
               return 'vendor'

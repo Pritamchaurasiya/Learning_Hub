@@ -38,6 +38,7 @@ import { useStore } from '../stores/useStore'
 import { useSpeechVoice } from '../hooks/useSpeechVoice'
 
 import { renderMarkdown } from '../utils/markdown'
+import { playRewardChime } from '../utils/soundEffects'
 import { useBreakpoint } from '../hooks/useMediaQuery'
 import { getCsrfToken, getSessionId, getAccessToken } from '../utils/api'
 
@@ -447,6 +448,9 @@ export default function AITutorPage() {
             }
           }
         }
+        if (fullResponse) {
+          playRewardChime('xp-gain')
+        }
       } catch (error) {
         // Don't show error toast for intentional abort
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -462,6 +466,7 @@ export default function AITutorPage() {
           })
 
           if (fallbackRes.data?.message) {
+            playRewardChime('xp-gain')
             queryClient.setQueryData(
               ['aiTutor', 'session', currentSessionId],
               (old: AIChatMessage[] = []) => {

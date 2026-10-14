@@ -1,60 +1,70 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, ArrowRight, BookOpen, Code2, Sparkles, Layers } from 'lucide-react'
+import { Menu, X, ArrowRight, BookOpen, Code2, Layers, Keyboard } from 'lucide-react'
 import BrandLogo from '../BrandLogo'
 import { Button } from '../ui/Button'
 import { useStore } from '../../stores/useStore'
 
-export function PublicHeader() {
+interface PublicHeaderProps {
+  onOpenShortcuts?: () => void
+}
+
+export function PublicHeader({ onOpenShortcuts }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const isAuthenticated = useStore(s => s.auth.isAuthenticated)
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border-b border-gray-200/80 dark:border-gray-800/80 transition-colors">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-slate-950/90 border-b border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <Link
-          to={isAuthenticated ? '/dashboard' : '/'}
-          className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg p-1"
-          aria-label="LearningHub Home"
-        >
-          <BrandLogo size="sm" variant="full" />
-        </Link>
+        {/* Brand Logo & Track Indicator */}
+        <div className="flex items-center gap-4">
+          <Link
+            to={isAuthenticated ? '/dashboard' : '/'}
+            className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg p-1"
+            aria-label="LearningHub Home"
+          >
+            <BrandLogo size="sm" variant="full" />
+          </Link>
+
+          <span className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            STEM & Systems Studio
+          </span>
+        </div>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-6" aria-label="Main Navigation">
           <Link
             to="/library"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1.5"
+            className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            <BookOpen className="w-4 h-4 text-blue-500" aria-hidden="true" />
-            Courses & Library
+            <BookOpen className="w-4 h-4 text-amber-400" aria-hidden="true" />
+            Curriculum & PYQs
           </Link>
           <Link
             to="/problems"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1.5"
+            className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            <Code2 className="w-4 h-4 text-indigo-500" aria-hidden="true" />
-            DSA Practice
+            <Code2 className="w-4 h-4 text-blue-400" aria-hidden="true" />
+            DSA Sandbox
           </Link>
           <Link
             to="/tests-a"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1.5"
+            className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            <Layers className="w-4 h-4 text-purple-500" aria-hidden="true" />
-            Tests A+
+            <Layers className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+            Tests A+ (CBT)
           </Link>
           <Link
             to="/pricing"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1.5"
+            className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors"
           >
-            <Sparkles className="w-4 h-4 text-amber-500" aria-hidden="true" />
             Pricing
           </Link>
           <Link
             to="/updates"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors"
           >
             Notices
           </Link>
@@ -62,10 +72,21 @@ export function PublicHeader() {
 
         {/* Action CTAs */}
         <div className="hidden md:flex items-center gap-3">
+          {onOpenShortcuts && (
+            <button
+              onClick={onOpenShortcuts}
+              className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-lg border border-transparent hover:border-slate-800 transition-colors"
+              title="Keyboard Shortcuts (?)"
+              aria-label="Keyboard Shortcuts"
+            >
+              <Keyboard className="w-4 h-4" />
+            </button>
+          )}
+
           {isAuthenticated ? (
             <Button
               onClick={() => navigate('/dashboard')}
-              className="bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm px-5 py-2 min-h-[44px] min-w-[44px]"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm px-4 py-2"
             >
               Go to Dashboard
             </Button>
@@ -74,13 +95,13 @@ export function PublicHeader() {
               <Button
                 variant="ghost"
                 onClick={() => navigate('/auth')}
-                className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] px-4"
+                className="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 px-3 py-2"
               >
                 Sign In
               </Button>
               <Button
                 onClick={() => navigate('/auth?mode=signup')}
-                className="bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm px-4 min-h-[44px] min-w-[44px] shadow-sm flex items-center gap-1.5"
+                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm px-4 py-2 shadow-sm flex items-center gap-1.5"
               >
                 Start Free
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -90,10 +111,19 @@ export function PublicHeader() {
         </div>
 
         {/* Mobile menu toggle */}
-        <div className="flex md:hidden items-center">
+        <div className="flex md:hidden items-center gap-2">
+          {onOpenShortcuts && (
+            <button
+              onClick={onOpenShortcuts}
+              className="p-2 text-slate-400 hover:text-white"
+              aria-label="Shortcuts"
+            >
+              <Keyboard className="w-5 h-5" />
+            </button>
+          )}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 rounded-lg text-slate-300 hover:bg-slate-900 focus:outline-none flex items-center justify-center"
             aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
             aria-expanded={mobileMenuOpen}
           >
@@ -104,57 +134,50 @@ export function PublicHeader() {
 
       {/* Mobile dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 px-4 pt-3 pb-6 space-y-3">
+        <div className="md:hidden border-b border-slate-800 bg-slate-950 px-4 pt-3 pb-6 space-y-3">
           <Link
             to="/library"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
+            className="block py-2 text-sm font-semibold text-slate-200"
           >
-            Courses & Library
+            Curriculum & PYQs
           </Link>
           <Link
             to="/problems"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
+            className="block py-2 text-sm font-semibold text-slate-200"
           >
-            DSA Practice
+            DSA Sandbox
           </Link>
           <Link
             to="/tests-a"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
+            className="block py-2 text-sm font-semibold text-slate-200"
           >
-            Tests A+
+            Tests A+ (CBT Simulator)
           </Link>
           <Link
             to="/pricing"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
+            className="block py-2 text-sm font-semibold text-slate-200"
           >
-            Pricing & Plans
+            Pricing & Free Tier
           </Link>
           <Link
             to="/updates"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
+            className="block py-2 text-sm font-semibold text-slate-200"
           >
-            Student Updates
+            Student Notices
           </Link>
-          <Link
-            to="/verify-certificate"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2.5 text-base font-semibold text-gray-800 dark:text-gray-200"
-          >
-            Verify Certificate
-          </Link>
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-2.5">
+          <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
             {isAuthenticated ? (
               <Button
                 onClick={() => {
                   setMobileMenuOpen(false)
                   navigate('/dashboard')
                 }}
-                className="w-full bg-primary-600 text-white min-h-[44px]"
+                className="w-full bg-amber-400 text-slate-950 font-bold"
               >
                 Go to Dashboard
               </Button>
@@ -166,7 +189,7 @@ export function PublicHeader() {
                     setMobileMenuOpen(false)
                     navigate('/auth')
                   }}
-                  className="w-full min-h-[44px]"
+                  className="w-full border-slate-800 text-slate-200 hover:bg-slate-900"
                 >
                   Sign In
                 </Button>
@@ -175,7 +198,7 @@ export function PublicHeader() {
                     setMobileMenuOpen(false)
                     navigate('/auth?mode=signup')
                   }}
-                  className="w-full bg-primary-600 text-white min-h-[44px]"
+                  className="w-full bg-amber-400 text-slate-950 font-bold"
                 >
                   Start Free Practice
                 </Button>
@@ -187,3 +210,5 @@ export function PublicHeader() {
     </header>
   )
 }
+
+export default PublicHeader
