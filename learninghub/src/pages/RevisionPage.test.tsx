@@ -12,6 +12,16 @@ vi.mock('../components/ui/Toast', () => ({
   }),
 }))
 
+const mockPlayRewardChime = vi.fn()
+vi.mock('../utils/soundEffects', () => ({
+  playRewardChime: (...args: unknown[]) => mockPlayRewardChime(...args),
+}))
+
+const mockTriggerHaptic = vi.fn()
+vi.mock('../utils/haptics', () => ({
+  triggerHaptic: (...args: unknown[]) => mockTriggerHaptic(...args),
+}))
+
 
 const MOCK_CARDS = [
   {
@@ -145,5 +155,39 @@ describe('RevisionPage', () => {
 
     expect(screen.getByText('Create Flashcard')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/State the master theorem recurrence/i)).toBeInTheDocument()
+  })
+
+  it('triggers audio and haptic feedback when a card is reviewed', async () => {
+    vi.spyOn(revisionService, 'submitReview').mockResolvedValue({
+      card: {
+        ...MOCK_CARDS[0],
+        interval_days: 2,
+        repetitions: 2,
+      },
+    })
+
+    render(
+      <HelmetProvider>
+        <BrowserRouter>
+          <RevisionPage />
+        </BrowserRouter>
+      </HelmetProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(/Knapsack/i)).toBeInTheDocument()
+    })
+
+    // Flip card by pressing space
+    fireEvent.keyDown(window, { code: 'Space' })
+
+    // Grade as Good (4)
+    const goodBtn = await screen.findByRole('button', { name: /Good/i })
+    fireEvent.click(goodBtn)
+
+    await waitFor(() => {
+      expect(mockPlayRewardChime).toHaveBeenCalledWith('xp-gain')
+      expect(mockTriggerHaptic).toHaveBeenCalledWith('success')
+    })
   })
 })

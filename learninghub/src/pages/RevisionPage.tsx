@@ -21,6 +21,8 @@ import { Card } from '../components/ui/Card'
 import { useToast } from '../components/ui/Toast'
 import { ErrorState } from '../components/ui/ErrorState'
 import { SEO } from '../components/SEO'
+import { playRewardChime } from '../utils/soundEffects'
+import { triggerHaptic } from '../utils/haptics'
 
 export const RevisionPage: React.FC = () => {
   const { addToast } = useToast()
@@ -104,11 +106,21 @@ export const RevisionPage: React.FC = () => {
       setGradeCounts(prev => ({ ...prev, [grade]: (prev[grade] || 0) + 1 }))
       setSessionReviewedCount(prev => prev + 1)
 
+      // Audio & haptic feedback on rating
+      if (grade >= 4) {
+        playRewardChime('xp-gain')
+        triggerHaptic('success')
+      } else {
+        triggerHaptic('light')
+      }
+
       // Move to next card or complete session
       if (currentIndex + 1 < cards.length) {
         setCurrentIndex(prev => prev + 1)
       } else {
         setSessionCompleted(true)
+        playRewardChime('quest-complete')
+        triggerHaptic('heavy')
         addToast('Review session complete! Outstanding active recall.', 'success')
       }
     } catch (err) {
@@ -136,6 +148,8 @@ export const RevisionPage: React.FC = () => {
         card_type: newCardType,
       })
 
+      playRewardChime('milestone')
+      triggerHaptic('selection')
       addToast('Spaced repetition card created', 'success')
       setIsCreateModalOpen(false)
       setNewFront('')
@@ -154,6 +168,8 @@ export const RevisionPage: React.FC = () => {
   const handleSyncBookmarks = async () => {
     try {
       const res = await revisionService.generateFromBookmarks()
+      playRewardChime('milestone')
+      triggerHaptic('success')
       addToast(`Imported ${res.created_count} cards from bookmarks`, 'success')
       loadData()
     } catch (err) {
