@@ -35,7 +35,6 @@ export interface NextBestAction {
 }
 
 export const dashboardService = {
-export const dashboardService = {
   async getDashboardAnalytics(): Promise<UserDashboardAnalytics | null> {
     try {
       const res = (await fetchApi('/user-analytics/me')) as {
