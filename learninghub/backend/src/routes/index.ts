@@ -59,6 +59,8 @@ import canaryRoutes from './v1/canary.routes'
 import catRoutes from './v1/cat.routes'
 import raftSimulationRoutes from './v1/raftSimulation.routes'
 import distributedTransactionRoutes from './v1/distributedTransaction.routes'
+import mvccDeadlockRoutes from './v1/mvccDeadlock.routes'
+import eventStreamingRoutes from './v1/eventStreaming.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -167,6 +169,8 @@ router.use('/deployments/canary', canaryRoutes)
 router.use('/cat', catRoutes)
 router.use('/raft', raftSimulationRoutes)
 router.use('/transactions', distributedTransactionRoutes)
+router.use('/concurrency', mvccDeadlockRoutes)
+router.use('/streaming', eventStreamingRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

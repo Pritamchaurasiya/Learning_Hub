@@ -3,6 +3,7 @@ import { render, screen, waitFor, fireEvent } from '../test/test-utils'
 import TestsAHistoryPage from './TestsAHistoryPage'
 import { testsAService } from '../services/testsAService'
 import { badgeService } from '../services/badgeService'
+import { scorecardPdfService } from '../services/scorecardPdfService'
 
 vi.mock('../services/testsAService', () => ({
   testsAService: {
@@ -13,6 +14,27 @@ vi.mock('../services/testsAService', () => ({
 vi.mock('../services/badgeService', () => ({
   badgeService: {
     getUserBadges: vi.fn(),
+  },
+}))
+
+vi.mock('../services/scorecardPdfService', () => ({
+  scorecardPdfService: {
+    downloadScorecard: vi.fn().mockResolvedValue(undefined),
+    generateVerificationAudit: vi.fn().mockReturnValue({
+      verificationHash: 'LH-118FE82C-4BD5B272-2DB3D418-4BD5B271',
+      verificationUrl:
+        'http://localhost/verify-scorecard?code=LH-118FE82C-4BD5B272-2DB3D418-4BD5B271',
+      issuedAt: '2026-08-20T10:23:20Z',
+    }),
+  },
+  ScorecardPdfService: {
+    downloadScorecard: vi.fn().mockResolvedValue(undefined),
+    generateVerificationAudit: vi.fn().mockReturnValue({
+      verificationHash: 'LH-118FE82C-4BD5B272-2DB3D418-4BD5B271',
+      verificationUrl:
+        'http://localhost/verify-scorecard?code=LH-118FE82C-4BD5B272-2DB3D418-4BD5B271',
+      issuedAt: '2026-08-20T10:23:20Z',
+    }),
   },
 }))
 
@@ -39,7 +61,7 @@ const mockHistoryData = [
     time_taken_seconds: 1400,
     started_at: '2026-08-20T10:00:00Z',
     submitted_at: '2026-08-20T10:23:20Z',
-    answers: ['A', 'B', 'C'],
+    answers: [{ question_id: 'q1', is_correct: true, topic: 'Web Engineering' }],
   },
   {
     id: 'attempt-2',
@@ -52,7 +74,7 @@ const mockHistoryData = [
     time_taken_seconds: 1800,
     started_at: '2026-08-21T14:00:00Z',
     submitted_at: '2026-08-21T14:30:00Z',
-    answers: ['A', 'C'],
+    answers: [{ question_id: 'q2', is_correct: false, topic: 'Algorithms' }],
   },
 ]
 
@@ -91,11 +113,12 @@ describe('TestsAHistoryPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Tests A+ History')).toBeInTheDocument()
-      expect(screen.getByText('Full-Stack Web Development Mock Exam')).toBeInTheDocument()
-      expect(screen.getByText('Algorithms & Data Structures Challenge')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Full-Stack Web Development Mock Exam' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Algorithms & Data Structures Challenge' })).toBeInTheDocument()
       expect(screen.getByText('First Test Cleared')).toBeInTheDocument()
       expect(screen.getAllByText('85%').length).toBeGreaterThanOrEqual(1)
-      expect(screen.getByText('45%')).toBeInTheDocument()
+      expect(screen.getAllByText('45%').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByRole('button', { name: /Verify Scorecard/i })).toBeInTheDocument()
     })
   })
 
@@ -103,20 +126,58 @@ describe('TestsAHistoryPage', () => {
     render(<TestsAHistoryPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Full-Stack Web Development Mock Exam')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Full-Stack Web Development Mock Exam' })).toBeInTheDocument()
     })
 
     const passedFilterBtn = screen.getByRole('button', { name: /^passed$/i })
     fireEvent.click(passedFilterBtn)
 
-    expect(screen.getByText('Full-Stack Web Development Mock Exam')).toBeInTheDocument()
-    expect(screen.queryByText('Algorithms & Data Structures Challenge')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Full-Stack Web Development Mock Exam' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Algorithms & Data Structures Challenge' })).not.toBeInTheDocument()
 
     const failedFilterBtn = screen.getByRole('button', { name: /^failed$/i })
     fireEvent.click(failedFilterBtn)
 
-    expect(screen.getByText('Algorithms & Data Structures Challenge')).toBeInTheDocument()
-    expect(screen.queryByText('Full-Stack Web Development Mock Exam')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Algorithms & Data Structures Challenge' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Full-Stack Web Development Mock Exam' })).not.toBeInTheDocument()
+  })
+
+  it('opens and closes topic drill-down modal', async () => {
+    render(<TestsAHistoryPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /Drill-Down/i }).length).toBeGreaterThanOrEqual(1)
+    })
+
+    const drillDownBtns = screen.getAllByRole('button', { name: /Drill-Down/i })
+    fireEvent.click(drillDownBtns[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('Assessment Drill-Down & Verification')).toBeInTheDocument()
+      expect(screen.getByText('Socratic AI Study Recommendation')).toBeInTheDocument()
+    })
+
+    const closeBtn = screen.getByRole('button', { name: /^close$/i })
+    fireEvent.click(closeBtn)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Assessment Drill-Down & Verification')).not.toBeInTheDocument()
+    })
+  })
+
+  it('triggers PDF scorecard generation when clicking PDF Scorecard button', async () => {
+    render(<TestsAHistoryPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /PDF Scorecard/i }).length).toBeGreaterThanOrEqual(1)
+    })
+
+    const downloadBtns = screen.getAllByRole('button', { name: /PDF Scorecard/i })
+    fireEvent.click(downloadBtns[0])
+
+    await waitFor(() => {
+      expect(scorecardPdfService.downloadScorecard).toHaveBeenCalled()
+    })
   })
 
   it('renders empty state when no test attempts exist', async () => {
@@ -133,3 +194,4 @@ describe('TestsAHistoryPage', () => {
     })
   })
 })
+

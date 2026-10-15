@@ -26,6 +26,7 @@ import {
   FileText,
   Briefcase,
   Database,
+  GitFork,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -146,6 +147,24 @@ const COMMANDS: CommandItem[] = [
     icon: Database,
     path: '/transactions',
     keywords: ['transaction', '2pc', 'saga', 'acid', 'base', 'distributed', 'compensation', 'lock', 'rollback', 'coordinator'],
+  },
+  {
+    id: 'practice-event-streaming',
+    title: 'Event Streaming & Outbox Studio (Kafka & Event Sourcing)',
+    description: 'Partition hashing, consumer group rebalance, transactional outbox atomicity, poison-pill DLQ & CQRS replay',
+    category: 'Practice',
+    icon: Layers,
+    path: '/streaming',
+    keywords: ['kafka', 'streaming', 'partition', 'consumer group', 'rebalance', 'outbox', 'dlq', 'poison pill', 'event sourcing', 'cqrs', 'event-driven'],
+  },
+  {
+    id: 'practice-mvcc-deadlock',
+    title: 'MVCC & Distributed Deadlock Studio',
+    description: 'Multi-Version Concurrency Control (xmin/xmax), Snapshot Isolation Write Skew & Tarjan WFG cycle detection',
+    category: 'Practice',
+    icon: GitFork,
+    path: '/concurrency',
+    keywords: ['mvcc', 'deadlock', 'concurrency', 'write skew', 'ssi', 'isolation', 'xmin', 'xmax', 'tarjan', 'locks'],
   },
   {
     id: 'practice-revision',

@@ -61,6 +61,10 @@ const CareerOrchestratorPage = lazy(() =>
 )
 const RaftConsensusStudioPage = lazy(() => import('./pages/RaftConsensusStudioPage'))
 const DistributedTransactionStudioPage = lazy(() => import('./pages/DistributedTransactionStudioPage'))
+const EventStreamingStudioPage = lazy(() =>
+  import('./pages/EventStreamingStudioPage').then(m => ({ default: m.EventStreamingStudioPage }))
+)
+const MvccDeadlockStudioPage = lazy(() => import('./pages/MvccDeadlockStudioPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -460,6 +464,28 @@ function App() {
               />
               <Route path="/2pc" element={<Navigate to="/transactions" replace />} />
               <Route path="/saga" element={<Navigate to="/transactions" replace />} />
+              <Route
+                path="/streaming"
+                element={
+                  <LazyRoute sectionName="Event Streaming Studio">
+                    <EventStreamingStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/kafka" element={<Navigate to="/streaming" replace />} />
+              <Route path="/event-driven" element={<Navigate to="/streaming" replace />} />
+              <Route path="/outbox" element={<Navigate to="/streaming" replace />} />
+              <Route path="/event-sourcing" element={<Navigate to="/streaming" replace />} />
+              <Route
+                path="/concurrency"
+                element={
+                  <LazyRoute sectionName="MVCC & Deadlock Detection Studio">
+                    <MvccDeadlockStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/mvcc" element={<Navigate to="/concurrency" replace />} />
+              <Route path="/deadlock" element={<Navigate to="/concurrency" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />

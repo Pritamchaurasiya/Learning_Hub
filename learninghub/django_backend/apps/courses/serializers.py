@@ -3,7 +3,7 @@ from .models import Course, Chapter, Lesson, Enrollment, LessonProgress, CourseR
 
 class LessonSerializer(serializers.ModelSerializer):
     duration = serializers.SerializerMethodField()
-    video_url = serializers.CharField(source='video_url', allow_null=True)
+    video_url = serializers.CharField(allow_null=True)
     is_free = serializers.BooleanField(source='is_free_preview')
     completed = serializers.SerializerMethodField()
     
