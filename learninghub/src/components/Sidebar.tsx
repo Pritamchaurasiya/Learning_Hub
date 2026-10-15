@@ -33,6 +33,7 @@ import {
   FileText,
   Briefcase,
   Layers,
+  Database,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -92,6 +93,7 @@ export default function Sidebar() {
         { to: '/resume', icon: FileText, label: 'Verifiable Career Resume' },
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
         { to: '/raft', icon: Layers, label: 'Raft Consensus Studio' },
+        { to: '/transactions', icon: Database, label: 'Distributed Transactions (2PC & Saga)' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

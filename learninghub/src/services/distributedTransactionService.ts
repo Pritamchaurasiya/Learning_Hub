@@ -2,6 +2,7 @@ import { fetchApi } from '../utils/api'
 import type {
   TwoPhaseTransactionRecord,
   SagaExecutionRecord,
+  SagaStepDefinition,
   ProtocolComparisonResponse,
 } from '../types/distributedTransaction'
 
@@ -163,13 +164,13 @@ export const distributedTransactionService = {
   getMockSagaRecord(failingStepIndex?: number): SagaExecutionRecord {
     const isFailed = failingStepIndex !== undefined && failingStepIndex >= 0 && failingStepIndex <= 3
 
-    const defaultSteps = [
+    const defaultSteps: SagaStepDefinition[] = [
       {
         stepIndex: 0,
         serviceName: 'OrderOrchestrator',
         actionName: 'CreatePendingOrder',
         compensationName: 'CancelPendingOrder',
-        status: 'SUCCESS' as const,
+        status: 'SUCCESS',
         payload: { orderId: 'ord-8891', amount: 149.0 },
         executionTimeMs: 12,
       },
@@ -178,7 +179,7 @@ export const distributedTransactionService = {
         serviceName: 'PaymentGatewayService',
         actionName: 'AuthorizeAndCaptureCharge',
         compensationName: 'RefundCharge',
-        status: 'SUCCESS' as const,
+        status: 'SUCCESS',
         payload: { transactionRef: 'chg_stripe_9921' },
         executionTimeMs: 45,
       },
@@ -187,7 +188,7 @@ export const distributedTransactionService = {
         serviceName: 'CourseEnrollmentService',
         actionName: 'ReserveCourseSeatAndGrantAccess',
         compensationName: 'RevokeCourseSeatAndAccess',
-        status: 'SUCCESS' as const,
+        status: 'SUCCESS',
         payload: { seatNumber: 'CS301-S44' },
         executionTimeMs: 25,
       },
@@ -196,7 +197,7 @@ export const distributedTransactionService = {
         serviceName: 'NotificationService',
         actionName: 'DispatchReceiptAndWelcomeEmail',
         compensationName: 'SendCancellationNotice',
-        status: 'SUCCESS' as const,
+        status: 'SUCCESS',
         payload: { dispatchChannel: 'SES_EMAIL' },
         executionTimeMs: 18,
       },

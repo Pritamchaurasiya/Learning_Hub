@@ -25,6 +25,7 @@ import {
   Trophy,
   FileText,
   Briefcase,
+  Database,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -136,6 +137,15 @@ const COMMANDS: CommandItem[] = [
     icon: Layers,
     path: '/raft',
     keywords: ['raft', 'consensus', 'distributed', 'split brain', 'paxos', 'replication', 'leader', 'election'],
+  },
+  {
+    id: 'practice-distributed-transactions',
+    title: 'Distributed Transaction Studio (2PC & Saga)',
+    description: 'Two-Phase Commit atomic locks vs Saga orchestrator backward compensation under coordinator crashes',
+    category: 'Practice',
+    icon: Database,
+    path: '/transactions',
+    keywords: ['transaction', '2pc', 'saga', 'acid', 'base', 'distributed', 'compensation', 'lock', 'rollback', 'coordinator'],
   },
   {
     id: 'practice-revision',
