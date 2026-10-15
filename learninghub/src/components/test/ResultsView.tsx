@@ -836,7 +836,7 @@ export const ResultsView = memo(
                     {q.explanation && (
                       <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-sm">
                         <span className="font-semibold block mb-1">Explanation:</span>
-                        {q.explanation}
+                        <MathRenderer text={q.explanation} />
                       </div>
                     )}
 

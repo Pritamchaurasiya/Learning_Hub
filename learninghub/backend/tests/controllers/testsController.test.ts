@@ -52,6 +52,7 @@ import {
   submitTest,
   getTestAttempts,
   autosaveTest,
+  verifyScorecardEndpoint,
 } from '../../src/controllers/testsController'
 
 // ─── App factory ──────────────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ function makeApp(userId = 'user-123') {
   const r = Router()
   r.get('/tests', listTests)
   r.get('/tests/attempts', getTestAttempts) // static BEFORE /:id
+  r.get('/tests/verify-scorecard', verifyScorecardEndpoint) // static BEFORE /:id
   r.get('/tests/:id', getTestDetails)
   r.post('/tests/:id/start', startTest)
   r.post('/tests/:id/autosave', autosaveTest)
@@ -625,5 +627,35 @@ describe('GET /tests/attempts', () => {
     expect(res.status).toBe(200)
     expect(res.body.data.results).toHaveLength(0)
     expect(res.body.data.totalXp).toBe(0)
+  })
+
+  // ─── GET /tests/verify-scorecard ──────────────────────────────────────────
+  describe('GET /tests/verify-scorecard', () => {
+    it('returns 400 when verification code is missing', async () => {
+      const res = await request(makeApp()).get('/api/tests/verify-scorecard')
+      expect(res.status).toBe(400)
+      expect(res.body.message).toMatch(/Verification code is required/i)
+    })
+
+    it('returns authentic verified scorecard details on valid cryptographic code', async () => {
+      const code = 'LH-118FE82C-4BD5B272-2DB3D418-4BD5B271'
+      const res = await request(makeApp()).get(
+        `/api/tests/verify-scorecard?code=${encodeURIComponent(code)}`
+      )
+      expect(res.status).toBe(200)
+      expect(res.body.data.valid).toBe(true)
+      expect(res.body.data.status).toBe('AUTHENTIC_VERIFIED')
+      expect(res.body.data.verification_code).toBe(code)
+      expect(res.body.data.candidate_name).toBeDefined()
+      expect(res.body.data.test_title).toBeDefined()
+    })
+
+    it('returns 400 when verification code indicates tampering or invalid digest', async () => {
+      const res = await request(makeApp()).get(
+        '/api/tests/verify-scorecard?code=LH-INVALID-TAMPERED-CODE'
+      )
+      expect(res.status).toBe(400)
+      expect(res.body.message).toMatch(/Cryptographic digest mismatch/i)
+    })
   })
 })

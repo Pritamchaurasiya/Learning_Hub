@@ -58,6 +58,7 @@ import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
 import canaryRoutes from './v1/canary.routes'
 import catRoutes from './v1/cat.routes'
 import raftSimulationRoutes from './v1/raftSimulation.routes'
+import distributedTransactionRoutes from './v1/distributedTransaction.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -165,6 +166,7 @@ router.use('/career', careerOrchestratorRoutes)
 router.use('/deployments/canary', canaryRoutes)
 router.use('/cat', catRoutes)
 router.use('/raft', raftSimulationRoutes)
+router.use('/transactions', distributedTransactionRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

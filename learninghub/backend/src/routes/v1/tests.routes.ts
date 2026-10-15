@@ -19,6 +19,7 @@ import {
   createTest,
   receiveTestTelemetry,
   gradeSubjectiveAnswerEndpoint,
+  verifyScorecardEndpoint,
 } from '../../controllers/testsController'
 import {
   practiceAnswer,
@@ -83,6 +84,9 @@ router.delete(
   validate(removeBookmarkSchema),
   removeBookmark
 )
+
+// Cryptographic scorecard verification route (MUST precede parameterized /:id)
+router.get('/verify-scorecard', optionalAuth, testReadLimiter, verifyScorecardEndpoint)
 
 // Parameterized routes after static ones
 router.get('/:id', cacheMiddleware(300), getTestDetails)

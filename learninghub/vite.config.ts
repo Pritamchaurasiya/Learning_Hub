@@ -200,11 +200,7 @@ export default defineConfig(({ mode }) => {
               )
                 return 'editor'
 
-              // Core libraries
-              if (id.includes('zustand')) return 'store'
-              if (id.includes('react-router-dom') || id.includes('react-router')) return 'router'
-              if (id.includes('@tanstack/react-query') || id.includes('@tanstack/query-core'))
-                return 'query'
+              // Core libraries - ensure react-core comes before vendor to avoid circular deps
               if (
                 id.includes('/react/') ||
                 id.includes('\\react\\') ||
@@ -213,6 +209,10 @@ export default defineConfig(({ mode }) => {
                 id.includes('scheduler')
               )
                 return 'react-core'
+              if (id.includes('zustand')) return 'store'
+              if (id.includes('react-router-dom') || id.includes('react-router')) return 'router'
+              if (id.includes('@tanstack/react-query') || id.includes('@tanstack/query-core'))
+                return 'query'
               if (id.includes('socket.io-client')) return 'socket'
               if (id.includes('i18next')) return 'i18n'
 

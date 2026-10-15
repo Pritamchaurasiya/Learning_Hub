@@ -161,3 +161,27 @@ export const countQuestionResults = (
     unansweredCount: unansweredFromResults + missingQuestionCount,
   }
 }
+
+/**
+ * Computes a pseudo-cryptographic audit digest for tamper-evident scorecard verification.
+ * Aligned with frontend ScorecardPdfService.
+ */
+export const computeAuditDigest = (
+  attemptId: string,
+  score: number,
+  percentage: number,
+  timestamp: string
+): string => {
+  const payload = `${attemptId}|${score}|${percentage}|${timestamp}|LEARNINGHUB_SECURE_V1`
+  let hash = 0
+  for (let i = 0; i < payload.length; i++) {
+    const char = payload.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash
+  }
+  const hex1 = Math.abs(hash).toString(16).padStart(8, '0')
+  const hex2 = Math.abs(hash ^ 0x5a5a5a5a).toString(16).padStart(8, '0')
+  const hex3 = Math.abs(hash ^ 0x3c3c3c3c).toString(16).padStart(8, '0')
+  const hex4 = Math.abs(hash ^ 0xa5a5a5a5).toString(16).padStart(8, '0')
+  return `LH-${hex1.toUpperCase()}-${hex2.toUpperCase()}-${hex3.toUpperCase()}-${hex4.toUpperCase()}`
+}

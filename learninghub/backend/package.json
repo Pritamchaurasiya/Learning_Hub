@@ -30,8 +30,8 @@
     "@aws-sdk/client-s3": "^3.1071.0",
     "@aws-sdk/s3-request-presigner": "^3.1071.0",
     "@google/generative-ai": "^0.21.0",
-    "@prisma/client": "^6.2.1",
-    "@prisma/extension-read-replicas": "^0.4.1",
+    "@prisma/client": "^6.19.3",
+    "@prisma/extension-read-replicas": "^0.5.0",
     "@sentry/node": "^10.56.0",
     "@sentry/profiling-node": "^10.56.0",
     "@socket.io/redis-adapter": "^8.3.0",
@@ -61,7 +61,7 @@
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "prisma": "^6.2.1",
+    "prisma": "^6.19.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

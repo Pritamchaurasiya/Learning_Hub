@@ -48,14 +48,45 @@ export class TestScoringService {
     if (attemptId) {
       existingResult = await prisma.testResult.findFirst({
         where: { id: attemptId, userId, testId },
-        select: { id: true, status: true, startedAt: true, attemptNumber: true },
+        select: {
+          id: true,
+          status: true,
+          startedAt: true,
+          attemptNumber: true,
+          attemptAnswers: {
+            select: { questionId: true, selectedOptions: true, textAnswer: true },
+          },
+        },
       })
       if (!existingResult) throw new Error('Attempt not found')
     } else {
       existingResult = await prisma.testResult.findFirst({
         where: { userId, testId, status: 'IN_PROGRESS' },
-        select: { id: true, status: true, startedAt: true, attemptNumber: true },
+        select: {
+          id: true,
+          status: true,
+          startedAt: true,
+          attemptNumber: true,
+          attemptAnswers: {
+            select: { questionId: true, selectedOptions: true, textAnswer: true },
+          },
+        },
       })
+    }
+
+    // Merge previously autosaved answers (ensuring locked or earlier section answers are not lost)
+    if (existingResult?.attemptAnswers) {
+      for (const savedAns of existingResult.attemptAnswers) {
+        if (!answers[savedAns.questionId]) {
+          if (savedAns.textAnswer) {
+            answers[savedAns.questionId] = savedAns.textAnswer
+          } else if (savedAns.selectedOptions && savedAns.selectedOptions.length === 1) {
+            answers[savedAns.questionId] = savedAns.selectedOptions[0]
+          } else if (savedAns.selectedOptions && savedAns.selectedOptions.length > 1) {
+            answers[savedAns.questionId] = savedAns.selectedOptions
+          }
+        }
+      }
     }
 
     if (existingResult && existingResult.status !== 'IN_PROGRESS') {
