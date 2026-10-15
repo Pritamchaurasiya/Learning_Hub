@@ -166,10 +166,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              // Large libraries - separate chunks
-              if (id.includes('framer-motion')) return 'animations'
-              if (id.includes('lucide-react')) return 'icons'
-              if (id.includes('highlight.js')) return 'highlight'
+              // Process markdown first to avoid circular dependency with vendor
               if (
                 id.includes('react-markdown') ||
                 id.includes('remark') ||
@@ -181,6 +178,11 @@ export default defineConfig(({ mode }) => {
               )
                 return 'vendor-markdown'
               if (id.includes('dompurify')) return 'vendor-dompurify'
+
+              // Large libraries - separate chunks
+              if (id.includes('framer-motion')) return 'animations'
+              if (id.includes('lucide-react')) return 'icons'
+              if (id.includes('highlight.js')) return 'highlight'
               if (id.includes('recharts') || id.includes('victory-vendor') || id.includes('d3-'))
                 return 'charts'
               if (id.includes('katex')) return 'katex'
