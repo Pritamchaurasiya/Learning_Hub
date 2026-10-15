@@ -35,6 +35,7 @@ import {
   Layers,
   Database,
   GitFork,
+  GitBranch,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -98,6 +99,7 @@ export default function Sidebar() {
         { to: '/streaming', icon: Layers, label: 'Event Streaming & Outbox Studio' },
         { to: '/concurrency', icon: GitFork, label: 'MVCC & Deadlock Studio' },
         { to: '/cache', icon: Database, label: 'Consistent Hashing & Cache Studio' },
+        { to: '/crdt', icon: GitBranch, label: 'CRDT & Local-First Studio' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

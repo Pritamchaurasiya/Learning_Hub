@@ -68,6 +68,9 @@ const MvccDeadlockStudioPage = lazy(() => import('./pages/MvccDeadlockStudioPage
 const DistributedCacheStudioPage = lazy(() =>
   import('./pages/DistributedCacheStudioPage').then(m => ({ default: m.DistributedCacheStudioPage }))
 )
+const CrdtStudioPage = lazy(() =>
+  import('./pages/CrdtStudioPage').then(m => ({ default: m.CrdtStudioPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -500,6 +503,17 @@ function App() {
               <Route path="/consistent-hashing" element={<Navigate to="/cache" replace />} />
               <Route path="/caching-studio" element={<Navigate to="/cache" replace />} />
               <Route path="/quorum" element={<Navigate to="/cache" replace />} />
+              <Route
+                path="/crdt"
+                element={
+                  <LazyRoute sectionName="CRDT & State Synchronization Studio">
+                    <CrdtStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/crdt-studio" element={<Navigate to="/crdt" replace />} />
+              <Route path="/collaborative" element={<Navigate to="/crdt" replace />} />
+              <Route path="/sync" element={<Navigate to="/crdt" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />

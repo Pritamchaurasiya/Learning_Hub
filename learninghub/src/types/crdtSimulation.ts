@@ -17,6 +17,7 @@ export interface RgaCharNode {
   parent: NodeId | null
   isDeleted: boolean
   lamport: number
+  originId?: NodeId
 }
 
 export interface LwwRegister {
@@ -24,6 +25,7 @@ export interface LwwRegister {
   value: any
   timestamp: number
   peerId: PeerId
+  writerPeerId?: PeerId
 }
 
 export interface LwwSetItem {
@@ -36,6 +38,8 @@ export interface LwwElementSet {
   addSet: LwwSetItem[]
   removeSet: LwwSetItem[]
 }
+
+export type LwwSet = LwwElementSet
 
 export interface PeerState {
   peerId: PeerId
@@ -57,17 +61,23 @@ export interface CrdtTopologySnapshot {
   globalLamport: number
   auditDigest: string
   lastSyncTimestamp: string
+  isConverged?: boolean
 }
 
 export interface AlgebraicProofResult {
-  isCommutative: boolean
-  isAssociative: boolean
-  isIdempotent: boolean
-  causalityPreserved: boolean
-  leftRightHash: string
-  rightLeftHash: string
-  convergenceVerified: boolean
-  proofDetails: string
+  isCommutative?: boolean
+  isAssociative?: boolean
+  isIdempotent?: boolean
+  causalityPreserved?: boolean
+  leftRightHash?: string
+  rightLeftHash?: string
+  convergenceVerified?: boolean
+  proofDetails?: string
+  commutative?: boolean
+  associative?: boolean
+  idempotent?: boolean
+  joinSemilatticeVerified?: boolean
+  auditDigest?: string
 }
 
 export type CrdtStudioTab =

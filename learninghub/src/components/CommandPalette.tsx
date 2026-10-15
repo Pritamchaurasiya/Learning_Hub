@@ -27,6 +27,7 @@ import {
   Briefcase,
   Database,
   GitFork,
+  Users,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -174,6 +175,15 @@ const COMMANDS: CommandItem[] = [
     icon: Database,
     path: '/cache',
     keywords: ['cache', 'consistent hashing', 'vnode', 'ring', 'redis', 'stampede', 'thundering herd', 'xfetch', 'quorum', 'multi-tier', 'lru'],
+  },
+  {
+    id: 'practice-crdt-sync',
+    title: 'CRDT & Collaborative State Sync Studio',
+    description: 'Replicated Growable Arrays (RGA), Vector Clocks, Lamport timestamps, LWW-Sets & P2P partition recovery',
+    category: 'Practice',
+    icon: Users,
+    path: '/crdt',
+    keywords: ['crdt', 'yjs', 'automerge', 'rga', 'vector clock', 'lamport', 'lww', 'sync', 'collaborative', 'p2p', 'partition'],
   },
   {
     id: 'practice-revision',
