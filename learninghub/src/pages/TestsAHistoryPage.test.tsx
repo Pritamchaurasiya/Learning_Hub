@@ -155,6 +155,7 @@ describe('TestsAHistoryPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Assessment Drill-Down & Verification')).toBeInTheDocument()
       expect(screen.getByText('Socratic AI Study Recommendation')).toBeInTheDocument()
+      expect(screen.getByText('Socratic Active-Recall Remediation Deck')).toBeInTheDocument()
     })
 
     const closeBtn = screen.getByRole('button', { name: /^close$/i })

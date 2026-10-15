@@ -167,6 +167,15 @@ const COMMANDS: CommandItem[] = [
     keywords: ['mvcc', 'deadlock', 'concurrency', 'write skew', 'ssi', 'isolation', 'xmin', 'xmax', 'tarjan', 'locks'],
   },
   {
+    id: 'practice-distributed-cache',
+    title: 'Consistent Hashing & Distributed Cache Studio',
+    description: 'Virtual nodes ring, tunable quorum (R + W > N), cache stampede XFetch defense & multi-tier L1/L2 waterfalls',
+    category: 'Practice',
+    icon: Database,
+    path: '/cache',
+    keywords: ['cache', 'consistent hashing', 'vnode', 'ring', 'redis', 'stampede', 'thundering herd', 'xfetch', 'quorum', 'multi-tier', 'lru'],
+  },
+  {
     id: 'practice-revision',
     title: 'Spaced Revision Hub',
     description: 'SuperMemo SM-2+ spaced repetition flashcards & targeted mistake remediation',

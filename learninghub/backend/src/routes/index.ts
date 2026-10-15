@@ -61,6 +61,8 @@ import raftSimulationRoutes from './v1/raftSimulation.routes'
 import distributedTransactionRoutes from './v1/distributedTransaction.routes'
 import mvccDeadlockRoutes from './v1/mvccDeadlock.routes'
 import eventStreamingRoutes from './v1/eventStreaming.routes'
+import distributedCacheRoutes from './v1/distributedCache.routes'
+import crdtSimulationRoutes from './v1/crdtSimulation.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -171,6 +173,8 @@ router.use('/raft', raftSimulationRoutes)
 router.use('/transactions', distributedTransactionRoutes)
 router.use('/concurrency', mvccDeadlockRoutes)
 router.use('/streaming', eventStreamingRoutes)
+router.use('/cache-lab', distributedCacheRoutes)
+router.use('/crdt', crdtSimulationRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

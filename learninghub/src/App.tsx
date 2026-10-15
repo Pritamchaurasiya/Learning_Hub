@@ -65,6 +65,9 @@ const EventStreamingStudioPage = lazy(() =>
   import('./pages/EventStreamingStudioPage').then(m => ({ default: m.EventStreamingStudioPage }))
 )
 const MvccDeadlockStudioPage = lazy(() => import('./pages/MvccDeadlockStudioPage'))
+const DistributedCacheStudioPage = lazy(() =>
+  import('./pages/DistributedCacheStudioPage').then(m => ({ default: m.DistributedCacheStudioPage }))
+)
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -486,6 +489,17 @@ function App() {
               />
               <Route path="/mvcc" element={<Navigate to="/concurrency" replace />} />
               <Route path="/deadlock" element={<Navigate to="/concurrency" replace />} />
+              <Route
+                path="/cache"
+                element={
+                  <LazyRoute sectionName="Consistent Hashing & Distributed Cache Studio">
+                    <DistributedCacheStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/consistent-hashing" element={<Navigate to="/cache" replace />} />
+              <Route path="/caching-studio" element={<Navigate to="/cache" replace />} />
+              <Route path="/quorum" element={<Navigate to="/cache" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />

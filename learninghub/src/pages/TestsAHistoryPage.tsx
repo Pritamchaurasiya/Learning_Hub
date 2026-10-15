@@ -46,6 +46,7 @@ import { Skeleton } from '../components/ui/Skeleton'
 import AnimatedPage from '../components/AnimatedPage'
 import { SpeedAccuracyScatterChart } from '../components/test/SpeedAccuracyScatterChart'
 import { PeerPercentileBellCurve } from '../components/test/PeerPercentileBellCurve'
+import { SocraticRemediationFlashcards } from '../components/test/SocraticRemediationFlashcards'
 
 // Types
 interface Stats {
@@ -1000,6 +1001,9 @@ const TestsAHistoryPage = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* On-Demand Socratic Active-Recall Remediation Flashcards */}
+                <SocraticRemediationFlashcards attempt={selectedAttempt} />
 
                 {/* Modal Footer Actions */}
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">

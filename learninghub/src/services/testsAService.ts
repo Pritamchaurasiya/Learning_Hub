@@ -98,6 +98,8 @@ export interface TestAttempt {
     is_flagged: boolean
     is_bookmarked: boolean
     answered_at: string | null
+    topic?: string
+    explanation?: string
   }>
 }
 
