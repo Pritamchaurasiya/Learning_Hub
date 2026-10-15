@@ -32,6 +32,7 @@ import {
   BellRing,
   FileText,
   Briefcase,
+  Layers,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -90,6 +91,7 @@ export default function Sidebar() {
         { to: '/interview', icon: Bot, label: 'Technical Mock Interview' },
         { to: '/resume', icon: FileText, label: 'Verifiable Career Resume' },
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
+        { to: '/raft', icon: Layers, label: 'Raft Consensus Studio' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

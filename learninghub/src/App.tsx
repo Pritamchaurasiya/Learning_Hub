@@ -59,6 +59,7 @@ const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
 const CareerOrchestratorPage = lazy(() =>
   import('./pages/CareerOrchestratorPage').then(m => ({ default: m.CareerOrchestratorPage }))
 )
+const RaftConsensusStudioPage = lazy(() => import('./pages/RaftConsensusStudioPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -438,6 +439,16 @@ function App() {
               <Route path="/career-match" element={<Navigate to="/career" replace />} />
               <Route path="/jobs" element={<Navigate to="/career" replace />} />
               <Route path="/recruiter-sim" element={<Navigate to="/career" replace />} />
+              <Route
+                path="/raft"
+                element={
+                  <LazyRoute sectionName="Raft Consensus Studio">
+                    <RaftConsensusStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/consensus" element={<Navigate to="/raft" replace />} />
+              <Route path="/raft-studio" element={<Navigate to="/raft" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />

@@ -129,6 +129,15 @@ const COMMANDS: CommandItem[] = [
     keywords: ['job', 'jobs', 'career', 'recruiter', 'negotiation', 'salary', 'matching', 'hiring', 'offer'],
   },
   {
+    id: 'practice-raft-consensus',
+    title: 'Raft Consensus Protocol Studio',
+    description: 'Interactive distributed state machine replication, leader election & split-brain partition lab',
+    category: 'Practice',
+    icon: Layers,
+    path: '/raft',
+    keywords: ['raft', 'consensus', 'distributed', 'split brain', 'paxos', 'replication', 'leader', 'election'],
+  },
+  {
     id: 'practice-revision',
     title: 'Spaced Revision Hub',
     description: 'SuperMemo SM-2+ spaced repetition flashcards & targeted mistake remediation',
