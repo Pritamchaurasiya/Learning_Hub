@@ -163,9 +163,10 @@ export const SpanWaterfallTimeline: React.FC<SpanWaterfallTimelineProps> = ({ tr
         <div className="bg-gray-50 dark:bg-gray-900/60 rounded-xl p-4 border border-gray-200 dark:border-gray-750 text-xs space-y-3 font-mono">
           <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-gray-750">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 dark:text-gray-100 font-sans">
-                Span: {selectedSpan.name}
-              </span>
+              <h4 className="font-bold text-gray-900 dark:text-gray-100 font-sans">
+                Span Details & Telemetry Attributes
+              </h4>
+              <span className="text-gray-500 font-sans">({selectedSpan.name})</span>
               <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                 {selectedSpan.serviceName}
               </span>
@@ -204,7 +205,7 @@ export const SpanWaterfallTimeline: React.FC<SpanWaterfallTimelineProps> = ({ tr
               <div className="mt-1 space-y-1 text-gray-700 dark:text-gray-300">
                 {Object.entries(selectedSpan.attributes).map(([k, v]) => (
                   <div key={k} className="truncate">
-                    <span className="text-indigo-600 dark:text-indigo-400">{k}:</span> {String(v)}
+                    <span className="text-indigo-600 dark:text-indigo-400">{k}</span>: {String(v)}
                   </div>
                 ))}
               </div>
