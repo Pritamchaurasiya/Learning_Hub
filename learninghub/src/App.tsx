@@ -71,6 +71,13 @@ const DistributedCacheStudioPage = lazy(() =>
 const CrdtStudioPage = lazy(() =>
   import('./pages/CrdtStudioPage').then(m => ({ default: m.CrdtStudioPage }))
 )
+const DistributedTracingStudioPage = lazy(() =>
+  import('./pages/DistributedTracingStudioPage').then(m => ({ default: m.DistributedTracingStudioPage }))
+)
+const DistributedRateLimiterStudioPage = lazy(() =>
+  import('./pages/DistributedRateLimiterStudioPage').then(m => ({ default: m.DistributedRateLimiterStudioPage }))
+)
+const LsmStorageStudioPage = lazy(() => import('./pages/LsmStorageStudioPage'))
 
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
@@ -514,6 +521,39 @@ function App() {
               <Route path="/crdt-studio" element={<Navigate to="/crdt" replace />} />
               <Route path="/collaborative" element={<Navigate to="/crdt" replace />} />
               <Route path="/sync" element={<Navigate to="/crdt" replace />} />
+              <Route
+                path="/tracing"
+                element={
+                  <LazyRoute sectionName="Distributed Tracing & OpenTelemetry Studio">
+                    <DistributedTracingStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/opentelemetry" element={<Navigate to="/tracing" replace />} />
+              <Route path="/otel" element={<Navigate to="/tracing" replace />} />
+              <Route path="/distributed-tracing" element={<Navigate to="/tracing" replace />} />
+              <Route
+                path="/rate-limiter"
+                element={
+                  <LazyRoute sectionName="Distributed Rate Limiter & Traffic Shaping Studio">
+                    <DistributedRateLimiterStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/throttling" element={<Navigate to="/rate-limiter" replace />} />
+              <Route path="/traffic-shaping" element={<Navigate to="/rate-limiter" replace />} />
+              <Route path="/token-bucket" element={<Navigate to="/rate-limiter" replace />} />
+              <Route
+                path="/lsm"
+                element={
+                  <LazyRoute sectionName="LSM-Tree & Storage Engine Studio">
+                    <LsmStorageStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/storage-engine" element={<Navigate to="/lsm" replace />} />
+              <Route path="/lsm-tree" element={<Navigate to="/lsm" replace />} />
+              <Route path="/rocksdb" element={<Navigate to="/lsm" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />
@@ -541,7 +581,6 @@ function App() {
               <Route path="/self-healing" element={<Navigate to="/dashboard" replace />} />
               <Route path="/refactor" element={<Navigate to="/dashboard" replace />} />
               <Route path="/security-audit" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/crdt" element={<Navigate to="/dashboard" replace />} />
               <Route path="/whiteboard" element={<Navigate to="/dashboard" replace />} />
               <Route path="/collab-canvas" element={<Navigate to="/dashboard" replace />} />
               <Route path="/debate" element={<Navigate to="/dashboard" replace />} />

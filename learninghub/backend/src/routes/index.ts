@@ -63,6 +63,9 @@ import mvccDeadlockRoutes from './v1/mvccDeadlock.routes'
 import eventStreamingRoutes from './v1/eventStreaming.routes'
 import distributedCacheRoutes from './v1/distributedCache.routes'
 import crdtSimulationRoutes from './v1/crdtSimulation.routes'
+import lsmTreeSimulationRoutes from './v1/lsmTreeSimulation.routes'
+import distributedRateLimiterRoutes from './v1/distributedRateLimiter.routes'
+import distributedTracingRoutes from './v1/distributedTracing.routes'
 
 import { authenticate, optionalAuth } from '../middleware/authMiddleware'
 import { asyncHandler } from '../utils/errorHandler'
@@ -175,6 +178,9 @@ router.use('/concurrency', mvccDeadlockRoutes)
 router.use('/streaming', eventStreamingRoutes)
 router.use('/cache-lab', distributedCacheRoutes)
 router.use('/crdt', crdtSimulationRoutes)
+router.use('/lsm', lsmTreeSimulationRoutes)
+router.use('/tracing', distributedTracingRoutes)
+router.use('/rate-limiter', distributedRateLimiterRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

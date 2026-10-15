@@ -28,6 +28,9 @@ import {
   Database,
   GitFork,
   Users,
+  Network,
+  HardDrive,
+  Sliders,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -184,6 +187,33 @@ const COMMANDS: CommandItem[] = [
     icon: Users,
     path: '/crdt',
     keywords: ['crdt', 'yjs', 'automerge', 'rga', 'vector clock', 'lamport', 'lww', 'sync', 'collaborative', 'p2p', 'partition'],
+  },
+  {
+    id: 'practice-distributed-tracing',
+    title: 'Distributed Tracing & OpenTelemetry (OTel) Studio',
+    description: 'W3C TraceContext headers, span DAG Gantt waterfall, critical path bottleneck analysis, baggage propagation & chaos latency',
+    category: 'Practice',
+    icon: Network,
+    path: '/tracing',
+    keywords: ['tracing', 'opentelemetry', 'otel', 'w3c', 'traceparent', 'span', 'gantt', 'waterfall', 'critical path', 'baggage', 'chaos', 'distributed', 'latency'],
+  },
+  {
+    id: 'practice-rate-limiter',
+    title: 'Distributed Rate Limiting & Traffic Shaping Studio',
+    description: 'Token Bucket, Leaky Bucket, Sliding Window Counter, Redis Lua script atomicity & Adaptive Concurrency Limiting (Little\'s Law)',
+    category: 'Practice',
+    icon: Sliders,
+    path: '/rate-limiter',
+    keywords: ['rate limit', 'token bucket', 'leaky bucket', 'sliding window', 'redis', 'lua', 'atomicity', 'traffic shaping', 'throttling', 'adaptive concurrency', 'littles law', '429'],
+  },
+  {
+    id: 'practice-lsm-storage',
+    title: 'LSM-Tree & Storage Engine Studio',
+    description: 'Log-Structured Merge-Tree, MemTable (SkipList), Write-Ahead Log (WAL), SSTables, Bloom filters & leveled compaction',
+    category: 'Practice',
+    icon: HardDrive,
+    path: '/lsm',
+    keywords: ['lsm', 'lsm-tree', 'rocksdb', 'cassandra', 'sstable', 'memtable', 'wal', 'bloom filter', 'compaction', 'storage engine', 'database'],
   },
   {
     id: 'practice-revision',
