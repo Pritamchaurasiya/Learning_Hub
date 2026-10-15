@@ -6,7 +6,8 @@ from .views import (
     BookmarkQuestionView, AdaptiveNextQuestionView, TestTelemetryView,
     SpacedRepetitionDeckView, SpacedRepetitionReviewView,
     SpacedRepetitionGenerateView, SpacedRepetitionStatsView,
-    SkillDAGView, SkillInteractionView, SkillNextActionView
+    SkillDAGView, SkillInteractionView, SkillNextActionView,
+    TestAnalyticsView
 )
 
 urlpatterns = [
@@ -19,6 +20,8 @@ urlpatterns = [
     path('tests/attempts/<str:pk>', TestAttemptDetailView.as_view(), name='test-attempt-detail'),
     path('tests/attempts/<str:pk>/', TestAttemptDetailView.as_view(), name='test-attempt-detail-slash'),
     path('tests/history', TestAttemptHistoryView.as_view(), name='tests-history'),
+    path('tests/analytics', TestAnalyticsView.as_view(), name='test-analytics'),
+    path('tests/analytics/', TestAnalyticsView.as_view(), name='test-analytics-slash'),
     path('tests/analytics/topics', TopicPerformanceView.as_view(), name='topic-performance'),
     path('tests/generate', AIGenerateTestView.as_view(), name='test-generate'),
     path('tests/<str:pk>', TestDetailView.as_view(), name='test-detail'),

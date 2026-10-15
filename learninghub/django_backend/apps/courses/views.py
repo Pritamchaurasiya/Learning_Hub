@@ -17,10 +17,21 @@ class CourseListView(APIView):
 
         if category and category != 'All':
             queryset = queryset.filter(category__iexact=category)
-        if search:
-            queryset = queryset.filter(title__icontains=search) | queryset.filter(description__icontains=search)
         if level and level != 'All Levels':
             queryset = queryset.filter(level__iexact=level)
+
+        if search:
+            from apps.core.search import TokenizedSearchEngine
+            courses = TokenizedSearchEngine.search_and_rank(
+                queryset=queryset,
+                query=search,
+                title_field='title',
+                desc_field='description',
+                tags_field='tags',
+                limit=100
+            )
+            serializer = CourseListSerializer(courses, many=True, context={'request': request})
+            return success_response(data=serializer.data, meta={'count': len(serializer.data), 'total': len(serializer.data), 'query': search})
 
         serializer = CourseListSerializer(queryset, many=True, context={'request': request})
         return success_response(data=serializer.data, meta={'count': len(serializer.data), 'total': len(serializer.data)})

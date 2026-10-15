@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import F, Count
+from django.db.models import F, Count, Avg, Sum
 from apps.core.responses import success_response, error_response
 from .models import (
     Test, Question, Option, TestAttempt, AttemptAnswer,
@@ -1139,6 +1139,83 @@ class SkillNextActionView(APIView):
             'total_skills': dag.get('total_skills', 0),
             'mastered_skills': dag.get('mastered_skills', 0),
         })
+
+
+class TestAnalyticsView(APIView):
+    """
+    Computes aggregate test statistics:
+    - total_tests: total submitted attempts
+    - passed_tests: total attempts with passed=True
+    - pass_rate: percentage of submitted tests passed
+    - average_score: mean percentage score across attempts
+    - by_difficulty: breakdown by difficulty (Easy, Medium, Hard)
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        if not user:
+            return success_response(data={
+                'total_tests': 0,
+                'passed_tests': 0,
+                'pass_rate': 0.0,
+                'average_score': 0.0,
+                'by_difficulty': {
+                    'Easy': {'total': 0, 'passed': 0, 'avgScore': 0.0},
+                    'Medium': {'total': 0, 'passed': 0, 'avgScore': 0.0},
+                    'Hard': {'total': 0, 'passed': 0, 'avgScore': 0.0},
+                }
+            })
+
+        attempts = TestAttempt.objects.filter(user=user, status__in=['SUBMITTED', 'TIMEOUT']).select_related('test')
+        total_tests = attempts.count()
+        passed_tests = attempts.filter(passed=True).count()
+        pass_rate = round((passed_tests / max(1, total_tests)) * 100, 1) if total_tests > 0 else 0.0
+        avg_score_res = attempts.aggregate(avg=Avg('score'))['avg']
+        avg_score = round(float(avg_score_res), 1) if avg_score_res is not None else 0.0
+
+        by_difficulty = {
+            'Easy': {'total': 0, 'passed': 0, 'avgScore': 0.0, '_scores': []},
+            'Medium': {'total': 0, 'passed': 0, 'avgScore': 0.0, '_scores': []},
+            'Hard': {'total': 0, 'passed': 0, 'avgScore': 0.0, '_scores': []},
+        }
+
+        for att in attempts:
+            diff_attr = getattr(att.test, 'difficulty', None) if att.test else None
+            if not diff_attr:
+                avg_b = att.test.questions.aggregate(avg=Avg('difficulty'))['avg'] if att.test else None
+                if avg_b is not None:
+                    if avg_b < -0.5:
+                        diff = 'Easy'
+                    elif avg_b > 0.5:
+                        diff = 'Hard'
+                    else:
+                        diff = 'Medium'
+                else:
+                    diff = 'Medium'
+            else:
+                diff = str(diff_attr).capitalize()
+
+            if diff not in by_difficulty:
+                diff = 'Medium'
+            by_difficulty[diff]['total'] += 1
+            if att.passed:
+                by_difficulty[diff]['passed'] += 1
+            if att.score is not None:
+                by_difficulty[diff]['_scores'].append(att.score)
+
+        for diff_data in by_difficulty.values():
+            scores = diff_data.pop('_scores', [])
+            diff_data['avgScore'] = round(sum(scores) / len(scores), 1) if scores else 0.0
+
+        return success_response(data={
+            'total_tests': total_tests,
+            'passed_tests': passed_tests,
+            'pass_rate': pass_rate,
+            'average_score': avg_score,
+            'by_difficulty': by_difficulty
+        })
+
 
 
 

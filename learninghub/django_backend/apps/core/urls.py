@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     HealthCheckView, HealthReadyView, HealthLiveView, SystemMetricsView, CsrfTokenView,
-    DashboardAnalyticsView, UserAnalyticsView
+    DashboardAnalyticsView, UserAnalyticsView, LearningActivityAnalyticsView,
+    PerformanceTrendAnalyticsView, WeakAreasAnalyticsView
 )
 
 urlpatterns = [
@@ -15,6 +16,12 @@ urlpatterns = [
     path('csrf-token/', CsrfTokenView.as_view(), name='csrf-token-slash'),
     path('analytics/dashboard', DashboardAnalyticsView.as_view(), name='analytics-dashboard'),
     path('analytics/dashboard/', DashboardAnalyticsView.as_view(), name='analytics-dashboard-slash'),
+    path('analytics/learning-activity', LearningActivityAnalyticsView.as_view(), name='analytics-learning-activity'),
+    path('analytics/learning-activity/', LearningActivityAnalyticsView.as_view(), name='analytics-learning-activity-slash'),
+    path('analytics/performance-trend', PerformanceTrendAnalyticsView.as_view(), name='analytics-performance-trend'),
+    path('analytics/performance-trend/', PerformanceTrendAnalyticsView.as_view(), name='analytics-performance-trend-slash'),
+    path('analytics/weak-areas', WeakAreasAnalyticsView.as_view(), name='analytics-weak-areas'),
+    path('analytics/weak-areas/', WeakAreasAnalyticsView.as_view(), name='analytics-weak-areas-slash'),
     path('user-analytics/me', UserAnalyticsView.as_view(), name='user-analytics-me'),
     path('user-analytics/me/', UserAnalyticsView.as_view(), name='user-analytics-me-slash'),
     path('admin/dashboard', DashboardAnalyticsView.as_view(), name='admin-dashboard-alias'),

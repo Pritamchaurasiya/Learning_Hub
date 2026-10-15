@@ -108,7 +108,128 @@ const prismaOptions: Prisma.PrismaClientOptions = {
 }
 
 /**
- * Extended Prisma Client with query logging and metrics
+ * Soft delete extension using modern Prisma $extends query middleware
+ */
+const softDeleteExtension = Prisma.defineExtension({
+  name: 'softDelete',
+  query: {
+    $allModels: {
+      async findUnique({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async findFirst({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async findMany({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async count({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async aggregate({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async groupBy({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async updateMany({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          (args as any).where = injectDeletedAt((args as any).where)
+        }
+        return query(args)
+      },
+      async delete({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          // Convert hard delete to soft delete
+          return query({
+            ...args,
+            operation: 'update',
+            data: { deletedAt: new Date() },
+          } as any)
+        }
+        return query(args)
+      },
+      async deleteMany({ model, operation, args, query }) {
+        if (shouldApplySoftDelete(model, operation)) {
+          // Convert hard delete to soft delete
+          return query({
+            ...args,
+            operation: 'updateMany',
+            data: { ...((args as any).data || {}), deletedAt: new Date() },
+          } as any)
+        }
+        return query(args)
+      },
+    },
+  },
+})
+
+const modelsWithSoftDelete = new Set([
+  'User',
+  'Test',
+  'Problem',
+  'Exam',
+  'Subject',
+  'Topic',
+  'CanonicalQuestion',
+])
+
+function shouldApplySoftDelete(model: string | undefined, operation: string): boolean {
+  return model !== undefined && modelsWithSoftDelete.has(model)
+}
+
+function injectDeletedAt(
+  where: Record<string, unknown> | undefined
+): Record<string, unknown> {
+  if (!where) return { deletedAt: null }
+  if (where.deletedAt !== undefined) return where
+
+  const newWhere: Record<string, unknown> = { ...where }
+  if (Array.isArray(newWhere.OR)) {
+    newWhere.OR = newWhere.OR.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+  }
+  if (newWhere.AND) {
+    if (Array.isArray(newWhere.AND)) {
+      newWhere.AND = newWhere.AND.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+    } else {
+      newWhere.AND = injectDeletedAt(newWhere.AND as Record<string, unknown>)
+    }
+  }
+  if (newWhere.NOT) {
+    if (Array.isArray(newWhere.NOT)) {
+      newWhere.NOT = newWhere.NOT.map(cond => injectDeletedAt(cond as Record<string, unknown>))
+    } else {
+      newWhere.NOT = injectDeletedAt(newWhere.NOT as Record<string, unknown>)
+    }
+  }
+
+  if (newWhere.deletedAt === undefined) {
+    newWhere.deletedAt = null
+  }
+
+  return newWhere
+}
+
+/**
+ * Extended Prisma Client with query logging, metrics, and soft delete
  */
 export class ExtendedPrismaClient extends PrismaClient {
   private queryMetrics = {
@@ -155,88 +276,6 @@ export class ExtendedPrismaClient extends PrismaClient {
       dbLogger.warn('Prisma warning', {
         message: event.message,
       })
-    })
-
-    this.setupSoftDeleteMiddleware()
-  }
-
-  private setupSoftDeleteMiddleware(): void {
-    const modelsWithSoftDelete = [
-      'User',
-      'Test',
-      'Problem',
-      'Exam',
-      'Subject',
-      'Topic',
-      'CanonicalQuestion',
-    ]
-
-    const injectDeletedAt = (
-      where: Record<string, unknown> | undefined
-    ): Record<string, unknown> => {
-      if (!where) return { deletedAt: null }
-      if (where.deletedAt !== undefined) return where
-
-      const newWhere: Record<string, unknown> = { ...where }
-      if (Array.isArray(newWhere.OR)) {
-        newWhere.OR = newWhere.OR.map(cond => injectDeletedAt(cond as Record<string, unknown>))
-      }
-      if (newWhere.AND) {
-        if (Array.isArray(newWhere.AND)) {
-          newWhere.AND = newWhere.AND.map(cond => injectDeletedAt(cond as Record<string, unknown>))
-        } else {
-          newWhere.AND = injectDeletedAt(newWhere.AND as Record<string, unknown>)
-        }
-      }
-      if (newWhere.NOT) {
-        if (Array.isArray(newWhere.NOT)) {
-          newWhere.NOT = newWhere.NOT.map(cond => injectDeletedAt(cond as Record<string, unknown>))
-        } else {
-          newWhere.NOT = injectDeletedAt(newWhere.NOT as Record<string, unknown>)
-        }
-      }
-
-      if (newWhere.deletedAt === undefined) {
-        newWhere.deletedAt = null
-      }
-
-      return newWhere
-    }
-
-    this.$use(async (params, next) => {
-      if (params.model && modelsWithSoftDelete.includes(params.model)) {
-        params.args = params.args || {}
-        if (
-          params.action === 'findUnique' ||
-          params.action === 'findFirst' ||
-          params.action === 'findUniqueOrThrow' ||
-          params.action === 'findFirstOrThrow'
-        ) {
-          // Keep findUnique as findUnique to preserve unique-index fast path
-          // Inject deletedAt: null to exclude soft-deleted rows
-          params.args.where = injectDeletedAt(params.args.where)
-        }
-        if (
-          params.action === 'findMany' ||
-          params.action === 'count' ||
-          params.action === 'aggregate' ||
-          params.action === 'groupBy'
-        ) {
-          params.args.where = injectDeletedAt(params.args.where)
-        }
-        if (params.action === 'updateMany') {
-          params.args.where = injectDeletedAt(params.args.where)
-        }
-        if (params.action === 'delete') {
-          params.action = 'update'
-          params.args.data = { deletedAt: new Date() }
-        }
-        if (params.action === 'deleteMany') {
-          params.action = 'updateMany'
-          params.args.data = { ...(params.args.data || {}), deletedAt: new Date() }
-        }
-      }
-      return next(params)
     })
   }
 
@@ -327,8 +366,8 @@ export class ExtendedPrismaClient extends PrismaClient {
   }
 }
 
-// Create base singleton instance
-const basePrisma: ExtendedPrismaClient = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions)
+// Create base singleton instance with soft delete extension
+const basePrisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions).$extends(softDeleteExtension)
 
 const replicaUrl = process.env.DATABASE_URL_REPLICA
 let replicaClient: PrismaClient | undefined
@@ -351,11 +390,11 @@ export const prisma: ExtendedPrismaClient = replicaClient
         ],
       })
     ) as unknown as ExtendedPrismaClient)
-  : basePrisma
+  : (basePrisma as ExtendedPrismaClient)
 
 // Cache instance in development to prevent hot-reload issues
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = basePrisma
+  globalForPrisma.prisma = basePrisma as ExtendedPrismaClient
 }
 
 // Graceful shutdown — database disconnect only (server.ts handles full shutdown)

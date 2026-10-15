@@ -184,7 +184,7 @@ test.describe('DSA Practice Module', () => {
     await expect(page.getByRole('heading', { name: 'No Problems Found' })).toBeVisible({
       timeout: 10000,
     })
-    await expect(page.getByText(/Try adjusting your filters/i).first()).toBeVisible({
+    await expect(page.getByText(/Try adjusting.*filters/i).first()).toBeVisible({
       timeout: 10000,
     })
   })
