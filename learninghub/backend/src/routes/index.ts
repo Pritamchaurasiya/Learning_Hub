@@ -73,10 +73,12 @@ const apiVersion = (_req: Request, res: Response, next: NextFunction): void => {
 const responseTimeHeader = (_req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now()
   const originalEnd = res.end.bind(res)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res.end = ((...args: any[]): any => {
     if (!res.headersSent) {
       res.setHeader('X-Response-Time', `${Date.now() - start}ms`)
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (originalEnd as any)(...args)
   }) as any
   next()

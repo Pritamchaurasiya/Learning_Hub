@@ -27,6 +27,8 @@ export class SearchController {
       if (typeof req.query.category === 'string') filters.category = req.query.category
       if (typeof req.query.difficulty === 'string') filters.difficulty = req.query.difficulty
       if (typeof req.query.tags === 'string') filters.tags = req.query.tags.split(',')
+      if (typeof req.query.examId === 'string') filters.examId = req.query.examId
+      if (typeof req.query.subjectId === 'string') filters.subjectId = req.query.subjectId
 
       const userId = req.user?.userId || (req as any).user?.id
 

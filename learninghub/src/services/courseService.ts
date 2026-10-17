@@ -180,7 +180,8 @@ export const FALLBACK_COURSES: CourseDetails[] = [
     title: 'Full-Stack Modern Web Engineering with TypeScript',
     description:
       'Build enterprise-grade web applications using React 19, TypeScript, state management with Zustand, real-time WebSockets, and secure API gateways.',
-    short_description: 'Clean Architecture, React 19, Vite, and high-performance frontend patterns.',
+    short_description:
+      'Clean Architecture, React 19, Vite, and high-performance frontend patterns.',
     thumbnail:
       'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=80',
     trailer_video: null,
@@ -240,22 +241,33 @@ export const courseService = {
 
       const responseData = res.data ?? res
       const rawCourses = responseData?.courses ?? responseData ?? []
-      const coursesList = Array.isArray(rawCourses) && rawCourses.length > 0 ? rawCourses : FALLBACK_COURSES
+      // When API successfully returns empty array (e.g. newly selected exam), preserve genuine empty array
+      const coursesList = Array.isArray(rawCourses) ? rawCourses : FALLBACK_COURSES
       const result = {
         status: res.status ?? 'success',
         data: coursesList,
-        pagination: responseData?.pagination ?? { page: 1, limit: 10, total: coursesList.length, totalPages: 1 },
+        pagination: responseData?.pagination ?? {
+          page: 1,
+          limit: 10,
+          total: coursesList.length,
+          totalPages: 1,
+        },
       }
 
-      const ttl = params?.q ? 5 * 60 * 1000 : 10 * 60 * 1000
+      const ttl = params?.q || params?.examId ? 5 * 60 * 1000 : 10 * 60 * 1000
       CacheService.set(cacheKey, result, ttl)
 
       return result
     } catch {
       const result = {
         status: 'success',
-        data: FALLBACK_COURSES,
-        pagination: { page: 1, limit: 10, total: FALLBACK_COURSES.length, totalPages: 1 },
+        data: params?.examId ? [] : FALLBACK_COURSES,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: params?.examId ? 0 : FALLBACK_COURSES.length,
+          totalPages: 1,
+        },
       }
       return result
     }

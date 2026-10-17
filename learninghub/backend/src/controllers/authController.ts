@@ -653,10 +653,31 @@ export const updatePreferences = asyncHandler(
     const { countryId, examId, subjectIds, difficulty, dailyGoal } = req.body
     const formattedSubjectIds = Array.isArray(subjectIds) ? subjectIds : []
 
-    let validSubjectIds = formattedSubjectIds
+    // Validate exam and country relationship if both provided
+    if (examId) {
+      const exam = await prisma.exam.findUnique({
+        where: { id: examId },
+        select: { id: true, countryId: true },
+      })
+      if (!exam) {
+        sendValidationError(res, 'The specified target exam does not exist.')
+        return
+      }
+      if (countryId && exam.countryId !== countryId) {
+        sendValidationError(res, 'The selected exam does not belong to the selected country.')
+        return
+      }
+    }
+
+    let validSubjectIds: string[] = []
     if (formattedSubjectIds.length > 0) {
+      const subjectWhere: Record<string, unknown> = { id: { in: formattedSubjectIds } }
+      // Enforce that subjects belong strictly to the target exam
+      if (examId) {
+        subjectWhere.examId = examId
+      }
       const existingSubjects = await prisma.subject.findMany({
-        where: { id: { in: formattedSubjectIds } },
+        where: subjectWhere,
         select: { id: true },
       })
       validSubjectIds = existingSubjects.map((s: { id: string }) => s.id)

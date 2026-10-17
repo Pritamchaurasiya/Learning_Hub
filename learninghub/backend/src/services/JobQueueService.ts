@@ -482,8 +482,10 @@ class JobQueueService {
     // Flush pending topic performance cache invalidations before closing
     try {
       const { topicPerformanceService } = await import('./TopicPerformanceService')
-      await topicPerformanceService.flushPendingInvalidations()
-      logger.info('[JobQueueService] Topic performance cache invalidations flushed')
+      if (typeof topicPerformanceService?.flushPendingInvalidations === 'function') {
+        await topicPerformanceService.flushPendingInvalidations()
+        logger.info('[JobQueueService] Topic performance cache invalidations flushed')
+      }
     } catch (e) {
       logger.error(
         '[JobQueueService] Failed to flush topic performance invalidations during shutdown',
@@ -491,14 +493,34 @@ class JobQueueService {
       )
     }
 
-    await Promise.all([
-      this.emailQueue?.close(),
-      this.aiQueue?.close(),
-      this.reportQueue?.close(),
-      this.analyticsQueue?.close(),
-      this.growthQueue?.close(),
-      this.testSubmissionQueue?.close(),
-    ])
+    if (!this.enabled) {
+      logger.info('[JobQueueService] Queue shutdown complete (in-memory mode)')
+      return
+    }
+
+    const queues = [
+      this.emailQueue,
+      this.aiQueue,
+      this.reportQueue,
+      this.analyticsQueue,
+      this.growthQueue,
+      this.testSubmissionQueue,
+    ].filter((q): q is NonNullable<typeof q> => Boolean(q))
+
+    const closePromises = queues.map(queue =>
+      Promise.race([
+        queue.close(),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout closing queue ${queue.name}`)), 5000)
+        ),
+      ]).catch(err => {
+        logger.warn(`[JobQueueService] Error closing queue ${queue.name}`, {
+          error: err instanceof Error ? err.message : String(err),
+        })
+      })
+    )
+
+    await Promise.allSettled(closePromises)
     logger.info('[JobQueueService] All queues closed')
   }
 }

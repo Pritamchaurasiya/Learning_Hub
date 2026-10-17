@@ -382,13 +382,14 @@ export const getDauAnalytics = asyncHandler(async (req: Request, res: Response):
     return
   }
 
-  const days = parseInt(req.query.days as string) || 30
+  const requestedDays = parseInt(req.query.days as string)
+  const days = Number.isInteger(requestedDays) && requestedDays > 0 ? Math.min(requestedDays, 365) : 30
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 
   const activeUsers = await prisma.user.findMany({
-    where: { updatedAt: { gte: startDate } },
-    select: { updatedAt: true },
+    where: { lastActive: { gte: startDate } },
+    select: { lastActive: true },
   })
 
   const dauMap = new Map<string, number>()
@@ -400,7 +401,7 @@ export const getDauAnalytics = asyncHandler(async (req: Request, res: Response):
   }
 
   activeUsers.forEach((u: any) => {
-    const dateStr = u.updatedAt.toISOString().split('T')[0]
+    const dateStr = u.lastActive.toISOString().split('T')[0]
     if (dauMap.has(dateStr)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dauMap.set(dateStr, dauMap.get(dateStr)! + 1)

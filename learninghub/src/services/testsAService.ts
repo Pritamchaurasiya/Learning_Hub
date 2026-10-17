@@ -156,7 +156,12 @@ export interface TestResult {
   total_questions?: number
   time_taken_seconds?: number
   adaptive_diagnostics?: { finalTheta?: number; [key: string]: any }
-  telemetry_digest?: { integrityScore?: number; riskLevel?: string; tabSwitches?: number; [key: string]: any }
+  telemetry_digest?: {
+    integrityScore?: number
+    riskLevel?: string
+    tabSwitches?: number
+    [key: string]: any
+  }
 }
 
 const normalizeEnum = (value: unknown, fallback: string): string =>
@@ -503,15 +508,29 @@ export const testsAService = {
   // Get all tests with optional filters
   getTests: (filters?: {
     exam?: string
+    examId?: string
+    subjectId?: string
+    subjectIds?: string[]
+    includeGeneral?: boolean
     mode?: string
     difficulty?: string
     ai_mode?: string
     question_source?: string
     country?: string
+    countryId?: string
     search?: string
   }) => {
     const params = new URLSearchParams()
+    if (filters?.examId) params.append('examId', filters.examId)
     if (filters?.exam) params.append('exam', filters.exam)
+    if (filters?.countryId) params.append('countryId', filters.countryId)
+    if (filters?.subjectId) params.append('subjectId', filters.subjectId)
+    if (filters?.subjectIds && filters.subjectIds.length > 0) {
+      params.append('subjectIds', filters.subjectIds.join(','))
+    }
+    if (filters?.includeGeneral !== undefined) {
+      params.append('includeGeneral', String(filters.includeGeneral))
+    }
     if (filters?.mode) params.append('mode', filters.mode)
     if (filters?.difficulty) params.append('difficulty', filters.difficulty)
     if (filters?.ai_mode) params.append('ai_mode', filters.ai_mode)
@@ -525,7 +544,13 @@ export const testsAService = {
     return fetchApi(url)
       .then(res => {
         const tests = Array.isArray(res.data) ? res.data : (res.data?.results ?? [])
-        const testList = tests.length > 0 ? tests.map(normalizeTest) : FALLBACK_TESTS
+        // When exam or subject filter is active and returns empty, preserve genuine empty state
+        const testList =
+          tests.length > 0
+            ? tests.map(normalizeTest)
+            : filters?.exam || filters?.examId || filters?.subjectId
+              ? []
+              : FALLBACK_TESTS
         return {
           status: res.status ?? 'success',
           data: testList,
@@ -534,7 +559,7 @@ export const testsAService = {
       .catch(() => {
         return {
           status: 'success',
-          data: FALLBACK_TESTS,
+          data: filters?.exam || filters?.examId ? [] : FALLBACK_TESTS,
         }
       }) as Promise<{ status: string; data: TestA[] }>
   },

@@ -594,6 +594,8 @@ export class SearchService {
       category?: string
       difficulty?: string
       tags?: string[]
+      examId?: string
+      subjectId?: string
     }
   }): Promise<{
     results: Array<{
@@ -621,6 +623,19 @@ export class SearchService {
     for (const type of types) {
       const typeResults = await this.searchByType(type, query, queryEmbedding, filters, 50)
       results.push(...typeResults.map((r: any) => ({ ...r, type })))
+    }
+
+    // Apply exam context boosting
+    if (filters.examId) {
+      for (const r of results) {
+        if (
+          r.metadata?.examId === filters.examId ||
+          r.metadata?.exam === filters.examId ||
+          r.metadata?.examName === filters.examId
+        ) {
+          r.score = (r.score || 0) + 0.5
+        }
+      }
     }
 
     results.sort((a, b) => (b.score || 0) - (a.score || 0))

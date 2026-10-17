@@ -106,4 +106,8 @@ describe('JobQueueService Suite (Fallback Mode / Redis Disabled)', () => {
     const status = await jobQueueService.getJobStatus('email', 'job-1')
     expect(status).toBeNull()
   })
+
+  it('should cleanly shut down via close() without throwing', async () => {
+    await expect(jobQueueService.close()).resolves.toBeUndefined()
+  })
 })

@@ -12,11 +12,17 @@ export const courseService = {
     if (search) {
       where.title = { contains: search, mode: 'insensitive' }
     }
-    if (params.category) {
+    if (params.examId) {
+      if (params.includeGeneral === true || params.includeGeneral === 'true') {
+        where.OR = [{ examId: params.examId as string }, { examId: null }]
+      } else {
+        where.examId = params.examId as string
+      }
+    } else if (params.category && params.category !== 'All') {
       where.exam = { name: { contains: params.category as string, mode: 'insensitive' } }
     }
-    if (params.difficulty) {
-      where.difficulty = params.difficulty as string
+    if (params.difficulty && params.difficulty !== 'all') {
+      where.difficulty = (params.difficulty as string).toUpperCase()
     }
 
     const cacheKey = cacheService.generateKey(
@@ -27,6 +33,9 @@ export const courseService = {
         search,
         category: params.category,
         difficulty: params.difficulty,
+        examId: params.examId,
+        subjectId: params.subjectId,
+        includeGeneral: params.includeGeneral,
       })
     )
     const cached = await cacheService.get<any>(cacheKey)
@@ -44,6 +53,14 @@ export const courseService = {
           passingScore: true,
           totalMarks: true,
           createdAt: true,
+          examId: true,
+          exam: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
         take: limit,
         skip,
@@ -64,6 +81,9 @@ export const courseService = {
         passingScore: t.passingScore,
         totalMarks: t.totalMarks,
         createdAt: t.createdAt,
+        examId: t.examId,
+        examName: t.exam?.name ?? 'General',
+        examSlug: t.exam?.slug ?? 'general',
       })),
       meta: { total, page, limit, pages, hasNext: page < pages, hasPrev: page > 1 },
     }

@@ -98,7 +98,7 @@
     "workbox-cli": "^7.4.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "src/**/*.{ts,tsx,js,jsx}": [
       "npx eslint --fix",
       "npx prettier --write"
     ],

@@ -23,6 +23,8 @@ import { useOnClickOutside } from '../hooks/useOnClickOutside'
 import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 import { BrandLogo } from './BrandLogo'
+import { ExamContextBadge } from './exam/ExamContextBadge'
+import { useLearningContextStore } from '../stores/useLearningContextStore'
 
 const LevelProgressionModal = lazy(() =>
   import('./gamification/LevelProgressionModal').then(m => ({ default: m.LevelProgressionModal }))
@@ -36,11 +38,18 @@ const LevelUpCelebrationModal = lazy(() =>
 const Header = memo(() => {
   const navigate = useNavigate()
   const location = useLocation()
+  const activeExam = useLearningContextStore(s => s.activeExam)
   const isUpdatesPage = location.pathname.startsWith('/updates')
   const searchPlaceholder = isUpdatesPage
     ? 'Search student updates, circulars, exams...'
-    : 'Search courses...'
-  const searchAriaLabel = isUpdatesPage ? 'Search student updates and notices' : 'Search courses'
+    : activeExam
+      ? `Search ${activeExam.name} tests, courses, topics...`
+      : 'Search exams, courses, tests...'
+  const searchAriaLabel = isUpdatesPage
+    ? 'Search student updates and notices'
+    : activeExam
+      ? `Search ${activeExam.name} resources`
+      : 'Search resources'
   const {
     theme,
     toggleDarkMode,
@@ -178,6 +187,9 @@ const Header = memo(() => {
           <span className="sr-only">LearningHub</span>
           <span className="sr-only">LH</span>
         </div>
+
+        <ExamContextBadge className="hidden sm:inline-flex ml-1 sm:ml-2" />
+        <ExamContextBadge compact className="sm:hidden ml-1" />
       </div>
 
       {/* Desktop Search */}

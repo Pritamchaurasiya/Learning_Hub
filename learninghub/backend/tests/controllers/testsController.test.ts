@@ -54,6 +54,7 @@ import {
   autosaveTest,
   verifyScorecardEndpoint,
 } from '../../src/controllers/testsController'
+import { computeAuditDigest } from '../../src/utils/testsHelper'
 
 // ─── App factory ──────────────────────────────────────────────────────────────
 function makeApp(userId = 'user-123') {
@@ -638,16 +639,67 @@ describe('GET /tests/attempts', () => {
     })
 
     it('returns authentic verified scorecard details on valid cryptographic code', async () => {
-      const code = 'LH-118FE82C-4BD5B272-2DB3D418-4BD5B271'
+      const attemptId = 'attempt-123'
+      const completedAt = new Date('2026-01-01T00:00:00.000Z')
+      ;(prisma.testResult.findUnique as jest.Mock).mockResolvedValue({
+        id: attemptId,
+        score: 85,
+        percentage: 85,
+        passed: true,
+        timeTaken: 1800,
+        completedAt,
+        createdAt: completedAt,
+        user: { username: 'alice', email: 'alice@example.com' },
+        test: { title: 'Maths 101', mode: 'mock', totalMarks: 100 },
+      })
+
+      const code = computeAuditDigest(attemptId, 85, 85, completedAt.toISOString())
       const res = await request(makeApp()).get(
-        `/api/tests/verify-scorecard?code=${encodeURIComponent(code)}`
+        `/api/tests/verify-scorecard?code=${encodeURIComponent(code)}&attempt=${attemptId}`
       )
       expect(res.status).toBe(200)
       expect(res.body.data.valid).toBe(true)
       expect(res.body.data.status).toBe('AUTHENTIC_VERIFIED')
       expect(res.body.data.verification_code).toBe(code)
-      expect(res.body.data.candidate_name).toBeDefined()
-      expect(res.body.data.test_title).toBeDefined()
+      expect(res.body.data.candidate_name).toBe('alice')
+      expect(res.body.data.test_title).toBe('Maths 101')
+      expect(res.body.data.score).toBe(85)
+      expect(res.body.data.percentage).toBe(85)
+      expect(res.body.data.passed).toBe(true)
+    })
+
+    it('returns 400 when verification code matches attempt id but digest is tampered', async () => {
+      const attemptId = 'attempt-456'
+      const completedAt = new Date('2026-02-01T00:00:00.000Z')
+      ;(prisma.testResult.findUnique as jest.Mock).mockResolvedValue({
+        id: attemptId,
+        score: 72,
+        percentage: 72,
+        passed: false,
+        timeTaken: 2400,
+        completedAt,
+        createdAt: completedAt,
+        user: { username: 'bob', email: 'bob@example.com' },
+        test: { title: 'Science 202', mode: 'mock', totalMarks: 100 },
+      })
+
+      // Deliberately wrong digest for the same attempt id
+      const tamperedCode = computeAuditDigest(attemptId, 99, 99, '2099-12-31T00:00:00.000Z')
+      const res = await request(makeApp()).get(
+        `/api/tests/verify-scorecard?code=${encodeURIComponent(tamperedCode)}&attempt=${attemptId}`
+      )
+      expect(res.status).toBe(400)
+      expect(res.body.message).toMatch(/Cryptographic digest mismatch/i)
+    })
+
+    it('returns 400 for a well-formed LH- code with no matching attempt (no fabricated data)', async () => {
+      ;(prisma.testResult.findUnique as jest.Mock).mockResolvedValue(null)
+      const res = await request(makeApp()).get(
+        '/api/tests/verify-scorecard?code=LH-118FE82C-4BD5B272-2DB3D418-4BD5B271'
+      )
+      expect(res.status).toBe(400)
+      expect(res.body.message).toMatch(/Cryptographic digest mismatch/i)
+      expect(res.body.data).toBeUndefined()
     })
 
     it('returns 400 when verification code indicates tampering or invalid digest', async () => {

@@ -1,6 +1,8 @@
 import { StateCreator } from 'zustand'
 import { fetchApi, setAccessToken, setRefreshToken, clearTokens } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
+import { useLearningContextStore } from '../useLearningContextStore'
+import type { UserPreferencePayload } from '../../types/learningContext'
 import type { AppState, AuthSlice } from '../types'
 
 const initialAuthState = { isAuthenticated: false, user: null, isHydrated: false }
@@ -34,6 +36,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
         lastActive: user?.lastActive ?? state.progress.lastActive ?? new Date().toISOString(),
       },
     }))
+    if (user?.examPreference) {
+      useLearningContextStore.getState().reconcileWithUser(user.examPreference)
+    }
     trackEvent('user_authenticated', { user_id: user?.id })
   },
   updateUser: userData => {
@@ -53,6 +58,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       }
     }
     await clearTokens()
+    useLearningContextStore.getState().clearContext()
     set({ auth: { isAuthenticated: false, user: null, isHydrated: true } })
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('data:progress-updated'))
@@ -72,6 +78,15 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       if (!userData?.id) {
         void get().logout()
         return
+      }
+
+      const examPref =
+        (userData as Record<string, unknown>).examPreference ||
+        (userData as Record<string, unknown>).exam_preference
+      if (examPref) {
+        useLearningContextStore
+          .getState()
+          .reconcileWithUser(examPref as unknown as UserPreferencePayload)
       }
 
       set(state => ({

@@ -42,6 +42,19 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction): v
   next()
 }
 
+/**
+ * requireAdminPermission — DEPRECATED: Permission-based access control is not yet enforced.
+ *
+ * This function accepts `_allowedPermissions` for API compatibility, but currently only
+ * enforces role-based access (ADMIN or SUPERADMIN). Individual permission strings are
+ * accepted but ignored — there is no permissions field on the User model.
+ *
+ * New code should import `authorize`/`authorizeAdmin` from authMiddleware.ts instead.
+ *
+ * @param _allowedPermissions - Permission strings (accepted but not yet enforced)
+ * @returns Express middleware
+ * @deprecated Use authorize(['ADMIN', 'SUPERADMIN']) from authMiddleware.ts instead
+ */
 export const requireAdminPermission = (_allowedPermissions: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {

@@ -36,6 +36,9 @@ export interface CoursesResponse {
 }
 
 export interface CourseFilters {
+  examId?: string
+  subjectId?: string
+  includeGeneral?: boolean
   category?: string
   difficulty?: string
   is_free?: boolean
@@ -93,7 +96,8 @@ const FALLBACK_LIBRARY_COURSES: Course[] = [
     title: 'Full-Stack Modern Web Engineering with TypeScript',
     description:
       'Build enterprise-grade web applications using React 19, TypeScript, state management, and WebSockets.',
-    short_description: 'Clean Architecture, React 19, Vite, and high-performance frontend patterns.',
+    short_description:
+      'Clean Architecture, React 19, Vite, and high-performance frontend patterns.',
     slug: 'fullstack-modern-web-engineering',
     duration: '28 hours',
     level: 'Beginner',
@@ -116,6 +120,15 @@ export const libraryService = {
   async getCourses(filters?: CourseFilters): Promise<CoursesResponse> {
     const params = new URLSearchParams()
 
+    if (filters?.examId) {
+      params.append('examId', filters.examId)
+    }
+    if (filters?.subjectId) {
+      params.append('subjectId', filters.subjectId)
+    }
+    if (filters?.includeGeneral) {
+      params.append('includeGeneral', 'true')
+    }
     if (filters?.category && filters.category !== 'All') {
       params.append('category', filters.category.toLowerCase().replace(' ', '-'))
     }
@@ -133,17 +146,35 @@ export const libraryService = {
     }
 
     const queryString = params.toString()
-    const endpoint = `/courses/${queryString ? `?${queryString}` : ''}`
+    const endpoint = `/courses${queryString ? `?${queryString}` : ''}`
 
     try {
       const res = await fetchApi(endpoint)
       const data = res?.data ?? res
-      if (Array.isArray(data) && data.length > 0) {
-        return { status: 'success', data, count: data.length }
+      if (Array.isArray(data)) {
+        // If an explicit exam was requested, never inject unrelated fallback courses
+        if (filters?.examId) {
+          return { status: 'success', data, count: data.length }
+        }
+        if (data.length > 0) {
+          return { status: 'success', data, count: data.length }
+        }
       }
-      return { status: 'success', data: FALLBACK_LIBRARY_COURSES, count: FALLBACK_LIBRARY_COURSES.length }
+      return filters?.examId
+        ? { status: 'success', data: [], count: 0 }
+        : {
+            status: 'success',
+            data: FALLBACK_LIBRARY_COURSES,
+            count: FALLBACK_LIBRARY_COURSES.length,
+          }
     } catch {
-      return { status: 'success', data: FALLBACK_LIBRARY_COURSES, count: FALLBACK_LIBRARY_COURSES.length }
+      return filters?.examId
+        ? { status: 'success', data: [], count: 0 }
+        : {
+            status: 'success',
+            data: FALLBACK_LIBRARY_COURSES,
+            count: FALLBACK_LIBRARY_COURSES.length,
+          }
     }
   },
 

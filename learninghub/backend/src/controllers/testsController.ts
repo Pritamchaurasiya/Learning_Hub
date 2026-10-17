@@ -45,7 +45,7 @@ const normalizeCacheKey = (query: Record<string, unknown>): string => {
 }
 
 export const listTests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { mode, difficulty, search, examId, countryId, exam, country } = req.query
+  const { mode, difficulty, search, examId, countryId, exam, country, subjectId, subjectIds, includeGeneral } = req.query
   const { page, limit, skip } = getPaginationParams(req.query)
   const userId = req.user?.userId // This endpoint might allow unauthenticated access (optionalAuth)
 
@@ -88,7 +88,6 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
   }
 
   const examFilters: Prisma.ExamWhereInput = {}
-  if (examId) examFilters.id = examId as string
   if (countryId) examFilters.countryId = countryId as string
 
   if (typeof exam === 'string' && exam.trim()) {
@@ -111,8 +110,32 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
     }
   }
 
-  if (Object.keys(examFilters).length > 0) {
+  if (examId) {
+    if (String(includeGeneral) === 'true') {
+      filters.OR = [{ examId: examId as string }, { examId: null }]
+    } else {
+      filters.examId = examId as string
+    }
+  } else if (Object.keys(examFilters).length > 0) {
     filters.exam = examFilters
+  }
+
+  const targetSubjectId =
+    (subjectId as string) ||
+    (Array.isArray(subjectIds)
+      ? (subjectIds[0] as string)
+      : typeof subjectIds === 'string'
+        ? subjectIds.split(',')[0].trim()
+        : null)
+
+  if (targetSubjectId) {
+    filters.questions = {
+      some: {
+        topic: {
+          subjectId: targetSubjectId,
+        },
+      },
+    }
   }
 
   const [total, tests] = await Promise.all([
@@ -775,11 +798,11 @@ export const getTestAttemptDetails = asyncHandler(
       time_limit: attempt.test?.timeLimit ?? 0,
       test: sanitizedTest,
       answers: answersForResponse,
-      integrity_score: 100,
-      integrity_risk: 'EXCELLENT',
+      integrity_score: 95,
+      integrity_risk: 'NEEDS_TELEMETRY',
       telemetry_summary: {
-        integrity_score: 100,
-        risk_level: 'EXCELLENT',
+        integrity_score: 95,
+        risk_level: 'NEEDS_TELEMETRY',
         total_violations: 0,
         violation_counts: {
           TAB_SWITCH: 0,
@@ -791,6 +814,7 @@ export const getTestAttemptDetails = asyncHandler(
         flagged_for_review: false,
         audit_hash: `lh-audit-${attempt.id.slice(0, 16)}`,
         events_logged: 0,
+        status: 'PENDING_TELEMETRY',
       },
       question_results: questions,
     })
@@ -1480,10 +1504,9 @@ export const verifyScorecardEndpoint = asyncHandler(
 
       const isDigestMatch =
         code.toUpperCase() === computedDigest.toUpperCase() ||
-        code === attempt.id ||
-        (code.startsWith('LH-') && !code.includes('INVALID') && !code.includes('TAMPERED'))
+        code === attempt.id
 
-      if (!isDigestMatch) {
+      if (!attempt || !isDigestMatch) {
         sendValidationError(
           res,
           'Cryptographic digest mismatch. This scorecard content appears to have been altered.',
@@ -1519,38 +1542,11 @@ export const verifyScorecardEndpoint = asyncHandler(
       return
     }
 
-    // If no attempt matched directly by ID, validate against format and tampering indicators
-    const isStandardLhFormat = /^LH-[0-9A-F]{8}-[0-9A-F]{8}-[0-9A-F]{8}-[0-9A-F]{8}$/i.test(
-      code
-    )
-
-    if (code.includes('INVALID') || code.includes('TAMPERED') || !isStandardLhFormat) {
-      sendValidationError(
-        res,
-        'Cryptographic digest mismatch. This scorecard content appears to have been altered.',
-        'SCORECARD_INTEGRITY_MISMATCH'
-      )
-      return
-    }
-
-    sendSuccess(
+    // If no attempt matched directly by ID or digest, reject rather than fabricating mock data
+    sendValidationError(
       res,
-      {
-        valid: true,
-        status: 'AUTHENTIC_VERIFIED',
-        verification_code: code,
-        candidate_name: 'Verified Scholar',
-        test_title: 'National Academic Assessment',
-        test_mode: 'mock',
-        score: 88,
-        percentage: 88,
-        passed: true,
-        submitted_at: new Date().toISOString(),
-        time_taken_seconds: 2400,
-        integrity_risk_level: 'EXCELLENT',
-        proctoring_verified: true,
-      },
-      'Scorecard verified successfully'
+      'Cryptographic digest mismatch. This scorecard content appears to have been altered.',
+      'SCORECARD_INTEGRITY_MISMATCH'
     )
   }
 )
