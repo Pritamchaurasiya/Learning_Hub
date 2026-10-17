@@ -2,6 +2,7 @@
 Artificial General Intelligence (AGI) Orchestrator (Phase 100).
 The Ultimate Metacognitive Router and capability synthesizer.
 """
+import re
 import random
 import logging
 from typing import List, Dict, Any
@@ -26,6 +27,17 @@ class AGIOrchestrator:
         "Quantum & Scaling": ["Phase 97: Tensor Networks (MPS)", "Phase 88: Quantum ML Sim", "Phase 76: Mixture of Experts"],
         "Interpretability": ["Phase 99: Kolmogorov-Arnold Networks (KAN)"]
     }
+
+    # Pre-compiled regex patterns for fast keyword matching
+    DOMAIN_PATTERNS = {
+        "Computer Vision": re.compile(r"image|vision|see|spatial"),
+        "Generative Modeling": re.compile(r"generate|create|new|dream"),
+        "Time Series & Sequences": re.compile(r"time|sequence|predict|flow"),
+        "Extreme Memory": re.compile(r"memory|remember|store"),
+        "Optimization & Biology": re.compile(r"biology|life|grow|brain|energy"),
+        "Quantum & Scaling": re.compile(r"scale|quantum|massive|compress"),
+        "Interpretability": re.compile(r"explain|understand|why"),
+    }
     
     def __init__(self):
         self.intelligence_level = "Level 5: AGI"
@@ -34,22 +46,12 @@ class AGIOrchestrator:
     def _parse_intent(self, prompt: str) -> List[str]:
         """Basic keyword matching simulating semantic understanding."""
         prompt = prompt.lower()
-        required_domains = []
         
-        if any(word in prompt for word in ["image", "vision", "see", "spatial"]):
-            required_domains.append("Computer Vision")
-        if any(word in prompt for word in ["generate", "create", "new", "dream"]):
-            required_domains.append("Generative Modeling")
-        if any(word in prompt for word in ["time", "sequence", "predict", "flow"]):
-            required_domains.append("Time Series & Sequences")
-        if any(word in prompt for word in ["memory", "remember", "store"]):
-            required_domains.append("Extreme Memory")
-        if any(word in prompt for word in ["biology", "life", "grow", "brain", "energy"]):
-            required_domains.append("Optimization & Biology")
-        if any(word in prompt for word in ["scale", "quantum", "massive", "compress"]):
-            required_domains.append("Quantum & Scaling")
-        if any(word in prompt for word in ["explain", "understand", "why"]):
-            required_domains.append("Interpretability")
+        required_domains = [
+            domain
+            for domain, pattern in self.DOMAIN_PATTERNS.items()
+            if pattern.search(prompt)
+        ]
             
         if not required_domains:
             # Fallback for highly abstract requests
