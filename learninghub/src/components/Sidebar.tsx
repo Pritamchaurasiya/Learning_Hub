@@ -99,7 +99,6 @@ export default function Sidebar() {
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
         { to: '/raft', icon: Layers, label: 'Raft Consensus Studio' },
         { to: '/transactions', icon: Database, label: 'Distributed Transactions (2PC & Saga)' },
-        { to: '/streaming', icon: Layers, label: 'Event Streaming & Outbox Studio' },
         { to: '/concurrency', icon: GitFork, label: 'MVCC & Deadlock Studio' },
         { to: '/cache', icon: Database, label: 'Consistent Hashing & Cache Studio' },
         { to: '/crdt', icon: GitBranch, label: 'CRDT & Local-First Studio' },

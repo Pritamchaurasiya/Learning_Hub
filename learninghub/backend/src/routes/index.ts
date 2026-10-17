@@ -60,46 +60,33 @@ import catRoutes from './v1/cat.routes'
 import raftSimulationRoutes from './v1/raftSimulation.routes'
 import distributedTransactionRoutes from './v1/distributedTransaction.routes'
 import mvccDeadlockRoutes from './v1/mvccDeadlock.routes'
-import eventStreamingRoutes from './v1/eventStreaming.routes'
 import distributedCacheRoutes from './v1/distributedCache.routes'
 import crdtSimulationRoutes from './v1/crdtSimulation.routes'
 import lsmTreeSimulationRoutes from './v1/lsmTreeSimulation.routes'
 import distributedRateLimiterRoutes from './v1/distributedRateLimiter.routes'
 import distributedTracingRoutes from './v1/distributedTracing.routes'
 
-import { authenticate, optionalAuth } from '../middleware/authMiddleware'
-import { asyncHandler } from '../utils/errorHandler'
-import { searchService, SearchParams } from '../services/SearchService'
-import { courseService } from '../services/CourseService'
-import { sendSuccess } from '../utils/responseHelper'
-import { createRateLimiter } from '../middleware/rateLimiter'
-import { requestLogger, responseCompression, bodySizeLimiter } from '../middleware/requestLogger'
+import { responseCompression, bodySizeLimiter } from '../middleware/requestLogger'
 
 const router = Router()
 
-const searchRateLimiter = createRateLimiter({
-  windowMs: 60 * 1000,
-  max: 30,
-  keyPrefix: 'search',
-})
-
 // API versioning middleware
-const apiVersion = (req: Request, res: Response, next: NextFunction): void => {
+const apiVersion = (_req: Request, res: Response, next: NextFunction): void => {
   res.setHeader('X-API-Version', '1.0.0')
   res.setHeader('X-Powered-By', 'LearningHub')
   next()
 }
 
 // Response time header
-const responseTimeHeader = (req: Request, res: Response, next: NextFunction): void => {
+const responseTimeHeader = (_req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now()
-  const originalEnd = res.end
-  res.end = function (this: any, ...args: any[]): any {
+  const originalEnd = res.end.bind(res)
+  res.end = function (...args: Parameters<typeof res.end>): ReturnType<typeof res.end> {
     if (!res.headersSent) {
       res.setHeader('X-Response-Time', `${Date.now() - start}ms`)
     }
-    return (originalEnd as any).apply(this, args)
-  } as any
+    return (originalEnd as Function)(...args)
+  }
   next()
 }
 
@@ -175,7 +162,6 @@ router.use('/cat', catRoutes)
 router.use('/raft', raftSimulationRoutes)
 router.use('/transactions', distributedTransactionRoutes)
 router.use('/concurrency', mvccDeadlockRoutes)
-router.use('/streaming', eventStreamingRoutes)
 router.use('/cache-lab', distributedCacheRoutes)
 router.use('/crdt', crdtSimulationRoutes)
 router.use('/lsm', lsmTreeSimulationRoutes)

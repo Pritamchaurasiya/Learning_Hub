@@ -60,22 +60,27 @@ const CareerOrchestratorPage = lazy(() =>
   import('./pages/CareerOrchestratorPage').then(m => ({ default: m.CareerOrchestratorPage }))
 )
 const RaftConsensusStudioPage = lazy(() => import('./pages/RaftConsensusStudioPage'))
-const DistributedTransactionStudioPage = lazy(() => import('./pages/DistributedTransactionStudioPage'))
-const EventStreamingStudioPage = lazy(() =>
-  import('./pages/EventStreamingStudioPage').then(m => ({ default: m.EventStreamingStudioPage }))
+const DistributedTransactionStudioPage = lazy(
+  () => import('./pages/DistributedTransactionStudioPage')
 )
 const MvccDeadlockStudioPage = lazy(() => import('./pages/MvccDeadlockStudioPage'))
 const DistributedCacheStudioPage = lazy(() =>
-  import('./pages/DistributedCacheStudioPage').then(m => ({ default: m.DistributedCacheStudioPage }))
+  import('./pages/DistributedCacheStudioPage').then(m => ({
+    default: m.DistributedCacheStudioPage,
+  }))
 )
 const CrdtStudioPage = lazy(() =>
   import('./pages/CrdtStudioPage').then(m => ({ default: m.CrdtStudioPage }))
 )
 const DistributedTracingStudioPage = lazy(() =>
-  import('./pages/DistributedTracingStudioPage').then(m => ({ default: m.DistributedTracingStudioPage }))
+  import('./pages/DistributedTracingStudioPage').then(m => ({
+    default: m.DistributedTracingStudioPage,
+  }))
 )
 const DistributedRateLimiterStudioPage = lazy(() =>
-  import('./pages/DistributedRateLimiterStudioPage').then(m => ({ default: m.DistributedRateLimiterStudioPage }))
+  import('./pages/DistributedRateLimiterStudioPage').then(m => ({
+    default: m.DistributedRateLimiterStudioPage,
+  }))
 )
 const LsmStorageStudioPage = lazy(() => import('./pages/LsmStorageStudioPage'))
 
@@ -477,18 +482,6 @@ function App() {
               />
               <Route path="/2pc" element={<Navigate to="/transactions" replace />} />
               <Route path="/saga" element={<Navigate to="/transactions" replace />} />
-              <Route
-                path="/streaming"
-                element={
-                  <LazyRoute sectionName="Event Streaming Studio">
-                    <EventStreamingStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/kafka" element={<Navigate to="/streaming" replace />} />
-              <Route path="/event-driven" element={<Navigate to="/streaming" replace />} />
-              <Route path="/outbox" element={<Navigate to="/streaming" replace />} />
-              <Route path="/event-sourcing" element={<Navigate to="/streaming" replace />} />
               <Route
                 path="/concurrency"
                 element={
