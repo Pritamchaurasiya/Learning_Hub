@@ -59,31 +59,6 @@ const ResumePortfolioPage = lazy(() => import('./pages/ResumePortfolioPage'))
 const CareerOrchestratorPage = lazy(() =>
   import('./pages/CareerOrchestratorPage').then(m => ({ default: m.CareerOrchestratorPage }))
 )
-const RaftConsensusStudioPage = lazy(() => import('./pages/RaftConsensusStudioPage'))
-const DistributedTransactionStudioPage = lazy(
-  () => import('./pages/DistributedTransactionStudioPage')
-)
-const MvccDeadlockStudioPage = lazy(() => import('./pages/MvccDeadlockStudioPage'))
-const DistributedCacheStudioPage = lazy(() =>
-  import('./pages/DistributedCacheStudioPage').then(m => ({
-    default: m.DistributedCacheStudioPage,
-  }))
-)
-const CrdtStudioPage = lazy(() =>
-  import('./pages/CrdtStudioPage').then(m => ({ default: m.CrdtStudioPage }))
-)
-const DistributedTracingStudioPage = lazy(() =>
-  import('./pages/DistributedTracingStudioPage').then(m => ({
-    default: m.DistributedTracingStudioPage,
-  }))
-)
-const DistributedRateLimiterStudioPage = lazy(() =>
-  import('./pages/DistributedRateLimiterStudioPage').then(m => ({
-    default: m.DistributedRateLimiterStudioPage,
-  }))
-)
-const LsmStorageStudioPage = lazy(() => import('./pages/LsmStorageStudioPage'))
-
 const StudyPlannerPage = lazy(() => import('./pages/StudyPlannerPage'))
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'))
 const AdminABTestingPage = lazy(() => import('./pages/AdminABTestingPage'))
@@ -462,91 +437,6 @@ function App() {
               <Route path="/career-match" element={<Navigate to="/career" replace />} />
               <Route path="/jobs" element={<Navigate to="/career" replace />} />
               <Route path="/recruiter-sim" element={<Navigate to="/career" replace />} />
-              <Route
-                path="/raft"
-                element={
-                  <LazyRoute sectionName="Raft Consensus Studio">
-                    <RaftConsensusStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/consensus" element={<Navigate to="/raft" replace />} />
-              <Route path="/raft-studio" element={<Navigate to="/raft" replace />} />
-              <Route
-                path="/transactions"
-                element={
-                  <LazyRoute sectionName="Distributed Transaction Studio">
-                    <DistributedTransactionStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/2pc" element={<Navigate to="/transactions" replace />} />
-              <Route path="/saga" element={<Navigate to="/transactions" replace />} />
-              <Route
-                path="/concurrency"
-                element={
-                  <LazyRoute sectionName="MVCC & Deadlock Detection Studio">
-                    <MvccDeadlockStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/mvcc" element={<Navigate to="/concurrency" replace />} />
-              <Route path="/deadlock" element={<Navigate to="/concurrency" replace />} />
-              <Route
-                path="/cache"
-                element={
-                  <LazyRoute sectionName="Consistent Hashing & Distributed Cache Studio">
-                    <DistributedCacheStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/consistent-hashing" element={<Navigate to="/cache" replace />} />
-              <Route path="/caching-studio" element={<Navigate to="/cache" replace />} />
-              <Route path="/quorum" element={<Navigate to="/cache" replace />} />
-              <Route
-                path="/crdt"
-                element={
-                  <LazyRoute sectionName="CRDT & State Synchronization Studio">
-                    <CrdtStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/crdt-studio" element={<Navigate to="/crdt" replace />} />
-              <Route path="/collaborative" element={<Navigate to="/crdt" replace />} />
-              <Route path="/sync" element={<Navigate to="/crdt" replace />} />
-              <Route
-                path="/tracing"
-                element={
-                  <LazyRoute sectionName="Distributed Tracing & OpenTelemetry Studio">
-                    <DistributedTracingStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/opentelemetry" element={<Navigate to="/tracing" replace />} />
-              <Route path="/otel" element={<Navigate to="/tracing" replace />} />
-              <Route path="/distributed-tracing" element={<Navigate to="/tracing" replace />} />
-              <Route
-                path="/rate-limiter"
-                element={
-                  <LazyRoute sectionName="Distributed Rate Limiter & Traffic Shaping Studio">
-                    <DistributedRateLimiterStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/throttling" element={<Navigate to="/rate-limiter" replace />} />
-              <Route path="/traffic-shaping" element={<Navigate to="/rate-limiter" replace />} />
-              <Route path="/token-bucket" element={<Navigate to="/rate-limiter" replace />} />
-              <Route
-                path="/lsm"
-                element={
-                  <LazyRoute sectionName="LSM-Tree & Storage Engine Studio">
-                    <LsmStorageStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/storage-engine" element={<Navigate to="/lsm" replace />} />
-              <Route path="/lsm-tree" element={<Navigate to="/lsm" replace />} />
-              <Route path="/rocksdb" element={<Navigate to="/lsm" replace />} />
               {/* Removed engineering lab routes -> redirect to dashboard */}
               <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
               <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />

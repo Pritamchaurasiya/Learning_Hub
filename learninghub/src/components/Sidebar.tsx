@@ -32,13 +32,6 @@ import {
   BellRing,
   FileText,
   Briefcase,
-  Layers,
-  Database,
-  GitFork,
-  GitBranch,
-  Network,
-  HardDrive,
-  Sliders,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -97,14 +90,6 @@ export default function Sidebar() {
         { to: '/interview', icon: Bot, label: 'Technical Mock Interview' },
         { to: '/resume', icon: FileText, label: 'Verifiable Career Resume' },
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
-        { to: '/raft', icon: Layers, label: 'Raft Consensus Studio' },
-        { to: '/transactions', icon: Database, label: 'Distributed Transactions (2PC & Saga)' },
-        { to: '/concurrency', icon: GitFork, label: 'MVCC & Deadlock Studio' },
-        { to: '/cache', icon: Database, label: 'Consistent Hashing & Cache Studio' },
-        { to: '/crdt', icon: GitBranch, label: 'CRDT & Local-First Studio' },
-        { to: '/tracing', icon: Network, label: 'Distributed Tracing & OTel Studio' },
-        { to: '/rate-limiter', icon: Sliders, label: 'Rate Limiter & Traffic Shaping' },
-        { to: '/lsm', icon: HardDrive, label: 'LSM-Tree & Storage Studio' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },

@@ -57,14 +57,6 @@ import sweStudioRoutes from './v1/sweStudio.routes'
 import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
 import canaryRoutes from './v1/canary.routes'
 import catRoutes from './v1/cat.routes'
-import raftSimulationRoutes from './v1/raftSimulation.routes'
-import distributedTransactionRoutes from './v1/distributedTransaction.routes'
-import mvccDeadlockRoutes from './v1/mvccDeadlock.routes'
-import distributedCacheRoutes from './v1/distributedCache.routes'
-import crdtSimulationRoutes from './v1/crdtSimulation.routes'
-import lsmTreeSimulationRoutes from './v1/lsmTreeSimulation.routes'
-import distributedRateLimiterRoutes from './v1/distributedRateLimiter.routes'
-import distributedTracingRoutes from './v1/distributedTracing.routes'
 
 import { responseCompression, bodySizeLimiter } from '../middleware/requestLogger'
 
@@ -81,12 +73,12 @@ const apiVersion = (_req: Request, res: Response, next: NextFunction): void => {
 const responseTimeHeader = (_req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now()
   const originalEnd = res.end.bind(res)
-  res.end = function (...args: Parameters<typeof res.end>): ReturnType<typeof res.end> {
+  res.end = ((...args: any[]): any => {
     if (!res.headersSent) {
       res.setHeader('X-Response-Time', `${Date.now() - start}ms`)
     }
-    return (originalEnd as Function)(...args)
-  }
+    return (originalEnd as any)(...args)
+  }) as any
   next()
 }
 
@@ -159,14 +151,6 @@ router.use('/swe-studio', sweStudioRoutes)
 router.use('/career', careerOrchestratorRoutes)
 router.use('/deployments/canary', canaryRoutes)
 router.use('/cat', catRoutes)
-router.use('/raft', raftSimulationRoutes)
-router.use('/transactions', distributedTransactionRoutes)
-router.use('/concurrency', mvccDeadlockRoutes)
-router.use('/cache-lab', distributedCacheRoutes)
-router.use('/crdt', crdtSimulationRoutes)
-router.use('/lsm', lsmTreeSimulationRoutes)
-router.use('/tracing', distributedTracingRoutes)
-router.use('/rate-limiter', distributedRateLimiterRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'
