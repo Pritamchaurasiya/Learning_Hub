@@ -32,6 +32,8 @@ urlpatterns = [
     path('<str:pk>/offline-bundle', TestViewSet.as_view({'get': 'offline_bundle'}), name='test-offline-bundle-noslash'),
     path('<str:pk>/offline-sync', TestViewSet.as_view({'post': 'offline_sync'}), name='test-offline-sync-noslash'),
     path('<str:pk>/adaptive/step', TestViewSet.as_view({'post': 'adaptive_step'}), name='test-adaptive-step-noslash'),
+    path('<str:pk>/grade-subjective', TestViewSet.as_view({'post': 'grade_subjective'}), name='test-grade-subjective-noslash'),
+    path('<str:pk>/grade-subjective/', TestViewSet.as_view({'post': 'grade_subjective'}), name='test-grade-subjective'),
 
     path('', include(router.urls)),
 ]

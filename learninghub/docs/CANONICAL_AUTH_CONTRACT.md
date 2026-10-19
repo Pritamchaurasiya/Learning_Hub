@@ -28,10 +28,11 @@ All auth responses follow this envelope:
 ```json
 {
   "user": { "id": "...", "email": "...", "username": "...", "role": "STUDENT" },
-  "token": "eyJ...",                     // canonical access token (preferred)
-  "accessToken": "eyJ...",               // alias
-  "refreshToken": "eyJ...",              // canonical refresh token
-  "tokens": {                            // alternative structured form
+  "token": "eyJ...", // canonical access token (preferred)
+  "accessToken": "eyJ...", // alias
+  "refreshToken": "eyJ...", // canonical refresh token
+  "tokens": {
+    // alternative structured form
     "access": "eyJ...",
     "refresh": "eyJ...",
     "accessToken": "eyJ...",
@@ -45,11 +46,13 @@ All auth responses follow this envelope:
 ### `POST /api/v1/auth/login`
 
 **Request:**
+
 ```json
 { "email": "user@example.com", "password": "StrongPass123!" }
 ```
 
 **Response 200 (success, no MFA):**
+
 ```json
 {
   "status": "success",
@@ -65,6 +68,7 @@ All auth responses follow this envelope:
 ```
 
 **Response 200 (MFA required):**
+
 ```json
 {
   "status": "success",
@@ -74,12 +78,14 @@ All auth responses follow this envelope:
 ```
 
 **Set-Cookie headers (always, when success):**
+
 - `access_token=...; HttpOnly; Path=/; Max-Age=900; SameSite=Strict`
 - `refresh_token=...; HttpOnly; Path=/api/v1/auth; Max-Age=604800; SameSite=Strict`
 
 ### `POST /api/v1/auth/register`
 
 **Request:**
+
 ```json
 { "email": "new@example.com", "password": "StrongPass123!", "username": "optional" }
 ```
@@ -90,6 +96,7 @@ Same as login success.
 ### `POST /api/v1/auth/refresh`
 
 **Request (any of these field names accepted):**
+
 ```json
 { "refreshToken": "..." }
 // OR
@@ -101,6 +108,7 @@ Same as login success.
 If no body field, fallback to `refresh_token` httpOnly cookie.
 
 **Response 200:**
+
 ```json
 {
   "status": "success",
@@ -121,6 +129,7 @@ Also sets new `access_token` and `refresh_token` cookies.
 **Request:** (optional refresh token in body or cookie)
 
 **Response 200:**
+
 ```json
 { "status": "success", "data": null, "message": "Logged out successfully" }
 ```
@@ -132,6 +141,7 @@ Clears auth cookies.
 **Request:** Bearer token in Authorization header OR `access_token` cookie.
 
 **Response 200:**
+
 ```json
 {
   "status": "success",
@@ -148,41 +158,54 @@ Clears auth cookies.
 }
 ```
 
-## Frontend Behavior
+## Frontend Behavior (Cycle 21+)
 
-The frontend (`src/utils/api.ts`) will:
+The frontend (`src/utils/api.ts`) now uses **httpOnly cookies exclusively**:
 
-1. **Read tokens from body first** (primary), fall back to SecureStorage
-2. **Send `refreshToken` (camelCase)** as the canonical field name on refresh
-3. **Send `Authorization: Bearer <token>`** header from the access token
-4. **Persist tokens in SecureStorage** (not localStorage for XSS resistance)
-5. **Dispatch `auth:token-refreshed`** event after successful refresh
-6. **Dispatch `auth:session-expired`** event when refresh fails — triggers logout
+1. **No localStorage/token storage** — tokens are NOT stored in frontend memory or localStorage
+2. **httpOnly cookies set by backend** — `access_token` and `refresh_token` cookies set via `Set-Cookie` headers
+3. **Automatic cookie transmission** — `credentials: 'include'` on all `fetchApi` calls
+4. **No Authorization header needed** — backend reads from httpOnly cookies (defense in depth)
+5. **Refresh flow** — `POST /auth/refresh` with `credentials: 'include'` returns new cookies
+6. **WebSocket auth** — in-memory token for WS connections only (`src/services/examStationWebSocketService.ts`)
+
+### Legacy (Pre-Cycle 21) — Removed
+
+- ~~SecureStorage for XSS-resistant client storage~~ (REMOVED — httpOnly cookies are superior)
+- ~~Authorization header from localStorage token~~ (REMOVED — cookie auto-transmit)
+- ~~`auth:token-refreshed` / `auth:session-expired` events for token management~~ (still dispatched for UI sync)
+
+### AuthSlice (`src/stores/slices/authSlice.ts`)
+
+- `setAuth()` — sets authenticated user state only (tokens from cookies)
+- `logout()` — calls `/auth/logout`, clears cookies, clears in-memory WS token
+- `fetchMe()` — validates session via `/auth/me`
 
 ## Backend Implementation Matrix
 
-| Endpoint | Node Backend | Django Backend | Status |
-|----------|--------------|----------------|--------|
-| POST /auth/login | ✅ Returns user + tokens in body, sets cookies | ✅ Returns user + tokens in body | ALIGNED |
-| POST /auth/register | ✅ Returns user + tokens in body, sets cookies | ✅ Returns user + tokens in body | ALIGNED |
-| POST /auth/refresh | ✅ Accepts refresh_token/refresh/**refreshToken**, returns tokens in body, sets cookies | ✅ Accepts refresh/refreshToken, returns tokens in body | ALIGNED |
-| POST /auth/logout | ✅ Clears cookies | ⚠️ Returns success but no token blacklist (TODO) | PARTIAL |
-| GET /auth/me | ✅ Returns full user | ✅ Returns user | ALIGNED |
-| POST /auth/mfa/setup | ✅ Returns secret + QR | ✅ Returns secret + QR URL | ALIGNED |
-| POST /auth/mfa/verify-enable | ✅ Enables MFA | ⚠️ VerifyMfaView exists but differs (TODO align) | PARTIAL |
-| POST /auth/mfa/verify-login | ✅ Returns tokens on MFA success | ⚠️ Not seen in views.py (TODO) | MISSING IN DJANGO |
+| Endpoint                     | Node Backend                                                                            | Django Backend                                          | Status            |
+| ---------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------- |
+| POST /auth/login             | ✅ Returns user + tokens in body, sets cookies                                          | ✅ Returns user + tokens in body                        | ALIGNED           |
+| POST /auth/register          | ✅ Returns user + tokens in body, sets cookies                                          | ✅ Returns user + tokens in body                        | ALIGNED           |
+| POST /auth/refresh           | ✅ Accepts refresh_token/refresh/**refreshToken**, returns tokens in body, sets cookies | ✅ Accepts refresh/refreshToken, returns tokens in body | ALIGNED           |
+| POST /auth/logout            | ✅ Clears cookies                                                                       | ⚠️ Returns success but no token blacklist (TODO)        | PARTIAL           |
+| GET /auth/me                 | ✅ Returns full user                                                                    | ✅ Returns user                                         | ALIGNED           |
+| POST /auth/mfa/setup         | ✅ Returns secret + QR                                                                  | ✅ Returns secret + QR URL                              | ALIGNED           |
+| POST /auth/mfa/verify-enable | ✅ Enables MFA                                                                          | ⚠️ VerifyMfaView exists but differs (TODO align)        | PARTIAL           |
+| POST /auth/mfa/verify-login  | ✅ Returns tokens on MFA success                                                        | ⚠️ Not seen in views.py (TODO)                          | MISSING IN DJANGO |
 
-## Security Requirements
+## Security Requirements (Cycle 21+)
 
-1. **Token Storage:**
-   - Backend: httpOnly cookies (defense in depth)
-   - Frontend: SecureStorage (XSS-resistant client storage)
+1. **Token Storage — httpOnly Cookie Only:**
+   - **Backend:** Sets httpOnly cookies on login/register/refresh (`setAuthCookies`)
+   - **Frontend:** **NO token storage** — reads auth state from `/auth/me` response only
+   - **WebSocket:** In-memory token for WS connection handshake only (not persisted)
 
 2. **Token Lifetime (Canonical Reality — Intentional Divergence):**
-    - Node: 15 min (`backend/src/utils/cookies.ts:54` — `COOKIE_ACCESS.maxAge = 15 * 60 * 1000` / `Set-Cookie Max-Age=900`)
-    - Django: 60 min (`django_backend/learninghub_server/settings.py:191` — `SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'] = timedelta(minutes=60)`)
-    - Refresh: 7 days both (`backend/src/utils/cookies.ts:34` — `7 * 24 * 60 * 60 * 1000`; `django_backend/learninghub_server/settings.py:192` — `timedelta(days=7)`)
-    - Recommendation: align to 15min in future — requires coordinated rollout (do not change without migration plan)
+   - Node: 15 min access (`backend/src/utils/cookies.ts:54` — `COOKIE_ACCESS.maxAge = 15 * 60 * 1000` / `Set-Cookie Max-Age=900`)
+   - Django: 60 min (`django_backend/learninghub_server/settings.py:191` — `SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'] = timedelta(minutes=60)`)
+   - Refresh: 7 days both (`backend/src/utils/cookies.ts:34` — `7 * 24 * 60 * 60 * 1000`; `django_backend/learninghub_server/settings.py:192` — `timedelta(days=7)`)
+   - Recommendation: align to 15min in future — requires coordinated rollout (do not change without migration plan)
 
 3. **CSRF:**
    - Mutating requests require `X-CSRF-Token` header (matches cookie value)
@@ -196,11 +219,28 @@ The frontend (`src/utils/api.ts`) will:
 
 5. **Token Blacklist:**
    - Both backends: enabled after rotation (SimpleJWT BLACKLIST_AFTER_ROTATION=True)
+   - Node: refresh token rotation with `usedAt` timestamp in DB
+
+6. **XSS Protection:**
+   - httpOnly cookies prevent token theft via XSS
+   - CSP headers via Helmet (no `unsafe-inline` in production)
+   - DOMPurify for user-generated HTML
+   - Input sanitization on both ends (control chars, event handlers, javascript: protocol)
 
 ## Migration Path
 
-Phase 1 (DONE in this cycle): Align Node backend to canonical contract.
-Phase 2 (TODO): Verify Django backend matches all fields.
-Phase 3 (TODO): Add integration tests for both backends.
-Phase 4 (TODO): Switch frontend to backend via `VITE_API_TARGET` env var.
-Phase 5 (TODO): Decommission Node backend after full parity proven.
+**Phase 0 — COMPLETE (Cycle 21):** httpOnly cookie migration for frontend
+
+- Removed SecureStorage/localStorage token storage
+- Frontend uses `credentials: 'include'` + httpOnly cookies
+- WebSocket auth uses in-memory token
+
+**Phase 1 — COMPLETE (Cycle 18-20):** Align Node backend to canonical contract.
+
+**Phase 2 (TODO):** Verify Django backend matches all fields.
+
+**Phase 3 (TODO):** Add integration tests for both backends.
+
+**Phase 4 (TODO):** Switch frontend to backend via `VITE_API_TARGET` env var.
+
+**Phase 5 (TODO):** Decommission Node backend after full parity proven.

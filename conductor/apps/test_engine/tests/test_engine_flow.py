@@ -199,5 +199,102 @@ class TestEngineFlowTests(TestCase):
         res_stats = recalculate_question_stats()
         self.assertIsInstance(res_stats['updated'], int)
 
+    def test_adaptive_assessment_engine_irt_math(self):
+        from apps.test_engine.services import AdaptiveAssessmentEngine
+
+        # 1. Test 3PL probability bounds and monotonicity
+        p_low = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=-2.0, a=1.5, b=0.0, c=0.25)
+        p_mid = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=0.0, a=1.5, b=0.0, c=0.25)
+        p_high = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=2.0, a=1.5, b=0.0, c=0.25)
+        self.assertGreaterEqual(p_low, 0.25)
+        self.assertGreater(p_mid, p_low)
+        self.assertGreater(p_high, p_mid)
+        self.assertLessEqual(p_high, 1.0)
+
+        # 2. Test Fisher Information peaks near item difficulty b
+        info_at_b = AdaptiveAssessmentEngine.fisher_information(theta=0.0, a=1.5, b=0.0, c=0.25)
+        info_far = AdaptiveAssessmentEngine.fisher_information(theta=3.0, a=1.5, b=0.0, c=0.25)
+        self.assertGreater(info_at_b, info_far)
+
+        # 3. Test Bayesian EAP estimation
+        responses_correct = [1, 1, 1, 1]
+        params = [{'a': 1.2, 'b': 0.0, 'c': 0.25} for _ in range(4)]
+        theta_high, sem_high = AdaptiveAssessmentEngine.estimate_ability_eap(responses_correct, params)
+        self.assertGreater(theta_high, 0.0)
+
+        responses_incorrect = [0, 0, 0, 0]
+        theta_low, sem_low = AdaptiveAssessmentEngine.estimate_ability_eap(responses_incorrect, params)
+        self.assertLess(theta_low, 0.0)
+        self.assertGreater(sem_high, 0.0)
+
+        # 4. Test percentile and ability band mapping
+        pct_high = AdaptiveAssessmentEngine.theta_to_percentile(2.0)
+        pct_low = AdaptiveAssessmentEngine.theta_to_percentile(-2.0)
+        self.assertGreater(pct_high, pct_low)
+        self.assertEqual(AdaptiveAssessmentEngine.get_ability_band(2.5), 'Advanced Master')
+        self.assertEqual(AdaptiveAssessmentEngine.get_ability_band(-2.5), 'Foundational')
+
+    def test_subjective_ai_rubric_grading_service_and_api(self):
+        from rest_framework.test import APIClient
+        from django.urls import reverse
+
+        # 1. Create subjective question and attach to test
+        subj_q = Question.objects.create(
+            topic=self.topic,
+            text='Prove the correctness of Dijkstra algorithm with non-negative weights.',
+            question_type='subjective',
+            explanation='Greedy choice invariant: shortest path to settled nodes is guaranteed when weights >= 0.'
+        )
+        TestQuestion.objects.create(test=self.test, question=subj_q, order=2, marks=5)
+        self.test.total_marks = 6
+        self.test.save()
+
+        # 2. Test SessionManager grading with substantive response
+        res = TestSessionManager.grade_subjective_answer(
+            user=self.user,
+            test=self.test,
+            question_id=subj_q.id,
+            answer_text=(
+                "Proof by induction on settled vertices. In Dijkstra algorithm, we maintain a priority queue "
+                "of distances. Because edge weights are non-negative, any alternative path through unsettled nodes "
+                "must have length >= distance to the current closest unsettled node."
+            )
+        )
+        self.assertEqual(res['questionId'], str(subj_q.id))
+        self.assertGreater(res['marksObtained'], 0.0)
+        self.assertTrue(res['isCorrect'])
+        self.assertGreaterEqual(len(res['rubric']), 3)
+        self.assertIn('feedback', res)
+        self.assertIn('strengths', res)
+        self.assertIn('improvements', res)
+
+        # 3. Test SessionManager grading with empty/minimal response
+        res_empty = TestSessionManager.grade_subjective_answer(
+            user=self.user,
+            test=self.test,
+            question_id=subj_q.id,
+            answer_text="xyz"
+        )
+        self.assertEqual(res_empty['marksObtained'], 0.0)
+        self.assertFalse(res_empty['isCorrect'])
+
+        # 4. Test API endpoint POST /api/v1/tests/{pk}/grade-subjective
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        api_url = f"/api/v1/tests/{self.test.id}/grade-subjective"
+        response = client.post(
+            api_url,
+            {
+                'question_id': str(subj_q.id),
+                'answer_text': 'Valid proof with induction step and non-negative constraints.'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'success')
+        self.assertEqual(response.data['data']['questionId'], str(subj_q.id))
+        self.assertIn('rubric', response.data['data'])
+
+
 
 

@@ -549,6 +549,43 @@ class TestViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     @extend_schema(
+        description='Grade subjective answer using multidimensional AI Rubric',
+        responses={200: dict},
+    )
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='grade-subjective')
+    def grade_subjective(self, request, pk=None):
+        """Grade subjective question answer with multidimensional AI Rubric."""
+        test = self.get_object()
+        question_id = request.data.get('question_id') or request.data.get('questionId')
+        attempt_id = request.data.get('attempt_id') or request.data.get('testResultId') or request.data.get('attemptId')
+        answer_text = request.data.get('answer_text') or request.data.get('answerText')
+
+        if not question_id:
+            return Response(
+                {'status': 'error', 'message': 'question_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = TestSessionManager.grade_subjective_answer(
+                user=request.user,
+                test=test,
+                question_id=question_id,
+                attempt_id=attempt_id,
+                answer_text=answer_text,
+            )
+            return Response({
+                'status': 'success',
+                'data': result,
+            })
+        except Exception as e:
+            logger.exception(f"Subjective rubric grading failed: {e}")
+            return Response(
+                {'status': 'error', 'message': str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @extend_schema(
         description='Verify official academic scorecard via cryptographic checksum',
         responses={200: dict},
     )

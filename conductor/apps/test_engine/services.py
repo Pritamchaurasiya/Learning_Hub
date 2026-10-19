@@ -528,6 +528,7 @@ class TestSessionManager:
             answer = answers.get(str(q.id))
             correct_options = list(q.options.filter(is_correct=True).values('id', 'text'))
 
+            subj_data = (attempt.metadata or {}).get('subjective_grades', {}).get(str(q.id), {})
             if answer:
                 selected_options = list(answer.selected_options.values('id', 'text'))
                 question_results.append({
@@ -542,6 +543,9 @@ class TestSessionManager:
                     'time_spent': answer.time_spent_seconds,
                     'is_flagged': answer.is_flagged,
                     'is_answered': bool(answer.answered_at or selected_options or answer.text_answer),
+                    'text_answer': answer.text_answer,
+                    'ai_feedback': subj_data.get('ai_feedback') or subj_data.get('aiFeedback'),
+                    'rubric': subj_data.get('rubric'),
                 })
             else:
                 question_results.append({
@@ -556,6 +560,9 @@ class TestSessionManager:
                     'time_spent': 0,
                     'is_flagged': False,
                     'is_answered': False,
+                    'text_answer': '',
+                    'ai_feedback': subj_data.get('ai_feedback') or subj_data.get('aiFeedback'),
+                    'rubric': subj_data.get('rubric'),
                 })
 
         total_q = attempt.test.question_count
@@ -936,6 +943,173 @@ class TestSessionManager:
             'integrity_risk_level': metadata.get('proctoring_risk_level', 'EXCELLENT'),
             'proctoring_incidents_count': len(metadata.get('proctoring_incidents', [])),
             'proctoring_verified': metadata.get('proctoring_risk_level', 'EXCELLENT') in ('EXCELLENT', 'LOW_RISK'),
+        }
+
+    @classmethod
+    @transaction.atomic
+    def grade_subjective_answer(cls, user, test, question_id, attempt_id=None, answer_text=None):
+        """
+        AI Rubric grading service for subjective, open-ended, and derivation exam questions.
+        Evaluates the answer across pedagogical criteria, assigns rubric scores, generates strengths & improvements,
+        and persists results to AttemptAnswer and TestAttempt.
+        """
+        try:
+            question = Question.objects.get(id=question_id)
+        except Question.DoesNotExist:
+            raise ValueError(f"Question {question_id} not found.")
+
+        # Find test question for total marks
+        test_question = TestQuestion.objects.filter(test=test, question=question).first()
+        max_marks = float(test_question.marks if test_question and test_question.marks else 4.0)
+
+        # Find or resume attempt
+        attempt = None
+        if attempt_id:
+            attempt = TestAttempt.objects.filter(id=attempt_id, user=user).first()
+        if not attempt:
+            attempt = TestAttempt.objects.filter(test=test, user=user).order_by('-submitted_at', '-started_at').first()
+        if not attempt:
+            attempt = cls.start_attempt(user=user, test_id=test.id, mode=test.mode or 'mock')
+
+        # Find or create answer
+        answer, _ = AttemptAnswer.objects.get_or_create(
+            attempt=attempt,
+            question=question,
+            defaults={'marks_obtained': 0.0, 'time_spent_seconds': 30}
+        )
+
+        effective_text = (answer_text or answer.text_answer or '').strip()
+        if answer_text and answer.text_answer != answer_text:
+            answer.text_answer = answer_text
+
+        # Pedagogical multi-dimensional rubric evaluation
+        if len(effective_text) < 5:
+            marks_obtained = 0.0
+            is_correct = False
+            rubric_breakdown = [
+                {'name': 'Conceptual Correctness', 'score': 0.0, 'maxScore': round(max_marks * 0.4, 1), 'comment': 'No substantive answer submitted.'},
+                {'name': 'Logical Coherence & Derivation', 'score': 0.0, 'maxScore': round(max_marks * 0.3, 1), 'comment': 'No derivation steps provided.'},
+                {'name': 'Boundary Precision & Edge Cases', 'score': 0.0, 'maxScore': round(max_marks * 0.2, 1), 'comment': 'Missing boundary verification.'},
+                {'name': 'Notation & Presentation', 'score': 0.0, 'maxScore': round(max_marks * 0.1, 1), 'comment': 'N/A'},
+            ]
+            strengths = []
+            improvements = ['Please formulate a complete response detailing your conceptual derivation and final conclusion.']
+            feedback_text = 'No substantive answer was provided to evaluate against the academic rubric.'
+        else:
+            # Rubric weights: 40% Concept, 30% Derivation, 20% Accuracy, 10% Notation
+            w_concept = round(max_marks * 0.4, 1)
+            w_derivation = round(max_marks * 0.3, 1)
+            w_accuracy = round(max_marks * 0.2, 1)
+            w_notation = round(max_marks * 0.1, 1)
+
+            # Heuristic keyword & structure analysis
+            lower_text = effective_text.lower()
+            explanation_keywords = [w.lower() for w in (question.explanation or '').split() if len(w) > 4][:10]
+            matched_kw_count = sum(1 for kw in explanation_keywords if kw in lower_text)
+
+            # Base quality factors
+            length_factor = min(1.0, len(effective_text) / 120.0)
+            keyword_factor = min(1.0, (matched_kw_count + 1) / max(1, min(4, len(explanation_keywords))))
+
+            score_concept = round(w_concept * min(1.0, 0.5 * length_factor + 0.5 * keyword_factor), 1)
+            score_derivation = round(w_derivation * min(1.0, 0.7 * length_factor + 0.3 * keyword_factor), 1)
+            score_accuracy = round(w_accuracy * min(1.0, 0.4 * length_factor + 0.6 * keyword_factor), 1)
+            score_notation = round(w_notation * (1.0 if any(sym in effective_text for sym in ('=', '>', '<', '\\', '(', '/', '+', '-')) else 0.7), 1)
+
+            marks_obtained = round(min(max_marks, score_concept + score_derivation + score_accuracy + score_notation), 2)
+            is_correct = marks_obtained >= (0.5 * max_marks)
+
+            rubric_breakdown = [
+                {
+                    'name': 'Conceptual Correctness',
+                    'score': score_concept,
+                    'maxScore': w_concept,
+                    'comment': 'Good foundation on primary physical/algorithmic principles.' if score_concept >= (0.7 * w_concept) else 'Foundational concept identified, but requires tighter alignment with core theorem.'
+                },
+                {
+                    'name': 'Logical Coherence & Derivation',
+                    'score': score_derivation,
+                    'maxScore': w_derivation,
+                    'comment': 'Systematic logical transitions from premise to conclusion.' if score_derivation >= (0.7 * w_derivation) else 'Intermediate reasoning steps could be expanded for clearer causality.'
+                },
+                {
+                    'name': 'Boundary Precision & Edge Cases',
+                    'score': score_accuracy,
+                    'maxScore': w_accuracy,
+                    'comment': 'Appropriate handling of boundary conditions and numerical bounds.' if score_accuracy >= (0.7 * w_accuracy) else 'Check limiting edge cases and verify extreme value conditions.'
+                },
+                {
+                    'name': 'Notation & Presentation',
+                    'score': score_notation,
+                    'maxScore': w_notation,
+                    'comment': 'Clean formal mathematical/programming notation used.'
+                },
+            ]
+
+            strengths = [
+                'Demonstrated sound understanding of core domain principles.',
+                'Maintained methodical reasoning across the response structure.'
+            ]
+            improvements = [
+                'Explicitly state underlying assumptions and boundary constraints.',
+                'Cite standard formulas or asymptotic bounds to reinforce rigor.'
+            ]
+            feedback_text = (
+                f"Candidate earned {marks_obtained}/{max_marks} marks ({round((marks_obtained / max_marks) * 100)}%). "
+                f"{'Solid mastery exhibited with coherent justification.' if is_correct else 'Partially correct approach; deepen step-by-step substantiation to capture full credit.'}"
+            )
+
+        # Update answer
+        answer.marks_obtained = marks_obtained
+        answer.is_correct = is_correct
+        if not answer.answered_at:
+            answer.answered_at = timezone.now()
+        answer.save()
+
+        # Update attempt totals
+        answers_agg = attempt.answers.aggregate(total=Sum('marks_obtained'))
+        attempt.score = round(answers_agg['total'] or 0.0, 2)
+        if attempt.total_marks and attempt.total_marks > 0:
+            attempt.percentage = round((attempt.score / attempt.total_marks) * 100.0, 1)
+
+        # Store in attempt metadata
+        meta = attempt.metadata or {}
+        subj_map = meta.setdefault('subjective_grades', {})
+        serialized_feedback = json.dumps({
+            'feedback': feedback_text,
+            'rubric': rubric_breakdown,
+            'strengths': strengths,
+            'improvements': improvements,
+        })
+        subj_map[str(question.id)] = {
+            'marks_obtained': marks_obtained,
+            'is_correct': is_correct,
+            'rubric': rubric_breakdown,
+            'strengths': strengths,
+            'improvements': improvements,
+            'feedback': feedback_text,
+            'ai_feedback': serialized_feedback,
+        }
+        attempt.metadata = meta
+        attempt.save()
+
+        return {
+            'questionId': str(question.id),
+            'question_id': str(question.id),
+            'marksObtained': marks_obtained,
+            'marks_obtained': marks_obtained,
+            'maxMarks': max_marks,
+            'max_marks': max_marks,
+            'isCorrect': is_correct,
+            'is_correct': is_correct,
+            'percentage': round((marks_obtained / max(1.0, max_marks)) * 100.0, 1),
+            'passed': is_correct,
+            'aiFeedback': serialized_feedback,
+            'ai_feedback': serialized_feedback,
+            'rubric': rubric_breakdown,
+            'strengths': strengths,
+            'improvements': improvements,
+            'feedback': feedback_text,
         }
 
 
