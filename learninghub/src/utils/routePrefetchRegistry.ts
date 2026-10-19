@@ -181,6 +181,12 @@ export function prefetchRoute(to: string, queryClient?: QueryClient | null): voi
 export function idlePrefetchRoutes(routes: string[], queryClient?: QueryClient | null): void {
   if (typeof window === 'undefined') return
 
+  // Respect user data saver and slow mobile connection preferences
+  const connection = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+  if (connection?.saveData || connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g') {
+    return
+  }
+
   const executeIdle = () => {
     routes.forEach((route, idx) => {
       // Stagger idle prefetching to avoid bandwidth spikes

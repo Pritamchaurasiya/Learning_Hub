@@ -19,6 +19,19 @@ from .telemetry import AssessmentIntegrityEngine
 from .spaced_repetition import SuperMemoEngine
 from .bkt_engine import BayesianKnowledgeTracingEngine
 
+
+def _saved_answers_for_scoring(attempt):
+    return [
+        {
+            'questionId': answer.question_id,
+            'selectedOptionId': answer.selected_option_id,
+            'selectedOptionIds': answer.selected_option_ids,
+            'timeSpentSeconds': answer.time_spent_sec,
+        }
+        for answer in attempt.answers.all()
+    ]
+
+
 class TestListView(APIView):
     permission_classes = [AllowAny]
 
@@ -40,7 +53,7 @@ class TestDetailView(APIView):
 
     def get(self, request, pk):
         try:
-            test = Test.objects.prefetch_related('questions__options').get(pk=pk)
+            test = Test.objects.filter(is_published=True).prefetch_related('questions__options').get(pk=pk)
         except Test.DoesNotExist:
             return error_response('Test not found', status_code=status.HTTP_404_NOT_FOUND)
 
@@ -52,7 +65,7 @@ class StartTestView(APIView):
 
     def post(self, request, pk):
         try:
-            test = Test.objects.prefetch_related('questions__options').get(pk=pk)
+            test = Test.objects.filter(is_published=True).prefetch_related('questions__options').get(pk=pk)
         except Test.DoesNotExist:
             return error_response('Test not found', status_code=status.HTTP_404_NOT_FOUND)
 
@@ -61,7 +74,9 @@ class StartTestView(APIView):
             user = request.user.__class__.objects.select_for_update().get(pk=request.user.pk)
             
             # Check existing in-progress attempt (with lock)
-            in_progress = TestAttempt.objects.filter(user=user, test=test, status='IN_PROGRESS').first()
+            in_progress = TestAttempt.objects.select_for_update().filter(
+                user=user, test=test, status='IN_PROGRESS'
+            ).first()
             if in_progress:
                 # Map saved answers
                 answers_map = {}
@@ -109,22 +124,14 @@ class StartTestView(APIView):
 
                 elapsed_seconds = int((timezone.now() - in_progress.started_at).total_seconds())
                 duration_seconds = test.duration_minutes * 60
-                if elapsed_seconds >= duration_seconds:
+                if duration_seconds > 0 and elapsed_seconds >= duration_seconds:
                     in_progress.status = 'TIMEOUT'
                     in_progress.submitted_at = timezone.now()
                     in_progress.time_spent_seconds = duration_seconds
                     in_progress.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
-                    saved_answers_data = [
-                        {
-                            'questionId': ans.question_id,
-                            'selectedOptionId': ans.selected_option_id,
-                            'selectedOptionIds': ans.selected_option_ids,
-                            'timeSpentSeconds': ans.time_spent_sec
-                        }
-                        for ans in in_progress.answers.all()
-                    ]
-                    if saved_answers_data:
-                        IRTScoringEngine.calculate_score_and_irt(in_progress, saved_answers_data)
+                    IRTScoringEngine.calculate_score_and_irt(
+                        in_progress, _saved_answers_for_scoring(in_progress)
+                    )
                     return error_response(
                         'This test session has expired and was automatically closed.',
                         status_code=status.HTTP_400_BAD_REQUEST,
@@ -227,86 +234,98 @@ class TestAutosaveView(APIView):
         except Test.DoesNotExist:
             return error_response('Test not found', status_code=status.HTTP_404_NOT_FOUND)
 
-        attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
-        if attempt_id:
-            attempt = TestAttempt.objects.filter(pk=attempt_id, user=request.user).first()
+        with transaction.atomic():
+            user = request.user.__class__.objects.select_for_update().get(pk=request.user.pk)
+            attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
+            if attempt_id:
+                attempt = TestAttempt.objects.select_for_update().filter(
+                    pk=attempt_id, user=user, test=test
+                ).first()
+                if not attempt:
+                    return error_response('Attempt not found', status_code=status.HTTP_404_NOT_FOUND)
+            else:
+                attempt = TestAttempt.objects.select_for_update().filter(
+                    user=user, test=test, status='IN_PROGRESS'
+                ).first()
+
             if not attempt:
-                return error_response('Attempt not found', status_code=status.HTTP_404_NOT_FOUND)
-        else:
-            attempt = TestAttempt.objects.filter(user=request.user, test=test, status='IN_PROGRESS').first()
+                if not test.is_published:
+                    return error_response('Test not found', status_code=status.HTTP_404_NOT_FOUND)
 
-        if not attempt:
-            # Check maximum attempt limit before creating
-            existing_count = TestAttempt.objects.filter(user=request.user, test=test).count()
-            if existing_count >= test.max_attempts:
-                return error_response('Maximum attempts reached for this test', status_code=status.HTTP_400_BAD_REQUEST, code='MAX_ATTEMPTS_REACHED')
+                # Check maximum attempt limit before creating
+                existing_count = TestAttempt.objects.filter(user=user, test=test).count()
+                if existing_count >= test.max_attempts:
+                    return error_response('Maximum attempts reached for this test', status_code=status.HTTP_400_BAD_REQUEST, code='MAX_ATTEMPTS_REACHED')
 
-            attempt = TestAttempt.objects.create(
-                user=request.user,
-                test=test,
-                attempt_number=existing_count + 1,
-                status='IN_PROGRESS',
-                started_at=timezone.now()
-            )
-
-        # Enforce attempt terminal state protection
-        if attempt.status in ('SUBMITTED', 'TIMEOUT', 'EXPIRED', 'ABANDONED'):
-            return error_response(
-                'Cannot modify answers: test attempt has already been finalized.',
-                status_code=status.HTTP_400_BAD_REQUEST,
-                code='ATTEMPT_FINALIZED'
-            )
-
-        # Enforce server-authoritative timer
-        if test.duration_minutes > 0 and attempt.started_at:
-            elapsed_seconds = int((timezone.now() - attempt.started_at).total_seconds())
-            duration_seconds = test.duration_minutes * 60
-            if elapsed_seconds >= duration_seconds:
-                attempt.status = 'TIMEOUT'
-                attempt.submitted_at = timezone.now()
-                attempt.time_spent_seconds = duration_seconds
-                attempt.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
-                return error_response(
-                    'This test session has expired and was automatically closed.',
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    code='TEST_EXPIRED'
+                attempt = TestAttempt.objects.create(
+                    user=user,
+                    test=test,
+                    attempt_number=existing_count + 1,
+                    status='IN_PROGRESS',
+                    started_at=timezone.now()
                 )
 
-        answers_data = request.data.get('answers', {})
-        saved_count = 0
-        if isinstance(answers_data, dict):
-            for q_id, opt_id in answers_data.items():
-                try:
-                    # Scope question strictly to this test
-                    q = Question.objects.filter(pk=q_id, test=test).first()
-                    if not q:
-                        continue
-                    selected_opt = None
-                    selected_ids = []
-                    text_ans = ''
-                    if isinstance(opt_id, list):
-                        selected_ids = [str(x) for x in opt_id]
-                        selected_opt = Option.objects.filter(question=q, id__in=selected_ids).first()
-                    elif isinstance(opt_id, str):
-                        selected_opt = Option.objects.filter(question=q, id=opt_id).first()
-                        if selected_opt:
-                            selected_ids = [selected_opt.id]
-                        else:
-                            text_ans = opt_id
+            # Enforce attempt terminal state protection
+            if attempt.status in ('SUBMITTED', 'TIMEOUT', 'EXPIRED', 'ABANDONED'):
+                return error_response(
+                    'Cannot modify answers: test attempt has already been finalized.',
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    code='ATTEMPT_FINALIZED'
+                )
 
-                    AttemptAnswer.objects.update_or_create(
-                        attempt=attempt,
-                        question=q,
-                        defaults={
-                            'selected_option': selected_opt,
-                            'selected_option_ids': selected_ids,
-                            'text_answer': text_ans,
-                            'time_spent_sec': 10
-                        }
+            # Enforce server-authoritative timer
+            if test.duration_minutes > 0 and attempt.started_at:
+                elapsed_seconds = int((timezone.now() - attempt.started_at).total_seconds())
+                duration_seconds = test.duration_minutes * 60
+                if elapsed_seconds >= duration_seconds:
+                    attempt.status = 'TIMEOUT'
+                    attempt.submitted_at = timezone.now()
+                    attempt.time_spent_seconds = duration_seconds
+                    attempt.save(update_fields=['status', 'submitted_at', 'time_spent_seconds'])
+                    IRTScoringEngine.calculate_score_and_irt(
+                        attempt, _saved_answers_for_scoring(attempt)
                     )
-                    saved_count += 1
-                except Exception:
-                    continue
+                    return error_response(
+                        'This test session has expired and was automatically closed.',
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        code='TEST_EXPIRED'
+                    )
+
+            answers_data = request.data.get('answers', {})
+            saved_count = 0
+            if isinstance(answers_data, dict):
+                for q_id, opt_id in answers_data.items():
+                    try:
+                        # Scope question strictly to this test
+                        q = Question.objects.filter(pk=q_id, test=test).first()
+                        if not q:
+                            continue
+                        selected_opt = None
+                        selected_ids = []
+                        text_ans = ''
+                        if isinstance(opt_id, list):
+                            selected_ids = [str(x) for x in opt_id]
+                            selected_opt = Option.objects.filter(question=q, id__in=selected_ids).first()
+                        elif isinstance(opt_id, str):
+                            selected_opt = Option.objects.filter(question=q, id=opt_id).first()
+                            if selected_opt:
+                                selected_ids = [selected_opt.id]
+                            else:
+                                text_ans = opt_id
+
+                        AttemptAnswer.objects.update_or_create(
+                            attempt=attempt,
+                            question=q,
+                            defaults={
+                                'selected_option': selected_opt,
+                                'selected_option_ids': selected_ids,
+                                'text_answer': text_ans,
+                                'time_spent_sec': 10
+                            }
+                        )
+                        saved_count += 1
+                    except Exception:
+                        continue
 
         return success_response(
             data={'saved': True, 'saved_count': saved_count, 'attempt_id': attempt.id},
@@ -328,11 +347,17 @@ class SubmitTestView(APIView):
             
             attempt_id = request.data.get('attempt_id') or request.data.get('attemptId')
             if attempt_id:
-                attempt = TestAttempt.objects.select_for_update().filter(pk=attempt_id, user=user).first()
+                attempt = TestAttempt.objects.select_for_update().filter(
+                    pk=attempt_id, user=user, test=test
+                ).first()
+                if not attempt:
+                    return error_response('Attempt not found', status_code=status.HTTP_404_NOT_FOUND)
             else:
                 attempt = TestAttempt.objects.select_for_update().filter(user=user, test=test, status='IN_PROGRESS').first()
 
             if not attempt:
+                if not test.is_published:
+                    return error_response('Test not found', status_code=status.HTTP_404_NOT_FOUND)
                 existing_count = TestAttempt.objects.filter(user=user, test=test).count()
                 if existing_count >= test.max_attempts:
                     return error_response('Maximum attempts reached for this test', status_code=status.HTTP_400_BAD_REQUEST, code='MAX_ATTEMPTS_REACHED')
@@ -367,7 +392,7 @@ class SubmitTestView(APIView):
             time_spent_seconds = actual_time_spent_seconds
 
             time_limit_seconds = test.duration_minutes * 60 if test.duration_minutes else 0
-            is_over_time = time_limit_seconds > 0 and time_spent_seconds > time_limit_seconds
+            is_over_time = time_limit_seconds > 0 and time_spent_seconds >= time_limit_seconds
             is_too_fast = time_limit_seconds > 60 and time_spent_seconds < 5  # <5s for >1min test = suspicious
 
             # Priority: is_over_time (TIMEOUT) first, then is_too_fast rejection
@@ -395,6 +420,11 @@ class SubmitTestView(APIView):
                         'timeSpentSeconds': 0,
                     })
                 answers_data = normalized_answers
+
+            if is_over_time:
+                # A late request may contain answers that were never saved before expiry.
+                # Only answers persisted during the active session are eligible for scoring.
+                answers_data = _saved_answers_for_scoring(attempt)
 
             if not already_submitted:
                 attempt.time_spent_seconds = time_spent_seconds
@@ -503,10 +533,11 @@ class SubmitTestView(APIView):
             attempt_id=attempt.id
         )
         # Persist integrity audit metrics to database model
-        attempt.integrity_score = integrity_report.get('integrity_score', 100.0)
-        attempt.risk_level = integrity_report.get('risk_level', 'EXCELLENT')
-        attempt.telemetry_audit_hash = integrity_report.get('audit_hash', '')
-        attempt.save(update_fields=['integrity_score', 'risk_level', 'telemetry_audit_hash'])
+        if not already_submitted:
+            attempt.integrity_score = integrity_report.get('integrity_score', 100.0)
+            attempt.risk_level = integrity_report.get('risk_level', 'EXCELLENT')
+            attempt.telemetry_audit_hash = integrity_report.get('audit_hash', '')
+            attempt.save(update_fields=['integrity_score', 'risk_level', 'telemetry_audit_hash'])
 
         response_data.update({
             'integrity_score': integrity_report['integrity_score'],
@@ -1215,7 +1246,6 @@ class TestAnalyticsView(APIView):
             'average_score': avg_score,
             'by_difficulty': by_difficulty
         })
-
 
 
 

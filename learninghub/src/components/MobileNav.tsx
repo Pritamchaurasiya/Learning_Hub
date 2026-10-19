@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { PrefetchNavLink } from './PrefetchNavLink'
-import { prefetchRoute } from '../utils/routePrefetchRegistry'
+import { prefetchRoute, idlePrefetchRoutes } from '../utils/routePrefetchRegistry'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
@@ -126,7 +126,7 @@ const moreFeatureItems = [
 export default function MobileNav() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const isAuthenticated = useStore(s => s.auth.isAuthenticated)
-  const user = useStore(s => s.auth.user)
+  const username = useStore(s => s.auth.user?.username)
   const userXp = useStore(s => s.progress?.xp ?? 0)
   const userLevel = useStore(s => s.progress?.level ?? 1)
   const userStreak = useStore(s => s.progress?.streak ?? 0)
@@ -137,6 +137,21 @@ export default function MobileNav() {
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  // Pre-warm drawer routes when drawer opens
+  useEffect(() => {
+    if (drawerOpen) {
+      idlePrefetchRoutes([
+        '/arena',
+        '/revision',
+        '/study-planner',
+        '/visualizer',
+        '/contest',
+        '/profile',
+        '/settings',
+      ])
+    }
+  }, [drawerOpen])
 
   // Close drawer on Escape
   useEffect(() => {
@@ -269,15 +284,15 @@ export default function MobileNav() {
               </div>
 
               {/* Authenticated User Quick Card */}
-              {isAuthenticated && user && (
+              {isAuthenticated && username && (
                 <div className="mx-4 mt-3 p-3 rounded-2xl bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-transparent border border-primary-200/50 dark:border-primary-800/40 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">
-                      {(user.username || 'U')[0].toUpperCase()}
+                      {(username || 'U')[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
-                        {user.username}
+                        {username}
                       </p>
                       <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-400">
                         <span className="font-semibold text-purple-600 dark:text-purple-400">
@@ -300,6 +315,8 @@ export default function MobileNav() {
                         setDrawerOpen(false)
                         navigate('/profile')
                       }}
+                      onPointerEnter={() => prefetchRoute('/profile')}
+                      onTouchStart={() => prefetchRoute('/profile')}
                       className="px-2.5 py-1 text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-sm transition-colors"
                     >
                       Profile
@@ -309,6 +326,8 @@ export default function MobileNav() {
                         setDrawerOpen(false)
                         navigate('/settings')
                       }}
+                      onPointerEnter={() => prefetchRoute('/settings')}
+                      onTouchStart={() => prefetchRoute('/settings')}
                       className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                       title="Settings"
                       aria-label="Settings"

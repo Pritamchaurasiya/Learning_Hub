@@ -106,6 +106,9 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
 
     await page.goto('/settings')
 
+    // Click Security tab to show 2FA card
+    await page.getByRole('tab', { name: /Security/i }).click()
+
     // Verify 2FA card is rendered in disabled state
     await expect(page.getByText('Two-Factor Auth (2FA)')).toBeVisible()
     const enableBtn = page.getByRole('button', { name: /Enable 2FA Protection/i })
@@ -237,7 +240,7 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
     await page.getByRole('button', { name: /Sign In/i }).click()
 
     // Expect MFA challenge form to be visible
-    await expect(page.getByText('Two-Factor Verification')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByTestId('mfa-challenge-form')).toBeVisible({ timeout: 10000 })
     await expect(page.getByTestId('auth-mfa-code')).toBeVisible()
 
     // Fill 6-digit MFA token
