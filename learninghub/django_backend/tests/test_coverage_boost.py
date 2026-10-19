@@ -475,31 +475,36 @@ class TestCoverageBoost:
         a6 = CodeSandboxService.analyze_ast("for:", language="python")
         assert "Syntax Error" in a6["time_complexity"]
 
-        # execute_code: python success
-        r1 = CodeSandboxService.execute_code("print('hello')", language="python", input_data="")
-        assert r1["success"] is True
-        assert "hello" in r1["stdout"]
-        assert "analysis" in r1
-        # python with input
-        r2 = CodeSandboxService.execute_code("x=input(); print(x.upper())", language="python", input_data="test")
-        assert r2["success"] is True
-        assert "TEST" in r2["stdout"]
+        # Exercise accepted outputs without requiring a local Docker daemon.
+        container_results = [
+            {"success": True, "stdout": "hello\n", "stderr": "", "runtime_ms": 1, "memory_mb": 1.0, "status": "Accepted"},
+            {"success": True, "stdout": "TEST\n", "stderr": "", "runtime_ms": 1, "memory_mb": 1.0, "status": "Accepted"},
+        ]
+        with patch.object(CodeSandboxService, "_run_container", side_effect=container_results):
+            r1 = CodeSandboxService.execute_code("print('hello')", language="python", input_data="")
+            assert r1["success"] is True
+            assert "hello" in r1["stdout"]
+            assert "analysis" in r1
+            # python with input
+            r2 = CodeSandboxService.execute_code("x=input(); print(x.upper())", language="python", input_data="test")
+            assert r2["success"] is True
+            assert "TEST" in r2["stdout"]
         # security violation blocks execution
         r3 = CodeSandboxService.execute_code("import socket", language="python")
         assert r3["success"] is False
         assert "Security Violation" in r3["stderr"]
-        # javascript fallback (node may not be installed -> simulated)
-        r4 = CodeSandboxService.execute_code("console.log('js')", language="javascript")
-        assert r4["success"] is True
-        # unsupported language fallback
+        # Missing container runtime must fail closed for supported runtimes.
+        with patch("apps.problems.sandbox.shutil.which", return_value=None):
+            r4 = CodeSandboxService.execute_code("console.log('js')", language="javascript")
+            assert r4["success"] is False
+            assert "runtime unavailable" in r4["stderr"].lower()
+            # A long-running submission cannot fall back to host execution.
+            r6 = CodeSandboxService.execute_code("while True: pass", language="python", timeout_sec=0.1)
+        # Unsupported languages are rejected rather than reported as simulated success.
         r5 = CodeSandboxService.execute_code("code", language="java")
-        assert r5["success"] is True
-        assert "sandbox container" in r5["stdout"]
-        # timeout handling is hard to trigger without long code, but test _run_python directly with quick code
-        r6 = CodeSandboxService.execute_code("while True: pass", language="python", timeout_sec=0.1)
-        # Should either timeout or succeed quickly before timeout (depending on system speed)
-        # Accept either Timeout or Runtime Error, but must have status field
-        assert r6["status"] in ("Time Limit Exceeded", "Runtime Error", "Accepted")
+        assert r5["success"] is False
+        assert "unsupported language" in r5["stderr"].lower()
+        assert r6["status"] == "Runtime Error"
 
         # AI Tutor Engine fallback branches (no GEMINI_API_KEY)
         # Ensure fallback covers hint, complexity, explain, general
@@ -783,4 +788,3 @@ class TestCoverageBoost:
                 break
             except Exception:
                 continue
-

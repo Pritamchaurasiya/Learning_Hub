@@ -7,17 +7,48 @@ class Coupon(BaseModel):
     """
     Discount Coupons for payments.
     """
-    code = models.CharField(max_length=50, unique=True)
-    discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
-    valid_from = models.DateTimeField(null=True, blank=True)
-    valid_until = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    code = models.CharField(max_length=50, unique=True, db_index=True)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, db_index=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Fixed amount discount (alternative to percentage)")
+    valid_from = models.DateTimeField(null=True, blank=True, db_index=True)
+    valid_until = models.DateTimeField(null=True, blank=True, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     max_uses = models.PositiveIntegerField(null=True, blank=True)
-    used_count = models.PositiveIntegerField(default=0)
+    used_count = models.PositiveIntegerField(default=0, db_index=True)
     # Legacy field - kept for backwards compatibility
     expires_at = models.DateTimeField(null=True, blank=True)
     # Courses this coupon applies to (empty = all courses)
     courses = models.ManyToManyField('courses.Course', blank=True, related_name='coupons')
+    minimum_order_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    class Meta:
+        db_table = "payment_coupons"
+        verbose_name = "Coupon"
+        verbose_name_plural = "Coupons"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['code', 'is_active'], name='idx_coupon_code_active'),
+            models.Index(fields=['is_active', 'valid_until'], name='idx_coupon_active_valid'),
+            models.Index(fields=['-used_count'], name='idx_coupon_popular'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(discount_percent__gte=0, discount_percent__lte=100),
+                name='coupon_discount_percent_range'
+            ),
+            models.CheckConstraint(
+                check=models.Q(discount_amount__isnull=True) | models.Q(discount_amount__gte=0),
+                name='coupon_discount_amount_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(used_count__gte=0),
+                name='coupon_used_count_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(max_uses__isnull=True) | models.Q(max_uses__gte=0),
+                name='coupon_max_uses_non_negative'
+            ),
+        ]
     
     def is_valid(self):
         now = timezone.now()
@@ -36,6 +67,11 @@ class Coupon(BaseModel):
         if self.max_uses and self.used_count >= self.max_uses:
             return False
         return True
+    
+    def increment_usage(self):
+        """Increment coupon usage count."""
+        self.used_count += 1
+        self.save(update_fields=['used_count'])
 
     def __str__(self):
         return f"{self.code} - {self.discount_percent}%"
@@ -49,33 +85,77 @@ class Payment(BaseModel):
         COMPLETED = 'completed', 'Completed'
         FAILED = 'failed', 'Failed'
         REFUNDED = 'refunded', 'Refunded'
+        CANCELLED = 'cancelled', 'Cancelled'
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
-    course = models.ForeignKey('courses.Course', on_delete=models.SET_NULL, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=10, default='INR')
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments', db_index=True)
+    course = models.ForeignKey('courses.Course', on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, db_index=True)
+    currency = models.CharField(max_length=10, default='INR', db_index=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
     
     # Gateway info
-    gateway = models.CharField(max_length=50) # 'razorpay', 'stripe'
-    gateway_order_id = models.CharField(max_length=100, blank=True)
-    gateway_payment_id = models.CharField(max_length=100, blank=True)
+    gateway = models.CharField(max_length=50, db_index=True) # 'razorpay', 'stripe'
+    gateway_order_id = models.CharField(max_length=100, blank=True, db_index=True)
+    gateway_payment_id = models.CharField(max_length=100, blank=True, db_index=True)
+    gateway_signature = models.CharField(max_length=256, blank=True)
     
     # Coupon
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    failed_at = models.DateTimeField(null=True, blank=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    
+    # Additional metadata
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
 
     class Meta:
+        db_table = "payments"
         ordering = ['-created_at']
+        verbose_name = "Payment"
+        verbose_name_plural = "Payments"
         indexes = [
-            models.Index(fields=['status', 'created_at']),
-            models.Index(fields=['gateway_payment_id']),
+            models.Index(fields=['status', '-created_at'], name='idx_payment_status_created'),
+            models.Index(fields=['gateway_payment_id'], name='idx_payment_gateway_id'),
+            models.Index(fields=['user', '-created_at'], name='idx_payment_user_created'),
+            models.Index(fields=['course', 'status'], name='idx_payment_course_status'),
+            models.Index(fields=['user', 'status'], name='idx_payment_user_status'),
+            models.Index(fields=['-completed_at'], name='idx_payment_completed'),
+            models.Index(fields=['gateway', 'status'], name='idx_payment_gateway_status'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gte=0),
+                name='payment_amount_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(discount_amount__gte=0),
+                name='payment_discount_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(original_amount__isnull=True) | models.Q(original_amount__gte=0),
+                name='payment_original_amount_non_negative'
+            ),
         ]
 
     def __str__(self):
         return f"{self.user.email} - {self.amount} {self.currency} - {self.status}"
+    
+    def mark_completed(self):
+        """Mark payment as completed."""
+        self.status = self.Status.COMPLETED
+        self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'completed_at'])
+    
+    def mark_failed(self):
+        """Mark payment as failed."""
+        self.status = self.Status.FAILED
+        self.failed_at = timezone.now()
+        self.save(update_fields=['status', 'failed_at'])
 
 
 class Subscription(BaseModel):

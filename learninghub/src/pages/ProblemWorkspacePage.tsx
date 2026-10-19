@@ -187,6 +187,17 @@ function getLanguageExtension(lang: string) {
   }
 }
 
+const CODEMIRROR_BASIC_SETUP = {
+  lineNumbers: true,
+  highlightActiveLineGutter: true,
+  highlightActiveLine: true,
+  foldGutter: true,
+  autocompletion: true,
+  bracketMatching: true,
+  closeBrackets: true,
+  indentOnInput: true,
+} as const
+
 // ─── Resizable Split Pane (horizontal) ──────────────────────────────
 function useHorizontalResize(initialLeftPercent = 42) {
   const leftPercentRef = useRef(initialLeftPercent)
@@ -221,39 +232,57 @@ function useHorizontalResize(initialLeftPercent = 42) {
   }, [initialLeftPercent])
 
   useEffect(() => {
-    const onMove = (e: MouseEvent | PointerEvent) => {
+    let rafId: number | null = null
+    let pendingX: number | null = null
+
+    const applyResize = () => {
+      rafId = null
       if (
         !dragging.current ||
         !containerRef.current ||
         !leftPaneRef.current ||
         !rightPaneRef.current ||
-        window.innerWidth < 768
+        window.innerWidth < 768 ||
+        pendingX === null
       )
         return
       const rect = containerRef.current.getBoundingClientRect()
-      const pct = ((e.clientX - rect.left) / rect.width) * 100
+      if (rect.width <= 0) return
+      const pct = ((pendingX - rect.left) / rect.width) * 100
       const clampedPct = Math.max(20, Math.min(80, pct))
       leftPercentRef.current = clampedPct
       leftPaneRef.current.style.width = `${clampedPct}%`
       rightPaneRef.current.style.width = `${100 - clampedPct}%`
     }
+
+    const onMove = (e: MouseEvent | PointerEvent) => {
+      if (!dragging.current) return
+      pendingX = e.clientX
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(applyResize)
+      }
+    }
+
     const onUp = () => {
       if (!dragging.current) return
       dragging.current = false
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId)
+        rafId = null
+      }
+      pendingX = null
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-    window.addEventListener('pointermove', onMove)
+
+    window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
     return () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
     }
   }, [])
 
@@ -560,9 +589,9 @@ export default function ProblemWorkspacePage() {
       setConsoleTab('output')
 
       // Refresh submissions history query and stats
-      queryClient.invalidateQueries({ queryKey: ['submissions', problem?.id] })
-      queryClient.invalidateQueries({ queryKey: ['dsa-stats'] })
-      refetchSubmissions()
+      void queryClient.invalidateQueries({ queryKey: ['submissions', problem?.id] })
+      void queryClient.invalidateQueries({ queryKey: ['dsa-stats'] })
+      void refetchSubmissions()
 
       if (collabRoomId) {
         sendTestResults(formatted, isAccepted ? 'passed' : 'failed')
@@ -773,7 +802,7 @@ ${review.overallFeedback}
   // Copy code utility
   const handleCopyCode = useCallback(
     (key: string, text: string) => {
-      navigator.clipboard.writeText(text)
+      void navigator.clipboard.writeText(text)
       setCopiedCodeKey(key)
       setTimeout(() => setCopiedCodeKey(null), 2000)
       addToast({ message: 'Code copied to clipboard', type: 'info' })
@@ -792,10 +821,10 @@ ${review.overallFeedback}
         }
       } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
-        handleSubmit()
+        void handleSubmit()
       } else if (e.shiftKey && e.key === 'Enter') {
         e.preventDefault()
-        handleRun()
+        void handleRun()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -804,38 +833,56 @@ ${review.overallFeedback}
 
   // Console vertical resize
   useEffect(() => {
-    const onMove = (e: MouseEvent | PointerEvent) => {
+    let rafId: number | null = null
+    let pendingY: number | null = null
+
+    const applyResize = () => {
+      rafId = null
       if (
         !consoleDragging.current ||
         !editorPanelRef.current ||
         !consolePanelRef.current ||
-        !codeEditorRef.current
+        !codeEditorRef.current ||
+        pendingY === null
       )
         return
       const rect = editorPanelRef.current.getBoundingClientRect()
-      const pct = ((rect.bottom - e.clientY) / rect.height) * 100
+      if (rect.height <= 0) return
+      const pct = ((rect.bottom - pendingY) / rect.height) * 100
       const clampedPct = Math.max(10, Math.min(75, pct))
       consoleHeightRef.current = clampedPct
       consolePanelRef.current.style.height = `${clampedPct}%`
       codeEditorRef.current.style.height = `${100 - clampedPct}%`
     }
+
+    const onMove = (e: MouseEvent | PointerEvent) => {
+      if (!consoleDragging.current) return
+      pendingY = e.clientY
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(applyResize)
+      }
+    }
+
     const onUp = () => {
       if (!consoleDragging.current) return
       consoleDragging.current = false
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId)
+        rafId = null
+      }
+      pendingY = null
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-    window.addEventListener('pointermove', onMove)
+
+    window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
     return () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
     }
   }, [])
 
@@ -1216,6 +1263,7 @@ ${review.overallFeedback}
 
                 {/* Markdown Description */}
                 <div className="prose prose-invert prose-sm max-w-none prose-headings:text-gray-200 prose-p:text-gray-400 prose-code:text-primary-400 prose-code:bg-gray-900 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 prose-pre:border prose-pre:border-gray-800">
+                  {/* eslint-disable-next-line react/no-danger */}
                   <div dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
                 </div>
 
@@ -1775,16 +1823,7 @@ ${review.overallFeedback}
                     extensions={codeMirrorExtensions}
                     onChange={handleCodeChange}
                     className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:!overflow-auto text-sm"
-                    basicSetup={{
-                      lineNumbers: true,
-                      highlightActiveLineGutter: true,
-                      highlightActiveLine: true,
-                      foldGutter: true,
-                      autocompletion: true,
-                      bracketMatching: true,
-                      closeBrackets: true,
-                      indentOnInput: true,
-                    }}
+                    basicSetup={CODEMIRROR_BASIC_SETUP}
                   />
                 </Suspense>
               </EditorErrorBoundary>

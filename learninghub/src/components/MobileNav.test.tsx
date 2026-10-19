@@ -168,7 +168,7 @@ describe('MobileNav Component', () => {
       expect(screen.queryByRole('dialog', { name: /all features menu/i })).not.toBeInTheDocument()
     })
 
-    it('closes the drawer and navigates when a feature item is clicked', () => {
+    it('renders the authenticated user card and Profile item in the drawer', () => {
       render(
         <MemoryRouter initialEntries={['/dashboard']}>
           <MobileNav />
@@ -177,9 +177,24 @@ describe('MobileNav Component', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /more features/i }))
 
-      const arenaButton = screen.getByText('1v1 Arena Duel').closest('button')
-      expect(arenaButton).toBeInTheDocument()
-      fireEvent.click(arenaButton!)
+      // User card
+      expect(screen.getByText('AlexLearner')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Profile' })).toBeInTheDocument()
+
+      // Feature item in grid
+      expect(screen.getByText('Profile & Portfolio')).toBeInTheDocument()
+    })
+
+    it('navigates to /profile and closes drawer when Profile quick button is clicked', () => {
+      render(
+        <MemoryRouter initialEntries={['/dashboard']}>
+          <MobileNav />
+        </MemoryRouter>
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /more features/i }))
+      const profileBtn = screen.getByRole('button', { name: 'Profile' })
+      fireEvent.click(profileBtn)
 
       expect(screen.queryByRole('dialog', { name: /all features menu/i })).not.toBeInTheDocument()
     })

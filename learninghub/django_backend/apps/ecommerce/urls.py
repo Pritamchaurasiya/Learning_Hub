@@ -6,7 +6,7 @@ from .views import (
     ContestsListView, ContestDetailView, ContestRegisterView,
     ContestLeaderboardView, ContestResultsView, ContestSubmitView,
     ContestTimeSyncView, ContestProctorEventView,
-    PaymentWebhookView,
+    PaymentWebhookView, StripeWebhookView,
     # Stripe views
     StripeCheckoutView, StripeSubscriptionManageView, StripeSubscriptionDetailView,
     StripeBillingPortalView, StripePaymentMethodsView, StripePriceListView
@@ -43,7 +43,7 @@ urlpatterns = [
 
     # Payment gateway webhooks
     path('webhooks/payment', PaymentWebhookView.as_view(), name='payment-webhook'),
-    path('webhooks/stripe', PaymentWebhookView.as_view(), name='stripe-webhook'),
+    path('webhooks/stripe', StripeWebhookView.as_view(), name='stripe-webhook'),
     path('webhooks/razorpay', PaymentWebhookView.as_view(), name='razorpay-webhook'),
 
     # Certificate endpoints

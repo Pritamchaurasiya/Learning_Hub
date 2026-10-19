@@ -51,18 +51,44 @@ class UserManager(BaseUserManager):
 
 class Organization(BaseModel):
     """B2B Organization/Company."""
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    subscription_plan = models.CharField(max_length=50, default='free') # 'enterprise', 'scale'
+    
+    class SubscriptionPlan(models.TextChoices):
+        FREE = 'free', 'Free'
+        SCALE = 'scale', 'Scale'
+        ENTERPRISE = 'enterprise', 'Enterprise'
+    
+    name = models.CharField(max_length=200, db_index=True)
+    slug = models.SlugField(unique=True, max_length=250)
+    subscription_plan = models.CharField(
+        max_length=50, 
+        choices=SubscriptionPlan.choices,
+        default=SubscriptionPlan.FREE,
+        db_index=True
+    )
     max_seats = models.PositiveIntegerField(default=5)
     
-    owner = models.ForeignKey('User', on_delete=models.CASCADE, related_name='owned_organizations')
+    owner = models.ForeignKey('User', on_delete=models.CASCADE, related_name='owned_organizations', db_index=True)
 
     class Meta:
         db_table = "organizations"
+        indexes = [
+            models.Index(fields=['subscription_plan', 'created_at'], name='idx_org_plan_created'),
+            models.Index(fields=['owner', 'created_at'], name='idx_org_owner_created'),
+            models.Index(fields=['name'], name='idx_org_name'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(max_seats__gte=1),
+                name='org_min_seats_check'
+            ),
+        ]
 
     def __str__(self):
         return self.name
+    
+    def has_available_seats(self):
+        """Check if organization has available seats."""
+        return self.members.filter(role__in=['admin', 'member', 'manager']).count() < self.max_seats
 
 class OrganizationMember(BaseModel):
     """Employee in an organization."""
@@ -71,13 +97,23 @@ class OrganizationMember(BaseModel):
         MEMBER = 'member', 'Member'
         MANAGER = 'manager', 'Manager'
         
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members')
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='organization_memberships')
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members', db_index=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='organization_memberships', db_index=True)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    joined_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         unique_together = ['organization', 'user']
         db_table = "organization_members"
+        indexes = [
+            models.Index(fields=['organization', 'role', 'is_active'], name='idx_orgmember_org_role'),
+            models.Index(fields=['user', 'is_active'], name='idx_orgmember_user_active'),
+            models.Index(fields=['-joined_at'], name='idx_orgmember_recent'),
+        ]
+        
+    def __str__(self):
+        return f"{self.user.email} in {self.organization.name} ({self.role})"
 
 class User(AbstractBaseUser, PermissionsMixin, UUIDMixin, TimestampMixin):
     """
@@ -101,10 +137,10 @@ class User(AbstractBaseUser, PermissionsMixin, UUIDMixin, TimestampMixin):
     )
 
     # Profile fields
-    display_name = models.CharField(max_length=100, blank=True)
-    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+    display_name = models.CharField(max_length=100, blank=True, db_index=True)
+    avatar = models.ImageField(upload_to="avatars/%Y/%m/", null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = models.CharField(max_length=20, blank=True, db_index=True)
 
     # Status flags
     is_active = models.BooleanField(default=True)
@@ -131,10 +167,24 @@ class User(AbstractBaseUser, PermissionsMixin, UUIDMixin, TimestampMixin):
         verbose_name_plural = "Users"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["email"]),
-            models.Index(fields=["username"]),
-            models.Index(fields=["role"]),
-            models.Index(fields=["is_active", "is_verified"]),
+            models.Index(fields=["email"], name='idx_user_email'),
+            models.Index(fields=["username"], name='idx_user_username'),
+            models.Index(fields=["role"], name='idx_user_role'),
+            models.Index(fields=["is_active", "is_verified"], name='idx_user_active_verified'),
+            models.Index(fields=["role", "is_active"], name='idx_user_role_active'),
+            models.Index(fields=["-created_at"], name='idx_user_recent'),
+            models.Index(fields=["is_verified", "-created_at"], name='idx_user_verified_recent'),
+            models.Index(fields=["display_name"], name='idx_user_display_name'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(email__isnull=False) & ~models.Q(email=''),
+                name='user_email_not_empty'
+            ),
+            models.CheckConstraint(
+                check=models.Q(username__isnull=False) & ~models.Q(username=''),
+                name='user_username_not_empty'
+            ),
         ]
 
     def __str__(self):
@@ -207,18 +257,31 @@ class PasswordResetToken(BaseModel):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="password_reset_tokens"
+        User, on_delete=models.CASCADE, related_name="password_reset_tokens", db_index=True
     )
-    token = models.CharField(max_length=100, unique=True)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
+    token = models.CharField(max_length=100, unique=True, db_index=True)
+    expires_at = models.DateTimeField(db_index=True)
+    is_used = models.BooleanField(default=False, db_index=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     class Meta:
         db_table = "password_reset_tokens"
+        indexes = [
+            models.Index(fields=['token', 'is_used', 'expires_at'], name='idx_reset_token_valid'),
+            models.Index(fields=['user', '-created_at'], name='idx_reset_user_recent'),
+            models.Index(fields=['expires_at', 'is_used'], name='idx_reset_expiry'),
+        ]
 
     def is_valid(self):
         """Check if the token is still valid."""
         return not self.is_used and timezone.now() < self.expires_at
+    
+    def mark_used(self):
+        """Mark token as used with timestamp."""
+        self.is_used = True
+        self.used_at = timezone.now()
+        self.save(update_fields=['is_used', 'used_at'])
 
 
 class Bookmark(models.Model):
@@ -230,13 +293,15 @@ class Bookmark(models.Model):
 
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="bookmarks"
+        User, on_delete=models.CASCADE, related_name="bookmarks", db_index=True
     )
     course = models.ForeignKey(
-        "courses.Course", on_delete=models.CASCADE, related_name="bookmarked_by"
+        "courses.Course", on_delete=models.CASCADE, related_name="bookmarked_by", db_index=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True, help_text="User notes about this bookmark")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    notes = models.TextField(blank=True, max_length=1000, help_text="User notes about this bookmark")
+    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         db_table = "user_bookmarks"
@@ -245,8 +310,9 @@ class Bookmark(models.Model):
         ordering = ["-created_at"]
         unique_together = ["user", "course"]
         indexes = [
-            models.Index(fields=["user", "created_at"]),
-            models.Index(fields=["course"]),
+            models.Index(fields=["user", "-created_at"], name='idx_bookmark_user_recent'),
+            models.Index(fields=["course", "-created_at"], name='idx_bookmark_course'),
+            models.Index(fields=["user", "is_archived"], name='idx_bookmark_user_archived'),
         ]
 
     def __str__(self):
@@ -255,18 +321,45 @@ class Bookmark(models.Model):
 
 class TwoFactorAuth(BaseModel):
     """Two-Factor Authentication (TOTP) credentials for user."""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="two_factor")
-    is_enabled = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="two_factor", db_index=True)
+    is_enabled = models.BooleanField(default=False, db_index=True)
     secret = models.CharField(max_length=64, blank=True)
     recovery_codes = models.JSONField(default=list, blank=True)
-    last_verified_at = models.DateTimeField(null=True, blank=True)
+    last_verified_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    backup_codes_generated_at = models.DateTimeField(null=True, blank=True)
+    failed_attempts = models.PositiveIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "user_two_factor"
         verbose_name = "Two-Factor Auth"
+        indexes = [
+            models.Index(fields=['is_enabled', 'last_verified_at'], name='idx_2fa_enabled_verified'),
+            models.Index(fields=['locked_until'], name='idx_2fa_locked'),
+        ]
 
     def __str__(self):
         return f"2FA for {self.user.email} (Enabled: {self.is_enabled})"
+    
+    def is_locked(self):
+        """Check if 2FA is temporarily locked due to failed attempts."""
+        if self.locked_until and timezone.now() < self.locked_until:
+            return True
+        return False
+    
+    def record_failed_attempt(self):
+        """Record a failed 2FA attempt and lock if threshold exceeded."""
+        self.failed_attempts += 1
+        if self.failed_attempts >= 5:
+            self.locked_until = timezone.now() + timezone.timedelta(minutes=15)
+        self.save(update_fields=['failed_attempts', 'locked_until'])
+    
+    def reset_failed_attempts(self):
+        """Reset failed attempts on successful verification."""
+        self.failed_attempts = 0
+        self.locked_until = None
+        self.last_verified_at = timezone.now()
+        self.save(update_fields=['failed_attempts', 'locked_until', 'last_verified_at'])
 
 
 class UserSession(BaseModel):

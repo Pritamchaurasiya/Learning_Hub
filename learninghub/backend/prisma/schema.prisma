@@ -468,6 +468,8 @@ model PYQ {
   @@index([subjectName])
   @@index([difficulty])
   @@index([examType, difficulty, year])
+  @@index([examId, year(sort: Desc)], map: "idx_pyq_exam_year")
+  @@index([subjectId, year(sort: Desc)], map: "idx_pyq_subject_year")
   @@map("pyqs")
 }
 
@@ -580,6 +582,7 @@ model Subject {
   @@index([slug])
   @@index([deletedAt], map: "idx_subject_deleted_at")
   @@index([name], map: "idx_subject_name")
+  @@index([examId, deletedAt, name], map: "idx_subject_exam_active_sort")
   @@map("subjects")
 }
 
@@ -631,6 +634,8 @@ model TestTemplate {
   @@index([mode])
   @@index([isPublished])
   @@index([createdBy])
+  @@index([examId, isPublished], map: "idx_test_template_exam_published")
+  @@index([subjectId, isPublished], map: "idx_test_template_subject_published")
   @@map("test_templates")
 }
 

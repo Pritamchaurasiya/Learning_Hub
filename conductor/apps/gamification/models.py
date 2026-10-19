@@ -9,31 +9,59 @@ class UserXP(BaseModel):
     Persistent storage for user gamification stats.
     Synced from Redis asynchronously.
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='xp_profile')
-    total_xp = models.PositiveIntegerField(default=0)
-    weekly_xp = models.PositiveIntegerField(default=0)  # Reset weekly
-    level = models.PositiveIntegerField(default=1)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='xp_profile', db_index=True)
+    total_xp = models.PositiveIntegerField(default=0, db_index=True)
+    weekly_xp = models.PositiveIntegerField(default=0, db_index=True)  # Reset weekly
+    level = models.PositiveIntegerField(default=1, db_index=True)
     current_streak = models.PositiveIntegerField(default=0)
-    last_activity_date = models.DateField(null=True, blank=True)
+    last_activity_date = models.DateField(null=True, blank=True, db_index=True)
+    weekly_reset_date = models.DateField(null=True, blank=True)
     
     class Meta:
+        db_table = "user_xp"
+        verbose_name = "User XP"
+        verbose_name_plural = "User XP"
         indexes = [
-            models.Index(fields=['-total_xp']),  # Efficient DB leaderboard fallback
+            models.Index(fields=['-total_xp'], name='idx_userxp_total'),  # Efficient DB leaderboard fallback
             models.Index(fields=['-total_xp', 'user'], name='idx_userxp_leaderboard'),  # Leaderboard with user lookup
             models.Index(fields=['-weekly_xp'], name='idx_userxp_weekly'),  # Weekly leaderboard
             models.Index(fields=['level', '-total_xp'], name='idx_userxp_level_xp'),  # Level-based leaderboard
             models.Index(fields=['last_activity_date'], name='idx_userxp_activity'),  # Activity tracking
+            models.Index(fields=['-level', '-total_xp'], name='idx_userxp_level_total'),  # Level leaderboard
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(total_xp__gte=0),
+                name='userxp_total_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(weekly_xp__gte=0),
+                name='userxp_weekly_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(level__gte=1),
+                name='userxp_level_minimum_1'
+            ),
         ]
 
     def add_xp(self, amount):
         """Add XP to user and update level if needed."""
+        if amount <= 0:
+            return
         self.total_xp += amount
         self.weekly_xp += amount
         # Simple level calculation: 100 XP per level
         new_level = (self.total_xp // 100) + 1
         if new_level > self.level:
             self.level = new_level
-        self.save()
+        self.last_activity_date = timezone.now().date()
+        self.save(update_fields=['total_xp', 'weekly_xp', 'level', 'last_activity_date'])
+
+    def reset_weekly_xp(self):
+        """Reset weekly XP (called by scheduled task)."""
+        self.weekly_xp = 0
+        self.weekly_reset_date = timezone.now().date()
+        self.save(update_fields=['weekly_xp', 'weekly_reset_date'])
 
     def __str__(self):
         return f"{self.user.username} - Lvl {self.level} ({self.total_xp} XP)"
@@ -44,16 +72,31 @@ class Streak(BaseModel):
     """
     Tracks daily login/activity streaks separately.
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='streak_profile')
-    current_streak = models.PositiveIntegerField(default=0)
-    longest_streak = models.PositiveIntegerField(default=0)
-    last_activity_date = models.DateField(null=True, blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='streak_profile', db_index=True)
+    current_streak = models.PositiveIntegerField(default=0, db_index=True)
+    longest_streak = models.PositiveIntegerField(default=0, db_index=True)
+    last_activity_date = models.DateField(null=True, blank=True, db_index=True)
+    streak_frozen_until = models.DateField(null=True, blank=True, help_text="Streak freeze power-up")
 
     class Meta:
+        db_table = "user_streaks"
+        verbose_name = "User Streak"
+        verbose_name_plural = "User Streaks"
         indexes = [
             models.Index(fields=['-current_streak'], name='idx_streak_current'),  # Current streak leaderboard
             models.Index(fields=['-longest_streak'], name='idx_streak_longest'),  # All-time streak leaderboard
             models.Index(fields=['last_activity_date'], name='idx_streak_activity'),  # Activity tracking
+            models.Index(fields=['user', '-current_streak'], name='idx_streak_user_current'),  # User streaks
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(current_streak__gte=0),
+                name='streak_current_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(longest_streak__gte=0),
+                name='streak_longest_non_negative'
+            ),
         ]
 
     def update_streak(self):
@@ -65,20 +108,25 @@ class Streak(BaseModel):
             self.current_streak = 1
         elif self.last_activity_date == today:
             # Already recorded activity today
-            pass
+            return  # No need to save
         elif self.last_activity_date == today - timedelta(days=1):
             # Consecutive day - continue streak
             self.current_streak += 1
         else:
-            # Streak broken - reset to 1
-            self.current_streak = 1
+            # Check if streak is frozen
+            if self.streak_frozen_until and self.streak_frozen_until >= today:
+                # Streak is protected, don't reset
+                pass
+            else:
+                # Streak broken - reset to 1
+                self.current_streak = 1
         
         # Update longest streak if current is higher
         if self.current_streak > self.longest_streak:
             self.longest_streak = self.current_streak
         
         self.last_activity_date = today
-        self.save()
+        self.save(update_fields=['current_streak', 'longest_streak', 'last_activity_date'])
 
     def __str__(self):
         return f"{self.user.username} - Streak: {self.current_streak}"

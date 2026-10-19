@@ -26,6 +26,7 @@ import AuthPage from './pages/AuthPage'
 // Lazy-loaded page components
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const TestsAPage = lazy(() => import('./pages/TestsAPage'))
+const TestsAStationPage = lazy(() => import('./pages/TestsAStationPage'))
 
 // Lazy-loaded page components
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
@@ -80,6 +81,9 @@ const UpdateDetailsPage = lazy(() =>
   import('./pages/UpdateDetailsPage').then(m => ({ default: m.UpdateDetailsPage }))
 )
 
+import { RouteProgressBar } from './components/ui/RouteProgressBar'
+import { idlePrefetchRoutes } from './utils/routePrefetchRegistry'
+
 function ProtectedLayout() {
   const auth = useStore(state => state.auth)
   const location = useLocation()
@@ -94,7 +98,7 @@ function ProtectedLayout() {
   return (
     <Layout>
       <SectionErrorBoundary sectionName="Page Content">
-        <Suspense fallback={<LoadingScreen />}>
+        <Suspense fallback={<RouteProgressBar />}>
           <Outlet />
         </Suspense>
       </SectionErrorBoundary>
@@ -174,6 +178,16 @@ function App() {
       })
     }
   }, [auth.isAuthenticated, auth.user, fetchMe])
+
+  // Pre-warm high-priority route chunks and data during idle time
+  useEffect(() => {
+    if (auth.isAuthenticated && auth.isHydrated) {
+      idlePrefetchRoutes(
+        ['/dashboard', '/problems', '/updates', '/library', '/tests-a', '/search'],
+        queryClient
+      )
+    }
+  }, [auth.isAuthenticated, auth.isHydrated, queryClient])
 
   // Initialize Google Analytics 4 on app load
   useEffect(() => {
@@ -547,6 +561,22 @@ function App() {
                 element={
                   <LazyRoute sectionName="Adaptive Tests">
                     <TestsAPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/tests-a-plus"
+                element={
+                  <LazyRoute sectionName="Tests A+ Interactive Studio">
+                    <TestsAStationPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/tests-a/simulator"
+                element={
+                  <LazyRoute sectionName="Tests A+ Interactive Studio">
+                    <TestsAStationPage />
                   </LazyRoute>
                 }
               />

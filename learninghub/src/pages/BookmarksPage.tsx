@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnimatedPage from '../components/AnimatedPage'
+import { SEO } from '../components/SEO'
 import { Skeleton } from '../components/ui/Skeleton'
 import { Bookmark, BookOpen, Clock, Trash2, Search, AlertCircle, RefreshCw } from 'lucide-react'
 import { useStore } from '../stores/useStore'
@@ -92,8 +93,7 @@ export default function BookmarksPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <BookmarkSkeleton key={i} />
+            <BookmarkSkeleton key={`bookmark-skel-${i}`} />
           ))}
         </div>
       </AnimatedPage>
@@ -103,13 +103,14 @@ export default function BookmarksPage() {
   if (error) {
     return (
       <AnimatedPage>
+        <SEO title="Bookmarks - LearningHub" description="Your saved courses and modules." />
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
           <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
           <h2 className="text-xl font-bold mb-2">Failed to load bookmarks</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">{error}</p>
           <button
             onClick={() => fetchBookmarks()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium min-h-[44px]"
           >
             <RefreshCw className="w-4 h-4" />
             Try Again
@@ -121,6 +122,7 @@ export default function BookmarksPage() {
 
   return (
     <AnimatedPage className="space-y-6">
+      <SEO title="Bookmarks - LearningHub" description="Your saved courses and modules." />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
@@ -173,8 +175,9 @@ export default function BookmarksPage() {
                         e.stopPropagation()
                         await handleRemoveBookmark(course.id)
                       }}
-                      className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-gray-400 hover:text-red-500 transition-all duration-200"
+                      className="p-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-gray-400 hover:text-red-500 transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       title="Remove bookmark"
+                      aria-label={`Remove bookmark for ${course.title}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

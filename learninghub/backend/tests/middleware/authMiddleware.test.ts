@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { prisma } from '../../src/prismaClient'
 
 // ── Mock the actual dependencies that authMiddleware.ts imports ──
 
@@ -7,35 +8,13 @@ jest.mock('../../src/utils/auth', () => ({
   verifyAccessToken: (...args: any[]) => mockVerifyAccessToken(...args),
 }))
 
-const mockFindUnique = jest.fn()
-jest.mock('../../src/config', () => ({
-  prisma: {
-    user: {
-      findUnique: (...args: any[]) => mockFindUnique(...args),
-    },
-  },
-  jwtConfig: {
-    accessSecret: 'test-secret',
-    refreshSecret: 'test-refresh-secret',
-    accessExpiresIn: '15m',
-    issuer: 'learninghub',
-    audience: 'learninghub-users',
-  },
-  corsOptions: { origin: 'http://localhost:5173' },
-  helmetConfig: {},
-  generalRateLimit: (_req: any, _res: any, next: any) => next(),
-  authRateLimit: (_req: any, _res: any, next: any) => next(),
-  adminRateLimit: (_req: any, _res: any, next: any) => next(),
-  bcryptConfig: { rounds: 10 },
-  validatePasswordStrength: () => ({ valid: true, errors: [] }),
-}))
-
 const mockCacheGet = jest.fn()
 const mockCacheSet = jest.fn()
 jest.mock('../../src/services/CacheService', () => ({
   cacheService: {
     get: (...args: any[]) => mockCacheGet(...args),
     set: (...args: any[]) => mockCacheSet(...args),
+    delete: jest.fn().mockResolvedValue(true),
   },
 }))
 jest.mock('../../src/utils/logger', () => ({
@@ -72,7 +51,7 @@ describe('authenticate middleware', () => {
     jest.clearAllMocks()
     mockCacheGet.mockResolvedValue(null)
     mockCacheSet.mockResolvedValue(undefined)
-    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
   })
 
   it('returns 401 when Authorization header is missing', async () => {
@@ -117,7 +96,7 @@ describe('authenticate middleware', () => {
 
   it('returns 401 when user not found in DB', async () => {
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockFindUnique.mockResolvedValue(null)
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -126,7 +105,7 @@ describe('authenticate middleware', () => {
 
   it('returns 401 when account is soft-deleted', async () => {
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: new Date(), lockedUntil: null })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u1', deletedAt: new Date(), lockedUntil: null })
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -136,7 +115,7 @@ describe('authenticate middleware', () => {
   it('returns 401 when account is locked', async () => {
     const future = new Date(Date.now() + 60000)
     mockVerifyAccessToken.mockReturnValue({ userId: 'u1', email: 'a@b.com', role: 'STUDENT' })
-    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: future })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: future })
     const { req, res, next, status } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(status).toHaveBeenCalledWith(401)
@@ -146,7 +125,7 @@ describe('authenticate middleware', () => {
   it('calls next() and attaches user when token is valid', async () => {
     const decoded = { userId: 'u1', email: 'a@b.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
-    mockFindUnique.mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u1', deletedAt: null, lockedUntil: null })
     const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await authenticate(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -159,7 +138,7 @@ describe('optionalAuth middleware', () => {
     jest.clearAllMocks()
     mockCacheGet.mockResolvedValue(null)
     mockCacheSet.mockResolvedValue(undefined)
-    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: null })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: null })
   })
 
   it('calls next() without setting user when no token', async () => {
@@ -172,6 +151,7 @@ describe('optionalAuth middleware', () => {
   it('calls next() and attaches user when valid token provided', async () => {
     const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u2', deletedAt: null, lockedUntil: null })
     const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await optionalAuth(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -181,7 +161,7 @@ describe('optionalAuth middleware', () => {
   it('calls next() without user when token belongs to deactivated account', async () => {
     const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
-    mockFindUnique.mockResolvedValue({ id: 'u2', deletedAt: new Date(), lockedUntil: null })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'u2', deletedAt: new Date(), lockedUntil: null })
     const { req, res, next } = makeReqResNext({ authorization: 'Bearer valid-token' })
     await optionalAuth(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -191,7 +171,7 @@ describe('optionalAuth middleware', () => {
   it('calls next() without user when token belongs to locked account', async () => {
     const decoded = { userId: 'u2', email: 'b@c.com', role: 'STUDENT' }
     mockVerifyAccessToken.mockReturnValue(decoded)
-    mockFindUnique.mockResolvedValue({
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'u2',
       deletedAt: null,
       lockedUntil: new Date(Date.now() + 60000),

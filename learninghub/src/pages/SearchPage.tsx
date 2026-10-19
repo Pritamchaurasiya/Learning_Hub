@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import AnimatedPage from '../components/AnimatedPage'
+import { SEO } from '../components/SEO'
 
 import { useStore } from '../stores/useStore'
 
@@ -151,7 +152,6 @@ const SearchPage = React.memo(function SearchPage() {
     sortBy,
     setSearchParams,
     addRecentSearch,
-    query,
   ])
 
   const handleSearch = useCallback((searchQuery: string) => {
@@ -182,6 +182,17 @@ const SearchPage = React.memo(function SearchPage() {
 
   return (
     <AnimatedPage className="max-w-[1400px] mx-auto space-y-8 pb-12 pt-4 px-2">
+      <SEO
+        title={
+          debouncedQuery
+            ? `Search: "${debouncedQuery}" | LearningHub`
+            : 'Course Catalog & Search | LearningHub'
+        }
+        description="Search engineering courses, system design diagnostics, algorithmic interview training, and computer science masterclasses."
+        noindex={Boolean(debouncedQuery || activeFiltersCount > 0)}
+        canonical="https://learninghub.app/search"
+      />
+
       {/* Search Header Container */}
       <Card className="p-6 md:p-8 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-gray-900 flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -267,7 +278,7 @@ const SearchPage = React.memo(function SearchPage() {
                     key={opt}
                     onClick={() => setDifficultyFilter(opt)}
                     aria-pressed={difficultyFilter === opt}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    className={`min-h-[40px] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center ${
                       difficultyFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
                         : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -288,7 +299,7 @@ const SearchPage = React.memo(function SearchPage() {
                     key={opt}
                     onClick={() => setPhaseFilter(opt)}
                     aria-pressed={phaseFilter === opt}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    className={`min-h-[40px] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center ${
                       phaseFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
                         : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -309,7 +320,7 @@ const SearchPage = React.memo(function SearchPage() {
                     key={opt}
                     onClick={() => setDurationFilter(opt)}
                     aria-pressed={durationFilter === opt}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    className={`min-h-[40px] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center ${
                       durationFilter === opt
                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
                         : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -328,7 +339,7 @@ const SearchPage = React.memo(function SearchPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-8 mt-8 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-8 mt-8 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-4">
               <label
                 htmlFor="sort-select"
@@ -340,7 +351,7 @@ const SearchPage = React.memo(function SearchPage() {
                 id="sort-select"
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortOption)}
-                className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                className="min-h-[44px] bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
               >
                 <option value="relevance">Relevance</option>
                 <option value="name">Alpha (A-Z)</option>
@@ -351,7 +362,7 @@ const SearchPage = React.memo(function SearchPage() {
             <Button
               variant="outline"
               onClick={clearFilters}
-              className="text-[10px] font-black uppercase tracking-widest rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 border-rose-100 dark:border-rose-900/30"
+              className="min-h-[44px] text-[10px] font-black uppercase tracking-widest rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 border-rose-100 dark:border-rose-900/30"
             >
               <Trash2 className="w-3.5 h-3.5 mr-2" /> Reset
             </Button>
@@ -425,13 +436,15 @@ const SearchPage = React.memo(function SearchPage() {
         <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-primary-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            aria-label="Grid layout view"
+            className={`min-h-[44px] min-w-[44px] p-2 rounded-lg transition-all flex items-center justify-center ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-primary-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-gray-100 dark:bg-gray-800 text-primary-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            aria-label="List layout view"
+            className={`min-h-[44px] min-w-[44px] p-2 rounded-lg transition-all flex items-center justify-center ${viewMode === 'list' ? 'bg-gray-100 dark:bg-gray-800 text-primary-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
             <List className="w-4 h-4" />
           </button>

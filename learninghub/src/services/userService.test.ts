@@ -53,7 +53,7 @@ describe('userService', () => {
         bio: 'New bio',
       })
 
-      expect(fetchApi).toHaveBeenCalledWith('/auth/profile/', {
+      expect(fetchApi).toHaveBeenCalledWith('/auth/profile', {
         method: 'PUT',
         body: JSON.stringify({ display_name: 'Updated Name', bio: 'New bio' }),
       })

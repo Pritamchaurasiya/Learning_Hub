@@ -257,11 +257,8 @@ class TestAdditionalRegressions:
         Inspected ecommerce/urls.py:
           - name='payment-webhook' at webhooks/payment
           - name='stripe-webhook' at webhooks/stripe
-        Inspected ecommerce/views.py PaymentWebhookView:
-          - reads Stripe-Signature / X-Razorpay-Signature / X-Webhook-Signature
-          - webhook_secret = os.environ.get('PAYMENT_WEBHOOK_SECRET','')
-          - if no secret and DJANGO_DEBUG not true -> 500
-          - elif signature and hmac mismatch -> 400 Invalid webhook signature
+        The payment endpoint retains its custom HMAC contract, while the Stripe
+        endpoint verifies Stripe-Signature with STRIPE_WEBHOOK_SECRET.
         """
         anon_client = APIClient()
         url = reverse("payment-webhook")
@@ -278,7 +275,11 @@ class TestAdditionalRegressions:
         )
 
         # Case 1: With secret set, fake signature must yield 400
-        with patch.dict(os.environ, {"PAYMENT_WEBHOOK_SECRET": "whsec_test_secret_for_ci_123", "DJANGO_DEBUG": "True"}):
+        with patch.dict(os.environ, {
+            "PAYMENT_WEBHOOK_SECRET": "payment_webhook_test_secret_for_ci_123",
+            "STRIPE_WEBHOOK_SECRET": "whsec_test_secret_for_ci_123",
+            "DJANGO_DEBUG": "True",
+        }):
             res = anon_client.post(
                 url,
                 data=payload,
@@ -297,6 +298,7 @@ class TestAdditionalRegressions:
                 HTTP_STRIPE_SIGNATURE="another_fake_sig",
             )
             assert res_stripe.status_code == status.HTTP_400_BAD_REQUEST
+            assert "Invalid Stripe webhook signature" in res_stripe.data.get("message", "")
 
         # Case 2: No secret in production -> 500 (DJANGO_DEBUG False/empty)
         # Spec says 400 or 500 acceptable; we verify 500 branch works
@@ -315,8 +317,7 @@ class TestAdditionalRegressions:
             assert res_prod.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR, res_prod.data
             assert "Webhook secret not configured" in res_prod.data.get("message", "")
 
-        # Case 3: No secret in debug mode -> allows processing (200) — not error
-        # Verify debug mode doesn't require signature
+        # Case 3: The non-Stripe payment webhook retains its debug-mode behavior.
         with patch.dict(os.environ, {"PAYMENT_WEBHOOK_SECRET": "", "DJANGO_DEBUG": "True"}, clear=False):
             os.environ["PAYMENT_WEBHOOK_SECRET"] = ""
             os.environ["DJANGO_DEBUG"] = "True"

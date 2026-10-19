@@ -45,8 +45,8 @@ To eliminate ambiguity between parallel backend implementations, a complete sour
 | **Behavioral Assessment Telemetry** | `apps/tests_engine/telemetry.py:15-81` | **PARTIALLY VERIFIED** | Capped linear risk scoring + HMAC-SHA256 digest | Telemetry scores and HMAC proofs are ephemeral (never stored in database models). |
 | **Exam Attempt Lifecycle & Timer** | `apps/tests_engine/views.py:50-482` | **BROKEN** | Server-authoritative elapsed time validation | Autosave modifies submitted tests; overdue submit grades late answers; bypasses attempt limits. |
 | **DSA Problem Recommendation** | `apps/problems/views.py:10-28` | **BROKEN** | Empty stub (`recommendations = []` in `apps/ai_tutor`) | No recommendation ranking in Django; no weak-area targeting; no solve-status tracking. |
-| **DSA Code Sandbox & AST** | `apps/problems/sandbox.py:35-198` | **BROKEN** | AST whitelist + Host Subprocess | Fake C++/Java/Go execution (hardcoded Accepted); fake memory stats; AST only checks Python. |
-| **DSA Hidden Testcase Secrecy** | `apps/problems/views.py:105` | **BROKEN** | String comparison against expected output | Leaks secret `expected_output` to client in `last_stdout` on Wrong Answer. |
+| **DSA Code Sandbox & AST** | `learninghub/django_backend/apps/problems/sandbox.py` | **HARDENED; RUNTIME NOT DEPLOYED** | Docker-isolated Python/JavaScript with network disabled and CPU, memory, process, output, and wall-clock limits | No host-process fallback; unsupported languages and missing Docker fail closed. The Django image does not provide a dedicated sandbox runtime, so execution remains unavailable until one is deployed. |
+| **DSA Hidden Testcase Secrecy** | `learninghub/django_backend/apps/problems/views.py` | **FIXED** | Hidden failures return only a generic testcase message | Expected output is not included in hidden-case responses. |
 | **Course Prerequisite Enforcement** | `apps/courses/views.py:52-71` | **BROKEN** | Metadata field only | Zero enforcement at enrollment; any user can enroll in advanced courses. |
 | **Search Engine & Retrieval** | `apps/courses/views.py:306-317` | **BROKEN** | Basic SQL `LIKE '%query%'` (`__icontains`) | Multi-word queries fail; zero relevance ranking; no tokenization or stemming. |
 | **Dashboard Analytics Isolation** | `apps/core/views.py:94-180` | **BROKEN** | Synthetic fallbacks (`or 12`, `or 1450`) | Data fabrication for real zero-progress users; identical mock stats returned to all users. |
@@ -77,13 +77,10 @@ In Python, subtraction (`-`) binds tighter than the conditional expression (`x i
 4. **Missing Multi-Select Persistence (`scoring.py:50-59`):**
    `AttemptAnswer.objects.update_or_create` records `selected_option_id`, but completely drops `selected_option_ids` (JSONField).
 
-### 3.3 DSA Sandbox & Secret Leakage
-1. **Hidden Testcase Leak (`apps/problems/views.py:105`):**
-   `last_stdout = f"Output: {actual_out}\nExpected: {expected_out}"` is written into `submission.stdout` and sent in the API response, exposing hidden evaluation testcases.
-2. **Infinite XP Farming (`apps/problems/views.py:128-130`):**
-   Submitting an accepted solution repeatedly grants +25 XP on each request without checking if the problem was already solved.
-3. **Fake Execution (`apps/problems/sandbox.py:186-195`):**
-   Submitting non-Python/JS code (C++, Java, Go, Rust) immediately returns hardcoded `Accepted` without running the compiler.
+### 3.3 DSA Sandbox & Secret Leakage (rechecked October 18, 2026)
+1. **Untrusted code execution:** `learninghub/django_backend/apps/problems/sandbox.py` now launches Python and JavaScript only through Docker with networking disabled, CPU/memory/process/output limits, a read-only root filesystem, an unprivileged UID, and a bounded wall-clock timeout. Static analysis is defense-in-depth, not the isolation boundary.
+2. **Fail-closed runtime requirement:** If Docker is missing or cannot start, the API reports a runtime failure and never executes submissions on the Django host. The current Django image does not include a sandbox runner or expose a dedicated isolated runtime, so production code execution must remain disabled until that infrastructure is provisioned. C++, Java, Go, and other unconfigured languages are explicitly rejected.
+3. **Hidden testcase secrecy and XP farming:** Hidden-case failures now omit expected output, and repeat accepted submissions do not award XP again; regression tests cover both behaviors.
 
 ### 3.4 BKT Engine Premature Mastery & Concurrency
 1. **Premature Mastery ($N=2$):**
@@ -101,7 +98,7 @@ In Python, subtraction (`-`) binds tighter than the conditional expression (`x i
 | :--- | :--- | :--- | :--- |
 | **DSA Recommendations** | Multi-factor priority score, weak-area targeting, Kahn DAG | None (`AIRecommendationsView` returns `[]`) | Implement `DSARecommendationEngine` in Django combining weak topics, solve status, and difficulty. |
 | **DSA Solve Status** | Resolves `user_status: SOLVED \| ATTEMPTED \| UNATTEMPTED` | None (raw problem list) | Annotate user solve status in `ProblemListView`. |
-| **Code Sandboxing** | Piston container execution for 8 languages | Host subprocess with fake execution for 4 languages | Harden Python sandbox; disallow fake languages or require external worker. |
+| **Code Sandboxing** | Piston container execution for 8 languages | Docker-isolated Python/JavaScript; no host fallback; runtime not deployed | Provision a dedicated isolated sandbox worker and add runtimes only when actually supported. |
 | **Search Relevance** | Fuse.js / basic text | Basic `icontains` | Implement multi-word tokenized search with field weighting and ranking in `apps/core/search.py`. |
 | **Prerequisites** | Course prerequisite checks | Unchecked `JSONField` | Implement strict prerequisite completion validation in `EnrollCourseView`. |
 
@@ -112,8 +109,7 @@ In Python, subtraction (`-`) binds tighter than the conditional expression (`x i
 1. **P0 (Critical Correctness & Security):**
    - Fix IRT ability delta operator precedence in `scoring.py`.
    - Block autosave and answer modifications on finalized attempts (`SUBMITTED`, `TIMEOUT`, `EXPIRED`).
-   - Eliminate hidden testcase leakage in `apps/problems/views.py`.
-   - Prevent infinite XP farming on tests and DSA problems.
+   - Retain hidden-testcase output masking and one-time XP awarding in DSA submissions.
    - Fix shared guest cart isolation in `apps/ecommerce/views.py`.
 2. **P1 (Core Learning Intelligence):**
    - Implement `DSARecommendationEngine` with weak-area targeting and explainable reasons.

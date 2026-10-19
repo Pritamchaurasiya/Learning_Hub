@@ -8,17 +8,20 @@ import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useStore } from './stores/useStore'
 import './index.css'
-import * as Sentry from '@sentry/react'
 
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.VITE_SENTRY_ENVIRONMENT,
-    integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-    tracesSampleRate: 0.1,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-  })
+  void import('@sentry/react')
+    .then(Sentry => {
+      Sentry.init({
+        dsn: import.meta.env.VITE_SENTRY_DSN,
+        environment: import.meta.env.VITE_SENTRY_ENVIRONMENT,
+        integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+        tracesSampleRate: 0.1,
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
+      })
+    })
+    .catch(() => {})
 }
 
 // Rehydrate Zustand persisted state
@@ -37,8 +40,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000,
-      retry: 3, // React Query layer retry (separate from api fetch layer RETRY_CONFIG MAX_RETRIES=1) — intentional double-retry separation
+      gcTime: 30 * 60 * 1000, // 30 minutes
+      retry: 2, // React Query layer retry
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
@@ -56,7 +59,11 @@ const queryClient = new QueryClient({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const reportErrorToMonitoring = (error: Error, context?: Record<string, any>) => {
   if (import.meta.env.PROD) {
-    Sentry.captureException(error, { extra: context })
+    void import('@sentry/react')
+      .then(Sentry => {
+        Sentry.captureException(error, { extra: context })
+      })
+      .catch(() => {})
   } else {
     console.error('[Error]', error.message, context ?? '')
   }

@@ -67,15 +67,14 @@ const pwaConfig = VitePWA({
         },
       },
       {
-        // Stable catalog content: 24h is acceptable (courses change rarely).
+        // Stable catalog content: StaleWhileRevalidate delivers instant sub-5ms cached reads while syncing in background
         urlPattern: /.*\/(?:courses|content)\/.*/i,
-        handler: 'NetworkFirst',
+        handler: 'StaleWhileRevalidate',
         options: {
           cacheName: 'api-courses-cache',
-          networkTimeoutSeconds: 10,
           expiration: {
             maxEntries: 100,
-            maxAgeSeconds: 60 * 60 * 24, // 24h for courses/content only
+            maxAgeSeconds: 60 * 60 * 24, // 24h for courses/content
           },
           cacheableResponse: {
             statuses: [0, 200],
@@ -83,13 +82,27 @@ const pwaConfig = VitePWA({
         },
       },
       {
-        // Volatile gamification/pricing/leaderboard: 1h max so NetworkFirst
-        // never serves a day-old leaderboard or stale price as fresh.
+        // Tests, quizzes, and problem catalogs: StaleWhileRevalidate for instant page transitions
+        urlPattern: /.*\/(?:problems|quizzes|exams)\/.*/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'api-problems-cache',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 2, // 2h
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+      {
+        // Volatile gamification/pricing/leaderboard: 1h max with 3s timeout
         urlPattern: /.*\/(?:gamification|leaderboard|pricing|contest)\/.*/i,
         handler: 'NetworkFirst',
         options: {
           cacheName: 'api-volatile-cache',
-          networkTimeoutSeconds: 10,
+          networkTimeoutSeconds: 3,
           expiration: {
             maxEntries: 100,
             maxAgeSeconds: 60 * 60 * 1, // 1h for gamification/pricing/leaderboard
@@ -157,6 +170,19 @@ export default defineConfig(({ mode }) => {
     },
     esbuild: mode === 'production' ? { drop: ['console', 'debugger'] } : {},
     build: {
+      target: 'es2022',
+      modulePreload: {
+        resolveDependencies(_filename, deps) {
+          return deps.filter(
+            dep =>
+              !dep.includes('pdf-') &&
+              !dep.includes('editor-') &&
+              !dep.includes('charts-') &&
+              !dep.includes('katex-') &&
+              !dep.includes('sentry-')
+          )
+        },
+      },
       // 500kB Vite default restored so bundle bloat is reported, not masked.
       // Run `ANALYZE=true npm run build` (visualizer → dist/stats.html) to inspect
       // which chunk regressed when this warning fires.
@@ -194,11 +220,13 @@ export default defineConfig(({ mode }) => {
               if (id.includes('lodash')) return 'vendor-utils'
               if (id.includes('zod')) return 'vendor-validation'
 
-              // Code editor - only load on DSA pages
+              // Code editor - only load on DSA pages (isolate parser state tables and grammars)
               if (
                 id.includes('codemirror') ||
                 id.includes('@codemirror') ||
-                id.includes('@uiw/react-codemirror')
+                id.includes('@uiw/react-codemirror') ||
+                id.includes('@lezer') ||
+                id.includes('lezer')
               )
                 return 'editor'
 
@@ -212,16 +240,22 @@ export default defineConfig(({ mode }) => {
               )
                 return 'react-core'
               if (id.includes('zustand')) return 'store'
-              if (id.includes('react-router-dom') || id.includes('react-router')) return 'router'
+              if (
+                id.includes('react-router-dom') ||
+                id.includes('react-router') ||
+                id.includes('@remix-run')
+              )
+                return 'router'
               if (id.includes('@tanstack/react-query') || id.includes('@tanstack/query-core'))
                 return 'query'
               if (id.includes('socket.io-client')) return 'socket'
-              if (id.includes('i18next')) return 'i18n'
+              if (id.includes('i18next') || id.includes('react-i18next')) return 'i18n'
 
               // Additional library splits for better caching
               if (id.includes('fuse.js')) return 'search'
               if (id.includes('react-virtuoso') || id.includes('@tanstack/react-virtual'))
                 return 'virtualization'
+              if (id.includes('canvg') || id.includes('html2canvas')) return 'pdf-canvas'
               if (id.includes('react-helmet-async')) return 'seo'
               if (
                 id.includes('class-variance-authority') ||

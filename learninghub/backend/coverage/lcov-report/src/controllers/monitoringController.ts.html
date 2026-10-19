@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.22% </span>
+                <span class="strong">89.36% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>83/90</span>
+                <span class='fraction'>84/94</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">65% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>25/40</span>
+                <span class='fraction'>26/40</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/7</span>
+                <span class='fraction'>7/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">92.04% </span>
+                <span class="strong">90.21% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>81/88</span>
+                <span class='fraction'>83/92</span>
             </div>
         
             
@@ -268,7 +268,15 @@
 <a name='L203'></a><a href='#L203'>203</a>
 <a name='L204'></a><a href='#L204'>204</a>
 <a name='L205'></a><a href='#L205'>205</a>
-<a name='L206'></a><a href='#L206'>206</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -473,6 +481,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
@@ -480,6 +494,7 @@ import os from 'os'
 import { sendSuccess, sendError } from '../utils/responseHelper'
 import { cacheService } from '../services/CacheService'
 import { asyncHandler } from '../utils/errorHandler'
+import { register } from '../utils/metrics'
 &nbsp;
 async function checkDatabase(): Promise&lt;{
   status: string
@@ -561,7 +576,7 @@ export const deepHealthCheck = asyncHandler(async (req: Request, res: Response):
     const cpuPercent = totalTick &gt; 0 ? Math.round(((totalTick - totalIdle) / totalTick) * 100) : <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
 &nbsp;
     if (db.status !== 'healthy') report.status = 'critical'
-    else <span class="missing-if-branch" title="else path not taken" >E</span>if (usedMem / totalMem &gt; 0.9 || <span class="branch-1 cbranch-no" title="branch not covered" >cpuPercent &gt; 90)</span> report.status = 'degraded'
+    else <span class="missing-if-branch" title="if path not taken" >I</span>if (usedMem / totalMem &gt; 0.9 || cpuPercent &gt; 90) <span class="cstat-no" title="statement not covered" >report.status = 'degraded'</span>
     ;(report.components as Record&lt;string, unknown&gt;).system = {
       memory_used_percent: Math.round((usedMem / totalMem) * 100),
       cpu_percent: cpuPercent,
@@ -678,6 +693,12 @@ export const getProcesses = asyncHandler(async (req: Request, res: Response): Pr
     ],
   })
 })
+&nbsp;
+export const getPrometheusMetrics = asyncHandler(<span class="fstat-no" title="function not covered" >async </span>(_req: Request, res: Response): Promise&lt;void&gt; =&gt; {
+<span class="cstat-no" title="statement not covered" >  res.setHeader('Content-Type', register.contentType)</span>
+<span class="cstat-no" title="statement not covered" >  res.send(await register.metrics())</span>
+})
+&nbsp;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -685,7 +706,7 @@ export const getProcesses = asyncHandler(async (req: Request, res: Response): Pr
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-13T11:51:31.996Z
+                at 2026-10-19T06:43:59.382Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

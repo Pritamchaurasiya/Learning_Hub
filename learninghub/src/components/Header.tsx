@@ -25,6 +25,7 @@ import { NotificationBell } from './NotificationBell'
 import { BrandLogo } from './BrandLogo'
 import { ExamContextBadge } from './exam/ExamContextBadge'
 import { useLearningContextStore } from '../stores/useLearningContextStore'
+import { prefetchRoute } from '../utils/routePrefetchRegistry'
 
 const LevelProgressionModal = lazy(() =>
   import('./gamification/LevelProgressionModal').then(m => ({ default: m.LevelProgressionModal }))
@@ -53,21 +54,27 @@ const Header = memo(() => {
   const {
     theme,
     toggleDarkMode,
-    progress,
+    progressXp,
+    progressLevel,
+    progressStreak,
     setSidebarOpen,
-    dailyGoal,
+    dailyGoalProgress,
+    dailyGoalTarget,
     isAuthenticated,
-    authUser,
+    authUsername,
     logout,
   } = useStore(
     useShallow(s => ({
       theme: s.theme,
       toggleDarkMode: s.toggleDarkMode,
-      progress: s.progress,
+      progressXp: s.progress.xp,
+      progressLevel: s.progress.level,
+      progressStreak: s.progress.streak,
       setSidebarOpen: s.setSidebarOpen,
-      dailyGoal: s.dailyGoal,
+      dailyGoalProgress: s.dailyGoal.progress,
+      dailyGoalTarget: s.dailyGoal.target,
       isAuthenticated: s.auth.isAuthenticated,
-      authUser: s.auth.user,
+      authUsername: s.auth.user?.username,
       logout: s.logout,
     }))
   )
@@ -160,7 +167,7 @@ const Header = memo(() => {
     }
   }
 
-  const dailyProgress = dailyGoal.target > 0 ? (dailyGoal.progress / dailyGoal.target) * 100 : 0
+  const dailyProgress = dailyGoalTarget > 0 ? (dailyGoalProgress / dailyGoalTarget) * 100 : 0
 
   return (
     <header
@@ -181,7 +188,20 @@ const Header = memo(() => {
           <Menu className="w-5 h-5" />
         </motion.button>
 
-        <div onClick={() => navigate('/')} className="cursor-pointer flex items-center">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate('/')}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              navigate('/')
+            }
+          }}
+          onPointerEnter={() => prefetchRoute('/')}
+          onTouchStart={() => prefetchRoute('/')}
+          className="cursor-pointer flex items-center"
+        >
           <BrandLogo size="md" variant="full" badgeText="PRO" className="hidden sm:inline-flex" />
           <BrandLogo size="sm" variant="full" showBadge={false} className="sm:hidden" />
           <span className="sr-only">LearningHub</span>
@@ -200,6 +220,7 @@ const Header = memo(() => {
             type="text"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
+            onFocus={() => prefetchRoute(isUpdatesPage ? '/updates' : '/search')}
             placeholder={searchPlaceholder}
             aria-label={searchAriaLabel}
             className="input-field pl-10 pr-16 text-sm w-full bg-gray-50/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 focus:bg-white dark:focus:bg-gray-900 transition-all"
@@ -273,8 +294,8 @@ const Header = memo(() => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           className="hidden sm:flex items-center cursor-help"
-          title={`Daily Goal: ${dailyGoal.progress}/${dailyGoal.target} XP`}
-          aria-label={`Daily Goal Progress: ${dailyGoal.progress} of ${dailyGoal.target} XP`}
+          title={`Daily Goal: ${dailyGoalProgress}/${dailyGoalTarget} XP`}
+          aria-label={`Daily Goal Progress: ${dailyGoalProgress} of ${dailyGoalTarget} XP`}
           role="img"
         >
           <ProgressRing progress={dailyProgress} size={32} strokeWidth={2.5} />
@@ -290,11 +311,11 @@ const Header = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 cursor-pointer hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-colors"
             title="Click to view Cognitive Level & Progression Matrix"
-            aria-label={`${progress.xp} experience points. Click to view level progression.`}
+            aria-label={`${progressXp} experience points. Click to view level progression.`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-              {progress.xp}
+              {progressXp}
             </span>
           </motion.button>
           <motion.button
@@ -306,11 +327,11 @@ const Header = memo(() => {
             transition={{ delay: 0.1 }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200/60 dark:border-purple-800/40 cursor-pointer hover:bg-purple-100/60 dark:hover:bg-purple-900/30 transition-colors"
             title="Click to view Cognitive Level & Progression Matrix"
-            aria-label={`Level ${progress.level}. Click to view level progression.`}
+            aria-label={`Level ${progressLevel}. Click to view level progression.`}
           >
             <Trophy className="w-3.5 h-3.5 text-purple-500" aria-hidden="true" />
             <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
-              Lv.{progress.level}
+              Lv.{progressLevel}
             </span>
           </motion.button>
         </div>
@@ -336,6 +357,8 @@ const Header = memo(() => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/cart')}
+            onPointerEnter={() => prefetchRoute('/cart')}
+            onTouchStart={() => prefetchRoute('/cart')}
             className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center relative"
             aria-label="View shopping cart"
           >
@@ -348,12 +371,16 @@ const Header = memo(() => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/auth')}
+              onPointerEnter={() => prefetchRoute('/auth')}
+              onTouchStart={() => prefetchRoute('/auth')}
               className="px-3.5 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl transition-colors"
             >
               Sign In
             </button>
             <button
               onClick={() => navigate('/auth?mode=signup')}
+              onPointerEnter={() => prefetchRoute('/auth')}
+              onTouchStart={() => prefetchRoute('/auth')}
               className="hidden sm:inline-flex px-4 py-1.5 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-md shadow-primary-500/20 transition-all duration-200"
             >
               Get Started
@@ -368,6 +395,18 @@ const Header = memo(() => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setUserMenuOpen(!userMenuOpen)}
+              onPointerEnter={() => {
+                prefetchRoute('/profile')
+                prefetchRoute('/bookmarks')
+                prefetchRoute('/cart')
+                prefetchRoute('/settings')
+              }}
+              onTouchStart={() => {
+                prefetchRoute('/profile')
+                prefetchRoute('/bookmarks')
+                prefetchRoute('/cart')
+                prefetchRoute('/settings')
+              }}
               className="flex items-center gap-2 p-1.5 pr-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors"
               aria-label="User menu"
               aria-haspopup="true"
@@ -396,7 +435,7 @@ const Header = memo(() => {
                       Account
                     </p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {authUser?.username ?? 'Learner'}
+                      {authUsername ?? 'Learner'}
                     </p>
                   </div>
 
@@ -405,6 +444,7 @@ const Header = memo(() => {
                       navigate('/profile')
                       setUserMenuOpen(false)
                     }}
+                    onPointerEnter={() => prefetchRoute('/profile')}
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-3 transition-colors text-gray-700 dark:text-gray-300"
                     role="menuitem"
                   >
@@ -416,6 +456,7 @@ const Header = memo(() => {
                       navigate('/bookmarks')
                       setUserMenuOpen(false)
                     }}
+                    onPointerEnter={() => prefetchRoute('/bookmarks')}
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-3 transition-colors text-gray-700 dark:text-gray-300"
                     role="menuitem"
                   >
@@ -427,6 +468,7 @@ const Header = memo(() => {
                       navigate('/cart')
                       setUserMenuOpen(false)
                     }}
+                    onPointerEnter={() => prefetchRoute('/cart')}
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-3 transition-colors text-gray-700 dark:text-gray-300"
                     role="menuitem"
                   >
@@ -438,6 +480,7 @@ const Header = memo(() => {
                       navigate('/settings')
                       setUserMenuOpen(false)
                     }}
+                    onPointerEnter={() => prefetchRoute('/settings')}
                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-3 transition-colors text-gray-700 dark:text-gray-300"
                     role="menuitem"
                   >
@@ -450,6 +493,7 @@ const Header = memo(() => {
                       void logout()
                       navigate('/auth')
                     }}
+                    onPointerEnter={() => prefetchRoute('/auth')}
                     className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-medium"
                     role="menuitem"
                   >
@@ -469,8 +513,8 @@ const Header = memo(() => {
           <LevelProgressionModal
             isOpen={progressionModalOpen}
             onClose={() => setProgressionModalOpen(false)}
-            currentXp={progress.xp}
-            streak={progress.streak}
+            currentXp={progressXp}
+            streak={progressStreak}
           />
         </Suspense>
       )}

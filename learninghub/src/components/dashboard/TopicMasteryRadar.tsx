@@ -47,9 +47,7 @@ export function TopicMasteryRadar({ topicMastery }: Props) {
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-              Topic Mastery Radar
-            </h3>
+            <h3 className="font-bold text-sm text-gray-900 dark:text-white">Topic Mastery Radar</h3>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
               Competency distribution across studied domains
             </p>
@@ -61,8 +59,8 @@ export function TopicMasteryRadar({ topicMastery }: Props) {
       </div>
 
       {/* Radar Chart */}
-      <div className="h-56 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-56 w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <RadarChart cx="50%" cy="50%" outerRadius="72%" data={chartData}>
             <PolarGrid stroke="rgba(150,150,150,0.15)" />
             <PolarAngleAxis

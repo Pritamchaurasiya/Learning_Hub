@@ -21,9 +21,18 @@ class StripeService:
     """Stripe payment service for LearningHub."""
 
     @staticmethod
+    def _require_api_key() -> None:
+        api_key = os.environ.get('STRIPE_SECRET_KEY') or stripe.api_key
+        if not api_key:
+            raise RuntimeError('Stripe secret key is not configured')
+        stripe.api_key = api_key
+
+    @staticmethod
     def create_customer(user, email: str = None) -> Dict[str, Any]:
         """Create or retrieve Stripe customer for user."""
-        if not user.stripe_customer_id:
+        StripeService._require_api_key()
+        customer_id = getattr(user, 'stripe_customer_id', None)
+        if not customer_id:
             customer = stripe.Customer.create(
                 email=email or user.email,
                 name=user.get_full_name() or user.username,
@@ -32,11 +41,12 @@ class StripeService:
                     'username': user.username,
                 }
             )
-            user.stripe_customer_id = customer.id
-            user.save(update_fields=['stripe_customer_id'])
+            if hasattr(user, 'stripe_customer_id'):
+                user.stripe_customer_id = customer.id
+                user.save(update_fields=['stripe_customer_id'])
             return {'customer': customer, 'created': True}
         else:
-            return {'customer': stripe.Customer.retrieve(user.stripe_customer_id), 'created': False}
+            return {'customer': stripe.Customer.retrieve(customer_id), 'created': False}
 
     @staticmethod
     def create_checkout_session(
@@ -46,7 +56,8 @@ class StripeService:
         cancel_url: str,
         idempotency_key: str,
         trial_days: int = 0,
-        subscription_mode: str = 'payment'
+        subscription_mode: str = 'payment',
+        order=None,
     ) -> Dict[str, Any]:
         """
         Create Stripe Checkout Session.
@@ -59,21 +70,44 @@ class StripeService:
             idempotency_key: Unique key for idempotency
             trial_days: Trial period days for subscriptions
             subscription_mode: 'payment' (one-time) or 'subscription'
+            order: Pending local order to associate with a one-time payment
         """
+        StripeService._require_api_key()
         customer_data = StripeService.create_customer(user)
 
-        line_items = []
-        for item in items:
-            if 'price_id' in item:
-                line_items.append({
-                    'price': item['price_id'],
-                    'quantity': item.get('quantity', 1),
-                })
-            elif 'price_data' in item:
-                line_items.append({
-                    'price_data': item['price_data'],
-                    'quantity': item.get('quantity', 1),
-                })
+        if order is not None and subscription_mode == 'payment':
+            from decimal import ROUND_HALF_UP
+
+            payment = order.transactions.first()
+            currency = payment.currency.lower() if payment else 'inr'
+            amount = int(
+                (Decimal(order.total_amount) * 100).quantize(
+                    Decimal('1'), rounding=ROUND_HALF_UP
+                )
+            )
+            if amount <= 0:
+                raise ValueError('Stripe checkout requires a positive order total')
+            line_items = [{
+                'price_data': {
+                    'currency': currency,
+                    'product_data': {'name': f'LearningHub order {order.id}'},
+                    'unit_amount': amount,
+                },
+                'quantity': 1,
+            }]
+        else:
+            line_items = []
+            for item in items:
+                if 'price_id' in item:
+                    line_items.append({
+                        'price': item['price_id'],
+                        'quantity': item.get('quantity', 1),
+                    })
+                elif 'price_data' in item:
+                    line_items.append({
+                        'price_data': item['price_data'],
+                        'quantity': item.get('quantity', 1),
+                    })
 
         session_params = {
             'customer': customer_data['customer'].id,
@@ -81,7 +115,6 @@ class StripeService:
             'mode': subscription_mode,
             'success_url': success_url,
             'cancel_url': cancel_url,
-            'idempotency_key': idempotency_key,
             'metadata': {
                 'user_id': str(user.id),
             },
@@ -89,14 +122,25 @@ class StripeService:
             'billing_address_collection': 'required',
         }
 
+        if order is not None and subscription_mode == 'payment':
+            session_params['client_reference_id'] = str(order.id)
+            session_params['metadata']['order_id'] = str(order.id)
+
         if subscription_mode == 'subscription':
             if trial_days > 0:
                 session_params['subscription_data'] = {'trial_period_days': trial_days}
             session_params['subscription_data'] = session_params.get('subscription_data', {})
             session_params['subscription_data']['metadata'] = {'user_id': str(user.id)}
 
-        session = stripe.checkout.Session.create(**session_params, idempotency_key=idempotency_key)
-        return {'session': session, 'url': session.url}
+        session = stripe.checkout.Session.create(
+            **session_params,
+            idempotency_key=idempotency_key,
+        )
+        return {
+            'session': session,
+            'url': session.url,
+            'customer_id': customer_data['customer'].id,
+        }
 
     @staticmethod
     def create_subscription(
@@ -183,11 +227,21 @@ class StripeService:
         return True
 
     @staticmethod
-    def construct_webhook_event(payload: bytes, sig_header: str) -> stripe.Event:
-        """Verify and construct webhook event."""
-        return stripe.Webhook.construct_event(
-            payload, os.environ.get('STRIPE_WEBHOOK_SECRET', ''), sig_header
+    def construct_webhook_event(payload: bytes, sig_header: str) -> Dict[str, Any]:
+        """Verify and normalize a Stripe webhook event."""
+        webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET') or STRIPE_WEBHOOK_SECRET
+        if not webhook_secret:
+            raise RuntimeError('Stripe webhook secret is not configured')
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
         )
+        return event.to_dict()
+
+    @staticmethod
+    def retrieve_checkout_session(session_id: str):
+        """Retrieve an existing Checkout Session for an idempotent order retry."""
+        StripeService._require_api_key()
+        return stripe.checkout.Session.retrieve(session_id)
 
     @staticmethod
     def get_subscription(subscription_id: str) -> Dict:

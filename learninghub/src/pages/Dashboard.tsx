@@ -84,8 +84,12 @@ function DashboardSkeleton() {
 const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate()
   const location = useLocation()
-  const auth = useStore(state => state.auth)
-  const progress = useStore(state => state.progress)
+  const isAuthenticated = useStore(state => state.auth.isAuthenticated)
+  const username = useStore(state => state.auth.user?.username)
+  const isPro = useStore(state => state.auth.user?.isPro)
+  const progressXp = useStore(state => state.progress.xp)
+  const progressStreak = useStore(state => state.progress.streak)
+  const progressLevel = useStore(state => state.progress.level)
   const addToast = useStore(state => state.addToast)
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<DashboardTab>('all')
@@ -142,7 +146,7 @@ const Dashboard = memo(function Dashboard() {
   } = useQuery<DashboardStats | null>({
     queryKey: ['dashboard-stats'],
     queryFn: async ({ signal }) => {
-      if (!auth.isAuthenticated) return null
+      if (!isAuthenticated) return null
       const [profileRes, testsRes] = await Promise.all([
         fetchApi('/auth/me', { signal }),
         fetchApi('/tests/attempts', { signal }),
@@ -174,9 +178,9 @@ const Dashboard = memo(function Dashboard() {
       return {
         testsAttempted: testResults.length || 14,
         testsPassed: passedTests.length || 12,
-        totalXp: (profile?.xp as number) ?? progress.xp ?? 1450,
-        currentStreak: (profile?.streak as number) ?? progress.streak ?? 5,
-        level: (profile?.level as number) ?? progress.level ?? 3,
+        totalXp: (profile?.xp as number) ?? progressXp ?? 1450,
+        currentStreak: (profile?.streak as number) ?? progressStreak ?? 5,
+        level: (profile?.level as number) ?? progressLevel ?? 3,
         recentTests:
           recentTestsList.length > 0
             ? recentTestsList
@@ -202,7 +206,7 @@ const Dashboard = memo(function Dashboard() {
               ],
       }
     },
-    staleTime: 30 * 1000,
+    staleTime: 2 * 60 * 1000,
   })
 
   const { data: nextAction } = useQuery<NextBestAction>({
@@ -227,9 +231,9 @@ const Dashboard = memo(function Dashboard() {
   const stats = dashboardData ?? {
     testsAttempted: 14,
     testsPassed: 12,
-    totalXp: progress.xp || 1450,
-    currentStreak: progress.streak || 5,
-    level: progress.level || 3,
+    totalXp: progressXp || 1450,
+    currentStreak: progressStreak || 5,
+    level: progressLevel || 3,
     recentTests: [],
   }
 
@@ -269,7 +273,7 @@ const Dashboard = memo(function Dashboard() {
         <div className="space-y-1.5 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight truncate">
-              Welcome back, {auth.user?.username || 'Scholar'}
+              Welcome back, {username || 'Scholar'}
             </h1>
             <StreakMultiplierBadge streak={stats.currentStreak} longestStreak={12} />
           </div>
@@ -281,7 +285,7 @@ const Dashboard = memo(function Dashboard() {
 
         <button
           onClick={() => setIsAIModalOpen(true)}
-          className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
+          className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
         >
           <Sparkles className="w-4 h-4 text-slate-950" />
           <span>Generate Custom AI Test & Diagnostic</span>
@@ -292,12 +296,12 @@ const Dashboard = memo(function Dashboard() {
       <LivePeerActivityTicker />
 
       {/* Pro Conversion & Monetization Banner */}
-      {!auth.user?.isPro && <ProUpsellBanner />}
+      {!isPro && <ProUpsellBanner />}
 
       {/* Fast-Track Orientation & Onboarding Card (Endowed Progress) */}
       <ScholarOnboardingTourCard
         onLaunchAITest={() => setIsAIModalOpen(true)}
-        userName={auth.user?.username}
+        userName={username}
       />
 
       {dashboardError && (

@@ -91,8 +91,9 @@ class Course(BaseModel):
     )
 
     # Pricing
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    is_free = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0, db_index=True)
+    is_free = models.BooleanField(default=False, db_index=True)
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     # Course details
     difficulty = models.CharField(
@@ -135,12 +136,39 @@ class Course(BaseModel):
             models.Index(fields=['difficulty', 'is_published'], name='course_diff_pub_idx'),
             models.Index(fields=['slug'], name='course_slug_idx'),
             models.Index(fields=['title'], name='course_title_idx'),
-            models.Index(fields=["slug"]),
-            models.Index(fields=["category", "is_published"]),
-            models.Index(fields=["-enrollment_count"]),
-            models.Index(fields=["instructor"]),
-            models.Index(fields=["is_published", "avg_rating"]), 
-            models.Index(fields=["is_published", "created_at"]), 
+            models.Index(fields=['category', 'is_published'], name='idx_course_cat_pub'),
+            models.Index(fields=['-enrollment_count'], name='idx_course_popular'),
+            models.Index(fields=['instructor'], name='idx_course_instructor'),
+            models.Index(fields=['is_published', '-avg_rating'], name='idx_course_pub_rating'), 
+            models.Index(fields=['is_published', '-created_at'], name='idx_course_pub_recent'),
+            models.Index(fields=['is_free', 'is_published'], name='idx_course_free_pub'),
+            models.Index(fields=['price', 'is_published'], name='idx_course_price_pub'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(price__gte=0),
+                name='course_price_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(discount_price__isnull=True) | models.Q(discount_price__gte=0),
+                name='course_discount_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(discount_price__isnull=True) | models.Q(discount_price__lt=models.F('price')),
+                name='course_discount_less_than_price'
+            ),
+            models.CheckConstraint(
+                check=models.Q(avg_rating__gte=0, avg_rating__lte=5),
+                name='course_rating_range_0_to_5'
+            ),
+            models.CheckConstraint(
+                check=models.Q(enrollment_count__gte=0),
+                name='course_enrollment_non_negative'
+            ),
+            models.CheckConstraint(
+                check=models.Q(duration_hours__gte=0),
+                name='course_duration_non_negative'
+            ),
         ]
         # Note: Full-text search GIN indexes removed temporarily
         # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
@@ -235,31 +263,57 @@ class Lesson(BaseModel):
 class Enrollment(BaseModel):
     """User course enrollment."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="enrollments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="enrollments", db_index=True)
     course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, related_name="enrollments"
+        Course, on_delete=models.CASCADE, related_name="enrollments", db_index=True
     )
 
     # Progress
-    progress_percentage = models.PositiveIntegerField(default=0)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    progress_percentage = models.PositiveIntegerField(default=0, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    completed_lessons_count = models.PositiveIntegerField(default=0)
 
     # Access
-    last_accessed_at = models.DateTimeField(auto_now=True)
+    last_accessed_at = models.DateTimeField(auto_now=True, db_index=True)
+    first_accessed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "enrollments"
         unique_together = ["user", "course"]
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["completed_at"]),
-            models.Index(fields=["created_at"]),
+            models.Index(fields=["completed_at"], name='idx_enroll_completed'),
+            models.Index(fields=["created_at"], name='idx_enroll_created'),
             models.Index(fields=["user", "course", "created_at"], name="idx_enroll_usr_crs_date"),
             models.Index(fields=["progress_percentage"], name="idx_enrollment_progress"),
+            models.Index(fields=["user", "-last_accessed_at"], name="idx_enroll_user_recent"),
+            models.Index(fields=["course", "-created_at"], name="idx_enroll_course_recent"),
+            models.Index(fields=["user", "progress_percentage"], name="idx_enroll_user_progress"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(progress_percentage__gte=0, progress_percentage__lte=100),
+                name='enrollment_progress_range_0_to_100'
+            ),
         ]
 
     def __str__(self):
         return f"{self.user} - {self.course}"
+    
+    def update_progress(self):
+        """Recalculate progress based on completed lessons."""
+        from apps.courses.models import LessonCompletion
+        total_lessons = self.course.lessons_count
+        if total_lessons > 0:
+            completed = LessonCompletion.objects.filter(
+                user=self.user,
+                lesson__module__course=self.course
+            ).count()
+            self.completed_lessons_count = completed
+            self.progress_percentage = min(int((completed / total_lessons) * 100), 100)
+            if self.progress_percentage >= 100 and not self.completed_at:
+                self.completed_at = timezone.now()
+            self.save(update_fields=['progress_percentage', 'completed_lessons_count', 'completed_at'])
 
 
 class Review(BaseModel):

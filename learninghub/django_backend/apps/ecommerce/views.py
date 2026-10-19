@@ -4,12 +4,14 @@ import json
 import os
 import sys
 import uuid
+import stripe
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+from decimal import Decimal
 from apps.core.responses import success_response, error_response
 from apps.core.models import AuditLog
 from apps.courses.models import Course, Enrollment
@@ -542,6 +544,132 @@ class PaymentWebhookView(APIView):
 
         return success_response(data={'received': True})
 
+
+class StripeWebhookView(APIView):
+    """Verify Stripe's signature and fulfill only the mapped pending order."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from apps.ecommerce.stripe_service import StripeService
+
+        signature = request.headers.get('Stripe-Signature', '')
+        try:
+            event = StripeService.construct_webhook_event(request.body, signature)
+        except RuntimeError as exc:
+            return error_response(str(exc), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except (stripe.error.SignatureVerificationError, ValueError):
+            return error_response('Invalid Stripe webhook signature or payload', status_code=status.HTTP_400_BAD_REQUEST)
+
+        event_type = event.get('type')
+        if event_type not in {
+            'checkout.session.completed',
+            'checkout.session.async_payment_succeeded',
+        }:
+            return success_response(data={'received': True, 'ignored': True})
+
+        session = event.get('data', {}).get('object', {})
+        session_id = session.get('id')
+        if not session_id:
+            return error_response('Stripe Checkout Session ID is missing', status_code=status.HTTP_400_BAD_REQUEST)
+
+        if session.get('status') != 'complete' or session.get('payment_status') != 'paid':
+            return success_response(data={'received': True, 'paid': False})
+
+        from decimal import ROUND_HALF_UP
+
+        try:
+            with transaction.atomic():
+                order = Order.objects.select_for_update().select_related('user').get(
+                    gateway_order_id=session_id,
+                    payment_method='STRIPE',
+                )
+
+                metadata = session.get('metadata') or {}
+                if (
+                    str(session.get('client_reference_id') or '') != str(order.id)
+                    or str(metadata.get('order_id') or '') != str(order.id)
+                    or str(metadata.get('user_id') or '') != str(order.user_id)
+                ):
+                    return error_response('Stripe Checkout Session does not match its order', status_code=status.HTTP_400_BAD_REQUEST)
+
+                customer = session.get('customer')
+                if isinstance(customer, dict):
+                    customer = customer.get('id')
+                expected_customer = (order.metadata or {}).get('stripe_customer_id')
+                if not expected_customer or customer != expected_customer:
+                    return error_response('Stripe Checkout Session customer does not match its order', status_code=status.HTTP_400_BAD_REQUEST)
+
+                if order.status == 'COMPLETED':
+                    return success_response(data={'received': True, 'already_processed': True})
+                if order.status != 'PENDING':
+                    return error_response('Stripe Checkout Session is not associated with a pending order', status_code=status.HTTP_409_CONFLICT)
+
+                payment = order.transactions.first()
+                currency = payment.currency.lower() if payment else 'inr'
+                expected_amount = int(
+                    (order.total_amount * 100).quantize(
+                        Decimal('1'), rounding=ROUND_HALF_UP
+                    )
+                )
+                if (
+                    session.get('mode') != 'payment'
+                    or session.get('currency') != currency
+                    or session.get('amount_total') != expected_amount
+                ):
+                    return error_response('Stripe Checkout Session amount or currency does not match its order', status_code=status.HTTP_400_BAD_REQUEST)
+
+                now = timezone.now()
+                payment_intent = session.get('payment_intent')
+                if isinstance(payment_intent, dict):
+                    payment_intent = payment_intent.get('id')
+                gateway_payment_id = str(payment_intent or session_id)
+                order.status = 'COMPLETED'
+                order.gateway_payment_id = gateway_payment_id
+                order.paid_at = now
+                order.webhook_received_at = now
+                order.save(update_fields=[
+                    'status', 'gateway_payment_id', 'paid_at',
+                    'webhook_received_at', 'updated_at',
+                ])
+
+                AuditLog.record(
+                    'COMMERCE_ORDER_PAID',
+                    actor=order.user,
+                    target_user=order.user,
+                    details={'order_id': order.id, 'total_amount': float(order.total_amount)},
+                )
+
+                if payment:
+                    payment.status = 'SUCCESS'
+                    payment.gateway_reference = gateway_payment_id
+                    payment.save(update_fields=['status', 'gateway_reference'])
+                else:
+                    PaymentTransaction.objects.create(
+                        order=order,
+                        amount=order.total_amount,
+                        currency=currency.upper(),
+                        status='SUCCESS',
+                        gateway_reference=gateway_payment_id,
+                    )
+
+                course_ids = []
+                for item in order.items.select_related('course'):
+                    course_ids.append(item.course_id)
+                    Enrollment.objects.get_or_create(user=order.user, course=item.course)
+
+                cart = Cart.objects.filter(user=order.user).first()
+                if cart:
+                    cart.items.filter(course_id__in=course_ids).delete()
+                    if not cart.items.exists():
+                        cart.applied_coupon = None
+                        cart.save(update_fields=['applied_coupon', 'updated_at'])
+
+        except Order.DoesNotExist:
+            return error_response('Pending Stripe order not found', status_code=status.HTTP_404_NOT_FOUND)
+
+        return success_response(data={'received': True, 'already_processed': False})
+
+
 class ContestLeaderboardView(APIView):
     permission_classes = [AllowAny]
 
@@ -617,26 +745,94 @@ class StripeCheckoutView(APIView):
         items = request.data.get('items', [])
         success_url = request.data.get('success_url')
         cancel_url = request.data.get('cancel_url')
-        idempotency_key = request.data.get('idempotency_key') or f"checkout_{uuid.uuid4().hex[:12]}"
+
+        if mode not in {'payment', 'subscription'}:
+            return error_response('Unsupported checkout mode', status_code=status.HTTP_400_BAD_REQUEST)
 
         if not success_url or not cancel_url:
             return error_response('success_url and cancel_url are required', status_code=status.HTTP_400_BAD_REQUEST)
 
-        if not items:
+        if mode == 'subscription' and not items:
             return error_response('No items provided', status_code=status.HTTP_400_BAD_REQUEST)
 
         try:
-            result = StripeService.create_checkout_session(
-                user=request.user,
-                items=items,
-                success_url=success_url,
-                cancel_url=cancel_url,
-                idempotency_key=idempotency_key,
-                subscription_mode=mode,
-            )
+            order = None
+            if mode == 'payment':
+                order_id = request.data.get('order_id') or request.data.get('orderId')
+                if not order_id:
+                    return error_response('order_id is required for Stripe payment checkout', status_code=status.HTTP_400_BAD_REQUEST)
+
+                with transaction.atomic():
+                    try:
+                        order = Order.objects.select_for_update().get(
+                            pk=order_id,
+                            user=request.user,
+                        )
+                    except Order.DoesNotExist:
+                        return error_response('Pending order not found', status_code=status.HTTP_404_NOT_FOUND)
+                    if order.status != 'PENDING':
+                        return error_response('Only pending orders can be checked out with Stripe', status_code=status.HTTP_409_CONFLICT)
+                    if order.gateway_order_id:
+                        if order.payment_method != 'STRIPE':
+                            return error_response('Order is already associated with another payment gateway', status_code=status.HTTP_409_CONFLICT)
+                        session = StripeService.retrieve_checkout_session(order.gateway_order_id)
+                        result = (
+                            {'session': session, 'url': session.url}
+                            if getattr(session, 'status', None) != 'expired'
+                            else None
+                        )
+                    else:
+                        result = None
+
+                    if result is None:
+                        previous_session_id = order.gateway_order_id
+                        result = StripeService.create_checkout_session(
+                            user=request.user,
+                            items=[],
+                            success_url=success_url,
+                            cancel_url=cancel_url,
+                            idempotency_key=(
+                                f"stripe-order-{order.id}"
+                                if not previous_session_id
+                                else f"stripe-order-{order.id}-after-{previous_session_id}"
+                            ),
+                            subscription_mode='payment',
+                            order=order,
+                        )
+                        order.gateway_order_id = result['session'].id
+                        order.payment_method = 'STRIPE'
+                        customer = result.get('customer_id') or getattr(result['session'], 'customer', None)
+                        if isinstance(customer, dict):
+                            customer = customer.get('id')
+                        if not customer:
+                            return error_response(
+                                'Stripe Checkout Session is missing its customer reference',
+                                status_code=status.HTTP_502_BAD_GATEWAY,
+                            )
+                        order.metadata = {
+                            **(order.metadata or {}),
+                            'stripe_customer_id': customer,
+                        }
+                        order.save(update_fields=[
+                            'gateway_order_id', 'payment_method', 'metadata', 'updated_at',
+                        ])
+                        order.transactions.filter(status='PENDING').update(
+                            gateway_reference=result['session'].id,
+                        )
+            else:
+                result = StripeService.create_checkout_session(
+                    user=request.user,
+                    items=items,
+                    success_url=success_url,
+                    cancel_url=cancel_url,
+                    idempotency_key=request.data.get('idempotency_key') or f"checkout_{uuid.uuid4().hex[:12]}",
+                    subscription_mode=mode,
+                )
+
             return success_response(data={
                 'session_id': result['session'].id,
                 'url': result['url'],
+                **({'order_id': order.id} if order else {}),
             }, message='Checkout session created')
         except stripe.error.StripeError as e:
             return error_response(f'Stripe error: {str(e)}', status_code=status.HTTP_400_BAD_REQUEST)

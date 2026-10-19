@@ -1,6 +1,6 @@
 import { Suspense, ReactNode } from 'react'
 import { SectionErrorBoundary } from './SectionErrorBoundary'
-import { LoadingScreen } from './ui/LoadingScreen'
+import { RouteProgressBar } from './ui/RouteProgressBar'
 
 interface LazyRouteProps {
   children: ReactNode
@@ -10,7 +10,7 @@ interface LazyRouteProps {
 export function LazyRoute({ children, sectionName }: LazyRouteProps) {
   return (
     <SectionErrorBoundary sectionName={sectionName}>
-      <Suspense fallback={<LoadingScreen />}>{children}</Suspense>
+      <Suspense fallback={<RouteProgressBar />}>{children}</Suspense>
     </SectionErrorBoundary>
   )
 }

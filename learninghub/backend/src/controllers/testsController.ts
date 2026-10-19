@@ -1211,7 +1211,8 @@ export const createTest = asyncHandler(async (req: Request, res: Response): Prom
         if (rawType === 'MULTIPLE_SELECT' || rawType === 'MSQ') qType = QuestionType.MSQ
         else if (rawType === 'TRUE_FALSE') qType = QuestionType.MCQ
         else if (rawType === 'NUMERICAL') qType = QuestionType.NUMERICAL
-        else if (rawType === 'SUBJECTIVE') qType = QuestionType.SUBJECTIVE
+        else if (rawType === 'SHORT_ANSWER' || rawType === 'SUBJECTIVE') qType = QuestionType.SUBJECTIVE
+        else if (rawType === 'CODING') qType = QuestionType.CODING
 
         const rawBloom = String(q.bloomLevel || 'UNDERSTAND').toUpperCase()
         const bloomLevel: BloomLevel = (BloomLevel as any)[rawBloom] ?? BloomLevel.UNDERSTAND

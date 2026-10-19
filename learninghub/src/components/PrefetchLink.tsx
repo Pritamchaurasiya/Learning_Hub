@@ -1,39 +1,51 @@
-import { useCallback, useRef } from 'react'
-import { Link, LinkProps } from 'react-router-dom'
+import { forwardRef, useContext } from 'react'
+import { Link, type LinkProps } from 'react-router-dom'
+import { QueryClientContext } from '@tanstack/react-query'
+import { prefetchRoute } from '../utils/routePrefetchRegistry'
 
-interface PrefetchLinkProps extends LinkProps {
-  prefetchOnHover?: boolean
+export interface PrefetchLinkProps extends LinkProps {
+  prefetchQuery?: boolean
 }
 
-export function PrefetchLink({ prefetchOnHover = true, ...props }: PrefetchLinkProps) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+/**
+ * High-performance Link replacement that predictively prefetches
+ * the target page's JavaScript chunk and initial React Query data
+ * on hover intent (pointerenter), mobile touch intent (touchstart),
+ * and keyboard navigation (focus).
+ */
+export const PrefetchLink = forwardRef<HTMLAnchorElement, PrefetchLinkProps>(
+  ({ to, prefetchQuery = true, onPointerEnter, onTouchStart, onFocus, ...props }, ref) => {
+    const queryClient = useContext(QueryClientContext) ?? null
 
-  const handleMouseEnter = useCallback(() => {
-    if (!prefetchOnHover) return
-    timerRef.current = setTimeout(() => {
-      // Prefetch route by triggering a dynamic import on hover
-      const path = props.to as string
-      void import(
-        `../pages${path === '/' ? '/HomePage' : `${path.replace(/^\//, '').replace(/\/.*/, '')}Page`}`
-      ).catch(() => {})
-    }, 150)
-  }, [prefetchOnHover, props.to])
+    const triggerPrefetch = () => {
+      if (typeof to === 'string') {
+        prefetchRoute(to, prefetchQuery ? queryClient : null)
+      } else if (to && typeof to === 'object' && to.pathname) {
+        prefetchRoute(to.pathname, prefetchQuery ? queryClient : null)
+      }
+    }
 
-  const handleMouseLeave = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current)
-  }, [])
+    return (
+      <Link
+        ref={ref}
+        to={to}
+        onPointerEnter={e => {
+          triggerPrefetch()
+          onPointerEnter?.(e)
+        }}
+        onTouchStart={e => {
+          triggerPrefetch()
+          onTouchStart?.(e)
+        }}
+        onFocus={e => {
+          triggerPrefetch()
+          onFocus?.(e)
+        }}
+        {...props}
+      />
+    )
+  }
+)
 
-  const handleMouseDown = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current)
-  }, [])
-
-  return (
-    <Link
-      {...props}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleMouseEnter}
-    />
-  )
-}
+PrefetchLink.displayName = 'PrefetchLink'
+export default PrefetchLink

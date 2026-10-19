@@ -96,7 +96,10 @@ import Header from './Header'
 
 function renderHeader(initialEntries = ['/']) {
   return render(
-    <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={initialEntries}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Header />
     </MemoryRouter>
   )
@@ -114,9 +117,9 @@ describe('Header Component', () => {
     expect(screen.getByText('LH')).toBeInTheDocument()
   })
 
-  it('renders search input with default courses placeholder', () => {
+  it('renders search input with default placeholder', () => {
     renderHeader()
-    expect(screen.getByPlaceholderText('Search courses...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search exams, courses, tests...')).toBeInTheDocument()
   })
 
   it('renders context-aware search input when on updates page', () => {

@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { fetchApi, setAccessToken, setRefreshToken, clearTokens } from '../../utils/api'
+import { fetchApi, clearTokens } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import { useLearningContextStore } from '../useLearningContextStore'
 import type { UserPreferencePayload } from '../../types/learningContext'
@@ -23,9 +23,11 @@ function extractUserFromResponse(response: unknown): Record<string, unknown> | u
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   auth: initialAuthState,
   setAuth: (_token, _refreshToken, user) => {
-    // Persist any provided tokens (login/register flows) in background
-    if (_token) void setAccessToken(_token)
-    if (_refreshToken) void setRefreshToken(_refreshToken)
+    // SECURITY: Tokens are now stored in httpOnly cookies set by the backend.
+    // The backend sets these via Set-Cookie headers on login/register/refresh.
+    // _token and _refreshToken parameters are kept for backward compatibility
+    // but are NOT stored in the frontend (to prevent XSS vulnerabilities).
+    // The httpOnly cookies are automatically sent with requests via credentials: 'include'.
     set(state => ({
       auth: { isAuthenticated: true, user, isHydrated: state.auth.isHydrated },
       progress: {
@@ -57,6 +59,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
         console.warn('[Auth] Logout request failed:', error)
       }
     }
+    // clearTokens expires cookies and clears any legacy localStorage
     await clearTokens()
     useLearningContextStore.getState().clearContext()
     set({ auth: { isAuthenticated: false, user: null, isHydrated: true } })

@@ -1,9 +1,11 @@
-import sys
-import subprocess
-import time
-import tempfile
-import os
 import ast
+import os
+import shutil
+import subprocess
+import tempfile
+import threading
+import time
+import uuid
 
 class CodeSandboxService:
     DISALLOWED_MODULES = {
@@ -21,8 +23,8 @@ class CodeSandboxService:
         'memoryview', 'globals', 'locals', 'vars', 'dir', 'help', 'exit', 'quit',
         'getattr', 'setattr', 'delattr', 'hasattr'
     }
-    # NOTE: 'input' is intentionally allowed — stdin is piped via communicate(input_data)
-    # with a timeout, so controlled input() cannot hang the worker. Blocking it would
+    # NOTE: 'input' is intentionally allowed — stdin is piped to the isolated container
+    # and the container run has a bounded timeout. Blocking it would
     # break legitimate stdin-based problems (e.g. test uses input_data="test").
 
     DISALLOWED_ATTRIBUTES = {
@@ -162,231 +164,277 @@ class CodeSandboxService:
             'suggestions': suggestions
         }
 
-    @classmethod
-    def execute_code(cls, code: str, language: str = 'python', input_data: str = '', timeout_sec: float = 2.0):
-        language = (language or 'python').lower()
-        start_time = time.time()
-        analysis = cls.analyze_ast(code, language)
-
-        if not analysis['security_passed']:
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': f"Security Violation: {', '.join(analysis['security_issues'])}",
-                'runtime_ms': 0,
-                'memory_mb': 0,
-                'status': 'Runtime Error',
-                'analysis': analysis
-            }
-
-        if language == 'python':
-            res = cls._run_python(code, input_data, timeout_sec, start_time)
-        elif language in ['javascript', 'js']:
-            res = cls._run_javascript(code, input_data, timeout_sec, start_time)
-        else:
-            elapsed = round((time.time() - start_time) * 1000)
-            res = {
-                'success': True,
-                'stdout': 'Compiled and executed successfully in sandbox container.\nResult: Valid solution.',
-                'stderr': '',
-                'runtime_ms': max(12, elapsed),
-                'memory_mb': 18.4,
-                'status': 'Accepted',
-            }
-
-        res['analysis'] = analysis
-        return res
-
-    @staticmethod
-    def _run_python(code: str, input_data: str, timeout_sec: float, start_time: float):
-        with tempfile.NamedTemporaryFile(suffix='.py', mode='w', delete=False, encoding='utf-8') as f:
-            f.write(code)
-            f.flush()
-            temp_path = f.name
-
-        try:
-            python_exe = sys.executable or 'python'
-            process = subprocess.Popen(
-                [python_exe, '-I', '-S', temp_path],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-
-            stdout, stderr = process.communicate(input=input_data, timeout=timeout_sec)
-            elapsed_ms = int((time.time() - start_time) * 1000)
-
-            if len(stdout) > 20000:
-                stdout = stdout[:20000] + "\n[Output truncated: maximum 20KB allowed]"
-
-            if process.returncode == 0:
-                return {
-                    'success': True,
-                    'stdout': stdout,
-                    'stderr': stderr,
-                    'runtime_ms': elapsed_ms,
-                    'memory_mb': 15.6,
-                    'status': 'Accepted',
-                }
-            else:
-                return {
-                    'success': False,
-                    'stdout': stdout,
-                    'stderr': stderr,
-                    'runtime_ms': elapsed_ms,
-                    'memory_mb': 16.0,
-                    'status': 'Runtime Error',
-                }
-        except subprocess.TimeoutExpired:
-            process.kill()
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': f'Execution timed out after {timeout_sec} seconds',
-                'runtime_ms': int(timeout_sec * 1000),
-                'memory_mb': 24.0,
-                'status': 'Time Limit Exceeded',
-            }
-        except Exception as e:
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': str(e),
-                'runtime_ms': int((time.time() - start_time) * 1000),
-                'memory_mb': 16.0,
-                'status': 'Runtime Error',
-            }
-        finally:
-            if os.path.exists(temp_path):
-                try:
-                    os.remove(temp_path)
-                except Exception:
-                    pass
-
     DISALLOWED_JS_MODULES = {
         'child_process', 'fs', 'net', 'http', 'https', 'process', 'vm',
         'cluster', 'worker_threads', 'tls', 'dgram', 'dns'
     }
 
     @classmethod
-    def _run_javascript(cls, code: str, input_data: str, timeout_sec: float, start_time: float):
+    def execute_code(cls, code: str, language: str = 'python', input_data: str = '', timeout_sec: float = 2.0):
+        language = language.strip().lower() if isinstance(language, str) else ''
+        language = language or 'python'
+        start_time = time.monotonic()
+        if not isinstance(code, str):
+            analysis = cls.analyze_ast('', language)
+            result = cls._failure('Code must be a string.', start_time)
+        elif len(code) > cls.MAX_SOURCE_BYTES:
+            analysis = cls.analyze_ast('', language)
+            result = cls._failure('Submission exceeds the 64 KiB source limit.', start_time)
+        elif not isinstance(input_data, str):
+            analysis = cls.analyze_ast(code, language)
+            result = cls._failure('Input must be a string.', start_time)
+        elif len(input_data) > cls.MAX_INPUT_BYTES:
+            analysis = cls.analyze_ast(code, language)
+            result = cls._failure('Input exceeds the 64 KiB limit.', start_time)
+        elif language not in {'python', 'javascript', 'js'}:
+            analysis = cls.analyze_ast(code, language)
+            result = cls._failure(
+                'Unsupported language: no isolated runtime is configured for this language.',
+                start_time,
+            )
+        else:
+            analysis = cls.analyze_ast(code, language)
+            if len(code.encode('utf-8')) > cls.MAX_SOURCE_BYTES:
+                result = cls._failure('Submission exceeds the 64 KiB source limit.', start_time)
+            elif len(input_data.encode('utf-8')) > cls.MAX_INPUT_BYTES:
+                result = cls._failure('Input exceeds the 64 KiB limit.', start_time)
+            elif not analysis['security_passed']:
+                result = cls._failure(
+                    f"Security Violation: {', '.join(analysis['security_issues'])}",
+                    start_time,
+                )
+            elif language in {'javascript', 'js'} and (js_issue := cls._javascript_security_issue(code)):
+                analysis['security_passed'] = False
+                analysis['security_issues'] = [js_issue]
+                result = cls._failure(js_issue, start_time)
+            else:
+                result = cls._run_container(code, language, input_data, timeout_sec, start_time)
+
+        result['analysis'] = analysis
+        return result
+
+    MAX_SOURCE_BYTES = 64 * 1024
+    MAX_INPUT_BYTES = 64 * 1024
+    MAX_OUTPUT_BYTES = 20_000
+    MAX_TIMEOUT_SECONDS = 5.0
+    STARTUP_GRACE_SECONDS = 5.0
+    CONTAINER_MEMORY = '128m'
+
+    @staticmethod
+    def _failure(stderr: str, start_time: float, status: str = 'Runtime Error'):
+        return {
+            'success': False,
+            'stdout': '',
+            'stderr': stderr,
+            'runtime_ms': max(0, int((time.monotonic() - start_time) * 1000)),
+            'memory_mb': 0.0,
+            'status': status,
+        }
+
+    @classmethod
+    def _javascript_security_issue(cls, code: str):
         import re
-        # Static AST/Regex safety check for JavaScript sandbox
-        # 1. Check for module imports (require, import, dynamic import, node: protocol)
-        mod_pattern = r'\b(?:require|import)\s*\(\s*[\'"`](?:node:)?(?:' + '|'.join(cls.DISALLOWED_JS_MODULES) + r')[\'"`]\s*\)'
-        if re.search(mod_pattern, code, re.IGNORECASE):
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': 'Security policy violation: Disallowed module import detected.',
-                'runtime_ms': 0,
-                'memory_mb': 0.0,
-                'status': 'Runtime Error',
-            }
+        modules = '|'.join(cls.DISALLOWED_JS_MODULES)
+        module_patterns = (
+            r'\b(?:require|import)\s*\(\s*[\'"`](?:node:)?(?:' + modules + r')[\'"`]\s*\)',
+            r'\bfrom\s*[\'"`](?:node:)?(?:' + modules + r')[\'"`]',
+        )
+        if any(re.search(pattern, code, re.IGNORECASE) for pattern in module_patterns):
+            return 'Security policy violation: Disallowed module import detected.'
 
-        # 2. Check for ES6 from '...' syntax
-        es6_pattern = r'\bfrom\s*[\'"`](?:node:)?(?:' + '|'.join(cls.DISALLOWED_JS_MODULES) + r')[\'"`]'
-        if re.search(es6_pattern, code, re.IGNORECASE):
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': 'Security policy violation: Disallowed module import detected.',
-                'runtime_ms': 0,
-                'memory_mb': 0.0,
-                'status': 'Runtime Error',
-            }
-
-        # 3. Check for process/child_process escape vectors
         dangerous_calls = [
             r'\bprocess\.(?:exit|env|binding|mainModule|kill|geteuid|dlopen)\b',
             r'\b(?:child_process|worker_threads)\b',
             r'\b(?:eval|Function)\s*\(',
         ]
-        for danger in dangerous_calls:
-            if re.search(danger, code, re.IGNORECASE):
+        if any(re.search(pattern, code, re.IGNORECASE) for pattern in dangerous_calls):
+            return 'Security policy violation: Disallowed API call detected in sandbox.'
+        return None
+
+    @classmethod
+    def _run_container(cls, code: str, language: str, input_data: str, timeout_sec: float, start_time: float):
+        docker = shutil.which('docker')
+        if not docker:
+            return cls._failure('Sandbox runtime unavailable: Docker CLI was not found.', start_time)
+
+        try:
+            requested_timeout = float(timeout_sec)
+        except (TypeError, ValueError):
+            requested_timeout = 2.0
+        execution_timeout = min(max(requested_timeout, 0.1), cls.MAX_TIMEOUT_SECONDS)
+        container_name = f'learninghub-sandbox-{uuid.uuid4().hex}'
+        filename = 'submission.py' if language == 'python' else 'submission.js'
+        image = 'python:3.12-slim' if language == 'python' else 'node:22-alpine'
+        runtime_command = (
+            ['python', '-I', '-S', '-B', f'/sandbox/{filename}']
+            if language == 'python'
+            else ['node', '--no-addons', '--disallow-code-generation-from-strings', f'/sandbox/{filename}']
+        )
+        process = None
+
+        try:
+            with tempfile.TemporaryDirectory(prefix='learninghub-sandbox-') as source_dir:
+                if ',' in source_dir:
+                    return cls._failure('Sandbox runtime unavailable: temporary path cannot be mounted safely.', start_time)
+
+                source_path = os.path.join(source_dir, filename)
+                with open(source_path, 'w', encoding='utf-8', newline='') as source_file:
+                    source_file.write(code)
+
+                command = [
+                    docker, 'run', '--rm', '--pull=missing', '--name', container_name,
+                    '--network=none',
+                    '--cpus=0.5',
+                    f'--memory={cls.CONTAINER_MEMORY}',
+                    f'--memory-swap={cls.CONTAINER_MEMORY}',
+                    '--pids-limit=32',
+                    '--read-only',
+                    '--cap-drop=ALL',
+                    '--security-opt=no-new-privileges:true',
+                    '--user=65534:65534',
+                    '--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m',
+                    '--mount', f'type=bind,src={source_dir},dst=/sandbox,readonly',
+                    '--workdir=/sandbox',
+                    '--env=HOME=/tmp',
+                    '--env=TMPDIR=/tmp',
+                    image,
+                    *runtime_command,
+                ]
+                process = subprocess.Popen(
+                    command,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+
+                stdout_bytes, stdout_truncated = bytearray(), [False]
+                stderr_bytes, stderr_truncated = bytearray(), [False]
+                readers = [
+                    threading.Thread(
+                        target=cls._drain_output,
+                        args=(process.stdout, stdout_bytes, stdout_truncated),
+                        daemon=True,
+                    ),
+                    threading.Thread(
+                        target=cls._drain_output,
+                        args=(process.stderr, stderr_bytes, stderr_truncated),
+                        daemon=True,
+                    ),
+                ]
+                for reader in readers:
+                    reader.start()
+
+                writer = threading.Thread(
+                    target=cls._write_input,
+                    args=(process.stdin, input_data.encode('utf-8')),
+                    daemon=True,
+                )
+                writer.start()
+
+                try:
+                    watchdog_timeout = execution_timeout + cls.STARTUP_GRACE_SECONDS
+                    return_code = process.wait(timeout=watchdog_timeout)
+                except subprocess.TimeoutExpired:
+                    cls._stop_container(docker, container_name, process)
+                    return cls._failure(
+                        f'Container execution exceeded its {watchdog_timeout:g} second wall-clock limit.',
+                        start_time,
+                        status='Time Limit Exceeded',
+                    )
+
+                writer.join(timeout=1)
+                for reader in readers:
+                    reader.join(timeout=1)
+
+                stdout = cls._decode_output(stdout_bytes, stdout_truncated[0])
+                stderr = cls._decode_output(stderr_bytes, stderr_truncated[0])
+                elapsed_ms = max(0, int((time.monotonic() - start_time) * 1000))
+                if return_code == 0:
+                    return {
+                        'success': True,
+                        'stdout': stdout,
+                        'stderr': stderr,
+                        'runtime_ms': elapsed_ms,
+                        'memory_mb': 0.0,
+                        'status': 'Accepted',
+                    }
+
+                if return_code in {125, 126, 127}:
+                    detail = stderr.strip() or f'Docker runner exited with code {return_code}.'
+                    stderr = f'Sandbox runtime unavailable: {detail}'
                 return {
                     'success': False,
-                    'stdout': '',
-                    'stderr': 'Security policy violation: Disallowed API call detected in sandbox.',
-                    'runtime_ms': 0,
+                    'stdout': stdout,
+                    'stderr': stderr,
+                    'runtime_ms': elapsed_ms,
                     'memory_mb': 0.0,
                     'status': 'Runtime Error',
                 }
-
-
-        temp_path = None
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.js', mode='w', delete=False, encoding='utf-8') as f:
-                f.write(code)
-                f.flush()
-                temp_path = f.name
-
-            # Windows process startup under high test suite CPU load requires resilient timeout
-            effective_timeout = max(5.0, timeout_sec) if sys.platform.startswith('win') else timeout_sec
-
-            process = subprocess.Popen(
-                ['node', '--no-addons', '--disallow-code-generation-from-strings', temp_path],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-
-            stdout, stderr = process.communicate(input=input_data, timeout=effective_timeout)
-            elapsed_ms = int((time.time() - start_time) * 1000)
-
-            if process.returncode == 0:
-                return {
-                    'success': True,
-                    'stdout': stdout,
-                    'stderr': stderr,
-                    'runtime_ms': elapsed_ms,
-                    'memory_mb': 28.4,
-                    'status': 'Accepted',
-                }
-            else:
-                return {
-                    'success': False,
-                    'stdout': stdout,
-                    'stderr': stderr,
-                    'runtime_ms': elapsed_ms,
-                    'memory_mb': 29.0,
-                    'status': 'Runtime Error',
-                }
         except FileNotFoundError:
-            elapsed_ms = int((time.time() - start_time) * 1000)
-            return {
-                'success': True,
-                'stdout': 'Simulated JS execution: Output matches test cases.',
-                'stderr': '',
-                'runtime_ms': max(15, elapsed_ms),
-                'memory_mb': 22.1,
-                'status': 'Accepted',
-            }
-        except subprocess.TimeoutExpired:
-            if 'process' in locals() and process:
-                process.kill()
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': f'Execution timed out after {timeout_sec} seconds',
-                'runtime_ms': int(timeout_sec * 1000),
-                'memory_mb': 32.0,
-                'status': 'Time Limit Exceeded',
-            }
-        except Exception as e:
-            return {
-                'success': False,
-                'stdout': '',
-                'stderr': str(e),
-                'runtime_ms': int((time.time() - start_time) * 1000),
-                'memory_mb': 20.0,
-                'status': 'Runtime Error',
-            }
+            return cls._failure('Sandbox runtime unavailable: Docker could not be started.', start_time)
+        except Exception as error:
+            if process is not None:
+                cls._stop_container(docker, container_name, process)
+            return cls._failure(f'Sandbox execution failed: {error}', start_time)
+
+    @classmethod
+    def _drain_output(cls, stream, captured: bytearray, truncated: list):
+        try:
+            while True:
+                chunk = stream.read(8192)
+                if not chunk:
+                    return
+                available = cls.MAX_OUTPUT_BYTES - len(captured)
+                if available > 0:
+                    captured.extend(chunk[:available])
+                if len(chunk) > max(0, available):
+                    truncated[0] = True
+        except (OSError, ValueError):
+            return
+
+    @staticmethod
+    def _write_input(stream, input_bytes: bytes):
+        try:
+            if input_bytes:
+                stream.write(input_bytes)
+                stream.flush()
+        except (BrokenPipeError, OSError, ValueError):
+            pass
         finally:
-            if os.path.exists(temp_path):
-                try:
-                    os.remove(temp_path)
-                except Exception:
-                    pass
+            try:
+                stream.close()
+            except (OSError, ValueError):
+                pass
+
+    @staticmethod
+    def _decode_output(output: bytearray, truncated: bool) -> str:
+        decoded = output.decode('utf-8', errors='replace')
+        if truncated:
+            decoded += '\n[Output truncated: maximum 20KB allowed]'
+        return decoded
+
+    @staticmethod
+    def _stop_container(docker: str, container_name: str, process):
+        try:
+            subprocess.run(
+                [docker, 'kill', container_name],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=2,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+
+        try:
+            process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            try:
+                process.kill()
+            except OSError:
+                pass
+            try:
+                process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass

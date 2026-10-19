@@ -277,16 +277,12 @@ export const me = asyncHandler(async (req: Request, res: Response): Promise<void
       take: 20,
       orderBy: { unlockedAt: 'desc' },
     }),
-    Promise.resolve(
-      prisma.questionBookmark.findMany({
-        where: { userId },
-        take: 50,
-        orderBy: { createdAt: 'desc' },
-        include: { question: { select: { id: true, text: true, type: true } } },
-      })
-    )
-      .catch(() => [])
-      .then(res => res || []),
+    prisma.questionBookmark.findMany({
+      where: { userId },
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: { question: { select: { id: true, text: true, type: true } } },
+    }),
   ])
 
   if (!user) {

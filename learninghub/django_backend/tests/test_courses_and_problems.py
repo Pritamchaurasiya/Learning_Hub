@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -5,6 +7,7 @@ from rest_framework import status
 from apps.users.models import User
 from apps.courses.models import Course, Chapter, Lesson, Enrollment, CourseReview, CourseBookmark
 from apps.problems.models import Problem, TestCase, ProblemSubmission
+from apps.problems.sandbox import CodeSandboxService
 
 @pytest.mark.django_db
 class TestCoursesAndProblems:
@@ -57,16 +60,25 @@ class TestCoursesAndProblems:
         # Run code sandbox
         run_url = reverse('global-code-run')
         code = 'print(5 * 5)'
-        run_res = self.client.post(run_url, {'code': code, 'language': 'python'}, format='json')
-        assert run_res.status_code == status.HTTP_200_OK
-        assert '25' in run_res.data['data']['stdout']
+        isolated_result = {
+            'success': True,
+            'stdout': '25\n',
+            'stderr': '',
+            'runtime_ms': 1,
+            'memory_mb': 1.0,
+            'status': 'Accepted',
+        }
+        with patch.object(CodeSandboxService, '_run_container', return_value=isolated_result):
+            run_res = self.client.post(run_url, {'code': code, 'language': 'python'}, format='json')
+            assert run_res.status_code == status.HTTP_200_OK
+            assert '25' in run_res.data['data']['stdout']
 
-        # Submit code
-        sub_url = reverse('problem-submit', kwargs={'pk': problem.id})
-        sub_res = self.client.post(sub_url, {'code': code, 'language': 'python'}, format='json')
-        assert sub_res.status_code == status.HTTP_201_CREATED
-        assert sub_res.data['data']['status'] == 'Accepted'
-        assert ProblemSubmission.objects.filter(user=self.user, problem=problem).exists()
+            # Submit code
+            sub_url = reverse('problem-submit', kwargs={'pk': problem.id})
+            sub_res = self.client.post(sub_url, {'code': code, 'language': 'python'}, format='json')
+            assert sub_res.status_code == status.HTTP_201_CREATED
+            assert sub_res.data['data']['status'] == 'Accepted'
+            assert ProblemSubmission.objects.filter(user=self.user, problem=problem).exists()
 
     def test_course_detail_with_enrollment_and_bookmark(self):
         course = Course.objects.create(

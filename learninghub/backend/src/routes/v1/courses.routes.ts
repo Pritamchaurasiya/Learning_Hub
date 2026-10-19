@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { courseService } from '../../services/CourseService'
 import { optionalAuth } from '../../middleware/authMiddleware'
+import { redisCacheMiddleware } from '../../middleware/redisCacheMiddleware'
 import { asyncHandler } from '../../utils/errorHandler'
 import { sendSuccess } from '../../utils/responseHelper'
 
@@ -9,6 +10,7 @@ const router = Router()
 // GET /api/v1/courses (course listing)
 router.get(
   '/',
+  redisCacheMiddleware(300),
   asyncHandler(async (req: Request, res: Response) => {
     const results = await courseService.getCourses(req.query)
     sendSuccess(res, results.data, undefined, 200, results.meta)
@@ -18,6 +20,7 @@ router.get(
 // GET /api/v1/courses/featured
 router.get(
   '/featured',
+  redisCacheMiddleware(600),
   asyncHandler(async (_req: Request, res: Response) => {
     const results = await courseService.getCourses({ limit: 6 })
     sendSuccess(res, results.data, undefined, 200, results.meta)
@@ -27,6 +30,7 @@ router.get(
 // GET /api/v1/courses/trending
 router.get(
   '/trending',
+  redisCacheMiddleware(600),
   asyncHandler(async (_req: Request, res: Response) => {
     const results = await courseService.getCourses({ limit: 6 })
     sendSuccess(res, results.data, undefined, 200, results.meta)
@@ -36,6 +40,7 @@ router.get(
 // GET /api/v1/courses/categories (must come before /:id)
 router.get(
   '/categories',
+  redisCacheMiddleware(3600),
   asyncHandler(async (_req: Request, res: Response) => {
     const categories = [
       'Algorithms',
@@ -132,6 +137,7 @@ router.post(
 // GET /api/v1/courses/:id/lessons
 router.get(
   '/:id/lessons',
+  redisCacheMiddleware(300),
   asyncHandler(async (req: Request, res: Response) => {
     const courseId = req.params.id as string
     const course = await courseService.getCourse(courseId)
@@ -276,6 +282,7 @@ router.post(
 // GET /api/v1/courses/:id (course detail)
 router.get(
   '/:id',
+  redisCacheMiddleware(300),
   asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id as string
     const course = await courseService.getCourse(id)

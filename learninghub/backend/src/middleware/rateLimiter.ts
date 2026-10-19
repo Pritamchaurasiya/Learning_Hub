@@ -100,7 +100,7 @@ export function createRateLimiter(config: RateLimiterConfig) {
 
     const userId = req.user?.userId
     const clientIp = getClientIp(req)
-    const route = req.originalUrl || req.path
+    const route = req.path
 
     const identifier = userId ? `user:${userId}` : `ip:${clientIp}`
     const key = `rate_limit:${keyPrefix}:${identifier}:${route}`

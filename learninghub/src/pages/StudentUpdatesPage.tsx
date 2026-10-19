@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BellRing,
   Flame,
@@ -20,15 +21,15 @@ import {
   CheckCircle2,
   X,
   Sliders,
-} from 'lucide-react';
-import { UpdateCard } from '../components/updates/UpdateCard';
-import { UpdateFilterBar } from '../components/updates/UpdateFilterBar';
-import { UpdateTimeline } from '../components/updates/UpdateTimeline';
-import { UpdateReminderModal } from '../components/updates/UpdateReminderModal';
-import { ResultWatcherModal } from '../components/updates/ResultWatcherModal';
-import { NotificationPreferencesModal } from '../components/updates/NotificationPreferencesModal';
-import { CollegeCircularModal } from '../components/updates/CollegeCircularModal';
-import { updatesService } from '../services/updatesService';
+} from 'lucide-react'
+import { UpdateCard } from '../components/updates/UpdateCard'
+import { UpdateFilterBar } from '../components/updates/UpdateFilterBar'
+import { UpdateTimeline } from '../components/updates/UpdateTimeline'
+import { UpdateReminderModal } from '../components/updates/UpdateReminderModal'
+import { ResultWatcherModal } from '../components/updates/ResultWatcherModal'
+import { NotificationPreferencesModal } from '../components/updates/NotificationPreferencesModal'
+import { CollegeCircularModal } from '../components/updates/CollegeCircularModal'
+import { updatesService } from '../services/updatesService'
 import type {
   StudentUpdate,
   UpdateCategory,
@@ -38,177 +39,255 @@ import type {
   UpdatesStatistics,
   ResultWatcher,
   UpdateSubscription,
-} from '../types/updates';
+} from '../types/updates'
 
 export const StudentUpdatesPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const urlSearch = searchParams.get('search') || '';
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlSearch = searchParams.get('search') || ''
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'feed' | 'personalized' | 'circulars' | 'deadlines' | 'watchers' | 'bookmarks' | 'sources'>('feed');
+  const [activeTab, setActiveTab] = useState<
+    'feed' | 'personalized' | 'circulars' | 'deadlines' | 'watchers' | 'bookmarks' | 'sources'
+  >('feed')
 
   // Filter States
-  const [searchQuery, setSearchQuery] = useState(urlSearch);
-  const [selectedCategory, setSelectedCategory] = useState<UpdateCategory>('ALL');
-  const [selectedImportance, setSelectedImportance] = useState<UpdateImportance | 'ALL'>('ALL');
-  const [onlyDeadlines, setOnlyDeadlines] = useState(false);
-  const [selectedInstitution, setSelectedInstitution] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearch)
+  const [selectedCategory, setSelectedCategory] = useState<UpdateCategory>('ALL')
+  const [selectedImportance, setSelectedImportance] = useState<UpdateImportance | 'ALL'>('ALL')
+  const [onlyDeadlines, setOnlyDeadlines] = useState(false)
+  const [selectedInstitution, setSelectedInstitution] = useState('')
 
   // Sync external URL search changes into local filter
   useEffect(() => {
     if (urlSearch !== searchQuery) {
-      setSearchQuery(urlSearch);
+      setSearchQuery(urlSearch)
     }
-  }, [urlSearch]);
+  }, [urlSearch, searchQuery])
+
+  const queryClient = useQueryClient()
 
   // Data States
-  const [updates, setUpdates] = useState<StudentUpdate[]>([]);
-  const [personalizedUpdates, setPersonalizedUpdates] = useState<StudentUpdate[]>([]);
-  const [collegeCirculars, setCollegeCirculars] = useState<StudentUpdate[]>([]);
-  const [bookmarks, setBookmarks] = useState<UpdateBookmark[]>([]);
-  const [sources, setSources] = useState<UpdateSource[]>([]);
-  const [resultWatchers, setResultWatchers] = useState<ResultWatcher[]>([]);
-  const [subscriptions, setSubscriptions] = useState<UpdateSubscription[]>([]);
+  const [updates, setUpdates] = useState<StudentUpdate[]>([])
+  const [personalizedUpdates, setPersonalizedUpdates] = useState<StudentUpdate[]>([])
+  const [collegeCirculars, setCollegeCirculars] = useState<StudentUpdate[]>([])
+  const [bookmarks, setBookmarks] = useState<UpdateBookmark[]>([])
+  const [sources, setSources] = useState<UpdateSource[]>([])
+  const [resultWatchers, setResultWatchers] = useState<ResultWatcher[]>([])
+  const [subscriptions, setSubscriptions] = useState<UpdateSubscription[]>([])
   const [stats, setStats] = useState<UpdatesStatistics>({
     total_updates: 0,
     urgent_updates: 0,
     active_deadlines: 0,
     tracked_sources: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  })
+  const [refreshing, setRefreshing] = useState(false)
 
   // Modals State
-  const [reminderModalUpdate, setReminderModalUpdate] = useState<StudentUpdate | null>(null);
-  const [isResultWatcherModalOpen, setIsResultWatcherModalOpen] = useState(false);
-  const [resultWatcherDefaults, setResultWatcherDefaults] = useState<{ institution?: string; course?: string }>({});
-  const [isPrefModalOpen, setIsPrefModalOpen] = useState(false);
-  const [isCollegeCircularModalOpen, setIsCollegeCircularModalOpen] = useState(false);
+  const [reminderModalUpdate, setReminderModalUpdate] = useState<StudentUpdate | null>(null)
+  const [isResultWatcherModalOpen, setIsResultWatcherModalOpen] = useState(false)
+  const [resultWatcherDefaults, setResultWatcherDefaults] = useState<{
+    institution?: string
+    course?: string
+  }>({})
+  const [isPrefModalOpen, setIsPrefModalOpen] = useState(false)
+  const [isCollegeCircularModalOpen, setIsCollegeCircularModalOpen] = useState(false)
 
-  // Load Main Data
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [allUpdates, personal, bmkList, srcList, statData, watchersList, subsList, circsData] = await Promise.all([
-        updatesService.getUpdates({
-          category: selectedCategory,
-          search: searchQuery,
-          institution: selectedInstitution,
-          importance: selectedImportance === 'ALL' ? undefined : selectedImportance,
-          onlyDeadlines,
-        }),
-        updatesService.getPersonalizedFeed(),
-        updatesService.getBookmarks(),
-        updatesService.getSources(),
-        updatesService.getStats(),
-        updatesService.getResultWatchers(),
-        updatesService.getSubscriptions(),
-        updatesService.getCollegeCirculars(),
-      ]);
+  // ─── TanStack Query Cached Queries (Sub-200ms Instant Page & Tab Switches) ───
+  const {
+    data: rawUpdates,
+    isFetching: isFetchingFeed,
+    refetch: refetchFeed,
+  } = useQuery({
+    queryKey: [
+      'updates-feed',
+      selectedCategory,
+      searchQuery,
+      selectedInstitution,
+      selectedImportance,
+      onlyDeadlines,
+    ],
+    queryFn: () =>
+      updatesService.getUpdates({
+        category: selectedCategory,
+        search: searchQuery,
+        institution: selectedInstitution,
+        importance: selectedImportance === 'ALL' ? undefined : selectedImportance,
+        onlyDeadlines,
+      }),
+    staleTime: 60 * 1000,
+  })
 
-      setUpdates(Array.isArray(allUpdates) ? allUpdates : []);
-      setPersonalizedUpdates(Array.isArray(personal) ? personal : []);
-      setCollegeCirculars(Array.isArray(circsData?.results) ? circsData.results : []);
-      setBookmarks(Array.isArray(bmkList) ? bmkList : []);
-      setSources(Array.isArray(srcList) ? srcList : []);
-      setResultWatchers(Array.isArray(watchersList) ? watchersList : []);
-      setSubscriptions(Array.isArray(subsList) ? subsList : []);
-      if (statData) setStats(statData);
-    } catch {
-      // Fallback handled by service
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const { data: rawPersonal } = useQuery({
+    queryKey: ['updates-personalized'],
+    queryFn: () => updatesService.getPersonalizedFeed(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: rawBookmarks } = useQuery({
+    queryKey: ['updates-bookmarks'],
+    queryFn: () => updatesService.getBookmarks(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: rawSources } = useQuery({
+    queryKey: ['updates-sources'],
+    queryFn: () => updatesService.getSources(),
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const { data: rawStats } = useQuery({
+    queryKey: ['updates-stats'],
+    queryFn: () => updatesService.getStats(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: rawWatchers } = useQuery({
+    queryKey: ['updates-watchers'],
+    queryFn: () => updatesService.getResultWatchers(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: rawSubscriptions } = useQuery({
+    queryKey: ['updates-subscriptions'],
+    queryFn: () => updatesService.getSubscriptions(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: rawCircs } = useQuery({
+    queryKey: ['updates-circulars'],
+    queryFn: () => updatesService.getCollegeCirculars(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Sync incoming cache into local state for instant rendering and optimistic operations
+  useEffect(() => {
+    if (Array.isArray(rawUpdates)) setUpdates(rawUpdates)
+  }, [rawUpdates])
 
   useEffect(() => {
-    loadData();
-  }, [selectedCategory, searchQuery, selectedInstitution, selectedImportance, onlyDeadlines]);
+    if (Array.isArray(rawPersonal)) setPersonalizedUpdates(rawPersonal)
+  }, [rawPersonal])
+
+  useEffect(() => {
+    if (Array.isArray(rawBookmarks)) setBookmarks(rawBookmarks)
+  }, [rawBookmarks])
+
+  useEffect(() => {
+    if (Array.isArray(rawSources)) setSources(rawSources)
+  }, [rawSources])
+
+  useEffect(() => {
+    if (Array.isArray(rawWatchers)) setResultWatchers(rawWatchers)
+  }, [rawWatchers])
+
+  useEffect(() => {
+    if (Array.isArray(rawSubscriptions)) setSubscriptions(rawSubscriptions)
+  }, [rawSubscriptions])
+
+  useEffect(() => {
+    if (Array.isArray(rawCircs?.results)) setCollegeCirculars(rawCircs.results)
+  }, [rawCircs])
+
+  useEffect(() => {
+    if (rawStats) setStats(rawStats)
+  }, [rawStats])
+
+  // Zero-CLS instant loading: only show spinner if we have no data at all
+  const loading = isFetchingFeed && updates.length === 0
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-  };
+    setRefreshing(true)
+    await Promise.all([
+      refetchFeed(),
+      queryClient.invalidateQueries({ queryKey: ['updates-personalized'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-bookmarks'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-sources'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-stats'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-watchers'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-subscriptions'] }),
+      queryClient.invalidateQueries({ queryKey: ['updates-circulars'] }),
+    ])
+    setRefreshing(false)
+  }
 
   const handleBookmarkToggle = async (updateId: string, willBookmark: boolean) => {
     if (willBookmark) {
-      const bmk = await updatesService.saveBookmark(updateId);
+      const bmk = await updatesService.saveBookmark(updateId)
       if (bmk) {
-        setBookmarks(prev => [bmk, ...prev]);
-        setUpdates(prev =>
-          prev.map(u => (u.id === updateId ? { ...u, is_bookmarked: true } : u))
-        );
+        setBookmarks(prev => [bmk, ...prev])
+        setUpdates(prev => prev.map(u => (u.id === updateId ? { ...u, is_bookmarked: true } : u)))
       }
     } else {
-      await updatesService.removeBookmark(updateId);
-      setBookmarks(prev => prev.filter(b => b.update.id !== updateId));
-      setUpdates(prev =>
-        prev.map(u => (u.id === updateId ? { ...u, is_bookmarked: false } : u))
-      );
+      await updatesService.removeBookmark(updateId)
+      setBookmarks(prev => prev.filter(b => b.update.id !== updateId))
+      setUpdates(prev => prev.map(u => (u.id === updateId ? { ...u, is_bookmarked: false } : u)))
     }
-  };
+  }
 
   const handleScheduleReminder = async (updateId: string, reminderType: string) => {
-    await updatesService.createReminder(updateId, reminderType);
-  };
+    await updatesService.createReminder(updateId, reminderType)
+  }
 
   const handleToggleFollow = async (institution: string) => {
     const existing = subscriptions.find(
-      s => s.target_type === 'INSTITUTION' && s.target_value.toLowerCase() === institution.toLowerCase()
-    );
+      s =>
+        s.target_type === 'INSTITUTION' &&
+        s.target_value.toLowerCase() === institution.toLowerCase()
+    )
 
     if (existing) {
-      await updatesService.unsubscribeTarget(existing.id);
-      setSubscriptions(prev => prev.filter(s => s.id !== existing.id));
+      await updatesService.unsubscribeTarget(existing.id)
+      setSubscriptions(prev => prev.filter(s => s.id !== existing.id))
     } else {
-      const newSub = await updatesService.subscribeTarget('INSTITUTION', institution);
+      const newSub = await updatesService.subscribeTarget('INSTITUTION', institution)
       if (newSub) {
-        setSubscriptions(prev => [newSub, ...prev]);
+        setSubscriptions(prev => [newSub, ...prev])
       }
     }
-  };
+  }
 
   const handleOpenResultWatcher = (institution: string, course?: string) => {
-    setResultWatcherDefaults({ institution, course });
-    setIsResultWatcherModalOpen(true);
-  };
+    setResultWatcherDefaults({ institution, course })
+    setIsResultWatcherModalOpen(true)
+  }
 
   const handleWatcherCreated = (watcher: ResultWatcher) => {
-    setResultWatchers(prev => [watcher, ...prev]);
-  };
+    setResultWatchers(prev => [watcher, ...prev])
+  }
 
   const handleCancelWatcher = async (watcherId: string) => {
-    await updatesService.cancelResultWatcher(watcherId);
+    await updatesService.cancelResultWatcher(watcherId)
     setResultWatchers(prev =>
       prev.map(w => (w.id === watcherId ? { ...w, status: 'CANCELLED' } : w))
-    );
-  };
+    )
+  }
 
   const isFollowing = (institution: string) =>
     subscriptions.some(
-      s => s.target_type === 'INSTITUTION' && s.target_value.toLowerCase() === institution.toLowerCase()
-    );
+      s =>
+        s.target_type === 'INSTITUTION' &&
+        s.target_value.toLowerCase() === institution.toLowerCase()
+    )
 
-  const activeWatchersCount = resultWatchers.filter(w => w.status === 'ACTIVE').length;
+  const activeWatchersCount = resultWatchers.filter(w => w.status === 'ACTIVE').length
 
   const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
+    setSearchQuery(query)
     if (query) {
       setSearchParams(prev => {
-        const next = new URLSearchParams(prev);
-        next.set('search', query);
-        return next;
-      });
+        const next = new URLSearchParams(prev)
+        next.set('search', query)
+        return next
+      })
     } else {
       setSearchParams(prev => {
-        const next = new URLSearchParams(prev);
-        next.delete('search');
-        return next;
-      });
+        const next = new URLSearchParams(prev)
+        next.delete('search')
+        return next
+      })
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-16">
@@ -230,7 +309,8 @@ export const StudentUpdatesPage: React.FC = () => {
                 Student Updates Hub
               </h1>
               <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">
-                Clutter-free, verified student updates, exam forms, timetable revisions, revaluations, and deadlines directly from official university notice boards.
+                Clutter-free, verified student updates, exam forms, timetable revisions,
+                revaluations, and deadlines directly from official university notice boards.
               </p>
             </div>
 
@@ -239,8 +319,8 @@ export const StudentUpdatesPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setResultWatcherDefaults({});
-                  setIsResultWatcherModalOpen(true);
+                  setResultWatcherDefaults({})
+                  setIsResultWatcherModalOpen(true)
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md"
               >
@@ -473,22 +553,25 @@ export const StudentUpdatesPage: React.FC = () => {
             ) : updates.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground bg-card/30">
                 <Search className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-                <h3 className="font-semibold text-foreground text-base">No updates matched your filters</h3>
+                <h3 className="font-semibold text-foreground text-base">
+                  No updates matched your filters
+                </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Try searching with different keywords, selecting "All Categories", or clearing the deadline toggle.
+                  Try searching with different keywords, selecting &quot;All Categories&quot;, or
+                  clearing the deadline toggle.
                 </p>
                 <button
                   type="button"
                   onClick={() => {
-                    setSearchQuery('');
-                    setSelectedCategory('ALL');
-                    setSelectedInstitution('');
-                    setOnlyDeadlines(false);
+                    setSearchQuery('')
+                    setSelectedCategory('ALL')
+                    setSelectedInstitution('')
+                    setOnlyDeadlines(false)
                     setSearchParams(prev => {
-                      const next = new URLSearchParams(prev);
-                      next.delete('search');
-                      return next;
-                    });
+                      const next = new URLSearchParams(prev)
+                      next.delete('search')
+                      return next
+                    })
                   }}
                   className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground"
                 >
@@ -525,7 +608,9 @@ export const StudentUpdatesPage: React.FC = () => {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-foreground">Followed Universities & Exams</h3>
+                    <h3 className="text-sm font-bold text-foreground">
+                      Followed Universities & Exams
+                    </h3>
                     <p className="text-xs text-muted-foreground">
                       Personalized feed filtered specifically by your followed institutions.
                     </p>
@@ -562,8 +647,10 @@ export const StudentUpdatesPage: React.FC = () => {
 
                 {/* Quick Add Suggestions */}
                 {['MGKVP', 'AKTU', 'University of Lucknow', 'BHU', 'SSC'].map(inst => {
-                  const alreadyFollowed = subscriptions.some(s => s.target_value.toLowerCase().includes(inst.toLowerCase()));
-                  if (alreadyFollowed) return null;
+                  const alreadyFollowed = subscriptions.some(s =>
+                    s.target_value.toLowerCase().includes(inst.toLowerCase())
+                  )
+                  if (alreadyFollowed) return null
                   return (
                     <button
                       key={inst}
@@ -574,7 +661,7 @@ export const StudentUpdatesPage: React.FC = () => {
                       <Plus className="w-3 h-3" />
                       <span>{inst}</span>
                     </button>
-                  );
+                  )
                 })}
               </div>
             </div>
@@ -605,9 +692,12 @@ export const StudentUpdatesPage: React.FC = () => {
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Verified College Notice Desks</h3>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Verified College Notice Desks
+                  </h3>
                   <p className="text-xs text-muted-foreground">
-                    Official departmental circulars, practical lab schedules, viva dates, and departmental orders authenticated by college faculties.
+                    Official departmental circulars, practical lab schedules, viva dates, and
+                    departmental orders authenticated by college faculties.
                   </p>
                 </div>
               </div>
@@ -624,9 +714,12 @@ export const StudentUpdatesPage: React.FC = () => {
             {collegeCirculars.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground bg-card/30 space-y-3">
                 <Building2 className="w-10 h-10 mx-auto text-muted-foreground/50" />
-                <h3 className="font-semibold text-foreground text-base">No departmental circulars published yet</h3>
+                <h3 className="font-semibold text-foreground text-base">
+                  No departmental circulars published yet
+                </h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Department heads and faculty members can post verified examination notices and lab memos directly.
+                  Department heads and faculty members can post verified examination notices and lab
+                  memos directly.
                 </p>
                 <button
                   type="button"
@@ -664,17 +757,20 @@ export const StudentUpdatesPage: React.FC = () => {
                   <Radio className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Continuous Result Radar Tracking</h3>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Continuous Result Radar Tracking
+                  </h3>
                   <p className="text-xs text-muted-foreground">
-                    Register your university, course, and roll number. Our crawlers check official gazettes 24/7 and alert you instantly upon declaration.
+                    Register your university, course, and roll number. Our crawlers check official
+                    gazettes 24/7 and alert you instantly upon declaration.
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setResultWatcherDefaults({});
-                  setIsResultWatcherModalOpen(true);
+                  setResultWatcherDefaults({})
+                  setIsResultWatcherModalOpen(true)
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shrink-0"
               >
@@ -686,9 +782,12 @@ export const StudentUpdatesPage: React.FC = () => {
             {resultWatchers.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground bg-card/30">
                 <GraduationCap className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-                <h3 className="font-semibold text-foreground text-base">No active result watchers</h3>
+                <h3 className="font-semibold text-foreground text-base">
+                  No active result watchers
+                </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Never miss an official result gazette or marksheet release. Activate your first result watcher today.
+                  Never miss an official result gazette or marksheet release. Activate your first
+                  result watcher today.
                 </p>
                 <button
                   type="button"
@@ -753,7 +852,9 @@ export const StudentUpdatesPage: React.FC = () => {
                     {watcher.roll_number && (
                       <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs flex items-center justify-between">
                         <span className="text-muted-foreground">Tracked Roll No:</span>
-                        <span className="font-mono font-bold text-foreground">{watcher.roll_number}</span>
+                        <span className="font-mono font-bold text-foreground">
+                          {watcher.roll_number}
+                        </span>
                       </div>
                     )}
 
@@ -787,7 +888,8 @@ export const StudentUpdatesPage: React.FC = () => {
             <div className="text-center space-y-1 mb-8">
               <h2 className="text-lg font-bold text-foreground">Upcoming Academic Deadlines</h2>
               <p className="text-xs text-muted-foreground">
-                Chronologically ordered submission cutoffs for exam forms, hall tickets, fee windows, and scholarships.
+                Chronologically ordered submission cutoffs for exam forms, hall tickets, fee
+                windows, and scholarships.
               </p>
             </div>
             <UpdateTimeline
@@ -805,7 +907,8 @@ export const StudentUpdatesPage: React.FC = () => {
                 <Bookmark className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
                 <h3 className="font-semibold text-foreground text-base">No saved notices yet</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Click the bookmark icon on any notice card to save circulars for quick access later.
+                  Click the bookmark icon on any notice card to save circulars for quick access
+                  later.
                 </p>
               </div>
             ) : (
@@ -833,7 +936,8 @@ export const StudentUpdatesPage: React.FC = () => {
             <div className="p-4 rounded-2xl border border-border bg-card/40 space-y-1">
               <h3 className="text-sm font-semibold text-foreground">Accredited Source Registry</h3>
               <p className="text-xs text-muted-foreground">
-                LearningHub adheres to strict public transparency. Every notice links back to its verified statutory domain and official circular PDF.
+                LearningHub adheres to strict public transparency. Every notice links back to its
+                verified statutory domain and official circular PDF.
               </p>
             </div>
 
@@ -916,11 +1020,11 @@ export const StudentUpdatesPage: React.FC = () => {
       <CollegeCircularModal
         isOpen={isCollegeCircularModalOpen}
         onClose={() => setIsCollegeCircularModalOpen(false)}
-        onCircularPublished={(newCirc) => {
-          setCollegeCirculars(prev => [newCirc, ...prev]);
-          setUpdates(prev => [newCirc, ...prev]);
+        onCircularPublished={newCirc => {
+          setCollegeCirculars(prev => [newCirc, ...prev])
+          setUpdates(prev => [newCirc, ...prev])
         }}
       />
     </div>
-  );
-};
+  )
+}

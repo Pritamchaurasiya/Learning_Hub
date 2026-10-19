@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <motion.div
-          className="max-w-md w-full card-static p-8 rounded-2xl relative shadow-2xl"
+          className="max-w-md w-full card-static p-5 sm:p-8 rounded-2xl relative shadow-2xl"
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}

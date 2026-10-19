@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { Request, Response, NextFunction } from 'express'
 import { verifyAccessToken } from '../utils/auth'
-import { prisma } from '../config'
+import { prisma } from '../prismaClient'
 import { sessionConfig } from '../config/security'
 import { sendError } from '../utils/responseHelper'
 import { cacheService } from '../services/CacheService'

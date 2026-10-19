@@ -7,7 +7,6 @@ import {
   setCachedData,
   trackInFlightRequest,
 } from './cache'
-import { SecureStorage } from './security'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -18,54 +17,86 @@ if (!API_URL) {
   throw new Error(msg)
 }
 
-const TOKEN_KEY = 'lh_access_token'
-const REFRESH_TOKEN_KEY = 'lh_refresh_token'
+/**
+ * Cookie names must match backend/src/utils/cookies.ts:
+ *   COOKIE_ACCESS.name  = 'access_token'  (path: '/', maxAge: 15min)
+ *   COOKIE_REFRESH.name = 'refresh_token' (path: '/api/v1/auth', maxAge: 7d)
+ * Both are httpOnly + SameSite=strict on the backend.
+ */
 
-async function getAccessToken(): Promise<string | null> {
-  try {
-    const token = await SecureStorage.getItem(TOKEN_KEY)
-    if (token) return token
-    return await SecureStorage.getItem('token')
-  } catch {
-    return null
-  }
+const ACCESS_TOKEN_COOKIE = 'access_token'
+const REFRESH_TOKEN_COOKIE = 'refresh_token'
+
+/**
+ * Read a cookie value by name. Returns null if not present.
+ */
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(
+    new RegExp(`(^| )${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}=([^;]+)`)
+  )
+  return match ? decodeURIComponent(match[2]) : null
 }
 
+/**
+ * Get the JWT access token from the httpOnly cookie.
+ * Backend sets this cookie on login; we read it for Authorization headers.
+ * NOTE: We cannot set httpOnly cookies from JS — the backend controls that.
+ * This function is read-only from the frontend's perspective.
+ */
+let inMemoryAccessToken: string | null = null
+let inMemoryRefreshToken: string | null = null
+
+async function getAccessToken(): Promise<string | null> {
+  return inMemoryAccessToken || getCookie(ACCESS_TOKEN_COOKIE)
+}
+
+/**
+ * Get the refresh token from the httpOnly cookie or in-memory fallback.
+ * Backend sets this cookie on login; we read it for token refresh calls.
+ */
 async function getRefreshToken(): Promise<string | null> {
-  try {
-    const token = await SecureStorage.getItem(REFRESH_TOKEN_KEY)
-    if (token) return token
-    return await SecureStorage.getItem('refreshToken')
-  } catch {
-    return null
-  }
+  return inMemoryRefreshToken || getCookie(REFRESH_TOKEN_COOKIE)
 }
 
 async function setAccessToken(token: string | null): Promise<void> {
-  if (token) {
-    await SecureStorage.setItem(TOKEN_KEY, token)
-    await SecureStorage.setItem('token', token)
-  } else {
-    SecureStorage.removeItem(TOKEN_KEY)
-    SecureStorage.removeItem('token')
-  }
+  inMemoryAccessToken = token
 }
 
 async function setRefreshToken(token: string | null): Promise<void> {
-  if (token) {
-    await SecureStorage.setItem(REFRESH_TOKEN_KEY, token)
-    await SecureStorage.setItem('refreshToken', token)
-  } else {
-    SecureStorage.removeItem(REFRESH_TOKEN_KEY)
-    SecureStorage.removeItem('refreshToken')
-  }
+  inMemoryRefreshToken = token
 }
 
+/**
+ * Clear auth tokens. Since cookies are httpOnly, we cannot delete them from JS.
+ * The backend clears them on logout via clearAuthCookies().
+ * We also clear any legacy localStorage tokens from the old SecureStorage scheme.
+ */
 async function clearTokens(): Promise<void> {
-  SecureStorage.removeItem(TOKEN_KEY)
-  SecureStorage.removeItem('token')
-  SecureStorage.removeItem(REFRESH_TOKEN_KEY)
-  SecureStorage.removeItem('refreshToken')
+  inMemoryAccessToken = null
+  inMemoryRefreshToken = null
+  // Expire any legacy localStorage tokens (old SecureStorage scheme)
+  if (typeof document !== 'undefined') {
+    document.cookie = `${ACCESS_TOKEN_COOKIE}=; path=/; max-age=0; SameSite=strict`
+    document.cookie = `${REFRESH_TOKEN_COOKIE}=; path=/api/v1/auth; max-age=0; SameSite=strict`
+  }
+  // Clear legacy localStorage keys from old SecureStorage
+  if (typeof localStorage !== 'undefined') {
+    const legacyKeys = [
+      'lh_access_token',
+      'lh_refresh_token',
+      'lh_salt_v2',
+      'token',
+      'refreshToken',
+    ]
+    for (const key of legacyKeys) {
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        // ignore
+      }
+    }
+  }
 }
 
 export { getAccessToken, getRefreshToken, setAccessToken, setRefreshToken, clearTokens }
@@ -316,24 +347,11 @@ const refreshAccessToken = async (): Promise<void> => {
       throw new Error('Token refresh failed')
     }
 
-    const data = await response.json().catch(() => ({}))
-    const newAccessToken =
-      data?.data?.token ??
-      data?.data?.accessToken ??
-      data?.data?.access_token ??
-      data?.token ??
-      data?.access_token ??
-      data?.access ??
-      null
-    const newRefreshToken =
-      data?.data?.refreshToken ?? data?.data?.refresh ?? data?.refreshToken ?? data?.refresh ?? null
-
-    if (newAccessToken) {
-      await setAccessToken(newAccessToken)
-    }
-    if (newRefreshToken) {
-      await setRefreshToken(newRefreshToken)
-    }
+    // Backend sets new access_token and refresh_token cookies via Set-Cookie headers.
+    // With credentials: 'include', the browser stores them automatically.
+    // We no longer need to manually store tokens since they're httpOnly cookies.
+    // The response body still contains tokens for legacy/mobile clients,
+    // but for web clients, the cookies are primary.
 
     window.dispatchEvent(new CustomEvent('auth:token-refreshed'))
   })().finally(() => {
@@ -404,7 +422,9 @@ export async function fetchApi<T = any>(
     cleanEndpoint = `/${cleanEndpoint}`
   }
   const normalizedEndpoint =
-    cleanEndpoint.endsWith('/') && cleanEndpoint.length > 1 ? cleanEndpoint.slice(0, -1) : cleanEndpoint
+    cleanEndpoint.endsWith('/') && cleanEndpoint.length > 1
+      ? cleanEndpoint.slice(0, -1)
+      : cleanEndpoint
   const fullUrl = `${API_URL}${normalizedEndpoint}`
   const method = (options.method ?? 'GET').toUpperCase()
 
@@ -429,7 +449,12 @@ export async function fetchApi<T = any>(
   if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   headers.set('X-Session-ID', getSessionId())
 
-  // Attach JWT access token if available
+  // Attach JWT access token if available (non-httpOnly cookie)
+  // SECURITY: With httpOnly cookies, the access token CANNOT be read via
+  // document.cookie. The browser sends it automatically via credentials:'include'.
+  // We attempt to read it for backward compatibility with non-httpOnly setups,
+  // but if the cookie is httpOnly (production), this returns null and the
+  // request still works because the browser auto-sends the cookie.
   const accessToken = await getAccessToken()
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`)
@@ -457,7 +482,9 @@ export async function fetchApi<T = any>(
           if (responseType === 'blob') return response.blob()
           const contentType = response.headers.get('content-type') || ''
           if (contentType.includes('text/html')) {
-            throw new Error(`Backend API returned HTML instead of JSON for ${normalizedEndpoint}. Backend may be offline or unattached.`)
+            throw new Error(
+              `Backend API returned HTML instead of JSON for ${normalizedEndpoint}. Backend may be offline or unattached.`
+            )
           }
           const data = await response.json()
           if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache)
@@ -465,7 +492,9 @@ export async function fetchApi<T = any>(
           return data
         }
 
-        const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(method.toUpperCase())
+        const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(
+          method.toUpperCase()
+        )
         if (!isIdempotent || !RETRY_CONFIG.retryableStatuses.includes(response.status)) {
           return handleNonRetryable(
             response,
@@ -550,16 +579,10 @@ async function handleNonRetryable(
         headers.set('X-Session-ID', getSessionId())
         const csrfToken = getCsrfToken()
         if (csrfToken) headers.set('X-CSRF-Token', csrfToken)
-        const newAccessToken = await getAccessToken()
-        if (newAccessToken) headers.set('Authorization', `Bearer ${newAccessToken}`)
 
         // 401-refresh retry MUST reuse the timeout/abort pipeline (not raw fetch)
         // so REQUEST_TIMEOUT_MS and caller-signal chaining still apply.
-        const retryResponse = await executeWithTimeout(
-          fullUrl,
-          { ...options, headers },
-          headers
-        )
+        const retryResponse = await executeWithTimeout(fullUrl, { ...options, headers }, headers)
 
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
@@ -582,7 +605,10 @@ async function handleNonRetryable(
   const errorData = await response.json().catch(() => ({}))
   const errorCode = (errorData.code || errorData.error?.code || '') as string
   const errorMessage =
-    errorData.message ?? errorData.error?.message ?? errorData.detail ?? 'An error occurred. Please try again.'
+    errorData.message ??
+    errorData.error?.message ??
+    errorData.detail ??
+    'An error occurred. Please try again.'
 
   if (
     response.status === 403 &&
@@ -595,14 +621,8 @@ async function handleNonRetryable(
         if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
         headers.set('X-Session-ID', getSessionId())
         headers.set('X-CSRF-Token', freshCsrf)
-        const currentAccessToken = await getAccessToken()
-        if (currentAccessToken) headers.set('Authorization', `Bearer ${currentAccessToken}`)
 
-        const retryResponse = await executeWithTimeout(
-          fullUrl,
-          { ...options, headers },
-          headers
-        )
+        const retryResponse = await executeWithTimeout(fullUrl, { ...options, headers }, headers)
 
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
@@ -613,7 +633,10 @@ async function handleNonRetryable(
         }
         const retryErrorData = await retryResponse.json().catch(() => ({}))
         const retryErrorMessage =
-          retryErrorData.message ?? retryErrorData.error?.message ?? retryErrorData.detail ?? errorMessage
+          retryErrorData.message ??
+          retryErrorData.error?.message ??
+          retryErrorData.detail ??
+          errorMessage
         throw new Error(retryErrorMessage)
       }
     } catch (e) {

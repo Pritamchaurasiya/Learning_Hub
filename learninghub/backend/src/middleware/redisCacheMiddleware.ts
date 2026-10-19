@@ -28,6 +28,9 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
 
     const key = `cache:${req.originalUrl || req.url}_${req.user?.userId ?? 'anonymous'}`
 
+    const isAuth = !!req.user?.userId
+    const cacheControlHeader = `${isAuth ? 'private' : 'public'}, max-age=${Math.min(durationInSeconds, 60)}, stale-while-revalidate=300`
+
     try {
       // Try Redis first
       const cached = await cacheService.get<any>(key)
@@ -35,6 +38,8 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
         if (process.env.NODE_ENV !== 'test') {
           logger.info(`[RedisCache] HIT for ${key}`)
         }
+        res.setHeader('Cache-Control', cacheControlHeader)
+        res.setHeader('X-Cache', 'HIT')
         const data = typeof cached === 'string' ? JSON.parse(cached) : cached
         res.json(data)
         return
@@ -48,6 +53,8 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       const originalJson = res.json.bind(res)
       res.json = (body: unknown) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          res.setHeader('Cache-Control', cacheControlHeader)
+          res.setHeader('X-Cache', 'MISS')
           try {
             cacheService.set(key, body, durationInSeconds).catch(() => {
               fallbackCache.set(key, body, durationInSeconds)
@@ -65,6 +72,8 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       const fallbackKey = `fallback:${key}`
       const fallbackCached = fallbackCache.get(fallbackKey)
       if (fallbackCached) {
+        res.setHeader('Cache-Control', cacheControlHeader)
+        res.setHeader('X-Cache', 'HIT-FALLBACK')
         res.json(fallbackCached)
         return
       }
@@ -72,6 +81,8 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       const originalJson = res.json.bind(res)
       res.json = (body: unknown) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          res.setHeader('Cache-Control', cacheControlHeader)
+          res.setHeader('X-Cache', 'MISS-FALLBACK')
           fallbackCache.set(fallbackKey, body, durationInSeconds)
         }
         return originalJson(body)

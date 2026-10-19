@@ -149,6 +149,15 @@ export default function NotificationsPage() {
   const handleAction = (notification: Notification) => {
     if (notification.metadata?.link) {
       const link = notification.metadata.link
+      const trimmed = link.trim().toLowerCase()
+      // Security: Disallow javascript:, data:, vbscript: schemes to prevent XSS
+      if (
+        trimmed.startsWith('javascript' + ':') ||
+        trimmed.startsWith('data:') ||
+        trimmed.startsWith('vbscript:')
+      ) {
+        return
+      }
       if (link.startsWith('http://') || link.startsWith('https://')) {
         window.open(link, '_blank', 'noopener,noreferrer')
       } else {
@@ -188,10 +197,11 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full md:w-auto">
           {unreadCount > 0 && !isLoading && (
             <Button
               variant="outline"
+              className="flex-1 sm:flex-none min-h-[44px]"
               leftIcon={<CheckCheck className="w-4 h-4" />}
               onClick={markAllAsRead}
               disabled={isLoading}
@@ -202,6 +212,7 @@ export default function NotificationsPage() {
           {notifications.length > 0 && !isLoading && (
             <Button
               variant="outline"
+              className="flex-1 sm:flex-none min-h-[44px]"
               leftIcon={<Trash2 className="w-4 h-4" />}
               onClick={clearAll}
               disabled={isLoading}
@@ -234,10 +245,10 @@ export default function NotificationsPage() {
 
       {/* Filter */}
       <Card className="p-4">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`min-h-[40px] px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center ${
               filter === 'all'
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -247,7 +258,7 @@ export default function NotificationsPage() {
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`min-h-[40px] px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center ${
               filter === 'unread'
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -257,7 +268,7 @@ export default function NotificationsPage() {
           </button>
           <button
             onClick={() => setFilter('read')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`min-h-[40px] px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center ${
               filter === 'read'
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -272,8 +283,7 @@ export default function NotificationsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Card key={i} className="p-4">
+            <Card key={`notif-skel-${i}`} className="p-4">
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse flex-shrink-0" />
                 <div className="flex-1 space-y-2">
@@ -320,11 +330,12 @@ export default function NotificationsPage() {
                             {notification.message}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                           {!notification.isRead && (
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl"
                               leftIcon={<Check className="w-4 h-4" />}
                               onClick={e => {
                                 e.stopPropagation()
@@ -336,6 +347,7 @@ export default function NotificationsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl"
                             leftIcon={<Trash2 className="w-4 h-4" />}
                             onClick={e => {
                               e.stopPropagation()

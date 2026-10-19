@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { authenticate, optionalAuth } from '../../middleware/authMiddleware'
 import { validate } from '../../middleware/validationMiddleware'
 import { createRateLimiter } from '../../middleware/rateLimiter'
+import { redisCacheMiddleware } from '../../middleware/redisCacheMiddleware'
 import { submitProblemSchema } from '../../validations/schemas'
 import {
   listProblems,
@@ -21,8 +22,8 @@ const codeExecutionLimiter = createRateLimiter({
   message: 'Too many code submissions. Please wait before submitting again.',
 })
 
-router.get('/', optionalAuth, listProblems)
-router.get('/:slug', optionalAuth, getProblem)
+router.get('/', optionalAuth, redisCacheMiddleware(120), listProblems)
+router.get('/:slug', optionalAuth, redisCacheMiddleware(300), getProblem)
 router.post(
   '/:id/run',
   optionalAuth,

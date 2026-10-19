@@ -17,6 +17,7 @@ const routeLabels = new Map<string, string>([
   ['/quiz', 'Quiz'],
   ['/quiz-history', 'Quiz History'],
   ['/tests-a', 'Tests A+'],
+  ['/tests-a-plus', 'Tests A+ Studio'],
   ['/tests-a-history', 'Test History'],
   ['/contest', 'Contests'],
   ['/leaderboard', 'Leaderboard'],

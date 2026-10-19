@@ -5,13 +5,13 @@ import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
 import { NetworkStatus } from './NetworkStatus'
 import ScrollToTop from './ui/ScrollToTop'
-import { LoadingScreen } from './ui/LoadingScreen'
+import { RouteProgressBar } from './ui/RouteProgressBar'
 import { useStore } from '../stores/useStore'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SectionErrorBoundary } from './SectionErrorBoundary'
 import { AnnouncerRegions } from './a11y/LiveAnnouncer'
 import { Suspense, ReactNode, lazy } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 const CommandPalette = lazy(() =>
   import('./CommandPalette').then(m => ({ default: m.CommandPalette }))
@@ -63,21 +63,18 @@ export default function Layout({ children }: LayoutProps) {
         >
           <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full pb-[88px] lg:pb-9 transition-all duration-300">
             <ErrorBoundary>
-              <Suspense fallback={<LoadingScreen />}>
+              <Suspense fallback={<RouteProgressBar />}>
                 {children}
                 {!children &&
                   (!isLowPerformance ? (
-                    <AnimatePresence mode="popLayout">
-                      <motion.div
-                        key={location.pathname}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.15, ease: 'easeOut' }}
-                      >
-                        <Outlet />
-                      </motion.div>
-                    </AnimatePresence>
+                    <motion.div
+                      key={location.pathname}
+                      initial={{ opacity: 0.9 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.05, ease: 'easeOut' }}
+                    >
+                      <Outlet />
+                    </motion.div>
                   ) : (
                     <Outlet />
                   ))}

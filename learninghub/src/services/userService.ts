@@ -9,6 +9,10 @@ export interface UserProfile {
   bio: string | null
   location: string | null
   website: string | null
+  github_username?: string | null
+  linkedin_url?: string | null
+  phone?: string | null
+  role?: string
   date_joined: string
   is_verified: boolean
 }
@@ -37,11 +41,26 @@ export interface Achievement {
 }
 
 export interface UpdateProfileData {
+  username?: string
   display_name?: string
   bio?: string
   location?: string
   website?: string
   avatar?: string
+  github_username?: string
+  linkedin_url?: string
+  phone?: string
+}
+
+export interface UserSession {
+  id: string
+  ipAddress?: string
+  userAgent?: string
+  device?: string
+  browser?: string
+  os?: string
+  lastActive: string
+  current?: boolean
 }
 
 export interface BookmarkedCourse {
@@ -65,6 +84,15 @@ interface ApiUser {
   level?: number
   avatar?: string | null
   bio?: string | null
+  display_name?: string
+  displayName?: string
+  location?: string | null
+  website?: string | null
+  github_username?: string | null
+  linkedin_url?: string | null
+  phone?: string | null
+  role?: string
+  is_verified?: boolean
 }
 
 interface ApiProgress {
@@ -89,13 +117,17 @@ function mapToUserProfile(user: ApiUser): UserProfile {
     id: user.id,
     username: user.username ?? '',
     email: user.email,
-    display_name: user.username ?? 'User',
+    display_name: user.display_name ?? user.displayName ?? user.username ?? 'User',
     avatar: user.avatar ?? null,
     bio: user.bio ?? null,
-    location: null,
-    website: null,
+    location: user.location ?? null,
+    website: user.website ?? null,
+    github_username: user.github_username ?? null,
+    linkedin_url: user.linkedin_url ?? null,
+    phone: user.phone ?? null,
+    role: user.role ?? 'STUDENT',
     date_joined: user.created_at ?? new Date().toISOString(),
-    is_verified: false,
+    is_verified: user.is_verified ?? false,
   }
 }
 
@@ -137,7 +169,7 @@ export const userService = {
   },
 
   updateProfile: async (data: UpdateProfileData) => {
-    return fetchApi('/auth/profile/', {
+    return fetchApi('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     })
@@ -207,6 +239,23 @@ export const userService = {
 
   removeBookmark: async (courseId: string): Promise<{ status: string; message: string }> => {
     return fetchApi(`/users/bookmarks/${courseId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  getSessions: async (): Promise<{ status: string; data: UserSession[] }> => {
+    try {
+      const res = await fetchApi('/auth/sessions')
+      const payload = res?.data ?? res
+      const sessions = Array.isArray(payload) ? payload : (payload?.sessions ?? [])
+      return { status: 'success', data: sessions }
+    } catch {
+      return { status: 'success', data: [] }
+    }
+  },
+
+  revokeSession: async (sessionId: string): Promise<{ status: string; message: string }> => {
+    return fetchApi(`/auth/sessions/${encodeURIComponent(sessionId)}`, {
       method: 'DELETE',
     })
   },

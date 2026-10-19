@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { PrefetchNavLink } from './PrefetchNavLink'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
@@ -47,8 +47,11 @@ interface NavSection {
 export default function Sidebar() {
   const sidebarOpen = useStore(s => s.sidebarOpen)
   const setSidebarOpen = useStore(s => s.setSidebarOpen)
-  const progress = useStore(s => s.progress)
-  const auth = useStore(s => s.auth)
+  const currentXp = useStore(s => s.progress.xp || 0)
+  const streak = useStore(s => s.progress.streak || 0)
+  const completedCoursesCount = useStore(s => s.progress.completedCourses?.length || 0)
+  const userRole = useStore(s => (s.auth.user?.role ?? '').toUpperCase())
+  const username = useStore(s => s.auth.user?.username ?? 'Learner')
   const isDesktop = useBreakpoint('lg') // Synced with lg (>=1024px) for desktop docked sidebar
 
   // Collapsible sections state - default secondary sections to collapsed to avoid overwhelming 20+ item clutter
@@ -63,7 +66,6 @@ export default function Sidebar() {
     setOpenSections(prev => ({ ...prev, [label]: !prev[label] }))
   }
 
-  const userRole = (auth.user?.role ?? '').toUpperCase()
   const isAdmin = ['ADMIN', 'SUPERADMIN', 'MODERATOR', 'INSTRUCTOR'].includes(userRole)
 
   const mainNavItems = [
@@ -92,6 +94,7 @@ export default function Sidebar() {
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
+        { to: '/tests-a-plus', icon: Sparkles, label: 'Tests A+ Studio' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },
         { to: '/tests-a-history', icon: History, label: 'Test History' },
         { to: '/contest', icon: Trophy, label: 'Contests' },
@@ -140,7 +143,6 @@ export default function Sidebar() {
     }
   }
 
-  const currentXp = progress.xp || 0
   const currentLevel = calculateLevel(currentXp)
   const currentLevelBaseXp = calculateXpForLevel(currentLevel)
   const nextLevelBaseXp = calculateXpForLevel(currentLevel + 1)
@@ -185,13 +187,13 @@ export default function Sidebar() {
       >
         {/* Sidebar header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/40 dark:border-white/10 shrink-0">
-          <NavLink
+          <PrefetchNavLink
             to="/dashboard"
             onClick={closeMobileSidebar}
             className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg group"
           >
             <BrandLogo size="sm" variant="full" subtitle="Pro Platform" animated={false} />
-          </NavLink>
+          </PrefetchNavLink>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -204,7 +206,7 @@ export default function Sidebar() {
         </div>
 
         {/* Streak indicator */}
-        {progress.streak > 0 && (
+        {streak > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -217,9 +219,7 @@ export default function Sidebar() {
                 <Flame className="w-5 h-5 animate-pulse" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-sm leading-tight">
-                  {progress.streak} Day Streak!
-                </span>
+                <span className="font-bold text-sm leading-tight">{streak} Day Streak!</span>
                 <span className="text-[10px] text-white/80">You&apos;re doing great!</span>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function Sidebar() {
           {/* Main nav items */}
           <div className="mb-4">
             {mainNavItems.map(({ to, icon: Icon, label }) => (
-              <NavLink
+              <PrefetchNavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
@@ -264,7 +264,7 @@ export default function Sidebar() {
                     <span className="relative z-10 text-sm">{label}</span>
                   </>
                 )}
-              </NavLink>
+              </PrefetchNavLink>
             ))}
           </div>
 
@@ -296,7 +296,7 @@ export default function Sidebar() {
                     >
                       <div className="pt-1">
                         {section.items.map(({ to, icon: Icon, label }) => (
-                          <NavLink
+                          <PrefetchNavLink
                             key={to}
                             to={to}
                             className={({ isActive }) =>
@@ -328,7 +328,7 @@ export default function Sidebar() {
                                 <span className="relative z-10 text-sm">{label}</span>
                               </>
                             )}
-                          </NavLink>
+                          </PrefetchNavLink>
                         ))}
                       </div>
                     </motion.div>
@@ -347,13 +347,13 @@ export default function Sidebar() {
             <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/50">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 Browse courses from the{' '}
-                <NavLink
+                <PrefetchNavLink
                   to="/search"
                   className="text-primary-600 dark:text-primary-400 hover:underline font-semibold"
                   onClick={closeMobileSidebar}
                 >
                   Course Catalog
-                </NavLink>
+                </PrefetchNavLink>
               </p>
             </div>
           </div>
@@ -362,34 +362,34 @@ export default function Sidebar() {
         {/* Bottom profile card with XP progress */}
         <div className="p-4 border-t border-gray-200/60 dark:border-gray-700/40 shrink-0 bg-gray-50/50 dark:bg-gray-800/20">
           {/* Mini profile */}
-          <NavLink
+          <PrefetchNavLink
             to="/profile"
             onClick={closeMobileSidebar}
             className="flex items-center gap-3 mb-3 p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors group"
           >
             <div className="relative">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                {(auth.user?.username ?? 'L')[0].toUpperCase()}
+                {(username[0] ?? 'L').toUpperCase()}
               </div>
               {/* Online indicator */}
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">
-                {auth.user?.username ?? 'Learner'}
+                {username}
               </p>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                 Level {currentLevel}
               </p>
             </div>
-          </NavLink>
+          </PrefetchNavLink>
 
           {/* XP Progress bar */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               <span className="flex items-center gap-1">
                 <Zap className="w-3 h-3 text-amber-500" />
-                {progress.xp} XP
+                {currentXp} XP
               </span>
               <span>
                 {xpInLevel}/{xpNeededForLevel} to Lv.{currentLevel + 1}
@@ -404,8 +404,8 @@ export default function Sidebar() {
               />
             </div>
             <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 dark:text-gray-400">
-              <span>{progress.completedCourses.length} Completed</span>
-              <span>{progress.streak > 0 ? `🔥 ${progress.streak}d` : 'No streak'}</span>
+              <span>{completedCoursesCount} Completed</span>
+              <span>{streak > 0 ? `🔥 ${streak}d` : 'No streak'}</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import { asyncHandler } from '../utils/errorHandler'
-import { sendSuccess, sendNotFound } from '../utils/responseHelper'
+import { sendSuccess, sendNotFound, sendValidationError } from '../utils/responseHelper'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import { cacheService } from '../services/CacheService'
 import { Prisma } from '@prisma/client'
@@ -147,13 +147,13 @@ export const runSolution = asyncHandler(async (req: Request, res: Response): Pro
     'go',
     'rust',
   ])
+  const resolvedLanguage = typeof language === 'string' && language ? language : 'javascript'
   if (typeof code !== 'string' || code.length === 0 || code.length > 100_000) {
-    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })
+    sendValidationError(res, 'Code must be 1-100000 chars')
     return
   }
-  const resolvedLanguage = typeof language === 'string' && language ? language : 'javascript'
   if (resolvedLanguage.length > 32 || !ALLOWED_LANGUAGES.has(resolvedLanguage.toLowerCase())) {
-    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })
+    sendValidationError(res, 'Unsupported language')
     return
   }
 
@@ -254,7 +254,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     'rust',
   ])
   if (typeof code !== 'string' || code.length === 0 || code.length > 100_000) {
-    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })
+    sendValidationError(res, 'Code must be 1-100000 chars')
     return
   }
   if (
@@ -263,7 +263,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     language.length > 32 ||
     !ALLOWED_SUBMIT_LANGUAGES.has(language.toLowerCase())
   ) {
-    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })
+    sendValidationError(res, 'Unsupported language')
     return
   }
 
@@ -314,12 +314,14 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
 
   const executionTime = executionResult.executionTime
   const memoryUsed = executionResult.memoryUsed
-  const score =
-    status === 'ACCEPTED'
-      ? problem.points
-      : Math.floor(
-          problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
-        )
+   const score =
+     status === 'ACCEPTED'
+       ? problem.points
+       : executionResult.testCasesTotal === 0
+         ? 0
+         : Math.floor(
+             problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
+           )
 
   const result = await prisma.$transaction(async (tx: any) => {
     const submission = await tx.problemSubmission.create({

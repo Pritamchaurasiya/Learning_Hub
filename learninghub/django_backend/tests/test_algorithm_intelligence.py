@@ -1,9 +1,12 @@
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from apps.users.models import User
 from apps.problems.models import Problem, TestCase, ProblemSubmission
+from apps.problems.sandbox import CodeSandboxService
 from apps.problems.recommendations import DSARecommendationEngine
 from apps.core.search import TokenizedSearchEngine
 from apps.tests_engine.models import Test, Question, Option, TestAttempt, AttemptAnswer
@@ -126,29 +129,41 @@ class TestAlgorithmIntelligence:
 
         submit_url = reverse('problem-submit', kwargs={'pk': problem.id})
 
-        # 1. Failed submission with hidden test case must NOT leak expected output
-        fail_code = "print(0)"
-        res_fail = self.client.post(submit_url, {'code': fail_code, 'language': 'python'}, format='json')
-        assert res_fail.status_code == status.HTTP_201_CREATED
-        stdout = res_fail.data['data']['stdout']
-        assert 'Expected: 10' not in stdout
-        assert 'hidden test case' in stdout
+        def run_isolated_container(code, language, input_data, timeout_sec, start_time):
+            output = '10\n' if code.strip() == 'print(10)' else '0\n'
+            return {
+                'success': True,
+                'stdout': output,
+                'stderr': '',
+                'runtime_ms': 1,
+                'memory_mb': 1.0,
+                'status': 'Accepted',
+            }
 
-        # 2. Accepted submission awards XP once
-        initial_xp = self.user.xp
-        pass_code = "print(10)"
-        res_pass1 = self.client.post(submit_url, {'code': pass_code, 'language': 'python'}, format='json')
-        assert res_pass1.status_code == status.HTTP_201_CREATED
-        assert res_pass1.data['data']['status'] == 'Accepted'
+        with patch.object(CodeSandboxService, '_run_container', side_effect=run_isolated_container):
+            # 1. Failed submission with hidden test case must NOT leak expected output
+            fail_code = "print(0)"
+            res_fail = self.client.post(submit_url, {'code': fail_code, 'language': 'python'}, format='json')
+            assert res_fail.status_code == status.HTTP_201_CREATED
+            stdout = res_fail.data['data']['stdout']
+            assert 'Expected: 10' not in stdout
+            assert 'hidden test case' in stdout
 
-        self.user.refresh_from_db()
-        assert self.user.xp == initial_xp + 25
+            # 2. Accepted submission awards XP once
+            initial_xp = self.user.xp
+            pass_code = "print(10)"
+            res_pass1 = self.client.post(submit_url, {'code': pass_code, 'language': 'python'}, format='json')
+            assert res_pass1.status_code == status.HTTP_201_CREATED
+            assert res_pass1.data['data']['status'] == 'Accepted'
 
-        # 3. Duplicate accepted submission does NOT award additional XP
-        res_pass2 = self.client.post(submit_url, {'code': pass_code, 'language': 'python'}, format='json')
-        assert res_pass2.status_code == status.HTTP_201_CREATED
-        self.user.refresh_from_db()
-        assert self.user.xp == initial_xp + 25  # Still +25, not +50
+            self.user.refresh_from_db()
+            assert self.user.xp == initial_xp + 25
+
+            # 3. Duplicate accepted submission does NOT award additional XP
+            res_pass2 = self.client.post(submit_url, {'code': pass_code, 'language': 'python'}, format='json')
+            assert res_pass2.status_code == status.HTTP_201_CREATED
+            self.user.refresh_from_db()
+            assert self.user.xp == initial_xp + 25  # Still +25, not +50
 
     def test_course_prerequisites_enforcement(self):
         from apps.courses.models import Course, Enrollment
@@ -193,4 +208,3 @@ class TestAlgorithmIntelligence:
         res_pass = self.client.post(enroll_url)
         assert res_pass.status_code == status.HTTP_200_OK
         assert res_pass.data['data']['enrolled'] is True
-

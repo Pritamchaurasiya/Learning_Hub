@@ -4,16 +4,7 @@ import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
 import type { User as UserType } from '../types/user'
-import {
-  Lock,
-  Mail,
-  Sparkles,
-  Eye,
-  EyeOff,
-  Shield,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react'
+import { Lock, Mail, Sparkles, Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
@@ -224,7 +215,7 @@ const AuthPage = memo(function AuthPage() {
       level: role === 'ADMIN' ? 25 : 7,
       streak: 14,
       lastActive: new Date().toISOString(),
-      role: role,
+      role,
       is_active: true,
     }
     setAuth('lh-demo-jwt-token-2026', 'lh-demo-refresh-token', demoUser)
@@ -289,7 +280,7 @@ const AuthPage = memo(function AuthPage() {
         </div>
 
         <motion.div
-          className="max-w-md w-full card-static p-8 rounded-2xl relative overflow-hidden shadow-2xl"
+          className="max-w-md w-full card-static p-5 sm:p-8 rounded-2xl relative overflow-hidden shadow-2xl"
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -303,7 +294,12 @@ const AuthPage = memo(function AuthPage() {
             transition={{ delay: 0.2, duration: 0.4 }}
           >
             <div className="mb-3">
-              <BrandLogo size="lg" variant="vertical" subtitle="Interactive Engineering Platform" animated />
+              <BrandLogo
+                size="lg"
+                variant="vertical"
+                subtitle="Interactive Engineering Platform"
+                animated
+              />
             </div>
 
             <motion.div
@@ -324,7 +320,11 @@ const AuthPage = memo(function AuthPage() {
           </motion.div>
 
           {isMfaChallenge ? (
-            <form onSubmit={handleMfaSubmit} className="relative z-10 space-y-6" data-testid="mfa-challenge-form">
+            <form
+              onSubmit={handleMfaSubmit}
+              className="relative z-10 space-y-6"
+              data-testid="mfa-challenge-form"
+            >
               <div className="text-center space-y-2 mb-2">
                 <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 shadow-inner">
                   <Shield className="w-7 h-7" />
@@ -353,7 +353,10 @@ const AuthPage = memo(function AuthPage() {
                   className="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-center text-2xl font-mono font-black tracking-[0.5em] focus:border-rose-500 focus:outline-none dark:text-white transition-colors"
                 />
                 {mfaError && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center justify-center gap-1 font-bold" role="alert">
+                  <p
+                    className="text-xs text-red-500 mt-1 flex items-center justify-center gap-1 font-bold"
+                    role="alert"
+                  >
                     <AlertCircle className="h-3.5 w-3.5" />
                     {mfaError}
                   </p>
@@ -397,281 +400,282 @@ const AuthPage = memo(function AuthPage() {
                   >
                     Email Address <span className="ml-1 text-red-500">*</span>
                   </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  id="auth-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => {
-                    setEmail(e.target.value)
-                    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }))
-                  }}
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  className={fieldClass('email')}
-                  aria-invalid={!!fieldErrors.email}
-                  aria-describedby={fieldErrors.email ? 'auth-email-error' : undefined}
-                  aria-errormessage={fieldErrors.email ? 'auth-email-error' : undefined}
-                />
-                {fieldErrors.email && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <AlertCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      id="auth-email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={e => {
+                        setEmail(e.target.value)
+                        if (fieldErrors.email)
+                          setFieldErrors(prev => ({ ...prev, email: undefined }))
+                      }}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      className={fieldClass('email')}
+                      aria-invalid={!!fieldErrors.email}
+                      aria-describedby={fieldErrors.email ? 'auth-email-error' : undefined}
+                      aria-errormessage={fieldErrors.email ? 'auth-email-error' : undefined}
+                    />
+                    {fieldErrors.email && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <AlertCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
+                  {fieldErrors.email && (
+                    <p
+                      id="auth-email-error"
+                      className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                      role="alert"
+                    >
+                      <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                      {fieldErrors.email}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="auth-password"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Password <span className="ml-1 text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      id="auth-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={e => {
+                        setPassword(e.target.value)
+                        if (fieldErrors.password)
+                          setFieldErrors(prev => ({ ...prev, password: undefined }))
+                      }}
+                      placeholder={isLogin ? 'Enter your password' : 'Min 8 characters'}
+                      autoComplete={isLogin ? 'current-password' : 'new-password'}
+                      className={passwordFieldClass('password')}
+                      aria-invalid={!!fieldErrors.password}
+                      aria-describedby={fieldErrors.password ? 'auth-password-error' : undefined}
+                      aria-errormessage={fieldErrors.password ? 'auth-password-error' : undefined}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {fieldErrors.password && (
+                    <p
+                      id="auth-password-error"
+                      className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                      role="alert"
+                    >
+                      <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                      {fieldErrors.password}
+                    </p>
+                  )}
+                  {isLogin && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/forgot-password')}
+                        className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+                  {!isLogin && (
+                    <div className="mt-2 space-y-1.5">
+                      <div className="flex gap-1 h-1">
+                        {[1, 2, 3, 4].map(level => {
+                          const strength = calculatePasswordStrength(password)
+                          const isActive = strength >= level
+                          let bgColor = 'bg-gray-200 dark:bg-gray-700'
+                          if (isActive) {
+                            if (strength === 1) bgColor = 'bg-red-500'
+                            else if (strength === 2) bgColor = 'bg-yellow-500'
+                            else if (strength === 3) bgColor = 'bg-blue-500'
+                            else bgColor = 'bg-green-500'
+                          }
+                          return (
+                            <div
+                              key={level}
+                              className={`flex-1 rounded-full transition-colors duration-300 ${bgColor}`}
+                            />
+                          )
+                        })}
+                      </div>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                        {calculatePasswordStrength(password) === 0 &&
+                          'Must contain uppercase, lowercase, number, and special character'}
+                        {calculatePasswordStrength(password) === 1 && 'Weak - add more variety'}
+                        {calculatePasswordStrength(password) === 2 &&
+                          'Fair - add numbers & special chars'}
+                        {calculatePasswordStrength(password) === 3 && 'Good - add special chars'}
+                        {calculatePasswordStrength(password) >= 4 && 'Strong password'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {!isLogin && (
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="auth-confirm-password"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Confirm Password <span className="ml-1 text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        id="auth-confirm-password"
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={e => {
+                          setConfirmPassword(e.target.value)
+                          if (fieldErrors.confirmPassword)
+                            setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }))
+                        }}
+                        placeholder="Re-enter your password"
+                        autoComplete="new-password"
+                        className={`flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                          fieldErrors.confirmPassword
+                            ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
+                        }`}
+                        aria-invalid={!!fieldErrors.confirmPassword}
+                        aria-describedby={
+                          fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
+                        }
+                        aria-errormessage={
+                          fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
+                        }
+                      />
+                    </div>
+                    {fieldErrors.confirmPassword && (
+                      <p
+                        id="auth-confirm-password-error"
+                        className="text-xs text-red-500 mt-1 flex items-center gap-1"
+                        role="alert"
+                      >
+                        <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                        {fieldErrors.confirmPassword}
+                      </p>
+                    )}
                   </div>
                 )}
-              </div>
-              {fieldErrors.email && (
-                <p
-                  id="auth-email-error"
-                  className="text-xs text-red-500 mt-1 flex items-center gap-1"
-                  role="alert"
-                >
-                  <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                  {fieldErrors.email}
-                </p>
-              )}
-            </div>
 
-            <div className="space-y-1.5">
-              <label
-                htmlFor="auth-password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Password <span className="ml-1 text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  id="auth-password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={e => {
-                    setPassword(e.target.value)
-                    if (fieldErrors.password)
-                      setFieldErrors(prev => ({ ...prev, password: undefined }))
-                  }}
-                  placeholder={isLogin ? 'Enter your password' : 'Min 8 characters'}
-                  autoComplete={isLogin ? 'current-password' : 'new-password'}
-                  className={passwordFieldClass('password')}
-                  aria-invalid={!!fieldErrors.password}
-                  aria-describedby={fieldErrors.password ? 'auth-password-error' : undefined}
-                  aria-errormessage={fieldErrors.password ? 'auth-password-error' : undefined}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {fieldErrors.password && (
-                <p
-                  id="auth-password-error"
-                  className="text-xs text-red-500 mt-1 flex items-center gap-1"
-                  role="alert"
-                >
-                  <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                  {fieldErrors.password}
-                </p>
-              )}
+                <Button type="submit" isLoading={loading} fullWidth size="lg" className="mt-6">
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                </Button>
+              </form>
+
               {isLogin && (
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/forgot-password')}
-                    className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              )}
-              {!isLogin && (
-                <div className="mt-2 space-y-1.5">
-                  <div className="flex gap-1 h-1">
-                    {[1, 2, 3, 4].map(level => {
-                      const strength = calculatePasswordStrength(password)
-                      const isActive = strength >= level
-                      let bgColor = 'bg-gray-200 dark:bg-gray-700'
-                      if (isActive) {
-                        if (strength === 1) bgColor = 'bg-red-500'
-                        else if (strength === 2) bgColor = 'bg-yellow-500'
-                        else if (strength === 3) bgColor = 'bg-blue-500'
-                        else bgColor = 'bg-green-500'
-                      }
-                      return (
-                        <div
-                          key={level}
-                          className={`flex-1 rounded-full transition-colors duration-300 ${bgColor}`}
-                        />
-                      )
-                    })}
+                <motion.div
+                  className="mt-6 relative z-10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white dark:bg-gray-800 px-2.5 text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
+                        Instant Demo Preview
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                    {calculatePasswordStrength(password) === 0 &&
-                      'Must contain uppercase, lowercase, number, and special character'}
-                    {calculatePasswordStrength(password) === 1 && 'Weak - add more variety'}
-                    {calculatePasswordStrength(password) === 2 &&
-                      'Fair - add numbers & special chars'}
-                    {calculatePasswordStrength(password) === 3 && 'Good - add special chars'}
-                    {calculatePasswordStrength(password) >= 4 && 'Strong password'}
-                  </p>
-                </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2.5">
+                    <motion.button
+                      type="button"
+                      onClick={() => handleInstantDemo('STUDENT')}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-primary-500/40 bg-primary-50/50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300 text-xs font-bold hover:bg-primary-100/70 dark:hover:bg-primary-900/40 shadow-sm transition-all"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Sparkles className="h-4 w-4 text-primary-500" />
+                      <span>Demo Student</span>
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => handleInstantDemo('ADMIN')}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold hover:bg-amber-100/70 dark:hover:bg-amber-900/40 shadow-sm transition-all"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Shield className="h-4 w-4 text-amber-500" />
+                      <span>Demo Admin</span>
+                    </motion.button>
+                  </div>
+                </motion.div>
               )}
-            </div>
 
-            {!isLogin && (
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="auth-confirm-password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Confirm Password <span className="ml-1 text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    id="auth-confirm-password"
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={e => {
-                      setConfirmPassword(e.target.value)
-                      if (fieldErrors.confirmPassword)
-                        setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }))
-                    }}
-                    placeholder="Re-enter your password"
-                    autoComplete="new-password"
-                    className={`flex h-11 w-full min-h-[44px] rounded-lg border pl-10 pr-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors duration-200 ${
-                      fieldErrors.confirmPassword
-                        ? 'border-red-400 dark:border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50 dark:bg-red-900/20'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-primary-500/20 focus:border-primary-500'
-                    }`}
-                    aria-invalid={!!fieldErrors.confirmPassword}
-                    aria-describedby={
-                      fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
-                    }
-                    aria-errormessage={
-                      fieldErrors.confirmPassword ? 'auth-confirm-password-error' : undefined
-                    }
-                  />
-                </div>
-                {fieldErrors.confirmPassword && (
-                  <p
-                    id="auth-confirm-password-error"
-                    className="text-xs text-red-500 mt-1 flex items-center gap-1"
-                    role="alert"
-                  >
-                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                    {fieldErrors.confirmPassword}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <Button type="submit" isLoading={loading} fullWidth size="lg" className="mt-6">
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
-
-          {isLogin && (
-            <motion.div
-              className="mt-6 relative z-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-800 px-2.5 text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
-                    Instant Demo Preview
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-2.5">
-                <motion.button
-                  type="button"
-                  onClick={() => handleInstantDemo('STUDENT')}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-primary-500/40 bg-primary-50/50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300 text-xs font-bold hover:bg-primary-100/70 dark:hover:bg-primary-900/40 shadow-sm transition-all"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Sparkles className="h-4 w-4 text-primary-500" />
-                  <span>Demo Student</span>
-                </motion.button>
-                <motion.button
-                  type="button"
-                  onClick={() => handleInstantDemo('ADMIN')}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold hover:bg-amber-100/70 dark:hover:bg-amber-900/40 shadow-sm transition-all"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Shield className="h-4 w-4 text-amber-500" />
-                  <span>Demo Admin</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          <motion.div
-            className="mt-8 text-center relative z-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.3 }}
-          >
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-              <motion.button
-                onClick={() => setIsLogin(!isLogin)}
-                className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label={isLogin ? 'Switch to sign up' : 'Switch to sign in'}
+              <motion.div
+                className="mt-8 text-center relative z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.3 }}
               >
-                {isLogin ? 'Sign up' : 'Sign in'}
-              </motion.button>
-            </p>
-          </motion.div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+                  <motion.button
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={isLogin ? 'Switch to sign up' : 'Switch to sign in'}
+                  >
+                    {isLogin ? 'Sign up' : 'Sign in'}
+                  </motion.button>
+                </p>
+              </motion.div>
 
-          {!isLogin && (
-            <motion.div
-              className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center relative z-10"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.3 }}
-            >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <div className="flex -space-x-2">
-                  <img
-                    src="https://i.pravatar.cc/100?img=1"
-                    alt="User"
-                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
-                  />
-                  <img
-                    src="https://i.pravatar.cc/100?img=2"
-                    alt="User"
-                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
-                  />
-                  <img
-                    src="https://i.pravatar.cc/100?img=3"
-                    alt="User"
-                    className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
-                  />
-                </div>
-                <div className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  <span>Join 10,000+ developers</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              {!isLogin && (
+                <motion.div
+                  className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center relative z-10"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.3 }}
+                >
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="flex -space-x-2">
+                      <img
+                        src="https://i.pravatar.cc/100?img=1"
+                        alt="User"
+                        className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                      />
+                      <img
+                        src="https://i.pravatar.cc/100?img=2"
+                        alt="User"
+                        className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                      />
+                      <img
+                        src="https://i.pravatar.cc/100?img=3"
+                        alt="User"
+                        className="w-6 h-6 rounded-full border-2 border-white dark:border-gray-900"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <span>Join 10,000+ developers</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </>
           )}
         </motion.div>

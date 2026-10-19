@@ -31,7 +31,12 @@ export default function CartPage() {
   const [selectedGateway, setSelectedGateway] = useState<'razorpay' | 'stripe'>('razorpay')
 
   // Fetch Cart query
-  const { data: cartResponse, isLoading, isError, refetch } = useQuery({
+  const {
+    data: cartResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['cart'],
     queryFn: () => cartService.getCart(),
   })
@@ -210,8 +215,8 @@ export default function CartPage() {
               Your cart is waiting for knowledge
             </h2>
             <p className="text-gray-500 dark:text-gray-400 max-w-md text-sm mb-8">
-              Explore our comprehensive library of computer science courses, tests, and masterclasses
-              to level up your career.
+              Explore our comprehensive library of computer science courses, tests, and
+              masterclasses to level up your career.
             </p>
             <Button
               variant="primary"
@@ -258,7 +263,7 @@ export default function CartPage() {
                             By {item.course.instructor.display_name}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30">
                             Instant Lifetime Access
                           </span>
@@ -286,7 +291,7 @@ export default function CartPage() {
                       <button
                         onClick={() => removeMutation.mutate(item.id)}
                         disabled={removeMutation.isPending}
-                        className="p-2.5 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors flex items-center justify-center"
                         aria-label={`Remove ${item.course.title}`}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -312,7 +317,8 @@ export default function CartPage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Add 20+ real architectural case studies, diagrams, and AST test cases for just $19
+                      Add 20+ real architectural case studies, diagrams, and AST test cases for just
+                      $19
                     </p>
                   </div>
                 </div>
@@ -328,7 +334,7 @@ export default function CartPage() {
                     })
                   }
                   disabled={addAddonMutation.isPending}
-                  className="rounded-xl border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 shrink-0 font-extrabold text-xs flex items-center gap-1.5"
+                  className="w-full sm:w-auto min-h-[44px] rounded-xl border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 shrink-0 font-extrabold text-xs flex items-center justify-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{addAddonMutation.isPending ? 'Adding...' : 'Add for $19'}</span>
@@ -339,8 +345,8 @@ export default function CartPage() {
               <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-800/40 flex items-center gap-3 text-xs text-indigo-900 dark:text-indigo-200 font-medium">
                 <Award className="w-5 h-5 text-indigo-500 shrink-0" />
                 <span>
-                  Completing this enrollment unlocks <strong>+250 XP</strong> towards your next Scholar
-                  tier and grants direct eligibility for verified blockchain credentials.
+                  Completing this enrollment unlocks <strong>+250 XP</strong> towards your next
+                  Scholar tier and grants direct eligibility for verified blockchain credentials.
                 </span>
               </div>
             </div>
@@ -376,7 +382,9 @@ export default function CartPage() {
                   )}
 
                   <div className="border-t border-gray-100 dark:border-slate-800 pt-3 flex justify-between items-baseline">
-                    <span className="text-base font-black text-gray-900 dark:text-white">Total</span>
+                    <span className="text-base font-black text-gray-900 dark:text-white">
+                      Total
+                    </span>
                     <div className="text-right">
                       <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                         ${(cart?.total ?? 0).toFixed(2)}
@@ -409,7 +417,7 @@ export default function CartPage() {
                       type="submit"
                       variant="outline"
                       disabled={couponMutation.isPending || !couponInput.trim()}
-                      className="px-4 text-xs font-bold rounded-xl"
+                      className="px-4 text-xs font-bold rounded-xl min-h-[44px]"
                     >
                       {couponMutation.isPending ? 'Applying...' : 'Apply'}
                     </Button>
@@ -444,7 +452,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedGateway('razorpay')}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                      className={`min-h-[44px] flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
                         selectedGateway === 'razorpay'
                           ? 'border-primary-500 bg-primary-50/70 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 shadow-sm'
                           : 'border-gray-200 dark:border-slate-800 text-gray-600 dark:text-gray-400 hover:border-gray-300'
@@ -455,7 +463,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedGateway('stripe')}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                      className={`min-h-[44px] flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
                         selectedGateway === 'stripe'
                           ? 'border-primary-500 bg-primary-50/70 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 shadow-sm'
                           : 'border-gray-200 dark:border-slate-800 text-gray-600 dark:text-gray-400 hover:border-gray-300'

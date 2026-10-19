@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.8% </span>
+                <span class="strong">62.6% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>76/121</span>
+                <span class='fraction'>77/123</span>
             </div>
         
             
@@ -446,7 +446,9 @@
 <a name='L381'></a><a href='#L381'>381</a>
 <a name='L382'></a><a href='#L382'>382</a>
 <a name='L383'></a><a href='#L383'>383</a>
-<a name='L384'></a><a href='#L384'>384</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -596,10 +598,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -764,6 +766,8 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -832,7 +836,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express'
 import { prisma } from '../prismaClient'
 import { asyncHandler } from '../utils/errorHandler'
-import { sendSuccess, sendNotFound } from '../utils/responseHelper'
+import { sendSuccess, sendNotFound, sendValidationError } from '../utils/responseHelper'
 import { getPaginationParams, createPaginatedResponse } from '../utils/pagination'
 import { cacheService } from '../services/CacheService'
 import { Prisma } from '@prisma/client'
@@ -978,13 +982,13 @@ export const runSolution = asyncHandler(async (req: Request, res: Response): Pro
     'go',
     'rust',
   ])
+  const resolvedLanguage = typeof language === 'string' &amp;&amp; language ? language : <span class="branch-1 cbranch-no" title="branch not covered" >'javascript'</span>
   <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof code !== 'string' || code.length === 0 || code.length &gt; 100_000) {
-<span class="cstat-no" title="statement not covered" >    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })</span>
+<span class="cstat-no" title="statement not covered" >    sendValidationError(res, 'Code must be 1-100000 chars')</span>
 <span class="cstat-no" title="statement not covered" >    return</span>
   }
-  const resolvedLanguage = typeof language === 'string' &amp;&amp; language ? language : <span class="branch-1 cbranch-no" title="branch not covered" >'javascript'</span>
   <span class="missing-if-branch" title="if path not taken" >I</span>if (resolvedLanguage.length &gt; 32 || !ALLOWED_LANGUAGES.has(resolvedLanguage.toLowerCase())) {
-<span class="cstat-no" title="statement not covered" >    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })</span>
+<span class="cstat-no" title="statement not covered" >    sendValidationError(res, 'Unsupported language')</span>
 <span class="cstat-no" title="statement not covered" >    return</span>
   }
 &nbsp;
@@ -1085,7 +1089,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     'rust',
   ])
   <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof code !== 'string' || code.length === 0 || code.length &gt; 100_000) {
-<span class="cstat-no" title="statement not covered" >    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Code must be 1-100000 chars' })</span>
+<span class="cstat-no" title="statement not covered" >    sendValidationError(res, 'Code must be 1-100000 chars')</span>
 <span class="cstat-no" title="statement not covered" >    return</span>
   }
   <span class="missing-if-branch" title="if path not taken" >I</span>if (
@@ -1094,7 +1098,7 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
     language.length &gt; 32 ||
     !ALLOWED_SUBMIT_LANGUAGES.has(language.toLowerCase())
   ) {
-<span class="cstat-no" title="statement not covered" >    sendSuccess(res, { status: 'VALIDATION_ERROR', message: 'Unsupported language' })</span>
+<span class="cstat-no" title="statement not covered" >    sendValidationError(res, 'Unsupported language')</span>
 <span class="cstat-no" title="statement not covered" >    return</span>
   }
 &nbsp;
@@ -1145,12 +1149,14 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
 &nbsp;
   const executionTime = executionResult.executionTime
   const memoryUsed = executionResult.memoryUsed
-  const score =
-    status === 'ACCEPTED'
-      ? problem.points
-      : Math.floor(
-          problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
-        )
+   const score =
+     status === 'ACCEPTED'
+       ? problem.points
+       : executionResult.testCasesTotal === 0
+         ? <span class="branch-0 cbranch-no" title="branch not covered" >0</span>
+         : Math.floor(
+             problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
+           )
 &nbsp;
   const result = await prisma.$transaction(async (tx: any) =&gt; {
     const submission = await tx.problemSubmission.create({
@@ -1219,7 +1225,7 @@ export const getSubmissions = asyncHandler(async (req: Request, res: Response): 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-13T11:51:31.996Z
+                at 2026-10-19T06:43:59.382Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

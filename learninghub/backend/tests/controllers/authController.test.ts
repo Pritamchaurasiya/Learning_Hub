@@ -471,6 +471,7 @@ describe('AuthController', () => {
       ;(mockReq as any).user = { userId: user.id, email: user.email, role: user.role }
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(user)
       ;(prisma.userAchievement.findMany as jest.Mock).mockResolvedValue([])
+      ;(prisma.questionBookmark.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.user.update as jest.Mock).mockResolvedValue(user)
 
       await me(mockReq as any, mockRes as any, jest.fn())

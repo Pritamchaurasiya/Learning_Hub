@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { PrefetchNavLink } from './PrefetchNavLink'
+import { prefetchRoute } from '../utils/routePrefetchRegistry'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
@@ -15,6 +17,7 @@ import {
   Trophy,
   BellRing,
   Settings,
+  User,
   X,
   ChevronRight,
   Sparkles,
@@ -101,6 +104,15 @@ const moreFeatureItems = [
     color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/40',
   },
   {
+    to: '/profile',
+    icon: User,
+    label: 'Profile & Portfolio',
+    desc: 'XP, stats, badges & credentials',
+    badge: 'XP',
+    badgeColor: 'bg-primary-500/10 text-primary-500 border-primary-500/20',
+    color: 'text-primary-500 bg-primary-50 dark:bg-primary-950/40',
+  },
+  {
     to: '/settings',
     icon: Settings,
     label: 'Account Settings',
@@ -114,6 +126,10 @@ const moreFeatureItems = [
 export default function MobileNav() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const isAuthenticated = useStore(s => s.auth.isAuthenticated)
+  const user = useStore(s => s.auth.user)
+  const userXp = useStore(s => s.progress?.xp ?? 0)
+  const userLevel = useStore(s => s.progress?.level ?? 1)
+  const userStreak = useStore(s => s.progress?.streak ?? 0)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -145,7 +161,7 @@ export default function MobileNav() {
         <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/30 shadow-[0_-4px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-4px_30px_rgb(0,0,0,0.3)]" />
         <div className="relative flex items-center justify-around gap-0.5 px-1 py-1 h-[68px] overflow-hidden">
           {publicNavItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
+            <PrefetchNavLink
               key={to}
               to={to}
               className={({ isActive }) =>
@@ -191,7 +207,7 @@ export default function MobileNav() {
                   </span>
                 </>
               )}
-            </NavLink>
+            </PrefetchNavLink>
           ))}
         </div>
       </nav>
@@ -252,6 +268,57 @@ export default function MobileNav() {
                 </div>
               </div>
 
+              {/* Authenticated User Quick Card */}
+              {isAuthenticated && user && (
+                <div className="mx-4 mt-3 p-3 rounded-2xl bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-transparent border border-primary-200/50 dark:border-primary-800/40 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">
+                      {(user.username || 'U')[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                        {user.username}
+                      </p>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+                        <span className="font-semibold text-purple-600 dark:text-purple-400">
+                          Lv.{userLevel}
+                        </span>
+                        <span>•</span>
+                        <span>{userXp} XP</span>
+                        {userStreak > 0 && (
+                          <>
+                            <span>•</span>
+                            <span className="text-amber-500 font-semibold">{userStreak}🔥</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false)
+                        navigate('/profile')
+                      }}
+                      className="px-2.5 py-1 text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-sm transition-colors"
+                    >
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false)
+                        navigate('/settings')
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      title="Settings"
+                      aria-label="Settings"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Grid of Features */}
               <div className="overflow-y-auto px-4 py-4 space-y-2 max-h-[calc(85vh-100px)]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -261,6 +328,8 @@ export default function MobileNav() {
                     return (
                       <button
                         key={item.to}
+                        onPointerEnter={() => prefetchRoute(item.to)}
+                        onTouchStart={() => prefetchRoute(item.to)}
                         onClick={() => {
                           setDrawerOpen(false)
                           navigate(item.to)
@@ -317,7 +386,7 @@ export default function MobileNav() {
 
         <div className="relative flex items-center justify-around gap-0.5 px-1 py-1 h-[68px] overflow-hidden">
           {authPrimaryNavItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
+            <PrefetchNavLink
               key={to}
               to={to}
               className={({ isActive }) =>
@@ -373,7 +442,7 @@ export default function MobileNav() {
                   )}
                 </>
               )}
-            </NavLink>
+            </PrefetchNavLink>
           ))}
 
           {/* More Launcher Button */}

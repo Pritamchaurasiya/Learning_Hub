@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import AnimatedPage from '../components/AnimatedPage'
+import { SEO } from '../components/SEO'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
@@ -141,9 +142,9 @@ export default function AchievementsPage() {
               <Skeleton className="h-3 w-full mb-2" />
               <Skeleton className="h-2.5 w-full rounded-full" />
             </div>
-            <div className="flex gap-8">
+            <div className="flex gap-4 sm:gap-8">
               {[1, 2, 3].map(i => (
-                <div key={i} className="text-center">
+                <div key={`achieve-stat-${i}`} className="text-center">
                   <Skeleton className="h-8 w-16 mx-auto mb-1" />
                   <Skeleton className="h-3 w-10 mx-auto" />
                 </div>
@@ -153,8 +154,7 @@ export default function AchievementsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <div key={i} className="card-static p-5">
+            <div key={`achieve-card-${i}`} className="card-static p-5">
               <div className="flex items-start gap-4">
                 <Skeleton className="w-14 h-14 rounded-xl shrink-0" />
                 <div className="flex-1">
@@ -194,6 +194,10 @@ export default function AchievementsPage() {
   if (totalCount === 0) {
     return (
       <AnimatedPage className="space-y-6">
+        <SEO
+          title="Achievements & Prestige - LearningHub"
+          description="View unlocked learning badges, cognitive mastery tiers, and XP milestones."
+        />
         <div className="text-center py-20 card-static border-dashed border-2 border-gray-200 dark:border-gray-700">
           <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Award className="w-10 h-10 text-gray-200 dark:text-gray-700" />
@@ -210,6 +214,10 @@ export default function AchievementsPage() {
 
   return (
     <AnimatedPage className="space-y-6 max-w-7xl mx-auto pb-12">
+      <SEO
+        title="Achievements & Prestige - LearningHub"
+        description="View unlocked learning badges, cognitive mastery tiers, and XP milestones."
+      />
       {/* Top Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -305,9 +313,7 @@ export default function AchievementsPage() {
               <p className="text-2xl sm:text-3xl font-black text-purple-400 tabular-nums group-hover:scale-105 transition-transform flex items-center justify-center gap-1">
                 {progress.level}
               </p>
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                Level
-              </p>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Level</p>
             </button>
 
             <div className="pl-6 sm:pl-8">
@@ -354,7 +360,9 @@ export default function AchievementsPage() {
 
         <div className="flex items-center gap-2 text-xs text-slate-400 pl-2">
           <Shield className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Streak Loss Shield: <strong>Armed</strong></span>
+          <span>
+            Streak Loss Shield: <strong>Armed</strong>
+          </span>
         </div>
       </div>
 
@@ -464,7 +472,8 @@ export default function AchievementsPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Maintain an unbroken 14-day study streak to decrypt this secret milestone and claim +500 XP bonus loot.
+              Maintain an unbroken 14-day study streak to decrypt this secret milestone and claim
+              +500 XP bonus loot.
             </p>
             <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-purple-400">
               <span>Decryption: {progress.streak} / 14 Days</span>
