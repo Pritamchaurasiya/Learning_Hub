@@ -69,6 +69,24 @@ const blitzQuestions = [
     answer: 2,
     subject: 'Coding',
   },
+  {
+    q: 'What is the pH of a neutral aqueous solution at 25°C?',
+    options: ['0', '7', '14', '1'],
+    answer: 1,
+    subject: 'Chemistry',
+  },
+  {
+    q: 'Which layer of the OSI model handles end-to-end flow control (e.g. TCP)?',
+    options: ['Network', 'Data Link', 'Transport', 'Session'],
+    answer: 2,
+    subject: 'CS Core',
+  },
+  {
+    q: 'If 5 machines make 5 widgets in 5 minutes, how many minutes do 100 machines take to make 100 widgets?',
+    options: ['5 minutes', '100 minutes', '20 minutes', '1 minute'],
+    answer: 0,
+    subject: 'Aptitude',
+  },
 ]
 
 export const TestBlitzModal = memo(function TestBlitzModal({
@@ -185,6 +203,7 @@ export const TestBlitzModal = memo(function TestBlitzModal({
 
             <button
               onClick={onClose}
+              aria-label="Close"
               className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />

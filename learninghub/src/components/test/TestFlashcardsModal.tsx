@@ -57,6 +57,25 @@ const flashcards = [
       '1. Mutual Exclusion\n2. Hold and Wait\n3. No Preemption\n4. Circular Wait. Eliminating any one condition prevents system deadlocks.',
     interval: '6 days',
   },
+  {
+    id: 'fc-6',
+    subject: 'Chemistry',
+    topic: 'Reaction Kinetics & SN1/SN2',
+    question:
+      'What is the rate-determining step in an SN1 substitution reaction, and what stereochemical outcome does it produce?',
+    answer:
+      'The rate-determining step is leaving group departure to form a planar carbocation intermediate. Nucleophilic attack from either face creates an equimolar racemic mixture of enantiomers (racemization).',
+    interval: '3 days',
+  },
+  {
+    id: 'fc-7',
+    subject: 'Aptitude',
+    topic: 'Combinatorics & Probability',
+    question: 'What is a derangement and what is the subfactorial formula for deranging n objects?',
+    answer:
+      'A derangement is a permutation where no element appears in its original position. Formula: !n = n! × Σ [(-1)^k / k!] for k = 0 to n. For 4 objects: !4 = 9.',
+    interval: '5 days',
+  },
 ]
 
 export const TestFlashcardsModal = memo(function TestFlashcardsModal({
@@ -112,6 +131,7 @@ export const TestFlashcardsModal = memo(function TestFlashcardsModal({
 
           <button
             onClick={onClose}
+            aria-label="Close"
             className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
