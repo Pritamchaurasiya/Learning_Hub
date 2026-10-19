@@ -421,7 +421,7 @@ export default function CourseDetailsPage() {
               <h3 className="text-base font-black text-gray-900 dark:text-white">Requirements</h3>
               <ul className="list-disc list-inside space-y-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
                 {course.prerequisites.map((req, i) => (
-                  <li key={i}>{req}</li>
+                  <li key={`prereq-${i}`}>{req}</li>
                 ))}
               </ul>
             </Card>
@@ -450,7 +450,7 @@ export default function CourseDetailsPage() {
             <Button
               onClick={handleEnroll}
               isLoading={enrolling}
-              className="w-full py-3.5 text-sm font-black rounded-2xl shadow-lg shadow-primary-500/25"
+              className="w-full py-3.5 text-sm font-black rounded-2xl shadow-lg shadow-primary-500/25 min-h-[44px]"
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
               {course.is_enrolled ? 'Resume Course' : 'Enroll Now'}
@@ -459,7 +459,7 @@ export default function CourseDetailsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleBookmark}
-                className="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Bookmark
                   className={`w-4 h-4 ${isBookmarked ? 'fill-primary-500 text-primary-500' : ''}`}
@@ -471,8 +471,9 @@ export default function CourseDetailsPage() {
                   void navigator.clipboard.writeText(window.location.href)
                   addToast({ message: 'Course link copied to clipboard!', type: 'success' })
                 }}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
+                className="min-h-[44px] min-w-[44px] py-2.5 px-4 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
                 title="Share Course"
+                aria-label="Share Course"
               >
                 <Share2 className="w-4 h-4" />
               </button>
@@ -497,6 +498,33 @@ export default function CourseDetailsPage() {
             </div>
           </Card>
         </div>
+      </div>
+
+      {/* Mobile Sticky Bottom Enrollment Bar (Small viewports) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-2xl flex items-center justify-between gap-4">
+        <div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-black text-gray-900 dark:text-white">
+              {course.price === 0 ? 'Free' : `$${course.price}`}
+            </span>
+            {course.original_price && (
+              <span className="text-xs line-through text-gray-400 font-semibold">
+                ${course.original_price}
+              </span>
+            )}
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+            Full Lifetime Access
+          </p>
+        </div>
+        <Button
+          onClick={handleEnroll}
+          isLoading={enrolling}
+          className="flex-1 max-w-[200px] min-h-[44px] rounded-xl font-black text-xs"
+          rightIcon={<ArrowRight className="w-4 h-4" />}
+        >
+          {course.is_enrolled ? 'Resume' : 'Enroll Now'}
+        </Button>
       </div>
     </AnimatedPage>
   )

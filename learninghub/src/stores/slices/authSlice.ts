@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand'
 import { fetchApi, clearTokens } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import { useLearningContextStore } from '../useLearningContextStore'
+import { clearWsAuthToken } from '../../services/examStationWebSocketService'
 import type { UserPreferencePayload } from '../../types/learningContext'
 import type { AppState, AuthSlice } from '../types'
 
@@ -61,6 +62,8 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     }
     // clearTokens expires cookies and clears any legacy localStorage
     await clearTokens()
+    // Clear in-memory WebSocket auth token
+    clearWsAuthToken()
     useLearningContextStore.getState().clearContext()
     set({ auth: { isAuthenticated: false, user: null, isHydrated: true } })
     if (typeof window !== 'undefined') {

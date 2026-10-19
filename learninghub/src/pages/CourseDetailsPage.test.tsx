@@ -89,7 +89,7 @@ describe('CourseDetailsPage', () => {
       expect(screen.getByText('Full-Stack TypeScript & React Mastery')).toBeInTheDocument()
       expect(screen.getByText(/Alex Mercer/i)).toBeInTheDocument()
       expect(screen.getByText(/Module 1: Foundations/i)).toBeInTheDocument()
-      expect(screen.getByText('Enroll Now')).toBeInTheDocument()
+      expect(screen.getAllByText('Enroll Now').length).toBeGreaterThanOrEqual(1)
     })
   })
 

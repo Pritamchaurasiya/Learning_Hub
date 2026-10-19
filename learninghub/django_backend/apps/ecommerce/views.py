@@ -1,25 +1,42 @@
-import secrets
 import hashlib
 import json
 import os
+import secrets
 import sys
 import uuid
-import stripe
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status
-from django.conf import settings
-from django.utils import timezone
-from django.db import transaction
 from decimal import Decimal
-from apps.core.responses import success_response, error_response
+
+import stripe
+from django.conf import settings
+from django.db import transaction
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
+
 from apps.core.models import AuditLog
+from apps.core.responses import error_response, success_response
 from apps.courses.models import Course, Enrollment
-from .models import Cart, CartItem, Coupon, Certificate, Web3Profile, Contest, Order, OrderItem, PaymentTransaction
-from .serializers import (
-    CartSerializer, CertificateSerializer, Web3ProfileSerializer,
-    ContestSerializer, OrderSerializer
+
+from .models import (
+    Cart,
+    CartItem,
+    Certificate,
+    Contest,
+    Coupon,
+    Order,
+    OrderItem,
+    PaymentTransaction,
+    Web3Profile,
 )
+from .serializers import (
+    CartSerializer,
+    CertificateSerializer,
+    ContestSerializer,
+    OrderSerializer,
+    Web3ProfileSerializer,
+)
+
 
 def get_or_create_cart(request):
     if request.user.is_authenticated:
@@ -438,8 +455,8 @@ class PaymentWebhookView(APIView):
     permission_classes = [AllowAny]  # Webhook comes from gateway, not user
 
     def post(self, request):
-        import hmac
         import hashlib
+        import hmac
 
         # SECURITY: Verify webhook signature
         signature = (

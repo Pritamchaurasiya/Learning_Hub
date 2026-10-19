@@ -9,7 +9,26 @@
  * - Instantaneous proctoring telemetry incident dispatch
  * - Remote proctor event listeners (warnings, time extensions, terminations)
  * - Exponential backoff reconnection with graceful HTTP fallback
+ *
+ * SECURITY: Uses in-memory token storage for WebSocket auth (not localStorage).
+ * Main auth tokens are stored in httpOnly cookies set by backend.
  */
+
+// In-memory token storage for WebSocket connections (not persisted to localStorage)
+// This is set by the auth flow after successful login.
+let wsAuthToken: string | null = null
+
+export function setWsAuthToken(token: string | null): void {
+  wsAuthToken = token
+}
+
+export function getWsAuthToken(): string | null {
+  return wsAuthToken
+}
+
+export function clearWsAuthToken(): void {
+  wsAuthToken = null
+}
 
 export interface ExamStationSocketHandlers {
   onConnectionEstablished?: (payload: {
@@ -78,7 +97,9 @@ class ExamStationWebSocketService {
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const host = window.location.host || 'localhost:8000'
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || ''
+      // Use in-memory token (set after login) instead of localStorage.
+      // Backend may also read httpOnly cookies from WebSocket handshake.
+      const token = getWsAuthToken()
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : ''
       const wsUrl = `${protocol}//${host}/ws/test/attempts/${this.attemptId}/${tokenParam}`
 

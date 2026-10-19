@@ -10,8 +10,8 @@ from rest_framework.test import APIClient
 
 from apps.courses.models import Course, Enrollment
 from apps.ecommerce.models import Order, OrderItem, PaymentTransaction
-from apps.users.models import User
 from apps.ecommerce.stripe_service import StripeService
+from apps.users.models import User
 
 
 @pytest.mark.django_db

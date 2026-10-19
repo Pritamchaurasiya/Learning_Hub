@@ -18,16 +18,16 @@ from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
-from apps.users.models import User
-from apps.courses.models import Course, CourseBookmark, Chapter, Lesson
+from apps.ai_tutor.engine import AITutorEngine, SpacedRepetitionEngine
+from apps.courses.models import Chapter, Course, CourseBookmark, Lesson
 from apps.ecommerce.models import Order
-from apps.social.models import Notification
 from apps.problems.models import Problem, TestCase
 from apps.problems.sandbox import CodeSandboxService
-from apps.ai_tutor.engine import AITutorEngine, SpacedRepetitionEngine
+from apps.social.models import Notification
+from apps.users.models import User
 
 
 @pytest.mark.asyncio
@@ -46,8 +46,9 @@ async def test_websocket_message_cooldown():
     (REST_FRAMEWORK DEFAULT_THROTTLE_RATES). Current setting has anon 100/min,
     leaderboard 60/min, notifications 30/min — all satisfy 50/IP/min intent.
     """
-    from django.conf import settings
     from channels.testing import WebsocketCommunicator
+    from django.conf import settings
+
     from learninghub_server.asgi import application
 
     # Inspect consumers.py source for messageCooldown

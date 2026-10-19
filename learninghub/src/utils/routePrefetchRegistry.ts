@@ -158,7 +158,7 @@ export function prefetchRoute(to: string, queryClient?: QueryClient | null): voi
   config.loadComponent().catch(err => {
     // If dynamic import failed, remove from set so it can retry on click
     prefetchedRoutes.delete(path)
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
       console.warn(`[RoutePrefetch] Failed to preload chunk for ${path}:`, err)
     }
   })

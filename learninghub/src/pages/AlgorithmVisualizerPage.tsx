@@ -113,6 +113,9 @@ export default function AlgorithmVisualizerPage() {
     const next = !soundEnabled
     setSoundEnabled(next)
     SoundSynth.isMuted = !next
+    if (next) {
+      SoundSynth.playNote(300, 1000)
+    }
   }
 
   return (
@@ -145,7 +148,8 @@ export default function AlgorithmVisualizerPage() {
               variant={soundEnabled ? 'primary' : 'outline'}
               size="sm"
               onClick={toggleSound}
-              className="gap-2"
+              className="min-h-[44px] px-4 gap-2 font-bold"
+              aria-label={soundEnabled ? 'Mute audio feedback' : 'Enable audio feedback'}
             >
               {soundEnabled ? (
                 <Volume2 className="w-4 h-4 text-emerald-400" />
@@ -172,7 +176,7 @@ export default function AlgorithmVisualizerPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabMode)}
-                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
+                className={`flex items-center gap-2.5 px-4 py-2.5 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
                   isActive
                     ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-md shadow-black/5 dark:shadow-none'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -341,19 +345,19 @@ function SortingVisualizerSection() {
                 variant={algorithm === a.id ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setAlgorithm(a.id)}
-                className="font-bold text-xs"
+                className="font-bold text-xs min-h-[40px] px-3.5"
               >
                 {a.name}
               </Button>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Button
               variant="outline"
               size="sm"
               onClick={() => generateNewArray(distribution)}
-              className="gap-1.5 text-xs font-semibold"
+              className="gap-1.5 text-xs font-semibold min-h-[40px] px-3"
             >
               <Shuffle className="w-3.5 h-3.5" />
               Regenerate
@@ -365,7 +369,7 @@ function SortingVisualizerSection() {
                 setIsPlaying(false)
                 setFrameIndex(0)
               }}
-              className="gap-1.5 text-xs font-semibold"
+              className="gap-1.5 text-xs font-semibold min-h-[40px] px-3"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset
@@ -374,7 +378,7 @@ function SortingVisualizerSection() {
               variant="primary"
               size="sm"
               onClick={() => setIsPlaying(!isPlaying)}
-              className="gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white min-w-[90px]"
+              className="gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white min-w-[90px] min-h-[40px] px-3.5"
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               {isPlaying ? 'Pause' : 'Start'}
@@ -387,7 +391,7 @@ function SortingVisualizerSection() {
                 setIsPlaying(false)
                 setFrameIndex(p => Math.max(0, p - 1))
               }}
-              className="p-2"
+              className="min-h-[40px] min-w-[40px] p-2 flex items-center justify-center"
               title="Step backward 1 frame"
               aria-label="Step backward 1 frame"
             >
@@ -401,7 +405,7 @@ function SortingVisualizerSection() {
                 setIsPlaying(false)
                 setFrameIndex(p => Math.min(frames.length - 1, p + 1))
               }}
-              className="p-2"
+              className="min-h-[40px] min-w-[40px] p-2 flex items-center justify-center"
               title="Step forward 1 frame"
               aria-label="Step forward 1 frame"
             >
@@ -426,7 +430,7 @@ function SortingVisualizerSection() {
                 setDistribution(nextDist)
                 generateNewArray(nextDist)
               }}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
+              className={`min-h-[36px] px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center ${
                 distribution === d.id
                   ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -751,7 +755,7 @@ function PathfindingVisualizerSection() {
                   setAlgo(a.id as 'dijkstra' | 'astar' | 'bfs')
                   clearPathOnly()
                 }}
-                className="text-xs font-bold"
+                className="text-xs font-bold min-h-[40px] px-3.5"
               >
                 {a.name}
               </Button>
@@ -763,7 +767,7 @@ function PathfindingVisualizerSection() {
               variant={drawMode === 'wall' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setDrawMode('wall')}
-              className="text-xs"
+              className="text-xs min-h-[40px] px-3"
             >
               🧱 Walls
             </Button>
@@ -771,7 +775,7 @@ function PathfindingVisualizerSection() {
               variant={drawMode === 'weight' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setDrawMode('weight')}
-              className="text-xs"
+              className="text-xs min-h-[40px] px-3"
             >
               ⚖️ Weights (5x)
             </Button>
@@ -779,11 +783,16 @@ function PathfindingVisualizerSection() {
               variant="outline"
               size="sm"
               onClick={generateMaze}
-              className="text-xs font-semibold"
+              className="text-xs font-semibold min-h-[40px] px-3"
             >
               🎲 Random Maze
             </Button>
-            <Button variant="outline" size="sm" onClick={clearBoard} className="text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearBoard}
+              className="text-xs min-h-[40px] px-3"
+            >
               <Trash2 className="w-3.5 h-3.5 mr-1" />
               Clear
             </Button>
@@ -791,7 +800,7 @@ function PathfindingVisualizerSection() {
               variant="primary"
               size="sm"
               onClick={startPathfinding}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 min-h-[40px] px-4"
             >
               <Play className="w-3.5 h-3.5" />
               Visualize Path
@@ -801,7 +810,7 @@ function PathfindingVisualizerSection() {
       </Card>
 
       <Card
-        className="p-4 bg-gray-950 border-gray-800 shadow-xl overflow-x-auto select-none"
+        className="p-4 bg-gray-950 border-gray-800 shadow-xl overflow-x-auto select-none custom-scrollbar"
         onMouseDown={() => setIsMouseDown(true)}
         onMouseUp={() => setIsMouseDown(false)}
         onMouseLeave={() => setIsMouseDown(false)}

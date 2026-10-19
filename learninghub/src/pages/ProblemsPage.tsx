@@ -364,7 +364,7 @@ export default function ProblemsPage() {
             onClick={handlePickRandom}
             isLoading={isPickingRandom}
             leftIcon={<Shuffle className="w-4 h-4 text-emerald-500" />}
-            className="border-emerald-500/30 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold"
+            className="min-h-[44px] border-emerald-500/30 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold"
             title="Pick a random challenge based on current filters"
           >
             Pick One
@@ -373,7 +373,7 @@ export default function ProblemsPage() {
             variant="primary"
             onClick={() => navigate('/visualizer')}
             leftIcon={<Sparkles className="w-4 h-4" />}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 font-bold"
+            className="min-h-[44px] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 font-bold"
           >
             Visualizer Studio
           </Button>
@@ -381,6 +381,7 @@ export default function ProblemsPage() {
             variant="outline"
             onClick={() => navigate('/contest')}
             leftIcon={<Trophy className="w-4 h-4 text-amber-500" />}
+            className="min-h-[44px] font-bold"
           >
             Compete
           </Button>
@@ -389,7 +390,7 @@ export default function ProblemsPage() {
             size="sm"
             onClick={() => setShowKeyboardShortcuts(true)}
             leftIcon={<Keyboard className="w-4 h-4" />}
-            className="hidden sm:inline-flex"
+            className="min-h-[44px] hidden sm:inline-flex"
             aria-label="Keyboard shortcuts"
           >
             Shortcuts (?)
@@ -484,21 +485,29 @@ export default function ProblemsPage() {
                 >
                   {dailyChallengeData.problem.difficulty}
                 </span>
-                {(dailyChallengeData.problem.tags || []).slice(0, 3).map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-gray-300"
-                  >
-                    {typeof t === 'string' ? t : t.name}
-                  </span>
-                ))}
+                {(dailyChallengeData.problem.tags || []).slice(0, 3).map((t, idx) => {
+                  const tagObj =
+                    typeof t === 'object' && t !== null
+                      ? (t as { id?: string; name?: string })
+                      : null
+                  const tagName = tagObj ? tagObj.name || String(t) : String(t)
+                  const tagKey = tagObj?.id || tagName || `tag-${idx}`
+                  return (
+                    <span
+                      key={tagKey}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-gray-300"
+                    >
+                      {tagName}
+                    </span>
+                  )
+                })}
               </div>
             </div>
-            <div className="shrink-0 flex items-center gap-3">
+            <div className="shrink-0 flex items-center gap-3 w-full sm:w-auto">
               <Button
                 variant="primary"
                 onClick={() => navigate(`/problem/${dailyChallengeData.problem.slug}`)}
-                className="bg-amber-500 hover:bg-amber-400 text-gray-950 font-black shadow-lg shadow-amber-500/25 px-6 h-12 text-sm gap-2"
+                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-gray-950 font-black shadow-lg shadow-amber-500/25 px-6 min-h-[44px] h-12 text-sm gap-2"
               >
                 Solve Challenge <ArrowRight className="w-4 h-4" />
               </Button>
@@ -525,7 +534,7 @@ export default function ProblemsPage() {
                 key={track.id}
                 onClick={() => setSelectedTrack(track.slug)}
                 className={cn(
-                  'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border',
+                  'px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-bold transition-all flex items-center gap-2 border',
                   isActive
                     ? 'bg-primary-600 text-white border-primary-500 shadow-md shadow-primary-500/25 scale-[1.02]'
                     : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-primary-500/40'
@@ -535,7 +544,7 @@ export default function ProblemsPage() {
                 <span>{track.title}</span>
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded-md font-mono',
+                    'text-[10px] px-1.5 py-0.5 rounded-md font-mono',
                     isActive
                       ? 'bg-white/20 text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
@@ -559,7 +568,7 @@ export default function ProblemsPage() {
                 key={topic.id}
                 onClick={() => setSelectedTopic(topic.id)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  'px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all inline-flex items-center shrink-0',
                   isActive
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -586,12 +595,13 @@ export default function ProblemsPage() {
                     placeholder="Filter by title or tags..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 outline-none text-gray-900 dark:text-white"
+                    className="w-full pl-10 pr-4 py-2.5 min-h-[44px] bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 outline-none text-gray-900 dark:text-white"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
+                      aria-label="Clear search"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -602,7 +612,7 @@ export default function ProblemsPage() {
                 <button
                   type="button"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="sm:hidden flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="sm:hidden flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300"
                   aria-label="Toggle filters"
                 >
                   <Filter className="w-4 h-4" />
@@ -620,7 +630,7 @@ export default function ProblemsPage() {
                   <select
                     value={selectedDifficulty}
                     onChange={e => setSelectedDifficulty(e.target.value as any)}
-                    className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                    className="bg-gray-50 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-xl px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
                   >
                     <option value="ALL">All Levels</option>
                     <option value="EASY">Beginner</option>
@@ -630,7 +640,7 @@ export default function ProblemsPage() {
                   <select
                     value={selectedStatus}
                     onChange={e => setSelectedStatus(e.target.value as any)}
-                    className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                    className="bg-gray-50 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-xl px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
                   >
                     <option value="ALL">All Status</option>
                     <option value="SOLVED">Solved</option>
@@ -639,7 +649,7 @@ export default function ProblemsPage() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as any)}
-                    className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
+                    className="bg-gray-50 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-xl px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-primary-500/50 outline-none cursor-pointer"
                   >
                     <option value="default">Sort: Default</option>
                     <option value="difficulty-asc">Difficulty: Easy first</option>
@@ -650,7 +660,7 @@ export default function ProblemsPage() {
                   <button
                     onClick={() => setOnlyBookmarked(!onlyBookmarked)}
                     className={cn(
-                      'p-2 rounded-xl transition-all border',
+                      'p-2.5 min-h-[44px] min-w-[44px] rounded-xl transition-all border flex items-center justify-center',
                       onlyBookmarked
                         ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-sm'
                         : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent hover:text-amber-400'
@@ -665,7 +675,7 @@ export default function ProblemsPage() {
                     <button
                       onClick={() => setViewMode('grid')}
                       className={cn(
-                        'p-1.5 rounded-lg transition-colors',
+                        'min-h-[40px] min-w-[40px] p-2 rounded-lg transition-colors flex items-center justify-center',
                         viewMode === 'grid'
                           ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                           : 'text-gray-400 hover:text-gray-200'
@@ -678,7 +688,7 @@ export default function ProblemsPage() {
                     <button
                       onClick={() => setViewMode('table')}
                       className={cn(
-                        'p-1.5 rounded-lg transition-colors',
+                        'min-h-[40px] min-w-[40px] p-2 rounded-lg transition-colors flex items-center justify-center',
                         viewMode === 'table'
                           ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                           : 'text-gray-400 hover:text-gray-200'
@@ -695,7 +705,7 @@ export default function ProblemsPage() {
           </Card>
 
           {/* Results Display */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {isProblemsLoading ? (
               <motion.div
                 key="loading"
@@ -705,7 +715,7 @@ export default function ProblemsPage() {
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
                 {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Skeleton key={i} className="h-40 rounded-2xl w-full" />
+                  <Skeleton key={`prob-skel-${i}`} className="h-40 rounded-2xl w-full" />
                 ))}
               </motion.div>
             ) : isProblemsError ? (

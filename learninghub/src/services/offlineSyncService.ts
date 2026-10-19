@@ -8,6 +8,7 @@
 
 import { setItem, getItem, removeItem, keys } from '../utils/storage'
 import { logger } from '../utils/logger'
+import { fetchApi } from '../utils/api'
 
 export interface PendingSyncItem {
   id: string
@@ -119,12 +120,10 @@ class OfflineSyncService {
 
       for (const item of items) {
         try {
-          const response = await fetch(item.endpoint, {
+          // Use fetchApi which automatically includes credentials: 'include' and CSRF tokens.
+          // The backend reads auth from httpOnly cookies, so no Authorization header needed.
+          const response = await fetchApi(item.endpoint, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
-            },
             body: JSON.stringify(item.payload),
           })
 

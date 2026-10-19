@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { AlertTriangle, Star } from 'lucide-react'
 import { testsAService, TestA, TestQuestion } from '../services/testsAService'
@@ -336,25 +337,34 @@ const TestsAPage = memo(() => {
     }
   }, [attemptQueryId, setTestResults])
 
-  useEffect(() => {
-    const loadAccessAndTests = async () => {
-      try {
-        setLoading(true)
-        setHasAccess(true)
-        const response = await testsAService.getTests(filter)
-        if (response.status === 'success') {
-          setTests(response.data)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load tests')
-      } finally {
-        setLoading(false)
-      }
-    }
+  const isCatalogMode = !testId && !test.isActive && !attemptQueryId
 
-    if (!testId && !test.isActive && !attemptQueryId) {
-      void loadAccessAndTests()
-    } else if (testId && !test.isActive) {
+  const {
+    data: catalogResponse,
+    isLoading: isCatalogLoading,
+    error: catalogQueryError,
+  } = useQuery({
+    queryKey: ['tests-catalog', filter],
+    queryFn: () => testsAService.getTests(filter),
+    enabled: isCatalogMode,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  useEffect(() => {
+    if (isCatalogMode) {
+      if (catalogResponse?.status === 'success' && Array.isArray(catalogResponse.data)) {
+        setTests(catalogResponse.data)
+        setHasAccess(true)
+        setError(null)
+      } else if (catalogQueryError) {
+        setError((catalogQueryError as Error).message || 'Failed to load tests')
+      }
+      setLoading(isCatalogLoading && tests.length === 0)
+    }
+  }, [isCatalogMode, catalogResponse, catalogQueryError, isCatalogLoading, tests.length])
+
+  useEffect(() => {
+    if (testId && !test.isActive) {
       // Direct navigation to /tests-a/:testId (e.g. bookmarks or retake links)
       const loadAndStartDirectTest = async () => {
         try {
@@ -413,7 +423,7 @@ const TestsAPage = memo(() => {
         setLoading(false)
       }
     }
-  }, [filter, testId, test.isActive, test.questions.length, attemptQueryId, setTestQuestions])
+  }, [testId, test.isActive, test.questions.length, setTestQuestions])
 
   // Recover missing questions for active tests (e.g. after page reload)
   useEffect(() => {

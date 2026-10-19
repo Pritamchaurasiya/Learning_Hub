@@ -2,12 +2,21 @@ from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 from rest_framework import status
-from apps.users.models import User
-from apps.courses.models import Course, Chapter, Lesson, Enrollment, CourseReview, CourseBookmark
-from apps.problems.models import Problem, TestCase, ProblemSubmission
+from rest_framework.test import APIClient
+
+from apps.courses.models import (
+    Chapter,
+    Course,
+    CourseBookmark,
+    CourseReview,
+    Enrollment,
+    Lesson,
+)
+from apps.problems.models import Problem, ProblemSubmission, TestCase
 from apps.problems.sandbox import CodeSandboxService
+from apps.users.models import User
+
 
 @pytest.mark.django_db
 class TestCoursesAndProblems:

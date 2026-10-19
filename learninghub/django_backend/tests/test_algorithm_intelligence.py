@@ -2,15 +2,16 @@ from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 from rest_framework import status
-from apps.users.models import User
-from apps.problems.models import Problem, TestCase, ProblemSubmission
-from apps.problems.sandbox import CodeSandboxService
-from apps.problems.recommendations import DSARecommendationEngine
+from rest_framework.test import APIClient
+
 from apps.core.search import TokenizedSearchEngine
-from apps.tests_engine.models import Test, Question, Option, TestAttempt, AttemptAnswer
+from apps.problems.models import Problem, ProblemSubmission, TestCase
+from apps.problems.recommendations import DSARecommendationEngine
+from apps.problems.sandbox import CodeSandboxService
+from apps.tests_engine.models import AttemptAnswer, Option, Question, Test, TestAttempt
 from apps.tests_engine.scoring import IRTScoringEngine
+from apps.users.models import User
 
 
 @pytest.mark.django_db

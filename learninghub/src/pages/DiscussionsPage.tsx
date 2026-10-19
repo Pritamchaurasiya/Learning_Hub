@@ -23,7 +23,11 @@ import { Modal } from '../components/ui/Modal'
 import AnimatedPage from '../components/AnimatedPage'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { discussionService, type Discussion, type DiscussionReply } from '../services/discussionService'
+import {
+  discussionService,
+  type Discussion,
+  type DiscussionReply,
+} from '../services/discussionService'
 import { useStore } from '../stores/useStore'
 import { useDebounce } from '../hooks/useDebounce'
 
@@ -181,7 +185,7 @@ export default function DiscussionsPage() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['discussions'] })
+      void queryClient.invalidateQueries({ queryKey: ['discussions'] })
       addToast({ message: 'Discussion thread created successfully!', type: 'success' })
       setIsCreateModalOpen(false)
       setNewTitle('')
@@ -222,8 +226,8 @@ export default function DiscussionsPage() {
       })
     },
     onSuccess: () => {
-      refetchReplies()
-      queryClient.invalidateQueries({ queryKey: ['discussions'] })
+      void refetchReplies()
+      void queryClient.invalidateQueries({ queryKey: ['discussions'] })
       addToast({ message: 'Reply posted successfully!', type: 'success' })
       setReplyContent('')
     },
@@ -288,7 +292,7 @@ export default function DiscussionsPage() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  className={`min-h-[44px] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center ${
                     selectedCategory === category
                       ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
                       : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -304,7 +308,7 @@ export default function DiscussionsPage() {
                 value={sortBy}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={e => setSortBy(e.target.value as any)}
-                className="appearance-none pl-12 pr-8 py-4 border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 font-black text-[10px] uppercase tracking-widest cursor-pointer outline-none w-full lg:w-auto"
+                className="appearance-none pl-12 pr-8 py-4 min-h-[44px] border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 font-black text-[10px] uppercase tracking-widest cursor-pointer outline-none w-full lg:w-auto"
               >
                 <option value="recent">Chronological</option>
                 <option value="popular">Top Rated</option>
@@ -319,7 +323,7 @@ export default function DiscussionsPage() {
           <div className="space-y-6">
             {[1, 2, 3].map(i => (
               <Card
-                key={i}
+                key={`disc-skel-${i}`}
                 className="p-8 rounded-[2rem] border-none shadow-md bg-white dark:bg-gray-900"
               >
                 <div className="flex gap-6">
@@ -352,7 +356,9 @@ export default function DiscussionsPage() {
               Failed to download threads from the network.
             </p>
             <Button
-              onClick={() => refetch()}
+              onClick={() => {
+                void refetch()
+              }}
               className="px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[10px]"
             >
               Retry Connection
@@ -413,7 +419,7 @@ export default function DiscussionsPage() {
                               : `Bookmark discussion ${discussion.title}`
                           }
                           aria-pressed={Boolean(discussion.is_bookmarked)}
-                          className={`p-3 rounded-xl transition-all border ${
+                          className={`min-h-[44px] min-w-[44px] p-3 rounded-xl transition-all border flex items-center justify-center ${
                             discussion.is_bookmarked
                               ? 'bg-primary-50 border-primary-200 text-primary-600 dark:bg-primary-900/20 dark:border-primary-900/50 dark:text-primary-400'
                               : 'bg-gray-50 border-gray-100 text-gray-400 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -471,7 +477,11 @@ export default function DiscussionsPage() {
                               : `Upvote ${discussion.title}`
                           }
                           aria-pressed={discussion.user_vote === 1}
-                          className={`flex items-center gap-2 transition-colors ${discussion.user_vote === 1 ? 'text-emerald-500' : 'hover:text-gray-700 dark:hover:text-gray-200'}`}
+                          className={`min-h-[44px] px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-colors ${
+                            discussion.user_vote === 1
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-400'
+                              : 'bg-white dark:bg-gray-800/80 border-gray-200/60 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'
+                          }`}
                         >
                           <ThumbsUp
                             aria-hidden="true"
@@ -536,11 +546,13 @@ export default function DiscussionsPage() {
                 onChange={e => setNewCategory(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary-500 font-medium outline-none text-sm"
               >
-                {categories.filter(c => c !== 'All').map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+                {categories
+                  .filter(c => c !== 'All')
+                  .map(cat => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -572,11 +584,7 @@ export default function DiscussionsPage() {
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreateModalOpen(false)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setIsCreateModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -613,7 +621,9 @@ export default function DiscussionsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-900 dark:text-white">
-                    {selectedThread.author?.display_name || selectedThread.author?.username || 'Anonymous'}
+                    {selectedThread.author?.display_name ||
+                      selectedThread.author?.username ||
+                      'Anonymous'}
                   </p>
                   <p className="text-xs text-gray-400">
                     Posted {formatTime(selectedThread.created_at)}

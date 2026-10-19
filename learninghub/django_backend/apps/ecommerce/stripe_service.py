@@ -4,9 +4,10 @@ Handles all Stripe API interactions securely.
 """
 import os
 import uuid
-import stripe
 from decimal import Decimal
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
+import stripe
 from django.conf import settings
 from django.utils import timezone
 from django.utils import timezone as django_timezone

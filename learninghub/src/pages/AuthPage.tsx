@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
+import { setWsAuthToken } from '../services/examStationWebSocketService'
 import type { User as UserType } from '../types/user'
 import { Lock, Mail, Sparkles, Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
@@ -142,6 +143,8 @@ const AuthPage = memo(function AuthPage() {
         const accessToken = tokens?.token ?? tokens?.accessToken ?? ''
         const refreshToken = tokens?.refreshToken ?? tokens?.refresh ?? null
         setAuth(accessToken, refreshToken, user)
+        // Store access token in memory for WebSocket connections (not localStorage)
+        setWsAuthToken(accessToken)
         addToast({
           message: isLogin ? 'Welcome back!' : 'Account created successfully!',
           type: 'success',
@@ -183,6 +186,8 @@ const AuthPage = memo(function AuthPage() {
         const accessToken = tokens?.token ?? tokens?.accessToken ?? ''
         const refreshToken = tokens?.refreshToken ?? tokens?.refresh ?? null
         setAuth(accessToken, refreshToken, user)
+        // Store access token in memory for WebSocket connections (not localStorage)
+        setWsAuthToken(accessToken)
         addToast({
           message: 'Welcome back!',
           type: 'success',

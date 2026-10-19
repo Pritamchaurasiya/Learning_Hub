@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -82,10 +83,6 @@ export default function LibraryPage() {
   const [viewAllCourses, setViewAllCourses] = useState(false)
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('All')
 
-  const [courses, setCourses] = useState<Course[]>([])
-  const [ebooks, setEbooks] = useState<EbookMetadata[]>([])
-  const [error, setError] = useState<string | null>(null)
-
   // Reset selected subject when active exam changes
   useEffect(() => {
     setSelectedSubjectId('All')
@@ -100,42 +97,63 @@ export default function LibraryPage() {
     if (search !== null && search !== searchQuery) {
       setSearchQuery(search)
     }
-  }, [searchParams])
+  }, [searchParams, activeTab, searchQuery])
 
-  const fetchData = useCallback(
-    async (signal?: AbortSignal) => {
-      try {
-        setError(null)
+  const isExamScoped = Boolean(activeExam && !viewAllCourses)
 
-        if (activeTab === 'courses') {
-          const isExamScoped = Boolean(activeExam && !viewAllCourses)
-          const response = await libraryService.getCourses({
-            examId: isExamScoped ? activeExam?.id : undefined,
-            subjectId: isExamScoped && selectedSubjectId !== 'All' ? selectedSubjectId : undefined,
-            category: !isExamScoped && selectedCategory !== 'All' ? selectedCategory : undefined,
-            search: searchQuery || undefined,
-          })
-          if (!signal?.aborted) setCourses(response.data)
-        } else if (activeTab === 'ebooks') {
-          const books = await ebookService.getEbooks({
-            category: selectedCategory === 'All' ? undefined : selectedCategory,
-            search: searchQuery || undefined,
-          })
-          if (!signal?.aborted) setEbooks(books)
-        }
-      } catch (err) {
-        if (signal?.aborted) return
-        setError(err instanceof Error ? err.message : 'Failed to load content')
-      }
-    },
-    [activeTab, activeExam, viewAllCourses, selectedSubjectId, selectedCategory, searchQuery]
-  )
+  const {
+    data: coursesResponse,
+    error: coursesQueryError,
+    refetch: refetchCourses,
+  } = useQuery({
+    queryKey: [
+      'library-courses',
+      isExamScoped ? activeExam?.id : 'all',
+      isExamScoped ? selectedSubjectId : 'all',
+      !isExamScoped && selectedCategory !== 'All' ? selectedCategory : 'all',
+      searchQuery || '',
+    ],
+    queryFn: () =>
+      libraryService.getCourses({
+        examId: isExamScoped ? activeExam?.id : undefined,
+        subjectId: isExamScoped && selectedSubjectId !== 'All' ? selectedSubjectId : undefined,
+        category: !isExamScoped && selectedCategory !== 'All' ? selectedCategory : undefined,
+        search: searchQuery || undefined,
+      }),
+    enabled: activeTab === 'courses',
+    staleTime: 5 * 60 * 1000,
+  })
 
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetchData(controller.signal)
-    return () => controller.abort()
-  }, [fetchData])
+  const {
+    data: ebooksData,
+    error: ebooksQueryError,
+    refetch: refetchEbooks,
+  } = useQuery({
+    queryKey: ['library-ebooks', selectedCategory, searchQuery || ''],
+    queryFn: () =>
+      ebookService.getEbooks({
+        category: selectedCategory === 'All' ? undefined : selectedCategory,
+        search: searchQuery || undefined,
+      }),
+    enabled: activeTab === 'ebooks',
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const courses: Course[] = coursesResponse?.data ?? []
+  const ebooks: EbookMetadata[] = ebooksData ?? []
+  const error = coursesQueryError
+    ? (coursesQueryError as Error).message
+    : ebooksQueryError
+      ? (ebooksQueryError as Error).message
+      : null
+
+  const handleRetry = () => {
+    if (activeTab === 'courses') {
+      void refetchCourses()
+    } else if (activeTab === 'ebooks') {
+      void refetchEbooks()
+    }
+  }
 
   return (
     <AnimatedPage className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -329,7 +347,7 @@ export default function LibraryPage() {
             <AlertCircle className="w-5 h-5 text-red-500" />
             <p className="text-xs text-red-700 dark:text-red-400">{error}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => fetchData()}>
+          <Button variant="outline" size="sm" onClick={handleRetry}>
             Retry
           </Button>
         </Card>
