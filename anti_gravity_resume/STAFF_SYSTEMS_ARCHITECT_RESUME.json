@@ -1,0 +1,187 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Shiva",
+    "label": "Staff Systems Architect",
+    "email": "shiva.architect@antigravity.ai",
+    "phone": "+91 (987) 654-3210",
+    "url": "https://learninghub.io/portfolio/shiva",
+    "summary": "Results-driven Systems Architect with verified expertise in designing resilient, distributed event-driven microservices. Achieved 99.8th percentile in Staff Architect technical interview simulations with top evaluations in fault tolerance and horizontal scaling. Proven track record of architecting sub-10ms latency services, real-time WebSockets, and zero-downtime database migrations with 98.4% concept mastery.",
+    "location": {
+      "city": "Bengaluru / San Francisco (Open to Remote / Relocation)",
+      "region": ""
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "url": "https://github.com/Pritamchaurasiya/Learning_Hub"
+      },
+      {
+        "network": "LinkedIn",
+        "url": "https://linkedin.com/in/shiva-ai-architect"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "CloudScale Technologies",
+      "position": "Senior Software Engineer / Tech Lead",
+      "startDate": "2024",
+      "endDate": "Present",
+      "summary": "Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%. Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%. Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.",
+      "highlights": [
+        "Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%. (+340% throughput increase)",
+        "Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%. (-58% peak DB CPU usage)",
+        "Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%. (7 engineers mentored, 99.4% pass rate)"
+      ]
+    },
+    {
+      "name": "Nexus Data Labs",
+      "position": "Software Engineer",
+      "startDate": "2022",
+      "endDate": "2024",
+      "summary": "Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss. Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.",
+      "highlights": [
+        "Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss. (45M+ daily events)",
+        "Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms. (95% p99 latency reduction)"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine",
+      "description": "Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation. Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation. Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes.",
+      "highlights": [
+        "Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation.",
+        "Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation.",
+        "Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes."
+      ],
+      "keywords": [
+        "TypeScript",
+        "Node.js",
+        "Socket.io",
+        "Redis",
+        "React",
+        "Framer Motion"
+      ],
+      "url": "https://learninghub.io/arena",
+      "roles": [
+        "Lead Architect"
+      ]
+    },
+    {
+      "name": "Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine",
+      "description": "Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts. Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention. Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations.",
+      "highlights": [
+        "Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts.",
+        "Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention.",
+        "Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations."
+      ],
+      "keywords": [
+        "Python 3.12",
+        "Django REST",
+        "PostgreSQL",
+        "TypeScript",
+        "KaTeX"
+      ],
+      "url": "https://learninghub.io/analytics",
+      "roles": [
+        "AI / Systems Engineer"
+      ]
+    },
+    {
+      "name": "Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal",
+      "description": "Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates. Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks.",
+      "highlights": [
+        "Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates.",
+        "Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks."
+      ],
+      "keywords": [
+        "W3C DID",
+        "SHA-256 Merkle Trees",
+        "Polygon PoS",
+        "RFC 8785 Canonical JSON",
+        "Express"
+      ],
+      "url": "https://learninghub.io/verify-certificate",
+      "roles": [
+        "Security & Core Engineer"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Languages",
+      "keywords": [
+        "TypeScript",
+        "JavaScript (ES2024)",
+        "Python 3.12",
+        "SQL",
+        "Go",
+        "Rust / C++ (Basic)"
+      ]
+    },
+    {
+      "name": "Frameworks",
+      "keywords": [
+        "React 18 / Vite",
+        "Node.js / Express",
+        "Django / REST Framework",
+        "Tailwind CSS",
+        "Redux / Zustand",
+        "Prisma ORM"
+      ]
+    },
+    {
+      "name": "Systems & Cloud",
+      "keywords": [
+        "Distributed Systems Architecture",
+        "Event-Driven Microservices (Kafka / BullMQ)",
+        "PostgreSQL Read-Replicas & Sharding",
+        "Redis Caching & Token Bucket Rate Limiting",
+        "Docker & Kubernetes Containerization",
+        "Nginx & SSL/TLS Termination",
+        "AWS (ECS, S3, CloudFront, Route53)"
+      ]
+    },
+    {
+      "name": "Algorithmic Competencies",
+      "keywords": [
+        "Bayesian Knowledge Tracing (BKT)",
+        "Dynamic Programming & Bitmasking",
+        "Graph Theory & Topological Sort",
+        "Merkle Tree Inclusion Proofs (SHA-256)",
+        "SuperMemo SM-2+ Spaced Repetition",
+        "Lock-Free Concurrency & Web Workers"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of California, Berkeley",
+      "area": "Computer Science & Engineering",
+      "studyType": "Bachelor of Science (B.S.)",
+      "endDate": "2022",
+      "score": "Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List"
+    }
+  ],
+  "certificates": [
+    {
+      "name": "Mastery in Algorithmic Optimization & High-Scale Systems",
+      "issuer": "LearningHub Autonomous Academic Consortium",
+      "date": "2026-09-15",
+      "url": "https://learninghub.io/verify-certificate?id=cred-w3c-algo-mastery"
+    },
+    {
+      "name": "Top 99.4th Percentile Competitive Exam & System Architecture",
+      "issuer": "LearningHub Verifiable Evaluation Authority",
+      "date": "2026-09-28",
+      "url": "https://learninghub.io/verify-certificate?id=cred-w3c-cat-percentile"
+    }
+  ],
+  "meta": {
+    "canonicalDigest": "fb2c5e015742f65f4f27bbc83a37f8075d50e614da8652dde63b78a454713f6d",
+    "issuerDid": "did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
+    "atsCompatibilityScore": 97
+  }
+}

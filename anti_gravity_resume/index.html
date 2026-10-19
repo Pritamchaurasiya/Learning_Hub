@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shiva — Anti-Gravity Verifiable Resume & Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --card-border: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --cyan: #06b6d4;
+      --indigo: #6366f1;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 24px 16px 80px;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--emerald-glow);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--emerald);
+    }
+    .action-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #334155;
+      border-color: #475569;
+    }
+    .btn-primary {
+      background: var(--emerald);
+      color: #022c22;
+      border-color: var(--emerald);
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background: #059669;
+      color: #ffffff;
+    }
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .role-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .role-card:hover {
+      border-color: #475569;
+      transform: translateY(-2px);
+    }
+    .role-card.active {
+      border-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    .role-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .role-card p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .resume-sheet {
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+    .candidate-name {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #090d16;
+      margin-bottom: 4px;
+    }
+    .candidate-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0d9488;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+    }
+    .contact-line {
+      font-size: 12px;
+      color: #475569;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .contact-line a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .contact-line a:hover {
+      text-decoration: underline;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f172a;
+      margin-top: 24px;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 14px;
+    }
+    .highlight-box {
+      background: #f0fdf4;
+      border-left: 3px solid #16a34a;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12.5px;
+      color: #14532d;
+      line-height: 1.5;
+    }
+    .highlight-box strong {
+      color: #15803d;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .skill-category {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #334155;
+    }
+    .skill-category strong {
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .project-card, .exp-card {
+      margin-bottom: 18px;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+    .item-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .item-period {
+      font-size: 12px;
+      color: #64748b;
+      font-family: var(--font-mono);
+    }
+    .item-sub {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .item-bullets {
+      list-style-type: disc;
+      padding-left: 18px;
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.55;
+    }
+    .item-bullets li {
+      margin-bottom: 4px;
+    }
+    .metric-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .proof-footer {
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 11px;
+      color: #64748b;
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .proof-hash {
+      color: #0f172a;
+      font-weight: 600;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .ats-meter-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      align-items: center;
+    }
+    .score-circle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      border: 3px solid var(--emerald);
+      margin: 0 auto;
+    }
+    .score-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--emerald);
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+    .breakdown-row strong {
+      color: #ffffff;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      .header-bar, .role-tabs, .ats-meter-card, .action-btns {
+        display: none !important;
+      }
+      .resume-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-bar">
+      <div>
+        <div class="badge-pill">
+          <div class="pulse-dot"></div>
+          Anti-Gravity Verifiable Evaluation
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+          Candidate: <strong style="color: #fff;">Shiva</strong> &bull; W3C DID: <code style="color: #38bdf8;">did:polygon:0x7a8b...5a6b</code>
+        </div>
+      </div>
+      <div class="action-btns">
+        <button class="btn btn-primary" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print to PDF
+        </button>
+        <button class="btn" onclick="copyAtsPlainText()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Plain Text ATS
+        </button>
+      </div>
+    </div>
+
+    <!-- Role Customizer Tabs -->
+    <div class="role-tabs">
+      <div class="role-card active" onclick="switchRole('SYSTEMS_ARCHITECT', this)">
+        <h4>Staff Systems Architect</h4>
+        <p>Distributed Systems, Raft, BullMQ, Sub-10ms Latency</p>
+      </div>
+      <div class="role-card" onclick="switchRole('ALGORITHM_ENGINEER', this)">
+        <h4>Senior Algorithmic Engineer</h4>
+        <p>Grandmaster 2450 Elo, O(1) Space, Graph Algorithms</p>
+      </div>
+      <div class="role-card" onclick="switchRole('FULL_STACK_LEAD', this)">
+        <h4>Lead Full Stack Engineer</h4>
+        <p>React 18, Node.js, WebSockets, Postgres, High Coverage</p>
+      </div>
+      <div class="role-card" onclick="switchRole('ML_DATA_ENGINEER', this)">
+        <h4>Senior ML Systems Engineer</h4>
+        <p>Bayesian Knowledge Tracing, Vector DAGs, PyTorch</p>
+      </div>
+    </div>
+
+    <!-- Paper Resume Sheet -->
+    <div class="resume-sheet" id="resumeSheet">
+      <div class="candidate-name" id="resName">Shiva</div>
+      <div class="candidate-title" id="resTitle">Staff Systems Architect</div>
+      <div class="contact-line">
+        <span>📧 <a href="mailto:shiva.architect@antigravity.ai">shiva.architect@antigravity.ai</a></span>
+        <span>📱 +91 (987) 654-3210</span>
+        <span>📍 Bengaluru / San Francisco (Open to Remote / Relocation)</span>
+        <span>🐙 <a href="https://github.com/Pritamchaurasiya/Learning_Hub" target="_blank">GitHub</a></span>
+        <span>💼 <a href="https://linkedin.com/in/shiva-ai-architect" target="_blank">LinkedIn</a></span>
+        <span>🌐 <a href="https://learninghub.io/portfolio/shiva" target="_blank">Portfolio</a></span>
+      </div>
+
+      <div class="section-title">
+        <span>Professional Summary</span>
+      </div>
+      <p class="section-p" id="resSummary">Results-driven Systems Architect with verified expertise in designing resilient, distributed event-driven microservices. Achieved 99.8th percentile in Staff Architect technical interview simulations with top evaluations in fault tolerance and horizontal scaling. Proven track record of architecting sub-10ms latency services, real-time WebSockets, and zero-downtime database migrations with 98.4% concept mastery.</p>
+
+      <div class="section-title">
+        <span>Verified Platform Telemetry & Evaluation Proofs</span>
+      </div>
+      <div id="resTelemetry">
+        
+          <div class="highlight-box">
+            <strong>[VERIFIED TELEMETRY]</strong> Maintained Grandmaster Rank (2450 Elo) across 180 live 1v1 algorithm duels with a 94.2% win rate and 24-win streak.
+          </div>
+        
+          <div class="highlight-box">
+            <strong>[VERIFIED TELEMETRY]</strong> Achieved top 99.8th percentile across comprehensive FAANG Staff AI Interview Simulations (Alex & Sophia personas), earning unanimous "STRONG_HIRE" ratings.
+          </div>
+        
+          <div class="highlight-box">
+            <strong>[VERIFIED TELEMETRY]</strong> Demonstrated 98.4% Exam Readiness in Bayesian Knowledge Tracing with 48 verified concept skills mastered.
+          </div>
+        
+          <div class="highlight-box">
+            <strong>[VERIFIED TELEMETRY]</strong> Active daily spaced repetition consistency with 350 flashcards mastered at 96.5% memory retention stability.
+          </div>
+        
+      </div>
+
+      <div class="section-title">
+        <span>Core Technical Skills</span>
+      </div>
+      <div class="skills-grid" id="resSkills">
+        <div class="skill-category"><strong>Languages:</strong> TypeScript, JavaScript (ES2024), Python 3.12, SQL, Go, Rust / C++ (Basic)</div>
+        <div class="skill-category"><strong>Frameworks & Libraries:</strong> React 18 / Vite, Node.js / Express, Django / REST Framework, Tailwind CSS, Redux / Zustand, Prisma ORM</div>
+        <div class="skill-category"><strong>Cloud & Systems:</strong> Distributed Systems Architecture, Event-Driven Microservices (Kafka / BullMQ), PostgreSQL Read-Replicas & Sharding, Redis Caching & Token Bucket Rate Limiting, Docker & Kubernetes Containerization, Nginx & SSL/TLS Termination, AWS (ECS, S3, CloudFront, Route53)</div>
+        <div class="skill-category"><strong>Algorithms:</strong> Bayesian Knowledge Tracing (BKT), Dynamic Programming & Bitmasking, Graph Theory & Topological Sort, Merkle Tree Inclusion Proofs (SHA-256), SuperMemo SM-2+ Spaced Repetition, Lock-Free Concurrency & Web Workers</div>
+      </div>
+
+      <div class="section-title">
+        <span>Key Technical Projects & Systems Architecture</span>
+      </div>
+      <div id="resProjects">
+        
+          <div class="project-card">
+            <div class="item-header">
+              <div class="item-title">Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine</div>
+              <div class="item-period">2026 – Present</div>
+            </div>
+            <div class="item-sub">Role: Lead Architect &bull; Tech: TypeScript, Node.js, Socket.io, Redis, React, Framer Motion</div>
+            <ul class="item-bullets">
+              
+                <li>Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation. <span class="metric-tag"><15ms broadcast latency</span></li>
+              
+                <li>Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation. <span class="metric-tag">100% test coverage</span></li>
+              
+                <li>Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes. <span class="metric-tag">60 FPS client UI rendering</span></li>
+              
+            </ul>
+          </div>
+        
+          <div class="project-card">
+            <div class="item-header">
+              <div class="item-title">Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine</div>
+              <div class="item-period">2026 – Present</div>
+            </div>
+            <div class="item-sub">Role: AI / Systems Engineer &bull; Tech: Python 3.12, Django REST, PostgreSQL, TypeScript, KaTeX</div>
+            <ul class="item-bullets">
+              
+                <li>Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts. <span class="metric-tag">4-parameter Bayesian update</span></li>
+              
+                <li>Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention. <span class="metric-tag">Readiness R_exam calculated in O(1)</span></li>
+              
+                <li>Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations. <span class="metric-tag">Topological sort O(V+E)</span></li>
+              
+            </ul>
+          </div>
+        
+          <div class="project-card">
+            <div class="item-header">
+              <div class="item-title">Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal</div>
+              <div class="item-period">2026 – Present</div>
+            </div>
+            <div class="item-sub">Role: Security & Core Engineer &bull; Tech: W3C DID, SHA-256 Merkle Trees, Polygon PoS, RFC 8785 Canonical JSON, Express</div>
+            <ul class="item-bullets">
+              
+                <li>Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates. <span class="metric-tag">O(log N) inclusion proofs</span></li>
+              
+                <li>Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks. <span class="metric-tag">Zero plaintext PII exposure</span></li>
+              
+            </ul>
+          </div>
+        
+      </div>
+
+      <div class="section-title">
+        <span>Professional Experience</span>
+      </div>
+      <div id="resExperience">
+        
+          <div class="exp-card">
+            <div class="item-header">
+              <div class="item-title">Senior Software Engineer / Tech Lead &mdash; CloudScale Technologies</div>
+              <div class="item-period">2024 – Present</div>
+            </div>
+            <div class="item-sub">San Francisco, CA</div>
+            <ul class="item-bullets">
+              
+                <li>Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%.</li>
+              
+                <li>Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%.</li>
+              
+                <li>Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.</li>
+              
+            </ul>
+          </div>
+        
+          <div class="exp-card">
+            <div class="item-header">
+              <div class="item-title">Software Engineer &mdash; Nexus Data Labs</div>
+              <div class="item-period">2022 – 2024</div>
+            </div>
+            <div class="item-sub">San Jose, CA</div>
+            <ul class="item-bullets">
+              
+                <li>Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss.</li>
+              
+                <li>Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.</li>
+              
+            </ul>
+          </div>
+        
+      </div>
+
+      <div class="section-title">
+        <span>Education & Credentials</span>
+      </div>
+      <div id="resEducation">
+        
+          <div style="font-size: 13px; margin-bottom: 6px;">
+            <strong>Bachelor of Science (B.S.) in Computer Science & Engineering</strong> &mdash; University of California, Berkeley (2022)
+            <br><span style="color: #64748b; font-size: 12px;">Honors: Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List</span>
+          </div>
+        
+      </div>
+
+      <div class="proof-footer">
+        <div>
+          SHA-256 Digest: <span class="proof-hash" id="resDigest">fb2c5e015742f65f4f27bbc83a37f8075d50e614da8652dde63b78a454713f6d</span>
+        </div>
+        <div>
+          Polygon PoS Anchor: <span class="proof-hash">did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATS Compatibility Card -->
+    <div class="ats-meter-card">
+      <div class="score-circle">
+        <div class="score-number" id="atsScore">97</div>
+        <div class="score-label">ATS Grade A+</div>
+      </div>
+      <div>
+        <h3 style="font-size: 16px; margin-bottom: 8px;">Applicant Tracking System (ATS) Verification</h3>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+          This resume is optimized for enterprise applicant tracking systems (Workday, Greenhouse, Lever, Taleo) with 100% single-column compliance, RFC 8785 canonical data sorting, and keyword density.
+        </p>
+      </div>
+      <div>
+        <div class="breakdown-row"><span>Quantified Metrics:</span> <strong>25 / 25</strong></div>
+        <div class="breakdown-row"><span>Action Verbs:</span> <strong>25 / 25</strong></div>
+        <div class="breakdown-row"><span>Keyword Optimization:</span> <strong>22 / 25</strong></div>
+        <div class="breakdown-row"><span>Format & Hierarchy:</span> <strong>25 / 25</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const roleData = {"SYSTEMS_ARCHITECT":{"id":"res-895c06ddcba6","userId":"usr-shiva-principal-architect","targetRole":"SYSTEMS_ARCHITECT","roleTitle":"Staff Systems Architect","generatedAt":"2026-10-19T10:02:13.696Z","profile":{"fullName":"Shiva","headline":"Principal AI Architect & Distributed Systems Engineer","email":"shiva.architect@antigravity.ai","phone":"+91 (987) 654-3210","location":"Bengaluru / San Francisco (Open to Remote / Relocation)","githubUrl":"https://github.com/Pritamchaurasiya/Learning_Hub","linkedinUrl":"https://linkedin.com/in/shiva-ai-architect","portfolioUrl":"https://learninghub.io/portfolio/shiva","didIdentifier":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b"},"summary":"Results-driven Systems Architect with verified expertise in designing resilient, distributed event-driven microservices. Achieved 99.8th percentile in Staff Architect technical interview simulations with top evaluations in fault tolerance and horizontal scaling. Proven track record of architecting sub-10ms latency services, real-time WebSockets, and zero-downtime database migrations with 98.4% concept mastery.","skillsMatrix":{"languages":["TypeScript","JavaScript (ES2024)","Python 3.12","SQL","Go","Rust / C++ (Basic)"],"frameworks":["React 18 / Vite","Node.js / Express","Django / REST Framework","Tailwind CSS","Redux / Zustand","Prisma ORM"],"systemsAndCloud":["Distributed Systems Architecture","Event-Driven Microservices (Kafka / BullMQ)","PostgreSQL Read-Replicas & Sharding","Redis Caching & Token Bucket Rate Limiting","Docker & Kubernetes Containerization","Nginx & SSL/TLS Termination","AWS (ECS, S3, CloudFront, Route53)"],"algorithmicCompetencies":["Bayesian Knowledge Tracing (BKT)","Dynamic Programming & Bitmasking","Graph Theory & Topological Sort","Merkle Tree Inclusion Proofs (SHA-256)","SuperMemo SM-2+ Spaced Repetition","Lock-Free Concurrency & Web Workers"]},"verifiedPlatformHighlights":["Maintained Grandmaster Rank (2450 Elo) across 180 live 1v1 algorithm duels with a 94.2% win rate and 24-win streak.","Achieved top 99.8th percentile across comprehensive FAANG Staff AI Interview Simulations (Alex & Sophia personas), earning unanimous \"STRONG_HIRE\" ratings.","Demonstrated 98.4% Exam Readiness in Bayesian Knowledge Tracing with 48 verified concept skills mastered.","Active daily spaced repetition consistency with 350 flashcards mastered at 96.5% memory retention stability."],"experiences":[{"id":"exp-1","company":"CloudScale Technologies","role":"Senior Software Engineer / Tech Lead","location":"San Francisco, CA","period":"2024 – Present","bulletPoints":[{"id":"exp-bp-1","text":"Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%.","quantifiedMetric":"+340% throughput increase","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-2","text":"Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%.","quantifiedMetric":"-58% peak DB CPU usage","category":"ARCHITECTURE","verifiedByPlatform":false},{"id":"exp-bp-3","text":"Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.","quantifiedMetric":"7 engineers mentored, 99.4% pass rate","category":"LEADERSHIP","verifiedByPlatform":false}]},{"id":"exp-2","company":"Nexus Data Labs","role":"Software Engineer","location":"San Jose, CA","period":"2022 – 2024","bulletPoints":[{"id":"exp-bp-4","text":"Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss.","quantifiedMetric":"45M+ daily events","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-5","text":"Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.","quantifiedMetric":"95% p99 latency reduction","category":"IMPACT","verifiedByPlatform":false}]}],"projects":[{"id":"proj-learning-arena","title":"Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine","role":"Lead Architect","technologies":["TypeScript","Node.js","Socket.io","Redis","React","Framer Motion"],"period":"2026 – Present","bulletPoints":[{"id":"bp-1","text":"Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation.","quantifiedMetric":"<15ms broadcast latency","category":"SYSTEMS","verifiedByPlatform":true},{"id":"bp-2","text":"Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation.","quantifiedMetric":"100% test coverage","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-3","text":"Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes.","quantifiedMetric":"60 FPS client UI rendering","category":"IMPACT","verifiedByPlatform":true}],"repoUrl":"https://github.com/learninghub/learninghub","liveUrl":"https://learninghub.io/arena","verifiedBadge":"VERIFIED_ARENA_DUEL"},{"id":"proj-bkt-analytics","title":"Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine","role":"AI / Systems Engineer","technologies":["Python 3.12","Django REST","PostgreSQL","TypeScript","KaTeX"],"period":"2026 – Present","bulletPoints":[{"id":"bp-4","text":"Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts.","quantifiedMetric":"4-parameter Bayesian update","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-5","text":"Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention.","quantifiedMetric":"Readiness R_exam calculated in O(1)","category":"IMPACT","verifiedByPlatform":true},{"id":"bp-6","text":"Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations.","quantifiedMetric":"Topological sort O(V+E)","category":"ARCHITECTURE","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/analytics","verifiedBadge":"VERIFIED_BKT_DAG"},{"id":"proj-did-credentials","title":"Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal","role":"Security & Core Engineer","technologies":["W3C DID","SHA-256 Merkle Trees","Polygon PoS","RFC 8785 Canonical JSON","Express"],"period":"2026 – Present","bulletPoints":[{"id":"bp-7","text":"Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates.","quantifiedMetric":"O(log N) inclusion proofs","category":"ARCHITECTURE","verifiedByPlatform":true},{"id":"bp-8","text":"Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks.","quantifiedMetric":"Zero plaintext PII exposure","category":"SYSTEMS","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/verify-certificate","verifiedBadge":"VERIFIED_W3C_DID"}],"education":[{"institution":"University of California, Berkeley","degree":"Bachelor of Science (B.S.)","field":"Computer Science & Engineering","graduationYear":"2022","gpaOrHonors":"Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List"}],"credentials":[{"id":"cred-w3c-algo-mastery","title":"Mastery in Algorithmic Optimization & High-Scale Systems","issuer":"LearningHub Autonomous Academic Consortium","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-15","merkleRootHash":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","credentialType":"ASSESSMENT_MASTERY","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-algo-mastery"},{"id":"cred-w3c-cat-percentile","title":"Top 99.4th Percentile Competitive Exam & System Architecture","issuer":"LearningHub Verifiable Evaluation Authority","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-28","merkleRootHash":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb","credentialType":"CAT_PERCENTILE","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-cat-percentile"}],"atsScoring":{"overallScore":97,"grade":"A+","criteriaScores":{"quantifiedMetricsScore":25,"actionVerbsScore":25,"keywordOptimizationScore":22,"formattingComplianceScore":25},"actionableFeedback":["Incorporate target role keywords: resilience."],"detectedKeywords":["distributed systems","microservices","redis","kafka","latency","docker","throughput"],"missingKeywords":["resilience"]},"cryptographicProof":{"canonicalDigestSha256":"fb2c5e015742f65f4f27bbc83a37f8075d50e614da8652dde63b78a454713f6d","signatureHmac":"c310881b96525ae227bf7b1bf7dfccb39305fcb59a808c46f42fc1f1755bf4b1","didAnchor":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b","verificationUrl":"/verify-certificate?proof=fb2c5e015742f65f"}},"ALGORITHM_ENGINEER":{"id":"res-6d0ea528a3f1","userId":"usr-shiva-principal-architect","targetRole":"ALGORITHM_ENGINEER","roleTitle":"Senior Algorithmic Engineer","generatedAt":"2026-10-19T10:02:13.716Z","profile":{"fullName":"Shiva","headline":"Principal AI Architect & Distributed Systems Engineer","email":"shiva.architect@antigravity.ai","phone":"+91 (987) 654-3210","location":"Bengaluru / San Francisco (Open to Remote / Relocation)","githubUrl":"https://github.com/Pritamchaurasiya/Learning_Hub","linkedinUrl":"https://linkedin.com/in/shiva-ai-architect","portfolioUrl":"https://learninghub.io/portfolio/shiva","didIdentifier":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b"},"summary":"High-performance Algorithmic Software Engineer with Grandmaster-tier 2450+ Elo rating in live competitive 1v1 algorithm duels. Demonstrates mastery over complex asymptotic optimization ($O(N)$ / $O(1)$ space), dynamic programming, and lock-free concurrency. Backed by 48 verified algorithmic masteries in Bayesian Knowledge Tracing.","skillsMatrix":{"languages":["C++20","Python 3.12","TypeScript","Java","Rust"],"frameworks":["React 18 / Vite","Node.js / Express","Django / REST Framework","Tailwind CSS","Redux / Zustand","Prisma ORM"],"systemsAndCloud":["PostgreSQL (Neon / pgvector)","Redis / BullMQ","Docker / Kubernetes","WebSockets (Socket.io)","AWS / S3","Nginx Reverse Proxy"],"algorithmicCompetencies":["Advanced Graph Algorithms (Dijkstra, Tarjan, SCC)","Segment Trees & Fenwick Trees","Dynamic Programming with Divide & Conquer Optimization","Asymptotic Complexity Auditing (O(1) amortized)","Memory Locality & Cache-Oblivious Structures"]},"verifiedPlatformHighlights":["Maintained Grandmaster Rank (2450 Elo) across 180 live 1v1 algorithm duels with a 94.2% win rate and 24-win streak.","Achieved top 99.8th percentile across comprehensive FAANG Staff AI Interview Simulations (Alex & Sophia personas), earning unanimous \"STRONG_HIRE\" ratings.","Demonstrated 98.4% Exam Readiness in Bayesian Knowledge Tracing with 48 verified concept skills mastered.","Active daily spaced repetition consistency with 350 flashcards mastered at 96.5% memory retention stability."],"experiences":[{"id":"exp-1","company":"CloudScale Technologies","role":"Senior Software Engineer / Tech Lead","location":"San Francisco, CA","period":"2024 – Present","bulletPoints":[{"id":"exp-bp-1","text":"Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%.","quantifiedMetric":"+340% throughput increase","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-2","text":"Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%.","quantifiedMetric":"-58% peak DB CPU usage","category":"ARCHITECTURE","verifiedByPlatform":false},{"id":"exp-bp-3","text":"Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.","quantifiedMetric":"7 engineers mentored, 99.4% pass rate","category":"LEADERSHIP","verifiedByPlatform":false}]},{"id":"exp-2","company":"Nexus Data Labs","role":"Software Engineer","location":"San Jose, CA","period":"2022 – 2024","bulletPoints":[{"id":"exp-bp-4","text":"Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss.","quantifiedMetric":"45M+ daily events","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-5","text":"Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.","quantifiedMetric":"95% p99 latency reduction","category":"IMPACT","verifiedByPlatform":false}]}],"projects":[{"id":"proj-learning-arena","title":"Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine","role":"Lead Architect","technologies":["TypeScript","Node.js","Socket.io","Redis","React","Framer Motion"],"period":"2026 – Present","bulletPoints":[{"id":"bp-1","text":"Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation.","quantifiedMetric":"<15ms broadcast latency","category":"SYSTEMS","verifiedByPlatform":true},{"id":"bp-2","text":"Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation.","quantifiedMetric":"100% test coverage","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-3","text":"Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes.","quantifiedMetric":"60 FPS client UI rendering","category":"IMPACT","verifiedByPlatform":true}],"repoUrl":"https://github.com/learninghub/learninghub","liveUrl":"https://learninghub.io/arena","verifiedBadge":"VERIFIED_ARENA_DUEL"},{"id":"proj-bkt-analytics","title":"Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine","role":"AI / Systems Engineer","technologies":["Python 3.12","Django REST","PostgreSQL","TypeScript","KaTeX"],"period":"2026 – Present","bulletPoints":[{"id":"bp-4","text":"Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts.","quantifiedMetric":"4-parameter Bayesian update","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-5","text":"Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention.","quantifiedMetric":"Readiness R_exam calculated in O(1)","category":"IMPACT","verifiedByPlatform":true},{"id":"bp-6","text":"Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations.","quantifiedMetric":"Topological sort O(V+E)","category":"ARCHITECTURE","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/analytics","verifiedBadge":"VERIFIED_BKT_DAG"},{"id":"proj-did-credentials","title":"Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal","role":"Security & Core Engineer","technologies":["W3C DID","SHA-256 Merkle Trees","Polygon PoS","RFC 8785 Canonical JSON","Express"],"period":"2026 – Present","bulletPoints":[{"id":"bp-7","text":"Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates.","quantifiedMetric":"O(log N) inclusion proofs","category":"ARCHITECTURE","verifiedByPlatform":true},{"id":"bp-8","text":"Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks.","quantifiedMetric":"Zero plaintext PII exposure","category":"SYSTEMS","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/verify-certificate","verifiedBadge":"VERIFIED_W3C_DID"}],"education":[{"institution":"University of California, Berkeley","degree":"Bachelor of Science (B.S.)","field":"Computer Science & Engineering","graduationYear":"2022","gpaOrHonors":"Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List"}],"credentials":[{"id":"cred-w3c-algo-mastery","title":"Mastery in Algorithmic Optimization & High-Scale Systems","issuer":"LearningHub Autonomous Academic Consortium","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-15","merkleRootHash":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","credentialType":"ASSESSMENT_MASTERY","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-algo-mastery"},{"id":"cred-w3c-cat-percentile","title":"Top 99.4th Percentile Competitive Exam & System Architecture","issuer":"LearningHub Verifiable Evaluation Authority","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-28","merkleRootHash":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb","credentialType":"CAT_PERCENTILE","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-cat-percentile"}],"atsScoring":{"overallScore":96,"grade":"A+","criteriaScores":{"quantifiedMetricsScore":25,"actionVerbsScore":25,"keywordOptimizationScore":21,"formattingComplianceScore":25},"actionableFeedback":["Incorporate target role keywords: data structures."],"detectedKeywords":["asymptotic","dynamic programming","complexity","graph algorithms","concurrency"],"missingKeywords":["data structures"]},"cryptographicProof":{"canonicalDigestSha256":"3c88f2207d1f69a4544bc5321fcea14687af346ad8200bcb3a04c6d9761da14e","signatureHmac":"8c43ff04b00aa1abd8ce2a59aeba2b069ad4157cad7f77a2628cdf327f48313d","didAnchor":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b","verificationUrl":"/verify-certificate?proof=3c88f2207d1f69a4"}},"FULL_STACK_LEAD":{"id":"res-642b6b2f8935","userId":"usr-shiva-principal-architect","targetRole":"FULL_STACK_LEAD","roleTitle":"Lead Full Stack Software Engineer","generatedAt":"2026-10-19T10:02:13.726Z","profile":{"fullName":"Shiva","headline":"Principal AI Architect & Distributed Systems Engineer","email":"shiva.architect@antigravity.ai","phone":"+91 (987) 654-3210","location":"Bengaluru / San Francisco (Open to Remote / Relocation)","githubUrl":"https://github.com/Pritamchaurasiya/Learning_Hub","linkedinUrl":"https://linkedin.com/in/shiva-ai-architect","portfolioUrl":"https://learninghub.io/portfolio/shiva","didIdentifier":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b"},"summary":"Engineering Lead & Full Stack Architect with deep competence in React, TypeScript, Node.js, and high-throughput backend services. Validated by 99.8th percentile mock technical interview rounds and Grandmaster 2450 Elo ranking in algorithmic problem-solving. Strong advocate for type-safe architectures, comprehensive automated testing (>95% coverage), and verifiable credential security.","skillsMatrix":{"languages":["TypeScript","JavaScript (ES2024)","Python 3.12","SQL","Go","Rust / C++ (Basic)"],"frameworks":["React 18 / Vite","Node.js / Express","Django / REST Framework","Tailwind CSS","Redux / Zustand","Prisma ORM"],"systemsAndCloud":["PostgreSQL (Neon / pgvector)","Redis / BullMQ","Docker / Kubernetes","WebSockets (Socket.io)","AWS / S3","Nginx Reverse Proxy"],"algorithmicCompetencies":["Bayesian Knowledge Tracing (BKT)","Dynamic Programming & Bitmasking","Graph Theory & Topological Sort","Merkle Tree Inclusion Proofs (SHA-256)","SuperMemo SM-2+ Spaced Repetition","Lock-Free Concurrency & Web Workers"]},"verifiedPlatformHighlights":["Maintained Grandmaster Rank (2450 Elo) across 180 live 1v1 algorithm duels with a 94.2% win rate and 24-win streak.","Achieved top 99.8th percentile across comprehensive FAANG Staff AI Interview Simulations (Alex & Sophia personas), earning unanimous \"STRONG_HIRE\" ratings.","Demonstrated 98.4% Exam Readiness in Bayesian Knowledge Tracing with 48 verified concept skills mastered.","Active daily spaced repetition consistency with 350 flashcards mastered at 96.5% memory retention stability."],"experiences":[{"id":"exp-1","company":"CloudScale Technologies","role":"Senior Software Engineer / Tech Lead","location":"San Francisco, CA","period":"2024 – Present","bulletPoints":[{"id":"exp-bp-1","text":"Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%.","quantifiedMetric":"+340% throughput increase","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-2","text":"Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%.","quantifiedMetric":"-58% peak DB CPU usage","category":"ARCHITECTURE","verifiedByPlatform":false},{"id":"exp-bp-3","text":"Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.","quantifiedMetric":"7 engineers mentored, 99.4% pass rate","category":"LEADERSHIP","verifiedByPlatform":false}]},{"id":"exp-2","company":"Nexus Data Labs","role":"Software Engineer","location":"San Jose, CA","period":"2022 – 2024","bulletPoints":[{"id":"exp-bp-4","text":"Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss.","quantifiedMetric":"45M+ daily events","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-5","text":"Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.","quantifiedMetric":"95% p99 latency reduction","category":"IMPACT","verifiedByPlatform":false}]}],"projects":[{"id":"proj-learning-arena","title":"Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine","role":"Lead Architect","technologies":["TypeScript","Node.js","Socket.io","Redis","React","Framer Motion"],"period":"2026 – Present","bulletPoints":[{"id":"bp-1","text":"Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation.","quantifiedMetric":"<15ms broadcast latency","category":"SYSTEMS","verifiedByPlatform":true},{"id":"bp-2","text":"Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation.","quantifiedMetric":"100% test coverage","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-3","text":"Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes.","quantifiedMetric":"60 FPS client UI rendering","category":"IMPACT","verifiedByPlatform":true}],"repoUrl":"https://github.com/learninghub/learninghub","liveUrl":"https://learninghub.io/arena","verifiedBadge":"VERIFIED_ARENA_DUEL"},{"id":"proj-bkt-analytics","title":"Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine","role":"AI / Systems Engineer","technologies":["Python 3.12","Django REST","PostgreSQL","TypeScript","KaTeX"],"period":"2026 – Present","bulletPoints":[{"id":"bp-4","text":"Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts.","quantifiedMetric":"4-parameter Bayesian update","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-5","text":"Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention.","quantifiedMetric":"Readiness R_exam calculated in O(1)","category":"IMPACT","verifiedByPlatform":true},{"id":"bp-6","text":"Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations.","quantifiedMetric":"Topological sort O(V+E)","category":"ARCHITECTURE","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/analytics","verifiedBadge":"VERIFIED_BKT_DAG"},{"id":"proj-did-credentials","title":"Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal","role":"Security & Core Engineer","technologies":["W3C DID","SHA-256 Merkle Trees","Polygon PoS","RFC 8785 Canonical JSON","Express"],"period":"2026 – Present","bulletPoints":[{"id":"bp-7","text":"Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates.","quantifiedMetric":"O(log N) inclusion proofs","category":"ARCHITECTURE","verifiedByPlatform":true},{"id":"bp-8","text":"Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks.","quantifiedMetric":"Zero plaintext PII exposure","category":"SYSTEMS","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/verify-certificate","verifiedBadge":"VERIFIED_W3C_DID"}],"education":[{"institution":"University of California, Berkeley","degree":"Bachelor of Science (B.S.)","field":"Computer Science & Engineering","graduationYear":"2022","gpaOrHonors":"Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List"}],"credentials":[{"id":"cred-w3c-algo-mastery","title":"Mastery in Algorithmic Optimization & High-Scale Systems","issuer":"LearningHub Autonomous Academic Consortium","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-15","merkleRootHash":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","credentialType":"ASSESSMENT_MASTERY","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-algo-mastery"},{"id":"cred-w3c-cat-percentile","title":"Top 99.4th Percentile Competitive Exam & System Architecture","issuer":"LearningHub Verifiable Evaluation Authority","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-28","merkleRootHash":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb","credentialType":"CAT_PERCENTILE","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-cat-percentile"}],"atsScoring":{"overallScore":97,"grade":"A+","criteriaScores":{"quantifiedMetricsScore":25,"actionVerbsScore":25,"keywordOptimizationScore":22,"formattingComplianceScore":25},"actionableFeedback":["Incorporate target role keywords: leadership."],"detectedKeywords":["react","typescript","node.js","websockets","postgresql","testing","architecture"],"missingKeywords":["leadership"]},"cryptographicProof":{"canonicalDigestSha256":"8e6ecd83f7ee04f5b8bd6076d983ab9e719dcb346ee2067067a438befb4a52ab","signatureHmac":"6d4cc958a6739ae8b1048be59d489831f6dc4ace001bc3a185c7e0a1c6a03ab8","didAnchor":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b","verificationUrl":"/verify-certificate?proof=8e6ecd83f7ee04f5"}},"ML_DATA_ENGINEER":{"id":"res-f5fbdb58a62c","userId":"usr-shiva-principal-architect","targetRole":"ML_DATA_ENGINEER","roleTitle":"Senior ML Systems Engineer","generatedAt":"2026-10-19T10:02:13.734Z","profile":{"fullName":"Shiva","headline":"Principal AI Architect & Distributed Systems Engineer","email":"shiva.architect@antigravity.ai","phone":"+91 (987) 654-3210","location":"Bengaluru / San Francisco (Open to Remote / Relocation)","githubUrl":"https://github.com/Pritamchaurasiya/Learning_Hub","linkedinUrl":"https://linkedin.com/in/shiva-ai-architect","portfolioUrl":"https://learninghub.io/portfolio/shiva","didIdentifier":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b"},"summary":"Applied Machine Learning & Systems Engineer specializing in probabilistic models, Bayesian Knowledge Tracing (BKT), and real-time inference pipelines. Successfully synthesized end-to-end knowledge graphs handling adaptive skill updating with an exam readiness prediction accuracy of 98.4%. Expert in Python, PyTorch, TypeScript, and high-throughput vector processing.","skillsMatrix":{"languages":["TypeScript","JavaScript (ES2024)","Python 3.12","SQL","Go","Rust / C++ (Basic)"],"frameworks":["React 18 / Vite","Node.js / Express","Django / REST Framework","Tailwind CSS","Redux / Zustand","Prisma ORM"],"systemsAndCloud":["PostgreSQL (Neon / pgvector)","Redis / BullMQ","Docker / Kubernetes","WebSockets (Socket.io)","AWS / S3","Nginx Reverse Proxy"],"algorithmicCompetencies":["Bayesian Knowledge Tracing (BKT)","Dynamic Programming & Bitmasking","Graph Theory & Topological Sort","Merkle Tree Inclusion Proofs (SHA-256)","SuperMemo SM-2+ Spaced Repetition","Lock-Free Concurrency & Web Workers"]},"verifiedPlatformHighlights":["Maintained Grandmaster Rank (2450 Elo) across 180 live 1v1 algorithm duels with a 94.2% win rate and 24-win streak.","Achieved top 99.8th percentile across comprehensive FAANG Staff AI Interview Simulations (Alex & Sophia personas), earning unanimous \"STRONG_HIRE\" ratings.","Demonstrated 98.4% Exam Readiness in Bayesian Knowledge Tracing with 48 verified concept skills mastered.","Active daily spaced repetition consistency with 350 flashcards mastered at 96.5% memory retention stability."],"experiences":[{"id":"exp-1","company":"CloudScale Technologies","role":"Senior Software Engineer / Tech Lead","location":"San Francisco, CA","period":"2024 – Present","bulletPoints":[{"id":"exp-bp-1","text":"Led the migration of monolith APIs to event-driven microservices using Node.js and BullMQ, boosting throughput by 340%.","quantifiedMetric":"+340% throughput increase","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-2","text":"Implemented Redis-backed distributed rate limiting and token bucket caching, lowering peak database CPU load from 82% to 24%.","quantifiedMetric":"-58% peak DB CPU usage","category":"ARCHITECTURE","verifiedByPlatform":false},{"id":"exp-bp-3","text":"Mentored team of 7 junior and mid-level engineers in test-driven development, driving integration test pass rate to 99.4%.","quantifiedMetric":"7 engineers mentored, 99.4% pass rate","category":"LEADERSHIP","verifiedByPlatform":false}]},{"id":"exp-2","company":"Nexus Data Labs","role":"Software Engineer","location":"San Jose, CA","period":"2022 – 2024","bulletPoints":[{"id":"exp-bp-4","text":"Engineered high-concurrency data ingestion pipelines processing 45M+ telemetry events per day with zero data loss.","quantifiedMetric":"45M+ daily events","category":"SYSTEMS","verifiedByPlatform":false},{"id":"exp-bp-5","text":"Optimized complex SQL queries and introduced database partial indexes, slashing p99 query latency from 850ms to 42ms.","quantifiedMetric":"95% p99 latency reduction","category":"IMPACT","verifiedByPlatform":false}]}],"projects":[{"id":"proj-learning-arena","title":"Real-Time 1v1 Algorithmic Duel Arena & Matchmaking Engine","role":"Lead Architect","technologies":["TypeScript","Node.js","Socket.io","Redis","React","Framer Motion"],"period":"2026 – Present","bulletPoints":[{"id":"bp-1","text":"Architected low-latency WebSocket arena pairing competitive coders with sub-15ms broadcast delay and room isolation.","quantifiedMetric":"<15ms broadcast latency","category":"SYSTEMS","verifiedByPlatform":true},{"id":"bp-2","text":"Implemented dynamic Elo rating calculation algorithm with streak multipliers and fallback AI Ghost opponent telemetry simulation.","quantifiedMetric":"100% test coverage","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-3","text":"Constructed responsive duel HUD broadcasting code typing speed, test execution verdicts, and real-time battle emotes.","quantifiedMetric":"60 FPS client UI rendering","category":"IMPACT","verifiedByPlatform":true}],"repoUrl":"https://github.com/learninghub/learninghub","liveUrl":"https://learninghub.io/arena","verifiedBadge":"VERIFIED_ARENA_DUEL"},{"id":"proj-bkt-analytics","title":"Bayesian Knowledge Tracing & Prerequisite Skill DAG Engine","role":"AI / Systems Engineer","technologies":["Python 3.12","Django REST","PostgreSQL","TypeScript","KaTeX"],"period":"2026 – Present","bulletPoints":[{"id":"bp-4","text":"Engineered Corbett & Anderson Bayesian Knowledge Tracing model with dynamic posterior probability updates upon question attempts.","quantifiedMetric":"4-parameter Bayesian update","category":"ALGORITHMIC","verifiedByPlatform":true},{"id":"bp-5","text":"Formulated 4-factor composite exam readiness scoring model analyzing syllabus coverage, mock test scores, pacing, and retention.","quantifiedMetric":"Readiness R_exam calculated in O(1)","category":"IMPACT","verifiedByPlatform":true},{"id":"bp-6","text":"Built topological DAG visualizer navigating prerequisite relationships and Zone of Proximal Development concept recommendations.","quantifiedMetric":"Topological sort O(V+E)","category":"ARCHITECTURE","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/analytics","verifiedBadge":"VERIFIED_BKT_DAG"},{"id":"proj-did-credentials","title":"Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal","role":"Security & Core Engineer","technologies":["W3C DID","SHA-256 Merkle Trees","Polygon PoS","RFC 8785 Canonical JSON","Express"],"period":"2026 – Present","bulletPoints":[{"id":"bp-7","text":"Designed W3C Verifiable Credentials Data Model v1.1/v2.0 compliant issuer issuing tamper-proof digital certificates.","quantifiedMetric":"O(log N) inclusion proofs","category":"ARCHITECTURE","verifiedByPlatform":true},{"id":"bp-8","text":"Engineered Zero-PII selective disclosure using salted SHA-256 student identity hashes anchored to decentralized ledger blocks.","quantifiedMetric":"Zero plaintext PII exposure","category":"SYSTEMS","verifiedByPlatform":true}],"liveUrl":"https://learninghub.io/verify-certificate","verifiedBadge":"VERIFIED_W3C_DID"}],"education":[{"institution":"University of California, Berkeley","degree":"Bachelor of Science (B.S.)","field":"Computer Science & Engineering","graduationYear":"2022","gpaOrHonors":"Summa Cum Laude (GPA 3.92/4.00) — Dean’s Honors List"}],"credentials":[{"id":"cred-w3c-algo-mastery","title":"Mastery in Algorithmic Optimization & High-Scale Systems","issuer":"LearningHub Autonomous Academic Consortium","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-15","merkleRootHash":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","credentialType":"ASSESSMENT_MASTERY","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-algo-mastery"},{"id":"cred-w3c-cat-percentile","title":"Top 99.4th Percentile Competitive Exam & System Architecture","issuer":"LearningHub Verifiable Evaluation Authority","issuerDid":"did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7","issuanceDate":"2026-09-28","merkleRootHash":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb","credentialType":"CAT_PERCENTILE","verificationUrl":"https://learninghub.io/verify-certificate?id=cred-w3c-cat-percentile"}],"atsScoring":{"overallScore":96,"grade":"A+","criteriaScores":{"quantifiedMetricsScore":25,"actionVerbsScore":25,"keywordOptimizationScore":21,"formattingComplianceScore":25},"actionableFeedback":["Incorporate target role keywords: analytics."],"detectedKeywords":["bayesian","inference","probabilistic","pipelines","python","vector"],"missingKeywords":["analytics"]},"cryptographicProof":{"canonicalDigestSha256":"68b46043cc55e73c40de5874e49ab3c9699c46d321fa499192582cda6fe21bc0","signatureHmac":"25f852cddd2d7a2d33c0afadf259e33cab64348dd985e1f4c800867cf7863dad","didAnchor":"did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b","verificationUrl":"/verify-certificate?proof=68b46043cc55e73c"}}};
+
+    function switchRole(roleKey, element) {
+      document.querySelectorAll('.role-card').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+
+      const data = roleData[roleKey];
+      if (!data) return;
+
+      document.getElementById('resTitle').innerText = data.roleTitle;
+      document.getElementById('resSummary').innerText = data.summary;
+      document.getElementById('resDigest').innerText = data.cryptographicProof.canonicalDigestSha256;
+      document.getElementById('atsScore').innerText = data.atsScoring.overallScore;
+
+      // Update Telemetry
+      const telHtml = data.verifiedPlatformHighlights.map(h => `
+        <div class="highlight-box">
+          <strong>[VERIFIED TELEMETRY]</strong> ${h}
+        </div>
+      `).join('');
+      document.getElementById('resTelemetry').innerHTML = telHtml;
+
+      // Update Skills
+      document.getElementById('resSkills').innerHTML = `
+        <div class="skill-category"><strong>Languages:</strong> ${data.skillsMatrix.languages.join(', ')}</div>
+        <div class="skill-category"><strong>Frameworks & Libraries:</strong> ${data.skillsMatrix.frameworks.join(', ')}</div>
+        <div class="skill-category"><strong>Cloud & Systems:</strong> ${data.skillsMatrix.systemsAndCloud.join(', ')}</div>
+        <div class="skill-category"><strong>Algorithms:</strong> ${data.skillsMatrix.algorithmicCompetencies.join(', ')}</div>
+      `;
+    }
+
+    function copyAtsPlainText() {
+      // Find current active role
+      const activeCard = document.querySelector('.role-card.active');
+      let role = 'SYSTEMS_ARCHITECT';
+      if (activeCard.innerText.includes('Algorithm')) role = 'ALGORITHM_ENGINEER';
+      if (activeCard.innerText.includes('Full Stack')) role = 'FULL_STACK_LEAD';
+      if (activeCard.innerText.includes('ML Systems')) role = 'ML_DATA_ENGINEER';
+
+      fetch(`${role === 'SYSTEMS_ARCHITECT' ? 'STAFF_SYSTEMS_ARCHITECT' : role === 'ALGORITHM_ENGINEER' ? 'SENIOR_ALGORITHM_ENGINEER' : role === 'FULL_STACK_LEAD' ? 'LEAD_FULL_STACK_ENGINEER' : 'SENIOR_ML_SYSTEMS_ENGINEER'}_ATS.txt`)
+        .then(r => r.text())
+        .then(txt => {
+          navigator.clipboard.writeText(txt);
+          alert('Copied ATS-optimized plain text resume to clipboard!');
+        })
+        .catch(() => {
+          alert('Resume files available in anti_gravity_resume folder!');
+        });
+    }
+  </script>
+</body>
+</html>
