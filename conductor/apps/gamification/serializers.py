@@ -66,8 +66,64 @@ class GuildSerializer(serializers.ModelSerializer):
 
 class AddXPSerializer(serializers.Serializer):
     amount = serializers.IntegerField(min_value=1, max_value=10000)
-    reason = serializers.CharField(max_length=200, required=False, default='Activity')
+    reason = serializers.CharField(max_length=200, required=False, default='Activity', allow_blank=False)
+    
+    def validate_amount(self, value):
+        """Validate XP amount is reasonable."""
+        if value <= 0:
+            raise serializers.ValidationError("XP amount must be positive")
+        if value > 10000:
+            raise serializers.ValidationError("XP amount too large (max 10000)")
+        return value
+    
+    def validate_reason(self, value):
+        """Validate reason is not empty."""
+        if value and not value.strip():
+            raise serializers.ValidationError("Reason cannot be empty")
+        return value.strip() if value else 'Activity'
 
 
 class UnlockAchievementSerializer(serializers.Serializer):
-    achievementId = serializers.CharField(max_length=200)
+    achievementId = serializers.CharField(max_length=200, allow_blank=False)
+    
+    def validate_achievementId(self, value):
+        """Validate achievement ID exists."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Achievement ID is required")
+        return value.strip()
+
+
+class GuildCreateSerializer(serializers.Serializer):
+    """Serializer for creating a new guild."""
+    name = serializers.CharField(max_length=50, min_length=3)
+    description = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    emblem = serializers.CharField(max_length=20, default='🛡️')
+    
+    def validate_name(self, value):
+        """Validate guild name is unique and valid."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Guild name is required")
+        
+        # Check uniqueness
+        from .models import Guild
+        if Guild.objects.filter(name__iexact=value.strip()).exists():
+            raise serializers.ValidationError("A guild with this name already exists")
+        
+        return value.strip()
+
+
+class GuildJoinSerializer(serializers.Serializer):
+    """Serializer for joining a guild."""
+    guild_id = serializers.UUIDField()
+    
+    def validate_guild_id(self, value):
+        """Validate guild exists and has space."""
+        from .models import Guild
+        try:
+            guild = Guild.objects.get(id=value)
+            current_members = guild.memberships.count()
+            if current_members >= guild.max_members:
+                raise serializers.ValidationError("Guild is full")
+            return value
+        except Guild.DoesNotExist:
+            raise serializers.ValidationError("Guild not found")
