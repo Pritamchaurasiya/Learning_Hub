@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchRoute } from '../utils/routePrefetchRegistry'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
@@ -116,6 +117,7 @@ function PracticeStatCardSkeleton() {
 export default function ProblemsPage() {
   useDocumentTitle('DSA Practice | Engineering Mastery')
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   void searchParams.get('contest')
   const addToast = useStore(state => state.addToast)
@@ -803,7 +805,9 @@ export default function ProblemsPage() {
                           <tr
                             key={p.id}
                             onClick={() => navigate(`/problem/${p.slug}`)}
-                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group"
+                            onPointerEnter={() => prefetchRoute(`/problem/${p.slug}`, queryClient)}
+                            onTouchStart={() => prefetchRoute(`/problem/${p.slug}`, queryClient)}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group content-visibility-auto"
                           >
                             <td className="py-3.5 px-4 text-center">
                               {isSolved ? (

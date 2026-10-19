@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchRoute } from '../utils/routePrefetchRegistry'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -66,6 +67,7 @@ const REVISION_KITS = [
 export default function LibraryPage() {
   useDocumentTitle('Knowledge & Ebook Library')
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const tabParam = searchParams.get('tab') as 'courses' | 'ebooks' | 'revision-kits' | null
   const [activeTab, setActiveTab] = useState<'courses' | 'ebooks' | 'revision-kits'>(() => {
@@ -419,8 +421,10 @@ export default function LibraryPage() {
                 <Card
                   key={course.id}
                   hover
-                  className="overflow-hidden cursor-pointer flex flex-col justify-between"
+                  className="overflow-hidden cursor-pointer flex flex-col justify-between content-visibility-auto"
                   onClick={() => navigate(`/course/${course.id}`)}
+                  onPointerEnter={() => prefetchRoute(`/course/${course.id}`, queryClient)}
+                  onTouchStart={() => prefetchRoute(`/course/${course.id}`, queryClient)}
                 >
                   <div>
                     <div className="aspect-video bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center overflow-hidden">
@@ -525,6 +529,8 @@ export default function LibraryPage() {
                 <div className="p-4 pt-0">
                   <button
                     onClick={() => navigate(`/ebook/${ebook.id}`)}
+                    onPointerEnter={() => prefetchRoute(`/ebook/${ebook.id}`, queryClient)}
+                    onTouchStart={() => prefetchRoute(`/ebook/${ebook.id}`, queryClient)}
                     className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition-all"
                   >
                     <BookOpen className="w-4 h-4" />
@@ -545,7 +551,11 @@ export default function LibraryPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {REVISION_KITS.map(kit => (
-              <Card key={kit.id} hover className="p-5 flex flex-col justify-between space-y-4">
+              <Card
+                key={kit.id}
+                hover
+                className="p-5 flex flex-col justify-between space-y-4 content-visibility-auto"
+              >
                 <div className="space-y-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                     {kit.category}
@@ -562,6 +572,8 @@ export default function LibraryPage() {
                 </div>
                 <button
                   onClick={() => navigate('/downloads')}
+                  onPointerEnter={() => prefetchRoute('/downloads', queryClient)}
+                  onTouchStart={() => prefetchRoute('/downloads', queryClient)}
                   className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
                 >
                   <span>Save for Offline Study</span>

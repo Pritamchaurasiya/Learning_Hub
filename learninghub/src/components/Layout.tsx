@@ -72,6 +72,7 @@ export default function Layout({ children }: LayoutProps) {
                       initial={{ opacity: 0.9 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.05, ease: 'easeOut' }}
+                      className="gpu-accelerated zero-cls-wrapper"
                     >
                       <Outlet />
                     </motion.div>

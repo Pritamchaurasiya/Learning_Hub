@@ -1,2 +1,10 @@
+# Direct static HTML pass-through
+/tests-a-plus.html    /tests-a-plus.html    200
+/tests-a.html         /tests-a.html         200
+/test-a.html          /test-a.html          200
+/tests                /tests/index.html     200
+/tests/               /tests/index.html     200
+
 # Cloudflare Pages SPA Routing
-/*    /index.html   200
+/*                    /index.html           200
+

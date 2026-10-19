@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit",
-    "prepare": "cd .. && husky learninghub/.husky"
+    "prepare": "cd .. && npx --no-install husky learninghub/.husky 2>nul || exit 0"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.3",

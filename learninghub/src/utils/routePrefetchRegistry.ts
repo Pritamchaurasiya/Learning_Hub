@@ -133,6 +133,15 @@ const ROUTE_PREFETCH_MAP = new Map<string, RoutePrefetchConfig>(
     '/monitoring': {
       loadComponent: () => import('../pages/MonitoringPage'),
     },
+    '/problem': {
+      loadComponent: () => import('../pages/ProblemWorkspacePage'),
+    },
+    '/course': {
+      loadComponent: () => import('../pages/CourseDetailsPage'),
+    },
+    '/ebook': {
+      loadComponent: () => import('../pages/EbookReaderPage'),
+    },
   })
 )
 
@@ -151,7 +160,18 @@ export function prefetchRoute(to: string, queryClient?: QueryClient | null): voi
     return
   }
 
-  const config = ROUTE_PREFETCH_MAP.get(path)
+  let config = ROUTE_PREFETCH_MAP.get(path)
+  let problemSlug: string | undefined
+  if (!config) {
+    if (path.startsWith('/problem/')) {
+      config = ROUTE_PREFETCH_MAP.get('/problem')
+      problemSlug = path.replace('/problem/', '')
+    } else if (path.startsWith('/course/')) {
+      config = ROUTE_PREFETCH_MAP.get('/course')
+    } else if (path.startsWith('/ebook/')) {
+      config = ROUTE_PREFETCH_MAP.get('/ebook')
+    }
+  }
   if (!config) {
     return
   }
@@ -172,6 +192,17 @@ export function prefetchRoute(to: string, queryClient?: QueryClient | null): voi
     config.prefetchQuery(queryClient).catch(() => {
       // Non-blocking query prefetch error
     })
+  } else if (problemSlug && queryClient) {
+    queryClient
+      .prefetchQuery({
+        queryKey: ['problem', problemSlug],
+        queryFn: () =>
+          fetchApi(`/problems/${problemSlug}`).then(r => (r as { data: unknown }).data),
+        staleTime: 5 * 60 * 1000,
+      })
+      .catch(() => {
+        // Non-blocking query prefetch error
+      })
   }
 }
 
@@ -182,8 +213,14 @@ export function idlePrefetchRoutes(routes: string[], queryClient?: QueryClient |
   if (typeof window === 'undefined') return
 
   // Respect user data saver and slow mobile connection preferences
-  const connection = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }).connection
-  if (connection?.saveData || connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g') {
+  const connection = (
+    navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }
+  ).connection
+  if (
+    connection?.saveData ||
+    connection?.effectiveType === '2g' ||
+    connection?.effectiveType === 'slow-2g'
+  ) {
     return
   }
 

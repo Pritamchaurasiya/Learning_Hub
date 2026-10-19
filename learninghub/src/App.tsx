@@ -551,7 +551,15 @@ function App() {
               <Route
                 path="/tests-a"
                 element={
-                  <LazyRoute sectionName="Adaptive Tests">
+                  <LazyRoute sectionName="Tests A+ Interactive Studio">
+                    <TestsAStationPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/tests-a/catalog"
+                element={
+                  <LazyRoute sectionName="Test Catalog">
                     <TestsAPage />
                   </LazyRoute>
                 }
