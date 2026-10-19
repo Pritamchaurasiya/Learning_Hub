@@ -18,7 +18,7 @@ class Tag(models.Model):
         verbose_name = "Problem Tag"
         verbose_name_plural = "Problem Tags"
         indexes = [
-            models.Index(fields=['name'], name='idx_tag_name'),
+            models.Index(fields=['name'], name='idx_dsa_tag_name'),
             models.Index(fields=['-problem_count'], name='idx_tag_popular'),
         ]
 
@@ -143,7 +143,7 @@ class Submission(models.Model):
         db_table = "dsa_submissions"
         ordering = ['-submitted_at']
         indexes = [
-            models.Index(fields=['user', 'problem', 'status'], name='idx_submission_user_prob_status'),  # For "Already Solved" check
+            models.Index(fields=['user', 'problem', 'status'], name='idx_sub_user_prob_status'),  # For "Already Solved" check
             models.Index(fields=['status'], name='idx_submission_status'),  # For filtering by status
             models.Index(fields=['-submitted_at'], name='idx_submission_recent'),  # For rigorous timeline ordering
             models.Index(fields=['user', '-submitted_at'], name='idx_submission_user_recent'),  # Optimized "My History" query

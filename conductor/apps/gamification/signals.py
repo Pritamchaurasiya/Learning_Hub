@@ -5,6 +5,7 @@ from apps.courses.models import LessonCompletion
 from apps.dsa.models import Submission
 from .services import GamificationService
 
+from django.db import transaction
 from django.contrib.auth import get_user_model
 from .models import UserXP, Streak
 
@@ -15,8 +16,9 @@ logger = logging.getLogger(__name__)
 def create_user_gamification_profiles(sender, instance, created, **kwargs):
     if created:
         try:
-            UserXP.objects.get_or_create(user=instance)
-            Streak.objects.get_or_create(user=instance)
+            with transaction.atomic():
+                UserXP.objects.get_or_create(user=instance)
+                Streak.objects.get_or_create(user=instance)
         except Exception as e:
             logger.error("Failed to create gamification profiles for user %s: %s", instance.id, e)
 

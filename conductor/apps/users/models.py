@@ -101,7 +101,7 @@ class OrganizationMember(BaseModel):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='organization_memberships', db_index=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER, db_index=True)
     is_active = models.BooleanField(default=True, db_index=True)
-    joined_at = models.DateTimeField(auto_now_add=True)
+    joined_at = models.DateTimeField(default=timezone.now, blank=True)
     
     class Meta:
         unique_together = ['organization', 'user']

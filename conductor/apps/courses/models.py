@@ -3,6 +3,7 @@ Course models for Learning Hub Backend.
 """
 
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 try:
@@ -275,7 +276,7 @@ class Enrollment(BaseModel):
 
     # Access
     last_accessed_at = models.DateTimeField(auto_now=True, db_index=True)
-    first_accessed_at = models.DateTimeField(auto_now_add=True)
+    first_accessed_at = models.DateTimeField(null=True, blank=True, default=timezone.now)
 
     class Meta:
         db_table = "enrollments"
