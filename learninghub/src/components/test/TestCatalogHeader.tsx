@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { Link } from 'react-router-dom'
 import { Sparkles, Plus, UploadCloud } from 'lucide-react'
 import { Button } from '../ui/Button'
 
@@ -23,13 +22,13 @@ export const TestCatalogHeader = memo(function TestCatalogHeader({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Link
-          to="/tests-a"
+        <a
+          href="/tests-a"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-emerald-200" />
           Interactive Tests A+ Studio
-        </Link>
+        </a>
         <Button
           onClick={onOpenImportModal}
           variant="outline"

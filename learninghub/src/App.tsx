@@ -551,8 +551,8 @@ function App() {
               <Route
                 path="/tests-a"
                 element={
-                  <LazyRoute sectionName="Tests A+ Interactive Studio">
-                    <TestsAStationPage />
+                  <LazyRoute sectionName="Tests A+">
+                    <TestsAPage />
                   </LazyRoute>
                 }
               />
@@ -575,13 +575,21 @@ function App() {
               <Route
                 path="/tests-a-plus"
                 element={
-                  <LazyRoute sectionName="Tests A+ Interactive Studio">
-                    <TestsAStationPage />
+                  <LazyRoute sectionName="Tests A+">
+                    <TestsAPage />
                   </LazyRoute>
                 }
               />
               <Route
                 path="/tests-a/simulator"
+                element={
+                  <LazyRoute sectionName="Tests A+">
+                    <TestsAPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/tests-a/studio"
                 element={
                   <LazyRoute sectionName="Tests A+ Interactive Studio">
                     <TestsAStationPage />

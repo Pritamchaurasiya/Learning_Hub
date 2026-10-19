@@ -22,9 +22,15 @@ import {
   QuestionBankImportModal,
   OfflineStationBanner,
   TestFilterBar,
-  TestCatalogHeader,
   TestCatalogCardGrid,
   TestActiveExamStation,
+  TestHeroHeader,
+  TestGamificationStrip,
+  TestQuickActionsGrid,
+  TestPathwayMap,
+  TestPerformanceSection,
+  TestBlitzModal,
+  TestFlashcardsModal,
 } from '../components/test'
 import { useProctoring } from '../hooks/useProctoring'
 import { playExamChime } from '../utils/soundEffects'
@@ -280,6 +286,8 @@ const TestsAPage = memo(() => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [isManualModalOpen, setIsManualModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isBlitzModalOpen, setIsBlitzModalOpen] = useState(false)
+  const [isFlashcardsModalOpen, setIsFlashcardsModalOpen] = useState(false)
   const [aiModalInitialTopic, setAiModalInitialTopic] = useState<string | undefined>(undefined)
   const [aiModalInitialMode, setAiModalInitialMode] = useState<
     'adaptive' | 'weak_area' | undefined
@@ -1397,15 +1405,50 @@ const TestsAPage = memo(() => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <SEO title="Tests A+" description="Take practice tests and improve your skills" />
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a1f] py-8 relative transition-colors duration-200">
+      <SEO
+        title="Tests A+"
+        description="Practice smarter. Test yourself. Improve faster with Tests A+ adaptive CBT simulator and diagnostics."
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <TestCatalogHeader
+      {/* Ambient background visual glows matching user's design */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-40 right-0 w-[45vmax] h-[45vmax] rounded-full bg-purple-600/10 blur-[100px]" />
+        <div className="absolute top-1/3 -left-40 w-[40vmax] h-[40vmax] rounded-full bg-blue-600/10 blur-[100px]" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Full Interactive Hero matching the exact user file */}
+        <TestHeroHeader
           onOpenImportModal={() => setIsImportModalOpen(true)}
           onOpenManualModal={() => setIsManualModalOpen(true)}
           onOpenAIModal={() => setIsAIModalOpen(true)}
         />
+
+        {/* Gamification Strip: Day Streak, Weekly Target, Accuracy Ring, Hex Badges */}
+        <TestGamificationStrip />
+
+        {/* 4 Quick Action Cards: 60s Blitz, Spaced Flashcards, Mistake Notebook, AI Drill */}
+        <TestQuickActionsGrid
+          onLaunchBlitz={() => setIsBlitzModalOpen(true)}
+          onOpenFlashcards={() => setIsFlashcardsModalOpen(true)}
+          onOpenMistakes={() => navigate('/revision')}
+          onOpenAdaptiveDrill={() => {
+            setAiModalInitialMode('adaptive')
+            setIsAIModalOpen(true)
+          }}
+        />
+
+        {/* Guided Learning Pathway Roadmap */}
+        <TestPathwayMap
+          onStartStage={stage => {
+            setAiModalInitialTopic(stage.topic)
+            setIsAIModalOpen(true)
+          }}
+        />
+
+        {/* Full Performance Dashboard: Radar Chart, Score Trend, 70% Benchmarks, 12-Week Study Heatmap */}
+        <TestPerformanceSection />
 
         {/* Offline Assessment Station Bar */}
         <OfflineStationBanner
@@ -1448,6 +1491,17 @@ const TestsAPage = memo(() => {
             {error}
           </div>
         )}
+
+        {/* Full Collection Header & Filter */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            All Practice Tests & Mocks
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            Explore the complete question repository with filters, difficulty tiers, and timed exam
+            modes.
+          </p>
+        </div>
 
         <TestFilterBar
           selectedModePill={selectedModePill}
@@ -1503,6 +1557,13 @@ const TestsAPage = memo(() => {
         onImportComplete={() => {
           void handleRetryLoadTests()
         }}
+      />
+
+      <TestBlitzModal isOpen={isBlitzModalOpen} onClose={() => setIsBlitzModalOpen(false)} />
+
+      <TestFlashcardsModal
+        isOpen={isFlashcardsModalOpen}
+        onClose={() => setIsFlashcardsModalOpen(false)}
       />
     </div>
   )
