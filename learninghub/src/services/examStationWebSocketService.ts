@@ -60,7 +60,7 @@ export interface AutosaveAnswerPayload {
   time_spent?: number
 }
 
-class ExamStationWebSocketService {
+export class ExamStationWebSocketService {
   private socket: WebSocket | null = null
   private attemptId: string | null = null
   private handlers: ExamStationSocketHandlers = {}
@@ -69,9 +69,15 @@ class ExamStationWebSocketService {
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private isExplicitlyClosed = false
+  private pendingQueue: Array<Record<string, unknown>> = []
+  private maxQueueSize = 50
 
   public isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN
+  }
+
+  public getQueueLength(): number {
+    return this.pendingQueue.length
   }
 
   public connect(attemptId: string, handlers: ExamStationSocketHandlers = {}): void {
@@ -83,7 +89,7 @@ class ExamStationWebSocketService {
       return
     }
 
-    this.disconnect()
+    this.disconnect(false)
     this.attemptId = attemptId
     this.handlers = handlers
     this.isExplicitlyClosed = false
@@ -95,19 +101,33 @@ class ExamStationWebSocketService {
     if (!this.attemptId || this.isExplicitlyClosed) return
 
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const host = window.location.host || 'localhost:8000'
+      let wsBase: string
+      if (
+        typeof import.meta !== 'undefined' &&
+        import.meta.env &&
+        typeof import.meta.env.VITE_WS_URL === 'string' &&
+        import.meta.env.VITE_WS_URL.trim()
+      ) {
+        wsBase = import.meta.env.VITE_WS_URL.trim().replace(/\/+$/, '')
+      } else {
+        const protocol =
+          typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+        const host = (typeof window !== 'undefined' && window.location.host) || 'localhost:8000'
+        wsBase = `${protocol}//${host}`
+      }
+
       // Use in-memory token (set after login) instead of localStorage.
       // Backend may also read httpOnly cookies from WebSocket handshake.
       const token = getWsAuthToken()
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : ''
-      const wsUrl = `${protocol}//${host}/ws/test/attempts/${this.attemptId}/${tokenParam}`
+      const wsUrl = `${wsBase}/ws/test/attempts/${this.attemptId}/${tokenParam}`
 
       this.socket = new WebSocket(wsUrl)
 
       this.socket.onopen = () => {
         this.reconnectAttempts = 0
         this.handlers.onStatusChange?.(true)
+        this.flushPendingQueue()
         this.startHeartbeat()
       }
 
@@ -134,6 +154,22 @@ class ExamStationWebSocketService {
       }
     } catch (err) {
       this.handlers.onError?.(err)
+    }
+  }
+
+  private flushPendingQueue(): void {
+    if (!this.isConnected() || !this.socket || this.pendingQueue.length === 0) return
+    const queued = [...this.pendingQueue]
+    this.pendingQueue = []
+    for (const msg of queued) {
+      try {
+        this.socket.send(JSON.stringify(msg))
+      } catch {
+        // Re-queue if transmission fails
+        if (this.pendingQueue.length < this.maxQueueSize) {
+          this.pendingQueue.push(msg)
+        }
+      }
     }
   }
 
@@ -217,20 +253,33 @@ class ExamStationWebSocketService {
     }
   }
 
-  public send(payload: Record<string, unknown>): boolean {
+  public send(payload: Record<string, unknown>, queueIfOffline = false): boolean {
     if (this.isConnected() && this.socket) {
-      this.socket.send(JSON.stringify(payload))
-      return true
+      try {
+        this.socket.send(JSON.stringify(payload))
+        return true
+      } catch {
+        if (queueIfOffline && this.pendingQueue.length < this.maxQueueSize) {
+          this.pendingQueue.push(payload)
+        }
+        return false
+      }
+    }
+    if (queueIfOffline && this.pendingQueue.length < this.maxQueueSize) {
+      this.pendingQueue.push(payload)
     }
     return false
   }
 
   public sendAutosave(questionId: string, answerData: AutosaveAnswerPayload): boolean {
-    return this.send({
-      type: 'autosave',
-      question_id: questionId,
-      answer_data: answerData,
-    })
+    return this.send(
+      {
+        type: 'autosave',
+        question_id: questionId,
+        answer_data: answerData,
+      },
+      true
+    )
   }
 
   public sendTelemetry(
@@ -238,17 +287,23 @@ class ExamStationWebSocketService {
     severity: 'low' | 'medium' | 'high' = 'low',
     details: Record<string, unknown> = {}
   ): boolean {
-    return this.send({
-      type: 'telemetry_event',
-      event_name: eventName,
-      severity,
-      details,
-    })
+    return this.send(
+      {
+        type: 'telemetry_event',
+        event_name: eventName,
+        severity,
+        details,
+      },
+      true
+    )
   }
 
-  public disconnect(): void {
+  public disconnect(clearQueue = true): void {
     this.isExplicitlyClosed = true
     this.stopHeartbeat()
+    if (clearQueue) {
+      this.pendingQueue = []
+    }
 
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout)

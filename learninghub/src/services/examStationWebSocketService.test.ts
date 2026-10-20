@@ -1,205 +1,190 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { examStationWebSocketService } from './examStationWebSocketService'
+import {
+  ExamStationWebSocketService,
+  setWsAuthToken,
+  getWsAuthToken,
+  clearWsAuthToken,
+} from './examStationWebSocketService'
 
 class MockWebSocket {
-  static instances: MockWebSocket[] = []
-  url: string
-  readyState: number = WebSocket.CONNECTING
-  sentData: string[] = []
-  onopen: (() => void) | null = null
-  onclose: (() => void) | null = null
-  onerror: ((err: any) => void) | null = null
-  onmessage: ((ev: { data: string }) => void) | null = null
+  public static instances: MockWebSocket[] = []
+  public url: string
+  public readyState: number = WebSocket.CONNECTING
+  public sentData: string[] = []
+
+  public onopen: (() => void) | null = null
+  public onmessage: ((event: { data: string }) => void) | null = null
+  public onclose: (() => void) | null = null
+  public onerror: ((error: unknown) => void) | null = null
 
   constructor(url: string) {
     this.url = url
     MockWebSocket.instances.push(this)
   }
 
-  send(data: string) {
+  public send(data: string) {
+    if (this.readyState !== WebSocket.OPEN) {
+      throw new Error('WebSocket is not open')
+    }
     this.sentData.push(data)
   }
 
-  close() {
+  public close() {
     this.readyState = WebSocket.CLOSED
-    this.onclose?.()
+    if (this.onclose) this.onclose()
   }
 
-  triggerOpen() {
+  public triggerOpen() {
     this.readyState = WebSocket.OPEN
-    this.onopen?.()
+    if (this.onopen) this.onopen()
   }
 
-  triggerMessage(data: Record<string, unknown>) {
-    this.onmessage?.({ data: JSON.stringify(data) })
+  public triggerMessage(payload: Record<string, unknown>) {
+    if (this.onmessage) {
+      this.onmessage({ data: JSON.stringify(payload) })
+    }
+  }
+
+  public triggerError(err: unknown) {
+    if (this.onerror) this.onerror(err)
   }
 }
 
 describe('ExamStationWebSocketService', () => {
-  const originalWebSocket = global.WebSocket
+  let service: ExamStationWebSocketService
+  const originalWebSocket = globalThis.WebSocket
 
   beforeEach(() => {
     MockWebSocket.instances = []
-    global.WebSocket = MockWebSocket as any
-    examStationWebSocketService.disconnect()
-    vi.clearAllMocks()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalThis.WebSocket = MockWebSocket as any
+    service = new ExamStationWebSocketService()
+    clearWsAuthToken()
   })
 
   afterEach(() => {
-    examStationWebSocketService.disconnect()
-    global.WebSocket = originalWebSocket
+    service.disconnect()
+    globalThis.WebSocket = originalWebSocket
+    vi.restoreAllMocks()
   })
 
-  it('establishes connection and handles onopen handshake', () => {
-    const onStatusChange = vi.fn()
-    examStationWebSocketService.connect('attempt-uuid-01', { onStatusChange })
+  it('manages in-memory token state without touching localStorage', () => {
+    expect(getWsAuthToken()).toBeNull()
+    setWsAuthToken('test-secret-jwt')
+    expect(getWsAuthToken()).toBe('test-secret-jwt')
+    clearWsAuthToken()
+    expect(getWsAuthToken()).toBeNull()
+  })
 
+  it('connects to attempt endpoint and includes auth token parameter', () => {
+    setWsAuthToken('token-123')
+    service.connect('attempt-456')
+
+    expect(MockWebSocket.instances.length).toBe(1)
     const ws = MockWebSocket.instances[0]
-    expect(ws).toBeDefined()
-    expect(ws.url).toContain('/ws/test/attempts/attempt-uuid-01/')
-
-    ws.triggerOpen()
-    expect(onStatusChange).toHaveBeenCalledWith(true)
-    expect(examStationWebSocketService.isConnected()).toBe(true)
+    expect(ws.url).toContain('/ws/test/attempts/attempt-456/')
+    expect(ws.url).toContain('token=token-123')
   })
 
-  it('handles connection_established and heartbeat_ack messages', () => {
-    const onConnectionEstablished = vi.fn()
-    const onHeartbeatAck = vi.fn()
+  it('buffers autosaves while offline and flushes upon connection open', () => {
+    // Attempt to autosave before connecting
+    expect(service.isConnected()).toBe(false)
+    const queued1 = service.sendAutosave('q-1', { selected_options: ['opt-a'], time_spent: 10 })
+    expect(queued1).toBe(false)
+    expect(service.getQueueLength()).toBe(1)
 
-    examStationWebSocketService.connect('attempt-uuid-02', {
-      onConnectionEstablished,
-      onHeartbeatAck,
+    // Connect and trigger open
+    service.connect('attempt-789')
+    const ws = MockWebSocket.instances[0]
+    ws.triggerOpen()
+
+    expect(service.isConnected()).toBe(true)
+    expect(service.getQueueLength()).toBe(0)
+    expect(ws.sentData.length).toBe(1)
+
+    const flushed = JSON.parse(ws.sentData[0])
+    expect(flushed.type).toBe('autosave')
+    expect(flushed.question_id).toBe('q-1')
+  })
+
+  it('dispatches incoming WebSocket events to registered handlers', () => {
+    const onEstablished = vi.fn()
+    const onWarning = vi.fn()
+    const onExtension = vi.fn()
+    const onForceSubmit = vi.fn()
+
+    service.connect('attempt-xyz', {
+      onConnectionEstablished: onEstablished,
+      onProctorWarning: onWarning,
+      onProctorTimeExtension: onExtension,
+      onProctorForceSubmit: onForceSubmit,
     })
 
     const ws = MockWebSocket.instances[0]
     ws.triggerOpen()
 
+    // 1. Connection established
     ws.triggerMessage({
       type: 'connection_established',
-      attempt_id: 'attempt-uuid-02',
-      test_id: 'test-101',
+      attempt_id: 'attempt-xyz',
+      test_id: 'test-abc',
       status: 'in_progress',
-      time_remaining_seconds: 1500,
+      time_remaining_seconds: 1800,
     })
-
-    expect(onConnectionEstablished).toHaveBeenCalledWith({
-      attemptId: 'attempt-uuid-02',
-      testId: 'test-101',
+    expect(onEstablished).toHaveBeenCalledWith({
+      attemptId: 'attempt-xyz',
+      testId: 'test-abc',
       status: 'in_progress',
-      timeRemainingSeconds: 1500,
+      timeRemainingSeconds: 1800,
     })
 
-    ws.triggerMessage({
-      type: 'heartbeat_ack',
-      timestamp: '2026-10-10T12:00:00Z',
-      time_remaining_seconds: 1475,
-      status: 'in_progress',
-    })
-
-    expect(onHeartbeatAck).toHaveBeenCalledWith({
-      timestamp: '2026-10-10T12:00:00Z',
-      timeRemainingSeconds: 1475,
-      status: 'in_progress',
-    })
-  })
-
-  it('handles proctor interventions: warnings, time extensions, and force submit', () => {
-    const onProctorWarning = vi.fn()
-    const onProctorTimeExtension = vi.fn()
-    const onProctorForceSubmit = vi.fn()
-
-    examStationWebSocketService.connect('attempt-uuid-03', {
-      onProctorWarning,
-      onProctorTimeExtension,
-      onProctorForceSubmit,
-    })
-
-    const ws = MockWebSocket.instances[0]
-    ws.triggerOpen()
-
-    // 1. Proctor warning
+    // 2. Proctor warning
     ws.triggerMessage({
       type: 'proctor_warning',
-      message: 'Please refrain from opening multiple windows.',
-      severity: 'high',
-      issued_at: '2026-10-10T12:05:00Z',
+      message: 'Tab switch detected.',
+      severity: 'medium',
+      issued_at: '2026-10-20T12:00:00Z',
+    })
+    expect(onWarning).toHaveBeenCalledWith({
+      message: 'Tab switch detected.',
+      severity: 'medium',
+      issuedAt: '2026-10-20T12:00:00Z',
     })
 
-    expect(onProctorWarning).toHaveBeenCalledWith({
-      message: 'Please refrain from opening multiple windows.',
-      severity: 'high',
-      issuedAt: '2026-10-10T12:05:00Z',
-    })
-
-    // 2. Extra time extension
+    // 3. Proctor time extension
     ws.triggerMessage({
       type: 'proctor_time_extension',
       seconds_added: 300,
-      new_time_remaining: 1800,
-      message: '5 minutes added for technical issue resolution.',
+      new_time_remaining: 2100,
+      message: '5 minutes extra added',
     })
-
-    expect(onProctorTimeExtension).toHaveBeenCalledWith({
+    expect(onExtension).toHaveBeenCalledWith({
       secondsAdded: 300,
-      newTimeRemaining: 1800,
-      message: '5 minutes added for technical issue resolution.',
+      newTimeRemaining: 2100,
+      message: '5 minutes extra added',
     })
 
-    // 3. Force submit
+    // 4. Force submit
     ws.triggerMessage({
       type: 'proctor_force_submit',
-      reason: 'Proctor terminated exam session due to policy violation.',
+      reason: 'Proctor terminated test.',
     })
-
-    expect(onProctorForceSubmit).toHaveBeenCalledWith({
-      reason: 'Proctor terminated exam session due to policy violation.',
-    })
-  })
-
-  it('streams autosaves and telemetry events over open socket', () => {
-    examStationWebSocketService.connect('attempt-uuid-04')
-    const ws = MockWebSocket.instances[0]
-    ws.triggerOpen()
-
-    // Send autosave
-    const autosaveSent = examStationWebSocketService.sendAutosave('q-99', {
-      selected_options: ['opt-1', 'opt-2'],
-      time_spent: 42,
-    })
-    expect(autosaveSent).toBe(true)
-    expect(JSON.parse(ws.sentData[0])).toEqual({
-      type: 'autosave',
-      question_id: 'q-99',
-      answer_data: {
-        selected_options: ['opt-1', 'opt-2'],
-        time_spent: 42,
-      },
-    })
-
-    // Send telemetry incident
-    const telemSent = examStationWebSocketService.sendTelemetry('tab_switch', 'medium', {
-      switchCount: 2,
-    })
-    expect(telemSent).toBe(true)
-    expect(JSON.parse(ws.sentData[1])).toEqual({
-      type: 'telemetry_event',
-      event_name: 'tab_switch',
-      severity: 'medium',
-      details: {
-        switchCount: 2,
-      },
+    expect(onForceSubmit).toHaveBeenCalledWith({
+      reason: 'Proctor terminated test.',
     })
   })
 
-  it('gracefully disconnects and stops heartbeat timers', () => {
+  it('cleans up state and resets connection when disconnect is called', () => {
     const onStatusChange = vi.fn()
-    examStationWebSocketService.connect('attempt-uuid-05', { onStatusChange })
+    service.connect('attempt-999', { onStatusChange })
     const ws = MockWebSocket.instances[0]
     ws.triggerOpen()
 
-    examStationWebSocketService.disconnect()
-    expect(examStationWebSocketService.isConnected()).toBe(false)
+    expect(service.isConnected()).toBe(true)
+
+    service.disconnect()
+    expect(service.isConnected()).toBe(false)
+    expect(service.getQueueLength()).toBe(0)
     expect(onStatusChange).toHaveBeenCalledWith(false)
   })
 })

@@ -300,6 +300,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           ws: true,
         },
+        '/ws': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+          ws: true,
+        },
       },
       watch: {
         ignored: ['**/backend/**', '**/django_backend/**', '**/dist/**', '**/coverage/**'],
