@@ -410,6 +410,30 @@ class TestSessionManager:
                 'marks': test.marks_per_correct if is_correct else 0,
             }
 
+        elif question.question_type in ('coding', 'subjective'):
+            if not answer.text_answer or not answer.text_answer.strip():
+                return {'is_correct': False, 'is_wrong': False, 'marks': 0}
+
+            # Award marks for non-empty coding/subjective answer submissions
+            user_content = answer.text_answer.strip()
+            has_content = len(user_content) >= 5
+
+            correct_option = question.options.filter(is_correct=True).first()
+            if correct_option and correct_option.text.strip():
+                is_correct = correct_option.text.strip().lower() in user_content.lower()
+            else:
+                is_correct = has_content
+
+            answer.is_correct = is_correct
+            answer.marks_obtained = test.marks_per_correct if is_correct else 0
+            answer.save()
+
+            return {
+                'is_correct': is_correct,
+                'is_wrong': not is_correct,
+                'marks': test.marks_per_correct if is_correct else 0,
+            }
+
         return {'is_correct': False, 'is_wrong': False, 'marks': 0}
 
     @classmethod

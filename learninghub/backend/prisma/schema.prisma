@@ -2010,6 +2010,9 @@ model Ebook {
 
   @@index([category])
   @@index([slug])
+  @@index([author])
+  @@index([publishedAt(sort: Desc)], map: "idx_ebook_published")
+  @@index([category, difficulty], map: "idx_ebook_cat_diff")
   @@map("ebooks")
 }
 
@@ -2136,6 +2139,7 @@ model CartItem {
   @@unique([cartId, courseId])
   @@index([cartId])
   @@index([courseId])
+  @@index([cartId, addedAt(sort: Desc)], map: "idx_cart_item_cart_added")
   @@map("cart_items")
 }
 
@@ -2165,6 +2169,7 @@ model Order {
   @@index([status, createdAt])
   @@index([gatewayOrderId])
   @@index([idempotencyKey])
+  @@index([userId, status, createdAt(sort: Desc)], map: "idx_order_user_status_created")
   @@map("orders")
 }
 
@@ -2179,6 +2184,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([courseId])
+  @@index([orderId, courseId], map: "idx_order_item_order_course")
   @@map("order_items")
 }
 
@@ -2294,6 +2300,7 @@ model Certificate {
   @@index([userId, isRevoked])
   @@index([code])
   @@index([userId, issuedAt(sort: Desc)])
+  @@index([courseId], map: "idx_certificate_course")
   @@map("certificates")
 }
 
@@ -2319,6 +2326,7 @@ model Enrollment {
   @@index([userId, status])
   @@index([courseId])
   @@index([userId, completedAt])
+  @@index([userId, courseId, status], map: "idx_enrollment_user_course_status")
   @@map("enrollments")
 }
 

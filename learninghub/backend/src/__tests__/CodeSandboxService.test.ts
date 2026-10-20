@@ -103,6 +103,30 @@ describe('CodeSandboxService', () => {
       expect(result.testCasesPassed).toBe(1)
     })
 
+    it('allows valid OOP class declarations with constructor method', async () => {
+      const oopCode = `
+        class LRUCache {
+          constructor(capacity) {
+            this.capacity = capacity;
+            this.items = [];
+          }
+          getCap() {
+            return this.capacity;
+          }
+        }
+        const cache = new LRUCache(10);
+        console.log(cache.getCap());
+      `
+      const result = await CodeSandboxService.execute({
+        code: oopCode,
+        language: 'javascript',
+        testCases: [{ input: '', output: '10' }],
+      })
+
+      expect(result.status).toBe('accepted')
+      expect(result.testCasesPassed).toBe(1)
+    })
+
     it('handles runtime exceptions in user code gracefully', async () => {
       const result = await CodeSandboxService.execute({
         code: 'const a = null; a.someMethod();',

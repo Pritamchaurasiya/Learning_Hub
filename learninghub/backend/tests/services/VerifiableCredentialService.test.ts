@@ -60,6 +60,14 @@ describe('VerifiableCredentialService — W3C DID & Verifiable Credentials', () 
 
       const verified = MerkleTree.verifyProof('cred-1', proof, root)
       expect(verified).toBe(true)
+
+      // Tampered element must fail verification
+      const forgedVerified = MerkleTree.verifyProof('cred-forged', proof, root)
+      expect(forgedVerified).toBe(false)
+
+      // Random fake root must fail verification
+      const fakeRootVerified = MerkleTree.verifyProof('cred-1', proof, '0x0000000000000000000000000000000000000000000000000000000000000000')
+      expect(fakeRootVerified).toBe(false)
     })
 
     it('should handle odd number of elements gracefully', () => {

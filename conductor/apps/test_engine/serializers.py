@@ -28,6 +28,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'text', 'question_type', 'difficulty', 'bloom_level',
             'topic_name', 'subject_name', 'options',
+            'code_template', 'language', 'test_cases',
         ]
 
 
@@ -41,6 +42,7 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'text', 'question_type', 'difficulty', 'bloom_level',
             'topic_name', 'options', 'explanation', 'solution_steps',
+            'code_template', 'language', 'test_cases',
         ]
 
 
@@ -57,6 +59,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'text', 'question_type', 'status', 'difficulty', 'discrimination',
             'guess_factor', 'bloom_level', 'explanation', 'solution_steps',
+            'code_template', 'language', 'test_cases',
             'tags', 'is_ai_generated', 'ai_model', 'is_verified',
             'usage_count', 'correct_count', 'incorrect_count', 'accuracy_rate',
             'avg_time_seconds', 'reported_count',
@@ -121,6 +124,9 @@ class TestDetailSerializer(serializers.ModelSerializer):
                 'question_type': q.question_type,
                 'difficulty': q.difficulty,
                 'bloom_level': q.bloom_level,
+                'code_template': getattr(q, 'code_template', '') or '',
+                'language': getattr(q, 'language', 'python') or 'python',
+                'test_cases': getattr(q, 'test_cases', []) or [],
                 'options': [
                     {'id': str(o.id), 'text': o.text, 'order': o.order}
                     for o in q.options.all()

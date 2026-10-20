@@ -80,6 +80,8 @@ const FILE_NAME_MAP: Record<string, string> = {
 export class CodeSandboxService {
   private static consecutiveFailures = 0
   private static circuitOpenUntil = 0
+  private static readonly CIRCUIT_BREAKER_THRESHOLD = 5
+  private static readonly CIRCUIT_BREAKER_RESET_MS = 30000
 
   static async execute(req: ExecutionRequest): Promise<ExecutionResult> {
     const rawLang = req.language.toLowerCase()
@@ -107,7 +109,8 @@ export class CodeSandboxService {
       /\beval\s*\(/,
       /\bFunction\s*\(/,
       /\bimport\s*\(/,
-      /\bconstructor\b/,
+      /(?:\.|\bthis\s*\.)constructor\b/,
+      /\[\s*['"`]constructor['"`]\s*\]/,
       /__proto__/,
       /\bprototype\b/,
       /\bglobalThis\b/,
@@ -158,29 +161,53 @@ export class CodeSandboxService {
       return cachedResult
     }
 
-    // Try Tier 1 / Tier 2 Piston
+    // Try Tier 1 / Tier 2 Piston with Circuit Breaker
     let result: ExecutionResult | null = null
-    const urlsToTry = [PRIMARY_PISTON_URL]
-    if (PRIMARY_PISTON_URL !== PUBLIC_PISTON_URL) {
-      urlsToTry.push(PUBLIC_PISTON_URL)
-    }
+    const isCircuitOpen = Date.now() < CodeSandboxService.circuitOpenUntil
 
-    for (const apiUrl of urlsToTry) {
-      try {
-        result = await CodeSandboxService._executeWithPiston(apiUrl, langConfig, {
-          ...req,
-          testCases,
-          timeLimit,
-          memoryLimit,
-        })
-        if (result && result.status !== 'runtime_error') {
-          break
-        }
-      } catch (err) {
-        logger.warn(`Piston execution failed on ${apiUrl}:`, {
-          error: err instanceof Error ? err.message : String(err),
-        })
+    if (!isCircuitOpen) {
+      const urlsToTry = [PRIMARY_PISTON_URL]
+      if (PRIMARY_PISTON_URL !== PUBLIC_PISTON_URL) {
+        urlsToTry.push(PUBLIC_PISTON_URL)
       }
+
+      for (const apiUrl of urlsToTry) {
+        try {
+          result = await CodeSandboxService._executeWithPiston(apiUrl, langConfig, {
+            ...req,
+            testCases,
+            timeLimit,
+            memoryLimit,
+          })
+          if (result && result.status !== 'runtime_error') {
+            CodeSandboxService.consecutiveFailures = 0
+            break
+          } else if (
+            result?.status === 'runtime_error' &&
+            (result.message.includes('unavailable') ||
+              result.message.includes('unreachable') ||
+              result.message.includes('failed') ||
+              result.message.includes('Piston API returned'))
+          ) {
+            CodeSandboxService.consecutiveFailures++
+          }
+        } catch (err) {
+          CodeSandboxService.consecutiveFailures++
+          logger.warn(`Piston execution failed on ${apiUrl}:`, {
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
+      }
+
+      if (CodeSandboxService.consecutiveFailures >= CodeSandboxService.CIRCUIT_BREAKER_THRESHOLD) {
+        CodeSandboxService.circuitOpenUntil =
+          Date.now() + CodeSandboxService.CIRCUIT_BREAKER_RESET_MS
+        logger.warn(
+          `[CodeSandboxService] Circuit breaker tripped open for ${CodeSandboxService.CIRCUIT_BREAKER_RESET_MS}ms due to ${CodeSandboxService.consecutiveFailures} consecutive failures`
+        )
+      }
+    } else {
+      logger.warn('[CodeSandboxService] Circuit breaker is OPEN. Bypassing remote Piston execution.')
     }
 
     // Tier 3: Isolated Secure In-Memory VM Sandbox fallback for JavaScript/Node
@@ -216,8 +243,17 @@ export class CodeSandboxService {
       }
     }
 
-    // Cache successful execution result for 1 hour
-    if (result) {
+    // Cache successful execution result for 1 hour (never cache transient outage errors)
+    const isTransientError =
+      result &&
+      result.status === 'runtime_error' &&
+      (result.message.includes('currently unreachable') ||
+        result.message.includes('unavailable') ||
+        result.message.includes('Piston API returned') ||
+        result.message.includes('unreachable') ||
+        result.message.includes('ECONNREFUSED'))
+
+    if (result && !isTransientError) {
       await cacheService.set(cacheKey, result, 3600)
     }
 
@@ -471,7 +507,9 @@ export class CodeSandboxService {
         Set,
       })
 
-      const ctx = vm.createContext(sandbox)
+      const ctx = vm.createContext(sandbox, {
+        codeGeneration: { strings: false, wasm: false },
+      })
       const t0 = Date.now()
       try {
         vm.runInContext(code, ctx, { timeout: Math.min(timeLimit, 5000) })

@@ -202,17 +202,31 @@ export class MerkleTree {
 
   public static verifyProof(element: string, proof: string[], root: string): boolean {
     try {
-      let hash = crypto.createHash('sha256').update(element).digest()
-      for (const proofElement of proof) {
-        const proofBuf = Buffer.from(proofElement.replace(/^0x/, ''), 'hex')
-        const combined = Buffer.concat([hash, proofBuf])
-        const altCombined = Buffer.concat([proofBuf, hash])
-        // Check both order permutations
-        const hash1 = crypto.createHash('sha256').update(combined).digest()
-        const hash2 = crypto.createHash('sha256').update(altCombined).digest()
-        hash = hash1
+      if (!element || !root || !Array.isArray(proof)) {
+        return false
       }
-      return Boolean(root && root.startsWith('0x'))
+      const cleanRoot = root.replace(/^0x/, '').toLowerCase()
+      if (cleanRoot.length !== 64) {
+        return false
+      }
+      const rootBuf = Buffer.from(cleanRoot, 'hex')
+
+      let candidates: Buffer[] = [crypto.createHash('sha256').update(element).digest()]
+      for (const proofElement of proof) {
+        const cleanProof = proofElement.replace(/^0x/, '')
+        if (cleanProof.length !== 64) {
+          return false
+        }
+        const proofBuf = Buffer.from(cleanProof, 'hex')
+        const nextCandidates: Buffer[] = []
+        for (const cand of candidates) {
+          const hashLeft = crypto.createHash('sha256').update(Buffer.concat([cand, proofBuf])).digest()
+          const hashRight = crypto.createHash('sha256').update(Buffer.concat([proofBuf, cand])).digest()
+          nextCandidates.push(hashLeft, hashRight)
+        }
+        candidates = nextCandidates
+      }
+      return candidates.some(cand => cand.equals(rootBuf))
     } catch {
       return false
     }

@@ -189,23 +189,10 @@ export default defineConfig(({ mode }) => {
       // which chunk regressed when this warning fires.
       chunkSizeWarningLimit: 500,
       sourcemap: false,
-      rollupOptions: {
+rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              // Process markdown first to avoid circular dependency with vendor
-              if (
-                id.includes('react-markdown') ||
-                id.includes('remark') ||
-                id.includes('micromark') ||
-                id.includes('unist') ||
-                id.includes('vfile') ||
-                id.includes('mdast') ||
-                id.includes('marked')
-              )
-                return 'vendor-markdown'
-              if (id.includes('dompurify')) return 'vendor-dompurify'
-
               // Large libraries - separate chunks
               if (id.includes('framer-motion')) return 'animations'
               if (id.includes('lucide-react')) return 'icons'
@@ -215,23 +202,34 @@ export default defineConfig(({ mode }) => {
               if (id.includes('katex')) return 'katex'
               if (id.includes('@google/generative-ai')) return 'vendor-ai'
               if (id.includes('jspdf')) return 'pdf-jspdf'
-              if (id.includes('html2canvas')) return 'pdf-canvas'
+              if (id.includes('html2canvas') || id.includes('canvg')) return 'pdf-canvas'
               if (id.includes('@sentry')) return 'sentry'
               if (id.includes('stripe') || id.includes('@stripe')) return 'payments'
               if (id.includes('lodash')) return 'vendor-utils'
               if (id.includes('zod')) return 'vendor-validation'
 
-              // Code editor - only load on DSA pages (isolate parser state tables and grammars)
+              // Markdown/HTML processing (merged into vendor to avoid circular dep)
+              // These are small enough and don't justify separate chunk
+              // if (id.includes('dompurify') || id.includes('react-markdown') || ...) return 'vendor'
+
+              // Code editor - split grammars/languages from core
               if (
                 id.includes('codemirror') ||
                 id.includes('@codemirror') ||
-                id.includes('@uiw/react-codemirror') ||
-                id.includes('@lezer') ||
-                id.includes('lezer')
-              )
-                return 'editor'
+                id.includes('@uiw/react-codemirror')
+              ) {
+                if (
+                  id.includes('@lezer/') ||
+                  id.includes('lezer-') ||
+                  (id.includes('language-') && !id.includes('language-data'))
+                )
+                  return 'editor-grammars'
+                return 'editor-core'
+              }
+              if (id.includes('@lezer') || (id.includes('lezer') && !id.includes('lezer-')))
+                return 'editor-grammars'
 
-              // Core libraries - ensure react-core comes before vendor to avoid circular deps
+              // Core libraries - react-core first to prevent circular deps
               if (
                 id.includes('/react/') ||
                 id.includes('\\react\\') ||
@@ -256,7 +254,7 @@ export default defineConfig(({ mode }) => {
               if (id.includes('fuse.js')) return 'search'
               if (id.includes('react-virtuoso') || id.includes('@tanstack/react-virtual'))
                 return 'virtualization'
-              if (id.includes('canvg') || id.includes('html2canvas')) return 'pdf-canvas'
+              if (id.includes('canvg')) return 'pdf-canvas'
               if (id.includes('react-helmet-async')) return 'seo'
               if (
                 id.includes('class-variance-authority') ||
@@ -266,7 +264,7 @@ export default defineConfig(({ mode }) => {
                 return 'styling-utils'
               if (id.includes('workbox')) return 'pwa-workbox'
 
-              // Everything else
+              // Everything else - vendor LAST
               return 'vendor'
             }
           },

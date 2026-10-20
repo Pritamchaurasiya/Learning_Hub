@@ -674,6 +674,81 @@ class Command(BaseCommand):
                 ]
             },
             {
+                "topic": two_pointers_topic,
+                "text": "Given an array of integers `nums` and an integer `target`, return the 0-based indices `[i, j]` of the two numbers such that they add up to `target` ($i < j$). Assume exactly one valid pair exists, and do not use the same element twice. Achieve an optimal time complexity of $O(n)$.",
+                "question_type": "coding",
+                "difficulty": 0.42,
+                "discrimination": 1.35,
+                "bloom_level": "apply",
+                "explanation": "A hash map storing previously seen values mapped to their indices achieves $O(n)$ single-pass lookup. For each element `nums[i]`, we check if `target - nums[i]` exists in the hash table.",
+                "solution_steps": [
+                    "Initialize an empty hash table `seen = {}`",
+                    "Iterate `i, val` in enumerate(nums)",
+                    "Check if `target - val` is present in `seen`",
+                    "If found, return `[seen[target - val], i]`; otherwise record `seen[val] = i`"
+                ],
+                "tags": ["coding", "two-sum", "hash-map", "algorithms", "dsa"],
+                "language": "python",
+                "code_template": (
+                    "def two_sum(nums, target):\n"
+                    "    # Write your solution here\n"
+                    "    # Return list of two indices [i, j]\n"
+                    "    seen = {}\n"
+                    "    for i, x in enumerate(nums):\n"
+                    "        diff = target - x\n"
+                    "        if diff in seen:\n"
+                    "            return [seen[diff], i]\n"
+                    "        seen[x] = i\n"
+                    "    return []\n"
+                ),
+                "test_cases": [
+                    {"input": "nums = [2, 7, 11, 15], target = 9", "output": "[0, 1]", "explanation": "nums[0] + nums[1] = 2 + 7 = 9"},
+                    {"input": "nums = [3, 2, 4], target = 6", "output": "[1, 2]", "explanation": "nums[1] + nums[2] = 2 + 4 = 6"},
+                    {"input": "nums = [3, 3], target = 6", "output": "[0, 1]", "explanation": "nums[0] + nums[1] = 3 + 3 = 6"},
+                ],
+                "options": [
+                    {"text": "[0, 1]", "is_correct": True, "explanation": "Correct index pair for standard test case"},
+                ]
+            },
+            {
+                "topic": two_pointers_topic,
+                "text": "Given a string `s`, find the length of the longest contiguous substring without duplicate characters in optimal $O(n)$ time using a sliding window.",
+                "question_type": "coding",
+                "difficulty": 0.58,
+                "discrimination": 1.45,
+                "bloom_level": "analyze",
+                "explanation": "Use a sliding window with two pointers (`left` and `right`) and a hash map of character last-seen positions. When a duplicate character is encountered within the current window, advance `left` to `last_seen[ch] + 1`.",
+                "solution_steps": [
+                    "Maintain `left = 0`, `max_len = 0`, and dictionary `pos = {}`",
+                    "Iterate `right` from 0 to len(s) - 1",
+                    "If `s[right]` in `pos` and `pos[s[right]] >= left`, jump `left = pos[s[right]] + 1`",
+                    "Update `pos[s[right]] = right` and `max_len = max(max_len, right - left + 1)`"
+                ],
+                "tags": ["coding", "longest-substring", "sliding-window", "strings"],
+                "language": "python",
+                "code_template": (
+                    "def length_of_longest_substring(s):\n"
+                    "    # Return integer length of longest substring without repeating characters\n"
+                    "    pos = {}\n"
+                    "    left = 0\n"
+                    "    max_len = 0\n"
+                    "    for right, ch in enumerate(s):\n"
+                    "        if ch in pos and pos[ch] >= left:\n"
+                    "            left = pos[ch] + 1\n"
+                    "        pos[ch] = right\n"
+                    "        max_len = max(max_len, right - left + 1)\n"
+                    "    return max_len\n"
+                ),
+                "test_cases": [
+                    {"input": "s = \"abcabcbb\"", "output": "3", "explanation": "The answer is 'abc' with length 3"},
+                    {"input": "s = \"bbbbb\"", "output": "1", "explanation": "The answer is 'b' with length 1"},
+                    {"input": "s = \"pwwkew\"", "output": "3", "explanation": "The answer is 'wke' with length 3"},
+                ],
+                "options": [
+                    {"text": "3", "is_correct": True, "explanation": "Length 3 for abcabcbb"},
+                ]
+            },
+            {
                 "topic": concurrency_topic,
                 "text": "Which of Coffman's four deadlock conditions is directly violated by enforcing a global strict ordering on all resource acquisition requests across threads?",
                 "question_type": "mcq",
@@ -832,21 +907,32 @@ class Command(BaseCommand):
         # 5. Populate Question Bank
         created_questions = []
         for q_item in question_data:
+            defaults = {
+                "question_type": q_item["question_type"],
+                "difficulty": q_item["difficulty"],
+                "discrimination": q_item["discrimination"],
+                "bloom_level": q_item["bloom_level"],
+                "explanation": q_item["explanation"],
+                "solution_steps": q_item["solution_steps"],
+                "tags": q_item["tags"],
+                "code_template": q_item.get("code_template", ""),
+                "language": q_item.get("language", "python"),
+                "test_cases": q_item.get("test_cases", []),
+                "is_verified": True,
+                "status": "published",
+            }
             q_obj, created = Question.objects.get_or_create(
                 text=q_item["text"],
                 topic=q_item["topic"],
-                defaults={
-                    "question_type": q_item["question_type"],
-                    "difficulty": q_item["difficulty"],
-                    "discrimination": q_item["discrimination"],
-                    "bloom_level": q_item["bloom_level"],
-                    "explanation": q_item["explanation"],
-                    "solution_steps": q_item["solution_steps"],
-                    "tags": q_item["tags"],
-                    "is_verified": True,
-                    "status": "published",
-                }
+                defaults=defaults,
             )
+            if not created:
+                q_obj.question_type = q_item["question_type"]
+                q_obj.code_template = q_item.get("code_template", "")
+                q_obj.language = q_item.get("language", "python")
+                q_obj.test_cases = q_item.get("test_cases", [])
+                q_obj.save(update_fields=["question_type", "code_template", "language", "test_cases"])
+
             created_questions.append(q_obj)
 
             # Populate Options
@@ -982,8 +1068,8 @@ class Command(BaseCommand):
                 defaults={"order": i + 1, "marks": 4}
             )
 
-        # 2. GATE CS Sprint (CS Core + DSA)
-        gate_subset = [q for q in created_questions if q.topic.subject.code in ("CS_CORE", "DSA_CORE")][:6]
+        # 2. GATE CS Sprint (CS Core + DSA + Coding)
+        gate_subset = [q for q in created_questions if q.topic.subject.code in ("CS_CORE", "DSA_CORE", "CODING_DEV")][:6]
         for i, q in enumerate(gate_subset):
             TestQuestion.objects.get_or_create(
                 test=gate_algo_test,

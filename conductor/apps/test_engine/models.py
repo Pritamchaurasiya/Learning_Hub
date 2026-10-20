@@ -20,6 +20,8 @@ class Question(models.Model):
         ('true_false', 'True/False'),
         ('numerical', 'Numerical Answer'),
         ('fill_blank', 'Fill in the Blank'),
+        ('subjective', 'Subjective / Free-Text Answer'),
+        ('coding', 'Interactive Code / Algorithm Execution'),
     ]
 
     BLOOM_LEVELS = [
@@ -56,6 +58,11 @@ class Question(models.Model):
     # Content
     explanation = models.TextField(help_text="Detailed explanation of the correct answer")
     solution_steps = models.JSONField(default=list, blank=True, help_text="Step-by-step solution")
+
+    # Coding & interactive execution metadata
+    code_template = models.TextField(blank=True, default='', help_text="Starter code or solution skeleton")
+    language = models.CharField(max_length=30, blank=True, default='python', help_text="Default programming language")
+    test_cases = models.JSONField(default=list, blank=True, help_text="List of test cases: [{input, output, explanation}]")
 
     # Tags for search and filtering
     tags = models.JSONField(default=list, blank=True, help_text="List of topic tags")
