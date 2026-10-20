@@ -13,6 +13,7 @@ import {
   Zap,
   Loader2,
   XCircle,
+  ClipboardCheck,
 } from 'lucide-react'
 import { MathRenderer } from '../MathRenderer'
 import { Button } from '../ui/Button'
@@ -47,6 +48,58 @@ const getCodingTemplate = (lang: string): string => {
   return DEFAULT_CODING_TEMPLATES.python
 }
 
+/**
+ * Intelligently resolves language starter code from multi-language JSON,
+ * signature translation, or default boilerplates.
+ */
+const resolveLanguageStarterCode = (question: TestQuestion, targetLang: string): string => {
+  const rawTemplate = question.starter_code || question.code_template
+  if (rawTemplate) {
+    try {
+      const parsed = JSON.parse(rawTemplate) as Record<string, string>
+      // eslint-disable-next-line security/detect-object-injection
+      if (typeof parsed === 'object' && parsed !== null && typeof parsed[targetLang] === 'string') {
+        // eslint-disable-next-line security/detect-object-injection
+        return parsed[targetLang]
+      }
+    } catch {
+      // rawTemplate is code string
+    }
+
+    const questionLang = (question.language || 'python').toLowerCase()
+    if (targetLang === questionLang) {
+      return rawTemplate
+    }
+
+    // Dynamic signature conversion from Python to JS / TS
+    if (questionLang === 'python' && rawTemplate.includes('def ')) {
+      const funcMatch = rawTemplate.match(/def\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)/)
+      if (funcMatch) {
+        const [, funcName, params] = funcMatch
+        const cleanParams = params
+          .split(',')
+          .map(p => p.split(':')[0].trim())
+          .filter(Boolean)
+          .join(', ')
+
+        if (targetLang === 'javascript') {
+          return `// Complete your solution below\nfunction ${funcName}(${cleanParams}) {\n  // Write your solution here\n  return null;\n}\n`
+        }
+        if (targetLang === 'typescript') {
+          const typedParams = params
+            .split(',')
+            .map(p => `${p.split(':')[0].trim()}: any`)
+            .filter(Boolean)
+            .join(', ')
+          return `// Complete your solution below\nfunction ${funcName}(${typedParams}): any {\n  // Write your solution here\n  return null;\n}\n`
+        }
+      }
+    }
+  }
+
+  return getCodingTemplate(targetLang)
+}
+
 interface CodingQuestionWorkbenchProps {
   question: TestQuestion
   selectedAnswer: string | string[] | null
@@ -64,19 +117,25 @@ const CodingQuestionWorkbench = memo(
     const [isExecuting, setIsExecuting] = useState(false)
     const [showCustomInput, setShowCustomInput] = useState(false)
     const [customInput, setCustomInput] = useState('')
+    const [languageDrafts, setLanguageDrafts] = useState<Record<string, string>>({})
+    const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 })
+    const [pasteNotice, setPasteNotice] = useState<{ chars: number; timestamp: number } | null>(
+      null
+    )
     const customInputId = useId()
 
     // Determine current code value
     const currentCode =
       typeof selectedAnswer === 'string' && selectedAnswer.trim().length > 0
         ? selectedAnswer
-        : question.starter_code || question.code_template || getCodingTemplate(selectedLanguage)
+        : resolveLanguageStarterCode(question, selectedLanguage)
 
     // When question changes, reset execution state
     useEffect(() => {
       setWasmResult(null)
       setShowCustomInput(false)
       setCustomInput('')
+      setPasteNotice(null)
       if (question.language) {
         setSelectedLanguage(question.language.toLowerCase())
       }
@@ -90,41 +149,31 @@ const CodingQuestionWorkbench = memo(
     }, [question.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleLanguageChange = (lang: string) => {
+      if (lang === selectedLanguage) return
+
+      // Save current code in drafts map
+      setLanguageDrafts(prev => ({
+        ...prev,
+        [selectedLanguage]: currentCode,
+      }))
+
       setSelectedLanguage(lang)
-      // If code was untouched or matches another default template, switch to new template
-      const isUntouched =
-        !selectedAnswer ||
-        Object.values(DEFAULT_CODING_TEMPLATES).some(
-          tmpl => tmpl.trim() === (typeof selectedAnswer === 'string' ? selectedAnswer.trim() : '')
-        )
-      if (isUntouched) {
-        const newTemplate =
-          question.starter_code || question.code_template || getCodingTemplate(lang)
-        onAnswer(newTemplate)
-      }
+
+      // Restore code if examinee previously typed in that language, else load template
+      // eslint-disable-next-line security/detect-object-injection
+      const nextCode = languageDrafts[lang] || resolveLanguageStarterCode(question, lang)
+      onAnswer(nextCode)
     }
 
     const handleReset = () => {
       if (disabled) return
-      const template =
-        question.starter_code || question.code_template || getCodingTemplate(selectedLanguage)
+      const template = resolveLanguageStarterCode(question, selectedLanguage)
+      setLanguageDrafts(prev => ({
+        ...prev,
+        [selectedLanguage]: template,
+      }))
       onAnswer(template)
       setWasmResult(null)
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Tab') {
-        e.preventDefault()
-        const textarea = e.currentTarget
-        const start = textarea.selectionStart
-        const end = textarea.selectionEnd
-        const val = textarea.value
-        const updated = `${val.substring(0, start)}  ${val.substring(end)}`
-        onAnswer(updated)
-        requestAnimationFrame(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + 2
-        })
-      }
     }
 
     const handleRunWasmTests = useCallback(async () => {
@@ -185,6 +234,46 @@ const CodingQuestionWorkbench = memo(
       currentCode,
     ])
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault()
+        void handleRunWasmTests()
+        return
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault()
+        const textarea = e.currentTarget
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const val = textarea.value
+        const updated = `${val.substring(0, start)}  ${val.substring(end)}`
+        onAnswer(updated)
+        requestAnimationFrame(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 2
+        })
+      }
+    }
+
+    const handleCursorUpdate = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+      const textarea = e.currentTarget
+      const pos = textarea.selectionStart
+      const textBefore = textarea.value.substring(0, pos)
+      const lines = textBefore.split('\n')
+      const line = lines.length
+      const col = lines[lines.length - 1].length + 1
+      setCursorPos({ line, col })
+    }
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const pasted = e.clipboardData.getData('text')
+      if (pasted && pasted.length > 20) {
+        setPasteNotice({ chars: pasted.length, timestamp: Date.now() })
+        setTimeout(() => {
+          setPasteNotice(prev => (prev && Date.now() - prev.timestamp >= 2800 ? null : prev))
+        }, 3000)
+      }
+    }
+
     const lineCount = currentCode ? currentCode.split('\n').length : 1
 
     return (
@@ -228,6 +317,22 @@ const CodingQuestionWorkbench = memo(
                 <Zap className="w-3 h-3 text-amber-400" />
                 {wasmSandboxService.getEngineLabel(selectedLanguage)}
               </span>
+
+              {/* Keyboard Shortcut Hint */}
+              <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-mono text-slate-400">
+                <kbd className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded border border-slate-700 text-[10px]">
+                  Ctrl+Enter
+                </kbd>{' '}
+                run
+              </span>
+
+              {/* Proctoring Clipboard Paste Alert */}
+              {pasteNotice && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-amber-300 bg-amber-950/70 border border-amber-800/80 px-2 py-0.5 rounded animate-pulse">
+                  <ClipboardCheck className="w-3 h-3 text-amber-400" />
+                  Clipboard: +{pasteNotice.chars} chars logged
+                </span>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -302,6 +407,10 @@ const CodingQuestionWorkbench = memo(
               value={currentCode}
               onChange={e => onAnswer(e.target.value)}
               onKeyDown={handleKeyDown}
+              onSelect={handleCursorUpdate}
+              onKeyUp={handleCursorUpdate}
+              onClick={handleCursorUpdate}
+              onPaste={handlePaste}
               disabled={disabled}
               aria-label="Code Editor"
               placeholder={disabled ? 'Section is locked.' : 'Write your code solution here...'}
@@ -311,8 +420,16 @@ const CodingQuestionWorkbench = memo(
               autoCorrect="off"
               className="w-full min-h-[300px] p-4 font-mono text-xs sm:text-sm bg-slate-950 text-emerald-300 dark:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-blue-500/40 resize-y leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed selection:bg-blue-600/40"
             />
-            <div className="absolute bottom-2 right-3 pointer-events-none text-[10px] font-mono text-slate-500">
-              {lineCount} {lineCount === 1 ? 'line' : 'lines'} · UTF-8
+            <div className="absolute bottom-2 right-3 pointer-events-none text-[10px] font-mono text-slate-500 flex items-center gap-1.5 bg-slate-950/80 px-2 py-0.5 rounded border border-slate-800/60 backdrop-blur-sm">
+              <span>
+                Ln {cursorPos.line}, Col {cursorPos.col}
+              </span>
+              <span>·</span>
+              <span>
+                {lineCount} {lineCount === 1 ? 'line' : 'lines'}
+              </span>
+              <span>·</span>
+              <span>UTF-8</span>
             </div>
           </div>
         </div>

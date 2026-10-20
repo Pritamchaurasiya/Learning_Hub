@@ -314,4 +314,154 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
     const textarea = screen.getByLabelText('Code Editor')
     expect(textarea).toBeDisabled()
   })
+
+  it('triggers WASM execution via Ctrl+Enter keyboard shortcut', async () => {
+    const executeSpy = vi.spyOn(wasmSandboxService, 'execute').mockResolvedValueOnce({
+      status: 'AC',
+      engine: '⚡ Pyodide WASM Runtime',
+      executionMode: 'wasm',
+      overallPassed: true,
+      passedTests: 1,
+      totalTests: 1,
+      totalExecutionTimeMs: 3.5,
+      peakMemoryKb: 200,
+      testResults: [],
+      rawLogs: ['Passed'],
+      feedback: 'Execution completed successfully',
+    })
+
+    const question: TestQuestion = {
+      id: 'q-shortcut',
+      text: 'Shortcut execution question',
+      question_type: 'coding',
+      difficulty: 0.4,
+      bloom_level: 'apply',
+      options: [],
+      order: 0,
+      marks: 10,
+      starter_code: 'def solve(): return 42',
+    }
+
+    render(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer="def solve(): return 42"
+        confidence="HIGH"
+        isFlagged={false}
+        onAnswer={vi.fn()}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+      />
+    )
+
+    const textarea = screen.getByLabelText('Code Editor')
+    fireEvent.keyDown(textarea, { key: 'Enter', ctrlKey: true })
+
+    await waitFor(() => {
+      expect(executeSpy).toHaveBeenCalledWith('python', 'def solve(): return 42', expect.anything())
+    })
+  })
+
+  it('dynamically translates Python signature to JS on language switch and retains user drafts', () => {
+    const onAnswer = vi.fn()
+    const question: TestQuestion = {
+      id: 'q-trans',
+      text: 'Two Sum in multiple languages',
+      question_type: 'coding',
+      difficulty: 0.5,
+      bloom_level: 'apply',
+      options: [],
+      order: 0,
+      marks: 10,
+      language: 'python',
+      starter_code: 'def two_sum(nums, target):\n    # TODO\n    return []\n',
+    }
+
+    const { rerender } = render(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer={`def two_sum(nums, target):\n    return [0, 1]\n`}
+        confidence="HIGH"
+        isFlagged={false}
+        onAnswer={onAnswer}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+      />
+    )
+
+    // Switch to JS: verify function two_sum signature is generated
+    const jsButton = screen.getByRole('button', { name: 'JS' })
+    fireEvent.click(jsButton)
+    expect(onAnswer).toHaveBeenCalledWith(expect.stringContaining('function two_sum(nums, target)'))
+
+    // Now re-render with the JS code and simulate examinee typing JS code
+    rerender(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer="function two_sum(nums, target) { return [0, 1]; }"
+        confidence="HIGH"
+        isFlagged={false}
+        onAnswer={onAnswer}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+      />
+    )
+
+    // Switch back to Python: verify previous Python draft was preserved
+    const pyButton = screen.getByRole('button', { name: 'Python' })
+    fireEvent.click(pyButton)
+    expect(onAnswer).toHaveBeenLastCalledWith(`def two_sum(nums, target):\n    return [0, 1]\n`)
+  })
+
+  it('detects external paste events and displays proctoring alert badge', () => {
+    const question: TestQuestion = {
+      id: 'q-paste',
+      text: 'Paste detection test',
+      question_type: 'coding',
+      difficulty: 0.5,
+      bloom_level: 'apply',
+      options: [],
+      order: 0,
+      marks: 10,
+    }
+
+    render(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer="def test(): pass"
+        confidence="HIGH"
+        isFlagged={false}
+        onAnswer={vi.fn()}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+      />
+    )
+
+    const textarea = screen.getByLabelText('Code Editor')
+    const longPastedText = 'const solution = Array.from({ length: 100 }).map((_, i) => i * 2);'
+
+    fireEvent.paste(textarea, {
+      clipboardData: {
+        getData: () => longPastedText,
+      },
+    })
+
+    expect(
+      screen.getByText(content =>
+        content.includes(`Clipboard: +${longPastedText.length} chars logged`)
+      )
+    ).toBeInTheDocument()
+  })
 })

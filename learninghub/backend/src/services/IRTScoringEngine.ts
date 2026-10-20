@@ -47,18 +47,26 @@ export class IRTScoringEngine {
     responses: number[],
     parameters: Array<{ a: number; b: number; c: number }>
   ): number {
-    if (responses.length === 0) return 50
+    if (!responses || !parameters || responses.length === 0 || parameters.length === 0) {
+      return 50
+    }
+
+    const count = Math.min(responses.length, parameters.length)
+    if (count === 0) return 50
+
+    // Slice to valid bounds
+    const validResponses = responses.slice(0, count)
 
     // Edge case: all correct → theta near upper bound
-    const allCorrect = responses.every(r => r === 1)
+    const allCorrect = validResponses.every(r => r === 1)
     if (allCorrect) return 95
 
     // Edge case: all incorrect → theta near lower bound
-    const allIncorrect = responses.every(r => r === 0)
+    const allIncorrect = validResponses.every(r => r === 0)
     if (allIncorrect) return 5
 
     // Adaptive initial theta from classical proportion correct
-    const proportionCorrect = responses.reduce((s, r) => s + r, 0) / responses.length
+    const proportionCorrect = validResponses.reduce((s, r) => s + r, 0) / count
     // Map proportion [0,1] → theta [-3, 3] using probit-like mapping without padding bias
     const p = Math.max(0.01, Math.min(0.99, proportionCorrect))
     let theta = Math.log(p / (1 - p))
@@ -71,11 +79,11 @@ export class IRTScoringEngine {
       let firstDerivative = 0
       let secondDerivative = 0
 
-      for (let i = 0; i < responses.length; i++) {
-        // eslint-disable-next-line security/detect-object-injection
-        const u = responses[i]
-        // eslint-disable-next-line security/detect-object-injection
-        const { a, b, c } = parameters[i]
+      for (let i = 0; i < count; i++) {
+        const u = validResponses[i]
+        const itemParam = parameters[i]
+        if (!itemParam) continue
+        const { a, b, c } = itemParam
 
         const P = this.calculateProbability(theta, a, b, c)
         const Q = 1 - P
@@ -111,6 +119,66 @@ export class IRTScoringEngine {
     normalized = Math.max(0, Math.min(100, normalized))
 
     return Math.round(normalized * 100) / 100 // 2 decimal precision
+  }
+
+  /**
+   * Estimate ability (theta) on native logit scale [-4.0, +4.0] with Standard Error of Measurement (SEM)
+   */
+  public static estimateAbilityLogit(
+    responses: number[],
+    parameters: Array<{ a: number; b: number; c: number }>
+  ): { theta: number; sem: number } {
+    if (!responses || !parameters || responses.length === 0 || parameters.length === 0) {
+      return { theta: 0.0, sem: 1.0 }
+    }
+
+    const count = Math.min(responses.length, parameters.length)
+    const validResponses = responses.slice(0, count)
+
+    if (validResponses.every(r => r === 1)) {
+      return { theta: 3.0, sem: 0.35 }
+    }
+    if (validResponses.every(r => r === 0)) {
+      return { theta: -3.0, sem: 0.35 }
+    }
+
+    const proportionCorrect = validResponses.reduce((s, r) => s + r, 0) / count
+    const p = Math.max(0.01, Math.min(0.99, proportionCorrect))
+    let theta = Math.max(-3, Math.min(3, Math.log(p / (1 - p))))
+
+    const MAX_ITER = 25
+    const EPSILON = 0.0005
+
+    for (let iter = 0; iter < MAX_ITER; iter++) {
+      let firstDerivative = 0
+      let secondDerivative = 0
+
+      for (let i = 0; i < count; i++) {
+        const u = validResponses[i]
+        const itemParam = parameters[i]
+        if (!itemParam) continue
+        const { a, b, c } = itemParam
+
+        const P = this.calculateProbability(theta, a, b, c)
+        const Q = 1 - P
+        const denom = 1 - c
+        if (denom <= 0 || P <= 0 || Q <= 0) continue
+
+        const pPrime = (a * (P - c) * Q) / denom
+        firstDerivative += ((u - P) * pPrime) / (P * Q)
+        secondDerivative -= (pPrime * pPrime) / (P * Q)
+      }
+
+      if (Math.abs(firstDerivative) < EPSILON || secondDerivative === 0) break
+
+      const step = firstDerivative / secondDerivative
+      const dampenedStep = Math.max(-1, Math.min(1, step))
+      theta -= dampenedStep
+      theta = Math.max(-4, Math.min(4, theta))
+    }
+
+    const sem = this.computeSEM(theta, parameters.slice(0, count))
+    return { theta: Math.round(theta * 1000) / 1000, sem }
   }
 
   /**

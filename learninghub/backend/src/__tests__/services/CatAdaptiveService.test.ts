@@ -92,6 +92,29 @@ describe('CatAdaptiveService (Milestone 26 Computerized Adaptive Testing Engine)
 
       expect(res2.session.currentTheta).toBeLessThan(thetaAfterStep1)
     })
+
+    it('maintains high ability estimation without Bayesian underflow on long test sequences', () => {
+      // 20 consecutive correct answers on high-difficulty items
+      const mockItems = Array.from({ length: 20 }, (_, idx) => ({
+        id: `high-diff-${idx}`,
+        text: `Question ${idx}`,
+        subject: 'Algorithms',
+        topic: 'Complexity',
+        options: [],
+        correctOptionId: 'a',
+        a: 2.0,
+        b: 1.5,
+        c: 0.2,
+        explanation: '',
+        bloomLevel: 'EVALUATE' as const,
+      }))
+      const responses = new Array(20).fill(true)
+      const { theta, sem } = service.estimateAbilityEAP(responses, mockItems)
+
+      expect(theta).toBeGreaterThan(1.5)
+      expect(sem).toBeLessThan(0.5)
+      expect(Number.isNaN(theta)).toBe(false)
+    })
   })
 
   describe('Confidence-Based Marking (CBM)', () => {

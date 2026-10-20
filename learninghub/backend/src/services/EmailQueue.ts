@@ -34,7 +34,7 @@ class EmailQueueService {
 
   private initialize(): void {
     try {
-      this.queue = new Queue<EmailJob>('email', REDIS_URL, {
+      this.queue = new Queue<EmailJob>('mailer-queue', REDIS_URL, {
         defaultJobOptions: {
           attempts: 3,
           backoff: {

@@ -290,7 +290,7 @@ export const searchService = {
           const [contests, contestCount] = await Promise.all([
             (prisma as any).contest.findMany({
               where: {
-                deletedAt: null,
+                isPublished: true,
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -301,7 +301,7 @@ export const searchService = {
             }),
             (prisma as any).contest.count({
               where: {
-                deletedAt: null,
+                isPublished: true,
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -330,7 +330,6 @@ export const searchService = {
           const [ebooks, ebookCount] = await Promise.all([
             (prisma as any).ebook.findMany({
               where: {
-                deletedAt: null,
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -342,7 +341,6 @@ export const searchService = {
             }),
             (prisma as any).ebook.count({
               where: {
-                deletedAt: null,
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -394,9 +392,10 @@ export const searchService = {
       }
     }
 
+    const pagedResults = searchAll ? results.slice(0, limit) : results
     const pages = Math.ceil(total / limit)
     return {
-      data: results,
+      data: pagedResults,
       meta: { total, page, limit, pages, hasNext: page < pages, hasPrev: page > 1 },
     }
   },

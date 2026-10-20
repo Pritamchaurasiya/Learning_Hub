@@ -44,6 +44,8 @@ import { setupWebSockets } from './websockets'
 import { notificationService } from './services/NotificationService'
 import { webSocketService } from './services/WebSocketService'
 import { cacheService } from './services/CacheService'
+import { jobQueueService } from './services/JobQueueService'
+import { emailQueue } from './services/EmailQueue'
 
 const app = express()
 // TRUST-PROXY ALLOWLIST NOTE: `trust proxy, 1` trusts only the first hop (the
@@ -251,6 +253,8 @@ const shutdownResources = async (): Promise<void> => {
     cacheService.disconnect(),
     prisma.$disconnect(),
     Promise.resolve(stopMemoryStoreCleanup()),
+    jobQueueService.close(),
+    emailQueue.close(),
   ]
 
   if (ioPubClient) shutdownTasks.push(ioPubClient.quit())

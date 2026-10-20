@@ -53,6 +53,8 @@ export interface ProctoringSession {
   averageGazeDeviation: number
   averageNoiseDecibels: number
   sessionSignature?: string
+  lastFaceMissingAt?: number
+  lastGazeAvertedAt?: number
 }
 
 export interface ProctoringSummaryReport {
@@ -130,42 +132,54 @@ export class ProctoringEngineService {
 
     session.totalFramesAnalyzed += 1
     const newIncidents: ProctorIncident[] = []
+    const now = Date.now()
 
-    // 1. Analyze face presence
+    // 1. Analyze face presence with temporal debouncing (at most once every 3s)
     if (telemetry.facesDetectedCount === 0) {
-      newIncidents.push({
-        id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        timestamp: new Date().toISOString(),
-        type: 'FACE_MISSING',
-        severity: 'HIGH',
-        confidence: 0.95,
-        description: 'Candidate face disappeared from camera viewport.',
-      })
-      session.integrityScore = Math.max(0, session.integrityScore - 4)
-    } else if (telemetry.facesDetectedCount > 1) {
-      newIncidents.push({
-        id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        timestamp: new Date().toISOString(),
-        type: 'MULTIPLE_FACES_DETECTED',
-        severity: 'CRITICAL',
-        confidence: 0.98,
-        description: `Multiple distinct individuals (${telemetry.facesDetectedCount}) detected in camera frame.`,
-      })
-      session.integrityScore = Math.max(0, session.integrityScore - 12)
+      if (!session.lastFaceMissingAt || now - session.lastFaceMissingAt >= 3000) {
+        session.lastFaceMissingAt = now
+        newIncidents.push({
+          id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          timestamp: new Date().toISOString(),
+          type: 'FACE_MISSING',
+          severity: 'HIGH',
+          confidence: 0.95,
+          description: 'Candidate face disappeared from camera viewport.',
+        })
+        session.integrityScore = Math.max(0, session.integrityScore - 4)
+      }
+    } else {
+      session.lastFaceMissingAt = undefined
+      if (telemetry.facesDetectedCount > 1) {
+        newIncidents.push({
+          id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          timestamp: new Date().toISOString(),
+          type: 'MULTIPLE_FACES_DETECTED',
+          severity: 'CRITICAL',
+          confidence: 0.98,
+          description: `Multiple distinct individuals (${telemetry.facesDetectedCount}) detected in camera frame.`,
+        })
+        session.integrityScore = Math.max(0, session.integrityScore - 12)
+      }
     }
 
-    // 2. Head pose & Gaze deviation analysis
+    // 2. Head pose & Gaze deviation analysis with temporal debouncing (at most once every 3s)
     const headTurnedSignificantly = Math.abs(telemetry.headPose.yaw) > 35 || Math.abs(telemetry.headPose.pitch) > 25
     if (telemetry.gazeDeviationScore > 0.65 || headTurnedSignificantly) {
-      newIncidents.push({
-        id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        timestamp: new Date().toISOString(),
-        type: 'GAZE_AVERTED',
-        severity: 'MEDIUM',
-        confidence: 0.88,
-        description: `Gaze persistently averted from test interface (Yaw: ${telemetry.headPose.yaw.toFixed(1)}°, Pitch: ${telemetry.headPose.pitch.toFixed(1)}°).`,
-      })
-      session.integrityScore = Math.max(0, session.integrityScore - 2)
+      if (!session.lastGazeAvertedAt || now - session.lastGazeAvertedAt >= 3000) {
+        session.lastGazeAvertedAt = now
+        newIncidents.push({
+          id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          timestamp: new Date().toISOString(),
+          type: 'GAZE_AVERTED',
+          severity: 'MEDIUM',
+          confidence: 0.88,
+          description: `Gaze persistently averted from test interface (Yaw: ${telemetry.headPose.yaw.toFixed(1)}°, Pitch: ${telemetry.headPose.pitch.toFixed(1)}°).`,
+        })
+        session.integrityScore = Math.max(0, session.integrityScore - 2)
+      }
+    } else {
+      session.lastGazeAvertedAt = undefined
     }
 
     // 3. Audio noise & speech anomaly detection

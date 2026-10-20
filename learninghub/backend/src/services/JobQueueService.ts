@@ -86,7 +86,15 @@ class JobQueueService {
     this.growthQueue = new Queue<GrowthJobData>('growth', queueConfig)
     this.testSubmissionQueue = new Queue<TestSubmissionJobData>('test-submission', queueConfig)
 
-    this.setupProcessors()
+    const shouldProcessJobs =
+      process.env.WORKER_MODE === 'true' ||
+      (!process.env.WORKER_MODE && process.env.NODE_ENV !== 'production')
+
+    if (shouldProcessJobs) {
+      this.setupProcessors()
+    } else {
+      logger.info('[JobQueueService] Background worker processing disabled on this instance (API mode).')
+    }
     this.setupEventHandlers()
   }
 

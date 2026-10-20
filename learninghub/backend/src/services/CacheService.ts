@@ -19,6 +19,7 @@ export class CacheService {
   private readonly HEALTH_CHECK_INTERVAL_MS = 30_000
   private readonly RECONNECT_INTERVAL_MS = 30_000
   private readonly version = process.env.CACHE_VERSION ?? '1'
+  private inFlight = new Map<string, Promise<any>>()
 
   // Lua script for atomic increment + conditional TTL set
   // Only sets PEXPIRE on first increment to avoid extending the window on each request
@@ -300,7 +301,8 @@ export class CacheService {
     key: string,
     ttlMs: number,
     operation: () => Promise<T>,
-    heartbeatIntervalMs?: number
+    heartbeatIntervalMs?: number,
+    retryOptions?: { maxRetries?: number; baseDelayMs?: number }
   ): Promise<T> {
     if (!this.client) {
       // Fallback: If no Redis, just execute the operation.
@@ -310,15 +312,28 @@ export class CacheService {
 
     const lockKey = `lock:${key}`
     const lockValue = crypto.randomUUID()
+    const maxRetries = retryOptions?.maxRetries ?? 3
+    const baseDelay = retryOptions?.baseDelayMs ?? 40
 
-    // Acquire Lock
-    const acquired = await this.client.set(lockKey, lockValue, {
-      NX: true,
-      PX: ttlMs,
-    })
+    let acquired = false
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const res = await this.client.set(lockKey, lockValue, {
+        NX: true,
+        PX: ttlMs,
+      })
+      if (res) {
+        acquired = true
+        break
+      }
+      if (attempt < maxRetries) {
+        const jitter = Math.floor(Math.random() * 20)
+        const delay = Math.min(baseDelay * Math.pow(1.5, attempt) + jitter, 1000)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
 
     if (!acquired) {
-      throw new Error(`Could not acquire distributed lock for ${key}`)
+      throw new Error(`Could not acquire distributed lock for ${key} after ${maxRetries} retries`)
     }
 
     // Start heartbeat to extend lock TTL for long-running operations
@@ -601,11 +616,26 @@ export class CacheService {
     if (cached !== null && cached !== undefined) {
       return cached
     }
-    const fresh = await fetcher()
-    if (fresh !== null && fresh !== undefined) {
-      await this.set(key, fresh, ttlSeconds)
+
+    // Single-flight stampede protection: join existing in-flight request if present
+    if (this.inFlight.has(key)) {
+      return this.inFlight.get(key) as Promise<T>
     }
-    return fresh
+
+    const fetchPromise = (async () => {
+      try {
+        const fresh = await fetcher()
+        if (fresh !== null && fresh !== undefined) {
+          await this.set(key, fresh, ttlSeconds)
+        }
+        return fresh
+      } finally {
+        this.inFlight.delete(key)
+      }
+    })()
+
+    this.inFlight.set(key, fetchPromise)
+    return fetchPromise
   }
 
   isAvailable(): boolean {

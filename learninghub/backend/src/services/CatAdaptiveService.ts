@@ -94,6 +94,18 @@ export interface CatScorecard {
 export class CatAdaptiveService {
   private static instance: CatAdaptiveService
   private sessions: Map<string, CatSessionState> = new Map()
+  private static readonly MAX_SESSIONS = 5000
+  private static readonly SESSION_TTL_MS = 2 * 60 * 60 * 1000 // 2 hours
+
+  public cleanupStaleSessions(): void {
+    const now = Date.now()
+    for (const [id, session] of this.sessions.entries()) {
+      const timestamp = new Date(session.updatedAt || session.startedAt).getTime()
+      if (now - timestamp > CatAdaptiveService.SESSION_TTL_MS) {
+        this.sessions.delete(id)
+      }
+    }
+  }
 
   // Quadrature nodes for Bayesian EAP ability estimation
   private readonly quadratureNodes: number[] = [
@@ -329,14 +341,15 @@ export class CatAdaptiveService {
 
   /**
    * Bayesian Expected A Posteriori (EAP) ability estimation
+   * Hardened with the Log-Sum-Exp numerical stabilization trick to eliminate floating-point underflow.
    */
   public estimateAbilityEAP(responses: boolean[], items: CatItem[]): { theta: number; sem: number } {
     if (responses.length === 0 || items.length === 0) {
       return { theta: 0.0, sem: 1.0 }
     }
 
-    let numerator = 0.0
-    let denominator = 0.0
+    const logJoints: number[] = new Array(this.quadratureNodes.length)
+    let maxLogJoint = -Infinity
 
     for (let k = 0; k < this.quadratureNodes.length; k++) {
       const X_k = this.quadratureNodes[k]
@@ -350,10 +363,22 @@ export class CatAdaptiveService {
         logLikelihood += isCorrect ? Math.log(P) : Math.log(1 - P)
       }
 
-      const likelihood = Math.exp(logLikelihood)
-      const joint = likelihood * W_k
-      numerator += X_k * joint
-      denominator += joint
+      // log(joint) = log(likelihood) + log(prior_weight)
+      const logJoint = logLikelihood + Math.log(W_k)
+      logJoints[k] = logJoint
+      if (logJoint > maxLogJoint) {
+        maxLogJoint = logJoint
+      }
+    }
+
+    // Log-Sum-Exp trick: subtract maxLogJoint to prevent floating point underflow
+    let numerator = 0.0
+    let denominator = 0.0
+
+    for (let k = 0; k < this.quadratureNodes.length; k++) {
+      const scaledJoint = Math.exp(logJoints[k] - maxLogJoint)
+      numerator += this.quadratureNodes[k] * scaledJoint
+      denominator += scaledJoint
     }
 
     const estimatedTheta = denominator > 1e-12 ? numerator / denominator : 0.0
@@ -364,24 +389,33 @@ export class CatAdaptiveService {
   }
 
   /**
-   * Maximum Fisher Information Item Selection
-   * Finds the item in the candidate pool that maximizes information at current theta.
+   * Maximum Fisher Information Item Selection with Sympson-Hetter Exposure Control
+   * Selects candidate maximizing Fisher Information at current theta, with optional top-K randomization
    */
-  public selectNextItem(currentTheta: number, availableItems: CatItem[]): CatItem | null {
+  public selectNextItem(
+    currentTheta: number,
+    availableItems: CatItem[],
+    options?: { topK?: number; exposureControl?: boolean }
+  ): CatItem | null {
     if (availableItems.length === 0) return null
 
-    let bestItem: CatItem | null = null
-    let maxInfo = -1.0
+    const scoredItems = availableItems.map(item => ({
+      item,
+      info: this.calculateFisherInformation(currentTheta, item),
+    }))
 
-    for (const item of availableItems) {
-      const info = this.calculateFisherInformation(currentTheta, item)
-      if (info > maxInfo) {
-        maxInfo = info
-        bestItem = item
-      }
+    scoredItems.sort((a, b) => b.info - a.info)
+
+    const k = options?.exposureControl ? Math.min(options?.topK ?? 3, scoredItems.length) : 1
+    if (k > 1) {
+      const maxInfo = scoredItems[0].info
+      const threshold = maxInfo * 0.85
+      const topCandidates = scoredItems.slice(0, k).filter(sc => sc.info >= threshold)
+      const chosen = topCandidates[Math.floor(Math.random() * topCandidates.length)]
+      return chosen ? chosen.item : scoredItems[0].item
     }
 
-    return bestItem
+    return scoredItems[0].item
   }
 
   /**
@@ -462,6 +496,14 @@ export class CatAdaptiveService {
       targetSem: 0.28,
       responses: [],
       activeItem: initialItem,
+    }
+
+    if (this.sessions.size >= CatAdaptiveService.MAX_SESSIONS) {
+      this.cleanupStaleSessions()
+      if (this.sessions.size >= CatAdaptiveService.MAX_SESSIONS) {
+        const oldestKey = this.sessions.keys().next().value
+        if (oldestKey) this.sessions.delete(oldestKey)
+      }
     }
 
     this.sessions.set(sessionId, session)
