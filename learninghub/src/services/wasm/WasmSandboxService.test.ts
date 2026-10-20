@@ -60,9 +60,7 @@ describe('WasmSandboxService', () => {
         return [99, 99];
       }
     `
-    const testCases = [
-      { input: 'nums = [2,7,11,15], target = 9', output: '[0,1]' },
-    ]
+    const testCases = [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]' }]
 
     const result = await wasmSandboxService.execute('javascript', code, { testCases })
 
@@ -130,9 +128,7 @@ class Solution:
     def twoSum(self, nums, target):
         return [0, 1]
     `
-    const testCases = [
-      { input: 'nums = [2,7,11,15], target = 9', output: '[0,1]' },
-    ]
+    const testCases = [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]' }]
 
     const result = await wasmSandboxService.execute('python', code, { testCases })
 
@@ -146,5 +142,13 @@ class Solution:
     expect(result.status).toBe('UNSUPPORTED')
     expect(result.executionMode).toBe('cloud')
     expect(result.engine).toContain('Cloud')
+  })
+
+  it('tolerates inverted arguments execute(code, language)', async () => {
+    const code = 'function solve(a, b) { return a + b; }'
+    const testCases = [{ input: 'a = 3, b = 4', output: '7' }]
+    const result = await wasmSandboxService.execute(code, 'javascript', { testCases })
+    expect(result.status).toBe('AC')
+    expect(result.passedTests).toBe(1)
   })
 })

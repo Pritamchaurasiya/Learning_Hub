@@ -87,11 +87,12 @@ export class WasmSandboxService {
     options: WasmExecutionOptions = {}
   ): Promise<WasmExecutionResult> {
     const startTime = performance.now()
-    const testCases: WasmTestCase[] = options.testCases && options.testCases.length > 0
-      ? options.testCases
-      : options.customInput
-        ? [{ input: options.customInput, output: '' }]
-        : [{ input: '', output: '' }]
+    const testCases: WasmTestCase[] =
+      options.testCases && options.testCases.length > 0
+        ? options.testCases
+        : options.customInput
+          ? [{ input: options.customInput, output: '' }]
+          : [{ input: '', output: '' }]
 
     const testResults: WasmTestCaseResult[] = []
     const overallLogs: string[] = []
@@ -189,11 +190,12 @@ export class WasmSandboxService {
     options: WasmExecutionOptions = {}
   ): Promise<WasmExecutionResult> {
     const startTime = performance.now()
-    const testCases: WasmTestCase[] = options.testCases && options.testCases.length > 0
-      ? options.testCases
-      : options.customInput
-        ? [{ input: options.customInput, output: '' }]
-        : [{ input: '', output: '' }]
+    const testCases: WasmTestCase[] =
+      options.testCases && options.testCases.length > 0
+        ? options.testCases
+        : options.customInput
+          ? [{ input: options.customInput, output: '' }]
+          : [{ input: '', output: '' }]
 
     const testResults: WasmTestCaseResult[] = []
     const overallLogs: string[] = []
@@ -303,12 +305,25 @@ ${tc.input}
     code: string,
     options: WasmExecutionOptions = {}
   ): Promise<WasmExecutionResult> {
-    const lang = language.toLowerCase()
+    const knownLangs = ['javascript', 'typescript', 'js', 'ts', 'python', 'py', 'c', 'cpp', 'java']
+    let lang = language ? language.toLowerCase().trim() : ''
+    let sourceCode = code || ''
+
+    // Tolerate flipped argument orders (code, language)
+    if (
+      code &&
+      knownLangs.includes(code.toLowerCase().trim()) &&
+      !knownLangs.includes(language.toLowerCase().trim())
+    ) {
+      lang = code.toLowerCase().trim()
+      sourceCode = language
+    }
+
     if (['javascript', 'typescript', 'js', 'ts'].includes(lang)) {
-      return this.executeJs(code, options)
+      return this.executeJs(sourceCode, options)
     }
     if (['python', 'py'].includes(lang)) {
-      return this.executePython(code, options)
+      return this.executePython(sourceCode, options)
     }
 
     return {
@@ -388,7 +403,10 @@ ${tc.input}
 
   private simulatePythonExecution(code: string, input: string): { output: string; logs: string[] } {
     // Match common Two Sum / Parentheses / Array logic
-    if (input.includes('nums = [2,7,11,15]') || (input.includes('[2,7,11,15]') && input.includes('9'))) {
+    if (
+      input.includes('nums = [2,7,11,15]') ||
+      (input.includes('[2,7,11,15]') && input.includes('9'))
+    ) {
       return { output: '[0,1]', logs: ['[Pyodide Sandbox] Executed Solution.twoSum'] }
     }
     if (input.includes('nums = [3,2,4]') && input.includes('6')) {
@@ -551,7 +569,8 @@ ${tc.input}
       log: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
       info: (...args: any[]) => tcLogs.push(args.map(a => this.formatArg(a)).join(' ')),
       warn: (...args: any[]) => tcLogs.push(`[WARN] ${args.map(a => this.formatArg(a)).join(' ')}`),
-      error: (...args: any[]) => tcLogs.push(`[ERROR] ${args.map(a => this.formatArg(a)).join(' ')}`),
+      error: (...args: any[]) =>
+        tcLogs.push(`[ERROR] ${args.map(a => this.formatArg(a)).join(' ')}`),
     }
 
     const wrappedCode = `
@@ -584,7 +603,7 @@ ${tc.input}
 
     const execPromise = new Promise<{ result: any; logs: string[] }>((resolve, reject) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        // eslint-disable-next-line no-new-func
         const evaluator = new Function('sandboxedConsole', wrappedCode)
         const evalResult = evaluator(sandboxedConsole)
         resolve({ result: evalResult, logs: tcLogs })
@@ -594,7 +613,10 @@ ${tc.input}
     })
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error(`Time Limit Exceeded (Execution exceeded ${timeoutMs}ms)`)), timeoutMs)
+      setTimeout(
+        () => reject(new Error(`Time Limit Exceeded (Execution exceeded ${timeoutMs}ms)`)),
+        timeoutMs
+      )
     })
 
     return Promise.race([execPromise, timeoutPromise])

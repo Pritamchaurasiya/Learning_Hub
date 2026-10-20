@@ -50,7 +50,14 @@ export interface TestQuestion {
   id: string
   text: string
   question_type:
-    'mcq' | 'multiple_select' | 'true_false' | 'numerical' | 'fill_blank' | 'subjective'
+    | 'mcq'
+    | 'multiple_select'
+    | 'true_false'
+    | 'numerical'
+    | 'fill_blank'
+    | 'subjective'
+    | 'coding'
+    | string
   type?: string
   difficulty: number
   bloom_level: string
@@ -66,6 +73,14 @@ export interface TestQuestion {
   order: number
   marks: number
   explanation?: string
+  code_template?: string
+  starter_code?: string
+  language?: string
+  test_cases?: Array<{
+    input: string
+    output: string
+    explanation?: string
+  }>
 }
 
 export interface TestAttempt {

@@ -1,9 +1,375 @@
-import { memo } from 'react'
+import { memo, useState, useEffect, useCallback, useId } from 'react'
 import { motion } from 'framer-motion'
-import { Flag, CheckCircle, Lock, Sparkles, Lightbulb } from 'lucide-react'
+import {
+  Flag,
+  CheckCircle,
+  Lock,
+  Sparkles,
+  Lightbulb,
+  Play,
+  RotateCcw,
+  Code2,
+  Terminal,
+  Zap,
+  Loader2,
+  XCircle,
+} from 'lucide-react'
 import { MathRenderer } from '../MathRenderer'
 import { Button } from '../ui/Button'
+import { wasmSandboxService } from '../../services/wasm/WasmSandboxService'
+import { WasmTestResultsView } from '../WasmTestResultsView'
+import type { WasmExecutionResult } from '../../services/wasm/types'
 import type { TestQuestion } from '../../services/testsAService'
+
+const DEFAULT_CODING_TEMPLATES: Record<string, string> = {
+  python: `# Complete your solution below
+def solve(*args):
+    # Write your solution here
+    return None
+`,
+  javascript: `// Complete your solution below
+function solve(...args) {
+  // Write your solution here
+  return null;
+}
+`,
+  typescript: `// Complete your solution below
+function solve(...args: any[]): any {
+  // Write your solution here
+  return null;
+}
+`,
+}
+
+const getCodingTemplate = (lang: string): string => {
+  if (lang === 'javascript') return DEFAULT_CODING_TEMPLATES.javascript
+  if (lang === 'typescript') return DEFAULT_CODING_TEMPLATES.typescript
+  return DEFAULT_CODING_TEMPLATES.python
+}
+
+interface CodingQuestionWorkbenchProps {
+  question: TestQuestion
+  selectedAnswer: string | string[] | null
+  onAnswer: (code: string) => void
+  disabled?: boolean
+}
+
+const CodingQuestionWorkbench = memo(
+  ({ question, selectedAnswer, onAnswer, disabled }: CodingQuestionWorkbenchProps) => {
+    const defaultLang = (question.language || 'python').toLowerCase()
+    const [selectedLanguage, setSelectedLanguage] = useState<string>(
+      ['python', 'javascript', 'typescript'].includes(defaultLang) ? defaultLang : 'python'
+    )
+    const [wasmResult, setWasmResult] = useState<WasmExecutionResult | null>(null)
+    const [isExecuting, setIsExecuting] = useState(false)
+    const [showCustomInput, setShowCustomInput] = useState(false)
+    const [customInput, setCustomInput] = useState('')
+    const customInputId = useId()
+
+    // Determine current code value
+    const currentCode =
+      typeof selectedAnswer === 'string' && selectedAnswer.trim().length > 0
+        ? selectedAnswer
+        : question.starter_code || question.code_template || getCodingTemplate(selectedLanguage)
+
+    // When question changes, reset execution state
+    useEffect(() => {
+      setWasmResult(null)
+      setShowCustomInput(false)
+      setCustomInput('')
+      if (question.language) {
+        setSelectedLanguage(question.language.toLowerCase())
+      }
+    }, [question.id, question.language])
+
+    // Synchronize initial starter template if answer is empty
+    useEffect(() => {
+      if (!selectedAnswer && currentCode) {
+        onAnswer(currentCode)
+      }
+    }, [question.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleLanguageChange = (lang: string) => {
+      setSelectedLanguage(lang)
+      // If code was untouched or matches another default template, switch to new template
+      const isUntouched =
+        !selectedAnswer ||
+        Object.values(DEFAULT_CODING_TEMPLATES).some(
+          tmpl => tmpl.trim() === (typeof selectedAnswer === 'string' ? selectedAnswer.trim() : '')
+        )
+      if (isUntouched) {
+        const newTemplate =
+          question.starter_code || question.code_template || getCodingTemplate(lang)
+        onAnswer(newTemplate)
+      }
+    }
+
+    const handleReset = () => {
+      if (disabled) return
+      const template =
+        question.starter_code || question.code_template || getCodingTemplate(selectedLanguage)
+      onAnswer(template)
+      setWasmResult(null)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Tab') {
+        e.preventDefault()
+        const textarea = e.currentTarget
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const val = textarea.value
+        const updated = `${val.substring(0, start)}  ${val.substring(end)}`
+        onAnswer(updated)
+        requestAnimationFrame(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 2
+        })
+      }
+    }
+
+    const handleRunWasmTests = useCallback(async () => {
+      if (disabled || isExecuting) return
+      setIsExecuting(true)
+      try {
+        const testCases =
+          showCustomInput && customInput.trim()
+            ? [{ input: customInput.trim(), output: '' }]
+            : question.test_cases && question.test_cases.length > 0
+              ? question.test_cases
+              : [{ input: '', output: '' }]
+
+        const result = await wasmSandboxService.execute(selectedLanguage, currentCode, {
+          testCases,
+          customInput: showCustomInput ? customInput : undefined,
+          timeoutMs: 3000,
+        })
+        setWasmResult(result)
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err)
+        setWasmResult({
+          status: 'RE',
+          engine: wasmSandboxService.getEngineLabel(selectedLanguage),
+          executionMode: 'wasm',
+          overallPassed: false,
+          passedTests: 0,
+          totalTests: 1,
+          totalExecutionTimeMs: 0,
+          peakMemoryKb: 0,
+          testResults: [
+            {
+              testCaseIndex: 1,
+              passed: false,
+              input: showCustomInput ? customInput : '',
+              expectedOutput: '',
+              actualOutput: `Execution error: ${errMsg}`,
+              logs: [],
+              executionTimeMs: 0,
+              memoryKb: 0,
+              status: 'RE',
+              error: errMsg,
+            },
+          ],
+          rawLogs: [errMsg],
+          feedback: 'Runtime error encountered during in-browser WebAssembly execution.',
+        })
+      } finally {
+        setIsExecuting(false)
+      }
+    }, [
+      disabled,
+      isExecuting,
+      showCustomInput,
+      customInput,
+      question.test_cases,
+      selectedLanguage,
+      currentCode,
+    ])
+
+    const lineCount = currentCode ? currentCode.split('\n').length : 1
+
+    return (
+      <div className="space-y-4 font-sans" data-testid="coding-workbench">
+        {/* Editor Container */}
+        <div className="rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-xl">
+          {/* Editor Header Toolbar */}
+          <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Code2 className="w-4 h-4 text-blue-400" />
+                <span>Code Solution</span>
+              </div>
+
+              {/* Language Selector */}
+              <div
+                role="group"
+                aria-label="Select Programming Language"
+                className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-xs"
+              >
+                {(['python', 'javascript', 'typescript'] as const).map(lang => (
+                  <button
+                    key={lang}
+                    type="button"
+                    aria-pressed={selectedLanguage === lang}
+                    disabled={disabled}
+                    onClick={() => handleLanguageChange(lang)}
+                    className={`px-2.5 py-1 rounded-md capitalize font-medium transition-all ${
+                      selectedLanguage === lang
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    {lang === 'typescript' ? 'TS' : lang === 'javascript' ? 'JS' : 'Python'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Engine Badge */}
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-0.5 rounded-full">
+                <Zap className="w-3 h-3 text-amber-400" />
+                {wasmSandboxService.getEngineLabel(selectedLanguage)}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setShowCustomInput(!showCustomInput)}
+                className={`text-xs px-2.5 py-1 rounded-md border transition-colors flex items-center gap-1.5 ${
+                  showCustomInput
+                    ? 'bg-blue-950 text-blue-300 border-blue-700'
+                    : 'text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Custom Input</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleReset}
+                title="Reset to starter template"
+                className="text-xs text-slate-400 hover:text-slate-200 border border-slate-800 hover:bg-slate-800/60 px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
+
+              <Button
+                type="button"
+                disabled={disabled || isExecuting}
+                onClick={handleRunWasmTests}
+                size="sm"
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isExecuting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Executing WASM...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Run Tests (WASM)</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Custom Input Drawer */}
+          {showCustomInput && (
+            <div className="p-3 bg-slate-900/90 border-b border-slate-800 text-xs space-y-1.5">
+              <label htmlFor={customInputId} className="block text-slate-300 font-medium">
+                Custom Test Input / Arguments (passed to your function execution):
+              </label>
+              <textarea
+                id={customInputId}
+                value={customInput}
+                onChange={e => setCustomInput(e.target.value)}
+                placeholder="e.g. nums = [2, 7, 11, 15], target = 9"
+                rows={2}
+                className="w-full font-mono text-xs p-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
+          {/* Code Textarea Surface */}
+          <div className="relative">
+            <textarea
+              value={currentCode}
+              onChange={e => onAnswer(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={disabled}
+              aria-label="Code Editor"
+              placeholder={disabled ? 'Section is locked.' : 'Write your code solution here...'}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              autoCorrect="off"
+              className="w-full min-h-[300px] p-4 font-mono text-xs sm:text-sm bg-slate-950 text-emerald-300 dark:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-blue-500/40 resize-y leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed selection:bg-blue-600/40"
+            />
+            <div className="absolute bottom-2 right-3 pointer-events-none text-[10px] font-mono text-slate-500">
+              {lineCount} {lineCount === 1 ? 'line' : 'lines'} · UTF-8
+            </div>
+          </div>
+        </div>
+
+        {/* Sample Test Cases Preview (if question has preconfigured test cases) */}
+        {question.test_cases && question.test_cases.length > 0 && !wasmResult && (
+          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-2">
+            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+              <Terminal className="w-3.5 h-3.5 text-blue-400" />
+              Preconfigured Sample Test Cases ({question.test_cases.length})
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {question.test_cases.slice(0, 4).map((tc, idx) => (
+                <div
+                  key={tc.input ? `tc-in-${tc.input}` : `tc-out-${tc.output}`}
+                  className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80 font-mono text-[11px] space-y-1"
+                >
+                  <div className="text-slate-400 font-bold">Case {idx + 1}:</div>
+                  <div className="text-slate-300 truncate">
+                    <span className="text-slate-500">Input: </span>
+                    {tc.input || '(empty)'}
+                  </div>
+                  <div className="text-emerald-400 truncate">
+                    <span className="text-slate-500">Expected: </span>
+                    {tc.output}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Wasm Test Results View */}
+        {wasmResult && (
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-xl space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>In-Browser WebAssembly Test Results</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWasmResult(null)}
+                className="text-slate-400 hover:text-rose-400 text-xs flex items-center gap-1 transition-colors"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                <span>Clear Output</span>
+              </button>
+            </div>
+            <WasmTestResultsView result={wasmResult} />
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+CodingQuestionWorkbench.displayName = 'CodingQuestionWorkbench'
 
 export interface QuestionCardProps {
   question: TestQuestion
@@ -43,6 +409,13 @@ export const QuestionCard = memo(
     sectionTitle,
     isSectionLocked,
   }: QuestionCardProps) => {
+    const isCodingQuestion =
+      question.question_type === 'coding' ||
+      question.type === 'coding' ||
+      Boolean(question.code_template) ||
+      Boolean(question.starter_code) ||
+      (Array.isArray(question.test_cases) && question.test_cases.length > 0)
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -88,12 +461,21 @@ export const QuestionCard = memo(
           />
 
           <div className="space-y-3">
-            {question.question_type === 'subjective' || question.type === 'subjective' ? (
+            {isCodingQuestion ? (
+              <CodingQuestionWorkbench
+                question={question}
+                selectedAnswer={selectedAnswer}
+                onAnswer={onAnswer}
+                disabled={isSectionLocked}
+              />
+            ) : question.question_type === 'subjective' || question.type === 'subjective' ? (
               <textarea
                 value={typeof selectedAnswer === 'string' ? selectedAnswer : ''}
                 onChange={e => onAnswer(e.target.value)}
                 disabled={isSectionLocked}
-                placeholder={isSectionLocked ? 'Section is locked.' : 'Type your detailed answer here...'}
+                placeholder={
+                  isSectionLocked ? 'Section is locked.' : 'Type your detailed answer here...'
+                }
                 className="w-full min-h-[200px] p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-y disabled:opacity-60 disabled:cursor-not-allowed"
               />
             ) : !question.options ||
