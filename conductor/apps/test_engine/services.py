@@ -1300,6 +1300,15 @@ class AdaptiveAssessmentEngine:
                     is_correct = abs(user_val - corr_val) <= (abs(corr_val) * 0.01)
                 except (ValueError, TypeError):
                     is_correct = False
+        elif question.question_type == 'coding':
+            # Interactive coding question evaluation
+            corr_opt = question.options.filter(is_correct=True).first()
+            if corr_opt and selected_ids:
+                is_correct = bool(submitted_set & correct_option_ids) or (
+                    corr_opt.text.strip() in selected_ids[0].strip()
+                )
+            else:
+                is_correct = bool(submitted_set & correct_option_ids) if submitted_set else False
         else:
             # Default MCQ / True-False
             is_correct = bool(submitted_set & correct_option_ids) if submitted_set else False
@@ -1437,9 +1446,13 @@ class AdaptiveAssessmentEngine:
             'id': str(best_q.id),
             'text': best_q.text,
             'type': best_q.question_type,
+            'question_type': best_q.question_type,
             'difficulty': best_q.difficulty,
             'bloom_level': best_q.bloom_level,
             'points': getattr(best_tq, 'marks', 1.0),
+            'code_template': getattr(best_q, 'code_template', '') or '',
+            'language': getattr(best_q, 'language', 'python') or 'python',
+            'test_cases': getattr(best_q, 'test_cases', []) or [],
             'options': [
                 {
                     'id': str(opt.id),

@@ -7,7 +7,13 @@ from .views import (
     SpacedRepetitionDeckView, SpacedRepetitionReviewView,
     SpacedRepetitionGenerateView, SpacedRepetitionStatsView,
     SkillDAGView, SkillInteractionView, SkillNextActionView,
-    TestAnalyticsView
+    TestAnalyticsView,
+    OfflineBundleView,
+    OfflineSyncView,
+    AdaptiveStepView,
+    SocraticMisconceptionView,
+    SubjectiveGradeView,
+    VerifyScorecardView
 )
 
 urlpatterns = [
@@ -24,6 +30,11 @@ urlpatterns = [
     path('tests/analytics/', TestAnalyticsView.as_view(), name='test-analytics-slash'),
     path('tests/analytics/topics', TopicPerformanceView.as_view(), name='topic-performance'),
     path('tests/generate', AIGenerateTestView.as_view(), name='test-generate'),
+    # Scorecard verification & AI Misconception Diagnosis (static routes before parameterized /<pk>)
+    path('tests/verify-scorecard', VerifyScorecardView.as_view(), name='tests-verify-scorecard'),
+    path('tests/verify-scorecard/', VerifyScorecardView.as_view(), name='tests-verify-scorecard-slash'),
+    path('tests/diagnose-misconception', SocraticMisconceptionView.as_view(), name='tests-diagnose-misconception'),
+    path('tests/diagnose-misconception/', SocraticMisconceptionView.as_view(), name='tests-diagnose-misconception-slash'),
     path('tests/<str:pk>', TestDetailView.as_view(), name='test-detail'),
     path('tests/<str:pk>/', TestDetailView.as_view(), name='test-detail-slash'),
     path('tests/<str:pk>/start', StartTestView.as_view(), name='test-start'),
@@ -36,6 +47,14 @@ urlpatterns = [
     path('tests/<str:pk>/result/', TestResultView.as_view(), name='test-result-slash'),
     path('tests/<str:pk>/adaptive-next', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test'),
     path('tests/<str:pk>/adaptive-next/', AdaptiveNextQuestionView.as_view(), name='adaptive-next-by-test-slash'),
+    path('tests/<str:pk>/adaptive/step', AdaptiveStepView.as_view(), name='test-adaptive-step'),
+    path('tests/<str:pk>/adaptive/step/', AdaptiveStepView.as_view(), name='test-adaptive-step-slash'),
+    path('tests/<str:pk>/offline-bundle', OfflineBundleView.as_view(), name='test-offline-bundle'),
+    path('tests/<str:pk>/offline-bundle/', OfflineBundleView.as_view(), name='test-offline-bundle-slash'),
+    path('tests/<str:pk>/offline-sync', OfflineSyncView.as_view(), name='test-offline-sync'),
+    path('tests/<str:pk>/offline-sync/', OfflineSyncView.as_view(), name='test-offline-sync-slash'),
+    path('tests/<str:pk>/grade-subjective', SubjectiveGradeView.as_view(), name='test-grade-subjective'),
+    path('tests/<str:pk>/grade-subjective/', SubjectiveGradeView.as_view(), name='test-grade-subjective-slash'),
     path('tests/<str:pk>/telemetry', TestTelemetryView.as_view(), name='test-telemetry'),
     path('tests/<str:pk>/telemetry/', TestTelemetryView.as_view(), name='test-telemetry-slash'),
     path('tests/attempts/<str:attempt_id>/telemetry', TestTelemetryView.as_view(), name='attempt-telemetry'),

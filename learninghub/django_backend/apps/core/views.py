@@ -149,4 +149,14 @@ class UserAnalyticsView(APIView):
         return success_response(data=data)
 
 
+class NextBestActionView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from .learner_analytics import LearnerAnalyticsService
+        user = request.user if (request.user and request.user.is_authenticated) else None
+        data = LearnerAnalyticsService.get_next_best_action(user)
+        return success_response(data=data)
+
+
 

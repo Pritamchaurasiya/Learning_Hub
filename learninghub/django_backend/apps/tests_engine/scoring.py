@@ -172,6 +172,10 @@ class IRTScoringEngine:
         return round(max(-3.0, min(3.0, new_theta)), 3)
 
     @staticmethod
+    def select_next_item(attempt: TestAttempt, answered_ids: list = None):
+        return IRTScoringEngine.get_next_adaptive_question(attempt)
+
+    @staticmethod
     def get_next_adaptive_question(attempt: TestAttempt, max_questions: int = 10):
         """
         Selects the next unattempted question that maximizes Fisher Information

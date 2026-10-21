@@ -720,12 +720,16 @@ const TestsAPage = memo(() => {
           stepAdaptiveQuestion({
             id: nextQuestion.id,
             text: nextQuestion.text,
-            question_type: nextQuestion.type || 'mcq',
+            question_type: nextQuestion.type || nextQuestion.question_type || 'mcq',
             difficulty: nextQuestion.difficulty ?? 0.5,
-            bloom_level: 'analyze',
+            bloom_level: nextQuestion.bloom_level || nextQuestion.bloomLevel || 'analyze',
             options: nextQuestion.options || [],
             order: test.questions.length,
             marks: nextQuestion.points || 1,
+            code_template: nextQuestion.code_template,
+            starter_code: nextQuestion.starter_code || nextQuestion.code_template,
+            language: nextQuestion.language,
+            test_cases: nextQuestion.test_cases,
           })
         }
       }

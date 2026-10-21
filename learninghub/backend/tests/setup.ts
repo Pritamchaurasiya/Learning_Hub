@@ -14,26 +14,31 @@ jest.mock('../src/prismaClient', () => {
 })
 
 // Mock Redis CacheService to prevent "Redis is offline" errors
-jest.mock('../src/services/CacheService', () => ({
-  cacheService: {
-    get: jest.fn().mockResolvedValue(null),
-    set: jest.fn().mockResolvedValue(true),
-    delete: jest.fn().mockResolvedValue(true),
-    deletePattern: jest.fn().mockResolvedValue(true),
-    clear: jest.fn().mockResolvedValue(true),
-    increment: jest.fn().mockResolvedValue(1),
-    incrementWithExpiry: jest.fn().mockResolvedValue(1),
-    expire: jest.fn().mockResolvedValue(true),
-    isAvailable: jest.fn().mockReturnValue(true),
-    getClient: jest.fn().mockReturnValue(null),
-    generateKey: jest.fn().mockImplementation((prefix, ...args) => `${prefix}:${args.join(':')}`),
-    curriculumKey: jest.fn().mockImplementation((userId) => `curriculum:active:${userId}`),
-    revisionDeckKey: jest.fn().mockImplementation((userId, filter) => `revision:deck:${userId}:${filter || 'all'}`),
-    skillGraphKey: jest.fn().mockImplementation((userId, domain) => `skills:graph:${userId}:${domain || 'all'}`),
-    learningPathsKey: jest.fn().mockImplementation((query) => `learning-paths:${query || 'all'}`),
-    cacheOrFetch: jest.fn().mockImplementation(async (_key, _ttl, fetcher) => fetcher()),
-  },
-}))
+// Note: CacheService.test.ts has its own mocks and tests the real class, so we don't mock the class here
+jest.mock('../src/services/CacheService', () => {
+  const actualCacheService = jest.requireActual('../src/services/CacheService')
+  return {
+    ...actualCacheService,
+    cacheService: {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(true),
+      delete: jest.fn().mockResolvedValue(true),
+      deletePattern: jest.fn().mockResolvedValue(true),
+      clear: jest.fn().mockResolvedValue(true),
+      increment: jest.fn().mockResolvedValue(1),
+      incrementWithExpiry: jest.fn().mockResolvedValue(1),
+      expire: jest.fn().mockResolvedValue(true),
+      isAvailable: jest.fn().mockReturnValue(true),
+      getClient: jest.fn().mockReturnValue(null),
+      generateKey: jest.fn().mockImplementation((prefix, ...args) => `${prefix}:${args.join(':')}`),
+      curriculumKey: jest.fn().mockImplementation((userId) => `curriculum:active:${userId}`),
+      revisionDeckKey: jest.fn().mockImplementation((userId, filter) => `revision:deck:${userId}:${filter || 'all'}`),
+      skillGraphKey: jest.fn().mockImplementation((userId, domain) => `skills:graph:${userId}:${domain || 'all'}`),
+      learningPathsKey: jest.fn().mockImplementation((query) => `learning-paths:${query || 'all'}`),
+      cacheOrFetch: jest.fn().mockImplementation(async (_key, _ttl, fetcher) => fetcher()),
+    },
+  }
+})
 
 // Reset mocks before each test
 beforeEach(() => {

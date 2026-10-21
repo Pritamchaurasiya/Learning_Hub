@@ -1,0 +1,989 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "LearningHub Core Engine API",
+    "version": "1.0.0",
+    "description": "LearningHub API for adaptive learning, AI tutoring, gamification, and assessments.\n\n## Authentication\nAll endpoints use **httpOnly cookies** for JWT token storage:\n- `access_token` (15min, Path: /, SameSite=Strict)\n- `refresh_token` (7 days, Path: /api/v1/auth, SameSite=Strict)\n\nThe browser automatically sends cookies with `credentials: 'include'`.\nNo Authorization header required (but supported for legacy clients).\n\n## CSRF Protection\nMutating requests (POST, PUT, DELETE, PATCH) require:\n- `X-CSRF-Token` header matching the `csrf_token` cookie value\n\n## Rate Limits\n- Global: 500 requests / 15 minutes\n- Auth endpoints (login, register, MFA): 10 requests / 10 minutes\n- Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`\n\n## Error Format\n```json\n{\n  \"status\": \"error\",\n  \"code\": \"ERROR_CODE\",\n  \"message\": \"Human readable message\",\n  \"details\": {}\n}\n```\n\n## Success Format\n```json\n{\n  \"status\": \"success\",\n  \"message\": \"Optional message\",\n  \"data\": {}\n}\n```",
+    "contact": {
+      "name": "LearningHub Support",
+      "url": "https://learninghub.com",
+      "email": "support@learninghub.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://learninghub.com/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://api.learninghub.com/api/v1",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "httpOnly cookie set by backend on login"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "CSRF token from csrf_token cookie"
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Legacy support - httpOnly cookies preferred"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["error"] },
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "details": { "type": "object" }
+        },
+        "required": ["status", "code", "message"]
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["success"] },
+          "message": { "type": "string" },
+          "data": { "type": "object" }
+        },
+        "required": ["status"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email" },
+          "username": { "type": "string" },
+          "role": { "type": "string", "enum": ["STUDENT", "INSTRUCTOR", "ADMIN"] },
+          "xp": { "type": "integer" },
+          "level": { "type": "integer" },
+          "streak": { "type": "integer" },
+          "longestStreak": { "type": "integer" },
+          "avatarUrl": { "type": "string", "nullable": true },
+          "examPreference": { "type": "object" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "difficulty": { "type": "string", "enum": ["BEGINNER", "INTERMEDIATE", "ADVANCED"] },
+          "timeLimit": { "type": "integer" },
+          "passingScore": { "type": "integer" },
+          "totalMarks": { "type": "integer" },
+          "exam": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "slug": { "type": "string" }
+            }
+          },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Test": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "difficulty": { "type": "string", "enum": ["EASY", "MEDIUM", "HARD"] },
+          "timeLimit": { "type": "integer" },
+          "passingScore": { "type": "integer" },
+          "totalMarks": { "type": "integer" },
+          "questions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Question" }
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "type": { "type": "string", "enum": ["MCQ", "MSQ", "NUMERIC", "CODE"] },
+          "difficulty": { "type": "string", "enum": ["EASY", "MEDIUM", "HARD"] },
+          "points": { "type": "integer" },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "text": { "type": "string" },
+                "isCorrect": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "TestResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "testId": { "type": "string", "format": "uuid" },
+          "userId": { "type": "string", "format": "uuid" },
+          "score": { "type": "number" },
+          "passed": { "type": "boolean" },
+          "timeSpent": { "type": "integer" },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "questionId": { "type": "string" },
+                "selectedOption": { "type": "string" },
+                "isCorrect": { "type": "boolean" },
+                "timeSpent": { "type": "integer" }
+              }
+            }
+          },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "LeaderboardEntry": {
+        "type": "object",
+        "properties": {
+          "rank": { "type": "integer" },
+          "userId": { "type": "string" },
+          "username": { "type": "string" },
+          "xp": { "type": "integer" },
+          "level": { "type": "integer" },
+          "streak": { "type": "integer" }
+        }
+      },
+      "Achievement": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "icon": { "type": "string" },
+          "unlockedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "condition": { "type": "string" }
+        }
+      },
+      "AITutorResponse": {
+        "type": "object",
+        "properties": {
+          "response": { "type": "string" },
+          "sessionId": { "type": "string" },
+          "followUpQuestions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "type": "object" } },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer" },
+              "page": { "type": "integer" },
+              "limit": { "type": "integer" },
+              "pages": { "type": "integer" },
+              "hasNext": { "type": "boolean" },
+              "hasPrev": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check (public)",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "status": "healthy",
+                    "version": "1.0.0",
+                    "uptime": 86400,
+                    "database": { "healthy": true, "latency": 12 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register new user",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "username": { "type": "string", "minLength": 3 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "409": {
+            "description": "Email already exists",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "rememberMe": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "429": {
+            "description": "Too many attempts",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Logged out successfully",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "401": {
+            "description": "Invalid refresh token",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user profile",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": { "status": "success", "data": { "$ref": "#/components/schemas/User" } }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "List courses with filters",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10, "maximum": 50 }
+          },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "examId", "in": "query", "schema": { "type": "string" } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["BEGINNER", "INTERMEDIATE", "ADVANCED"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated course list",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get course details with questions",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course details",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "404": {
+            "description": "Course not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests": {
+      "get": {
+        "tags": ["Tests"],
+        "summary": "List tests with filters",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10, "maximum": 50 }
+          },
+          { "name": "examId", "in": "query", "schema": { "type": "string" } },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["EASY", "MEDIUM", "HARD"] }
+          },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated test list",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}": {
+      "get": {
+        "tags": ["Tests"],
+        "summary": "Get test details",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test details",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "404": {
+            "description": "Test not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/start": {
+      "post": {
+        "tags": ["Tests"],
+        "summary": "Start a test attempt",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test session started",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "404": {
+            "description": "Test not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "409": {
+            "description": "Active attempt exists",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/submit": {
+      "post": {
+        "tags": ["Tests"],
+        "summary": "Submit test answers",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["answers"],
+                "properties": {
+                  "answers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "questionId": { "type": "string" },
+                        "selectedOption": { "type": "string" },
+                        "timeSpent": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Test submitted",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "400": {
+            "description": "Invalid submission",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "404": {
+            "description": "Test not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/{id}/autosave": {
+      "post": {
+        "tags": ["Tests"],
+        "summary": "Autosave test progress",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": { "type": "object" },
+                  "currentQuestionIndex": { "type": "integer" },
+                  "timeRemaining": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Progress saved",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    },
+    "/tests/attempts": {
+      "get": {
+        "tags": ["Tests"],
+        "summary": "Get user test attempts",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Test attempts",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/ai/learning-path": {
+      "post": {
+        "tags": ["AI Tutoring"],
+        "summary": "Analyze learning path and weak areas",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "responses": {
+          "200": {
+            "description": "Learning path analysis",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    },
+    "/ai/tutor": {
+      "post": {
+        "tags": ["AI Tutoring"],
+        "summary": "Get AI tutor response",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": { "type": "string", "maxLength": 2000 },
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "course_id": { "type": "string" },
+                      "question_text": { "type": "string" },
+                      "options": { "type": "array", "items": { "type": "object" } },
+                      "selected_option": { "type": "string" },
+                      "problem_title": { "type": "string" },
+                      "user_code": { "type": "string", "maxLength": 5000 },
+                      "language": { "type": "string" },
+                      "is_review": { "type": "boolean" }
+                    }
+                  },
+                  "session_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tutor response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": {
+                  "status": "success",
+                  "data": { "$ref": "#/components/schemas/AITutorResponse" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Message required",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/ai/tutor/stream": {
+      "post": {
+        "tags": ["AI Tutoring"],
+        "summary": "Get AI tutor response (SSE stream)",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": { "type": "string", "maxLength": 2000 },
+                  "context": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-Sent Events stream",
+            "content": {
+              "text/event-stream": {
+                "schema": { "type": "string" },
+                "example": "data: {\"type\": \"token\", \"content\": \"Hello\"}\\n\\n"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/weak-topics": {
+      "get": {
+        "tags": ["AI Tutoring"],
+        "summary": "Get weak topics for user",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Weak topics list",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    },
+    "/ai/models": {
+      "get": {
+        "tags": ["AI Tutoring"],
+        "summary": "Get available AI models",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Available models",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": { "status": "success", "data": { "providers": ["openai", "anthropic"] } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/council/consult": {
+      "post": {
+        "tags": ["AI Tutoring"],
+        "summary": "Multi-agent council consultation",
+        "security": [{ "cookieAuth": [], "csrfToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": { "type": "string" },
+                  "context": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Council response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "400": {
+            "description": "Query required",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/gamification/leaderboard": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get leaderboard",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "timeframe",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["daily", "weekly", "monthly", "all"],
+              "default": "weekly"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard entries",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/LeaderboardEntry" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gamification/achievements": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get user achievements",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User achievements",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Achievement" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gamification/xp": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Get XP and level info",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "XP info",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    },
+    "/problems": {
+      "get": {
+        "tags": ["Problems"],
+        "summary": "List problems with filters",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "maximum": 100 }
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["EASY", "MEDIUM", "HARD"] }
+          },
+          { "name": "topic", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated problems",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/problems/{slug}": {
+      "get": {
+        "tags": ["Problems"],
+        "summary": "Get problem details",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Problem details",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          },
+          "404": {
+            "description": "Problem not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/leaderboard": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Global leaderboard (alias)",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "timeframe",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["daily", "weekly", "monthly", "all"],
+              "default": "weekly"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Success" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Health", "description": "Health check endpoints" },
+    { "name": "Authentication", "description": "User authentication and session management" },
+    { "name": "Courses", "description": "Course catalog and enrollment" },
+    { "name": "Tests", "description": "Test attempts and submissions" },
+    { "name": "AI Tutoring", "description": "AI-powered learning assistance" },
+    { "name": "Gamification", "description": "XP, achievements, leaderboards, streaks" },
+    { "name": "Problems", "description": "DSA practice problems" }
+  ]
+}

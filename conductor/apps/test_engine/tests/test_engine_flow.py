@@ -295,6 +295,67 @@ class TestEngineFlowTests(TestCase):
         self.assertEqual(response.data['data']['questionId'], str(subj_q.id))
         self.assertIn('rubric', response.data['data'])
 
+    def test_adaptive_step_endpoint_and_coding_item_propagation(self):
+        from rest_framework.test import APIClient
+        from apps.test_engine.models import TestAttempt, AttemptAnswer
+
+        # 1. Create a second coding question on the test to be picked by adaptive Fisher Information
+        coding_q = Question.objects.create(
+            topic=self.topic,
+            text='Write two_sum in O(n) hash map time.',
+            question_type='coding',
+            difficulty=0.45,
+            discrimination=1.7,
+            bloom_level='apply',
+            language='python',
+            code_template='def two_sum(nums, target): pass',
+            test_cases=[{'input': 'nums = [2,7], target = 9', 'output': '[0, 1]'}],
+            explanation='Single-pass hash table'
+        )
+        opt_correct = Option.objects.create(question=coding_q, text='[0, 1]', is_correct=True, order=1)
+        TestQuestion.objects.create(test=self.test, question=coding_q, order=3, marks=10)
+
+        # 2. Create active attempt
+        attempt = TestAttempt.objects.create(
+            user=self.user,
+            test=self.test,
+            mode='adaptive',
+            status='in_progress',
+            metadata={'adaptive': {'history': []}}
+        )
+
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+
+        # 3. Submit adaptive step for question 1
+        url = f"/api/v1/tests/{self.test.id}/adaptive/step"
+        res = client.post(
+            url,
+            {
+                'attempt_id': str(attempt.id),
+                'question_id': str(self.question.id),
+                'selected_option_id': str(self.option1.id),
+                'time_spent_seconds': 25,
+            },
+            format='json'
+        )
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['status'], 'success')
+        step_data = res.data['data']
+
+        self.assertIn('currentTheta', step_data)
+        self.assertIn('sem', step_data)
+        self.assertIn('isCompleted', step_data)
+
+        # If next question is selected, verify coding metadata fields are properly propagated
+        if step_data.get('nextQuestion'):
+            next_q = step_data['nextQuestion']
+            self.assertIn('code_template', next_q)
+            self.assertIn('language', next_q)
+            self.assertIn('test_cases', next_q)
+
+
 
 
 

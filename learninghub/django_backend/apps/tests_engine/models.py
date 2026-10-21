@@ -131,6 +131,7 @@ class TestAttempt(models.Model):
     integrity_score = models.FloatField(default=100.0, null=True, blank=True)
     risk_level = models.CharField(max_length=32, default='EXCELLENT', blank=True)
     telemetry_audit_hash = models.CharField(max_length=128, blank=True, default='')
+    locked_section_ids = models.JSONField(default=list, blank=True)
 
     class Meta:
         db_table = 'lh_test_attempts'
@@ -150,6 +151,7 @@ class AttemptAnswer(models.Model):
     is_correct = models.BooleanField(default=False)
     marks_awarded = models.FloatField(default=0.0)
     time_spent_sec = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
 
     class Meta:
         db_table = 'lh_attempt_answers'

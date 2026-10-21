@@ -257,7 +257,9 @@ class LearnerAnalyticsService:
         for i in range(6, -1, -1):
             day = (now - timedelta(days=i)).date()
             day_name = day.strftime('%a')
-            day_answers = answers.filter(created_at__date=day)
+            day_answers = answers.filter(
+                Q(created_at__date=day) | Q(created_at__isnull=True, attempt__started_at__date=day)
+            )
             day_q_count = day_answers.count()
             day_correct = day_answers.filter(is_correct=True).count()
             day_acc = round((day_correct / max(1, day_q_count)) * 100, 1) if day_q_count > 0 else 0.0
@@ -305,4 +307,69 @@ class LearnerAnalyticsService:
                 'speedDelta': -5.0 if total_questions > 0 else 0.0,
                 'consistencyScore': min(100.0, (getattr(user, 'streak', 0) or 0) * 10.0),
             }
+        }
+
+    @classmethod
+    def get_next_best_action(cls, user) -> Dict[str, Any]:
+        """
+        Dynamically determine the optimal next pedagogical action for the student.
+        """
+        if not user or not user.is_authenticated:
+            return {
+                'id': 'action-diagnostic-drill',
+                'title': 'Benchmark Your Skills: Complete Diagnostic Assessment',
+                'reason': 'Establish your baseline IRT ability estimate (theta) and unlock personalized question recommendations.',
+                'type': 'daily_goal',
+                'actionUrl': '/tests-a',
+                'actionLabel': 'Start Diagnostic Test',
+                'estimatedMinutes': 15,
+                'multiplierBonus': '100 Bonus Gems',
+                'priority': 'MEDIUM',
+            }
+
+        weak = TopicPerformance.objects.filter(user=user, accuracy__lt=65.0).order_by('accuracy').first()
+        if weak:
+            return {
+                'id': f'action-weak-{weak.topic.lower().replace(" ", "-")}',
+                'title': f'Target Weakness: {weak.topic}',
+                'reason': f'Your accuracy in {weak.topic} is {round(weak.accuracy, 1)}%. 5 targeted drill questions will accelerate your mastery.',
+                'type': 'weak_topic',
+                'actionUrl': '/tests-a',
+                'actionLabel': f'Launch {weak.topic} Drill',
+                'estimatedMinutes': 10,
+                'multiplierBonus': '1.5x XP Boost Active',
+                'priority': 'HIGH',
+            }
+
+        try:
+            from apps.ai_tutor.models import SpacedRepetitionSchedule
+            due_count = SpacedRepetitionSchedule.objects.filter(
+                user=user,
+                next_review_date__lte=timezone.now().date()
+            ).count()
+            if due_count > 0:
+                return {
+                    'id': 'action-spaced-rep',
+                    'title': f'Memory Retention: {due_count} Concepts Due for Review',
+                    'reason': 'Reviewing items at their optimal decay interval increases long-term recall by 4x.',
+                    'type': 'spaced_repetition',
+                    'actionUrl': '/tests-a',
+                    'actionLabel': 'Start Spaced Review',
+                    'estimatedMinutes': 8,
+                    'multiplierBonus': '2.0x Streak Shield',
+                    'priority': 'CRITICAL',
+                }
+        except Exception:
+            pass
+
+        return {
+            'id': 'action-diagnostic-drill',
+            'title': 'Benchmark Your Skills: Complete Diagnostic Assessment',
+            'reason': 'Establish your baseline IRT ability estimate (theta) and unlock personalized question recommendations.',
+            'type': 'daily_goal',
+            'actionUrl': '/tests-a',
+            'actionLabel': 'Start Diagnostic Test',
+            'estimatedMinutes': 15,
+            'multiplierBonus': '100 Bonus Gems',
+            'priority': 'MEDIUM',
         }

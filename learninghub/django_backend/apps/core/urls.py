@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     HealthCheckView, HealthReadyView, HealthLiveView, SystemMetricsView, CsrfTokenView,
     DashboardAnalyticsView, UserAnalyticsView, LearningActivityAnalyticsView,
-    PerformanceTrendAnalyticsView, WeakAreasAnalyticsView
+    PerformanceTrendAnalyticsView, WeakAreasAnalyticsView, NextBestActionView
 )
 
 urlpatterns = [
@@ -26,6 +26,10 @@ urlpatterns = [
     path('user-analytics/me/', UserAnalyticsView.as_view(), name='user-analytics-me-slash'),
     path('admin/dashboard', DashboardAnalyticsView.as_view(), name='admin-dashboard-alias'),
     path('admin/dashboard/', DashboardAnalyticsView.as_view(), name='admin-dashboard-alias-slash'),
+
+
+    path('analytics/next-best-action', NextBestActionView.as_view(), name='analytics-next-best-action'),
+    path('analytics/next-best-action/', NextBestActionView.as_view(), name='analytics-next-best-action-slash'),
 ]
 
 

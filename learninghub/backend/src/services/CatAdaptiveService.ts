@@ -51,6 +51,8 @@ export interface CatSessionState {
   targetSem: number
   responses: CatResponseRecord[]
   activeItem?: CatItem
+  startedAt: number // Unix timestamp
+  updatedAt: number // Unix timestamp
 }
 
 export interface CatScorecard {
@@ -496,6 +498,8 @@ export class CatAdaptiveService {
       targetSem: 0.28,
       responses: [],
       activeItem: initialItem,
+      startedAt: Date.now(),
+      updatedAt: Date.now(),
     }
 
     if (this.sessions.size >= CatAdaptiveService.MAX_SESSIONS) {

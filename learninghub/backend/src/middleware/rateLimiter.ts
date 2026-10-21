@@ -100,12 +100,12 @@ export function createRateLimiter(config: RateLimiterConfig) {
 
     const userId = req.user?.userId
     const clientIp = getClientIp(req)
-    const rawRoute = req.route
+const rawRoute = req.route
       ? `${req.baseUrl || ''}${req.route.path}`
       : req.baseUrl
-        ? `${req.baseUrl}${req.path}`
-        : req.path
-    const route = rawRoute
+      ? `${req.baseUrl}${req.path}`
+      : req.path
+    const route = (rawRoute ?? '/')
       .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, ':id')
       .replace(/\b[c0-9a-z]{24,25}\b/gi, ':id')
 

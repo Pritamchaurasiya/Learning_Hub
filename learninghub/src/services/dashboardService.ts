@@ -94,6 +94,14 @@ export const dashboardService = {
   },
 
   async getNextBestAction(): Promise<NextBestAction> {
+    try {
+      const res = (await fetchApi('/analytics/next-best-action')) as {
+        status: string
+        data: NextBestAction
+      }
+      if (res?.data?.id && res?.data?.title) return res.data
+    } catch {}
+
     return {
       id: 'action-dynamic-prog-boost',
       title: 'Target Weakness: Dynamic Programming Knapsack Patterns',
