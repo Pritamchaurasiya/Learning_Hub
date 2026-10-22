@@ -140,8 +140,8 @@ describe('ResumeController (Milestone 12 Anti-Gravity Resume API)', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(200)
       expect(responseHeaders['Content-Type']).toContain('application/json')
-      expect(responseData['$schema']).toContain('jsonresume')
-      expect(responseData.basics.name).toBeDefined()
+      expect(responseData.data['$schema']).toContain('jsonresume')
+      expect(responseData.data.basics.name).toBeDefined()
     })
   })
 

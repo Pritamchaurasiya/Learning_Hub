@@ -1,3 +1,4 @@
+import { sendSuccess, sendError, sendInternalError, sendUnauthorized, sendBadRequest } from '../utils/responseHelper'
 import { Request, Response } from 'express'
 import {
   systemDesignSimulatorService,
@@ -17,17 +18,14 @@ export class SystemDesignController {
       const topology = systemDesignSimulatorService.getPresetTopology(presetId)
       const spofs = systemDesignSimulatorService.detectSPOFNodes(topology)
 
-      res.status(200).json({
-        success: true,
-        data: {
+      sendSuccess(res, {
           presetId,
           topology,
           spofNodeIds: spofs,
-        },
-      })
+        })
     } catch (err: any) {
       logger.error(`[SystemDesignController] getPreset error: ${err.message}`)
-      res.status(500).json({ success: false, message: 'Failed to retrieve architecture preset' })
+      sendInternalError(res, 'Failed to retrieve architecture preset')
     }
   }
 
@@ -43,7 +41,7 @@ export class SystemDesignController {
       }
 
       if (!topology || !topology.nodes || !topology.edges) {
-        res.status(400).json({ success: false, message: 'Invalid topology provided' })
+        sendBadRequest(res, 'Invalid topology provided')
         return
       }
 
@@ -56,13 +54,10 @@ export class SystemDesignController {
         activeFault: fault,
       })
 
-      res.status(200).json({
-        success: true,
-        data: result,
-      })
+      sendSuccess(res, result)
     } catch (err: any) {
       logger.error(`[SystemDesignController] simulate error: ${err.message}`)
-      res.status(500).json({ success: false, message: 'System simulation computation failed' })
+      sendInternalError(res, 'System simulation computation failed')
     }
   }
 }
