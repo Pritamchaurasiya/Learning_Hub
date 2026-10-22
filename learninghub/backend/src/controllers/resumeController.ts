@@ -5,7 +5,7 @@ import {
   ResumeCandidateProfile,
 } from '../services/ResumeEngineService'
 import { asyncHandler } from '../utils/errorHandler'
-import { sendSuccess, sendValidationError } from '../utils/responseHelper'
+import {     sendSuccess, sendValidationError , sendError , sendInternalError , sendUnauthorized , sendBadRequest } from '../utils/responseHelper'
 
 export const generateResume = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId || 'student-candidate-001'
@@ -65,7 +65,7 @@ export const exportJSONResume = asyncHandler(async (req: Request, res: Response)
   const jsonResume = resumeEngineService.formatJSONResume(resume)
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
   res.setHeader('Content-Disposition', `attachment; filename="resume_${targetRole.toLowerCase()}_schema.json"`)
-  res.status(200).json(jsonResume)
+  sendSuccess(res, jsonResume)
 })
 
 export const exportLatexResume = asyncHandler(async (req: Request, res: Response): Promise<void> => {

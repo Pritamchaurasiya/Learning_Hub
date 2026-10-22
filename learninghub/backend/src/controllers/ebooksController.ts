@@ -1,3 +1,4 @@
+import { sendSuccess, sendError, sendInternalError, sendUnauthorized, sendBadRequest } from '../utils/responseHelper'
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../prismaClient'
 import logger from '../utils/logger'
@@ -151,7 +152,7 @@ export const ebooksController = {
           orderBy: { createdAt: 'desc' },
         })
         if (books && books.length > 0) {
-          return res.json({ status: 'success', data: books })
+          return sendSuccess(res, books)
         }
       } catch {}
 
@@ -166,7 +167,7 @@ export const ebooksController = {
         )
       }
 
-      return res.json({ status: 'success', data: filtered })
+      return sendSuccess(res, filtered)
     } catch (err) {
       logger.error(
         '[EbooksController] getEbooks error:',
@@ -183,11 +184,11 @@ export const ebooksController = {
         const book = await (prisma as any).ebook.findFirst({
           where: { OR: [{ id }, { slug: id }] },
         })
-        if (book) return res.json({ status: 'success', data: book })
+        if (book) return sendSuccess(res, book)
       } catch {}
 
       const book = MOCK_EBOOKS.find(b => b.id === id || b.slug === id) || MOCK_EBOOKS[0]
-      return res.json({ status: 'success', data: book })
+      return sendSuccess(res, book)
     } catch (err) {
       return next(err)
     }
@@ -202,12 +203,12 @@ export const ebooksController = {
           orderBy: { order: 'asc' },
         })
         if (chapters && chapters.length > 0) {
-          return res.json({ status: 'success', data: chapters })
+          return sendSuccess(res, chapters)
         }
       } catch {}
 
       const chapters = (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] || FALLBACK_CHAPTERS['ebook-dsa-handbook'] || []
-      return res.json({ status: 'success', data: chapters })
+      return sendSuccess(res, chapters)
     } catch (err) {
       return next(err)
     }
@@ -222,13 +223,13 @@ export const ebooksController = {
           where: { ebookId, id: chapterId },
         })
         if (chapter) {
-          return res.json({ status: 'success', data: chapter })
+          return sendSuccess(res, chapter)
         }
       } catch {}
 
       const chapters = (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] || FALLBACK_CHAPTERS['ebook-dsa-handbook'] || []
       const chapter = chapters.find((c: any) => c.id === chapterId) || chapters[0]
-      return res.json({ status: 'success', data: chapter })
+      return sendSuccess(res, chapter)
     } catch (err) {
       return next(err)
     }
@@ -263,10 +264,7 @@ export const ebooksController = {
         }
       }
 
-      return res.json({
-        status: 'success',
-        data: { ebookId: id, chapterId, progressPercent, lastScrollPosition },
-      })
+      return sendSuccess(res, { ebookId: id, chapterId, progressPercent, lastScrollPosition },)
     } catch (err) {
       return next(err)
     }
@@ -277,13 +275,13 @@ export const ebooksController = {
       const ebookId = String(req.params.id)
       const userId = (req as any).user?.userId
       if (!userId) {
-        return res.json({ status: 'success', data: [] })
+        return sendSuccess(res, [])
       }
       const highlights = await (prisma as any).ebookHighlight.findMany({
         where: { userId, ebookId },
         orderBy: { createdAt: 'desc' },
       })
-      return res.json({ status: 'success', data: highlights })
+      return sendSuccess(res, highlights)
     } catch (err) {
       return next(err)
     }
@@ -294,11 +292,11 @@ export const ebooksController = {
       const ebookId = String(req.params.id)
       const userId = (req as any).user?.userId
       if (!userId) {
-        return res.status(401).json({ status: 'error', message: 'Authentication required' })
+        return sendUnauthorized(res, 'Authentication required')
       }
       const { chapterId, text, color, startOffset, endOffset, note } = req.body
       if (!chapterId || !text) {
-        return res.status(400).json({ status: 'error', message: 'chapterId and text required' })
+        return sendBadRequest(res, 'chapterId and text required')
       }
       const highlight = await (prisma as any).ebookHighlight.create({
         data: {
@@ -312,7 +310,7 @@ export const ebooksController = {
           note: note ? String(note) : null,
         },
       })
-      return res.status(201).json({ status: 'success', data: highlight })
+      return sendSuccess(res, highlight, undefined, 201)
     } catch (err) {
       return next(err)
     }
@@ -323,12 +321,12 @@ export const ebooksController = {
       const { id, highlightId } = req.params
       const userId = (req as any).user?.userId
       if (!userId) {
-        return res.status(401).json({ status: 'error', message: 'Authentication required' })
+        return sendUnauthorized(res, 'Authentication required')
       }
       await (prisma as any).ebookHighlight.deleteMany({
         where: { id: highlightId, userId, ebookId: id },
       })
-      return res.json({ status: 'success', data: { deleted: true } })
+      return sendSuccess(res, { deleted: true })
     } catch (err) {
       return next(err)
     }
@@ -362,11 +360,7 @@ export const ebooksController = {
         ],
       }
 
-      return res.json({
-        status: 'success',
-        ...payload,
-        data: payload,
-      })
+      return sendSuccess(res, payload, undefined, 200, payload)
     } catch (err) {
       return next(err)
     }
@@ -387,11 +381,7 @@ export const ebooksController = {
         ],
       }
 
-      return res.json({
-        status: 'success',
-        ...payload,
-        data: payload,
-      })
+      return sendSuccess(res, payload, undefined, 200, payload)
     } catch (err) {
       return next(err)
     }
