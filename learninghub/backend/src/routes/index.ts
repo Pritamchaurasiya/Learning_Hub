@@ -41,21 +41,8 @@ import skillsRoutes from './v1/skills.routes'
 import learningPathsRoutes from './v1/learningPaths.routes'
 import interviewRoutes from './v1/interview.routes'
 import resumeRoutes from './v1/resume.routes'
-import edgeAIRoutes from './v1/edgeAI.routes'
 import proctoringRoutes from './v1/proctoring.routes'
-import multimodalRoutes from './v1/multimodal.routes'
-import neuroAdaptiveRoutes from './v1/neuroAdaptive.routes'
-import debuggerRoutes from './v1/debugger.routes'
-import complexityRoutes from './v1/complexity.routes'
-import systemDesignRoutes from './v1/systemDesign.routes'
-import zkpRoutes from './v1/zkp.routes'
-import crdtCollabRoutes from './v1/crdtCollab.routes'
-import selfHealingRoutes from './v1/selfHealing.routes'
-import agentDebateRoutes from './v1/agentDebate.routes'
-import chaosClusterRoutes from './v1/chaosCluster.routes'
-import sweStudioRoutes from './v1/sweStudio.routes'
 import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
-import canaryRoutes from './v1/canary.routes'
 import catRoutes from './v1/cat.routes'
 
 import { bodySizeLimiter } from '../middleware/requestLogger'
@@ -137,21 +124,8 @@ router.use('/skills', skillsRoutes)
 router.use('/learning-paths', learningPathsRoutes)
 router.use('/interview', interviewRoutes)
 router.use('/resume', resumeRoutes)
-router.use('/edge-ai', edgeAIRoutes)
 router.use('/proctoring', proctoringRoutes)
-router.use('/multimodal', multimodalRoutes)
-router.use('/neuro-adaptive', neuroAdaptiveRoutes)
-router.use('/debugger', debuggerRoutes)
-router.use('/complexity', complexityRoutes)
-router.use('/system-design', systemDesignRoutes)
-router.use('/zkp', zkpRoutes)
-router.use('/collab', crdtCollabRoutes)
-router.use('/self-healing', selfHealingRoutes)
-router.use('/debate', agentDebateRoutes)
-router.use('/chaos', chaosClusterRoutes)
-router.use('/swe-studio', sweStudioRoutes)
 router.use('/career', careerOrchestratorRoutes)
-router.use('/deployments/canary', canaryRoutes)
 router.use('/cat', catRoutes)
 
 // Health check
