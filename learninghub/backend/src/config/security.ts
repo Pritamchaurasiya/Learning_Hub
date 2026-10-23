@@ -143,7 +143,7 @@ export const helmetConfig = {
         "'self'",
         ...(process.env.NODE_ENV === 'development' ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
       ],
-      scriptSrcAttr: ["'unsafe-inline'"],
+      scriptSrcAttr: ["'none'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
@@ -319,8 +319,6 @@ export const sanitizeInput = (input: string): string => {
     .replace(/vbscript\s*:/gi, '')
     .replace(/data\s*:\s*text\/html/gi, '')
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
-    .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
-    .replace(/&#\d+;/g, '') // Remove decimal HTML entities
     .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '')
     .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gi, '')
     .trim()
