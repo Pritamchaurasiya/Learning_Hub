@@ -81,22 +81,6 @@ const UpdateDetailsPage = lazy(() =>
   import('./pages/UpdateDetailsPage').then(m => ({ default: m.UpdateDetailsPage }))
 )
 
-// Engineering Labs & Interactive Studios
-const EdgeAIPage = lazy(() => import('./pages/EdgeAIPage'))
-const CanvasStudioPage = lazy(() => import('./pages/CanvasStudioPage'))
-const MultiModalStudioPage = lazy(() => import('./pages/MultiModalStudioPage'))
-const NeuroStudyOptimizerPage = lazy(() => import('./pages/NeuroStudyOptimizerPage'))
-const TimeTravelDebuggerPage = lazy(() => import('./pages/TimeTravelDebuggerPage'))
-const ComplexityProfilerPage = lazy(() => import('./pages/ComplexityProfilerPage'))
-const SystemDesignSimulatorPage = lazy(() => import('./pages/SystemDesignSimulatorPage'))
-const ChaosClusterSandboxPage = lazy(() => import('./pages/ChaosClusterSandboxPage'))
-const ZkAttestationPage = lazy(() => import('./pages/ZkAttestationPage'))
-const SelfHealingCodePage = lazy(() => import('./pages/SelfHealingCodePage'))
-const P2PCollabCanvasPage = lazy(() => import('./pages/P2PCollabCanvasPage'))
-const AgentDebateArenaPage = lazy(() => import('./pages/AgentDebateArenaPage'))
-const SweStudioPage = lazy(() => import('./pages/SweStudioPage'))
-const CanaryConsolePage = lazy(() => import('./pages/CanaryConsolePage'))
-
 import { RouteProgressBar } from './components/ui/RouteProgressBar'
 import { idlePrefetchRoutes } from './utils/routePrefetchRegistry'
 
@@ -467,142 +451,44 @@ function App() {
               <Route path="/career-match" element={<Navigate to="/career" replace />} />
               <Route path="/jobs" element={<Navigate to="/career" replace />} />
               <Route path="/recruiter-sim" element={<Navigate to="/career" replace />} />
-              {/* Engineering Labs & Interactive Studios */}
-              <Route
-                path="/edge-ai"
-                element={
-                  <LazyRoute sectionName="Edge AI & Offline Neural Tutor">
-                    <EdgeAIPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/offline-tutor" element={<Navigate to="/edge-ai" replace />} />
-              <Route
-                path="/canvas"
-                element={
-                  <LazyRoute sectionName="Engineering Canvas Studio">
-                    <CanvasStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/canvas-studio" element={<Navigate to="/canvas" replace />} />
-              <Route
-                path="/multimodal"
-                element={
-                  <LazyRoute sectionName="MultiModal AI Studio">
-                    <MultiModalStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/multimodal-studio" element={<Navigate to="/multimodal" replace />} />
-              <Route
-                path="/neuro-study"
-                element={
-                  <LazyRoute sectionName="Neuro Study Optimizer">
-                    <NeuroStudyOptimizerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/flow" element={<Navigate to="/neuro-study" replace />} />
-              <Route path="/biofeedback" element={<Navigate to="/neuro-study" replace />} />
-              <Route
-                path="/time-travel"
-                element={
-                  <LazyRoute sectionName="Deterministic Time-Travel Debugger">
-                    <TimeTravelDebuggerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/debugger" element={<Navigate to="/time-travel" replace />} />
-              <Route
-                path="/complexity"
-                element={
-                  <LazyRoute sectionName="Runtime Complexity & Big-O Profiler">
-                    <ComplexityProfilerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/profiler" element={<Navigate to="/complexity" replace />} />
-              <Route path="/big-o" element={<Navigate to="/complexity" replace />} />
-              <Route
-                path="/system-design"
-                element={
-                  <LazyRoute sectionName="Distributed System Design Simulator">
-                    <SystemDesignSimulatorPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/architecture" element={<Navigate to="/system-design" replace />} />
-              <Route
-                path="/chaos"
-                element={
-                  <LazyRoute sectionName="Chaos Cluster Resilience Sandbox">
-                    <ChaosClusterSandboxPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/chaos-sandbox" element={<Navigate to="/chaos" replace />} />
-              <Route path="/cluster-chaos" element={<Navigate to="/chaos" replace />} />
-              <Route path="/resilience" element={<Navigate to="/chaos" replace />} />
-              <Route
-                path="/zkp"
-                element={
-                  <LazyRoute sectionName="Zero-Knowledge Soulbound Attestations">
-                    <ZkAttestationPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/zk-attestation" element={<Navigate to="/zkp" replace />} />
-              <Route path="/soulbound" element={<Navigate to="/zkp" replace />} />
-              <Route
-                path="/self-healing"
-                element={
-                  <LazyRoute sectionName="Self-Healing Code & Security Auditor">
-                    <SelfHealingCodePage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/refactor" element={<Navigate to="/self-healing" replace />} />
-              <Route path="/security-audit" element={<Navigate to="/self-healing" replace />} />
-              <Route
-                path="/whiteboard"
-                element={
-                  <LazyRoute sectionName="P2P CRDT Collaborative Canvas">
-                    <P2PCollabCanvasPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/collab-canvas" element={<Navigate to="/whiteboard" replace />} />
-              <Route
-                path="/debate"
-                element={
-                  <LazyRoute sectionName="Multi-Agent Debate Arena">
-                    <AgentDebateArenaPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/council" element={<Navigate to="/debate" replace />} />
-              <Route path="/rfc-arena" element={<Navigate to="/debate" replace />} />
-              <Route
-                path="/swe-studio"
-                element={
-                  <LazyRoute sectionName="Autonomous SWE Studio & Benchmarks">
-                    <SweStudioPage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/swe-bench" element={<Navigate to="/swe-studio" replace />} />
-              <Route path="/autonomous-swe" element={<Navigate to="/swe-studio" replace />} />
-              <Route
-                path="/canary"
-                element={
-                  <LazyRoute sectionName="Automated Canary Deployment Console">
-                    <CanaryConsolePage />
-                  </LazyRoute>
-                }
-              />
-              <Route path="/deployments" element={<Navigate to="/canary" replace />} />
-              <Route path="/canary-console" element={<Navigate to="/canary" replace />} />
+              {/* Legacy Engineering Labs Routes redirected to dashboard */}
+              <Route path="/edge-ai" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/offline-tutor" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canvas" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canvas-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/multimodal" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/multimodal-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/neuro-study" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/flow" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/biofeedback" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/time-travel" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/debugger" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/complexity" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/profiler" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/big-o" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/system-design" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/architecture" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/chaos" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/chaos-sandbox" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/cluster-chaos" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/resilience" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/zkp" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/zk-attestation" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/soulbound" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/self-healing" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/refactor" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/security-audit" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/whiteboard" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/collab-canvas" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/debate" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/council" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/rfc-arena" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/swe-studio" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/swe-bench" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/autonomous-swe" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canary" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/deployments" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/canary-console" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/visualizer"
                 element={

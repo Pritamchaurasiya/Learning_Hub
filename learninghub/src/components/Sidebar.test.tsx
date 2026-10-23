@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Sidebar from './Sidebar'
 
@@ -91,7 +91,7 @@ describe('Sidebar Component', () => {
     expect(screen.getByText('My Library')).toBeInTheDocument()
   })
 
-  it('renders section headers including Engineering Labs', () => {
+  it('renders section headers without experimental Engineering Labs', () => {
     render(
       <MemoryRouter>
         <Sidebar />
@@ -99,28 +99,23 @@ describe('Sidebar Component', () => {
     )
 
     expect(screen.getByText('Practice')).toBeInTheDocument()
-    expect(screen.getByText('Engineering Labs')).toBeInTheDocument()
+    expect(screen.queryByText('Engineering Labs')).not.toBeInTheDocument()
     expect(screen.getByText('Community')).toBeInTheDocument()
     expect(screen.getByText('Study Tools & Mentorship')).toBeInTheDocument()
     expect(screen.getByText('Account')).toBeInTheDocument()
   })
 
-  it('expands Engineering Labs section and reveals studio navigation links when clicked', () => {
+  it('verifies Engineering Labs studio links are not present', () => {
     render(
       <MemoryRouter>
         <Sidebar />
       </MemoryRouter>
     )
 
-    const engineeringLabsBtn = screen.getByRole('button', { name: /engineering labs/i })
     expect(screen.queryByText('Edge AI Neural Tutor')).not.toBeInTheDocument()
-
-    // Expand
-    fireEvent.click(engineeringLabsBtn)
-    expect(screen.getByText('Edge AI Neural Tutor')).toBeInTheDocument()
-    expect(screen.getByText('System Design Simulator')).toBeInTheDocument()
-    expect(screen.getByText('Chaos Cluster Sandbox')).toBeInTheDocument()
-    expect(screen.getByText('Autonomous SWE Studio')).toBeInTheDocument()
+    expect(screen.queryByText('Self-Healing Code')).not.toBeInTheDocument()
+    expect(screen.queryByText('P2P Collab Canvas')).not.toBeInTheDocument()
+    expect(screen.queryByText('Chaos Cluster Sandbox')).not.toBeInTheDocument()
   })
 
   it('renders admin navigation items when user role is ADMIN', () => {
