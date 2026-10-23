@@ -18,6 +18,7 @@ ALLOWED_HOSTS = ["*"]
 _APPS_TO_REMOVE = {
     "django_prometheus",
     "django.contrib.postgres",  # requires psycopg2 which may not be installed locally
+    "daphne",  # Prevent Twisted/Python 3.13 import incompatibilities during management commands
 }
 INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in _APPS_TO_REMOVE]
 
