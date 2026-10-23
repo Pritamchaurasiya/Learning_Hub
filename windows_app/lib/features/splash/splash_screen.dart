@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:learning_hub/core/theme/app_colors.dart';
 import 'package:learning_hub/core/providers/biometric_provider.dart';
-import 'package:learning_hub/core/services/api_client.dart';
+import 'package:learning_hub/core/services/auth_service.dart';
 
 /// Splash screen with animated logo and initialization
 class SplashScreen extends ConsumerStatefulWidget {
@@ -45,8 +45,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     final hasCompletedOnboarding =
         prefs.getBool('hasCompletedOnboarding') ?? false;
-    // Use ApiClient to check for valid auth token (stored in secure storage)
-    final isLoggedIn = await ApiClient.instance.hasToken;
+    // Use AuthService to check auth status via /auth/me (cookies sent automatically)
+    final authService = AuthService();
+    final isLoggedIn = await authService.isAuthenticated();
 
     // Wait for minimum display time
     await minDisplayFuture;

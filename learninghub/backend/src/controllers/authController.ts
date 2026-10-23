@@ -20,6 +20,7 @@ import { config } from '../utils/env'
 import { asyncHandler } from '../utils/errorHandler'
 import { trackFailedAuth, clearFailedAuth } from '../middleware/anomalyDetection'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 
 function generateMfaSessionToken(userId: string): string {
   return jwt.sign({ userId, purpose: 'mfa_login' }, config.jwtRefreshSecret, {
@@ -157,7 +158,7 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
     setAuthCookies(res, {
       accessToken: result.tokens.accessToken,
       refreshToken: result.tokens.refreshToken,
-    })
+    }, req)
 
     const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
     void clearFailedAuth(clientIp)
@@ -206,6 +207,85 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
   }
 })
 
+export const demoLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const role = req.body?.role === 'ADMIN' ? 'ADMIN' : 'STUDENT'
+  const targetEmail = role === 'ADMIN' ? 'admin@learninghub.com' : 'student@learninghub.com'
+  const targetPassword = role === 'ADMIN' ? 'Super@2026#Hub' : 'Student@2026#Hub'
+
+  // Ensure demo account exists with valid state
+  let user = await prisma.user.findUnique({ where: { email: targetEmail } })
+  if (!user) {
+    const hashedPassword = await bcrypt.hash(targetPassword, 12)
+    user = await prisma.user.create({
+      data: {
+        email: targetEmail,
+        password: hashedPassword,
+        username: role === 'ADMIN' ? 'admin' : 'student',
+        role,
+        xp: role === 'ADMIN' ? 9999 : 1250,
+        level: role === 'ADMIN' ? 25 : 5,
+        streak: role === 'ADMIN' ? 21 : 7,
+        emailVerified: true,
+      },
+    })
+  } else {
+    // Always auto-unlock and ensure failed login count is cleared for demo accounts
+    const isMatching = await bcrypt.compare(targetPassword, user.password)
+    const updateData: { lockedUntil: null; failedLogins: number; password?: string } = {
+      lockedUntil: null,
+      failedLogins: 0,
+    }
+    if (!isMatching) {
+      updateData.password = await bcrypt.hash(targetPassword, 12)
+    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+    })
+  }
+
+  const result = await authService.login({
+    email: targetEmail,
+    password: targetPassword,
+    ipAddress: req.ip,
+    userAgent: req.headers['user-agent'],
+  })
+
+  setAuthCookies(res, {
+    accessToken: result.tokens.accessToken,
+    refreshToken: result.tokens.refreshToken,
+  }, req)
+
+  const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
+  void clearFailedAuth(clientIp)
+
+  sendSuccess(
+    res,
+    {
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        username: result.user.username,
+        role: result.user.role,
+        xp: result.user.xp,
+        level: result.user.level,
+        streak: result.user.streak,
+        lastActive: result.user.lastActive,
+      },
+      token: result.tokens.accessToken,
+      accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
+      tokens: {
+        access: result.tokens.accessToken,
+        refresh: result.tokens.refreshToken,
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+      },
+    },
+    'Demo login successful'
+  )
+})
+
 export const logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const refreshToken = req.body.refresh_token ?? req.body.refresh ?? getRefreshTokenFromCookie(req)
   const accessToken = req.headers.authorization?.startsWith('Bearer ')
@@ -222,7 +302,10 @@ export const logout = asyncHandler(async (req: Request, res: Response): Promise<
 
 export const refresh = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const refreshToken =
-    req.body.refresh_token ?? req.body.refresh ?? req.body.refreshToken ?? getRefreshTokenFromCookie(req)
+    req.body?.refresh_token ??
+    req.body?.refresh ??
+    req.body?.refreshToken ??
+    getRefreshTokenFromCookie(req)
   if (!refreshToken) {
     sendValidationError(res, 'Refresh token is required')
     return
@@ -232,7 +315,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response): Promise
     const result = await authService.refreshToken(refreshToken)
     // COMPAT DUALITY NOTE (see register): cookies are primary; body copy is for
     // legacy clients. Rotation is single-use with reuse detection in AuthService.
-    setAuthCookies(res, result)
+    setAuthCookies(res, result, req)
     sendSuccess(res, {
       message: 'Token refreshed',
       token: result.accessToken,

@@ -8,7 +8,7 @@
     "test:ci": "jest --ci --coverage --reporters=default",
     "lint": "npx eslint src --quiet",
     "test:watch": "jest --watch",
-    "test:specific": "jest --testPathPattern",
+    "test:specific": "jest --testPathPatterns",
     "test:e2e": "tsx src/server.ts",
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "prisma generate && tsc",

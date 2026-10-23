@@ -144,6 +144,8 @@ class Course(BaseModel):
             models.Index(fields=['is_published', '-created_at'], name='idx_course_pub_recent'),
             models.Index(fields=['is_free', 'is_published'], name='idx_course_free_pub'),
             models.Index(fields=['price', 'is_published'], name='idx_course_price_pub'),
+            models.Index(fields=['is_published', 'is_featured', '-created_at'], name='idx_course_featured'),
+            models.Index(fields=['category', 'is_published', '-enrollment_count'], name='idx_course_category_popular'),
         ]
         constraints = [
             models.CheckConstraint(
@@ -284,6 +286,8 @@ class Enrollment(BaseModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["completed_at"], name='idx_enroll_completed'),
+            models.Index(fields=['user', '-last_accessed_at'], name='idx_enroll_user_accessed'),
+            models.Index(fields=['course', 'progress_percentage'], name='idx_enroll_progress'),
             models.Index(fields=["created_at"], name='idx_enroll_created'),
             models.Index(fields=["user", "course", "created_at"], name="idx_enroll_usr_crs_date"),
             models.Index(fields=["progress_percentage"], name="idx_enrollment_progress"),
@@ -338,7 +342,8 @@ class Review(BaseModel):
             models.Index(fields=["rating"], name="idx_review_rating"),
             models.Index(fields=["course", "-created_at"], name="idx_review_course"),  # Recent course reviews
             models.Index(fields=["user", "-created_at"], name="idx_review_user"),  # User review history
-            models.Index(fields=["course", "-rating"], name="idx_review_course_rating"),  # Top-rated reviews
+            models.Index(fields=["course", "-rating"], name="idx_review_course_rating"),
+            models.Index(fields=['user', '-created_at'], name='idx_review_user_recent'),  # Top-rated reviews
         ]
         constraints = [
             models.CheckConstraint(

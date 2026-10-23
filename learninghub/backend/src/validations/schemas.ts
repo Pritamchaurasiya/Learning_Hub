@@ -65,9 +65,7 @@ export const refreshSchema = z.object({
         .max(512, 'Refresh token too long')
         .optional(),
     })
-    .refine(data => data.refresh_token ?? data.refresh ?? data.refreshToken, {
-      message: 'Refresh token is required (provide refresh_token, refresh, or refreshToken)',
-    }),
+    .optional(),
 })
 
 // Autosave test answers — must be an object map of questionId → optionId|optionId[]|text

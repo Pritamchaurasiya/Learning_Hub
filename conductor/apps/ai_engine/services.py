@@ -53,6 +53,26 @@ class RAGService:
             for hit in semantic_hits:
                 # CRITICAL SECURITY FIX: Filter GenericForeignKey hits by publish/active state
                 obj = hit.content_object
+                if obj is None:
+                    continue
+                
+                # Security validation: Check model-specific access restrictions
+                model_name = obj.__class__.__name__
+                
+                # Course content - must be published
+                if model_name == 'Course' and not getattr(obj, 'is_published', False):
+                    continue
+                # Lesson content - check both lesson and course publication
+                if model_name == 'Lesson':
+                    if not getattr(obj, 'is_published', False):
+                        continue
+                    if hasattr(obj, 'module') and hasattr(obj.module, 'course'):
+                        if not getattr(obj.module.course, 'is_published', False):
+                            continue
+                # DSA problems - must be active
+                if model_name == 'Problem' and not getattr(obj, 'is_active', False):
+                    continue
+                # Generic is_published/is_active check
                 if hasattr(obj, 'is_published') and not obj.is_published:
                     continue
                 if hasattr(obj, 'is_active') and not obj.is_active:

@@ -1,4 +1,7 @@
 import 'api_client.dart';
+import 'websocket_service.dart';
+import 'session_event_service.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
 
@@ -7,7 +10,7 @@ class AuthService {
   Future<AuthResult> signIn(String email, String password) async {
     try {
       final response = await _client.post<Map<String, dynamic>>(
-        '/auth/login/',
+        '/auth/login',
         data: {'email': email, 'password': password},
       );
 
@@ -17,13 +20,18 @@ class AuthService {
             ? payload['data'] as Map<String, dynamic>
             : payload;
 
-        await _client.setTokens(
-          accessToken: (data['accessToken'] ?? data['access_token']) as String,
-          refreshToken: (data['refreshToken'] ?? data['refresh_token']) as String,
-        );
+        // SECURITY: No local token storage - backend sets httpOnly cookies
+        // Cookies (access_token, refresh_token) are set via Set-Cookie headers
+        // Browser/mobile automatically stores and sends them with requests
+
+        // Store token in memory for WebSocket connections only
+        final accessToken = (data['accessToken'] ?? data['access_token']) as String?;
+        if (accessToken != null) {
+          webSocketService.setWsToken(accessToken);
+        }
 
         return AuthResult.success(AuthData(
-          token: (data['accessToken'] ?? data['access_token']) as String,
+          token: accessToken ?? '', // Kept for backward compatibility (in-memory only)
           userId: ((data['user'] as Map<String, dynamic>?)?['id'] ?? data['user_id']) as String,
           email: email,
         ));
@@ -39,7 +47,7 @@ class AuthService {
   Future<AuthResult> signUp(String email, String password, String name) async {
     try {
       final response = await _client.post<Map<String, dynamic>>(
-        '/auth/register/',
+        '/auth/register',
         data: {
           'email': email,
           'password': password,
@@ -61,36 +69,72 @@ class AuthService {
 
   Future<AuthResult> signOut() async {
     try {
-      final refreshToken = await _client.getRefreshToken();
-      if (refreshToken != null) {
-        await _client.post<dynamic>(
-          '/auth/logout/',
-          data: {'refresh_token': refreshToken},
-        );
-      }
-    } catch (_) {
-      // Best-effort logout
-    }
+      // Emit logged out event BEFORE clearing state
+      // This allows components to react before data is cleared
+      sessionEventService.emitLoggedOut();
 
-    await _client.clearTokens();
-    return AuthResult.success(AuthData(token: '', userId: '', email: ''));
+      // Clear in-memory WebSocket token
+      webSocketService.setWsToken(null);
+
+      // Clear all session data (cookies, state, refresh tracking)
+      await _client.clearAllSessionData();
+
+      return AuthResult.success(AuthData(token: '', userId: '', email: ''));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] Error during signOut: $e');
+      }
+      // Even if logout fails, emit the event and clear local state
+      sessionEventService.emitLoggedOut();
+      webSocketService.setWsToken(null);
+      await _client.clearAllSessionData();
+      return AuthResult.success(AuthData(token: '', userId: '', email: ''));
+    }
   }
 
   Future<bool> isAuthenticated() async {
-    return await _client.hasToken;
+    // Check auth status by calling /auth/me - cookies sent automatically
+    // Returns true if authenticated, false if 401
+    try {
+      final response = await _client.get<Map<String, dynamic>>('/auth/me');
+      return response.success;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<String?> getCurrentUserEmail() async {
-    // Email is not stored separately; we'd need to decode the JWT or fetch profile
+    try {
+      final response = await _client.get<Map<String, dynamic>>('/auth/me');
+      if (response.success && response.data != null) {
+        final payload = response.data!;
+        final data = payload.containsKey('data')
+            ? payload['data'] as Map<String, dynamic>
+            : payload;
+        return data['email'] as String?;
+      }
+    } catch (_) {}
     return null;
   }
 
   Future<String?> getCurrentUserId() async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>('/auth/me');
+      if (response.success && response.data != null) {
+        final payload = response.data!;
+        final data = payload.containsKey('data')
+            ? payload['data'] as Map<String, dynamic>
+            : payload;
+        return data['id'] as String?;
+      }
+    } catch (_) {}
     return null;
   }
 
   Future<String?> getCurrentToken() async {
-    return await _client.getAccessToken();
+    // Token not accessible from JS/httpOnly cookies
+    // Return in-memory WebSocket token if available
+    return webSocketService.getWsToken();
   }
 }
 

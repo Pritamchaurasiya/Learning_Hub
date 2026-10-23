@@ -8,6 +8,7 @@ vi.mock('../services/courseService', () => ({
   courseService: {
     getCourse: vi.fn(),
     updateProgress: vi.fn().mockResolvedValue({ status: 'success' }),
+    completeLesson: vi.fn().mockResolvedValue({ status: 'success' }),
   },
   getFallbackCourse: vi.fn((id: string) => ({
     id,
@@ -174,7 +175,7 @@ describe('LessonPlayerPage Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Completed')).toBeInTheDocument()
-      expect(courseService.updateProgress).toHaveBeenCalledWith('course-sys-101', 50)
+      expect(courseService.updateProgress).toHaveBeenCalledWith('course-sys-101', 50, 'les-1')
     })
   })
 

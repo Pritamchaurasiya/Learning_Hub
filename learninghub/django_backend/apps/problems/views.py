@@ -45,7 +45,7 @@ class ProblemDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        problem = Problem.objects.prefetch_related('test_cases').filter(Q(pk=pk) | Q(slug=pk)).first()
+        problem = Problem.objects.prefetch_related('test_cases').filter(Q(pk=pk) | Q(slug=pk) | Q(slug=f'{pk}-problem') | Q(slug__iexact=pk) | Q(slug__istartswith=pk)).first()
         if not problem:
             return error_response('Problem not found', status_code=status.HTTP_404_NOT_FOUND)
 
@@ -64,13 +64,39 @@ class RunCodeView(APIView):
             return error_response('Code cannot be empty', status_code=status.HTTP_400_BAD_REQUEST)
 
         result = CodeSandboxService.execute_code(code, language, custom_input)
-        return success_response(data=result, message='Code executed')
+        status_map = {
+            'Accepted': 'AC',
+            'Wrong Answer': 'WA',
+            'Time Limit Exceeded': 'TLE',
+            'Runtime Error': 'RE',
+            'Compilation Error': 'CE',
+        }
+        res_status = result.get('status', 'Accepted')
+        short_status = status_map.get(res_status, 'AC' if result.get('success') else 'RE')
+
+        from django.utils import timezone
+        run_data = {
+            **result,
+            'id': f"run-{int(timezone.now().timestamp() * 1000)}",
+            'problem': pk or 'code-run',
+            'code': code,
+            'language': language,
+            'status': short_status,
+            'full_status': res_status,
+            'passed_tests': 1 if result.get('success') else 0,
+            'total_tests': 1,
+            'execution_time_ms': result.get('runtime_ms', 35),
+            'memory_kb': int(result.get('memory_mb', 14.0) * 1024),
+            'feedback': 'Sample Test Passed' if result.get('success') else (result.get('stderr') or 'Execution failed'),
+            'created_at': timezone.now().isoformat(),
+        }
+        return success_response(data=run_data, message='Code executed')
 
 class SubmitProblemView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        problem = Problem.objects.prefetch_related('test_cases').filter(Q(pk=pk) | Q(slug=pk)).first()
+        problem = Problem.objects.prefetch_related('test_cases').filter(Q(pk=pk) | Q(slug=pk) | Q(slug=f'{pk}-problem') | Q(slug__iexact=pk) | Q(slug__istartswith=pk)).first()
         if not problem:
             return error_response('Problem not found', status_code=status.HTTP_404_NOT_FOUND)
 
@@ -163,7 +189,7 @@ class ProblemSubmissionsListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        problem = Problem.objects.filter(Q(pk=pk) | Q(slug=pk)).first()
+        problem = Problem.objects.filter(Q(pk=pk) | Q(slug=pk) | Q(slug=f'{pk}-problem') | Q(slug__iexact=pk) | Q(slug__istartswith=pk)).first()
         problem_id = problem.id if problem else pk
         submissions = ProblemSubmission.objects.filter(problem_id=problem_id, user=request.user)
         serializer = ProblemSubmissionSerializer(submissions, many=True)
@@ -194,3 +220,74 @@ class ProblemRecommendationsView(APIView):
             data=recs,
             meta={'count': len(recs), 'engine': 'DSA-Next-Best-Action-v1'}
         )
+
+
+class DSAStatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user if (request.user and request.user.is_authenticated) else None
+        total_problems = Problem.objects.count()
+        total_easy = Problem.objects.filter(difficulty__iexact='Easy').count()
+        total_medium = Problem.objects.filter(difficulty__iexact='Medium').count()
+        total_hard = Problem.objects.filter(difficulty__iexact='Hard').count()
+
+        if user:
+            solved_pids = set(ProblemSubmission.objects.filter(user=user, status='Accepted').values_list('problem_id', flat=True))
+            attempted_pids = set(ProblemSubmission.objects.filter(user=user).values_list('problem_id', flat=True))
+            submissions_count = ProblemSubmission.objects.filter(user=user).count()
+
+            solved_problems = len(solved_pids)
+            attempted_problems = len(attempted_pids)
+            acceptance_rate = round((solved_problems / max(1, attempted_problems)) * 100, 1)
+
+            easy_solved = Problem.objects.filter(id__in=solved_pids, difficulty__iexact='Easy').count()
+            medium_solved = Problem.objects.filter(id__in=solved_pids, difficulty__iexact='Medium').count()
+            hard_solved = Problem.objects.filter(id__in=solved_pids, difficulty__iexact='Hard').count()
+
+            current_streak = getattr(user, 'streak', 0) or 0
+            longest_streak = getattr(user, 'longest_streak', current_streak) or current_streak
+            rank = getattr(user, 'level', 1) * 10
+        else:
+            solved_problems = 0
+            attempted_problems = 0
+            submissions_count = 0
+            acceptance_rate = 0.0
+            easy_solved = 0
+            medium_solved = 0
+            hard_solved = 0
+            current_streak = 0
+            longest_streak = 0
+            rank = 1
+
+        stats_data = {
+            'total_problems': total_problems,
+            'solved_problems': solved_problems,
+            'attempted_problems': attempted_problems,
+            'submissions_count': submissions_count,
+            'acceptance_rate': acceptance_rate,
+            'current_streak': current_streak,
+            'longest_streak': longest_streak,
+            'rank': rank,
+            'easy_solved': easy_solved,
+            'medium_solved': medium_solved,
+            'hard_solved': hard_solved,
+            'total_easy': total_easy,
+            'total_medium': total_medium,
+            'total_hard': total_hard,
+            # Dual camelCase support
+            'totalProblems': total_problems,
+            'solvedProblems': solved_problems,
+            'attemptedProblems': attempted_problems,
+            'submissionsCount': submissions_count,
+            'acceptanceRate': acceptance_rate,
+            'currentStreak': current_streak,
+            'longestStreak': longest_streak,
+            'easySolved': easy_solved,
+            'mediumSolved': medium_solved,
+            'hardSolved': hard_solved,
+            'totalEasy': total_easy,
+            'totalMedium': total_medium,
+            'totalHard': total_hard,
+        }
+        return success_response(data=stats_data)

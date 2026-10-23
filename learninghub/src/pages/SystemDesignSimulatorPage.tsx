@@ -10,13 +10,11 @@ import { TopologyCanvas } from '../components/systemDesign/TopologyCanvas'
 import { ChaosControlPanel } from '../components/systemDesign/ChaosControlPanel'
 import { TelemetryMetricsHUD } from '../components/systemDesign/TelemetryMetricsHUD'
 import { ArchitectScorecardCard } from '../components/systemDesign/ArchitectScorecardCard'
-import {
-  Sparkles,
-  RefreshCw,
-} from 'lucide-react'
+import { Sparkles, RefreshCw } from 'lucide-react'
 
 export const SystemDesignSimulatorPage: React.FC = () => {
-  const [selectedPreset, setSelectedPreset] = useState<ArchitecturePresetId>('URL_SHORTENER_TINYURL')
+  const [selectedPreset, setSelectedPreset] =
+    useState<ArchitecturePresetId>('URL_SHORTENER_TINYURL')
   const [topology, setTopology] = useState<ArchitectureTopology | null>(null)
   const [currentQps, setCurrentQps] = useState<number>(25000)
   const [activeFault, setActiveFault] = useState<ChaosFaultType>('NONE')
@@ -58,7 +56,10 @@ export const SystemDesignSimulatorPage: React.FC = () => {
   }, [selectedPreset])
 
   // Run simulation on button or parameter change
-  const handleRunSimulation = async (topoToUse?: ArchitectureTopology, faultToUse?: ChaosFaultType) => {
+  const handleRunSimulation = async (
+    topoToUse?: ArchitectureTopology,
+    faultToUse?: ChaosFaultType
+  ) => {
     const topo = topoToUse || topology
     const fault = faultToUse !== undefined ? faultToUse : activeFault
     if (!topo) return
@@ -84,7 +85,7 @@ export const SystemDesignSimulatorPage: React.FC = () => {
     )
     const updatedTopo = { ...topology, nodes: updatedNodes }
     setTopology(updatedTopo)
-    handleRunSimulation(updatedTopo)
+    void handleRunSimulation(updatedTopo)
   }
 
   // Increment replica factor
@@ -95,7 +96,7 @@ export const SystemDesignSimulatorPage: React.FC = () => {
     )
     const updatedTopo = { ...topology, nodes: updatedNodes }
     setTopology(updatedTopo)
-    handleRunSimulation(updatedTopo)
+    void handleRunSimulation(updatedTopo)
   }
 
   // Reset to nominal cluster health
@@ -105,12 +106,12 @@ export const SystemDesignSimulatorPage: React.FC = () => {
     const restoredNodes = topology.nodes.map(n => ({ ...n, isHealthy: true }))
     const restoredTopo = { ...topology, nodes: restoredNodes }
     setTopology(restoredTopo)
-    handleRunSimulation(restoredTopo, 'NONE')
+    void handleRunSimulation(restoredTopo, 'NONE')
   }
 
   const handleSelectFault = (fault: ChaosFaultType) => {
     setActiveFault(fault)
-    handleRunSimulation(undefined, fault)
+    void handleRunSimulation(undefined, fault)
   }
 
   if (isLoading || !topology) {
@@ -142,7 +143,8 @@ export const SystemDesignSimulatorPage: React.FC = () => {
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
             Interactive C4 distributed topology sandbox. Simulate Little’s Law queueing dynamics,
-            validate CAP theorem trade-offs, and inject Chaos Monkey hardware faults under real-time synthetic traffic.
+            validate CAP theorem trade-offs, and inject Chaos Monkey hardware faults under real-time
+            synthetic traffic.
           </p>
         </div>
 
@@ -201,3 +203,5 @@ export const SystemDesignSimulatorPage: React.FC = () => {
     </div>
   )
 }
+
+export default SystemDesignSimulatorPage

@@ -83,22 +83,32 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer for user profile."""
-    xp = serializers.SerializerMethodField()
-    level = serializers.SerializerMethodField()
-    streak = serializers.SerializerMethodField()
+    """
+    Serializer for user profile.
+    
+    Performance Optimization:
+    - Uses select_related('xp_profile', 'streak_profile') from queryset
+    - Direct field access instead of SerializerMethodField to prevent N+1
+    - Expects UserViewSet to prefetch related data
+    """
+    # Access related fields directly (requires select_related in queryset)
+    xp = serializers.IntegerField(source='xp_profile.total_xp', read_only=True, default=0)
+    level = serializers.IntegerField(source='xp_profile.level', read_only=True, default=1)
+    streak = serializers.IntegerField(source='streak_profile.current_streak', read_only=True, default=0)
+    
+    # Optional: If you need the old SerializerMethodField behavior for compatibility
+    # Keep these commented out unless needed
+    # def get_xp(self, obj):
+    #     try:
+    #         return obj.xp_profile.total_xp
+    #     except Exception:
+    #         return 0
 
-    def get_xp(self, obj):
-        try:
-            return obj.xp_profile.total_xp
-        except Exception:
-            return 0
-
-    def get_level(self, obj):
-        try:
-            return obj.xp_profile.level
-        except Exception:
-            return 1
+    # def get_level(self, obj):
+    #     try:
+    #         return obj.xp_profile.level
+    #     except Exception:
+    #         return 1
 
     def get_streak(self, obj):
         try:

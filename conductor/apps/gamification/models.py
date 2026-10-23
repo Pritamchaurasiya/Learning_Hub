@@ -28,6 +28,9 @@ class UserXP(BaseModel):
             models.Index(fields=['level', '-total_xp'], name='idx_userxp_level_xp'),  # Level-based leaderboard
             models.Index(fields=['last_activity_date'], name='idx_userxp_activity'),  # Activity tracking
             models.Index(fields=['-level', '-total_xp'], name='idx_userxp_level_total'),  # Level leaderboard
+            models.Index(fields=['level', '-total_xp', '-weekly_xp'], name='idx_xp_leaderboard_full'),
+            models.Index(fields=['-weekly_xp', 'weekly_reset_date'], name='idx_xp_weekly_leader'),
+            models.Index(fields=['last_activity_date'], name='idx_xp_last_activity'),
         ]
         constraints = [
             models.CheckConstraint(
@@ -87,6 +90,7 @@ class Streak(BaseModel):
             models.Index(fields=['-longest_streak'], name='idx_streak_longest'),  # All-time streak leaderboard
             models.Index(fields=['last_activity_date'], name='idx_streak_activity'),  # Activity tracking
             models.Index(fields=['user', '-current_streak'], name='idx_streak_user_current'),  # User streaks
+            models.Index(fields=['-current_streak', '-longest_streak'], name='idx_streak_top_streaks'),
         ]
         constraints = [
             models.CheckConstraint(
@@ -167,7 +171,8 @@ class UserBadge(BaseModel):
     class Meta:
         unique_together = ['user', 'badge']
         indexes = [
-            models.Index(fields=['user', '-earned_at']),
+            models.Index(fields=['user', '-earned_at'], name='idx_badge_user_recent'),
+            models.Index(fields=['badge', '-earned_at'], name='idx_badge_type_recent'),
         ]
 
     def __str__(self):

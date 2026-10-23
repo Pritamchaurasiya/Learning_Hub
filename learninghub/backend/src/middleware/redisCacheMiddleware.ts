@@ -26,7 +26,7 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       return
     }
 
-    const key = `cache:${req.originalUrl || req.url}_${req.user?.userId ?? 'anonymous'}`
+    const key = cacheService.generateKey('http', req.originalUrl || req.url, req.user?.userId ?? 'anonymous')
 
     const isAuth = !!req.user?.userId
     const cacheControlHeader = `${isAuth ? 'private' : 'public'}, max-age=${Math.min(durationInSeconds, 60)}, stale-while-revalidate=300`
@@ -98,7 +98,15 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
  */
 export async function invalidateCache(pattern: string): Promise<void> {
   try {
-    await cacheService.deletePattern(pattern)
+    if (!pattern.startsWith('http:')) {
+      await Promise.allSettled([
+        cacheService.deletePattern(pattern),
+        cacheService.deletePattern(`http:*${pattern}*`),
+        cacheService.deletePattern(`*${pattern}*`),
+      ])
+    } else {
+      await cacheService.deletePattern(pattern)
+    }
   } catch {
     // Fallback: clear NodeCache
     fallbackCache.flushAll()

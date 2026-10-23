@@ -12,7 +12,7 @@ export const submitVisionTelemetry = async (req: Request, res: Response): Promis
       return
     }
 
-    const userId = (req as any).user?.id || 'anonymous_user'
+    const userId = req.user?.userId || (req as any).user?.id || 'anonymous_user'
     const result = multiModalStudioService.processVisionTelemetry({
       sessionId,
       userId,
@@ -65,7 +65,7 @@ export const processVoiceTurn = async (req: Request, res: Response): Promise<voi
       return
     }
 
-    const userId = (req as any).user?.id || 'anonymous_user'
+    const userId = req.user?.userId || (req as any).user?.id || 'anonymous_user'
     const result = multiModalStudioService.processVoiceTurn({
       sessionId,
       userId,

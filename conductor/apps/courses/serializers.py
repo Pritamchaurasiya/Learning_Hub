@@ -51,10 +51,22 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CourseListSerializer(serializers.ModelSerializer):
-    """Serializer for course listings (minimal data)."""
+    """
+    Serializer for course listings (minimal data).
+    
+    Performance Optimization:
+    - Uses annotated fields from queryset instead of SerializerMethodField
+    - Expects queryset to include: review_count, avg_rating, enrollment_count_cached
+    - Prevents N+1 queries by relying on select_related('instructor', 'category')
+    """
 
     instructor = UserListSerializer(read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
+    
+    # Use annotated fields from queryset (see CourseViewSet.get_queryset)
+    review_count = serializers.IntegerField(read_only=True)
+    avg_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    enrollment_count = serializers.IntegerField(source='enrollment_count_cached', read_only=True)
 
     class Meta:
         model = Course
@@ -93,13 +105,25 @@ class ModuleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'order', 'lessons']
 
 class CourseDetailSerializer(serializers.ModelSerializer):
-    """Serializer for course detail view."""
+    """
+    Serializer for course detail view.
+    
+    Performance Optimization:
+    - Uses annotated fields (review_count, avg_rating, enrollment_count_cached)
+    - Expects prefetched relations: modules.lessons, reviews
+    - Uses user_enrollment from Prefetch for is_enrolled check
+    """
 
     instructor = UserListSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     is_enrolled = serializers.SerializerMethodField()
     user_progress = serializers.SerializerMethodField()
     modules = ModuleSerializer(many=True, read_only=True)
+    
+    # Use annotated fields from queryset
+    review_count = serializers.IntegerField(read_only=True)
+    avg_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    enrollment_count = serializers.IntegerField(source='enrollment_count_cached', read_only=True)
 
     class Meta:
         model = Course
@@ -135,15 +159,19 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.BooleanField())
     def get_is_enrolled(self, obj):
-        """Check if current user is enrolled."""
-        if hasattr(obj, '_user_enrollment'):
-            return obj._user_enrollment is not None
-        enrollments_map = self.context.get('enrollments_map')
-        if enrollments_map is not None:
-            return obj.id in enrollments_map
+        """
+        Check if current user is enrolled.
+        Uses prefetched 'user_enrollment' from queryset to avoid extra query.
+        """
+        # Use prefetched user_enrollment attribute from CourseViewSet
+        if hasattr(obj, 'user_enrollment'):
+            return len(obj.user_enrollment) > 0
+        
+        # Fallback for cases without prefetch
         request = self.context.get("request")
         if request and request.user.is_authenticated:
-            return Enrollment.objects.filter(user=request.user, course=obj).exists()
+            # This will use cached query if prefetched
+            return obj.enrollments.filter(user=request.user).exists()
         return False
 
     @extend_schema_field(serializers.FloatField(allow_null=True))

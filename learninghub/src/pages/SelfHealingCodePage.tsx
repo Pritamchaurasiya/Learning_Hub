@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import {
-  CodeSnippetPresetId,
-  CodeAnalysisPayload,
-} from '../types/selfHealing'
+import { CodeSnippetPresetId, CodeAnalysisPayload } from '../types/selfHealing'
 import { selfHealingService } from '../services/selfHealingService'
 import { VulnerabilityDiagnosticCard } from '../components/selfHealing/VulnerabilityDiagnosticCard'
 import { CodeDiffViewerPanel } from '../components/selfHealing/CodeDiffViewerPanel'
 import { PatchImpactScorecard } from '../components/selfHealing/PatchImpactScorecard'
-import {
-  Sparkles,
-  RefreshCw,
-  CheckCircle2,
-} from 'lucide-react'
+import { Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react'
 
 export const SelfHealingCodePage: React.FC = () => {
   const [selectedPreset, setSelectedPreset] = useState<CodeSnippetPresetId>('N_PLUS_ONE_QUERY_LOOP')
@@ -24,7 +17,11 @@ export const SelfHealingCodePage: React.FC = () => {
 
   const presets: { id: CodeSnippetPresetId; label: string; tag: string }[] = [
     { id: 'N_PLUS_ONE_QUERY_LOOP', label: 'N+1 Query Loop in Express/Prisma', tag: 'PERFORMANCE' },
-    { id: 'SQL_INJECTION_CONCATENATION', label: 'SQL Injection via String Concat', tag: 'SECURITY' },
+    {
+      id: 'SQL_INJECTION_CONCATENATION',
+      label: 'SQL Injection via String Concat',
+      tag: 'SECURITY',
+    },
     { id: 'REACT_MEMORY_LEAK_INTERVAL', label: 'React Memory Leak in useEffect', tag: 'MEMORY' },
     { id: 'EVENT_LOOP_SYNC_BLOCKING', label: 'Synchronous Event-Loop Blocking I/O', tag: 'ASYNC' },
   ]
@@ -83,7 +80,7 @@ export const SelfHealingCodePage: React.FC = () => {
     const remediatedCode = analysis.recommendedPatch.patchedCode
     setCode(remediatedCode)
     setIsPatchApplied(true)
-    handleRunAnalysis(remediatedCode)
+    void handleRunAnalysis(remediatedCode)
   }
 
   if (isLoading || !code) {
@@ -114,8 +111,9 @@ export const SelfHealingCodePage: React.FC = () => {
             Autonomous AI Code Refactoring & Self-Healing Studio
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-            Static AST multi-vector inspection for N+1 queries, OWASP Top 10 vulnerabilities, and React memory leaks.
-            Synthesizes verifiable semantic Unified Diffs with zero-downtime safety guarantees.
+            Static AST multi-vector inspection for N+1 queries, OWASP Top 10 vulnerabilities, and
+            React memory leaks. Synthesizes verifiable semantic Unified Diffs with zero-downtime
+            safety guarantees.
           </p>
         </div>
 
@@ -162,9 +160,10 @@ export const SelfHealingCodePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Diagnostics & Scorecard */}
         <div className="lg:col-span-5 space-y-6">
-          {analysis && analysis.detectedIssues.map(issue => (
-            <VulnerabilityDiagnosticCard key={issue.id} issue={issue} />
-          ))}
+          {analysis &&
+            analysis.detectedIssues.map(issue => (
+              <VulnerabilityDiagnosticCard key={issue.id} issue={issue} />
+            ))}
 
           {analysis && (
             <PatchImpactScorecard
@@ -189,7 +188,9 @@ export const SelfHealingCodePage: React.FC = () => {
           {isPatchApplied && (
             <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Remediation patch successfully applied to source AST. Quality index restored to 98%.</span>
+              <span>
+                Remediation patch successfully applied to source AST. Quality index restored to 98%.
+              </span>
             </div>
           )}
         </div>
@@ -197,3 +198,5 @@ export const SelfHealingCodePage: React.FC = () => {
     </div>
   )
 }
+
+export default SelfHealingCodePage

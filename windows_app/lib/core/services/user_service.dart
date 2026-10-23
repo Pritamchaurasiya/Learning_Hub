@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../data/models/user_model.dart';
 import 'api_client.dart';
+import 'auth_service.dart';
 import 'cache_manager.dart';
 import 'package:learning_hub/core/services/biometric_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,35 +23,27 @@ class AuthResult {
 }
 
 /// User service for authentication and profile management
+/// 
+/// SECURITY: Uses httpOnly cookies for auth (same as React frontend).
+/// Delegates to AuthService for cookie-based auth operations.
 class UserService {
   static final UserService _instance = UserService._();
   static UserService get instance => _instance;
 
-  ApiClient api;
-  final CacheManager _cache;
-  final BiometricService _biometric;
+  final AuthService _authService = AuthService();
+  final ApiClient _api = ApiClient.instance;
+  final CacheManager _cache = CacheManager.instance;
+  final BiometricService _biometric = BiometricService.instance;
 
-  UserService._({
-    ApiClient? api,
-    CacheManager? cache,
-    BiometricService? biometric,
-  })  : api = api ?? ApiClient.instance,
-        _cache = cache ?? CacheManager.instance,
-        _biometric = biometric ?? BiometricService.instance;
+  UserService._();
 
   /// Factory constructor for testing or custom instance
   factory UserService({
+    AuthService? authService,
     ApiClient? api,
     CacheManager? cache,
     BiometricService? biometric,
   }) {
-    if (api != null || cache != null || biometric != null) {
-      return UserService._(
-        api: api,
-        cache: cache,
-        biometric: biometric,
-      );
-    }
     return _instance;
   }
 
@@ -64,7 +57,7 @@ class UserService {
   User? get currentUser => _currentUser;
 
   /// Check if user is logged in
-  Future<bool> get isLoggedIn async => await api.hasToken;
+  Future<bool> get isLoggedIn async => await _authService.isAuthenticated();
 
   /// Login with email and password
   Future<AuthResult> login({
@@ -72,53 +65,22 @@ class UserService {
     required String password,
     bool rememberMe = true,
   }) async {
-    final response = await api.post<Map<String, dynamic>>(
-      '/auth/login/',
-      data: {
-        'email': email,
-        'password': password,
-      },
-    );
+    final result = await _authService.signIn(email, password);
 
-    if (response.success && response.data != null) {
-      final payload = response.data!;
-      // Handle optional envelope
-      final data = payload.containsKey('data')
-          ? payload['data'] as Map<String, dynamic>
-          : payload;
-
-      // Store tokens
-      await api.setTokens(
-        accessToken: data['accessToken'] as String,
-        refreshToken: data['refreshToken'] as String,
-      );
-
-      // Save remember me preference
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('remember_me', rememberMe);
-
-      // Parse user
-      _currentUser = User.fromJson(data['user'] as Map<String, dynamic>);
-      _userController.add(_currentUser);
-
-      // Cache user data
-      await _cache.set(
-        CacheKeys.userProfile('current'),
-        _currentUser,
-        ttl: const Duration(hours: 24),
-        encoder: (u) => u!.toJson(),
-      );
+    if (result.isSuccess && result.data != null) {
+      // Fetch full profile via /auth/me (cookies sent automatically)
+      final user = await refreshProfile();
 
       return AuthResult(
         success: true,
-        token: data['accessToken'] as String,
-        user: _currentUser,
+        token: result.data!.token,
+        user: user,
       );
     }
 
     return AuthResult(
       success: false,
-      error: response.message ?? 'Login failed',
+      error: result.error ?? 'Login failed',
     );
   }
 
@@ -128,62 +90,43 @@ class UserService {
     required String email,
     required String password,
   }) async {
-    final response = await api.post<Map<String, dynamic>>(
-      '/auth/register/',
-      data: {
-        'username': email.split('@')[0],
-        'display_name': name,
-        'email': email,
-        'password': password,
-        'password_confirm': password,
-      },
-    );
-
-    if (response.success && response.data != null) {
-      // Auto login after registration
-      return login(email: email, password: password);
-    }
-
-    return AuthResult(
-      success: false,
-      error: response.message ?? 'Registration failed',
-    );
+    final result = await _authService.signUp(email, password, name);
+    return result;
   }
 
   /// Logout
   Future<void> logout() async {
     try {
-      // Get refresh token
-      final refreshToken = await api.getRefreshToken();
-      if (refreshToken != null) {
-        // Call backend logout to blacklist token
-        await api.post<dynamic>(
-          '/auth/logout/',
-          data: {'refresh_token': refreshToken},
-        );
+      await _authService.signOut();
+
+      // Clear local user data
+      _currentUser = null;
+      
+      // Only add to stream if not closed
+      if (!_userController.isClosed) {
+        _userController.add(null);
       }
+
+      // Clear cache
+      await _cache.remove(CacheKeys.userProfile('current'));
     } catch (e) {
       if (kDebugMode) {
-        print('Logout warning: $e');
+        debugPrint('[UserService] Error during logout: $e');
       }
+      // Ensure cleanup even on error
+      _currentUser = null;
+      if (!_userController.isClosed) {
+        _userController.add(null);
+      }
+      rethrow;
     }
-
-    // Clear tokens
-    await api.clearTokens();
-
-    // Clear local user data
-    _currentUser = null;
-    _userController.add(null);
-
-    // Clear cache
-    await _cache.remove(CacheKeys.userProfile('current'));
   }
 
   /// Refresh user profile
   Future<User?> refreshProfile() async {
     if (!await isLoggedIn) return null;
 
-    final response = await api.get<Map<String, dynamic>>('/users/profile/');
+    final response = await _api.get<Map<String, dynamic>>('/auth/me');
 
     if (response.success && response.data != null) {
       final payload = response.data!;
@@ -213,7 +156,7 @@ class UserService {
     String? photoUrl,
     Map<String, dynamic>? preferences,
   }) async {
-    final response = await api.put<Map<String, dynamic>>(
+    final response = await _api.put<Map<String, dynamic>>(
       '/users/profile/',
       data: {
         if (displayName != null) 'display_name': displayName,
@@ -238,7 +181,7 @@ class UserService {
     required String currentPassword,
     required String newPassword,
   }) async {
-    final response = await api.post<dynamic>(
+    final response = await _api.post<dynamic>(
       '/auth/change-password/',
       data: {
         'current_password': currentPassword,
@@ -255,7 +198,7 @@ class UserService {
 
   /// Forgot password
   Future<void> forgotPassword(String email) async {
-    await api.post<dynamic>(
+    await _api.post<dynamic>(
       '/auth/password-reset/',
       data: {'email': email},
     );
@@ -263,7 +206,7 @@ class UserService {
 
   /// Verify email
   Future<bool> verifyEmail(String code) async {
-    final response = await api.post<dynamic>(
+    final response = await _api.post<dynamic>(
       '/auth/verify-email',
       data: {'code': code},
     );
@@ -284,19 +227,15 @@ class UserService {
     );
 
     if (authenticated) {
-      // In a real app, you would retrieve stored credentials from secure storage
-      // after biometric success. For now, we'll assume we can use a stored token exchange
-      // or similar flow. Let's try to just refresh the profile if token already exists.
-
-      if (await api.hasToken) {
+      // Check if user is still authenticated via cookie
+      if (await isLoggedIn) {
         final user = await refreshProfile();
         if (user != null) {
           return AuthResult(success: true, user: user);
         }
       }
 
-      // If no token but bio success, we need credentials.
-      // This part depends on implementation. Returning error for now if strictly no token.
+      // If no active session, user needs to login with password first
       return const AuthResult(
           success: false,
           error: 'Session expired, please login with password first');
@@ -319,7 +258,7 @@ class UserService {
       return;
     }
 
-    if (await api.hasToken) {
+    if (await isLoggedIn) {
       // Try to load cached user first
       final cached = await _cache.get<User>(
         CacheKeys.userProfile('current'),
@@ -340,6 +279,9 @@ class UserService {
   void dispose() {
     if (!_userController.isClosed) {
       _userController.close();
+      if (kDebugMode) {
+        debugPrint('[UserService] Stream controller disposed');
+      }
     }
   }
 }

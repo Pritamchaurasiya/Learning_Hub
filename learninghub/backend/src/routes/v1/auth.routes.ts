@@ -5,6 +5,7 @@ import { strictLimiter, mfaLimiter } from '../../middleware/rateLimiter'
 import {
   register,
   login,
+  demoLogin,
   refresh,
   logout,
   me,
@@ -44,6 +45,7 @@ const router = Router()
 
 router.post('/register', strictLimiter, validate(registerSchema), register)
 router.post('/login', strictLimiter, validate(loginSchema), login)
+router.post('/demo-login', strictLimiter, demoLogin)
 router.post('/logout', authenticate, logout)
 router.post('/refresh', strictLimiter, validate(refreshSchema), refresh)
 router.get('/me', authenticate, me)

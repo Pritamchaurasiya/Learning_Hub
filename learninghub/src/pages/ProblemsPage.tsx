@@ -250,8 +250,8 @@ export default function ProblemsPage() {
         if (!matchesTitle && !matchesTags) return false
       }
 
-      // Difficulty
-      if (selectedDifficulty !== 'ALL' && problem.difficulty !== selectedDifficulty) return false
+      // Difficulty (case-insensitive)
+      if (selectedDifficulty !== 'ALL' && (problem.difficulty || '').toUpperCase() !== selectedDifficulty) return false
 
       // Status
       if (selectedStatus !== 'ALL') {

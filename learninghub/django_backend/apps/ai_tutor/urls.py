@@ -4,7 +4,9 @@ from .views import (
     AICodeReviewView, AIRecommendationsView, DueSpacedReviewsView,
     SubmitSpacedReviewView, GenerateStudyPlanView, AITutorStreamView,
     AIEbookSummarizeChapterView, AIEbookExplainParagraphView,
-    AIGenerateTestView, AIGenerateWeakAreaTestView, AILearningPathView
+    AIGenerateTestView, AIGenerateWeakAreaTestView, AILearningPathView,
+    StudyTasksListView, StudyTasksTodayView, StudyTasksUpcomingView,
+    StudyTaskDetailView, StudyTaskCompleteView, StudyScheduleView, StudyProgressView
 )
 
 urlpatterns = [
@@ -44,6 +46,25 @@ urlpatterns = [
     path('ai/spaced-repetition/due', DueSpacedReviewsView.as_view(), name='ai-spaced-due'),
     path('ai/spaced-repetition/review', SubmitSpacedReviewView.as_view(), name='ai-spaced-review'),
     path('study-planner/generate', GenerateStudyPlanView.as_view(), name='study-planner-generate'),
+    # Study Planner Core Endpoints
+    path('study-planner/tasks', StudyTasksListView.as_view(), name='study-planner-tasks'),
+    path('study-planner/tasks/', StudyTasksListView.as_view(), name='study-planner-tasks-slash'),
+    path('study-planner/tasks/today', StudyTasksTodayView.as_view(), name='study-planner-tasks-today'),
+    path('study-planner/tasks/today/', StudyTasksTodayView.as_view(), name='study-planner-tasks-today-slash'),
+    path('study-planner/tasks/upcoming', StudyTasksUpcomingView.as_view(), name='study-planner-tasks-upcoming'),
+    path('study-planner/tasks/upcoming/', StudyTasksUpcomingView.as_view(), name='study-planner-tasks-upcoming-slash'),
+    path('study-planner/tasks/<str:pk>/complete', StudyTaskCompleteView.as_view(), name='study-planner-task-complete'),
+    path('study-planner/tasks/<str:pk>/complete/', StudyTaskCompleteView.as_view(), name='study-planner-task-complete-slash'),
+    path('study-planner/tasks/<str:pk>', StudyTaskDetailView.as_view(), name='study-planner-task-detail'),
+    path('study-planner/tasks/<str:pk>/', StudyTaskDetailView.as_view(), name='study-planner-task-detail-slash'),
+    path('study-planner/schedules', StudyScheduleView.as_view(), name='study-planner-schedules'),
+    path('study-planner/schedules/', StudyScheduleView.as_view(), name='study-planner-schedules-slash'),
+    path('study-planner/schedules/my-schedule', StudyScheduleView.as_view(), name='study-planner-my-schedule'),
+    path('study-planner/schedules/my-schedule/', StudyScheduleView.as_view(), name='study-planner-my-schedule-slash'),
+    path('study-planner/schedules/<str:pk>', StudyScheduleView.as_view(), name='study-planner-schedule-detail'),
+    path('study-planner/schedules/<str:pk>/', StudyScheduleView.as_view(), name='study-planner-schedule-detail-slash'),
+    path('study-planner/progress', StudyProgressView.as_view(), name='study-planner-progress'),
+    path('study-planner/progress/', StudyProgressView.as_view(), name='study-planner-progress-slash'),
 ]
 
 

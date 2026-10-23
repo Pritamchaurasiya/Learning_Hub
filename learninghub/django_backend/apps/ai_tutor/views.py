@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.utils import timezone
 from apps.core.responses import success_response, error_response
-from .models import AIChatSession, AIChatMessage, SpacedRepetitionSchedule
-from .serializers import SpacedRepetitionSerializer
+from .models import AIChatSession, AIChatMessage, SpacedRepetitionSchedule, StudySchedule, StudyTask
+from .serializers import SpacedRepetitionSerializer, StudyTaskSerializer, StudyScheduleSerializer, AIChatSessionSerializer, AIChatMessageSerializer
 from .engine import AITutorEngine, SpacedRepetitionEngine
 
 # SECURITY: AI endpoints must be rate-limited to prevent cost attacks
@@ -241,7 +241,7 @@ class DueSpacedReviewsView(APIView):
     throttle_classes = [_AITutorThrottle]
 
     def get(self, request):
-        today = timezone.now().date()
+        today = timezone.localdate()
         due_schedules = SpacedRepetitionSchedule.objects.filter(
             user=request.user,
             next_review_date__lte=today
@@ -460,3 +460,199 @@ class AILearningPathView(APIView):
         return success_response(data=path_data, message="Personalized learning path generated successfully")
 
 
+
+
+class StudyTasksListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = StudyTask.objects.filter(user=request.user)
+        date_param = request.query_params.get('date')
+        status_param = request.query_params.get('status')
+        course_id_param = request.query_params.get('course_id')
+
+        if date_param:
+            qs = qs.filter(scheduled_date=date_param)
+        if status_param:
+            qs = qs.filter(status=status_param)
+        if course_id_param:
+            qs = qs.filter(course_id=course_id_param)
+
+        serializer = StudyTaskSerializer(qs, many=True)
+        return success_response(data=serializer.data, meta={'count': len(serializer.data)})
+
+    def post(self, request):
+        data = request.data
+        title = data.get('title', '').strip()
+        if not title:
+            return error_response('Title is required', status_code=status.HTTP_400_BAD_REQUEST)
+
+        task = StudyTask.objects.create(
+            user=request.user,
+            title=title,
+            description=data.get('description', ''),
+            course_id=data.get('course_id', ''),
+            task_type=data.get('task_type', 'practice'),
+            scheduled_date=data.get('scheduled_date') or timezone.localdate(),
+            scheduled_time=data.get('scheduled_time', ''),
+            duration_minutes=int(data.get('duration_minutes', 45)),
+            priority=data.get('priority', 'medium'),
+            notes=data.get('notes', ''),
+        )
+        return success_response(
+            data=StudyTaskSerializer(task).data,
+            message='Task created successfully',
+            status_code=status.HTTP_201_CREATED
+        )
+
+
+class StudyTasksTodayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today = timezone.localdate()
+        tasks = StudyTask.objects.filter(user=request.user, scheduled_date=today)
+        serializer = StudyTaskSerializer(tasks, many=True)
+        return success_response(data=serializer.data, meta={'count': len(serializer.data)})
+
+
+class StudyTasksUpcomingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today = timezone.localdate()
+        tasks = StudyTask.objects.filter(user=request.user, scheduled_date__gte=today)
+        serializer = StudyTaskSerializer(tasks, many=True)
+        return success_response(data=serializer.data, meta={'count': len(serializer.data)})
+
+
+class StudyTaskDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            task = StudyTask.objects.get(pk=pk, user=request.user)
+        except StudyTask.DoesNotExist:
+            return error_response('Task not found', status_code=status.HTTP_404_NOT_FOUND)
+        return success_response(data=StudyTaskSerializer(task).data)
+
+    def put(self, request, pk):
+        try:
+            task = StudyTask.objects.get(pk=pk, user=request.user)
+        except StudyTask.DoesNotExist:
+            return error_response('Task not found', status_code=status.HTTP_404_NOT_FOUND)
+
+        data = request.data
+        for field in ['title', 'description', 'task_type', 'scheduled_date', 'scheduled_time', 'duration_minutes', 'priority', 'status', 'notes', 'course_id']:
+            if field in data:
+                setattr(task, field, data[field])
+        task.save()
+        return success_response(data=StudyTaskSerializer(task).data, message='Task updated successfully')
+
+    def delete(self, request, pk):
+        deleted, _ = StudyTask.objects.filter(pk=pk, user=request.user).delete()
+        if not deleted:
+            return error_response('Task not found', status_code=status.HTTP_404_NOT_FOUND)
+        return success_response(data={'id': pk}, message='Task deleted successfully')
+
+
+class StudyTaskCompleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            task = StudyTask.objects.get(pk=pk, user=request.user)
+        except StudyTask.DoesNotExist:
+            return error_response('Task not found', status_code=status.HTTP_404_NOT_FOUND)
+
+        task.status = 'completed'
+        task.completed_at = timezone.now()
+        notes = request.data.get('notes')
+        if notes:
+            task.notes = notes
+        task.save()
+
+        request.user.xp = (request.user.xp or 0) + 15
+        request.user.save(update_fields=['xp'])
+
+        return success_response(
+            data=StudyTaskSerializer(task).data,
+            message='Task marked as completed (+15 XP awarded)'
+        )
+
+
+class StudyScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        schedule = StudySchedule.objects.filter(user=request.user, is_active=True).first()
+        if not schedule:
+            schedule = StudySchedule.objects.create(
+                user=request.user,
+                title='Master Study Plan',
+                daily_goal_minutes=120,
+                preferred_study_times=['evening']
+            )
+        return success_response(data=StudyScheduleSerializer(schedule).data)
+
+    def post(self, request):
+        data = request.data
+        schedule = StudySchedule.objects.create(
+            user=request.user,
+            title=data.get('title', 'Exam Preparation Schedule'),
+            description=data.get('description', ''),
+            start_date=data.get('start_date') or timezone.localdate(),
+            end_date=data.get('end_date') or None,
+            daily_goal_minutes=int(data.get('daily_goal_minutes', 120)),
+            preferred_study_times=data.get('preferred_study_times', []),
+            is_active=True,
+        )
+        return success_response(data=StudyScheduleSerializer(schedule).data, message='Schedule created')
+
+    def put(self, request, pk=None):
+        schedule = StudySchedule.objects.filter(user=request.user).first()
+        if not schedule:
+            return error_response('Schedule not found', status_code=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        for field in ['title', 'description', 'start_date', 'end_date', 'daily_goal_minutes', 'preferred_study_times', 'is_active']:
+            if field in data:
+                setattr(schedule, field, data[field])
+        schedule.save()
+        return success_response(data=StudyScheduleSerializer(schedule).data, message='Schedule updated')
+
+
+class StudyProgressView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from datetime import timedelta
+        try:
+            days = min(90, max(1, int(request.query_params.get('days', 30))))
+        except (ValueError, TypeError):
+            days = 30
+
+        today = timezone.localdate()
+        result = []
+        user_tasks = StudyTask.objects.filter(
+            user=request.user,
+            scheduled_date__gte=today - timedelta(days=days),
+            scheduled_date__lte=today
+        )
+
+        for d in range(days):
+            current_date = today - timedelta(days=(days - 1 - d))
+            date_str = str(current_date)
+            day_tasks = [t for t in user_tasks if t.scheduled_date == current_date]
+            tasks_total = len(day_tasks)
+            tasks_completed = sum(1 for t in day_tasks if t.status == 'completed')
+            total_minutes = sum(t.duration_minutes for t in day_tasks if t.status == 'completed')
+
+            result.append({
+                'date': date_str,
+                'total_minutes': total_minutes,
+                'tasks_completed': tasks_completed,
+                'tasks_total': tasks_total,
+                'streak_days': getattr(request.user, 'streak', 1) or 1
+            })
+
+        return success_response(data=result)

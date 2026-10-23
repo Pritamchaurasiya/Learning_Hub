@@ -37,6 +37,15 @@ describe('CSRF Middleware', () => {
     expect(nextFn).toHaveBeenCalled()
   })
 
+  it('should bypass CSRF check on requests with Authorization Bearer header', async () => {
+    mockReq.method = 'POST'
+    mockReq.originalUrl = '/api/v1/courses/enroll'
+    mockReq.headers = { authorization: 'Bearer test-token-123' }
+    await csrfProtection(mockReq as Request, mockRes as Response, nextFn)
+    expect(nextFn).toHaveBeenCalled()
+    expect(mockRes.status).not.toHaveBeenCalled()
+  })
+
   it('should bypass CSRF check on exempted auth endpoints (e.g. login)', async () => {
     mockReq.method = 'POST'
     mockReq.originalUrl = '/api/v1/auth/login'

@@ -204,6 +204,7 @@ class CourseLessonsListView(APIView):
 
         is_enrolled = False
         is_free_course = getattr(course, 'price', 0) == 0
+        completed_lesson_ids = set()
         if request.user.is_authenticated:
             is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
             completed_lesson_ids = set(
@@ -283,24 +284,41 @@ class CourseProgressView(APIView):
 
         enrollment, _ = Enrollment.objects.get_or_create(user=request.user, course=course)
 
-        # Compute server-side progress from actual lesson completions
+        lesson_id = request.data.get('lesson_id') or request.data.get('lessonId')
+        if lesson_id:
+            try:
+                lesson_obj = Lesson.objects.get(pk=lesson_id, chapter__course=course)
+                LessonProgress.objects.update_or_create(
+                    user=request.user,
+                    lesson=lesson_obj,
+                    defaults={'completed': True}
+                )
+            except Lesson.DoesNotExist:
+                pass
+
         total_lessons = Lesson.objects.filter(chapter__course=course).count()
         completed_lessons = LessonProgress.objects.filter(
             user=request.user,
             lesson__chapter__course=course,
             completed=True
         ).count()
-        server_progress = round((completed_lessons / max(1, total_lessons)) * 100, 1)
+        server_progress = round((completed_lessons / max(1, total_lessons)) * 100, 1) if total_lessons > 0 else 100.0
 
-        # Client can only DECREASE progress or set to exact server-computed value
-        if progress_val > server_progress and progress_val > enrollment.progress:
-            return error_response(
-                f'Cannot claim {progress_val}% progress. Server-computed is {server_progress}% based on completed lessons. Use lesson completion to increase progress.',
-                status_code=status.HTTP_403_FORBIDDEN,
-                code='PROGRESS_INFLATION_BLOCKED'
-            )
+        if total_lessons > 0 and progress_val > server_progress and progress_val > enrollment.progress:
+            if lesson_id:
+                progress_val = server_progress
+            else:
+                return error_response(
+                    f'Cannot claim {progress_val}% progress. Server-computed is {server_progress}% based on completed lessons. Use lesson completion to increase progress.',
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    code='PROGRESS_INFLATION_BLOCKED'
+                )
 
-        enrollment.progress = min(100.0, max(0.0, progress_val))
+        target_progress = progress_val if (total_lessons == 0 or not lesson_id) else max(progress_val, server_progress)
+        enrollment.progress = min(100.0, max(0.0, target_progress))
+        if enrollment.progress >= 100.0 and not enrollment.completed_at:
+            from django.utils import timezone
+            enrollment.completed_at = timezone.now()
         enrollment.save()
         return success_response(
             data={

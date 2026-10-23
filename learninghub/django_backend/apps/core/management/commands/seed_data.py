@@ -131,7 +131,7 @@ class Command(BaseCommand):
             id='prob-two-sum',
             defaults={
                 'title': 'Two Sum Problem',
-                'slug': 'two-sum-problem',
+                'slug': 'two-sum',
                 'description': 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\n### Example 1:\n```\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n```',
                 'difficulty': 'Easy',
                 'category': 'Arrays',

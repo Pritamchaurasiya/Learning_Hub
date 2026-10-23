@@ -56,6 +56,7 @@ class User(AbstractUser):
     login_count = models.IntegerField(default=0)
     last_login_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    stripe_customer_id = models.CharField(max_length=128, blank=True, default='', db_index=True)
 
     objects = CustomUserManager()
 

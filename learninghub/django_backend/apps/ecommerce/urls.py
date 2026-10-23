@@ -36,6 +36,11 @@ urlpatterns = [
     # Stripe Payment & Subscription endpoints
     path('stripe/checkout', StripeCheckoutView.as_view(), name='stripe-checkout'),
     path('stripe/subscriptions', StripeSubscriptionManageView.as_view(), name='stripe-subscriptions'),
+    path('stripe/subscriptions/', StripeSubscriptionManageView.as_view(), name='stripe-subscriptions-slash'),
+    path('ecommerce/stripe/subscriptions', StripeSubscriptionManageView.as_view(), name='ecommerce-stripe-subscriptions'),
+    path('ecommerce/stripe/subscriptions/', StripeSubscriptionManageView.as_view(), name='ecommerce-stripe-subscriptions-slash'),
+    path('ecommerce/stripe/billing-portal', StripeBillingPortalView.as_view(), name='ecommerce-stripe-billing-portal'),
+    path('ecommerce/stripe/payment-methods', StripePaymentMethodsView.as_view(), name='ecommerce-stripe-payment-methods'),
     path('stripe/subscriptions/<str:subscription_id>', StripeSubscriptionDetailView.as_view(), name='stripe-subscription-detail'),
     path('stripe/billing-portal', StripeBillingPortalView.as_view(), name='stripe-billing-portal'),
     path('stripe/payment-methods', StripePaymentMethodsView.as_view(), name='stripe-payment-methods'),

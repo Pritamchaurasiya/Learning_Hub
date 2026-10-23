@@ -289,7 +289,8 @@ export const adminRegister = asyncHandler(async (req: Request, res: Response): P
       deletedAt: null,
     },
   })
-  if (existingAdminCount > 0) {
+  const isCallerAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPERADMIN'
+  if (existingAdminCount > 0 && !isCallerAdmin) {
     logger.warn('Rogue admin registration attempted when administrators already exist', { email })
     sendForbidden(res, 'Initial admin setup is disabled because an administrator already exists')
     return

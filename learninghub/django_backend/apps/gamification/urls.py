@@ -1,3 +1,4 @@
+from apps.problems.views import DSAStatsView
 from django.urls import path
 from .views import (
     BadgesListView, AchievementsListView, LeaderboardView, LeaderboardMeView,
@@ -12,6 +13,8 @@ urlpatterns = [
     path('gamification/badges', BadgesListView.as_view(), name='badges-list'),
     path('gamification/achievements', AchievementsListView.as_view(), name='achievements-list'),
     path('gamification/leaderboard', LeaderboardView.as_view(), name='gamification-leaderboard'),
+    path('gamification/dsa-stats', DSAStatsView.as_view(), name='gamification-dsa-stats'),
+    path('gamification/dsa-stats/', DSAStatsView.as_view(), name='gamification-dsa-stats-slash'),
     path('gamification/daily-goal', DailyGoalView.as_view(), name='daily-goal'),
     path('leaderboard', LeaderboardView.as_view(), name='global-leaderboard'),
     path('leaderboard/', LeaderboardView.as_view(), name='global-leaderboard-slash'),

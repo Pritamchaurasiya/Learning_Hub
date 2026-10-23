@@ -25,6 +25,8 @@ interface RawLeaderboardUser {
   xp: number
   level: number
   streak: number
+  rank?: number
+  is_current_user?: boolean
 }
 
 const FALLBACK_LEADERBOARD: LeaderboardEntry[] = [
@@ -59,18 +61,18 @@ export const leaderboardService = {
         return { status: 'success', data: FALLBACK_LEADERBOARD.slice(0, limit) }
       }
 
-      // Transform and assign rank
+      // Transform and assign rank with real is_current_user flag
       const mapped: LeaderboardEntry[] = rawList.slice(0, limit).map((u, idx) => ({
-        rank: idx + 1,
+        rank: u.rank || idx + 1,
         user_id: u.id,
         username: u.username || '',
-        display_name: u.username || 'User',
-        avatar_url: undefined,
+        display_name: (u as any).display_name || u.username || 'User',
+        avatar_url: (u as any).avatar || undefined,
         xp: u.xp || 0,
         level: u.level || 1,
         streak: u.streak || 0,
-        courses_completed: 0,
-        is_current_user: false,
+        courses_completed: (u as any).courses_completed || 0,
+        is_current_user: Boolean(u.is_current_user || (u as any).isCurrentUser),
       }))
       return { status: 'success', data: mapped }
     } catch {

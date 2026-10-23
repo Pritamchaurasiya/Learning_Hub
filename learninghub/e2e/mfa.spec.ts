@@ -106,8 +106,11 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
 
     await page.goto('/settings')
 
-    // Click Security tab to show 2FA card
-    await page.getByRole('tab', { name: /Security/i }).click()
+    // Wait for the settings tabs to load
+    await page.waitForSelector('text=All Settings', { timeout: 10000 })
+
+    // Click Security tab (labeled "2FA & Web3") to show 2FA card
+    await page.locator('button:has-text("2FA & Web3")').click()
 
     // Verify 2FA card is rendered in disabled state
     await expect(page.getByText('Two-Factor Auth (2FA)')).toBeVisible()

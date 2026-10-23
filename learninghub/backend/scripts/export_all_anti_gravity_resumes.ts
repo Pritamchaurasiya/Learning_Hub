@@ -63,9 +63,18 @@ const targetRoles: { role: TargetRole; fileSlug: string; title: string }[] = [
   { role: 'ML_DATA_ENGINEER', fileSlug: 'SENIOR_ML_SYSTEMS_ENGINEER', title: 'Senior ML Systems Engineer' }
 ]
 
-const outputDir = path.resolve(__dirname, '../../../../anti_gravity_resume')
+const outputDir = path.resolve(__dirname, '../../../anti_gravity_resume')
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true })
+}
+
+function safeWriteFileSync(filePath: string, content: string) {
+  const tmpPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(7)}.tmp`
+  fs.writeFileSync(tmpPath, content, 'utf-8')
+  fs.copyFileSync(tmpPath, filePath)
+  try {
+    fs.unlinkSync(tmpPath)
+  } catch {}
 }
 
 const generatedResumes: Record<string, any> = {}
@@ -82,15 +91,15 @@ for (const tr of targetRoles) {
 
   // 1. Plain Text ATS format
   const plainText = engine.formatATSPlainText(resume)
-  fs.writeFileSync(path.join(outputDir, `${tr.fileSlug}_ATS.txt`), plainText, 'utf-8')
+  safeWriteFileSync(path.join(outputDir, `${tr.fileSlug}_ATS.txt`), plainText)
 
   // 2. Standard JSON Resume format
   const jsonResume = engine.formatJSONResume(resume)
-  fs.writeFileSync(path.join(outputDir, `${tr.fileSlug}_RESUME.json`), JSON.stringify(jsonResume, null, 2), 'utf-8')
+  safeWriteFileSync(path.join(outputDir, `${tr.fileSlug}_RESUME.json`), JSON.stringify(jsonResume, null, 2))
 
   // 3. Overleaf / LaTeX compile-ready format
   const latexResume = engine.formatLatexResume(resume)
-  fs.writeFileSync(path.join(outputDir, `${tr.fileSlug}.tex`), latexResume, 'utf-8')
+  safeWriteFileSync(path.join(outputDir, `${tr.fileSlug}.tex`), latexResume)
 
   // 4. GitHub Markdown format
   let markdown = `# ${resume.profile.fullName} — ${resume.roleTitle}\n\n`
@@ -160,7 +169,7 @@ for (const tr of targetRoles) {
   }
   markdown += `\n`
 
-  fs.writeFileSync(path.join(outputDir, `${tr.fileSlug}.md`), markdown, 'utf-8')
+  safeWriteFileSync(path.join(outputDir, `${tr.fileSlug}.md`), markdown)
 }
 
 // Generate the standalone interactive HTML preview with print-to-PDF styles and role toggle
@@ -538,10 +547,22 @@ const htmlContent = `<!DOCTYPE html>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
           Print to PDF
         </button>
+        <a id="btnDownloadPdf" class="btn" href="STAFF_SYSTEMS_ARCHITECT_RESUME.pdf" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Download PDF
+        </a>
         <button class="btn" onclick="copyAtsPlainText()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           Copy Plain Text ATS
         </button>
+        <a id="btnDownloadJson" class="btn" href="STAFF_SYSTEMS_ARCHITECT_RESUME.json" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          JSON Resume
+        </a>
+        <a id="btnDownloadLatex" class="btn" href="STAFF_SYSTEMS_ARCHITECT.tex" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          LaTeX Source
+        </a>
       </div>
     </div>
 
@@ -669,8 +690,8 @@ const htmlContent = `<!DOCTYPE html>
     <!-- ATS Compatibility Card -->
     <div class="ats-meter-card">
       <div class="score-circle">
-        <div class="score-number" id="atsScore">97</div>
-        <div class="score-label">ATS Grade A+</div>
+        <div class="score-number" id="atsScore">${systemsResume.atsScoring.overallScore}</div>
+        <div class="score-label" id="atsGrade">ATS Grade ${systemsResume.atsScoring.grade}</div>
       </div>
       <div>
         <h3 style="font-size: 16px; margin-bottom: 8px;">Applicant Tracking System (ATS) Verification</h3>
@@ -679,16 +700,23 @@ const htmlContent = `<!DOCTYPE html>
         </p>
       </div>
       <div>
-        <div class="breakdown-row"><span>Quantified Metrics:</span> <strong>25 / 25</strong></div>
-        <div class="breakdown-row"><span>Action Verbs:</span> <strong>25 / 25</strong></div>
-        <div class="breakdown-row"><span>Keyword Optimization:</span> <strong>22 / 25</strong></div>
-        <div class="breakdown-row"><span>Format & Hierarchy:</span> <strong>25 / 25</strong></div>
+        <div class="breakdown-row"><span>Quantified Metrics:</span> <strong id="scoreMetrics">${systemsResume.atsScoring.criteriaScores.quantifiedMetricsScore} / 25</strong></div>
+        <div class="breakdown-row"><span>Action Verbs:</span> <strong id="scoreVerbs">${systemsResume.atsScoring.criteriaScores.actionVerbsScore} / 25</strong></div>
+        <div class="breakdown-row"><span>Keyword Optimization:</span> <strong id="scoreKeywords">${systemsResume.atsScoring.criteriaScores.keywordOptimizationScore} / 25</strong></div>
+        <div class="breakdown-row"><span>Format & Hierarchy:</span> <strong id="scoreFormatting">${systemsResume.atsScoring.criteriaScores.formattingComplianceScore} / 25</strong></div>
       </div>
     </div>
   </div>
 
   <script>
     const roleData = ${JSON.stringify(generatedResumes)};
+
+    const fileSlugMap = {
+      SYSTEMS_ARCHITECT: 'STAFF_SYSTEMS_ARCHITECT',
+      ALGORITHM_ENGINEER: 'SENIOR_ALGORITHM_ENGINEER',
+      FULL_STACK_LEAD: 'LEAD_FULL_STACK_ENGINEER',
+      ML_DATA_ENGINEER: 'SENIOR_ML_SYSTEMS_ENGINEER'
+    };
 
     function switchRole(roleKey, element) {
       document.querySelectorAll('.role-card').forEach(el => el.classList.remove('active'));
@@ -697,12 +725,30 @@ const htmlContent = `<!DOCTYPE html>
       const data = roleData[roleKey];
       if (!data) return;
 
+      const slug = fileSlugMap[roleKey] || 'STAFF_SYSTEMS_ARCHITECT';
+
+      // Header, Summary & Digest
       document.getElementById('resTitle').innerText = data.roleTitle;
       document.getElementById('resSummary').innerText = data.summary;
       document.getElementById('resDigest').innerText = data.cryptographicProof.canonicalDigestSha256;
-      document.getElementById('atsScore').innerText = data.atsScoring.overallScore;
 
-      // Update Telemetry
+      // ATS Meter Telemetry
+      document.getElementById('atsScore').innerText = data.atsScoring.overallScore;
+      document.getElementById('atsGrade').innerText = 'ATS Grade ' + data.atsScoring.grade;
+      document.getElementById('scoreMetrics').innerText = data.atsScoring.criteriaScores.quantifiedMetricsScore + ' / 25';
+      document.getElementById('scoreVerbs').innerText = data.atsScoring.criteriaScores.actionVerbsScore + ' / 25';
+      document.getElementById('scoreKeywords').innerText = data.atsScoring.criteriaScores.keywordOptimizationScore + ' / 25';
+      document.getElementById('scoreFormatting').innerText = data.atsScoring.criteriaScores.formattingComplianceScore + ' / 25';
+
+      // Export Download Buttons
+      const btnPdf = document.getElementById('btnDownloadPdf');
+      if (btnPdf) btnPdf.href = slug + '_RESUME.pdf';
+      const btnJson = document.getElementById('btnDownloadJson');
+      if (btnJson) btnJson.href = slug + '_RESUME.json';
+      const btnLatex = document.getElementById('btnDownloadLatex');
+      if (btnLatex) btnLatex.href = slug + '.tex';
+
+      // Telemetry Highlights
       const telHtml = data.verifiedPlatformHighlights.map(h => \`
         <div class="highlight-box">
           <strong>[VERIFIED TELEMETRY]</strong> \${h}
@@ -710,13 +756,69 @@ const htmlContent = `<!DOCTYPE html>
       \`).join('');
       document.getElementById('resTelemetry').innerHTML = telHtml;
 
-      // Update Skills
+      // Skills Matrix
       document.getElementById('resSkills').innerHTML = \`
         <div class="skill-category"><strong>Languages:</strong> \${data.skillsMatrix.languages.join(', ')}</div>
         <div class="skill-category"><strong>Frameworks & Libraries:</strong> \${data.skillsMatrix.frameworks.join(', ')}</div>
         <div class="skill-category"><strong>Cloud & Systems:</strong> \${data.skillsMatrix.systemsAndCloud.join(', ')}</div>
         <div class="skill-category"><strong>Algorithms:</strong> \${data.skillsMatrix.algorithmicCompetencies.join(', ')}</div>
       \`;
+
+      // Dynamic Projects
+      if (data.projects && data.projects.length) {
+        document.getElementById('resProjects').innerHTML = data.projects.map(p => \`
+          <div class="project-card">
+            <div class="item-header">
+              <div class="item-title">\${p.title}</div>
+              <div class="item-period">\${p.period}</div>
+            </div>
+            <div class="item-sub">Role: \${p.role} &bull; Tech: \${p.technologies.join(', ')}</div>
+            <ul class="item-bullets">
+              \${p.bulletPoints.map(bp => \`
+                <li>\${bp.text}\${bp.quantifiedMetric ? \` <span class="metric-tag">\${bp.quantifiedMetric}</span>\` : ''}</li>
+              \`).join('')}
+            </ul>
+          </div>
+        \`).join('');
+      }
+
+      // Dynamic Experience
+      if (data.experiences && data.experiences.length) {
+        document.getElementById('resExperience').innerHTML = data.experiences.map(e => \`
+          <div class="exp-card">
+            <div class="item-header">
+              <div class="item-title">\${e.role} &mdash; \${e.company}</div>
+              <div class="item-period">\${e.period}</div>
+            </div>
+            <div class="item-sub">\${e.location}</div>
+            <ul class="item-bullets">
+              \${e.bulletPoints.map(bp => \`
+                <li>\${bp.text}</li>
+              \`).join('')}
+            </ul>
+          </div>
+        \`).join('');
+      }
+
+      // Dynamic Education & Credentials
+      if (data.education && data.education.length) {
+        let eduHtml = data.education.map(ed => \`
+          <div style="font-size: 13px; margin-bottom: 6px;">
+            <strong>\${ed.degree} in \${ed.field}</strong> &mdash; \${ed.institution} (\${ed.graduationYear})
+            \${ed.gpaOrHonors ? \`<br><span style="color: #64748b; font-size: 12px;">Honors: \${ed.gpaOrHonors}</span>\` : ''}
+          </div>
+        \`).join('');
+
+        if (data.credentials && data.credentials.length) {
+          eduHtml += \`<div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);"><strong>Verifiable Credentials:</strong></div>\`;
+          eduHtml += data.credentials.map(c => \`
+            <div style="font-size: 12px; margin-top: 4px;">
+              &bull; <a href="\${c.verificationUrl}" target="_blank" style="color: var(--emerald); text-decoration: none;">\${c.title}</a> &mdash; \${c.issuer}
+            </div>
+          \`).join('');
+        }
+        document.getElementById('resEducation').innerHTML = eduHtml;
+      }
     }
 
     function copyAtsPlainText() {
@@ -741,7 +843,7 @@ const htmlContent = `<!DOCTYPE html>
 </body>
 </html>`
 
-fs.writeFileSync(path.join(outputDir, 'index.html'), htmlContent, 'utf-8')
+safeWriteFileSync(path.join(outputDir, 'index.html'), htmlContent)
 
 // Generate README.md in the output directory
 const readmeContent = `# Anti-Gravity Verifiable AI Resume & Cryptographic Portfolio
@@ -757,31 +859,35 @@ const readmeContent = `# Anti-Gravity Verifiable AI Resume & Cryptographic Portf
 This directory contains production-ready, exportable resume files across 4 specialized engineering tracks:
 
 1. **Staff Systems Architect**
+   - PDF Resume: [\`STAFF_SYSTEMS_ARCHITECT_RESUME.pdf\`](./STAFF_SYSTEMS_ARCHITECT_RESUME.pdf)
    - Plain Text ATS: [\`STAFF_SYSTEMS_ARCHITECT_ATS.txt\`](./STAFF_SYSTEMS_ARCHITECT_ATS.txt)
    - JSON Resume Schema: [\`STAFF_SYSTEMS_ARCHITECT_RESUME.json\`](./STAFF_SYSTEMS_ARCHITECT_RESUME.json)
    - Overleaf LaTeX: [\`STAFF_SYSTEMS_ARCHITECT.tex\`](./STAFF_SYSTEMS_ARCHITECT.tex)
    - Markdown: [\`STAFF_SYSTEMS_ARCHITECT.md\`](./STAFF_SYSTEMS_ARCHITECT.md)
 
 2. **Senior Algorithmic Engineer**
+   - PDF Resume: [\`SENIOR_ALGORITHM_ENGINEER_RESUME.pdf\`](./SENIOR_ALGORITHM_ENGINEER_RESUME.pdf)
    - Plain Text ATS: [\`SENIOR_ALGORITHM_ENGINEER_ATS.txt\`](./SENIOR_ALGORITHM_ENGINEER_ATS.txt)
    - JSON Resume Schema: [\`SENIOR_ALGORITHM_ENGINEER_RESUME.json\`](./SENIOR_ALGORITHM_ENGINEER_RESUME.json)
    - Overleaf LaTeX: [\`SENIOR_ALGORITHM_ENGINEER.tex\`](./SENIOR_ALGORITHM_ENGINEER.tex)
    - Markdown: [\`SENIOR_ALGORITHM_ENGINEER.md\`](./SENIOR_ALGORITHM_ENGINEER.md)
 
 3. **Lead Full Stack Software Engineer**
+   - PDF Resume: [\`LEAD_FULL_STACK_ENGINEER_RESUME.pdf\`](./LEAD_FULL_STACK_ENGINEER_RESUME.pdf)
    - Plain Text ATS: [\`LEAD_FULL_STACK_ENGINEER_ATS.txt\`](./LEAD_FULL_STACK_ENGINEER_ATS.txt)
    - JSON Resume Schema: [\`LEAD_FULL_STACK_ENGINEER_RESUME.json\`](./LEAD_FULL_STACK_ENGINEER_RESUME.json)
    - Overleaf LaTeX: [\`LEAD_FULL_STACK_ENGINEER.tex\`](./LEAD_FULL_STACK_ENGINEER.tex)
    - Markdown: [\`LEAD_FULL_STACK_ENGINEER.md\`](./LEAD_FULL_STACK_ENGINEER.md)
 
 4. **Senior ML Systems Engineer**
+   - PDF Resume: [\`SENIOR_ML_SYSTEMS_ENGINEER_RESUME.pdf\`](./SENIOR_ML_SYSTEMS_ENGINEER_RESUME.pdf)
    - Plain Text ATS: [\`SENIOR_ML_SYSTEMS_ENGINEER_ATS.txt\`](./SENIOR_ML_SYSTEMS_ENGINEER_ATS.txt)
    - JSON Resume Schema: [\`SENIOR_ML_SYSTEMS_ENGINEER_RESUME.json\`](./SENIOR_ML_SYSTEMS_ENGINEER_RESUME.json)
    - Overleaf LaTeX: [\`SENIOR_ML_SYSTEMS_ENGINEER.tex\`](./SENIOR_ML_SYSTEMS_ENGINEER.tex)
    - Markdown: [\`SENIOR_ML_SYSTEMS_ENGINEER.md\`](./SENIOR_ML_SYSTEMS_ENGINEER.md)
 
 5. **Standalone Interactive Web Viewer & Print-to-PDF**
-   - Open [\`index.html\`](./index.html) in your browser. It includes instant role-switching, ATS score telemetry, and a **"Print to PDF"** button formatted for standard letter/A4 paper size.
+   - Open [\`index.html\`](./index.html) in your browser. It includes instant role-switching, ATS score telemetry, direct download buttons for all formats including pre-rendered PDFs, and a **"Print to PDF"** button formatted for standard letter/A4 paper size.
 
 ---
 
@@ -793,6 +899,6 @@ This directory contains production-ready, exportable resume files across 4 speci
 - **Online Verification Route:** \`/verify-certificate?proof=<digest_prefix>\`
 `
 
-fs.writeFileSync(path.join(outputDir, 'README.md'), readmeContent, 'utf-8')
+safeWriteFileSync(path.join(outputDir, 'README.md'), readmeContent)
 
 console.log('✅ Successfully exported Anti-Gravity Resume suite across 4 roles into:', outputDir)

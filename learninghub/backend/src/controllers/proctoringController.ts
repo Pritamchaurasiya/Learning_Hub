@@ -6,7 +6,7 @@ import logger from '../utils/logger'
 export const startProctoringSession = async (req: Request, res: Response) => {
   try {
     const { testAttemptId, examTitle } = req.body
-    const userId = (req as any).user?.id || 'candidate-mock-student-id'
+    const userId = req.user?.userId || (req as any).user?.id || 'candidate-mock-student-id'
 
     if (!testAttemptId || !examTitle) {
       return sendError(res, 'testAttemptId and examTitle are required fields', 400)

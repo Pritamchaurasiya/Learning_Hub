@@ -15,8 +15,19 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         if obj.user:
-            return getattr(obj.user, 'username', '') or getattr(obj.user, 'email', '')
-        return 'Anonymous'
+            name = (obj.user.get_full_name() or obj.user.username or '').strip()
+            return {
+                'id': str(obj.user.id),
+                'username': obj.user.username,
+                'display_name': name or obj.user.username,
+                'avatar_url': getattr(obj.user, 'avatar', '') or '',
+            }
+        return {
+            'id': 'anon',
+            'username': 'Anonymous',
+            'display_name': 'Anonymous',
+            'avatar_url': '',
+        }
 
 
 class DiscussionListSerializer(serializers.ModelSerializer):
@@ -34,8 +45,19 @@ class DiscussionListSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         if obj.user:
-            return getattr(obj.user, 'username', '') or getattr(obj.user, 'email', '')
-        return 'Anonymous'
+            name = (obj.user.get_full_name() or obj.user.username or '').strip()
+            return {
+                'id': str(obj.user.id),
+                'username': obj.user.username,
+                'display_name': name or obj.user.username,
+                'avatar_url': getattr(obj.user, 'avatar', '') or '',
+            }
+        return {
+            'id': 'anon',
+            'username': 'Anonymous',
+            'display_name': 'Anonymous',
+            'avatar_url': '',
+        }
 
     def get_comments_count(self, obj):
         return obj.comments.count() if hasattr(obj, 'comments') else 0
@@ -56,11 +78,28 @@ class DiscussionDetailSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         if obj.user:
-            return getattr(obj.user, 'username', '') or getattr(obj.user, 'email', '')
-        return 'Anonymous'
+            name = (obj.user.get_full_name() or obj.user.username or '').strip()
+            return {
+                'id': str(obj.user.id),
+                'username': obj.user.username,
+                'display_name': name or obj.user.username,
+                'avatar_url': getattr(obj.user, 'avatar', '') or '',
+            }
+        return {
+            'id': 'anon',
+            'username': 'Anonymous',
+            'display_name': 'Anonymous',
+            'avatar_url': '',
+        }
 
 
 class LiveSessionSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(read_only=True)
+    host_name = serializers.CharField(read_only=True)
+    end_time = serializers.DateTimeField(read_only=True)
+    max_participants = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = LiveSession
         fields = [
@@ -71,6 +110,12 @@ class LiveSessionSerializer(serializers.ModelSerializer):
 
 
 class MentorSerializer(serializers.ModelSerializer):
+    expertise = serializers.CharField(read_only=True)
+    bio = serializers.CharField(read_only=True)
+    sessions_conducted = serializers.IntegerField(read_only=True)
+    is_available = serializers.BooleanField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = Mentor
         fields = [

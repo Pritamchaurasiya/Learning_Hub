@@ -24,7 +24,7 @@ export class NeuroAdaptiveController {
         return
       }
 
-      const userId = (req as any).user?.id || 'anonymous_user'
+      const userId = req.user?.userId || (req as any).user?.id || 'anonymous_user'
       const evaluation = neuroAdaptiveEngineService.evaluateCognitiveState({
         sessionId,
         userId,

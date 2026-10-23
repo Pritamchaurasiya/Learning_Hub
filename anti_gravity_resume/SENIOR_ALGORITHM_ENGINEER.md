@@ -5,9 +5,9 @@
 **GitHub:** [github.com/Pritamchaurasiya/Learning_Hub](https://github.com/Pritamchaurasiya/Learning_Hub) | **LinkedIn:** [linkedin.com/in/shiva-ai-architect](https://linkedin.com/in/shiva-ai-architect) | **Portfolio:** [learninghub.io/portfolio/shiva](https://learninghub.io/portfolio/shiva)
 
 > **Cryptographic Anchor (Polygon PoS L2):** `did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b`  
-> **Canonical SHA-256 Digest:** `3c88f2207d1f69a4544bc5321fcea14687af346ad8200bcb3a04c6d9761da14e`  
+> **Canonical SHA-256 Digest:** `df74ec06f571d91d6ba3f4b4475bc3de5fc40ca39939f7a6fa4493703945b238`  
 > **ATS Compatibility Score:** **96/100** (Grade: **A+**)  
-> **Verification Portal:** `/verify-certificate?proof=3c88f2207d1f69a4`
+> **Verification Portal:** `/verify-certificate?proof=df74ec06f571d91d`
 
 ---
 

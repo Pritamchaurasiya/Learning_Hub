@@ -141,6 +141,9 @@ Interactive API docs available at `/api/docs/` (Swagger UI).
 | `/health/`               | Health check                |
 | `/health/deep/`          | Deep health (DB + Redis)    |
 
+**Additional Documentation:**
+- [Session Management Architecture](windows_app/docs/SESSION_MANAGEMENT.md) - Token refresh, session expiry handling, and authentication flow
+
 ---
 
 ## 🧪 Testing

@@ -331,12 +331,19 @@ export const courseService = {
       data: { progress_percent: number; completed_lessons: number; total_lessons: number }
     }>,
 
-  updateProgress: (courseId: string, progressPercent: number) => {
+  updateProgress: (courseId: string, progressPercent: number, lessonId?: string) => {
     CacheService.delete(`course_${courseId}`)
     return fetchApi(`/courses/${courseId}/progress`, {
       method: 'POST',
-      body: JSON.stringify({ progress: progressPercent }),
+      body: JSON.stringify({ progress: progressPercent, lessonId }),
     }) as Promise<{ status: string; data: { enrollment: { progress: number } } }>
+  },
+
+  completeLesson: (lessonId: string, completed: boolean = true) => {
+    return fetchApi(`/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      body: JSON.stringify({ completed }),
+    }) as Promise<{ status: string; data: { lessonId: string; completed: boolean; courseProgress: number } }>
   },
 }
 

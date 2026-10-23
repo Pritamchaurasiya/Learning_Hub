@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:flutter/foundation.dart';
@@ -17,10 +18,26 @@ class WebSocketService {
   int _reconnectAttempts = 0;
   static const int _maxReconnectDelay = 30;
 
-  void connect(String token) {
+  // In-memory token for WebSocket handshake (not persisted to localStorage)
+  // Set by auth flow after successful login (see AuthProvider)
+  String? _wsToken;
+  
+  void setWsToken(String? token) {
+    _wsToken = token;
+  }
+  
+  String? getWsToken() {
+    return _wsToken;
+  }
+
+  void connect() {
     if (_isConnected) return;
+    if (_wsToken == null) {
+      debugPrint('[WebSocket] No token available, skipping connection');
+      return;
+    }
     _reconnectAttempts = 0;
-    _attemptConnection(token);
+    _attemptConnection(_wsToken!);
   }
 
   void _attemptConnection(String token) {
@@ -34,7 +51,10 @@ class WebSocketService {
         baseUrl,
         io.OptionBuilder()
             .setTransports(['websocket'])
-            .setAuth({'token': token})
+            // Use query param token (like React) instead of auth object
+            // Backend validates token from query param for WebSocket handshake
+            .setQuery({'token': token})
+            .setTransports(['websocket'])
             .build(),
       );
 
@@ -45,6 +65,7 @@ class WebSocketService {
       });
 
       _socket!.onAny((event, data) {
+        // Handle both Map and String data (some servers send raw strings)
         if (data is Map<String, dynamic>) {
           _handleEvent(data);
         } else if (data is List) {
@@ -52,6 +73,16 @@ class WebSocketService {
             if (item is Map<String, dynamic>) {
               _handleEvent(item);
             }
+          }
+        } else if (data is String) {
+          // Try to parse JSON string
+          try {
+            final parsed = json.decode(data);
+            if (parsed is Map<String, dynamic>) {
+              _handleEvent(parsed);
+            }
+          } catch (_) {
+            // Not JSON, ignore
           }
         }
       });
@@ -112,8 +143,7 @@ class WebSocketService {
         '[WebSocket] Reconnecting in ${delaySecs}s (attempt $_reconnectAttempts)');
 
     Future.delayed(Duration(seconds: delaySecs), () {
-      final authMap = _socket?.auth;
-      final currentToken = (authMap is Map) ? authMap['token'] as String? : null;
+      final currentToken = _wsToken;
       if (currentToken != null) {
         _attemptConnection(currentToken);
       }

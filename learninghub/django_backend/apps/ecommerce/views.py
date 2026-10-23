@@ -6,7 +6,30 @@ import sys
 import uuid
 from decimal import Decimal
 
-import stripe
+try:
+    import stripe
+except ImportError:
+    class _DummyStripeError(Exception):
+        pass
+
+    class _DummyStripeModule:
+        api_key = None
+
+        class error:
+            StripeError = _DummyStripeError
+            SignatureVerificationError = _DummyStripeError
+
+        class Subscription:
+            @staticmethod
+            def list(*args, **kwargs):
+                return []
+
+        class Webhook:
+            @staticmethod
+            def construct_event(*args, **kwargs):
+                raise _DummyStripeError("Stripe library is not installed on this server")
+
+    stripe = _DummyStripeModule()
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
@@ -864,11 +887,12 @@ class StripeSubscriptionManageView(APIView):
     def get(self, request):
         from apps.ecommerce.stripe_service import StripeService
         try:
-            if not request.user.stripe_customer_id:
+            stripe_cust_id = getattr(request.user, 'stripe_customer_id', '') or ''
+            if not stripe_cust_id:
                 return success_response(data={'subscriptions': []})
 
             subs = stripe.Subscription.list(
-                customer=request.user.stripe_customer_id,
+                customer=stripe_cust_id,
                 status='all',
                 limit=20,
             )
@@ -961,9 +985,10 @@ class StripeBillingPortalView(APIView):
         from apps.ecommerce.stripe_service import StripeService
         return_url = request.data.get('return_url', settings.FRONTEND_URL)
         try:
-            if not request.user.stripe_customer_id:
+            stripe_cust_id = getattr(request.user, 'stripe_customer_id', '') or ''
+            if not stripe_cust_id:
                 return error_response('No Stripe customer found', status_code=status.HTTP_401_UNAUTHORIZED)
-            url = StripeService.create_portal_session(request.user.stripe_customer_id, return_url)
+            url = StripeService.create_portal_session(stripe_cust_id, return_url)
             return success_response(data={'url': url})
         except stripe.error.StripeError as e:
             return error_response(f'Stripe error: {str(e)}', status_code=status.HTTP_400_BAD_REQUEST)
@@ -975,10 +1000,11 @@ class StripePaymentMethodsView(APIView):
 
     def get(self, request):
         from apps.ecommerce.stripe_service import StripeService
-        if not request.user.stripe_customer_id:
+        stripe_cust_id = getattr(request.user, 'stripe_customer_id', '') or ''
+        if not stripe_cust_id:
             return success_response(data={'payment_methods': []})
         try:
-            methods = StripeService.get_payment_methods(request.user.stripe_customer_id)
+            methods = StripeService.get_payment_methods(stripe_cust_id)
             data = [{
                 'id': m.id,
                 'type': m.type,

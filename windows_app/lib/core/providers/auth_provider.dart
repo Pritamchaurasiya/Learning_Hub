@@ -2,13 +2,28 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/user_model.dart';
 import '../services/user_service.dart';
+import '../services/session_event_service.dart';
 
 /// Authentication state notifier - Delegates to UserService
 class AuthNotifier extends AsyncNotifier<User?> {
   final UserService _userService = UserService.instance;
+  StreamSubscription<SessionEvent>? _sessionSubscription;
 
   @override
   Future<User?> build() async {
+    // Listen to session events for automatic logout
+    _sessionSubscription = sessionEventService.events.listen((event) {
+      if (event == SessionEvent.expired || event == SessionEvent.loggedOut) {
+        // Clear auth state on session expiry
+        state = const AsyncValue.data(null);
+      }
+    });
+
+    // Cleanup on disposal
+    ref.onDispose(() {
+      _sessionSubscription?.cancel();
+    });
+
     // First check current user in memory
     final currentUser = _userService.currentUser;
     if (currentUser != null) {

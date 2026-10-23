@@ -104,6 +104,12 @@ class Enrollment(models.Model):
         db_table = 'lh_course_enrollments'
         unique_together = ('user', 'course')
 
+    @property
+    def status(self):
+        if self.completed_at or (self.progress and self.progress >= 100.0):
+            return 'completed'
+        return 'active' 
+
 class LessonProgress(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lesson_progress')
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='user_progress')

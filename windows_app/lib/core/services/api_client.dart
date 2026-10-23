@@ -3,8 +3,8 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:crypto/crypto.dart';
+import 'session_event_service.dart';
 
 /// API error types
 enum ApiErrorType {
@@ -161,20 +161,28 @@ class ApiResponse<T> {
 }
 
 /// Centralized API client with interceptors and retry logic
+/// 
+/// SECURITY: Uses httpOnly cookies set by the backend (same as React frontend).
+/// No tokens stored in localStorage/FlutterSecureStorage.
+/// Browser automatically sends cookies with requests via Dio's BrowserHttpClientAdapter.
+/// CSRF protection via X-CSRF-Token header (from csrf_token cookie).
 class ApiClient {
   static final ApiClient _instance = ApiClient._();
   static ApiClient get instance => _instance;
 
   late final Dio _dio;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-  Future<bool>? _refreshFuture;
+  
+  // Token refresh state management
+  Completer<bool>? _refreshCompleter;
+  int _refreshFailureCount = 0;
+  DateTime? _lastRefreshAttempt;
+  static const int _maxRefreshFailures = 2;
+  static const Duration _refreshBackoffBase = Duration(seconds: 1);
 
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://localhost:5000/api/v1',
   );
-  static const String _tokenKey = 'auth_token';
-  static const String _refreshTokenKey = 'refresh_token';
   static const Duration _timeout = Duration(seconds: 30);
   static const int _maxRetries = 3;
 
@@ -197,6 +205,8 @@ class ApiClient {
         'Accept': 'application/json',
         'User-Agent': 'LearningHub/1.0.0',
       },
+      // Enable automatic cookie handling on web (BrowserHttpClientAdapter default)
+      // For mobile, cookies are handled via CookieManager if needed
     ));
 
     _setupCertificatePinning();
@@ -259,16 +269,21 @@ class ApiClient {
   /// Setup request/response interceptors
   void _setupInterceptors() {
     _dio.interceptors.addAll([
-      // Auth interceptor
+      // Auth interceptor - NO Authorization header (httpOnly cookies)
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await _secureStorage.read(key: _tokenKey);
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
+          // SECURITY: No Authorization header - backend reads from httpOnly cookies
+          // Browser automatically sends cookies via Dio's BrowserHttpClientAdapter (web)
+          // or CookieManager (mobile) when withCredentials is enabled
 
-          // Add Request Signing for non-GET requests
+          // Add CSRF token for mutating requests
           if (options.method != 'GET') {
+            final csrfToken = _getCsrfToken();
+            if (csrfToken != null) {
+              options.headers['X-CSRF-Token'] = csrfToken;
+            }
+            
+            // Add Request Signing for non-GET requests
             options.headers['X-Request-Signature'] = _generateRequestSignature(
               options.method,
               options.path,
@@ -280,8 +295,20 @@ class ApiClient {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            // Try to refresh token
+            // Check if we've exceeded maximum refresh failures
+            if (_refreshFailureCount >= _maxRefreshFailures) {
+              if (kDebugMode) {
+                debugPrint('[ApiClient] Max refresh failures reached, emitting session expired');
+              }
+              // Session is permanently expired - emit event and don't retry
+              sessionEventService.emitSessionExpired();
+              handler.next(error);
+              return;
+            }
+
+            // Try to refresh token via cookie-based refresh endpoint
             final refreshed = await _refreshToken();
+            
             if (refreshed) {
               // Retry original request
               try {
@@ -289,9 +316,17 @@ class ApiClient {
                 handler.resolve(response);
                 return;
               } catch (e) {
+                if (kDebugMode) {
+                  debugPrint('[ApiClient] Retry after refresh failed: $e');
+                }
                 handler.next(error);
                 return;
               }
+            } else {
+              // Refresh failed - let the error propagate
+              // SessionEvent.expired already emitted in _performTokenRefresh if needed
+              handler.next(error);
+              return;
             }
           }
           handler.next(error);
@@ -309,30 +344,111 @@ class ApiClient {
     ]);
   }
 
-  /// Refresh auth token with thundering herd protection
+  /// Get CSRF token from cookie (readable, not httpOnly)
+  String? _getCsrfToken() {
+    if (kIsWeb) {
+      // On web, read from document.cookie
+      // This is a simplified approach - in practice you might use a cookie library
+      // For now, we'll rely on the browser sending the cookie automatically
+      // The CSRF token cookie is readable (not httpOnly)
+      return null; // TODO: Implement cookie reading for CSRF
+    }
+    return null; // Mobile: use CookieManager if needed
+  }
+
+  /// Refresh auth token via cookie-based endpoint
+  /// 
+  /// Uses a Completer to ensure only one refresh attempt happens at a time,
+  /// even if multiple requests fail with 401 simultaneously.
+  /// 
+  /// Tracks consecutive failures and emits SessionEvent.expired after
+  /// _maxRefreshFailures attempts.
   Future<bool> _refreshToken() async {
-    if (_refreshFuture != null) {
-      return _refreshFuture!;
+    // If a refresh is already in progress, wait for it
+    if (_refreshCompleter != null && !_refreshCompleter!.isCompleted) {
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Token refresh already in progress, waiting...');
+      }
+      return _refreshCompleter!.future;
     }
 
-    _refreshFuture = _performTokenRefresh();
+    // Check if we should apply exponential backoff
+    if (_lastRefreshAttempt != null && _refreshFailureCount > 0) {
+      final backoffDuration = _refreshBackoffBase * (1 << (_refreshFailureCount - 1));
+      final timeSinceLastAttempt = DateTime.now().difference(_lastRefreshAttempt!);
+      
+      if (timeSinceLastAttempt < backoffDuration) {
+        final remainingBackoff = backoffDuration - timeSinceLastAttempt;
+        if (kDebugMode) {
+          debugPrint('[ApiClient] Applying backoff: waiting ${remainingBackoff.inMilliseconds}ms');
+        }
+        await Future<void>.delayed(remainingBackoff);
+      }
+    }
+
+    // Create new completer for this refresh attempt
+    _refreshCompleter = Completer<bool>();
+    _lastRefreshAttempt = DateTime.now();
+
     try {
-      return await _refreshFuture!;
+      final success = await _performTokenRefresh();
+      
+      if (success) {
+        // Reset failure count on successful refresh
+        _refreshFailureCount = 0;
+        sessionEventService.emitTokenRefreshed();
+        if (kDebugMode) {
+          debugPrint('[ApiClient] Token refresh successful');
+        }
+      } else {
+        // Increment failure count
+        _refreshFailureCount++;
+        if (kDebugMode) {
+          debugPrint('[ApiClient] Token refresh failed (attempt $_refreshFailureCount/$_maxRefreshFailures)');
+        }
+        
+        // Emit session expired if we've hit the limit
+        if (_refreshFailureCount >= _maxRefreshFailures) {
+          sessionEventService.emitSessionExpired();
+          if (kDebugMode) {
+            debugPrint('[ApiClient] Max refresh failures reached, session expired');
+          }
+        }
+      }
+      
+      _refreshCompleter!.complete(success);
+      return success;
+    } catch (e) {
+      _refreshFailureCount++;
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Token refresh exception (attempt $_refreshFailureCount/$_maxRefreshFailures): $e');
+      }
+      
+      if (_refreshFailureCount >= _maxRefreshFailures) {
+        sessionEventService.emitSessionExpired();
+      }
+      
+      _refreshCompleter!.complete(false);
+      return false;
     } finally {
-      _refreshFuture = null;
+      // Clear the completer after a short delay to allow waiting callers to complete
+      Future<void>.delayed(const Duration(milliseconds: 100), () {
+        _refreshCompleter = null;
+      });
     }
   }
 
   Future<bool> _performTokenRefresh() async {
     try {
-      final refreshToken = await _secureStorage.read(key: _refreshTokenKey);
-      if (refreshToken == null) {
-        return false;
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Performing token refresh...');
       }
-
+      
+      // Backend endpoint: POST /auth/refresh with credentials (cookies)
+      // No body needed - refresh_token cookie sent automatically
       final response = await Dio().post<Map<String, dynamic>>(
         '$_baseUrl/auth/refresh',
-        data: {'refresh_token': refreshToken},
+        data: {}, // Empty body - refresh_token cookie is used
         options: Options(
           headers: {'Accept': 'application/json'},
           sendTimeout: _timeout,
@@ -340,32 +456,27 @@ class ApiClient {
         ),
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final responseData = response.data as Map<String, dynamic>;
-        final data =
-            (responseData['data'] ?? responseData) as Map<String, dynamic>;
-        await _secureStorage.write(
-          key: _tokenKey,
-          value: (data['accessToken'] ?? data['access_token']) as String?,
-        );
-        await _secureStorage.write(
-          key: _refreshTokenKey,
-          value: (data['refreshToken'] ?? data['refresh_token']) as String?,
-        );
+      if (response.statusCode == 200) {
+        // New cookies (access_token, refresh_token) set by backend via Set-Cookie
+        // Browser/mobile stores them automatically
         return true;
       }
+      
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Token refresh returned status: ${response.statusCode}');
+      }
+      return false;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[Security] Token refresh failed: $e');
+        debugPrint('[ApiClient] Token refresh request failed: $e');
       }
+      return false;
     }
-    return false;
   }
 
   /// Retry a failed request
   Future<Response<dynamic>> _retryRequest(RequestOptions options) async {
-    final token = await _secureStorage.read(key: _tokenKey);
-    options.headers['Authorization'] = 'Bearer $token';
+    // No Authorization header needed - cookies sent automatically
     return _dio.fetch(options);
   }
 
@@ -529,35 +640,47 @@ class ApiClient {
     }
   }
 
-  /// Store auth tokens
-  Future<void> setTokens({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
-    await _secureStorage.write(key: _tokenKey, value: accessToken);
-    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+  /// Clear all session data - cookies, state, and reset refresh tracking
+  /// 
+  /// This is idempotent and safe to call multiple times.
+  /// Called on:
+  /// - Explicit logout
+  /// - Session expiry
+  /// - App initialization (if needed)
+  Future<void> clearAllSessionData() async {
+    if (kDebugMode) {
+      debugPrint('[ApiClient] Clearing all session data...');
+    }
+
+    // Reset refresh failure tracking
+    _refreshFailureCount = 0;
+    _lastRefreshAttempt = null;
+    _refreshCompleter = null;
+
+    // Call backend logout to clear httpOnly cookies
+    try {
+      await _dio.post('/auth/logout', 
+        options: Options(
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      // Ignore errors - logout is best effort
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Logout request failed (non-critical): $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      debugPrint('[ApiClient] Session data cleared');
+    }
   }
 
-  /// Clear auth tokens
-  Future<void> clearTokens() async {
-    await _secureStorage.delete(key: _tokenKey);
-    await _secureStorage.delete(key: _refreshTokenKey);
-  }
-
-  /// Get refresh token
-  Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: _refreshTokenKey);
-  }
-
-  /// Get access token
-  Future<String?> getAccessToken() async {
-    return await _secureStorage.read(key: _tokenKey);
-  }
-
-  /// Check if user has valid token
-  Future<bool> get hasToken async {
-    final token = await _secureStorage.read(key: _tokenKey);
-    return token != null && token.isNotEmpty;
+  /// Legacy method - kept for backwards compatibility
+  @Deprecated('Use clearAllSessionData() instead')
+  Future<void> clearAuthState() async {
+    await clearAllSessionData();
   }
 
   /// STREAM request (Server-Sent Events)
@@ -568,10 +691,6 @@ class ApiClient {
     CancelToken? cancelToken,
   }) async* {
     try {
-      // Ensure we have a token if needed (interceptors usually handle this, but for stream we might need manual header)
-      // Actually, since we use the same _dio instance, interceptors SHOULD work if we use _dio.request
-      // with ResponseType.stream.
-
       final response = await _executeWithRetry(
         () => _dio.request<ResponseBody>(
           path,

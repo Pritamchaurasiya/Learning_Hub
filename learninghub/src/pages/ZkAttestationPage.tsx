@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  ShieldCheck,
-  Lock,
-  Sparkles,
-  Award,
-  Layers,
-  Cpu,
-} from 'lucide-react'
+import { ShieldCheck, Lock, Sparkles, Award, Layers, Cpu } from 'lucide-react'
 import {
   ZkCircuitPreset,
   ZkAttestationProofPayload,
@@ -123,14 +116,17 @@ export const ZkAttestationPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 18
             </span>
-            <span className="text-xs text-slate-400 font-mono">Zero-Knowledge SNARK & SBT Engine</span>
+            <span className="text-xs text-slate-400 font-mono">
+              Zero-Knowledge SNARK & SBT Engine
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
             Zero-Knowledge Skill Attestation & Soulbound Tokens
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-            Prove threshold mastery, competitive Elo, and psychometric percentiles with BN128 Groth16 zk-SNARKs.
-            Mint non-transferable ERC-5192 Soulbound Tokens anchored to Polygon PoS without disclosing private scores.
+            Prove threshold mastery, competitive Elo, and psychometric percentiles with BN128
+            Groth16 zk-SNARKs. Mint non-transferable ERC-5192 Soulbound Tokens anchored to Polygon
+            PoS without disclosing private scores.
           </p>
         </div>
 
@@ -239,7 +235,8 @@ export const ZkAttestationPage: React.FC = () => {
               <Award className="w-10 h-10 text-slate-600 mx-auto" />
               <h3 className="text-sm font-semibold text-slate-300">No Soulbound Token Minted</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Generate a verified ZK proof in the Prover Studio and click "Mint Soulbound SBT" to anchor your non-transferable token to Polygon PoS.
+                Generate a verified ZK proof in the Prover Studio and click &quot;Mint Soulbound
+                SBT&quot; to anchor your non-transferable token to Polygon PoS.
               </p>
             </div>
           )}
@@ -283,3 +280,5 @@ export const ZkAttestationPage: React.FC = () => {
     </div>
   )
 }
+
+export default ZkAttestationPage

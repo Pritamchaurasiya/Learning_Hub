@@ -71,6 +71,11 @@ export async function csrfProtection(
     return
   }
 
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    next()
+    return
+  }
+
   if (req.originalUrl.includes('/webhook')) {
     next()
     return

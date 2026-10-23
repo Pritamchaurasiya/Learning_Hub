@@ -177,10 +177,14 @@ export default function LessonPlayerPage() {
         addToast({ message: 'Lesson completed! +25 XP', type: 'success' })
       }
 
-      // Sync progress percent
-      if (allLessons.length > 0 && courseId) {
-        const pct = Math.round((next.size / allLessons.length) * 100)
-        courseService.updateProgress(courseId, pct).catch(() => {})
+      // Sync lesson completion and course progress atomically
+      if (courseId) {
+        const isDone = next.has(lId)
+        courseService?.completeLesson?.(lId, isDone)?.catch?.(() => {})
+        if (allLessons.length > 0) {
+          const pct = Math.round((next.size / allLessons.length) * 100)
+          courseService?.updateProgress?.(courseId, pct, lId)?.catch?.(() => {})
+        }
       }
       return next
     })

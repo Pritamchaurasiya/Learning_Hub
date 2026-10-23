@@ -23,18 +23,20 @@ export const cookieMiddleware = (req: Request, _res: Response, next: () => void)
 const COOKIE_PATH = process.env.COOKIE_PATH || '/'
 const COOKIE_AUTH_PATH = process.env.COOKIE_AUTH_PATH || '/api/v1/auth'
 
+const COOKIE_SAMESITE = (process.env.COOKIE_SAMESITE as 'lax' | 'strict' | 'none') || 'lax'
+
 const COOKIE_ACCESS = {
   name: 'access_token',
   maxAge: 15 * 60 * 1000,
   path: COOKIE_PATH,
-  sameSite: 'strict' as const,
+  sameSite: COOKIE_SAMESITE,
 }
 
 const COOKIE_REFRESH = {
   name: 'refresh_token',
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: COOKIE_AUTH_PATH,
-  sameSite: 'strict' as const,
+  sameSite: COOKIE_SAMESITE,
 }
 
 /**

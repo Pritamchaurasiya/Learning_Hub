@@ -46,27 +46,39 @@ class AchievementsListView(APIView):
         achievements = []
         for b in badges:
             ub = user_badges_map.get(b.id)
+            cat = 'other'
+            b_cat = (b.category or '').upper()
+            if 'STREAK' in b_cat:
+                cat = 'streak'
+            elif 'DSA' in b_cat or 'MASTERY' in b_cat:
+                cat = 'dsa'
+            elif 'FRONTIER' in b_cat or 'ADVANCED' in b_cat:
+                cat = 'frontier'
+
             achievements.append({
                 'id': b.id,
                 'achievementId': b.id,
                 'name': b.title,
                 'title': b.title,
                 'description': b.description,
-                'icon': '🏆' if b.category == 'MASTERY' else ('🔥' if b.category == 'STREAK' else '⚡'),
+                'icon': 'Award',
+                'category': cat,
+                'xp_reward': getattr(b, 'xp_bonus', 50) or 50,
                 'rarity': 'epic' if b.xp_bonus >= 200 else 'common',
                 'unlocked': bool(ub and ub.earned_at),
                 'unlocked_at': ub.earned_at.isoformat() if ub and ub.earned_at else None,
                 'unlockedAt': ub.earned_at.isoformat() if ub and ub.earned_at else None,
+                'earned_at': ub.earned_at.isoformat() if ub and ub.earned_at else None,
                 'progress': ub.current_progress if ub else 0,
                 'requirement': b.requirement,
             })
 
         if not achievements:
             sample_achievements = [
-                {'id': 'ach-1', 'achievementId': 'ach-1', 'name': 'First Step', 'title': 'First Step', 'description': 'Completed your first course lesson', 'icon': '🎯', 'rarity': 'common', 'unlocked': True, 'unlocked_at': timezone.now().isoformat()},
-                {'id': 'ach-2', 'achievementId': 'ach-2', 'name': 'Algorithm Master', 'title': 'Algorithm Master', 'description': 'Solved 10+ DSA problems with optimal complexity', 'icon': '⚡', 'rarity': 'rare', 'unlocked': True, 'unlocked_at': timezone.now().isoformat()},
-                {'id': 'ach-3', 'achievementId': 'ach-3', 'name': '7-Day Streak', 'title': '7-Day Streak', 'description': 'Practiced every day for a full week', 'icon': '🔥', 'rarity': 'epic', 'unlocked': True, 'unlocked_at': timezone.now().isoformat()},
-                {'id': 'ach-4', 'achievementId': 'ach-4', 'name': 'Test Ace', 'title': 'Test Ace', 'description': 'Scored 90%+ in a Tests A+ Mock Exam', 'icon': '🏆', 'rarity': 'legendary', 'unlocked': False},
+                {'id': 'ach-1', 'achievementId': 'ach-1', 'name': 'First Step', 'title': 'First Step', 'description': 'Completed your first course lesson', 'icon': 'Award', 'category': 'other', 'xp_reward': 50, 'rarity': 'common', 'unlocked': True, 'unlocked_at': timezone.now().isoformat(), 'unlockedAt': timezone.now().isoformat()},
+                {'id': 'ach-2', 'achievementId': 'ach-2', 'name': 'Algorithm Master', 'title': 'Algorithm Master', 'description': 'Solved 10+ DSA problems with optimal complexity', 'icon': 'Zap', 'category': 'dsa', 'xp_reward': 100, 'rarity': 'rare', 'unlocked': True, 'unlocked_at': timezone.now().isoformat(), 'unlockedAt': timezone.now().isoformat()},
+                {'id': 'ach-3', 'achievementId': 'ach-3', 'name': '7-Day Streak', 'title': '7-Day Streak', 'description': 'Practiced every day for a full week', 'icon': 'Flame', 'category': 'streak', 'xp_reward': 150, 'rarity': 'epic', 'unlocked': True, 'unlocked_at': timezone.now().isoformat(), 'unlockedAt': timezone.now().isoformat()},
+                {'id': 'ach-4', 'achievementId': 'ach-4', 'name': 'Test Ace', 'title': 'Test Ace', 'description': 'Scored 90%+ in a Tests A+ Mock Exam', 'icon': 'Crown', 'category': 'frontier', 'xp_reward': 250, 'rarity': 'legendary', 'unlocked': False},
             ]
             achievements = sample_achievements
 
@@ -87,6 +99,7 @@ class LeaderboardView(APIView):
 
         for rank, u in enumerate(top_users, start=1):
             # SECURITY: Don't leak email or sensitive fields
+            is_curr = bool(request.user and request.user.is_authenticated and str(u.id) == str(request.user.id))
             leaderboard.append({
                 'rank': rank,
                 'id': u.id,
@@ -98,7 +111,8 @@ class LeaderboardView(APIView):
                 'xp': u.xp,
                 'level': u.level,
                 'streak': u.streak,
-                # Removed hardcoded fake fields: courses_completed, targetCollege
+                'is_current_user': is_curr,
+                'isCurrentUser': is_curr,
             })
 
         return success_response(data=leaderboard, meta={'count': len(leaderboard)})

@@ -68,3 +68,10 @@ urlpatterns = [
     path('<str:update_id>/broadcast/', BroadcastNoticeView.as_view(), name='update-broadcast'),
     path('<str:update_id>/', StudentUpdateDetailView.as_view(), name='update-detail'),
 ]
+
+_extra_patterns = []
+for p in list(urlpatterns):
+    route_str = getattr(getattr(p, 'pattern', None), '_route', None)
+    if route_str and route_str.endswith('/') and len(route_str) > 1:
+        _extra_patterns.append(path(route_str[:-1], p.callback, name=f"{p.name}-noslash"))
+urlpatterns.extend(_extra_patterns)

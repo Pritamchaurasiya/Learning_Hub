@@ -58,14 +58,14 @@ import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
 import canaryRoutes from './v1/canary.routes'
 import catRoutes from './v1/cat.routes'
 
-import { responseCompression, bodySizeLimiter } from '../middleware/requestLogger'
+import { bodySizeLimiter } from '../middleware/requestLogger'
 
 const router = Router()
 
 // API versioning middleware
 const apiVersion = (_req: Request, res: Response, next: NextFunction): void => {
   res.setHeader('X-API-Version', '1.0.0')
-  res.setHeader('X-Powered-By', 'LearningHub')
+
   next()
 }
 
@@ -87,7 +87,7 @@ const responseTimeHeader = (_req: Request, res: Response, next: NextFunction): v
 // Apply global middleware
 router.use(apiVersion)
 router.use(responseTimeHeader)
-router.use(responseCompression)
+
 router.use(bodySizeLimiter(10 * 1024 * 1024)) // 10MB limit
 
 // Mount all v1 routes under /api/v1 prefix

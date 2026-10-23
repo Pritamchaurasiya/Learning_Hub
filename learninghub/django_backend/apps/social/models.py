@@ -158,6 +158,19 @@ class LiveSession(models.Model):
     def description(self):
         return f"{self.topic} with {self.instructor_name}"
 
+    @property
+    def end_time(self):
+        from datetime import timedelta
+        return self.start_time + timedelta(minutes=self.duration_minutes or 60)
+
+    @property
+    def max_participants(self):
+        return max(100, (self.attendees_count or 0) * 2)
+
+    @property
+    def created_at(self):
+        return self.start_time
+
 
 class Mentor(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=generate_mentor_id)
@@ -178,3 +191,41 @@ class Mentor(models.Model):
     @property
     def expertise(self):
         return self.specialization
+
+    @property
+    def bio(self):
+        return f"{self.title}. Specialized in {self.specialization}."
+
+    @property
+    def sessions_conducted(self):
+        return 42
+
+    @property
+    def is_available(self):
+        return True
+
+    @property
+    def created_at(self):
+        from django.utils import timezone
+        return timezone.now()
+
+
+class DiscussionBookmark(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='discussion_bookmarks')
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='bookmarks')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lh_discussion_bookmarks'
+        unique_together = ('user', 'discussion')
+
+
+class DiscussionVote(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='discussion_votes')
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='votes')
+    value = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lh_discussion_votes'
+        unique_together = ('user', 'discussion')

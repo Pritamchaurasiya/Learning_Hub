@@ -410,3 +410,5 @@ export const NeuroStudyOptimizerPage = () => {
     </div>
   )
 }
+
+export default NeuroStudyOptimizerPage

@@ -16,6 +16,7 @@ import { offlineAssessmentService } from '../services/OfflineAssessmentService'
 import { adaptiveAssessmentEngine } from '../engines/test/AdaptiveAssessmentEngine'
 import { socraticDiagnosticService } from '../services/ai/SocraticDiagnosticService'
 import { cacheService as queryCache } from '../services/CacheService'
+import { invalidateCache } from '../middleware/redisCacheMiddleware'
 import { aiTestService } from '../services/AITestService'
 import { asyncHandler } from '../utils/errorHandler'
 
@@ -1254,7 +1255,11 @@ export const createTest = asyncHandler(async (req: Request, res: Response): Prom
   })
 
   // Invalidate listTests cache pattern so newly created test is discoverable immediately
-  await queryCache.deletePattern('listTests:*')
+  await Promise.allSettled([
+    queryCache.deletePattern('listTests:*'),
+    invalidateCache('tests*'),
+    invalidateCache('http:/api/v1/tests*'),
+  ])
 
   sendCreated(res, newTest, 'Test created successfully')
 })

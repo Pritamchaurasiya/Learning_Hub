@@ -431,7 +431,7 @@ LOGGING = {
     },
 }
 
-# Celery Configuration
+# Celery Configuration - Production-Ready with Error Handling
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
@@ -439,16 +439,73 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+# Task Execution Settings
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit (raises exception)
 CELERY_TASK_ACKS_LATE = True  # Ensure tasks aren't lost if worker crashes
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # One task at a time for long-running tasks
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100  # Restart worker after 100 tasks (prevent memory leaks)
+
+# Result Backend Settings
+CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
+CELERY_RESULT_PERSISTENT = True  # Persist results even if Redis restarts
+CELERY_TASK_IGNORE_RESULT = False  # Store all task results for monitoring
+
+# Broker Settings
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_POOL_LIMIT = 10
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+# Error Handling & Retry Configuration
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 1 minute delay between retries
+CELERY_TASK_MAX_RETRIES = 3
+CELERY_TASK_ANNOTATIONS = {
+    '*': {
+        'rate_limit': '100/m',  # Max 100 tasks per minute per task type
+        'time_limit': 1800,  # 30 minutes
+        'soft_time_limit': 1500,  # 25 minutes
+    },
+    'apps.ai_engine.tasks.*': {
+        'rate_limit': '20/m',  # AI tasks are more resource-intensive
+        'time_limit': 600,  # 10 minutes
+        'soft_time_limit': 540,  # 9 minutes
+    },
+    'apps.payments.tasks.*': {
+        'rate_limit': '50/m',  # Payment tasks need higher availability
+        'time_limit': 300,  # 5 minutes
+        'acks_late': True,  # Critical - don't lose payment tasks
+        'reject_on_worker_lost': True,
+    },
+}
+
+# Task Routing
 CELERY_TASK_ROUTES = {
     "apps.ai_engine.tasks.*": {"queue": "ai_queue"},
+    "apps.payments.tasks.*": {"queue": "payment_queue"},  # Separate queue for critical payments
     "apps.core.background_tasks.*": {"queue": "default"},
+    "apps.notifications.tasks.*": {"queue": "notifications_queue"},
 }
+
+# Logging Configuration for Celery
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Don't override Django logging
+CELERY_WORKER_LOG_FORMAT = '[%(asctime)s: %(levelname)s/%(processName)s] %(message)s'
+CELERY_WORKER_TASK_LOG_FORMAT = (
+    '[%(asctime)s: %(levelname)s/%(processName)s] '
+    '[%(task_name)s(%(task_id)s)] %(message)s'
+)
+
+# Monitoring & Events
+CELERY_WORKER_SEND_TASK_EVENTS = True  # Enable task events for monitoring
+CELERY_TASK_SEND_SENT_EVENT = True  # Track when tasks are sent
+CELERY_ENABLE_UTC = True
+
+# Task priority support (requires Redis 5.0+)
+CELERY_TASK_QUEUE_MAX_PRIORITY = 10
+CELERY_TASK_DEFAULT_PRIORITY = 5
 
 # Caching - Redis
 CACHES = {

@@ -34,6 +34,8 @@ class LessonSerializer(serializers.ModelSerializer):
             data['video_url'] = None
             data['content'] = 'Enroll in this course to access the full lesson content and video materials.'
 
+        data['description'] = data.get('content', '')
+        data['duration_minutes'] = getattr(instance, 'duration_minutes', 0)
         return data
 
 class ChapterSerializer(serializers.ModelSerializer):
@@ -66,9 +68,25 @@ class CourseReviewSerializer(serializers.ModelSerializer):
         model = CourseReview
         fields = ['id', 'user_name', 'user_avatar', 'rating', 'review_text', 'created_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['user'] = {
+            'id': str(instance.user.id) if instance.user else 'anon',
+            'display_name': getattr(instance.user, 'username', 'Student'),
+            'avatar': getattr(instance.user, 'avatar', '') or ''
+        }
+        data['review'] = instance.review_text
+        return data
+
 class CourseListSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['thumbnail'] = data.get('thumbnail_url', '')
+        data['difficulty'] = data.get('level', '')
+        return data
 
     class Meta:
         model = Course
@@ -141,6 +159,13 @@ class CourseDetailSerializer(CourseListSerializer):
             return CourseBookmark.objects.filter(user=request.user, course=obj).exists()
         return False
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['sections'] = data.get('chapters', [])
+        data['enrolled'] = data.get('is_enrolled', False)
+        data['progress'] = data.get('progress_percent', 0.0)
+        return data
+
 class CourseReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)
     user_avatar = serializers.CharField(source='user.avatar', read_only=True)
@@ -150,6 +175,8 @@ class CourseReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'user_name', 'user_avatar', 'rating', 'review_text', 'created_at']
 
 class EnrollmentSerializer(serializers.ModelSerializer):
+    status = serializers.CharField(read_only=True)
+
     class Meta:
         model = Enrollment
         fields = ['id', 'user', 'course', 'progress', 'enrolled_at', 'completed_at', 'status']

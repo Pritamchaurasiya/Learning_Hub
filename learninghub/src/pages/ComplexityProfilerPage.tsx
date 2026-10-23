@@ -12,11 +12,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import {
-  ProfilerResultPayload,
-  AlgorithmPreset,
-  BenchmarkRequestParams,
-} from '../types/complexity'
+import { ProfilerResultPayload, AlgorithmPreset, BenchmarkRequestParams } from '../types/complexity'
 import { complexityService } from '../services/complexityService'
 import { AsymptoticGrowthChart } from '../components/complexity/AsymptoticGrowthChart'
 import { AsymptoticProjectionTable } from '../components/complexity/AsymptoticProjectionTable'
@@ -93,14 +89,17 @@ export const ComplexityProfilerPage: React.FC = () => {
   const [selectedPresetId, setSelectedPresetId] = useState<string>('MERGE_SORT')
   const [code, setCode] = useState<string>(DEFAULT_PRESETS[0].code)
   const [algorithmName, setAlgorithmName] = useState<string>(DEFAULT_PRESETS[0].name)
-  const [activeTab, setActiveTab] = useState<'chart' | 'projections' | 'bottlenecks' | 'empirical'>('chart')
+  const [activeTab, setActiveTab] = useState<'chart' | 'projections' | 'bottlenecks' | 'empirical'>(
+    'chart'
+  )
   const [profilerResult, setProfilerResult] = useState<ProfilerResultPayload | null>(null)
   const [isRunning, setIsRunning] = useState<boolean>(false)
 
   // Load presets on mount
   useEffect(() => {
     let isMounted = true
-    complexityService.getPresets()
+    complexityService
+      .getPresets()
       .then(res => {
         if (isMounted && res && res.length > 0) {
           setPresets(res)
@@ -116,22 +115,24 @@ export const ComplexityProfilerPage: React.FC = () => {
 
   // Auto-run initial benchmark
   useEffect(() => {
-    handleRunBenchmark(selectedPresetId, code, algorithmName)
+    void handleRunBenchmark(selectedPresetId, code, algorithmName)
   }, [])
 
   const handleSelectPreset = (presetId: string) => {
     setSelectedPresetId(presetId)
-    const found = presets.find(p => p.id === presetId) || DEFAULT_PRESETS.find(p => p.id === presetId)
+    const found =
+      presets.find(p => p.id === presetId) || DEFAULT_PRESETS.find(p => p.id === presetId)
     if (found) {
       setCode(found.code)
       setAlgorithmName(found.name)
-      handleRunBenchmark(presetId, found.code, found.name)
+      void handleRunBenchmark(presetId, found.code, found.name)
     }
   }
 
   const handleRunBenchmark = async (presetId?: string, codeSnippet?: string, name?: string) => {
     setIsRunning(true)
-    const effectivePreset = (presetId || selectedPresetId) as BenchmarkRequestParams['presetAlgorithm']
+    const effectivePreset = (presetId ||
+      selectedPresetId) as BenchmarkRequestParams['presetAlgorithm']
     const params: BenchmarkRequestParams = {
       algorithmName: name || algorithmName,
       codeSnippet: codeSnippet || code,
@@ -150,10 +151,34 @@ export const ComplexityProfilerPage: React.FC = () => {
         classifiedClass: 'O(N log N)',
         confidenceScore: 96,
         empiricalData: [
-          { n: 100, executionTimeMicros: 32.1, memoryAllocatedBytes: 65536, iterationsMeasured: 20, standardDeviationMicros: 1.1 },
-          { n: 500, executionTimeMicros: 198.4, memoryAllocatedBytes: 73728, iterationsMeasured: 20, standardDeviationMicros: 6.4 },
-          { n: 1000, executionTimeMicros: 462.1, memoryAllocatedBytes: 81920, iterationsMeasured: 20, standardDeviationMicros: 15.2 },
-          { n: 5000, executionTimeMicros: 2810.0, memoryAllocatedBytes: 147456, iterationsMeasured: 20, standardDeviationMicros: 89.1 },
+          {
+            n: 100,
+            executionTimeMicros: 32.1,
+            memoryAllocatedBytes: 65536,
+            iterationsMeasured: 20,
+            standardDeviationMicros: 1.1,
+          },
+          {
+            n: 500,
+            executionTimeMicros: 198.4,
+            memoryAllocatedBytes: 73728,
+            iterationsMeasured: 20,
+            standardDeviationMicros: 6.4,
+          },
+          {
+            n: 1000,
+            executionTimeMicros: 462.1,
+            memoryAllocatedBytes: 81920,
+            iterationsMeasured: 20,
+            standardDeviationMicros: 15.2,
+          },
+          {
+            n: 5000,
+            executionTimeMicros: 2810.0,
+            memoryAllocatedBytes: 147456,
+            iterationsMeasured: 20,
+            standardDeviationMicros: 89.1,
+          },
         ],
         fittedModels: [
           {
@@ -172,15 +197,37 @@ export const ComplexityProfilerPage: React.FC = () => {
           coefficients: { a: 0.045, b: 5.0 },
         },
         asymptoticProjections: [
-          { targetN: 1000, projectedTimeMs: 0.46, projectedMemoryMb: 0.03, feasibilityVerdict: 'INSTANT' },
-          { targetN: 10000, projectedTimeMs: 5.1, projectedMemoryMb: 0.31, feasibilityVerdict: 'INSTANT' },
-          { targetN: 100000, projectedTimeMs: 60.5, projectedMemoryMb: 3.05, feasibilityVerdict: 'ACCEPTABLE' },
-          { targetN: 1000000, projectedTimeMs: 705.0, projectedMemoryMb: 30.52, feasibilityVerdict: 'DEGRADED_SLA' },
+          {
+            targetN: 1000,
+            projectedTimeMs: 0.46,
+            projectedMemoryMb: 0.03,
+            feasibilityVerdict: 'INSTANT',
+          },
+          {
+            targetN: 10000,
+            projectedTimeMs: 5.1,
+            projectedMemoryMb: 0.31,
+            feasibilityVerdict: 'INSTANT',
+          },
+          {
+            targetN: 100000,
+            projectedTimeMs: 60.5,
+            projectedMemoryMb: 3.05,
+            feasibilityVerdict: 'ACCEPTABLE',
+          },
+          {
+            targetN: 1000000,
+            projectedTimeMs: 705.0,
+            projectedMemoryMb: 30.52,
+            feasibilityVerdict: 'DEGRADED_SLA',
+          },
         ],
         bottleneckAnalysis: {
           primaryLimiter: 'MEMORY_BANDWIDTH',
           detectedAnomalies: ['Optimal comparison-based bounding model achieved.'],
-          actionableSuggestions: ['Inspect auxiliary array allocations to ensure recursion does not incur GC pressure.'],
+          actionableSuggestions: [
+            'Inspect auxiliary array allocations to ensure recursion does not incur GC pressure.',
+          ],
           katexFormalProof: 'T(N) = 2 \\cdot T(N/2) + O(N) = \\Theta(N \\log N)',
         },
         generatedAt: new Date().toISOString(),
@@ -200,7 +247,9 @@ export const ComplexityProfilerPage: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Milestone 17
             </span>
-            <span className="text-xs text-slate-400 font-mono">Non-Linear Least Squares Engine</span>
+            <span className="text-xs text-slate-400 font-mono">
+              Non-Linear Least Squares Engine
+            </span>
             {isRunning && (
               <span className="text-xs text-amber-400 flex items-center gap-1 font-mono animate-pulse">
                 <Loader2 className="w-3 h-3 animate-spin" /> Benchmarking Empirical Micro-Times...
@@ -211,8 +260,9 @@ export const ComplexityProfilerPage: React.FC = () => {
             Asymptotic Complexity Profiler & Big-O Benchmark Engine
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-            Execute algorithms across geometric input bounds (N). Fit empirical execution times to theoretical Big-O models,
-            extrapolate production SLAs, and inspect KaTeX formal mathematical proofs.
+            Execute algorithms across geometric input bounds (N). Fit empirical execution times to
+            theoretical Big-O models, extrapolate production SLAs, and inspect KaTeX formal
+            mathematical proofs.
           </p>
         </div>
 
@@ -243,7 +293,9 @@ export const ComplexityProfilerPage: React.FC = () => {
 
       {/* Preset Algorithm Chips */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Presets:</span>
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">
+          Presets:
+        </span>
         {presets.map(preset => {
           const isSelected = preset.id === selectedPresetId
           return (
@@ -258,7 +310,9 @@ export const ComplexityProfilerPage: React.FC = () => {
               }`}
             >
               <span>{preset.name}</span>
-              <span className="font-mono text-[10px] opacity-75 font-bold">({preset.complexity})</span>
+              <span className="font-mono text-[10px] opacity-75 font-bold">
+                ({preset.complexity})
+              </span>
             </button>
           )
         })}
@@ -309,9 +363,7 @@ export const ComplexityProfilerPage: React.FC = () => {
               <div className="text-xl font-extrabold text-white font-mono">
                 {profilerResult.primaryModel.rSquared.toFixed(3)}
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">
-                Least Squares Fit
-              </div>
+              <div className="text-[10px] text-slate-400 font-mono">Least Squares Fit</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
@@ -321,9 +373,7 @@ export const ComplexityProfilerPage: React.FC = () => {
               <div className="text-sm font-bold text-white font-mono truncate">
                 {profilerResult.bottleneckAnalysis.primaryLimiter.replace('_', ' ')}
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">
-                Hardware Vector
-              </div>
+              <div className="text-[10px] text-slate-400 font-mono">Hardware Vector</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
@@ -443,10 +493,18 @@ export const ComplexityProfilerPage: React.FC = () => {
                   <tbody className="divide-y divide-slate-800/60">
                     {profilerResult.empiricalData.map((pt, idx) => (
                       <tr key={idx} className="hover:bg-slate-800/40">
-                        <td className="py-2.5 px-4 font-bold text-slate-200">{pt.n.toLocaleString()}</td>
-                        <td className="py-2.5 px-4 text-emerald-400">{pt.executionTimeMicros.toFixed(2)} μs</td>
-                        <td className="py-2.5 px-4 text-slate-400">±{pt.standardDeviationMicros.toFixed(3)}</td>
-                        <td className="py-2.5 px-4 text-slate-300">{(pt.memoryAllocatedBytes / 1024).toFixed(1)} KB</td>
+                        <td className="py-2.5 px-4 font-bold text-slate-200">
+                          {pt.n.toLocaleString()}
+                        </td>
+                        <td className="py-2.5 px-4 text-emerald-400">
+                          {pt.executionTimeMicros.toFixed(2)} μs
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-400">
+                          ±{pt.standardDeviationMicros.toFixed(3)}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-300">
+                          {(pt.memoryAllocatedBytes / 1024).toFixed(1)} KB
+                        </td>
                         <td className="py-2.5 px-4 text-slate-400">{pt.iterationsMeasured}</td>
                       </tr>
                     ))}
@@ -460,3 +518,5 @@ export const ComplexityProfilerPage: React.FC = () => {
     </div>
   )
 }
+
+export default ComplexityProfilerPage

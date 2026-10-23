@@ -161,11 +161,63 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Override JWT signing key with production-only secret
-SIMPLE_JWT['SIGNING_KEY'] = JWT_SECRET_KEY
+# Override JWT configuration for production security
+from datetime import timedelta
+
+SIMPLE_JWT.update({
+    # Shorter access token lifetime for production security
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Reduced from 60 to 15
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    
+    # Enhanced token rotation and blacklisting
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
+    # Security claims
+    'JTI_CLAIM': 'jti',  # JWT ID for token revocation tracking
+    'ISSUER': 'learninghub',  # Token issuer validation
+    'LEEWAY': 0,  # No time leeway for token validation
+    
+    # Production signing key (separate from SECRET_KEY)
+    'SIGNING_KEY': JWT_SECRET_KEY,
+    
+    # HTTP-only cookie support (more secure than localStorage)
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_SECURE': True,  # HTTPS only
+    'AUTH_COOKIE_HTTP_ONLY': True,  # Not accessible via JavaScript
+    'AUTH_COOKIE_SAMESITE': 'Lax',  # CSRF protection
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_DOMAIN': os.environ.get('COOKIE_DOMAIN', None),
+})
+
+# Rate Limiting - Stricter in production
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
+    'anon': '500/day',  # Reduced from 1000
+    'user': '5000/day',  # Reduced from 10000
+    'ai_chat': '5/minute',  # Reduced from 10
+    'ai_generation': '10/hour',  # Reduced from 20
+    'login': '3/minute',  # Reduced from 5
+    'password_reset': '2/hour',  # Reduced from 3
+    'payment': '5/hour',  # Reduced from 10
+})
 
 # Security Admin Email
 ADMINS = [
     ('Admin', os.environ.get('ADMIN_EMAIL', 'admin@yourdomain.com')),
 ]
 MANAGERS = ADMINS
+
+# Additional Production Security
+# Prevent host header injection
+USE_X_FORWARDED_HOST = False
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# Content Security Policy - strict for production
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net')
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", 'https://fonts.googleapis.com')
+CSP_FONT_SRC = ("'self'", 'https://fonts.gstatic.com')
+CSP_IMG_SRC = ("'self'", 'data:', 'https:')
+CSP_CONNECT_SRC = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)  # Prevent iframe embedding

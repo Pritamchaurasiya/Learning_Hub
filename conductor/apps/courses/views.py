@@ -91,6 +91,94 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 @extend_schema(tags=["Courses"])
 class CourseViewSet(viewsets.ModelViewSet):
     """
+    Course endpoints (Optimized for N+1 prevention).
+
+    GET /api/v1/courses/ - List courses
+    GET /api/v1/courses/{slug}/ - Course detail
+    POST /api/v1/courses/{slug}/enroll/ - Enroll in course
+    GET /api/v1/courses/{slug}/reviews/ - Get reviews
+    POST /api/v1/courses/{slug}/review/ - Submit review
+    
+    Query Optimization:
+    - list: Minimal fields with select_related for instructor/category
+    - retrieve: Full course with prefetched modules, lessons, reviews
+    """
+    
+    def get_queryset(self):
+        """
+        Optimize queryset based on action to prevent N+1 queries.
+        """
+        queryset = Course.objects.filter(is_published=True)
+        
+        if self.action == 'list':
+            # List view: Optimize with minimal fields and annotations
+            queryset = queryset.select_related(
+                'instructor',
+                'category'
+            ).annotate(
+                review_count=Count('reviews'),
+                avg_rating=Avg('reviews__rating'),
+                enrollment_count_cached=Count('enrollments')
+            ).only(
+                'id', 'title', 'slug', 'short_description', 'price', 
+                'is_free', 'discount_price', 'thumbnail', 'difficulty',
+                'duration_hours', 'created_at', 'updated_at',
+                'instructor__id', 'instructor__username', 'instructor__display_name',
+                'category__id', 'category__name', 'category__slug'
+            )
+        
+        elif self.action == 'retrieve':
+            # Detail view: Fetch full course with related data
+            queryset = queryset.select_related(
+                'instructor',
+                'category'
+            ).prefetch_related(
+                Prefetch(
+                    'modules',
+                    queryset=Module.objects.select_related('course').prefetch_related(
+                        Prefetch(
+                            'lessons',
+                            queryset=Lesson.objects.order_by('order')
+                        )
+                    ).order_by('order')
+                ),
+                Prefetch(
+                    'reviews',
+                    queryset=Review.objects.select_related('user').order_by('-created_at')
+                )
+            ).annotate(
+                review_count=Count('reviews'),
+                avg_rating=Avg('reviews__rating'),
+                enrollment_count_cached=Count('enrollments')
+            )
+            
+            # Add user-specific enrollment if authenticated
+            user = self.request.user if hasattr(self.request, 'user') else None
+            if user and user.is_authenticated:
+                queryset = queryset.prefetch_related(
+                    Prefetch(
+                        'enrollments',
+                        queryset=Enrollment.objects.filter(user=user),
+                        to_attr='user_enrollment'
+                    )
+                )
+        
+        elif self.action in ['enroll', 'my_courses']:
+            # Enrollment-related actions
+            queryset = queryset.select_related('instructor', 'category')
+        
+        elif self.action in ['reviews', 'review']:
+            # Review-related actions
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    'reviews',
+                    queryset=Review.objects.select_related('user').order_by('-created_at')
+                )
+            )
+        
+        return queryset
+    
+    """
     Course endpoints.
 
     GET /api/v1/courses/ - List courses

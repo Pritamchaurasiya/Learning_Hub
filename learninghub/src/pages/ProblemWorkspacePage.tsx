@@ -533,7 +533,7 @@ export default function ProblemWorkspacePage() {
     mutationFn: () => problemService.runCode(problem!.id, language, code),
     onSuccess: res => {
       const d = res.data
-      const isAccepted = d.status === 'AC' || d.status === 'ACCEPTED'
+      const isAccepted = d.status === 'AC' || d.status === 'ACCEPTED' || d.status === 'Accepted' || (d as any).short_status === 'AC'
       const lines = [
         `▶ Run (Sample Tests): ${d.status}`,
         `   Passed: ${d.passed_tests}/${d.total_tests} test cases`,
@@ -579,7 +579,7 @@ export default function ProblemWorkspacePage() {
     mutationFn: () => problemService.submitSolution(problem!.id, language, code),
     onSuccess: res => {
       const d = res.data
-      const isAccepted = d.status === 'AC' || (d.status as string) === 'ACCEPTED'
+      const isAccepted = d.status === 'AC' || (d.status as string) === 'ACCEPTED' || (d.status as string) === 'Accepted' || (d as any).short_status === 'AC'
       const lines = [
         `${isAccepted ? '✅' : '❌'} Submission: ${d.status}`,
         `   Passed: ${d.passed_tests}/${d.total_tests} test cases`,

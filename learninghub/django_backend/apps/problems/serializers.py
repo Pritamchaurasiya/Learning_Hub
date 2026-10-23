@@ -35,6 +35,13 @@ class ProblemListSerializer(serializers.ModelSerializer):
             return 'ATTEMPTED'
         return 'UNATTEMPTED'
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['tags'] = [{'id': f'tag-{instance.category.lower()}', 'name': instance.category, 'slug': instance.category.lower()}] if instance.category else []
+        data['topic'] = instance.category
+        data['points'] = 10 if instance.difficulty == 'Easy' else (20 if instance.difficulty == 'Medium' else 35)
+        return data
+
 class ProblemDetailSerializer(serializers.ModelSerializer):
     test_cases = serializers.SerializerMethodField()
 
@@ -63,3 +70,27 @@ class ProblemSubmissionSerializer(serializers.ModelSerializer):
             'total_testcases', 'stdout', 'stderr', 'created_at'
         ]
         read_only_fields = ['id', 'status', 'runtime_ms', 'memory_mb', 'passed_testcases', 'total_testcases', 'stdout', 'stderr', 'created_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        status_map = {
+            'Accepted': 'AC',
+            'Wrong Answer': 'WA',
+            'Time Limit Exceeded': 'TLE',
+            'Runtime Error': 'RE',
+            'Compilation Error': 'CE',
+        }
+        short_status = status_map.get(instance.status, instance.status)
+        data['status'] = instance.status
+        data['short_status'] = short_status
+        data['full_status'] = instance.status
+        data['execution_time_ms'] = instance.runtime_ms
+        data['memory_kb'] = int((instance.memory_mb or 14.0) * 1024)
+        data['passed_tests'] = instance.passed_testcases
+        data['total_tests'] = instance.total_testcases
+        data['feedback'] = (
+            f"All {instance.passed_testcases}/{instance.total_testcases} Test Cases Passed in {instance.runtime_ms}ms!"
+            if instance.status == 'Accepted'
+            else f"Evaluation: {instance.status} ({instance.passed_testcases}/{instance.total_testcases} passed)"
+        )
+        return data

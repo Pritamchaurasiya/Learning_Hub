@@ -33,6 +33,60 @@ from .serializers import (
 
 from .services import UserService
 from apps.core.throttles import LoginRateThrottle, RegistrationRateThrottle
+from django.db.models import Prefetch, Count, Q
+
+
+# Optimized User Profile ViewSet
+@extend_schema(tags=["Users"])
+class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Optimized User Profile endpoints.
+    
+    Prevents N+1 queries by prefetching related data.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+    
+    def get_queryset(self):
+        """Optimize user queries based on action."""
+        queryset = User.objects.all()
+        
+        if self.action == 'retrieve':
+            # Full profile with all relations
+            queryset = queryset.select_related(
+                'xp_profile',
+                'streak_profile'
+            ).prefetch_related(
+                Prefetch(
+                    'enrollments',
+                    queryset=Enrollment.objects.select_related('course').annotate(
+                        completed_lessons=Count('course__modules__lessons')
+                    )
+                ),
+                Prefetch(
+                    'badges',
+                    queryset=UserBadge.objects.select_related('badge')
+                ),
+                Prefetch(
+                    'submissions',
+                    queryset=Submission.objects.select_related('problem').filter(
+                        status='AC'
+                    ).order_by('-submitted_at')[:10]
+                )
+            ).annotate(
+                total_courses=Count('enrollments'),
+                completed_courses=Count('enrollments', filter=Q(enrollments__completed_at__isnull=False)),
+                total_submissions=Count('submissions'),
+                accepted_submissions=Count('submissions', filter=Q(submissions__status='AC'))
+            )
+        elif self.action == 'list':
+            # Minimal fields for list
+            queryset = queryset.select_related('xp_profile').only(
+                'id', 'username', 'display_name', 'avatar',
+                'xp_profile__total_xp', 'xp_profile__level'
+            )
+        
+        return queryset
 
 
 @extend_schema_view(post=extend_schema(responses={201: UserProfileSerializer}))

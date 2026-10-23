@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ProblemListView, ProblemDetailView, RunCodeView,
-    SubmitProblemView, ProblemSubmissionsListView, ProblemRecommendationsView
+    SubmitProblemView, ProblemSubmissionsListView, ProblemRecommendationsView, DSAStatsView
 )
 
 urlpatterns = [
@@ -15,4 +15,8 @@ urlpatterns = [
     path('problems/<str:pk>/submit', SubmitProblemView.as_view(), name='problem-submit'),
     path('problems/<str:pk>/submissions', ProblemSubmissionsListView.as_view(), name='problem-submissions'),
     path('code/run', RunCodeView.as_view(), name='global-code-run'),
+    path('problems/dsa-stats', DSAStatsView.as_view(), name='problem-dsa-stats'),
+    path('problems/dsa-stats/', DSAStatsView.as_view(), name='problem-dsa-stats-slash'),
+    path('dsa-stats', DSAStatsView.as_view(), name='dsa-stats-direct'),
+    path('dsa-stats/', DSAStatsView.as_view(), name='dsa-stats-direct-slash'),
 ]

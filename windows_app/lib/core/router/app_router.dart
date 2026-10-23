@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 
 // Feature imports
 import '../providers/auth_provider.dart';
+import '../services/session_event_service.dart';
 import '../../data/models/user_model.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -53,7 +55,7 @@ final GlobalKey<NavigatorState> _shellNavigatorKey =
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     debugLogDiagnostics: true,
@@ -501,6 +503,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
     },
   );
+
+  // Listen to session events for silent redirect to login
+  // This handles session expiry without showing toasts/dialogs
+  late final StreamSubscription<SessionEvent> _sessionSubscription;
+  
+  ref.onDispose(() {
+    _sessionSubscription.cancel();
+  });
+
+  _sessionSubscription = sessionEventService.events.listen((event) {
+    if (event == SessionEvent.expired || event == SessionEvent.loggedOut) {
+      // Silent redirect to login, clearing navigation stack
+      // This prevents users from navigating back to protected screens
+      router.go('/login');
+      
+      // Note: clearAllSessionData is called from UserService.logout()
+      // or will be called by the session expiry handler in auth_provider
+    }
+  });
+
+  return router;
 });
 
 /// Navigation helper extensions

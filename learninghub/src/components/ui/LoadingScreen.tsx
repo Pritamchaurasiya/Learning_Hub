@@ -47,17 +47,14 @@ export function LoadingScreen({ fullScreen = false, className, message }: Loadin
       </div>
 
       <div className="space-y-2 text-center">
-        <h2 className="text-xl font-black tracking-tight">
-          <span className="text-slate-900 dark:text-white">Learning</span>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400">
-            Hub
+        <h2 className="text-2xl font-bold tracking-tight">
+          <span className="font-brand-cursive text-glow-brand bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-violet-300 to-fuchsia-400" style={{ fontFamily: "'Dancing Script', 'Caveat', cursive, sans-serif" }}>
+            LearningHub
           </span>
-          <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 ml-0.5 -mt-2">
-            ™
-          </span>
+          <span className="text-amber-400 text-xs ml-1">✦</span>
         </h2>
-        <p className="text-[9px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
-          LEARN • PRACTICE • GROW • ACHIEVE
+        <p className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+          LEARN • PRACTICE • GROW
         </p>
         <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">
           {message ?? (fullScreen ? 'Initializing your learning environment...' : 'Loading...')}

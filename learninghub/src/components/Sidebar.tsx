@@ -32,6 +32,11 @@ import {
   BellRing,
   FileText,
   Briefcase,
+  Layers,
+  ShieldCheck,
+  Terminal,
+  Share2,
+  Palette,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -57,8 +62,9 @@ export default function Sidebar() {
   // Collapsible sections state - default secondary sections to collapsed to avoid overwhelming 20+ item clutter
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     Practice: true,
+    'Engineering Labs': false,
     Community: false,
-    'AI & Tools': false,
+    'Study Tools & Mentorship': false,
     Account: false,
   })
 
@@ -99,6 +105,26 @@ export default function Sidebar() {
         { to: '/tests-a-history', icon: History, label: 'Test History' },
         { to: '/contest', icon: Trophy, label: 'Contests' },
         { to: '/leaderboard', icon: BarChart3, label: 'Leaderboard' },
+      ],
+    },
+    {
+      label: 'Engineering Labs',
+      defaultOpen: false,
+      items: [
+        { to: '/edge-ai', icon: Cpu, label: 'Edge AI Neural Tutor' },
+        { to: '/system-design', icon: Layers, label: 'System Design Simulator' },
+        { to: '/canvas', icon: Palette, label: 'Canvas Studio' },
+        { to: '/multimodal', icon: Bot, label: 'MultiModal AI Studio' },
+        { to: '/neuro-study', icon: Brain, label: 'Neuro Flow Optimizer' },
+        { to: '/time-travel', icon: History, label: 'Time-Travel Debugger' },
+        { to: '/complexity', icon: BarChart3, label: 'Complexity & Big-O' },
+        { to: '/chaos', icon: Flame, label: 'Chaos Cluster Sandbox' },
+        { to: '/zkp', icon: ShieldCheck, label: 'ZK-Attestation' },
+        { to: '/self-healing', icon: Sparkles, label: 'Self-Healing Code' },
+        { to: '/whiteboard', icon: Share2, label: 'P2P Collab Canvas' },
+        { to: '/debate', icon: Swords, label: 'Agent Debate Arena' },
+        { to: '/swe-studio', icon: Terminal, label: 'Autonomous SWE Studio' },
+        { to: '/canary', icon: Gauge, label: 'Canary Deployment' },
       ],
     },
     {
@@ -192,7 +218,7 @@ export default function Sidebar() {
             onClick={closeMobileSidebar}
             className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg group"
           >
-            <BrandLogo size="sm" variant="full" subtitle="Pro Platform" animated={false} />
+            <BrandLogo size="sm" variant="full" subtitle="Pro Platform" animated />
           </PrefetchNavLink>
           <motion.button
             whileHover={{ scale: 1.1 }}
