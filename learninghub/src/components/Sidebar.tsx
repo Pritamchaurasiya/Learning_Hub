@@ -94,7 +94,6 @@ export default function Sidebar() {
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
         { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
-        { to: '/tests-a-plus', icon: Sparkles, label: 'Tests A+ Studio' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },
         { to: '/tests-a-history', icon: History, label: 'Test History' },
         { to: '/contest', icon: Trophy, label: 'Contests' },

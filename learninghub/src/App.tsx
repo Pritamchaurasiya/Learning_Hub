@@ -26,7 +26,6 @@ import AuthPage from './pages/AuthPage'
 // Lazy-loaded page components
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const TestsAPage = lazy(() => import('./pages/TestsAPage'))
-const TestsAStationPage = lazy(() => import('./pages/TestsAStationPage'))
 
 // Lazy-loaded page components
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
@@ -572,30 +571,9 @@ function App() {
                   </LazyRoute>
                 }
               />
-              <Route
-                path="/tests-a-plus"
-                element={
-                  <LazyRoute sectionName="Tests A+">
-                    <TestsAPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/tests-a/simulator"
-                element={
-                  <LazyRoute sectionName="Tests A+">
-                    <TestsAPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/tests-a/studio"
-                element={
-                  <LazyRoute sectionName="Tests A+ Interactive Studio">
-                    <TestsAStationPage />
-                  </LazyRoute>
-                }
-              />
+              <Route path="/tests-a-plus" element={<Navigate to="/tests-a" replace />} />
+              <Route path="/tests-a/simulator" element={<Navigate to="/tests-a" replace />} />
+              <Route path="/tests-a/studio" element={<Navigate to="/tests-a" replace />} />
               <Route
                 path="/tests-a-history"
                 element={

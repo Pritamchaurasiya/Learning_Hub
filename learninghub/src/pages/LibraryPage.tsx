@@ -390,7 +390,7 @@ export default function LibraryPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate('/tests-a-plus')}
+                      onClick={() => navigate('/tests-a')}
                       className="flex items-center gap-1.5"
                     >
                       <FileText className="w-4 h-4" />
