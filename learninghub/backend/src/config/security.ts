@@ -307,10 +307,8 @@ export const validatePasswordStrength = (
 // for code/content fields where HTML entities are legitimate.
 //
 // This function is a defense-in-depth measure, NOT the primary protection against XSS.
-// HTML entity removal (hex &#x... and decimal &#... patterns) is intentional — while
-// these could be used for obfuscation, stripping them prevents encoded payloads from
-// reaching template engines. Fields that legitimately contain HTML entities (code blocks,
-// math formulas, etc.) should be excluded via SKIP_FIELDS in sanitizeMiddleware.ts.
+// NOTE: HTML entity removal is skipped to prevent destroying legitimate formatting
+// like code blocks and math formulas in CS/DSA tests.
 // Input length is capped at 1MB via .slice() to prevent memory exhaustion.
 export const sanitizeInput = (input: string): string => {
   return input
@@ -319,8 +317,6 @@ export const sanitizeInput = (input: string): string => {
     .replace(/vbscript\s*:/gi, '')
     .replace(/data\s*:\s*text\/html/gi, '')
     .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
-    .replace(/&#x[0-9a-fA-F]+;/g, '') // Remove hex HTML entities
-    .replace(/&#\d+;/g, '') // Remove decimal HTML entities
     .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '')
     .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gi, '')
     .trim()

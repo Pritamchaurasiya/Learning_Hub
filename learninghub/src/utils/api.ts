@@ -165,10 +165,10 @@ export const generateUUID = (): string => {
 }
 
 export const getSessionId = (): string => {
-  let sessionId = localStorage.getItem('sessionId')
+  let sessionId = sessionStorage.getItem('sessionId')
   if (!sessionId) {
     sessionId = generateUUID()
-    localStorage.setItem('sessionId', sessionId)
+    sessionStorage.setItem('sessionId', sessionId)
   }
   return sessionId
 }
