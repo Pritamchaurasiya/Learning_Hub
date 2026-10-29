@@ -130,7 +130,6 @@ describe('MobileNav Component', () => {
       expect(screen.getByText('1v1 Arena Duel')).toBeInTheDocument()
       expect(screen.getByText('Spaced Revision')).toBeInTheDocument()
       expect(screen.getByText('Study Planner')).toBeInTheDocument()
-      expect(screen.getByText('DSA Visualizer')).toBeInTheDocument()
       expect(screen.getByText('Contests')).toBeInTheDocument()
       expect(screen.getByText('Library & Ebooks')).toBeInTheDocument()
       expect(screen.getByText('Platform Updates')).toBeInTheDocument()

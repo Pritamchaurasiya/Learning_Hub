@@ -177,7 +177,7 @@
     }
   ],
   "meta": {
-    "canonicalDigest": "df74ec06f571d91d6ba3f4b4475bc3de5fc40ca39939f7a6fa4493703945b238",
+    "canonicalDigest": "dd1d0b4514b85612cfcafb7989f3c340f2ef3b2bae2e11aff0c3a81a3904dd4c",
     "issuerDid": "did:polygon:0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
     "atsCompatibilityScore": 96
   }

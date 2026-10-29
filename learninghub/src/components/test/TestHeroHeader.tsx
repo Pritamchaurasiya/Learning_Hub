@@ -22,73 +22,73 @@ export const TestHeroHeader = memo(function TestHeroHeader({
     'Scholar'
 
   return (
-    <div className="relative mb-8 overflow-hidden rounded-3xl border border-purple-500/20 bg-gradient-to-br from-indigo-950/40 via-purple-950/20 to-slate-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl">
+    <div className="relative mb-8 overflow-hidden rounded-3xl border border-violet-200/80 dark:border-purple-500/20 bg-gradient-to-br from-white via-purple-50/70 to-indigo-50/80 dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-slate-900/60 p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-colors duration-300">
       {/* Ambient background glow orbs */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-purple-600/20 blur-3xl animate-pulse" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-purple-400/20 dark:bg-purple-600/20 blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-400/20 dark:bg-blue-600/20 blur-3xl" />
 
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
         {/* Left Column: Heading, Subtitle, Stats & Actions */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/30">
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 dark:border-purple-500/30">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               Welcome back, {username}
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
               Live CBT Station
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-violet-200 to-purple-400 mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-indigo-950 to-purple-900 dark:from-white dark:via-violet-200 dark:to-purple-400 mb-2">
             Tests A+
           </h1>
 
-          <p className="text-gray-300 text-sm sm:text-base font-medium max-w-xl mb-6">
+          <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base font-medium max-w-xl mb-6 leading-relaxed">
             Practice smarter. Test yourself. Improve faster with deep adaptive diagnostics, spaced
             repetition, and real-time proctoring.
           </p>
 
           {/* 4 Stat Highlights */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                 <Trophy className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <b className="block text-sm font-bold text-white">10,000+</b>
-                <span className="text-[11px] text-gray-400 block truncate">Practice tests</span>
+                <b className="block text-sm font-bold text-gray-900 dark:text-white">10,000+</b>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 block truncate">Practice tests</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Flame className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <b className="block text-sm font-bold text-white">50+</b>
-                <span className="text-[11px] text-gray-400 block truncate">Exams & topics</span>
+                <b className="block text-sm font-bold text-gray-900 dark:text-white">50+</b>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 block truncate">Exams & topics</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <b className="block text-sm font-bold text-white">AI Powered</b>
-                <span className="text-[11px] text-gray-400 block truncate">Smart practice</span>
+                <b className="block text-sm font-bold text-gray-900 dark:text-white">AI Powered</b>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 block truncate">Smart practice</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <b className="block text-sm font-bold text-white">Track Progress</b>
-                <span className="text-[11px] text-gray-400 block truncate">Mastery analytics</span>
+                <b className="block text-sm font-bold text-gray-900 dark:text-white">Track Progress</b>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 block truncate">Mastery analytics</span>
               </div>
             </div>
           </div>
@@ -98,7 +98,7 @@ export const TestHeroHeader = memo(function TestHeroHeader({
             <Button
               onClick={onOpenAIModal}
               variant="primary"
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25 px-5 py-2.5 text-sm font-bold rounded-xl"
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25 px-5 py-2.5 text-sm font-bold rounded-xl"
             >
               <Sparkles className="w-4 h-4" />
               AI Custom Mock
@@ -107,18 +107,18 @@ export const TestHeroHeader = memo(function TestHeroHeader({
             <Button
               onClick={onOpenManualModal}
               variant="outline"
-              className="flex items-center gap-2 border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white px-4 py-2.5 text-sm font-semibold rounded-xl"
+              className="flex items-center gap-2 border-purple-200 dark:border-white/20 bg-white/90 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-white/10 hover:text-purple-700 dark:hover:text-white px-4 py-2.5 text-sm font-semibold rounded-xl shadow-sm"
             >
-              <Plus className="w-4 h-4 text-blue-400" />
+              <Plus className="w-4 h-4 text-indigo-600 dark:text-blue-400" />
               Create Custom Test
             </Button>
 
             <Button
               onClick={onOpenImportModal}
               variant="outline"
-              className="flex items-center gap-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 px-4 py-2.5 text-sm font-semibold rounded-xl"
+              className="flex items-center gap-2 border-emerald-300/80 dark:border-emerald-500/30 bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 px-4 py-2.5 text-sm font-semibold rounded-xl shadow-sm"
             >
-              <UploadCloud className="w-4 h-4 text-emerald-400" />
+              <UploadCloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               Import Questions
             </Button>
           </div>

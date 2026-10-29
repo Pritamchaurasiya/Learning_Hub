@@ -8,9 +8,19 @@ export const queryKeys = {
   // Global
   all: ['learninghub'] as const,
 
-  // Exam Taxonomy
+  // Exam Taxonomy (Scoped by Country for strict multi-country cache isolation)
   countries: () => [...queryKeys.all, 'countries'] as const,
-  exams: (countryId?: string | null) => [...queryKeys.all, 'exams', countryId ?? 'all'] as const,
+  exams: (countryId?: string | null, filters?: Record<string, unknown>) =>
+    [...queryKeys.all, 'exams', countryId ?? 'all', filters ?? {}] as const,
+  examsPersonalized: (activeCountryCode?: string | null, selectedSubjects?: string[]) =>
+    [
+      ...queryKeys.all,
+      'exams',
+      {
+        country: activeCountryCode ?? 'all',
+        subjects: (selectedSubjects ?? []).slice().sort().join(','),
+      },
+    ] as const,
   subjects: (examId?: string | null) => [...queryKeys.all, 'subjects', examId ?? 'none'] as const,
 
   // Learning Context / Preferences

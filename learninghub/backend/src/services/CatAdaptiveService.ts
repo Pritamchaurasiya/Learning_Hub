@@ -1,6 +1,8 @@
 import crypto from 'crypto'
 import logger from '../utils/logger'
 import { IRTScoringEngine } from './IRTScoringEngine'
+import { prisma } from '../prismaClient'
+import { defaultCatItems } from './catItemBank'
 
 export type ConfidenceLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 
@@ -37,6 +39,7 @@ export interface CatSessionState {
   sessionId: string
   userId: string
   subject: string
+  examSlug?: string
   stage: 1 | 2 | 3
   currentTheta: number // -3.0 to +3.0
   currentSem: number // Standard Error of Measurement
@@ -59,6 +62,7 @@ export interface CatScorecard {
   sessionId: string
   userId: string
   subject: string
+  examSlug?: string
   finalTheta: number
   finalSem: number
   confidenceInterval95: [number, number]
@@ -74,6 +78,16 @@ export interface CatScorecard {
     blindspotCount: number // Incorrect + High Confidence
     totalCbmScore: number
   }
+  topicMastery?: Record<
+    string,
+    {
+      total: number
+      correct: number
+      accuracy: number
+      masteryLevel: 'NEEDS_FOCUS' | 'PROFICIENT' | 'MASTERED'
+    }
+  >
+  suggestedRemediationAction?: string
   convergencePath: Array<{
     step: number
     theta: number
@@ -116,188 +130,7 @@ export class CatAdaptiveService {
   private readonly quadratureWeights: number[]
 
   // Calibrated Item Bank
-  private readonly itemBank: CatItem[] = [
-    {
-      id: 'cat-item-01',
-      text: 'What is the tight worst-case asymptotic time complexity of randomized QuickSort on an array of length N?',
-      subject: 'Algorithms',
-      topic: 'Sorting & Divide and Conquer',
-      options: [
-        { id: 'opt-a', text: 'O(N log N)' },
-        { id: 'opt-b', text: 'O(N^2)' },
-        { id: 'opt-c', text: 'O(N)' },
-        { id: 'opt-d', text: 'O(log N)' },
-      ],
-      correctOptionId: 'opt-b',
-      a: 1.45,
-      b: -0.4,
-      c: 0.25,
-      explanation: 'While expected time is O(N log N), the adversarial worst-case partitioning still degrades to O(N^2).',
-      bloomLevel: 'UNDERSTAND',
-    },
-    {
-      id: 'cat-item-02',
-      text: 'In a B-Tree of minimum degree t >= 2, what is the maximum number of children any internal node other than the root can have?',
-      subject: 'Data Structures',
-      topic: 'Multiway Search Trees',
-      options: [
-        { id: 'opt-a', text: 't - 1' },
-        { id: 'opt-b', text: 't' },
-        { id: 'opt-c', text: '2t' },
-        { id: 'opt-d', text: '2t - 1' },
-      ],
-      correctOptionId: 'opt-c',
-      a: 1.6,
-      b: 0.5,
-      c: 0.25,
-      explanation: 'An internal node in a B-Tree of minimum degree t has at most 2t - 1 keys and therefore at most 2t children.',
-      bloomLevel: 'APPLY',
-    },
-    {
-      id: 'cat-item-03',
-      text: 'Which invariant guarantees cycle-free topological ordering in a directed graph G = (V, E)?',
-      subject: 'Algorithms',
-      topic: 'Graph Theory',
-      options: [
-        { id: 'opt-a', text: 'Graph contains no back edges during DFS traversal' },
-        { id: 'opt-b', text: 'Every vertex has in-degree >= 1' },
-        { id: 'opt-c', text: 'Sum of in-degrees equals sum of out-degrees' },
-        { id: 'opt-d', text: 'Graph is strongly connected' },
-      ],
-      correctOptionId: 'opt-a',
-      a: 1.35,
-      b: -0.8,
-      c: 0.25,
-      explanation: 'A directed graph has a topological sort if and only if it is a DAG (no back edges in DFS tree).',
-      bloomLevel: 'UNDERSTAND',
-    },
-    {
-      id: 'cat-item-04',
-      text: 'Under the CAP theorem in distributed systems, what does a system guarantee during a network partition if it chooses CP over AP?',
-      subject: 'Distributed Systems',
-      topic: 'Consensus & Partition Tolerance',
-      options: [
-        { id: 'opt-a', text: 'It guarantees every non-failing node returns a response immediately' },
-        { id: 'opt-b', text: 'It returns an error or blocks to preserve atomic data linearizability across partitions' },
-        { id: 'opt-c', text: 'It permits eventual consistency across split-brain partitions' },
-        { id: 'opt-d', text: 'It eliminates all replication network latency' },
-      ],
-      correctOptionId: 'opt-b',
-      a: 1.8,
-      b: 1.2,
-      c: 0.25,
-      explanation: 'A CP system sacrifices availability to prevent stale or inconsistent reads/writes during partitions.',
-      bloomLevel: 'ANALYZE',
-    },
-    {
-      id: 'cat-item-05',
-      text: 'In Red-Black Tree balancing, what is the maximum possible height of a tree with N internal nodes?',
-      subject: 'Data Structures',
-      topic: 'Balanced Trees',
-      options: [
-        { id: 'opt-a', text: 'log2(N)' },
-        { id: 'opt-b', text: '2 * log2(N + 1)' },
-        { id: 'opt-c', text: '3 * log2(N)' },
-        { id: 'opt-d', text: 'N / 2' },
-      ],
-      correctOptionId: 'opt-b',
-      a: 1.95,
-      b: 1.6,
-      c: 0.25,
-      explanation: 'The black-height property ensures height h <= 2 * log2(N + 1).',
-      bloomLevel: 'EVALUATE',
-    },
-    {
-      id: 'cat-item-06',
-      text: 'Which algorithmic paradigm solves the 0/1 Knapsack problem with weights W and item values V in pseudo-polynomial time?',
-      subject: 'Algorithms',
-      topic: 'Dynamic Programming',
-      options: [
-        { id: 'opt-a', text: 'Greedy fractional ratio sorting' },
-        { id: 'opt-b', text: '2D Dynamic Programming table DP[i][w]' },
-        { id: 'opt-c', text: 'Simple Breadth First Search' },
-        { id: 'opt-d', text: 'Divide and conquer with master theorem' },
-      ],
-      correctOptionId: 'opt-b',
-      a: 1.2,
-      b: -1.3,
-      c: 0.25,
-      explanation: '0/1 Knapsack is NP-complete but solvable in O(N*W) pseudo-polynomial time using DP.',
-      bloomLevel: 'REMEMBER',
-    },
-    {
-      id: 'cat-item-07',
-      text: 'In Raft consensus protocol, what condition must a candidate meet to be elected leader during an election round?',
-      subject: 'Distributed Systems',
-      topic: 'Consensus Protocols',
-      options: [
-        { id: 'opt-a', text: 'Receive votes from a majority of cluster nodes and possess an up-to-date log' },
-        { id: 'opt-b', text: 'Have the lowest node IP address' },
-        { id: 'opt-c', text: 'Generate the fastest cryptographic HMAC signature' },
-        { id: 'opt-d', text: 'Have zero uncommitted entries in state machine' },
-      ],
-      correctOptionId: 'opt-a',
-      a: 1.75,
-      b: 1.4,
-      c: 0.25,
-      explanation: 'Raft election safety requires majority consensus and candidate log completeness (Election Restriction).',
-      bloomLevel: 'ANALYZE',
-    },
-    {
-      id: 'cat-item-08',
-      text: 'What is the amortized cost of an insertion into a dynamic resizing array that doubles its capacity when full?',
-      subject: 'Data Structures',
-      topic: 'Amortized Complexity',
-      options: [
-        { id: 'opt-a', text: 'O(1)' },
-        { id: 'opt-b', text: 'O(N)' },
-        { id: 'opt-c', text: 'O(log N)' },
-        { id: 'opt-d', text: 'O(N log N)' },
-      ],
-      correctOptionId: 'opt-a',
-      a: 1.1,
-      b: -1.8,
-      c: 0.25,
-      explanation: 'By aggregate analysis, N insertions require <= 3N operations, giving an amortized cost of O(1).',
-      bloomLevel: 'UNDERSTAND',
-    },
-    {
-      id: 'cat-item-09',
-      text: 'In Byzantine Fault Tolerant (PBFT) consensus, what is the maximum number of Byzantine faulty nodes f tolerated in a system of N total nodes?',
-      subject: 'Distributed Systems',
-      topic: 'BFT Systems',
-      options: [
-        { id: 'opt-a', text: 'f = (N - 1) / 3' },
-        { id: 'opt-b', text: 'f = (N - 1) / 2' },
-        { id: 'opt-c', text: 'f = N / 4' },
-        { id: 'opt-d', text: 'f = sqrt(N)' },
-      ],
-      correctOptionId: 'opt-a',
-      a: 2.1,
-      b: 2.2,
-      c: 0.25,
-      explanation: 'Castro and Liskov proved that PBFT requires N >= 3f + 1, so f <= (N - 1) / 3.',
-      bloomLevel: 'EVALUATE',
-    },
-    {
-      id: 'cat-item-10',
-      text: 'What does Little\'s Law state regarding average number of items L, arrival rate lambda, and dwell time W in a stable queueing system?',
-      subject: 'Distributed Systems',
-      topic: 'Queueing Theory',
-      options: [
-        { id: 'opt-a', text: 'L = lambda * W' },
-        { id: 'opt-b', text: 'L = lambda / W' },
-        { id: 'opt-c', text: 'L = lambda^2 + W' },
-        { id: 'opt-d', text: 'L = W / lambda' },
-      ],
-      correctOptionId: 'opt-a',
-      a: 1.3,
-      b: 0.1,
-      c: 0.25,
-      explanation: 'Little\'s Law L = lambda * W is invariant to arrival and service distributions.',
-      bloomLevel: 'APPLY',
-    },
-  ]
+  private readonly itemBank: CatItem[] = [...defaultCatItems]
 
   constructor() {
     // Normal distribution prior weights normalized to sum to 1.0
@@ -309,8 +142,67 @@ export class CatAdaptiveService {
   public static getInstance(): CatAdaptiveService {
     if (!CatAdaptiveService.instance) {
       CatAdaptiveService.instance = new CatAdaptiveService()
+      void CatAdaptiveService.instance.loadDbQuestions()
     }
     return CatAdaptiveService.instance
+  }
+
+  public async loadDbQuestions(): Promise<number> {
+    try {
+      const dbQuestions = await prisma.question.findMany({
+        where: { options: { some: {} } },
+        include: {
+          options: true,
+          topic: { select: { name: true, subject: { select: { name: true } } } },
+        },
+        take: 100,
+      })
+
+      let added = 0
+      for (const q of dbQuestions) {
+        if (this.itemBank.some(i => i.id === q.id)) continue
+        const correctOpt = q.options.find(o => o.isCorrect) || q.options[0]
+        if (!correctOpt) continue
+
+        const diffNum = typeof q.difficulty === 'number' ? q.difficulty : 0.5
+        const b = (diffNum - 0.5) * 6.0
+        let a = 1.4
+        switch (q.bloomLevel) {
+          case 'REMEMBER': a = 1.1; break
+          case 'UNDERSTAND': a = 1.3; break
+          case 'APPLY': a = 1.5; break
+          case 'ANALYZE': a = 1.8; break
+          case 'EVALUATE': a = 2.1; break
+        }
+        const c = q.options.length > 0 ? 1 / q.options.length : 0.25
+        const bloomMap: Record<string, CatItem['bloomLevel']> = {
+          REMEMBER: 'REMEMBER',
+          UNDERSTAND: 'UNDERSTAND',
+          APPLY: 'APPLY',
+          ANALYZE: 'ANALYZE',
+          EVALUATE: 'EVALUATE',
+        }
+
+        this.itemBank.push({
+          id: q.id,
+          text: q.text,
+          subject: q.topic?.subject?.name || 'Computer Science & Systems',
+          topic: q.topic?.name || 'General Core',
+          options: q.options.map(o => ({ id: o.id, text: o.text })),
+          correctOptionId: correctOpt.id,
+          a,
+          b: Math.round(b * 100) / 100,
+          c: Math.round(c * 100) / 100,
+          explanation: q.explanation || 'Refer to concept notes for detailed breakdown.',
+          bloomLevel: bloomMap[q.bloomLevel] || 'UNDERSTAND',
+        })
+        added++
+      }
+      return added
+    } catch (err) {
+      logger.warn(`[CatAdaptiveService] loadDbQuestions warning: ${err instanceof Error ? err.message : String(err)}`)
+      return 0
+    }
   }
 
   /**
@@ -473,18 +365,76 @@ export class CatAdaptiveService {
   /**
    * Starts a new Computerized Adaptive Testing session
    */
-  public startSession(userId: string, subject: string = 'Computer Science & Systems'): CatSessionState {
+  
+  /**
+   * Filters item bank for items matching the specified subject or discipline.
+   * Uses intelligent keyword and taxonomy matching with graceful fallback to available pool.
+   */
+  public filterItemsBySubject(subject?: string, availablePool: CatItem[] = this.itemBank): CatItem[] {
+    if (!subject || subject.trim() === '') {
+      return availablePool
+    }
+    const cleanSub = subject.toLowerCase().trim()
+
+    // 1. Direct or partial subject match
+    const directMatches = availablePool.filter(item => {
+      const itemSub = item.subject.toLowerCase()
+      const itemTopic = item.topic.toLowerCase()
+      return (
+        itemSub.includes(cleanSub) ||
+        cleanSub.includes(itemSub) ||
+        itemTopic.includes(cleanSub) ||
+        cleanSub.includes(itemTopic)
+      )
+    })
+
+    if (directMatches.length >= 2) {
+      return directMatches
+    }
+
+    // 2. Keyword/discipline mapping
+    const isPhysics = /physic|mechanic|electro|optic|thermo/.test(cleanSub)
+    const isChemistry = /chem|organic|inorganic|kinetics|equilibrium/.test(cleanSub)
+    const isMath = /math|calculus|algebra|geomet|vector|probab/.test(cleanSub)
+    const isBio = /bio|physio|gene|cell|ecolog|botany|zoology/.test(cleanSub)
+    const isCS = /comput|system|algorithm|software|data struct|distribut|tech|code/.test(cleanSub)
+
+    const disciplineMatches = availablePool.filter(item => {
+      const itemSub = item.subject.toLowerCase()
+      if (isPhysics && /physics/.test(itemSub)) return true
+      if (isChemistry && /chemistry/.test(itemSub)) return true
+      if (isMath && /mathematics/.test(itemSub)) return true
+      if (isBio && /biology/.test(itemSub)) return true
+      if (isCS && /computer science|algorithm|distributed|database|data structure/.test(itemSub)) return true
+      return false
+    })
+
+    if (disciplineMatches.length > 0) {
+      return disciplineMatches
+    }
+
+    // Graceful fallback to pool
+    return directMatches.length > 0 ? directMatches : availablePool
+  }
+
+  public startSession(
+    userId: string,
+    subject: string = 'Computer Science & Systems',
+    examSlug?: string
+  ): CatSessionState {
     const sessionId = `cat-${crypto.randomBytes(6).toString('hex')}`
     const initialTheta = 0.0
     const initialSem = 1.0
 
-    // Select initial item (medium difficulty b near 0)
-    const initialItem = this.selectNextItem(initialTheta, this.itemBank) || this.itemBank[0]
+    // Filter available items for subject
+    const subjectItems = this.filterItemsBySubject(subject)
+    const initialItem = this.selectNextItem(initialTheta, subjectItems) || subjectItems[0] || this.itemBank[0]
 
     const session: CatSessionState = {
       sessionId,
       userId,
       subject,
+      examSlug,
       stage: 1,
       currentTheta: initialTheta,
       currentSem: initialSem,
@@ -511,7 +461,7 @@ export class CatAdaptiveService {
     }
 
     this.sessions.set(sessionId, session)
-    logger.info(`[CatAdaptiveService] Started CAT session ${sessionId} for user ${userId}`)
+    logger.info(`[CatAdaptiveService] Started CAT session ${sessionId} for user ${userId} (subject: ${subject}, exam: ${examSlug || 'all'})`)
     return session
   }
 
@@ -592,9 +542,14 @@ export class CatAdaptiveService {
         session.currentSem <= session.targetSem ? 'SEM_CONVERGENCE' : 'MAX_QUESTIONS_REACHED'
       session.activeItem = undefined
     } else {
-      // Pick next available item maximizing Fisher information
-      const remainingItems = this.itemBank.filter(i => !answeredItemIds.includes(i.id))
-      session.activeItem = this.selectNextItem(session.currentTheta, remainingItems) || undefined
+      // Pick next available item maximizing Fisher information matching subject
+      const subjectPool = this.filterItemsBySubject(session.subject)
+      const remainingSubjectItems = subjectPool.filter(i => !answeredItemIds.includes(i.id))
+      let candidatePool = remainingSubjectItems
+      if (candidatePool.length === 0) {
+        candidatePool = this.itemBank.filter(i => !answeredItemIds.includes(i.id))
+      }
+      session.activeItem = this.selectNextItem(session.currentTheta, candidatePool) || undefined
       if (!session.activeItem) {
         session.isCompleted = true
         session.stoppingReason = 'MAX_QUESTIONS_REACHED'
@@ -676,6 +631,53 @@ export class CatAdaptiveService {
       })
     }
 
+    // Topic Mastery analysis
+    const topicStats: Record<string, { total: number; correct: number }> = {}
+    session.responses.forEach(r => {
+      const item = this.itemBank.find(i => i.id === r.itemId)
+      const topicName = item?.topic || session.subject || 'Core Concepts'
+      if (!topicStats[topicName]) {
+        topicStats[topicName] = { total: 0, correct: 0 }
+      }
+      topicStats[topicName].total += 1
+      if (r.isCorrect) {
+        topicStats[topicName].correct += 1
+      }
+    })
+
+    const topicMastery: CatScorecard['topicMastery'] = {}
+    let lowestAccuracyTopic = ''
+    let lowestAccuracy = 1.0
+
+    Object.entries(topicStats).forEach(([topic, stats]) => {
+      const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) / 100 : 0
+      let masteryLevel: 'NEEDS_FOCUS' | 'PROFICIENT' | 'MASTERED' = 'NEEDS_FOCUS'
+      if (accuracy >= 0.8) {
+        masteryLevel = 'MASTERED'
+      } else if (accuracy >= 0.5) {
+        masteryLevel = 'PROFICIENT'
+      }
+      topicMastery[topic] = {
+        total: stats.total,
+        correct: stats.correct,
+        accuracy: Math.round(accuracy * 100),
+        masteryLevel,
+      }
+      if (accuracy < lowestAccuracy) {
+        lowestAccuracy = accuracy
+        lowestAccuracyTopic = topic
+      }
+    })
+
+    let suggestedRemediationAction = 'Maintain daily practice cadence and challenge higher difficulty question tiers.'
+    if (blindspotCount > 0) {
+      suggestedRemediationAction = `High priority: Review fundamental axioms in ${lowestAccuracyTopic || 'flagged topics'} to eliminate overconfident blindspots.`
+    } else if (session.abilityBand === 'BEGINNER' || session.abilityBand === 'INTERMEDIATE') {
+      suggestedRemediationAction = `Focus on targeted topic drills and concept review in ${lowestAccuracyTopic || session.subject} before taking full mock exams.`
+    } else if (session.abilityBand === 'ADVANCED' || session.abilityBand === 'MASTER') {
+      suggestedRemediationAction = 'Excellent mastery demonstrated. Proceed to timed multi-subject grand mocks and advanced competitive sets.'
+    }
+
     // Cryptographic audit proof
     const auditPayload = `${session.sessionId}|${session.userId}|${session.currentTheta}|${session.currentSem}|${totalCbmScore}`
     const auditHash = crypto.createHash('sha256').update(auditPayload).digest('hex')
@@ -684,6 +686,9 @@ export class CatAdaptiveService {
       sessionId: session.sessionId,
       userId: session.userId,
       subject: session.subject,
+      examSlug: session.examSlug,
+      topicMastery,
+      suggestedRemediationAction,
       finalTheta: Math.round(session.currentTheta * 100) / 100,
       finalSem: Math.round(session.currentSem * 100) / 100,
       confidenceInterval95,
@@ -712,6 +717,46 @@ export class CatAdaptiveService {
         algorithm: 'SHA256-HMAC-PSYCHOMETRIC-PROOF',
       },
     }
+  }
+
+  public getItemBankStats() {
+    const totalItems = this.itemBank.length
+    if (totalItems === 0) {
+      return { totalItems: 0, meanDifficulty: 0, meanDiscrimination: 0, meanGuessing: 0, bloomDistribution: {}, subjects: [] }
+    }
+    const sumA = this.itemBank.reduce((acc, i) => acc + i.a, 0)
+    const sumB = this.itemBank.reduce((acc, i) => acc + i.b, 0)
+    const sumC = this.itemBank.reduce((acc, i) => acc + i.c, 0)
+    const bloomDistribution: Record<string, number> = {}
+    const subjects = new Set<string>()
+
+    for (const item of this.itemBank) {
+      bloomDistribution[item.bloomLevel] = (bloomDistribution[item.bloomLevel] || 0) + 1
+      subjects.add(item.subject)
+    }
+
+    return {
+      totalItems,
+      subjects: Array.from(subjects),
+      meanDiscrimination: Math.round((sumA / totalItems) * 100) / 100,
+      meanDifficulty: Math.round((sumB / totalItems) * 100) / 100,
+      meanGuessing: Math.round((sumC / totalItems) * 100) / 100,
+      bloomDistribution,
+    }
+  }
+
+  public getItemBankSummary() {
+    return this.itemBank.map(i => ({
+      id: i.id,
+      text: i.text,
+      subject: i.subject,
+      topic: i.topic,
+      a: i.a,
+      b: i.b,
+      c: i.c,
+      bloomLevel: i.bloomLevel,
+      optionCount: i.options.length,
+    }))
   }
 }
 

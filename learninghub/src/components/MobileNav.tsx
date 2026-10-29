@@ -13,7 +13,7 @@ import {
   Swords,
   RotateCcw,
   Calendar,
-  Layers,
+
   Trophy,
   BellRing,
   Settings,
@@ -21,6 +21,9 @@ import {
   X,
   ChevronRight,
   Sparkles,
+
+
+
 } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { useStore } from '../stores/useStore'
@@ -66,15 +69,6 @@ const moreFeatureItems = [
     badge: 'AI Plan',
     badgeColor: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
     color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40',
-  },
-  {
-    to: '/visualizer',
-    icon: Layers,
-    label: 'DSA Visualizer',
-    desc: 'Interactive step-by-step algorithms',
-    badge: 'Interactive',
-    badgeColor: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
-    color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/40',
   },
   {
     to: '/contest',
@@ -130,6 +124,8 @@ export default function MobileNav() {
   const userXp = useStore(s => s.progress?.xp ?? 0)
   const userLevel = useStore(s => s.progress?.level ?? 1)
   const userStreak = useStore(s => s.progress?.streak ?? 0)
+
+
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -145,7 +141,6 @@ export default function MobileNav() {
         '/arena',
         '/revision',
         '/study-planner',
-        '/visualizer',
         '/contest',
         '/profile',
         '/settings',

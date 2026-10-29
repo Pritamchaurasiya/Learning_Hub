@@ -175,4 +175,60 @@ describe('CatAdaptiveService (Milestone 26 Computerized Adaptive Testing Engine)
       expect(scorecard.cryptographicAuditProof.hash.length).toBe(64) // SHA-256 hex
     })
   })
-})
+
+  describe('Multi-disciplinary Subject Selection & Exam Scoping', () => {
+    it('initializes Physics CAT session with calibrated Physics questions and examSlug', () => {
+      const session = service.startSession('user-phy-01', 'Physics', 'jee-main')
+      expect(session).toBeDefined()
+      expect(session.subject).toBe('Physics')
+      expect(session.examSlug).toBe('jee-main')
+      expect(session.activeItem).toBeDefined()
+      expect(session.activeItem?.subject).toBe('Physics')
+      expect(session.activeItem?.id).toMatch(/^cat-item-phy-/)
+    })
+
+    it('initializes Chemistry CAT session with calibrated Chemistry questions', () => {
+      const session = service.startSession('user-chem-01', 'Chemistry', 'neet-ug')
+      expect(session.subject).toBe('Chemistry')
+      expect(session.activeItem?.subject).toBe('Chemistry')
+      expect(session.activeItem?.id).toMatch(/^cat-item-chem-/)
+    })
+
+    it('initializes Mathematics CAT session with calibrated Math questions', () => {
+      const session = service.startSession('user-math-01', 'Mathematics', 'jee-advanced')
+      expect(session.subject).toBe('Mathematics')
+      expect(session.activeItem?.subject).toBe('Mathematics')
+      expect(session.activeItem?.id).toMatch(/^cat-item-math-/)
+    })
+
+    it('initializes Biology CAT session with calibrated Biology questions', () => {
+      const session = service.startSession('user-bio-01', 'Biology', 'neet-ug')
+      expect(session.subject).toBe('Biology')
+      expect(session.activeItem?.subject).toBe('Biology')
+      expect(session.activeItem?.id).toMatch(/^cat-item-bio-/)
+    })
+  })
+
+  describe('Psychometric Topic Mastery & Actionable Remediation', () => {
+    it('generates topic mastery breakdown and blindspot remediation advice on scorecard', () => {
+      const session = service.startSession('user-remediation-01', 'Physics', 'jee-main')
+      const item1 = session.activeItem!
+      const wrongOption = item1.options.find(o => o.id !== item1.correctOptionId)!.id
+
+      // Submit incorrect with HIGH confidence (blindspot)
+      service.submitAnswer({
+        sessionId: session.sessionId,
+        itemId: item1.id,
+        selectedOptionId: wrongOption,
+        confidence: 'HIGH',
+      })
+
+      const scorecard = service.generateScorecard(session.sessionId)
+      expect(scorecard.cbmBreakdown.blindspotCount).toBe(1)
+      expect(scorecard.topicMastery).toBeDefined()
+      expect(scorecard.suggestedRemediationAction).toBeDefined()
+      expect(scorecard.suggestedRemediationAction).toContain('High priority')
+      expect(scorecard.examSlug).toBe('jee-main')
+    })
+  })
+});

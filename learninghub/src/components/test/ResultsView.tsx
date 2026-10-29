@@ -25,6 +25,7 @@ import { Button } from '../ui/Button'
 import { MathRenderer } from '../MathRenderer'
 import { AssessmentIntegrityScorecard } from './AssessmentIntegrityScorecard'
 import { CompetitiveScoringBreakdownCard } from './CompetitiveScoringBreakdownCard'
+import { HistoricalShiftBenchmarkCard } from './HistoricalShiftBenchmarkCard'
 import { PeerPercentileBellCurve } from './PeerPercentileBellCurve'
 import { SpeedAccuracyScatterChart } from './SpeedAccuracyScatterChart'
 import { SocraticReviewModal } from './SocraticReviewModal'
@@ -276,6 +277,7 @@ export interface ResultsViewProps {
   onRetry: () => void
   onBack: () => void
   onRemediate?: (topics: string[]) => void
+  onReattemptMistakes?: (incorrectQuestionIds: string[]) => void
   adaptiveDiagnostics?: {
     abilityBand?: string
     confidenceInterval?: [number, number]
@@ -284,7 +286,21 @@ export interface ResultsViewProps {
 }
 
 export const ResultsView = memo(
-  ({ result, onRetry, onBack, onRemediate, adaptiveDiagnostics }: ResultsViewProps) => {
+  ({
+    result,
+    onRetry,
+    onBack,
+    onRemediate,
+    onReattemptMistakes,
+    adaptiveDiagnostics,
+  }: ResultsViewProps) => {
+    const incorrectQuestionIds = useMemo(() => {
+      if (!result.question_results) return []
+      return result.question_results
+        .filter(q => q.is_correct === false)
+        .map(q => q.question_id)
+        .filter(Boolean) as string[]
+    }, [result.question_results])
     const percentage = result.percentage ?? 0
     const isPassed = result.passed ?? false
     const correctCount = result.correct_count ?? 0
@@ -552,6 +568,16 @@ export const ResultsView = memo(
                 <span>Mistake Diagnostics ({mistakeSummary.totalMistakes})</span>
               </Button>
             )}
+            {incorrectQuestionIds.length > 0 && onReattemptMistakes && (
+              <Button
+                onClick={() => onReattemptMistakes(incorrectQuestionIds)}
+                variant="secondary"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-md font-bold text-xs sm:text-sm min-h-[44px]"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Re-attempt Mistakes Only ({incorrectQuestionIds.length})</span>
+              </Button>
+            )}
             {weakTopics.length > 0 && onRemediate && (
               <Button
                 onClick={() => onRemediate(weakTopics.map(t => t.topic))}
@@ -596,6 +622,18 @@ export const ResultsView = memo(
 
         {/* NTA CBT Competitive Scoring Breakdown (+4 / -1) & National Rank Calibration */}
         <CompetitiveScoringBreakdownCard result={result} />
+
+        {/* Historical Shift Benchmark & AIR Calibration */}
+        <HistoricalShiftBenchmarkCard
+          result={result}
+          onReattemptMistakes={() => {
+            if (incorrectQuestionIds.length > 0 && onReattemptMistakes) {
+              onReattemptMistakes(incorrectQuestionIds)
+            } else {
+              setIsMistakeModalOpen(true)
+            }
+          }}
+        />
 
         {/* Cohort Bell Curve Benchmark */}
         <PeerPercentileBellCurve
@@ -767,6 +805,27 @@ export const ResultsView = memo(
                   </div>
 
                   <div className="pl-11 space-y-4">
+                    {/* Time Spent & Trap Question Diagnostics */}
+                    {typeof q.time_spent === 'number' && q.time_spent > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 flex items-center gap-1">
+                          <Timer className="w-3 h-3 text-blue-500" />
+                          Time: {Math.floor(q.time_spent / 60)}m {q.time_spent % 60}s
+                        </span>
+                        {!q.is_correct && q.time_spent >= 90 && (
+                          <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 text-rose-500" />
+                            Time Trap: Exceeded 90s with negative marks (-1). Recommended to skip initially.
+                          </span>
+                        )}
+                        {q.is_correct && q.time_spent <= 45 && (
+                          <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-emerald-500" />
+                            Topper Pace: Solved accurately in under 45s
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {/* Options */}
                     {(() => {
                       const isSubjective =

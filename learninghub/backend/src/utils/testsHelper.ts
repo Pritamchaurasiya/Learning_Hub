@@ -78,6 +78,7 @@ export const TEST_MODES = [
   'ADAPTIVE',
   'FLASHCARD',
   'CONTEST',
+  'PYQ',
 ] as const
 export const TEST_DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD', 'MIXED', 'ADAPTIVE'] as const
 

@@ -8,6 +8,7 @@ import {
 } from '../utils/responseHelper'
 import { asyncHandler } from '../utils/errorHandler'
 
+import { cacheService } from '../services/CacheService'
 const examContentService = new ExamContentService()
 
 export const examContentController = {
@@ -50,17 +51,80 @@ export const examContentController = {
     sendSuccess(res, notes)
   }),
 
-  getCountries: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  getCountries: asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+    const cacheKey = 'exam-content:countries'
+    const cached = await cacheService.get(cacheKey)
+    if (cached) {
+      sendSuccess(res, cached)
+      return
+    }
     const countries = await examContentService.getCountries()
+    await cacheService.set(cacheKey, countries, 3600)
     sendSuccess(res, countries)
   }),
 
   getExams: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const cfCountry = req.headers['cf-ipcountry'] as string | undefined
+    const queryCountry = req.query.country as string | undefined
+    const country = queryCountry || (cfCountry && cfCountry !== 'XX' ? cfCountry : undefined)
+    const countryId = req.query.countryId as string | undefined
+    const search = req.query.search as string | undefined
+
+    const cacheKey = `exam-content:exams:${countryId || 'all'}:${country || 'all'}:${search || 'all'}`
+    const cached = await cacheService.get(cacheKey)
+    if (cached) {
+      sendSuccess(res, cached)
+      return
+    }
+
     const exams = await examContentService.getExams({
-      countryId: req.query.countryId as string,
-      search: req.query.search as string,
+      countryId,
+      country,
+      search,
     })
+    await cacheService.set(cacheKey, exams, 3600)
     sendSuccess(res, exams)
+  }),
+
+  getGeoCountry: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const cfCountry = req.headers['cf-ipcountry'] as string | undefined
+    const acceptLanguage = req.headers['accept-language'] as string | undefined
+
+    const countries = await examContentService.getCountries()
+    let detectedCountry = null
+    let method = 'fallback'
+
+    if (cfCountry && cfCountry !== 'XX' && cfCountry.length === 2) {
+      detectedCountry = countries.find(c => c.code.toUpperCase() === cfCountry.toUpperCase())
+      if (detectedCountry) method = 'cloudflare'
+    }
+
+    if (!detectedCountry && acceptLanguage) {
+      for (const part of acceptLanguage.split(',')) {
+        const locale = part.split(';')[0].trim()
+        if (locale.includes('-')) {
+          let code = locale.split('-')[1].toUpperCase()
+          if (code === 'GB') code = 'UK'
+          detectedCountry = countries.find(c => c.code.toUpperCase() === code)
+          if (detectedCountry) {
+            method = 'locale'
+            break
+          }
+        }
+      }
+    }
+
+    if (!detectedCountry) {
+      detectedCountry = countries.find(c => c.code === 'IN') || countries.find(c => c.code === 'US') || countries[0] || null
+      method = 'fallback'
+    }
+
+    sendSuccess(res, {
+      countryCode: detectedCountry?.code ?? 'IN',
+      countryName: detectedCountry?.name ?? 'India',
+      countryId: detectedCountry?.id ?? null,
+      method,
+    })
   }),
 
   getSubjects: asyncHandler(async (req: Request, res: Response): Promise<void> => {

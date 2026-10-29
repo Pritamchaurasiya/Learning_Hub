@@ -4,8 +4,7 @@ import { motion } from 'framer-motion'
 import { useStore } from '../stores/useStore'
 import { fetchApi } from '../utils/api'
 import { setWsAuthToken } from '../services/examStationWebSocketService'
-import type { User as UserType } from '../types/user'
-import { Lock, Mail, Sparkles, Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Lock, Mail, Sparkles, Eye, EyeOff, Shield, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
@@ -33,6 +32,7 @@ const AuthPage = memo(function AuthPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState<'STUDENT' | 'ADMIN' | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   // MFA 2FA Challenge State
@@ -207,28 +207,59 @@ const AuthPage = memo(function AuthPage() {
     }
   }
 
-  const handleInstantDemo = (role: 'STUDENT' | 'ADMIN' = 'STUDENT') => {
-    const demoUser: UserType = {
-      id: role === 'ADMIN' ? 'usr-demo-admin' : 'usr-demo-student',
-      email: role === 'ADMIN' ? 'admin@learninghub.com' : 'alex.chen@learninghub.com',
-      username: role === 'ADMIN' ? 'Admin Officer' : 'Alex Chen',
-      avatar:
-        role === 'ADMIN'
-          ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=256'
-          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-      xp: role === 'ADMIN' ? 9999 : 2850,
-      level: role === 'ADMIN' ? 25 : 7,
-      streak: 14,
-      lastActive: new Date().toISOString(),
-      role,
-      is_active: true,
+  const handleInstantDemo = async (role: 'STUDENT' | 'ADMIN' = 'STUDENT') => {
+    setDemoLoading(role)
+    try {
+      const response = await fetchApi('/auth/demo-login', {
+        method: 'POST',
+        body: JSON.stringify({ role }),
+      })
+
+      const data = response?.data ?? response
+      const user = data?.user ?? data
+
+      if (user?.id) {
+        const tokens = data?.tokens ?? data
+        const accessToken = tokens?.token ?? tokens?.accessToken ?? ''
+        const refreshToken = tokens?.refreshToken ?? tokens?.refresh ?? null
+
+        setAuth(accessToken, refreshToken, user)
+        setWsAuthToken(accessToken)
+
+        addToast({
+          message: `Welcome ${user.username || (role === 'ADMIN' ? 'Admin' : 'Student')}! Exploring in Instant Demo Mode.`,
+          type: 'success',
+        })
+        navigate(from, { replace: true })
+      } else {
+        throw new Error(response?.message || 'Demo login failed')
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Demo login failed. Please try again.'
+      addToast({ message, type: 'error' })
+    } finally {
+      setDemoLoading(null)
     }
-    setAuth('lh-demo-jwt-token-2026', 'lh-demo-refresh-token', demoUser)
-    addToast({
-      message: `Welcome ${demoUser.username}! Exploring in Instant Demo Mode.`,
-      type: 'success',
-    })
-    navigate(from, { replace: true })
+  }
+
+  const handleFillDemoCredentials = (role: 'STUDENT' | 'ADMIN') => {
+    if (role === 'STUDENT') {
+      setEmail('student@learninghub.com')
+      setPassword('Student@123!')
+      setFieldErrors({})
+      addToast({
+        message: 'Filled Demo Student credentials into form.',
+        type: 'info',
+      })
+    } else {
+      setEmail('admin@learninghub.com')
+      setPassword('Admin@123!')
+      setFieldErrors({})
+      addToast({
+        message: 'Filled Demo Admin credentials into form.',
+        type: 'info',
+      })
+    }
   }
 
   const fieldClass = (field: keyof FieldErrors) => {
@@ -599,32 +630,90 @@ const AuthPage = memo(function AuthPage() {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-white dark:bg-gray-800 px-2.5 text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
-                        Instant Demo Preview
+                        Quick Demo Access
                       </span>
                     </div>
                   </div>
 
+                  {/* 1-Click Instant Demo Login Buttons */}
                   <div className="mt-4 grid grid-cols-2 gap-2.5">
                     <motion.button
                       type="button"
+                      disabled={demoLoading !== null}
                       onClick={() => handleInstantDemo('STUDENT')}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-primary-500/40 bg-primary-50/50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300 text-xs font-bold hover:bg-primary-100/70 dark:hover:bg-primary-900/40 shadow-sm transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-primary-500/40 bg-primary-50/50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-300 text-xs font-bold hover:bg-primary-100/70 dark:hover:bg-primary-900/40 shadow-sm transition-all disabled:opacity-60"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Sparkles className="h-4 w-4 text-primary-500" />
-                      <span>Demo Student</span>
+                      {demoLoading === 'STUDENT' ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 text-primary-500" />
+                      )}
+                      <span>Instant Student</span>
                     </motion.button>
                     <motion.button
                       type="button"
+                      disabled={demoLoading !== null}
                       onClick={() => handleInstantDemo('ADMIN')}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold hover:bg-amber-100/70 dark:hover:bg-amber-900/40 shadow-sm transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs font-bold hover:bg-amber-100/70 dark:hover:bg-amber-900/40 shadow-sm transition-all disabled:opacity-60"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Shield className="h-4 w-4 text-amber-500" />
-                      <span>Demo Admin</span>
+                      {demoLoading === 'ADMIN' ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                      ) : (
+                        <Shield className="h-4 w-4 text-amber-500" />
+                      )}
+                      <span>Instant Admin</span>
                     </motion.button>
+                  </div>
+
+                  {/* Demo Credentials Auto-Fill Card */}
+                  <div className="mt-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 text-xs space-y-2">
+                    <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 font-medium">
+                      <span className="flex items-center gap-1.5">
+                        <KeyRound className="h-3.5 w-3.5" />
+                        Demo Credentials:
+                      </span>
+                      <span className="text-[10px] text-gray-400">Click to fill form</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleFillDemoCredentials('STUDENT')}
+                        className="text-left p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-400 transition-colors group"
+                      >
+                        <div className="font-semibold text-primary-600 dark:text-primary-400 flex items-center justify-between">
+                          <span>🎓 Student Account</span>
+                          <span className="text-[10px] opacity-0 group-hover:opacity-100 text-primary-500 transition-opacity">
+                            Fill ↵
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                          student@learninghub.com
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono">Student@123!</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleFillDemoCredentials('ADMIN')}
+                        className="text-left p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-amber-400 transition-colors group"
+                      >
+                        <div className="font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-between">
+                          <span>🛡️ Admin Account</span>
+                          <span className="text-[10px] opacity-0 group-hover:opacity-100 text-amber-500 transition-opacity">
+                            Fill ↵
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
+                          admin@learninghub.com
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono">Admin@123!</div>
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}

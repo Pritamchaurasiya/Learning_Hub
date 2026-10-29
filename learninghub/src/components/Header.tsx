@@ -24,6 +24,7 @@ import ProgressRing from './ui/ProgressRing'
 import { NotificationBell } from './NotificationBell'
 import { BrandLogo } from './BrandLogo'
 import { ExamContextBadge } from './exam/ExamContextBadge'
+import { CountrySelectorBadge } from './country/CountrySelectorBadge'
 import { useLearningContextStore } from '../stores/useLearningContextStore'
 import { prefetchRoute } from '../utils/routePrefetchRegistry'
 
@@ -173,7 +174,7 @@ const Header = memo(() => {
     <header
       className={`h-16 flex items-center justify-between px-4 md:px-6 shrink-0 relative z-30 transition-all duration-300 ${
         isScrolled
-          ? 'glass-strong bg-white/70 dark:bg-slate-900/60 border-b border-gray-200/40 dark:border-white/10'
+          ? 'header-glass header-glass-scrolled'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -336,12 +337,16 @@ const Header = memo(() => {
           </motion.button>
         </div>
 
-        {/* Theme toggle */}
+        {/* Country / Region Selector Badge */}
+        <CountrySelectorBadge className="hidden md:inline-flex" />
+        <CountrySelectorBadge compact className="md:hidden" />
+
+        {/* Theme toggle — accessible across all screens */}
         <motion.button
-          whileHover={{ scale: 1.1, rotate: 15 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
           onClick={toggleDarkMode}
-          className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-all duration-200 min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center"
+          className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100/90 dark:hover:bg-slate-800/80 border border-transparent hover:border-gray-200 dark:hover:border-slate-700/60 transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center relative cursor-pointer"
           aria-label={themeLabel()}
           title={themeLabel()}
         >

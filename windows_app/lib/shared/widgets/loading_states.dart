@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:learning_hub/core/theme/theme_extensions.dart';
 
 /// Comprehensive loading state widgets
 /// 
 /// Features:
-/// - Skeleton loading screens
+/// - Skeleton loading screens (theme-aware)
 /// - Progress indicators
 /// - Shimmer effects
 /// - Loading overlays
@@ -45,7 +46,7 @@ class SkeletonCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (showImage) ...[
-            _buildShimmerBox(80, 80, 8),
+            _buildShimmerBox(80, 80, 8, context),
             const SizedBox(width: 16),
           ],
           Expanded(
@@ -53,11 +54,11 @@ class SkeletonCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (showTitle) ...[
-                  _buildShimmerBox(double.infinity, 20, 4),
+                  _buildShimmerBox(double.infinity, 20, 4, context),
                   const SizedBox(height: 8),
                 ],
                 if (showSubtitle) ...[
-                  _buildShimmerBox(150, 16, 4),
+                  _buildShimmerBox(150, 16, 4, context),
                   const SizedBox(height: 8),
                 ],
                 for (int i = 0; i < lines; i++) ...[
@@ -65,6 +66,7 @@ class SkeletonCard extends StatelessWidget {
                     i == lines - 1 ? 200 : double.infinity,
                     14,
                     4,
+                    context,
                   ),
                   if (i < lines - 1) const SizedBox(height: 4),
                 ],
@@ -76,15 +78,15 @@ class SkeletonCard extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmerBox(double width, double height, double radius) {
+  Widget _buildShimmerBox(double width, double height, double radius, BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: context.shimmerBase,
+      highlightColor: context.shimmerHighlight,
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.surfaceVariant,
           borderRadius: BorderRadius.circular(radius),
         ),
       ),
@@ -139,11 +141,11 @@ class SkeletonGrid extends StatelessWidget {
       itemCount: itemCount,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: context.shimmerBase,
+          highlightColor: context.shimmerHighlight,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
             ),
           ),
@@ -175,21 +177,20 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: backgroundColor ??
-                Colors.black.withValues(alpha: 0.5),
+            color: backgroundColor ?? context.overlayColor,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
-                    color: Colors.white,
+                  CircularProgressIndicator(
+                    color: context.primaryColor,
                   ),
                   if (loadingText != null) ...[
                     const SizedBox(height: 16),
                     Text(
                       loadingText!,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.textPrimary,
                         fontSize: 16,
                       ),
                     ),

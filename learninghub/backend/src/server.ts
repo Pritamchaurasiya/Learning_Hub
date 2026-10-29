@@ -223,11 +223,45 @@ async function warmup(): Promise<void> {
   }
 }
 
+let dbKeepAliveInterval: NodeJS.Timeout | null = null
+const startDbKeepAlive = () => {
+  if (dbKeepAliveInterval) clearInterval(dbKeepAliveInterval)
+  dbKeepAliveInterval = setInterval(async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`
+    } catch (err) {
+      logger.warn(`[Neon KeepAlive] Ping non-fatal: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }, 3 * 60 * 1000)
+  dbKeepAliveInterval.unref()
+}
+
+const connectWithRetry = async (retries = 5, delayMs = 2000): Promise<void> => {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      await prisma.$connect()
+      logger.info('Database connection pool initialized')
+      startDbKeepAlive()
+      void warmup()
+      return
+    } catch (err) {
+      logger.warn(
+        `[Database] Connection attempt ${i}/${retries} failed: ${err instanceof Error ? err.message : String(err)}`
+      )
+      if (i < retries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
+    }
+  }
+  logger.error('[Database] Failed to connect to database after all retries; running in resilient fallback mode.')
+}
+
 const startServer = async (): Promise<void> => {
-  await cacheService.connect()
-  await prisma.$connect()
-  logger.info('Database connection pool initialized')
-  void warmup()
+  try {
+    await cacheService.connect()
+  } catch (err) {
+    logger.warn(`[Cache] Cache connection non-fatal error: ${err}`)
+  }
 
   httpServer.listen(PORT, () => {
     startTokenCleanupScheduler()
@@ -236,6 +270,8 @@ const startServer = async (): Promise<void> => {
     startStaleSessionJob()
     logger.info(`Server running on port ${config.port} [${config.nodeEnv}]`)
   })
+
+  void connectWithRetry()
 }
 
 void startServer()
@@ -274,6 +310,7 @@ const shutdownResources = async (): Promise<void> => {
 
 const gracefulShutdown = (signal: string) => {
   logger.info(`${signal} received, shutting down gracefully`)
+  if (dbKeepAliveInterval) clearInterval(dbKeepAliveInterval)
   stopTokenCleanupScheduler()
   stopAiNotificationsJob()
   stopTestExpiryJob()

@@ -20,6 +20,8 @@ import {
   receiveTestTelemetry,
   gradeSubjectiveAnswerEndpoint,
   verifyScorecardEndpoint,
+  getPyqCatalog,
+  getPyqPercentilePrediction,
 } from '../../controllers/testsController'
 import {
   practiceAnswer,
@@ -67,6 +69,8 @@ router.get('/attempts/:id', authenticate, getTestAttemptDetails)
 router.get('/analytics', authenticate, getTestAnalytics)
 router.get('/my-results', authenticate, getTestAttempts) // alias used by quizService
 router.post('/diagnose-misconception', optionalAuth, testMutationLimiter, diagnoseMisconception)
+router.get('/pyq/catalog', optionalAuth, testReadLimiter, getPyqCatalog)
+router.post('/pyq/predict-percentile', optionalAuth, testMutationLimiter, getPyqPercentilePrediction)
 
 // Bookmark routes
 router.get('/bookmarks', authenticate, testReadLimiter, getBookmarkedQuestions)

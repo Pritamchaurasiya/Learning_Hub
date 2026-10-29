@@ -113,15 +113,16 @@ class CourseService:
             vector_matches = VectorService.search_similar_content(query, top_k=5)
             # vector_matches is a QuerySet of CourseEmbedding
             
-            # Extract Course IDs from embeddings
-            # Assuming content_object is Course. If it's Lesson, we'd need to traverse up.
-            semantic_course_ids = []
-            for em in vector_matches:
-                if isinstance(em.content_object, Course):
-                    semantic_course_ids.append(em.content_object.id)
-                # Handle generic relation if needed later
-            
-            semantic_results = Course.objects.filter(id__in=semantic_course_ids, is_published=True)
+            # Extract Course IDs directly from embeddings without N+1 GenericForeignKey queries
+            from django.contrib.contenttypes.models import ContentType
+            course_ct = ContentType.objects.get_for_model(Course)
+            semantic_course_ids = [
+                em.object_id for em in vector_matches if em.content_type_id == course_ct.id
+            ]
+            # Select relations eagerly to prevent N+1 queries during serialization/iteration
+            semantic_results = Course.objects.filter(
+                id__in=semantic_course_ids, is_published=True
+            ).select_related("instructor", "category")
             
         except Exception as e:
             # Fallback if AI/Vector fails
@@ -322,23 +323,31 @@ class EnrollmentService:
         ai_service = IntegratedAIService()
         scored_courses = []
         
-        for course in candidates:
-            # Extract Course Features (Mock)
-            # In production, this would parse syllabus/tags
-            course_features = {
-                'topics': [course.category.slug] + course.title.lower().split()
+        # Batch extract course features safely handling nullable category
+        course_features_list = [
+            {
+                'topics': ([course.category.slug] if course.category else ['general'])
+                + course.title.lower().split()
             }
+            for course in candidates
+        ]
+        
+        # 3. Batch Neuro-Symbolic Scoring (eliminates N sequential AI embedding computations)
+        try:
+            if hasattr(ai_service, 'batch_semantic_recommendation_boost'):
+                sym_scores = ai_service.batch_semantic_recommendation_boost(user_profile, course_features_list)
+            else:
+                sym_scores = [
+                    ai_service.get_semantic_recommendation_boost(user_profile, feat)
+                    for feat in course_features_list
+                ]
+        except Exception as e:
+            logger.warning("AI recommendation scoring error: %s", e)
+            sym_scores = [0.0] * len(candidates)
             
-            # 3. Neuro-Symbolic Scoring
-            try:
-                sym_score = ai_service.get_semantic_recommendation_boost(user_profile, course_features)
-            except Exception as e:
-                logger.warning("AI recommendation scoring error: %s", e)
-                sym_score = 0.0
-            
+        for course, sym_score in zip(candidates, sym_scores):
             # Base Score (Popularity)
             base_score = (course.avg_rating * 0.5) + (min(course.enrollment_count, 100) / 100.0 * 0.5)
-            
             final_score = (base_score * 0.7) + (sym_score * 0.3)
             
             scored_courses.append({

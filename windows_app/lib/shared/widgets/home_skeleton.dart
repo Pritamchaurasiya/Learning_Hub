@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:learning_hub/core/theme/theme_extensions.dart';
 
 class HomeSkeleton extends StatelessWidget {
   const HomeSkeleton({super.key});
@@ -14,8 +15,8 @@ class HomeSkeleton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Shimmer.fromColors(
-          baseColor: theme.colorScheme.surfaceContainerHighest,
-          highlightColor: theme.colorScheme.surface,
+          baseColor: context.shimmerBase,
+          highlightColor: context.shimmerHighlight,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -26,7 +27,7 @@ class HomeSkeleton extends StatelessWidget {
                 width: 200,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.surfaceVariant,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -35,7 +36,7 @@ class HomeSkeleton extends StatelessWidget {
                 width: 300,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.surfaceVariant,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -51,7 +52,7 @@ class HomeSkeleton extends StatelessWidget {
                             width: 100,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.surfaceVariant,
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
@@ -64,7 +65,7 @@ class HomeSkeleton extends StatelessWidget {
                 width: 180,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.surfaceVariant,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -73,7 +74,7 @@ class HomeSkeleton extends StatelessWidget {
                 width: double.infinity,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -87,7 +88,7 @@ class HomeSkeleton extends StatelessWidget {
                     width: 150,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.surfaceVariant,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
@@ -95,7 +96,7 @@ class HomeSkeleton extends StatelessWidget {
                     width: 60,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.surfaceVariant,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
@@ -110,7 +111,7 @@ class HomeSkeleton extends StatelessWidget {
                         crossAxisCount: 3,
                         childAspectRatio: 16 / 14,
                         crossAxisSpacing: 16,
-                        children: List.generate(3, (index) => _buildCardShim()),
+                        children: List.generate(3, (index) => _buildCardShim(context)),
                       )
                     : ListView.builder(
                         scrollDirection: Axis.horizontal,
@@ -119,7 +120,7 @@ class HomeSkeleton extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 16),
                           child: SizedBox(
                             width: 280,
-                            child: _buildCardShim(),
+                            child: _buildCardShim(context),
                           ),
                         ),
                       ),
@@ -131,10 +132,10 @@ class HomeSkeleton extends StatelessWidget {
     );
   }
 
-  Widget _buildCardShim() {
+  Widget _buildCardShim(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
       ),
     );

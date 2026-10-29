@@ -577,20 +577,17 @@
 }
 
 /* ===== ULTRA-FAST PERFORMANCE & SUB-200MS UTILITIES ===== */
-/* Fast paint isolation: skips layout/paint of off-screen items until scrolled */
 .content-visibility-auto {
   content-visibility: auto;
   contain-intrinsic-size: 1px 320px;
 }
 
-/* GPU hardware compositing layer to prevent layout thrashing */
 .gpu-accelerated {
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Zero Cumulative Layout Shift (CLS) container */
 .zero-cls-wrapper {
   contain: layout style;
   min-height: 100%;
@@ -613,5 +610,254 @@
     rgba(255, 255, 255, 0) 100%
   );
   background-size: 200% 100%;
+}
+
+/* ===== AURORA GRADIENT SYSTEM ===== */
+@keyframes auroraShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-aurora {
+  background: linear-gradient(
+    -45deg,
+    rgba(139, 92, 246, 0.06),
+    rgba(236, 72, 153, 0.05),
+    rgba(59, 130, 246, 0.06),
+    rgba(16, 185, 129, 0.05),
+    rgba(139, 92, 246, 0.06)
+  );
+  background-size: 400% 400%;
+  animation: auroraShift 20s ease infinite;
+}
+
+.dark .bg-aurora {
+  background: linear-gradient(
+    -45deg,
+    rgba(139, 92, 246, 0.1),
+    rgba(236, 72, 153, 0.08),
+    rgba(59, 130, 246, 0.1),
+    rgba(16, 185, 129, 0.08),
+    rgba(139, 92, 246, 0.1)
+  );
+  background-size: 400% 400%;
+  animation: auroraShift 20s ease infinite;
+}
+
+/* ===== GRADIENT BORDER UTILITY (for stat cards) ===== */
+.gradient-border {
+  position: relative;
+  border: none !important;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.3),
+    rgba(59, 130, 246, 0.2),
+    rgba(236, 72, 153, 0.2),
+    rgba(139, 92, 246, 0.3)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0.5;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+.dark .gradient-border::before {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.5),
+    rgba(56, 189, 248, 0.3),
+    rgba(236, 72, 153, 0.3),
+    rgba(139, 92, 246, 0.5)
+  );
+}
+
+/* ===== NEON GLOW CARD (for premium highlight cards) ===== */
+.neon-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(139, 92, 246, 0.08) 25%,
+    transparent 50%,
+    rgba(59, 130, 246, 0.08) 75%,
+    transparent 100%
+  );
+  animation: neonRotate 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes neonRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== SPARKLE / MICRO-SHIMMER ===== */
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sparkle-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.6);
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ===== SIDEBAR PREMIUM GLASS ===== */
+.sidebar-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(248, 250, 252, 0.88) 50%,
+    rgba(241, 245, 249, 0.85) 100%
+  );
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow:
+    4px 0 24px -4px rgba(0, 0, 0, 0.03),
+    inset -1px 0 0 rgba(255, 255, 255, 0.5);
+}
+
+.dark .sidebar-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.92) 0%,
+    rgba(15, 23, 42, 0.88) 50%,
+    rgba(15, 23, 42, 0.85) 100%
+  );
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  border-right: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow:
+    4px 0 32px -4px rgba(0, 0, 0, 0.2),
+    inset -1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ===== STAT CARD ICON GLOW ===== */
+.icon-glow-indigo {
+  box-shadow:
+    0 0 16px rgba(99, 102, 241, 0.2),
+    0 0 40px rgba(99, 102, 241, 0.06);
+}
+.icon-glow-emerald {
+  box-shadow:
+    0 0 16px rgba(16, 185, 129, 0.2),
+    0 0 40px rgba(16, 185, 129, 0.06);
+}
+.icon-glow-amber {
+  box-shadow:
+    0 0 16px rgba(245, 158, 11, 0.2),
+    0 0 40px rgba(245, 158, 11, 0.06);
+}
+.icon-glow-orange {
+  box-shadow:
+    0 0 16px rgba(249, 115, 22, 0.2),
+    0 0 40px rgba(249, 115, 22, 0.06);
+}
+
+/* ===== SUBTLE BREATHING ANIMATION ===== */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* ===== HEADER PREMIUM GLASS ===== */
+.header-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.dark .header-glass {
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+}
+
+.header-glass-scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 4px 16px -2px rgba(0, 0, 0, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.dark .header-glass-scrolled {
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow:
+    0 4px 20px -2px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.02) inset;
+}
+
+/* ===== SPIN SLOW (for loading / orbital ring) ===== */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
 }
 

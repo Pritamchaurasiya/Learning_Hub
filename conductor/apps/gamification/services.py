@@ -79,6 +79,85 @@ class GamificationService:
         # Cache for 2 minutes to serve frequent Dashboard requests efficiently
         cache.set(cache_key, stats, timeout=120)
         return stats
+
+    @staticmethod
+    def get_users_stats_batch(users):
+        """
+        DataLoader pattern for batch gamification stats across multiple users.
+        Executes exactly 3 bulk queries (UserXP, Streak, UserBadge) instead of 3 * N queries.
+        """
+        if not users:
+            return {}
+
+        user_ids = [u.id for u in users]
+        user_map = {str(u.id): u for u in users}
+
+        # 1. Check cache for each user first
+        cached_results = {}
+        missing_user_ids = []
+        for uid in user_ids:
+            cached = cache.get(f"gamification_user_stats_{uid}")
+            if cached:
+                cached_results[str(uid)] = cached
+            else:
+                missing_user_ids.append(uid)
+
+        if not missing_user_ids:
+            return cached_results
+
+        # 2. Bulk fetch UserXP (1 query)
+        xp_records = {
+            str(x.user_id): x
+            for x in UserXP.objects.filter(user_id__in=missing_user_ids)
+        }
+
+        # 3. Bulk fetch Streaks (1 query)
+        streak_records = {
+            str(s.user_id): s
+            for s in Streak.objects.filter(user_id__in=missing_user_ids)
+        }
+
+        # 4. Bulk fetch UserBadges with select_related('badge') (1 query)
+        badges_by_user = {}
+        for ub in UserBadge.objects.filter(user_id__in=missing_user_ids).select_related('badge'):
+            badges_by_user.setdefault(str(ub.user_id), []).append(ub)
+
+        # 5. Assemble and cache stats for each missing user
+        results = dict(cached_results)
+        for uid in missing_user_ids:
+            uid_str = str(uid)
+            user_obj = user_map.get(uid_str)
+            xp = xp_records.get(uid_str)
+            if not xp and user_obj:
+                xp, _ = UserXP.objects.get_or_create(user=user_obj)
+            streak = streak_records.get(uid_str)
+            if not streak and user_obj:
+                streak, _ = Streak.objects.get_or_create(user=user_obj)
+            badges = badges_by_user.get(uid_str, [])
+
+            level = xp.level if xp else 1
+            total_xp = xp.total_xp if xp else 0
+            weekly_xp = xp.weekly_xp if xp else 0
+            curr_streak = streak.current_streak if streak else 0
+            long_streak = streak.longest_streak if streak else 0
+
+            stats = {
+                "xp": xp,
+                "streak": streak,
+                "badges": badges,
+                "level": level,
+                "total_xp": total_xp,
+                "weekly_xp": weekly_xp,
+                "current_streak": curr_streak,
+                "longest_streak": long_streak,
+                "rank": GamificationService.get_user_rank(user_obj) if user_obj else 0,
+                "badge_count": len(badges),
+                "next_level_xp": (level * 100) - (total_xp % 100),
+            }
+            cache.set(f"gamification_user_stats_{uid_str}", stats, timeout=120)
+            results[uid_str] = stats
+
+        return results
     
     @classmethod
     def award_xp(cls, user, amount, reason="Activity"):

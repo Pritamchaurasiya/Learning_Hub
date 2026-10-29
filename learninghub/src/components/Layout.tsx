@@ -27,7 +27,7 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-mesh relative selection:bg-primary-500/30 selection:text-primary-900 dark:selection:text-primary-100">
+    <div className="flex h-[100dvh] overflow-hidden bg-gray-50/50 dark:bg-slate-950 relative selection:bg-primary-500/30 selection:text-primary-900 dark:selection:text-primary-100">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[200] focus:top-4 focus:left-4 focus:px-6 focus:py-3 focus:bg-primary-600 focus:text-white focus:rounded-2xl focus:font-bold focus:shadow-2xl focus:shadow-primary-500/50 transition-all"
@@ -37,10 +37,17 @@ export default function Layout({ children }: LayoutProps) {
 
       {!isLowPerformance && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary-500/10 rounded-full blur-[120px] animate-pulse-subtle" />
+          {/* Aurora gradient underlayer */}
+          <div className="absolute inset-0 bg-aurora opacity-50" />
+          {/* Ambient orbs */}
+          <div className="absolute top-1/4 -left-20 w-[400px] h-[400px] bg-primary-500/[0.06] rounded-full blur-[140px] animate-breathe" />
           <div
-            className="absolute bottom-1/4 -right-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-subtle"
+            className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-purple-500/[0.06] rounded-full blur-[140px] animate-breathe"
             style={{ animationDelay: '2s' }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/[0.03] rounded-full blur-[160px] animate-breathe"
+            style={{ animationDelay: '4s' }}
           />
         </div>
       )}

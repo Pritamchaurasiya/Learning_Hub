@@ -1,3 +1,4 @@
+import { pyqPaperService, HISTORICAL_BENCHMARKS } from '../services/PyqPaperService'
 import { Request, Response } from 'express'
 import crypto from 'crypto'
 import { prisma } from '../prismaClient'
@@ -46,7 +47,7 @@ const normalizeCacheKey = (query: Record<string, unknown>): string => {
 }
 
 export const listTests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { mode, difficulty, search, examId, countryId, exam, country, subjectId, subjectIds, includeGeneral } = req.query
+  const { mode, difficulty, search, examId, countryId, exam, country, subjectId, subjectIds, includeGeneral, isPYQ, year, shift, paper } = req.query
   const { page, limit, skip } = getPaginationParams(req.query)
   const userId = req.user?.userId // This endpoint might allow unauthenticated access (optionalAuth)
 
@@ -69,6 +70,24 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
 
   const difficultyFilter = normalizeEnumFilter(difficulty, TEST_DIFFICULTIES)
   if (difficultyFilter) filters.difficulty = difficultyFilter as TestDifficulty
+
+  if (String(isPYQ) === 'true' || modeFilter === 'PYQ') {
+    filters.isPYQ = true
+  } else if (String(isPYQ) === 'false') {
+    filters.isPYQ = false
+  }
+
+  if (year && !isNaN(Number(year))) {
+    filters.pyqYear = Number(year)
+  }
+
+  if (typeof shift === 'string' && shift.trim()) {
+    filters.pyqShift = { contains: shift.trim(), mode: 'insensitive' }
+  }
+
+  if (typeof paper === 'string' && paper.trim()) {
+    filters.pyqPaperName = { contains: paper.trim(), mode: 'insensitive' }
+  }
 
   if (typeof search === 'string' && search.trim()) {
     const query = search.trim()
@@ -159,6 +178,11 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
         totalMarks: true,
         negativeMarks: true,
         isAiGenerated: true,
+        isPYQ: true,
+        pyqYear: true,
+        pyqShift: true,
+        pyqPaperName: true,
+        markingScheme: true,
         createdAt: true,
         _count: {
           select: { questions: true, results: true },
@@ -213,6 +237,11 @@ export const listTests = asyncHandler(async (req: Request, res: Response): Promi
     negative_marks: t.negativeMarks,
     negative_marks_per_question: t.negativeMarks,
     is_ai_generated: t.isAiGenerated,
+    is_pyq: (t as any).isPYQ ?? false,
+    pyq_year: (t as any).pyqYear ?? null,
+    pyq_shift: (t as any).pyqShift ?? null,
+    pyq_paper_name: (t as any).pyqPaperName ?? null,
+    marking_scheme: (t as any).markingScheme ?? null,
     created_at: t.createdAt.toISOString(),
   }))
 
@@ -245,6 +274,11 @@ export const getTestDetails = asyncHandler(async (req: Request, res: Response): 
       totalMarks: true,
       negativeMarks: true,
       isAiGenerated: true,
+      isPYQ: true,
+      pyqYear: true,
+      pyqShift: true,
+      pyqPaperName: true,
+      markingScheme: true,
       sections: {
         orderBy: { order: 'asc' },
         select: {
@@ -255,6 +289,8 @@ export const getTestDetails = asyncHandler(async (req: Request, res: Response): 
           durationMinutes: true,
           isTimed: true,
           cutOffMarks: true,
+          maxQuestionsToAttempt: true,
+          sectionType: true,
         },
       },
       _count: {
@@ -282,6 +318,11 @@ export const getTestDetails = asyncHandler(async (req: Request, res: Response): 
     total_marks: test.totalMarks,
     negative_marks: test.negativeMarks,
     is_ai_generated: test.isAiGenerated,
+    is_pyq: (test as any).isPYQ ?? false,
+    pyq_year: (test as any).pyqYear ?? null,
+    pyq_shift: (test as any).pyqShift ?? null,
+    pyq_paper_name: (test as any).pyqPaperName ?? null,
+    marking_scheme: (test as any).markingScheme ?? null,
     shuffle_questions: (test as any).shuffleQuestions ?? false,
     shuffle_options: (test as any).shuffleOptions ?? false,
     sections: (test as any).sections ?? [],
@@ -303,6 +344,11 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
       maxAttempts: true,
       totalMarks: true,
       mode: true,
+      isPYQ: true,
+      pyqYear: true,
+      pyqShift: true,
+      pyqPaperName: true,
+      markingScheme: true,
       shuffleQuestions: true,
       shuffleOptions: true,
       sections: {
@@ -315,6 +361,8 @@ export const startTest = asyncHandler(async (req: Request, res: Response): Promi
           durationMinutes: true,
           isTimed: true,
           cutOffMarks: true,
+          maxQuestionsToAttempt: true,
+          sectionType: true,
         },
       },
       questions: {
@@ -1557,3 +1605,113 @@ export const verifyScorecardEndpoint = asyncHandler(
   }
 )
 
+
+export const getPyqCatalog = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  let tests = await prisma.test.findMany({
+    where: { isPublished: true, deletedAt: null, isPYQ: true },
+    orderBy: [{ pyqYear: 'desc' }, { createdAt: 'desc' }],
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      examId: true,
+      timeLimit: true,
+      totalMarks: true,
+      negativeMarks: true,
+      difficulty: true,
+      isPYQ: true,
+      pyqYear: true,
+      pyqShift: true,
+      pyqPaperName: true,
+      markingScheme: true,
+      exam: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      sections: {
+        orderBy: { order: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          order: true,
+          maxQuestionsToAttempt: true,
+          sectionType: true,
+        },
+      },
+      _count: { select: { questions: true } },
+    },
+  })
+
+  // Auto-seed if database doesn't have official PYQ papers yet
+  if (tests.length === 0) {
+    try {
+      await pyqPaperService.ensureOfficialPyqPapersSeeded()
+      tests = await prisma.test.findMany({
+        where: { isPublished: true, deletedAt: null, isPYQ: true },
+        orderBy: [{ pyqYear: 'desc' }, { createdAt: 'desc' }],
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          examId: true,
+          timeLimit: true,
+          totalMarks: true,
+          negativeMarks: true,
+          difficulty: true,
+          isPYQ: true,
+          pyqYear: true,
+          pyqShift: true,
+          pyqPaperName: true,
+          markingScheme: true,
+          exam: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          sections: {
+            orderBy: { order: 'asc' },
+            select: {
+              id: true,
+              title: true,
+              order: true,
+              maxQuestionsToAttempt: true,
+              sectionType: true,
+            },
+          },
+          _count: { select: { questions: true } },
+        },
+      })
+    } catch (seedErr: any) {
+      console.warn('Auto-seed PYQ catalog warning:', seedErr.message)
+    }
+  }
+
+  const benchmarks = Object.entries(HISTORICAL_BENCHMARKS).map(([key, val]) => ({
+    key,
+    ...val,
+  }))
+
+  sendSuccess(res, {
+    papers: tests.map(t => ({
+      ...t,
+      question_count: t._count.questions,
+    })),
+    benchmarks,
+  })
+})
+
+export const getPyqPercentilePrediction = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { rawScore, benchmarkKey } = req.body
+  if (typeof rawScore !== 'number' || !benchmarkKey) {
+    sendValidationError(res, 'rawScore (number) and benchmarkKey (string) are required')
+    return
+  }
+
+  const prediction = pyqPaperService.calculateShiftPercentile(rawScore, benchmarkKey)
+  sendSuccess(res, prediction)
+})

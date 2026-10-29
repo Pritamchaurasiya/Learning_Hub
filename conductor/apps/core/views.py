@@ -22,7 +22,7 @@ class ClientErrorLogView(APIView):
                 "client_side_error",
                 error=error_data.get("error"),
                 stack_trace=error_data.get("stackTrace"),
-                platform=error_data.get("platform", "flutter_unknown"),
+                platform=error_data.get("platform", "web_react"),
                 context=error_data.get("context", {})
             )
             

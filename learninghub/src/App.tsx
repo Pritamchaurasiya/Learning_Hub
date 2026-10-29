@@ -16,6 +16,8 @@ import { useNotificationConnection } from './hooks/useNotificationConnection'
 import ReloadPrompt from './components/ReloadPrompt'
 import { AITutorContextWidget } from './components/AITutorContextWidget'
 import { CodeCopyHandler } from './components/CodeCopyHandler'
+import { CountryConsentModal } from './components/country/CountryConsentModal'
+import { CountrySelectorModal } from './components/country/CountrySelectorModal'
 import { useQueryClient } from '@tanstack/react-query'
 import './index.css'
 
@@ -50,7 +52,6 @@ const DownloadsPage = lazy(() => import('./pages/DownloadsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const DiscussionsPage = lazy(() => import('./pages/DiscussionsPage'))
 const AITutorPage = lazy(() => import('./pages/AITutorPage'))
-const AlgorithmVisualizerPage = lazy(() => import('./pages/AlgorithmVisualizerPage'))
 const EbookReaderPage = lazy(() => import('./pages/EbookReaderPage'))
 const RevisionPage = lazy(() => import('./pages/RevisionPage'))
 const ArenaDuelPage = lazy(() => import('./pages/ArenaDuelPage'))
@@ -78,6 +79,14 @@ const StudentUpdatesPage = lazy(() =>
 )
 const UpdateDetailsPage = lazy(() =>
   import('./pages/UpdateDetailsPage').then(m => ({ default: m.UpdateDetailsPage }))
+)
+const MentorshipPage = lazy(() => import('./pages/MentorshipPage'))
+const PeerReviewPage = lazy(() => import('./pages/PeerReviewPage'))
+const StudyGroupsPage = lazy(() => import('./pages/StudyGroupsPage'))
+const SupportPage = lazy(() => import('./pages/SupportPage'))
+const NotesStudioPage = lazy(() => import('./pages/NotesStudioPage'))
+const InstitutionHubPage = lazy(() =>
+  import('./pages/InstitutionHubPage').then(m => ({ default: m.InstitutionHubPage }))
 )
 
 import { RouteProgressBar } from './components/ui/RouteProgressBar'
@@ -488,22 +497,8 @@ function App() {
               <Route path="/canary" element={<Navigate to="/dashboard" replace />} />
               <Route path="/deployments" element={<Navigate to="/dashboard" replace />} />
               <Route path="/canary-console" element={<Navigate to="/dashboard" replace />} />
-              <Route
-                path="/visualizer"
-                element={
-                  <LazyRoute sectionName="Algorithm Visualizer">
-                    <AlgorithmVisualizerPage />
-                  </LazyRoute>
-                }
-              />
-              <Route
-                path="/algorithms"
-                element={
-                  <LazyRoute sectionName="Algorithm Visualizer">
-                    <AlgorithmVisualizerPage />
-                  </LazyRoute>
-                }
-              />
+              <Route path="/visualizer" element={<Navigate to="/problems" replace />} />
+              <Route path="/algorithms" element={<Navigate to="/problems" replace />} />
               <Route
                 path="/problem/:slug"
                 element={
@@ -601,7 +596,7 @@ function App() {
                   </LazyRoute>
                 }
               />
-              <Route path="/algorithm-visualizer" element={<Navigate to="/visualizer" replace />} />
+              <Route path="/algorithm-visualizer" element={<Navigate to="/problems" replace />} />
               <Route path="/contests" element={<Navigate to="/contest" replace />} />
               <Route
                 path="/contest"
@@ -723,6 +718,58 @@ function App() {
                   </LazyRoute>
                 }
               />
+              <Route
+                path="/mentorship"
+                element={
+                  <LazyRoute sectionName="1-on-1 Mentorship">
+                    <MentorshipPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/mentors" element={<Navigate to="/mentorship" replace />} />
+              <Route
+                path="/peer-review"
+                element={
+                  <LazyRoute sectionName="Peer Review">
+                    <PeerReviewPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/study-groups"
+                element={
+                  <LazyRoute sectionName="Study Groups">
+                    <StudyGroupsPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/notes"
+                element={
+                  <LazyRoute sectionName="Notes Studio">
+                    <NotesStudioPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/institutions"
+                element={
+                  <LazyRoute sectionName="Enterprise Institution Portal">
+                    <InstitutionHubPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/institution-hub" element={<Navigate to="/institutions" replace />} />
+              <Route path="/lti" element={<Navigate to="/institutions" replace />} />
+              <Route
+                path="/support"
+                element={
+                  <LazyRoute sectionName="Help and Support Desk">
+                    <SupportPage />
+                  </LazyRoute>
+                }
+              />
+              <Route path="/help" element={<Navigate to="/support" replace />} />
             </Route>
 
             <Route
@@ -818,6 +865,8 @@ function App() {
         <CookieConsent />
         <ReloadPrompt />
         <CodeCopyHandler />
+        <CountryConsentModal />
+        <CountrySelectorModal />
       </div>
     </ErrorBoundary>
   )

@@ -50,62 +50,58 @@ class RateLimitMiddleware(MiddlewareMixin):
     """
     
     def process_request(self, request):
-        """Check rate limit before processing request."""
+        """Check rate limit before processing request using Redis Lua Token Bucket."""
         # Skip if rate limiting is disabled
         if not getattr(settings, 'RATE_LIMITING_ENABLED', True):
             return None
         
         # Skip rate limiting for health checks and static files
-        if request.path.startswith('/health') or request.path.startswith('/static'):
+        if request.path.startswith('/health') or request.path.startswith('/static') or request.path.startswith('/metrics'):
             return None
         
         # Skip for admin users with special permission
-        if hasattr(request, 'user') and request.user.is_superuser:
+        if hasattr(request, 'user') and getattr(request.user, 'is_superuser', False):
             return None
         
         category = get_rate_limit_category(request.path)
-        config = RATE_LIMITS.get(category, RATE_LIMITS['default'])
         
-        # Get client identifier
-        ip = self._get_client_ip(request)
-        user_id = getattr(request.user, 'id', None) if hasattr(request, 'user') and request.user.is_authenticated else None
+        from apps.core.rate_limiting import DistributedTokenBucketRateLimiter
+        limiter = DistributedTokenBucketRateLimiter()
+        tier = limiter.get_client_tier(getattr(request, 'user', None))
         
-        # Check IP-based rate limit
-        ip_key = f"rl:ip:{ip}:{category}"
-        ip_allowed, ip_remaining = self._check_rate(ip_key, config)
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            identifier = f"usr:{request.user.id}"
+        else:
+            identifier = f"ip:{self._get_client_ip(request)}"
+            
+        result = limiter.check_rate_limit(
+            identifier=identifier,
+            tier=tier,
+            endpoint_category=category,
+            cost=1,
+        )
         
-        # Check user-based rate limit (if authenticated)
-        user_remaining = None
-        if user_id:
-            user_key = f"rl:user:{user_id}:{category}"
-            user_allowed, user_remaining = self._check_rate(user_key, config)
-            if not user_allowed:
-                return self._rate_limited_response(user_remaining, config['window'], 'user')
-        
-        if not ip_allowed:
-            return self._rate_limited_response(ip_remaining, config['window'], 'ip')
-        
-        # Store rate limit info for response headers
+        if not result.allowed:
+            return self._rate_limited_response(result.remaining, result.retry_after, category, result.capacity)
+            
         request._rate_limit_info = {
             'category': category,
-            'ip_remaining': ip_remaining,
-            'user_remaining': user_remaining,
-            'limit': config['requests'],
-            'window': config['window'],
+            'remaining': result.remaining,
+            'limit': result.capacity,
+            'retry_after': result.retry_after,
+            'reset_time': result.reset_time,
         }
-        
         return None
     
     def process_response(self, request, response):
         """Add rate limit headers to response."""
         info = getattr(request, '_rate_limit_info', None)
         if info:
-            response['X-RateLimit-Limit'] = str(info['limit'])
-            response['X-RateLimit-Window'] = f"{info['window']}s"
-            response['X-RateLimit-Remaining'] = str(
-                info.get('user_remaining') or info.get('ip_remaining', 0)
-            )
-            response['X-RateLimit-Category'] = info['category']
+            response['X-RateLimit-Limit'] = str(info.get('limit', 60))
+            response['X-RateLimit-Remaining'] = str(info.get('remaining', 0))
+            response['X-RateLimit-Category'] = str(info.get('category', 'default'))
+            if 'reset_time' in info:
+                response['X-RateLimit-Reset'] = str(info['reset_time'])
         return response
     
     def _check_rate(self, key, config):

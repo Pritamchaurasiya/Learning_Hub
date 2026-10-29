@@ -9,51 +9,54 @@ if sys.platform == 'win32':
 def check_integrity():
     print("====================================")
     print("  Learning Hub Fullstack Integrity  ")
+    print("  (Unified React 18 + Node + Django) ")
     print("====================================")
     
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Paths
     conductor_urls_path = os.path.join(base_dir, "conductor", "config", "urls.py")
-    flutter_api_path = os.path.join(base_dir, "my_flutter_app", "lib", "src", "core", "constants", "api_constants.dart")
+    express_routes_dir = os.path.join(base_dir, "learninghub", "backend", "src", "routes", "v1")
     django_lh_urls_path = os.path.join(base_dir, "learninghub", "django_backend", "learninghub_server", "urls.py")
-    react_api_path = os.path.join(base_dir, "learninghub", "src", "utils", "api.ts")
+    react_services_dir = os.path.join(base_dir, "learninghub", "src", "services")
     
     errors = 0
 
-    # 1. Check Conductor <-> Flutter API Consistency
-    print("\n[1/3] Checking Conductor <-> Flutter API Consistency...")
+    # 1. Check Conductor & Express API Consistency with React Frontend Services
+    print("\n[1/3] Checking API Hubs <-> React Frontend Service Consistency...")
     with open(conductor_urls_path, 'r', encoding='utf-8') as f:
         conductor_urls = f.read()
-    with open(flutter_api_path, 'r', encoding='utf-8') as f:
-        flutter_api = f.read()
         
     routes = {
-        "auth": "auth/",
-        "users": "users/",
-        "courses": "courses/",
-        "gamification": "gamification/",
-        "payments": "payments/",
-        "notifications": "notifications/",
-        "ai": "ai/"
+        "auth": ["auth"],
+        "users": ["user"],
+        "courses": ["course", "lesson"],
+        "gamification": ["gamification", "leaderboard", "badge", "duel"],
+        "payments": ["payment", "cart", "stripe", "subscription"],
+        "notifications": ["notification"],
+        "ai": ["ai", "tutor"],
+        "mentors": ["mentor"],
+        "discussions": ["discussion"],
+        "peer_review": ["peerreview"],
+        "support": ["support"],
+        "study_groups": ["studygroup"]
     }
     
-    for key, path in routes.items():
-        if path in conductor_urls and path in flutter_api:
-            print(f"  [PASS] Route [{key}] matched.")
+    react_services = [s.lower().replace("_", "") for s in os.listdir(react_services_dir)] if os.path.exists(react_services_dir) else []
+    
+    for key, patterns in routes.items():
+        matched_service = any(any(pat in s for pat in patterns) for s in react_services)
+        if matched_service:
+            print(f"  [PASS] Domain [{key}] active in React services layer.")
         else:
-            print(f"  [WARN] Route [{key}] status:")
-            if path not in conductor_urls: print(f"     -> Missing in Conductor: {path}")
-            if path not in flutter_api: print(f"     -> Missing in Flutter: {path}")
+            print(f"  [WARN] Domain [{key}] missing corresponding React service.")
             errors += 1
 
     # 2. Check LearningHub Django <-> React API Parity
     print("\n[2/3] Checking LearningHub Django <-> React SPA Consistency...")
-    if os.path.exists(django_lh_urls_path) and os.path.exists(react_api_path):
+    if os.path.exists(django_lh_urls_path):
         with open(django_lh_urls_path, 'r', encoding='utf-8') as f:
             django_urls = f.read()
-        with open(react_api_path, 'r', encoding='utf-8') as f:
-            react_api = f.read()
             
         lh_apps = ["core", "users", "courses", "problems", "tests_engine", "gamification", "social", "ecommerce", "ai_tutor"]
         for app in lh_apps:

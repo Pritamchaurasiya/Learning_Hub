@@ -154,6 +154,16 @@ class User(AbstractBaseUser, PermissionsMixin, UUIDMixin, TimestampMixin):
     # User preferences (JSON field for flexibility)
     preferences = models.JSONField(default=dict, blank=True)
 
+    # Country preference for exam & content personalization
+    country = models.ForeignKey(
+        'exams.Country',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        db_index=True
+    )
+
     # Manager
     objects = UserManager()
 

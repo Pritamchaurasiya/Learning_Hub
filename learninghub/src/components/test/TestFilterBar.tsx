@@ -9,6 +9,7 @@ import {
   BrainCircuit,
   ShieldCheck,
   DownloadCloud,
+  GraduationCap,
 } from 'lucide-react'
 
 export interface TestFilterState {
@@ -30,11 +31,13 @@ export interface TestFilterBarProps {
 }
 
 const DEFAULT_EXAMS = [
+  'JEE Main',
   'JEE Advanced',
-  'GATE CS',
-  'Digital SAT',
   'NEET UG',
+  'GATE CS',
   'UPSC Prelims',
+  'SSC CGL',
+  'Digital SAT',
 ]
 
 export const TestFilterBar: FC<TestFilterBarProps> = ({
@@ -49,6 +52,13 @@ export const TestFilterBar: FC<TestFilterBarProps> = ({
 }) => {
   const modePills = [
     { id: 'all', label: 'All Modes', icon: Target, mode: '', ai: '' },
+    {
+      id: 'pyq',
+      label: '🎯 Target Exam PYQs & Mocks',
+      icon: GraduationCap,
+      mode: 'pyq',
+      ai: '',
+    },
     {
       id: 'adaptive',
       label: 'Adaptive CAT (2PL/3PL)',
@@ -83,7 +93,7 @@ export const TestFilterBar: FC<TestFilterBarProps> = ({
 
   return (
     <div data-testid="test-filter-bar" className="w-full">
-      {/* 6-Mode Platform Filter Selector */}
+      {/* Modality Filter Selector */}
       <div
         role="tablist"
         aria-label="Filter by test modality"
@@ -120,7 +130,7 @@ export const TestFilterBar: FC<TestFilterBarProps> = ({
           <input
             type="text"
             data-testid="test-search-input"
-            placeholder="Search tests..."
+            placeholder="Search tests, exams, shifts or topics..."
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -164,6 +174,7 @@ export const TestFilterBar: FC<TestFilterBarProps> = ({
             aria-label="Filter by mode"
           >
             <option value="">All Modes</option>
+            <option value="pyq">Official PYQ Shifts</option>
             <option value="practice">Practice</option>
             <option value="mock">Mock</option>
             <option value="timed_challenge">Timed Challenge</option>

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:learning_hub/core/theme/theme_extensions.dart';
 
 /// A premium Skeleton Loader (Shimmer Effect) widget.
-/// Zero external dependencies.
+/// Automatically adapts to light/dark theme.
 class SkeletonLoader extends StatefulWidget {
   final double width;
   final double height;
   final double borderRadius;
-  final Color baseColor;
-  final Color highlightColor;
+  final Color? baseColor;
+  final Color? highlightColor;
   final BoxShape shape;
 
   const SkeletonLoader({
@@ -15,16 +16,16 @@ class SkeletonLoader extends StatefulWidget {
     this.width = double.infinity,
     this.height = 16.0,
     this.borderRadius = 8.0,
-    this.baseColor = const Color(0xFF22262C), // Dark theme base
-    this.highlightColor = const Color(0xFF2F343A), // Slightly lighter
+    this.baseColor,
+    this.highlightColor,
     this.shape = BoxShape.rectangle,
   });
 
   const SkeletonLoader.circle({
     super.key,
     required double size,
-    this.baseColor = const Color(0xFF22262C),
-    this.highlightColor = const Color(0xFF2F343A),
+    this.baseColor,
+    this.highlightColor,
   })  : width = size,
         height = size,
         borderRadius = 0,
@@ -54,6 +55,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   @override
   Widget build(BuildContext context) {
+    final baseColor = widget.baseColor ?? context.shimmerBase;
+    final highlightColor = widget.highlightColor ?? context.shimmerHighlight;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -67,9 +71,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                 : null,
             gradient: LinearGradient(
               colors: [
-                widget.baseColor,
-                widget.highlightColor,
-                widget.baseColor,
+                baseColor,
+                highlightColor,
+                baseColor,
               ],
               stops: const [0.0, 0.5, 1.0],
               // Animate gradient from left to right

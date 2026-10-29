@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/api_client.dart';
 import '../../core/widgets/skeleton_loader.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_extensions.dart';
 
-/// Analytics Dashboard Screen - Shows user learning insights
+/// Analytics Dashboard Screen - Shows user learning insights (theme-aware)
 class AnalyticsDashboardScreen extends ConsumerStatefulWidget {
   const AnalyticsDashboardScreen({super.key});
 
@@ -58,17 +60,25 @@ class _AnalyticsDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0D1117),
-              Color(0xFF161B22),
-              Color(0xFF21262D),
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF0D1117),
+                    const Color(0xFF161B22),
+                    const Color(0xFF21262D),
+                  ]
+                : [
+                    AppColors.backgroundLight,
+                    AppColors.primaryLight.withValues(alpha: 0.08),
+                    AppColors.accentLight.withValues(alpha: 0.08),
+                  ],
           ),
         ),
         child: SafeArea(
@@ -152,36 +162,39 @@ class _AnalyticsDashboardScreenState
   }
 
   Widget _buildHeader() {
+    final textColor = context.isDarkMode ? Colors.white : context.textPrimary;
+    final secondaryColor = context.isDarkMode ? Colors.grey : context.textSecondary;
+    
     return Row(
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
         const SizedBox(width: 8),
         const Icon(Icons.analytics, color: Colors.cyan, size: 28),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Learning Analytics',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 'Your personalized insights',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(color: secondaryColor, fontSize: 14),
               ),
             ],
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.grey),
+          icon: Icon(Icons.refresh, color: secondaryColor),
           onPressed: _loadAnalytics,
         ),
       ],

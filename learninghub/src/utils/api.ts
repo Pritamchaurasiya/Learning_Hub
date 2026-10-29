@@ -311,9 +311,6 @@ const refreshAccessToken = async (): Promise<void> => {
     if (isRateLimited()) throw new Error('Too many requests. Please try again later.')
 
     const refreshToken = await getRefreshToken()
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -334,7 +331,7 @@ const refreshAccessToken = async (): Promise<void> => {
       response = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify(refreshToken ? { refreshToken } : {}),
         credentials: 'include',
         signal: refreshController.signal,
       })
@@ -347,11 +344,19 @@ const refreshAccessToken = async (): Promise<void> => {
       throw new Error('Token refresh failed')
     }
 
-    // Backend sets new access_token and refresh_token cookies via Set-Cookie headers.
-    // With credentials: 'include', the browser stores them automatically.
-    // We no longer need to manually store tokens since they're httpOnly cookies.
-    // The response body still contains tokens for legacy/mobile clients,
-    // but for web clients, the cookies are primary.
+    const data = await response.json().catch(() => ({}))
+    const bodyData = (data?.data ?? data) as Record<string, unknown>
+    const newAccessToken =
+      (bodyData?.accessToken as string) || (bodyData?.token as string) || ''
+    const newRefreshToken =
+      (bodyData?.refreshToken as string) || (bodyData?.refresh as string) || ''
+
+    if (newAccessToken) {
+      await setAccessToken(newAccessToken)
+    }
+    if (newRefreshToken) {
+      await setRefreshToken(newRefreshToken)
+    }
 
     window.dispatchEvent(new CustomEvent('auth:token-refreshed'))
   })().finally(() => {

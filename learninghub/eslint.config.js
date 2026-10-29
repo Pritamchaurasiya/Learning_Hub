@@ -31,6 +31,12 @@ export default [
       'postcss.config.js',
       'e2e/**',
       '**/e2e/**',
+      '**/*.test.{ts,tsx,js,jsx}',
+      '**/*.spec.{ts,tsx,js,jsx}',
+      '**/tests/**',
+      '**/__tests__/**',
+      'src/test/**',
+      'src/mocks/**',
     ],
   },
 
@@ -45,7 +51,8 @@ export default [
         ecmaFeatures: {
           jsx: true,
         },
-        project: ['./tsconfig.json', './backend/tsconfig.json'],
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname || process.cwd(),
       },
       globals: {
         document: 'readonly',

@@ -14,6 +14,8 @@ class CountrySerializer(serializers.ModelSerializer):
 class ExamListSerializer(serializers.ModelSerializer):
     country_name = serializers.CharField(source='country.name', read_only=True)
     country_code = serializers.CharField(source='country.code', read_only=True)
+    country_id = serializers.CharField(source='country.id', read_only=True)
+    countryId = serializers.CharField(source='country.id', read_only=True)
     subject_count = serializers.ReadOnlyField()
     total_questions = serializers.ReadOnlyField()
     duration_minutes = serializers.ReadOnlyField()
@@ -23,11 +25,28 @@ class ExamListSerializer(serializers.ModelSerializer):
         model = Exam
         fields = [
             'id', 'code', 'name', 'full_name', 'description',
-            'country_name', 'country_code', 'subject_count',
+            'country_id', 'countryId', 'country_name', 'country_code', 'subject_count',
             'total_questions', 'total_marks', 'duration_minutes',
             'has_negative_marking', 'is_active', 'is_featured',
             'popularity_score', 'frequency', 'next_exam_date',
         ]
+
+
+class ExamCreateUpdateSerializer(serializers.ModelSerializer):
+    """Admin serializer for creating and modifying exams with country linkage."""
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all(), source='country', required=True
+    )
+
+    class Meta:
+        model = Exam
+        fields = [
+            'id', 'code', 'name', 'full_name', 'description',
+            'country_id', 'pattern', 'difficulty_distribution',
+            'official_website', 'conducting_body', 'frequency',
+            'next_exam_date', 'is_active', 'is_featured', 'popularity_score',
+        ]
+
 
 
 class ExamDetailSerializer(serializers.ModelSerializer):

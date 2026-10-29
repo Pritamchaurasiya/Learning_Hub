@@ -654,14 +654,19 @@ export const createPYQSchema = z.object({
 })
 
 export const getExamsSchema = z.object({
-  query: z.object({
-    countryId: z.string().optional(),
-  }),
+  query: z
+    .object({
+      countryId: z.string().optional(),
+      country: z.string().optional(),
+      search: z.string().optional(),
+    })
+    .passthrough()
+    .optional(),
 })
 
 export const getSubjectsSchema = z.object({
   params: z.object({
-    examId: idSchema,
+    examId: z.string().min(1).max(100),
   }),
 })
 

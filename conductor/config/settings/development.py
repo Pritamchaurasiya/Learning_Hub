@@ -69,7 +69,22 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "dev-gemini-key")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "dev-openai-key")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "dev-anthropic-key")
 
+# N+1 Query Detection (Development Only)
+NPLUS_ONE_DETECTION_ENABLED = True
+NPLUS_ONE_THRESHOLD = 10
+NPLUS_ONE_IGNORED_PATHS = ['/health/', '/admin/', '/static/', '/media/', '/api/schema/', '/api/docs/']
+
+# Query Count Logging
+QUERY_COUNT_LOGGING = True
+SLOW_QUERY_THRESHOLD_MS = 500
+
 # Static files configuration for development
 STATICFILES_DIRS = [
     pathlib.Path(BASE_DIR) / "static",
+]
+
+# Add N+1 detection middleware (only in development)
+MIDDLEWARE += [
+    "apps.core.middleware.n_plus_one_detection.NPlusOneDetectionMiddleware",
+    "apps.core.middleware.n_plus_one_detection.QueryCountMiddleware",
 ]

@@ -44,6 +44,13 @@ import resumeRoutes from './v1/resume.routes'
 import proctoringRoutes from './v1/proctoring.routes'
 import careerOrchestratorRoutes from './v1/careerOrchestrator.routes'
 import catRoutes from './v1/cat.routes'
+import peerReviewRoutes from './v1/peerReview.routes'
+import studyGroupsRoutes from './v1/studyGroups.routes'
+import supportRoutes from './v1/support.routes'
+import notesRoutes from './v1/notes.routes'
+import remediationRoutes from './v1/remediation.routes'
+import ltiRoutes from './v1/lti.routes'
+import { examContentController } from '../controllers/examContentController'
 
 import { bodySizeLimiter } from '../middleware/requestLogger'
 
@@ -78,6 +85,7 @@ router.use(responseTimeHeader)
 router.use(bodySizeLimiter(10 * 1024 * 1024)) // 10MB limit
 
 // Mount all v1 routes under /api/v1 prefix
+router.get('/geo/detect', examContentController.getGeoCountry)
 router.use('/auth', authRoutes)
 router.use('/tests', testsRoutes)
 router.use('/question-bank', questionBankRoutes)
@@ -127,6 +135,12 @@ router.use('/resume', resumeRoutes)
 router.use('/proctoring', proctoringRoutes)
 router.use('/career', careerOrchestratorRoutes)
 router.use('/cat', catRoutes)
+router.use('/peer-reviews', peerReviewRoutes)
+router.use('/study-groups', studyGroupsRoutes)
+router.use('/support', supportRoutes)
+router.use('/notes', notesRoutes)
+router.use('/remediation', remediationRoutes)
+router.use('/lti', ltiRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

@@ -32,6 +32,7 @@ router.get(
 )
 
 // Countries, exams and subjects selection routes
+router.get('/geo/detect', examContentController.getGeoCountry)
 router.get('/countries', cacheMiddleware(600), examContentController.getCountries)
 router.get('/exams', cacheMiddleware(600), validate(getExamsSchema), examContentController.getExams)
 router.get(

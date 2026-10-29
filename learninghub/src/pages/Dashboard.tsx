@@ -1,6 +1,7 @@
 import { useState, useCallback, memo, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import {
   Brain,
   Trophy,
@@ -43,6 +44,7 @@ import { LivePeerActivityTicker } from '../components/dashboard/LivePeerActivity
 import { ScholarOnboardingTourCard } from '../components/dashboard/ScholarOnboardingTourCard'
 import { MilestoneRewardModal } from '../components/dashboard/MilestoneRewardModal'
 import { playRewardChime } from '../utils/soundEffects'
+import { PersonalizedExamFeed } from '../components/dashboard/PersonalizedExamFeed'
 
 interface DashboardStats {
   testsAttempted: number
@@ -263,37 +265,57 @@ const Dashboard = memo(function Dashboard() {
         description="Monitor your learning trajectory, cognitive benchmarks, and daily focus sprint."
       />
 
-      {/* Ambient background mesh glow for world-class glassmorphic depth */}
-      <div className="absolute top-10 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-80 right-10 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-40 left-10 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      {/* Aurora-animated ambient background for premium depth */}
+      <div className="absolute inset-0 bg-aurora pointer-events-none -z-10" />
+      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-indigo-500/[0.07] dark:bg-indigo-600/[0.08] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" />
+      <div className="absolute top-80 right-10 w-[400px] h-[400px] bg-purple-500/[0.06] dark:bg-purple-600/[0.08] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" style={{ animationDelay: '2s' }} />
+      <div className="absolute bottom-40 left-10 w-[450px] h-[450px] bg-cyan-500/[0.05] dark:bg-cyan-600/[0.07] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" style={{ animationDelay: '4s' }} />
 
       {/* Hero Header & Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight truncate">
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight truncate"
+            >
               Welcome back, {username || 'Scholar'}
-            </h1>
+            </motion.h1>
             <StreakMultiplierBadge streak={stats.currentStreak} longestStreak={12} />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+            className="text-sm text-gray-500 dark:text-gray-400"
+          >
             Your personalized learning roadmap is calibrated. Today is day {stats.currentStreak} of
             your streak!
-          </p>
+          </motion.p>
         </div>
 
-        <button
+        <motion.button
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 25 }}
+          whileHover={{ scale: 1.05, boxShadow: '0 8px 30px -5px rgba(245,158,11,0.3)' }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsAIModalOpen(true)}
-          className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
+          className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-colors shrink-0 relative overflow-hidden"
         >
-          <Sparkles className="w-4 h-4 text-slate-950" />
-          <span>Generate Custom AI Test & Diagnostic</span>
-        </button>
+          <div className="absolute inset-0 shimmer opacity-40" />
+          <Sparkles className="w-4 h-4 text-slate-950 relative z-10" />
+          <span className="relative z-10">Generate Custom AI Test & Diagnostic</span>
+        </motion.button>
       </div>
 
       {/* Live Peer Activity Ticker (Social Proof) */}
       <LivePeerActivityTicker />
+
+      {/* Target Exam Personalized Command Center & Feed */}
+      <PersonalizedExamFeed onLaunchAITest={() => setIsAIModalOpen(true)} />
 
       {/* Pro Conversion & Monetization Banner */}
       {!isPro && <ProUpsellBanner />}
@@ -311,86 +333,110 @@ const Dashboard = memo(function Dashboard() {
         </div>
       )}
 
-      {/* 4 Core Stat Tiles (Glassmorphic Bento) */}
+      {/* 4 Core Stat Tiles (Premium Gradient-Bordered Bento) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
-        <Card className="p-5 relative overflow-hidden bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-sm">
-              <Brain className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                {stats.testsAttempted}
+        {/* Metric 1 - Assessments */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Card className="p-5 relative overflow-hidden gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 icon-glow-indigo">
+                <Brain className="w-6 h-6" />
               </div>
-              <div className="text-xs font-bold text-gray-400">Assessments Taken</div>
+              <div>
+                <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
+                  {stats.testsAttempted}
+                </div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Assessments Taken</div>
+              </div>
             </div>
-          </div>
-          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-            +14% vs avg
-          </span>
-        </Card>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/50">
+              +14% vs avg
+            </span>
+          </Card>
+        </motion.div>
 
-        {/* Metric 2 */}
-        <Card className="p-5 relative overflow-hidden bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 shadow-sm">
-              <Target className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                {passRate}%
+        {/* Metric 2 - Accuracy */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Card className="p-5 relative overflow-hidden gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 icon-glow-emerald">
+                <Target className="w-6 h-6" />
               </div>
-              <div className="text-xs font-bold text-gray-400">Overall Accuracy Rate</div>
+              <div>
+                <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
+                  {passRate}%
+                </div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Overall Accuracy Rate</div>
+              </div>
             </div>
-          </div>
-          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-            Top 15%
-          </span>
-        </Card>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50">
+              Top 15%
+            </span>
+          </Card>
+        </motion.div>
 
-        {/* Metric 3 */}
-        <Card className="p-5 relative overflow-hidden bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 shadow-sm">
-              <Trophy className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                {stats.totalXp.toLocaleString()} XP
+        {/* Metric 3 - XP */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Card className="p-5 relative overflow-hidden gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 icon-glow-amber">
+                <Trophy className="w-6 h-6" />
               </div>
-              <div className="text-xs font-bold text-gray-400">Level {currentLevel} Scholar</div>
+              <div>
+                <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
+                  {stats.totalXp.toLocaleString()} XP
+                </div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Level {currentLevel} Scholar</div>
+              </div>
             </div>
-          </div>
-          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-            Tier {currentLevel}
-          </span>
-        </Card>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/50">
+              Tier {currentLevel}
+            </span>
+          </Card>
+        </motion.div>
 
-        {/* Metric 4 */}
-        <Card className="p-5 relative overflow-hidden bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 shadow-sm">
-              <Flame className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                {stats.currentStreak} Days
+        {/* Metric 4 - Streak */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Card className="p-5 relative overflow-hidden gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 icon-glow-orange">
+                <Flame className="w-6 h-6" />
               </div>
-              <div className="text-xs font-bold text-gray-400">Continuous Study Streak</div>
+              <div>
+                <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
+                  {stats.currentStreak} Days
+                </div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Continuous Study Streak</div>
+              </div>
             </div>
-          </div>
-          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
-            Shield Active
-          </span>
-        </Card>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-800/50">
+              Shield Active
+            </span>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Spotlight: AI Next Best Action */}
       {nextAction && <NextBestActionCard action={nextAction} />}
 
-      {/* Interactive Bento Navigation Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-gray-100 dark:border-slate-800">
+      {/* Interactive Bento Navigation Tabs — Premium Pill Nav */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none p-1 bg-gray-100/60 dark:bg-slate-800/40 rounded-2xl">
         {[
           { id: 'all', label: 'All Command Modules', icon: LayoutGrid },
           { id: 'focus', label: 'Daily Focus & Quests', icon: CheckCircle2 },
@@ -403,14 +449,20 @@ const Dashboard = memo(function Dashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as DashboardTab)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold flex items-center gap-2 whitespace-nowrap transition-all ${
-                isActive
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-slate-800/40'
+              className={`relative px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 whitespace-nowrap transition-all duration-200 ${isActive
+                ? 'text-white'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="dashboard-tab-active"
+                  className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg shadow-indigo-600/20"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <Icon className="w-4 h-4 relative z-10" />
+              <span className="relative z-10">{tab.label}</span>
             </button>
           )
         })}
@@ -447,26 +499,29 @@ const Dashboard = memo(function Dashboard() {
 
           {/* Recent Tests Table (shown in 'all' and 'analytics') */}
           {(activeTab === 'all' || activeTab === 'analytics') && (
-            <Card className="p-6 space-y-4 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-xl">
+            <Card className="p-6 space-y-4 gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">
                   Recent Completed Assessments
                 </h3>
                 <button
                   onClick={() => navigate('/tests-a-history')}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
                 >
                   <span>View Full Analytics History</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
 
               <div className="space-y-2">
-                {stats.recentTests.map(test => (
-                  <div
+                {stats.recentTests.map((test, index) => (
+                  <motion.div
                     key={test.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
                     onClick={() => navigate('/tests-a-history')}
-                    className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-slate-900/50 hover:bg-indigo-50/50 dark:hover:bg-slate-800/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between cursor-pointer transition-colors"
+                    className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-slate-900/50 hover:bg-indigo-50/60 dark:hover:bg-slate-800/60 border border-gray-100/80 dark:border-slate-800/60 flex items-center justify-between cursor-pointer transition-all duration-200 group/test hover:border-indigo-200/50 dark:hover:border-indigo-800/30"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -482,16 +537,16 @@ const Dashboard = memo(function Dashboard() {
                         <h4 className="text-xs font-bold text-gray-900 dark:text-white">
                           {test.title}
                         </h4>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500">
                           {test.passed ? 'Benchmark Achieved' : 'Review Recommended'}
                         </p>
                       </div>
                     </div>
 
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                      Review <ArrowRight className="w-3 h-3" />
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 opacity-70 group-hover/test:opacity-100 transition-opacity">
+                      Review <ArrowRight className="w-3 h-3 group-hover/test:translate-x-0.5 transition-transform" />
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </Card>
@@ -521,9 +576,11 @@ const Dashboard = memo(function Dashboard() {
             <SpeedTrendWidget data={analyticsData.speedTrend} />
           )}
 
-          {/* Level Progress with Milestone Chest */}
-          <Card className="p-5 space-y-3 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-800/80 shadow-xl">
-            <div className="flex justify-between items-center text-xs font-bold">
+          {/* Level Progress with Milestone Chest — Premium Card */}
+          <Card className="p-5 space-y-3 gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl relative overflow-hidden">
+            {/* Subtle neon ambient glow */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/[0.05] dark:bg-amber-500/[0.08] rounded-full blur-2xl pointer-events-none" />
+            <div className="flex justify-between items-center text-xs font-bold relative z-10">
               <span className="text-gray-900 dark:text-white flex items-center gap-1.5">
                 <Trophy className="w-3.5 h-3.5 text-amber-500" />
                 Tier Progress (Level {currentLevel})
@@ -532,25 +589,28 @@ const Dashboard = memo(function Dashboard() {
                 {xpInCurrentLevel} / {xpForNextLevel} XP
               </span>
             </div>
-            <ProgressBar progress={levelProgress} className="h-2 rounded-full" />
-            <div className="flex items-center justify-between pt-1">
-              <p className="text-[10px] text-gray-400 flex-1 pr-2">
+            <div className="relative z-10">
+              <ProgressBar progress={levelProgress} className="h-2.5 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between pt-1 relative z-10">
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 flex-1 pr-2">
                 Earn {xpForNextLevel - xpInCurrentLevel} more XP to reach Level {currentLevel + 1}{' '}
                 and unlock advanced adaptive mock tests.
               </p>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleClaimTierReward}
                 disabled={claimedTierReward}
-                className={`px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center gap-1 transition-all shrink-0 ${
-                  claimedTierReward
-                    ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-default'
-                    : 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-1 transition-all shrink-0 ${claimedTierReward
+                  ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-default'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md shadow-amber-500/20'
                 }`}
                 title="Claim Level Milestone Perk"
               >
                 <Gift className="w-3 h-3" />
                 <span>{claimedTierReward ? 'Claimed' : 'Claim Loot'}</span>
-              </button>
+              </motion.button>
             </div>
           </Card>
 

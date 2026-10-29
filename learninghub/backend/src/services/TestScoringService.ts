@@ -36,8 +36,10 @@ export class TestScoringService {
     const test = await prisma.test.findUnique({
       where: { id: testId },
       include: {
+        sections: true,
         questions: {
           include: { options: true },
+          orderBy: { order: 'asc' },
         },
       },
     })
@@ -128,6 +130,17 @@ export class TestScoringService {
     let correctCount = 0
     let incorrectCount = 0
 
+    const sectionAnsweredCounts: Record<string, number> = {}
+    const sectionAttemptCaps: Record<string, number> = {}
+    if (test.sections) {
+      for (const sec of test.sections) {
+        if (sec.maxQuestionsToAttempt && sec.maxQuestionsToAttempt > 0) {
+          sectionAttemptCaps[sec.id] = sec.maxQuestionsToAttempt
+          sectionAnsweredCounts[sec.id] = 0
+        }
+      }
+    }
+
     const questionResults = await Promise.all(
       test.questions.map(async (q: any) => {
         const correctOptions = q.options.filter((o: any) => o.isCorrect)
@@ -136,6 +149,19 @@ export class TestScoringService {
         const hasAnswer =
           submittedIds.length > 0 ||
           (typeof userAnswerId === 'string' && userAnswerId.trim().length > 0)
+
+        let isExceededSectionCap = false
+        if (hasAnswer && q.sectionId && sectionAttemptCaps[q.sectionId] !== undefined) {
+          sectionAnsweredCounts[q.sectionId] = (sectionAnsweredCounts[q.sectionId] || 0) + 1
+          if (sectionAnsweredCounts[q.sectionId] > sectionAttemptCaps[q.sectionId]) {
+            isExceededSectionCap = true
+          }
+        }
+
+        const isGateExam = (test as any).markingScheme && ((test as any).markingScheme as any).examType === 'GATE'
+        const qTypeUpper = String(q.type).toUpperCase()
+        const isZeroNegative = isGateExam && (qTypeUpper === 'MSQ' || qTypeUpper === 'MULTIPLE_SELECT' || qTypeUpper === 'NUMERICAL')
+        const currentNegativePenalty = isZeroNegative ? 0 : Math.abs(test.negativeMarks ?? 0)
 
         let isCorrect: boolean | null = false
         let marksObtained = 0
@@ -165,7 +191,7 @@ export class TestScoringService {
             } else {
               isCorrect = false
             }
-            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+            marksObtained = isCorrect ? q.points : -currentNegativePenalty
           } else if (qTypeUpper === 'SHORT_ANSWER' || qTypeUpper === 'FILL_BLANK') {
             // Normalized text match
             const rawUserStr = (
@@ -175,7 +201,7 @@ export class TestScoringService {
               .toLowerCase()
             const correctTexts = correctOptions.map((o: any) => o.text.trim().toLowerCase())
             isCorrect = correctTexts.some((ct: string) => ct === rawUserStr)
-            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+            marksObtained = isCorrect ? q.points : -currentNegativePenalty
           } else if (qTypeUpper === 'TRUE_FALSE') {
             if (correctOptions.length > 0) {
               const userOpt = submittedIds[0]
@@ -187,7 +213,7 @@ export class TestScoringService {
                 .trim()
                 .toLowerCase()
               isCorrect = userOpt === correctOpt || userText === correctText
-              marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+              marksObtained = isCorrect ? q.points : -currentNegativePenalty
             }
           } else if (correctOptions.length > 0) {
             if (qTypeUpper === 'MSQ' || qTypeUpper === 'MULTIPLE_SELECT') {
@@ -198,8 +224,14 @@ export class TestScoringService {
             } else {
               isCorrect = submittedIds[0] === correctOptions[0].id
             }
-            marksObtained = isCorrect ? q.points : -Math.abs(test.negativeMarks ?? 0)
+            marksObtained = isCorrect ? q.points : -currentNegativePenalty
           }
+        }
+
+        if (isExceededSectionCap) {
+          marksObtained = 0
+          isCorrect = null
+          aiFeedback = `Exceeded section attempt limit of ${sectionAttemptCaps[q.sectionId!]} questions. Response not counted.`
         }
 
         if (q.type !== 'SUBJECTIVE') {
@@ -248,7 +280,26 @@ export class TestScoringService {
     if (isOverTime) score = Math.floor(score * 0.75)
     score = Math.max(0, score)
 
-    const totalPossibleScore = test.questions.reduce((acc: number, q: any) => acc + q.points, 0)
+    let totalPossibleScore = 0
+    if (test.sections && test.sections.length > 0) {
+      for (const sec of test.sections) {
+        const secQuestions = test.questions.filter((q: any) => q.sectionId === sec.id)
+        if (sec.maxQuestionsToAttempt && sec.maxQuestionsToAttempt < secQuestions.length) {
+          const sortedPts = secQuestions.map((q: any) => q.points).sort((a: number, b: number) => b - a)
+          totalPossibleScore += sortedPts.slice(0, sec.maxQuestionsToAttempt).reduce((a: number, b: number) => a + b, 0)
+        } else {
+          totalPossibleScore += secQuestions.reduce((acc: number, q: any) => acc + q.points, 0)
+        }
+      }
+      const unsectioned = test.questions.filter((q: any) => !q.sectionId)
+      totalPossibleScore += unsectioned.reduce((acc: number, q: any) => acc + q.points, 0)
+    } else {
+      totalPossibleScore = test.questions.reduce((acc: number, q: any) => acc + q.points, 0)
+    }
+
+    if (!(test as any).isPYQ && test.mode !== 'PYQ') {
+      score = Math.max(0, score)
+    }
     const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
     const passed = percentage >= test.passingScore
 

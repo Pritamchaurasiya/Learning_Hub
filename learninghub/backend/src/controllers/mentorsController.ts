@@ -41,3 +41,25 @@ export const bookSession = asyncHandler(async (req: Request, res: Response) => {
   })
   sendSuccess(res, session, 'Mentorship session booked successfully', 201)
 })
+
+export const getMentorAvailability = asyncHandler(async (req: Request, res: Response) => {
+  const mentorId = (req.params.mentorId || req.params.id) as string
+  try {
+    const availability = await mentorService.getAvailability(mentorId)
+    sendSuccess(res, availability)
+  } catch (err: any) {
+    sendNotFound(res, err.message || 'Mentor not found')
+  }
+})
+
+export const cancelSession = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.userId
+  const sessionId = req.params.id as string
+  const reason = req.body?.reason
+  try {
+    const session = await mentorService.cancelSession(sessionId, userId, reason)
+    sendSuccess(res, session, 'Mentorship session cancelled successfully')
+  } catch (err: any) {
+    sendError(res, err.message || 'Failed to cancel session', 400)
+  }
+})

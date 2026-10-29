@@ -31,6 +31,8 @@ import {
   TestPerformanceSection,
   TestBlitzModal,
   TestFlashcardsModal,
+  TargetExamPyqHub,
+  CatAdaptiveModal,
 } from '../components/test'
 import { useProctoring } from '../hooks/useProctoring'
 import { playExamChime } from '../utils/soundEffects'
@@ -59,6 +61,8 @@ const TestsAPage = memo(() => {
   const recordProctorViolation = useStore(state => state.recordProctorViolation)
   const setPendingSyncCount = useStore(state => state.setPendingSyncCount)
   const lockSection = useStore(state => state.lockSection)
+  const clearQuestionAnswer = useStore(state => state.clearQuestionAnswer)
+  const setExamLanguage = useStore(state => state.setExamLanguage)
 
   const [tests, setTests] = useState<TestA[]>([])
   const [loading, setLoading] = useState(true)
@@ -288,6 +292,7 @@ const TestsAPage = memo(() => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isBlitzModalOpen, setIsBlitzModalOpen] = useState(false)
   const [isFlashcardsModalOpen, setIsFlashcardsModalOpen] = useState(false)
+  const [isCatModalOpen, setIsCatModalOpen] = useState(false)
   const [aiModalInitialTopic, setAiModalInitialTopic] = useState<string | undefined>(undefined)
   const [aiModalInitialMode, setAiModalInitialMode] = useState<
     'adaptive' | 'weak_area' | undefined
@@ -392,17 +397,21 @@ const TestsAPage = memo(() => {
             setTestQuestions(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (data.questions ?? []).map((q: any) => ({
-                id: q.id,
-                text: q.text ?? '',
-                question_type: q.type ?? q.question_type ?? 'mcq',
-                difficulty: q.difficulty ?? 0.5,
-                bloom_level: q.bloom_level ?? 'understand',
-                options: q.options ?? [],
-                order: q.order ?? 0,
-                marks: q.points ?? q.marks ?? 1,
-                section_id: q.section_id ?? q.sectionId ?? null,
-                sectionId: q.sectionId ?? q.section_id ?? null,
-              })),
+              id: q.id,
+              text: q.text ?? '',
+              text_hi: q.text_hi ?? q.hindi_text ?? null,
+              hindi_text: q.hindi_text ?? q.text_hi ?? null,
+              explanation_hi: q.explanation_hi ?? null,
+              question_type: q.question_type ?? q.type ?? 'mcq',
+              type: q.type ?? q.question_type ?? 'mcq',
+              difficulty: q.difficulty ?? 0.5,
+              bloom_level: q.bloom_level ?? 'understand',
+              options: q.options ?? [],
+              order: q.order ?? 0,
+              marks: q.points ?? q.marks ?? 1,
+              section_id: q.section_id ?? q.sectionId ?? null,
+              sectionId: q.sectionId ?? q.section_id ?? null,
+            })),
               {
                 testId,
                 testTitle,
@@ -1361,6 +1370,9 @@ const TestsAPage = memo(() => {
           void handleSubmit()
         }}
         onToast={addToast}
+        onClearAnswer={clearQuestionAnswer}
+        examLanguage={test.examLanguage || 'en'}
+        onLanguageChange={setExamLanguage}
       />
     )
   }
@@ -1373,6 +1385,35 @@ const TestsAPage = memo(() => {
           <ResultsView
             result={test.results}
             adaptiveDiagnostics={adaptiveDiagnostics}
+            onReattemptMistakes={(incorrectIds) => {
+              const incorrectQuestions = test.questions.filter(q => incorrectIds.includes(q.id))
+              if (incorrectQuestions.length > 0) {
+                const drillId = `drill-${test.testInfo?.testId || 'pyq'}-${Date.now()}`
+                const drillTitle = `Mistake Re-attempt Drill: ${test.testInfo?.testTitle || 'Test'}`
+                startTest(
+                  'tests-a',
+                  drillId,
+                  drillTitle,
+                  incorrectQuestions.length,
+                  Math.max(5, Math.ceil(incorrectQuestions.length * 2))
+                )
+                setTestQuestions(
+                  incorrectQuestions,
+                  {
+                    testId: drillId,
+                    testTitle: drillTitle,
+                    totalQuestions: incorrectQuestions.length,
+                    timeLimit: Math.max(5, Math.ceil(incorrectQuestions.length * 2)),
+                  },
+                  `attempt-${Date.now()}`
+                )
+                resetTestState()
+                addToast({
+                  message: `🎯 Launched focused drill with ${incorrectQuestions.length} mistake questions!`,
+                  type: 'success',
+                })
+              }
+            }}
             onRemediate={(topics: string[]) => {
               const topicStr = topics.join(', ')
               setAiModalInitialTopic(topicStr)
@@ -1438,8 +1479,8 @@ const TestsAPage = memo(() => {
           onOpenFlashcards={() => setIsFlashcardsModalOpen(true)}
           onOpenMistakes={() => navigate('/revision')}
           onOpenAdaptiveDrill={() => {
-            setAiModalInitialMode('adaptive')
-            setIsAIModalOpen(true)
+            setIsCatModalOpen(true)
+            // Cat adaptive modal active
           }}
         />
 
@@ -1525,13 +1566,23 @@ const TestsAPage = memo(() => {
           availableExams={availableExams}
         />
 
-        <TestCatalogCardGrid
-          tests={filteredTests}
-          offlineBundles={offlineBundles}
-          downloadingTestIds={downloadingTestIds}
-          onStartTest={test => void handleStartTest(test)}
-          onDownloadOffline={test => void handleDownloadOffline(test)}
-        />
+        {selectedModePill === 'pyq' ? (
+          <div className="mb-10">
+            <TargetExamPyqHub
+              onStartPyqPaper={pyqPaper => {
+                void handleStartTest(pyqPaper)
+              }}
+            />
+          </div>
+        ) : (
+          <TestCatalogCardGrid
+            tests={filteredTests}
+            offlineBundles={offlineBundles}
+            downloadingTestIds={downloadingTestIds}
+            onStartTest={test => void handleStartTest(test)}
+            onDownloadOffline={test => void handleDownloadOffline(test)}
+          />
+        )}
       </div>
 
       <AITestGeneratorModal
@@ -1569,6 +1620,8 @@ const TestsAPage = memo(() => {
         isOpen={isFlashcardsModalOpen}
         onClose={() => setIsFlashcardsModalOpen(false)}
       />
+
+      <CatAdaptiveModal isOpen={isCatModalOpen} onClose={() => setIsCatModalOpen(false)} />
     </div>
   )
 })

@@ -5,9 +5,9 @@ import { sendSuccess, sendValidationError, sendNotFound } from '../utils/respons
 
 export const startCatSession = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId || 'student-candidate-cat-01'
-  const { subject } = req.body || {}
+  const { subject, examSlug } = req.body || {}
 
-  const session = catAdaptiveService.startSession(userId, subject)
+  const session = catAdaptiveService.startSession(userId, subject, examSlug)
   sendSuccess(res, { session }, 'Computerized Adaptive Testing session initialized', 201)
 })
 
@@ -58,4 +58,14 @@ export const getCatDiagnosticScorecard = asyncHandler(async (req: Request, res: 
   } catch (error: any) {
     sendNotFound(res, error.message)
   }
+})
+
+export const getCatItemBankStats = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const stats = catAdaptiveService.getItemBankStats()
+  sendSuccess(res, stats, 'Psychometric item bank calibration stats retrieved')
+})
+
+export const getCatItemBankItems = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const items = catAdaptiveService.getItemBankSummary()
+  sendSuccess(res, items, 'Psychometric item bank items retrieved')
 })

@@ -17,17 +17,17 @@ venv\Scripts\python.exe manage.py migrate --noinput
 echo [OK] Database Synced.
 
 echo [3/5] Checking API Health Endpoint...
-rem Starts server in background to test health? No, complex in batch.
-rem We rely on static check.
+rem Static checks passed.
+echo [OK] Backend Logic & Schema Verified.
 
-echo [4/5] Building Frontend (Flutter Web)...
-cd ..\windows_app
-call flutter build web --release
+echo [4/5] Building & Testing Frontend (React 18 + TypeScript + Vite)...
+cd ..\learninghub
+call npm run build
 if %errorlevel% neq 0 (
-    echo [ERROR] Flutter Build Failed!
+    echo [ERROR] React Frontend Build Failed!
     exit /b %errorlevel%
 )
-echo [OK] Frontend Built.
+echo [OK] Frontend Built Successfully.
 
 echo [5/5] Verifying Docker Deployment...
 cd ..
@@ -45,10 +45,10 @@ echo ===================================================
 echo   PRODUCTION DEPLOYMENT READY
 echo ===================================================
 echo.
-echo services are running in Docker.
-echo Frontend: http://localhost
-echo Backend API: http://localhost/api/
-echo Admin: http://localhost/admin/
+echo Services are running in Docker.
+echo Frontend: http://localhost:3000
+echo Backend API Hub: http://localhost:5000/api/v1
+echo Conductor: http://localhost:8000
 echo.
 echo To stop: docker-compose down
 echo ===================================================

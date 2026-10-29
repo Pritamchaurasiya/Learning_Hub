@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { WifiOff } from 'lucide-react'
 import { SEO } from '../SEO'
@@ -10,6 +10,11 @@ import { TestNavigationControls } from './TestNavigationControls'
 import { ProctoringWarningBanner } from './ProctoringWarningBanner'
 import { SocraticReviewModal } from './SocraticReviewModal'
 import { TestSubmitModal } from './TestSubmitModal'
+import { ExamScientificCalculatorModal } from './ExamScientificCalculatorModal'
+import { ExamScratchpadModal } from './ExamScratchpadModal'
+import { ExamQuestionPaperModal } from './ExamQuestionPaperModal'
+import { ExamInstructionsModal } from './ExamInstructionsModal'
+import { useStore } from '../../stores/useStore'
 import type { UnifiedTestState } from '../../stores/slices/testSlice'
 import type { ProctoringViolation } from '../../hooks/useProctoring'
 import type { TestSection } from '../../services/testsAService'
@@ -57,6 +62,9 @@ export interface TestActiveExamStationProps {
   isWsConnected?: boolean
   webcamStream?: MediaStream | null
   isWebcamActive?: boolean
+  onClearAnswer?: (questionId: string) => void
+  examLanguage?: 'en' | 'hi'
+  onLanguageChange?: (lang: 'en' | 'hi') => void
 }
 
 export const TestActiveExamStation = memo(function TestActiveExamStation({
@@ -92,14 +100,104 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   isWsConnected = false,
   webcamStream,
   isWebcamActive,
+  onClearAnswer,
+  examLanguage: propExamLanguage,
+  onLanguageChange: propOnLanguageChange,
 }: TestActiveExamStationProps) {
   const [isWebcamMinimized, setIsWebcamMinimized] = useState(false)
+
+  // CBT Exam Station Tool Modals
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
+  const [isScratchpadOpen, setIsScratchpadOpen] = useState(false)
+  const [isQuestionPaperOpen, setIsQuestionPaperOpen] = useState(false)
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
+  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md')
+
+  // Fallback to store actions if not passed directly in props
+  const storeClearAnswer = useStore(state => state.clearQuestionAnswer)
+  const storeSetLanguage = useStore(state => state.setExamLanguage)
+
+  const handleClearAnswer = useCallback(
+    (qId: string) => {
+      if (onClearAnswer) {
+        onClearAnswer(qId)
+      } else if (storeClearAnswer) {
+        storeClearAnswer(qId)
+      }
+    },
+    [onClearAnswer, storeClearAnswer]
+  )
+
+  const currentLanguage = propExamLanguage || test.examLanguage || 'en'
+  const handleLanguageChange = useCallback(
+    (lang: 'en' | 'hi') => {
+      if (propOnLanguageChange) {
+        propOnLanguageChange(lang)
+      } else if (storeSetLanguage) {
+        storeSetLanguage(lang)
+      }
+    },
+    [propOnLanguageChange, storeSetLanguage]
+  )
+
   const currentQuestion = test.questions[test.currentQuestionIndex]
   const selectedAnswer = currentQuestion ? test.answers[currentQuestion.id] ?? null : null
   const isFlagged = currentQuestion ? test.flaggedQuestions.includes(currentQuestion.id) : false
 
+  // Section quota calculation (e.g. JEE Main Section B: attempt 5 of 10)
+  const quotaInfo = useMemo(() => {
+    if (!activeSection?.maxQuestionsToAttempt) return undefined
+    const secQIds = new Set(
+      test.questions
+        .filter(q => (q.section_id || q.sectionId) === activeSection.id)
+        .map(q => q.id)
+    )
+    const currentAttempted = Object.keys(test.answers).filter(id => secQIds.has(id)).length
+    return {
+      maxAllowed: activeSection.maxQuestionsToAttempt,
+      currentAttempted,
+    }
+  }, [activeSection, test.questions, test.answers])
+
+  // CBT Navigation Handlers
+  const handleSaveAndNext = useCallback(() => {
+    if (test.currentQuestionIndex < test.questions.length - 1) {
+      onNavigateToQuestion(test.currentQuestionIndex + 1)
+    }
+  }, [test.currentQuestionIndex, test.questions.length, onNavigateToQuestion])
+
+  const handleSaveAndMarkForReview = useCallback(() => {
+    if (currentQuestion && !isFlagged) {
+      onFlagQuestion(currentQuestion.id)
+    }
+    if (test.currentQuestionIndex < test.questions.length - 1) {
+      onNavigateToQuestion(test.currentQuestionIndex + 1)
+    }
+  }, [currentQuestion, isFlagged, onFlagQuestion, test.currentQuestionIndex, test.questions.length, onNavigateToQuestion])
+
+  const handleMarkForReviewAndNext = useCallback(() => {
+    if (currentQuestion && !isFlagged) {
+      onFlagQuestion(currentQuestion.id)
+    }
+    if (test.currentQuestionIndex < test.questions.length - 1) {
+      onNavigateToQuestion(test.currentQuestionIndex + 1)
+    }
+  }, [currentQuestion, isFlagged, onFlagQuestion, test.currentQuestionIndex, test.questions.length, onNavigateToQuestion])
+
+  const handleClearCurrentResponse = useCallback(() => {
+    if (currentQuestion) {
+      handleClearAnswer(currentQuestion.id)
+      onToast({
+        message: 'Selected response cleared.',
+        type: 'info',
+      })
+    }
+  }, [currentQuestion, handleClearAnswer, onToast])
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16">
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 ${
+      fontSize === 'lg' ? 'text-base' : fontSize === 'sm' ? 'text-xs' : 'text-sm'
+    }`}>
       <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
 
       {isWsConnected && (
@@ -147,6 +245,14 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         violationCount={proctorViolationCount}
       />
 
+            {/* Official Candidate Session Watermark */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center opacity-[0.025] dark:opacity-[0.035] select-none rotate-[-15deg] text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-widest text-gray-900 dark:text-white"
+      >
+        {test.testInfo?.testTitle || 'Official CBT Assessment'} • CANDIDATE SESSION {test.attempt?.attemptId ? test.attempt.attemptId.slice(-6).toUpperCase() : 'VERIFIED'}
+      </div>
+
       <TestExamHeader
         title={test.testInfo?.testTitle}
         assessmentMode={test.assessmentMode}
@@ -161,6 +267,14 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         currentQuestionIndex={test.currentQuestionIndex}
         totalQuestions={test.questions.length}
         onSubmitClick={() => setIsSubmitModalOpen(true)}
+        examLanguage={currentLanguage}
+        onLanguageChange={handleLanguageChange}
+        onOpenQuestionPaper={() => setIsQuestionPaperOpen(true)}
+        onOpenInstructions={() => setIsInstructionsOpen(true)}
+        onOpenCalculator={() => setIsCalculatorOpen(true)}
+        onOpenScratchpad={() => setIsScratchpadOpen(true)}
+        fontSize={fontSize}
+        onChangeFontSize={setFontSize}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -199,7 +313,10 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                 currentIndex={test.currentQuestionIndex}
                 answers={test.answers}
                 flaggedQuestions={test.flaggedQuestions}
+                visitedQuestions={test.visitedQuestionIds}
                 onSelectQuestion={onNavigateToQuestion}
+                sections={test.sections}
+                activeSectionId={activeSection?.id || test.activeSectionId || undefined}
               />
             </div>
 
@@ -221,10 +338,13 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                     isFlagged={isFlagged}
                     sectionTitle={activeSection?.title}
                     isSectionLocked={isCurrentSectionLocked}
+                    examLanguage={currentLanguage}
                     onAnswer={optionId => onAnswerQuestion(currentQuestion.id, optionId)}
                     onConfidenceChange={level => onConfidenceChange(currentQuestion.id, level)}
                     onFlag={() => onFlagQuestion(currentQuestion.id)}
                     onUnflag={() => onUnflagQuestion(currentQuestion.id)}
+                    onClearAnswer={() => handleClearAnswer(currentQuestion.id)}
+                    quotaInfo={quotaInfo}
                     assessmentMode={test.assessmentMode}
                     practiceChecked={Boolean(practiceChecked[currentQuestion.id])}
                     onCheckPracticeAnswer={() => onCheckPracticeAnswer(currentQuestion.id)}
@@ -258,6 +378,12 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
               onPreviousQuestion={() => onNavigateToQuestion(test.currentQuestionIndex - 1)}
               onNextQuestion={() => onNavigateToQuestion(test.currentQuestionIndex + 1)}
               onAdaptiveStep={onAdaptiveStep}
+              onSaveAndNext={handleSaveAndNext}
+              onSaveAndMarkForReview={handleSaveAndMarkForReview}
+              onMarkForReviewAndNext={handleMarkForReviewAndNext}
+              onClearResponse={handleClearCurrentResponse}
+              isCurrentAnswered={Boolean(selectedAnswer)}
+              isCurrentFlagged={isFlagged}
             />
           </div>
 
@@ -280,13 +406,17 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                 currentIndex={test.currentQuestionIndex}
                 answers={test.answers}
                 flaggedQuestions={test.flaggedQuestions}
+                visitedQuestions={test.visitedQuestionIds}
                 onSelectQuestion={onNavigateToQuestion}
+                sections={test.sections}
+                activeSectionId={activeSection?.id || test.activeSectionId || undefined}
               />
             </div>
           </aside>
         </div>
       </main>
 
+      {/* Socratic Diagnostics Modal */}
       {socraticModalQuestion && (
         <SocraticReviewModal
           isOpen={Boolean(socraticModalQuestion)}
@@ -297,6 +427,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         />
       )}
 
+      {/* Submit Confirmation Modal */}
       <TestSubmitModal
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
@@ -314,6 +445,42 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         timeRemaining={test.timeRemaining}
       />
 
+      {/* CBT Virtual Scientific Calculator Modal */}
+      <ExamScientificCalculatorModal
+        isOpen={isCalculatorOpen}
+        onClose={() => setIsCalculatorOpen(false)}
+      />
+
+      {/* CBT Digital Scratchpad Modal */}
+      <ExamScratchpadModal
+        isOpen={isScratchpadOpen}
+        onClose={() => setIsScratchpadOpen(false)}
+      />
+
+      {/* Full Question Paper Preview Modal */}
+      <ExamQuestionPaperModal
+        isOpen={isQuestionPaperOpen}
+        onClose={() => setIsQuestionPaperOpen(false)}
+        questions={test.questions}
+        sections={test.sections}
+        answers={test.answers}
+        flaggedQuestions={test.flaggedQuestions}
+        onJumpToQuestion={idx => {
+          setIsQuestionPaperOpen(false)
+          onNavigateToQuestion(idx)
+        }}
+        examLanguage={currentLanguage}
+      />
+
+      {/* Official Instructions Modal */}
+      <ExamInstructionsModal
+        isOpen={isInstructionsOpen}
+        onClose={() => setIsInstructionsOpen(false)}
+        examName={test.testInfo?.testTitle || 'Target Competitive Exam'}
+        examLanguage={currentLanguage}
+      />
+
+      {/* Live Proctor Camera Feed */}
       {webcamStream && (
         <aside
           aria-label="Live Proctoring Camera Feed"

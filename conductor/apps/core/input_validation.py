@@ -18,7 +18,7 @@ class InputValidator:
         'alphanumeric': re.compile(r'^[a-zA-Z0-9_]+$'),
         'slug': re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$'),
         'username': re.compile(r'^[a-zA-Z0-9_.-]+$'),
-        'safe_text': re.compile(r'^[\w\s\-'".,!?;:()]+$'),
+        'safe_text': re.compile(r"""^[\w\s\-'".,!?;:()]+$"""),
         'no_html': re.compile(r'<[^>]+>'),
     }
     
@@ -106,12 +106,11 @@ class SQLInjectionProtection:
     """Protect against SQL injection attacks."""
     
     DANGEROUS_PATTERNS = [
-        re.compile(r'(\%27)|(')|(\-\-)|(\%23)|(#)', re.IGNORECASE),
-        re.compile(r'((\%3D)|(=))[^
-]*((\%27)|(')|(\-\-)|(\%3B)|(;))', re.IGNORECASE),
-        re.compile(r'\w*((\%27)|('))((\%6F)|o|(\%4F))((\%72)|r|(\%52))', re.IGNORECASE),
-        re.compile(r'((\%27)|('))union', re.IGNORECASE),
-        re.compile(r'exec(\s|\+)+(s|x)p\w+', re.IGNORECASE),
+        re.compile(r"(%27)|(')|(--)|(%23)|(#)", re.IGNORECASE),
+        re.compile(r"((%3D)|(=))[^\n\r]*((%27)|(')|(--)|(%3B)|(;))", re.IGNORECASE),
+        re.compile(r"\w*((%27)|('))((%6F)|o|(%4F))((%72)|r|(%52))", re.IGNORECASE),
+        re.compile(r"((%27)|('))union", re.IGNORECASE),
+        re.compile(r"exec(\s|\+)+(s|x)p\w+", re.IGNORECASE),
     ]
     
     @classmethod

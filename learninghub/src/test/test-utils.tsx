@@ -3,6 +3,7 @@ import { render, RenderOptions, RenderResult } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HelmetProvider } from 'react-helmet-async'
+import { CountryProvider } from '../context/CountryContext'
 
 // Create a custom render function that wraps components with providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -27,7 +28,9 @@ function AllTheProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <BrowserRouter>{children}</BrowserRouter>
+        <BrowserRouter>
+          <CountryProvider>{children}</CountryProvider>
+        </BrowserRouter>
       </HelmetProvider>
     </QueryClientProvider>
   )

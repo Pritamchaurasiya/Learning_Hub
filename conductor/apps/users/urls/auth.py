@@ -14,6 +14,7 @@ from ..views import (
     RegisterView,
     UserProfileViewSet,
 )
+from apps.exams.views import PreferenceView
 
 app_name = "auth"
 
@@ -37,6 +38,8 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("me/", me_view, name="me"),
+    path("preferences/", PreferenceView.as_view(), name="preferences"),
+    path("preferences", PreferenceView.as_view()),
     path("refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),

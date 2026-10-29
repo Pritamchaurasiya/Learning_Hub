@@ -21,6 +21,7 @@ import { requireInstructorOrAdmin } from '../../middleware/roleMiddleware'
 const router = Router()
 
 // Public / optionally authenticated routes
+router.get('/', optionalAuth, listThreads)
 router.get('/threads', optionalAuth, listThreads)
 router.get('/trending', optionalAuth, getTrendingThreads)
 router.get('/threads/search', optionalAuth, searchThreads)

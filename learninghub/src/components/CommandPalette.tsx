@@ -7,7 +7,7 @@ import {
   Code2,
   Swords,
   Award,
-  Layers,
+
   BarChart3,
   Calendar,
   MessageSquare,
@@ -206,15 +206,6 @@ const COMMANDS: CommandItem[] = [
     keywords: ['chat', 'gemini', 'socratic', 'assistant', 'explain', 'help'],
   },
   {
-    id: 'tool-algo-visualizer',
-    title: 'Algorithm Visualizer',
-    description: 'Interactive Sorting, Pathfinding, Tree, and DP visualizers',
-    category: 'Tools',
-    icon: Layers,
-    path: '/visualizer',
-    keywords: ['sorting', 'dijkstra', 'trees', 'knapsack', 'lcs', 'edit distance'],
-  },
-  {
     id: 'tool-downloads',
     title: 'Offline Downloads',
     description: 'Access revision notes and offline PWA learning assets',
@@ -258,6 +249,15 @@ const COMMANDS: CommandItem[] = [
     icon: Trophy,
     path: '/achievements',
     keywords: ['achievements', 'badges', 'trophies', 'xp', 'rewards', 'milestones'],
+  },
+  {
+    id: 'enterprise-institutions',
+    title: 'Enterprise Institution Hub',
+    description: '1EdTech LTI 1.3 Advantage, LMS SSO, and Automated Grade Passback (AGS)',
+    category: 'Admin',
+    icon: Briefcase,
+    path: '/institutions',
+    keywords: ['lti', 'lms', 'canvas', 'moodle', 'blackboard', 'sso', 'institution', 'university', 'grade passback'],
   },
   {
     id: 'admin-panel',

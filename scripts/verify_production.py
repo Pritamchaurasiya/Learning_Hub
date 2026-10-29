@@ -9,7 +9,7 @@ from pathlib import Path
 # Configuration
 BASE_DIR = Path(__file__).resolve().parent.parent
 BACKEND_DIR = BASE_DIR / "conductor"
-FRONTEND_DIR = BASE_DIR / "my_flutter_app"
+FRONTEND_DIR = BASE_DIR / "learninghub"
 SERVER_URL = "http://127.0.0.1:8000"
 
 def run_command(command, cwd, description):
@@ -18,10 +18,7 @@ def run_command(command, cwd, description):
     print(f"       cwd: {cwd}")
     
     try:
-        if sys.platform == "win32":
-            shell = True
-        else:
-            shell = False
+        shell = sys.platform == "win32"
             
         subprocess.run(
             command, 
@@ -48,16 +45,16 @@ def check_backend_tests():
 
 def check_frontend_analyze():
     return run_command(
-        ["flutter", "analyze"], 
+        ["npm", "run", "typecheck"], 
         FRONTEND_DIR, 
-        "Running Frontend Analysis"
+        "Running Frontend Analysis (TypeScript)"
     )
 
 def build_frontend():
     return run_command(
-        ["flutter", "build", "web", "--release"], 
+        ["npm", "run", "build"], 
         FRONTEND_DIR, 
-        "Building Frontend (Production)"
+        "Building Frontend (React 18 + Vite)"
     )
 
 def check_integration():
@@ -74,47 +71,62 @@ def check_integration():
     
     try:
         # Wait for server to start
-        print("       Waiting for server to boot...")
-        for i in range(15):
+        print("       Waiting for server to be responsive...")
+        max_retries = 15
+        for i in range(max_retries):
             try:
-                response = requests.get(f"{SERVER_URL}/health/", timeout=2)
+                response = requests.get(f"{SERVER_URL}/admin/login/", timeout=2)
                 if response.status_code == 200:
-                    print(f"       Server is UP! Response: {response.json()}")
-                    print("[OK] Integration Test Passed.")
-                    return True
-            except requests.exceptions.ConnectionError:
-                pass
-            time.sleep(1)
-            print(f"       ...retry {i+1}/15")
+                    print("       Server responded 200 OK.")
+                    break
+            except requests.exceptions.RequestException:
+                time.sleep(1)
+        else:
+            print("[FAIL] Server timed out without responding!")
+            return False
             
-        print("[FAIL] Server failed to start or health check failed.")
-        return False
-        
+        print("[OK] Integration Smoke Test Passed.")
+        return True
     finally:
-        print("       Stopping server...")
+        # Stop Server
+        print("       Terminating server...")
         if sys.platform == "win32":
-            # Windows requires stronger kill
-            subprocess.call(["taskkill", "/F", "/T", "/PID", str(server_process.pid)])
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(server_process.pid)], capture_output=True)
         else:
             server_process.terminate()
             server_process.wait()
 
 def main():
     print(SEPARATOR)
-    print(" LEARNING HUB - AUTOMATED PRODUCTION VERIFICATION")
+    print("      PRODUCTION READINESS VERIFICATION PIPELINE")
+    print("      Unified React 18 + Express + Django Stack")
     print(SEPARATOR)
     
-    if not check_backend_tests(): sys.exit(1)
-    if not check_frontend_analyze(): sys.exit(1)
-    # integration check before build to save time if server is broken
-    if not check_integration(): sys.exit(1) 
+    steps = [
+        check_frontend_analyze,
+        build_frontend,
+        check_backend_tests,
+        check_integration
+    ]
     
-    # Uncomment for full production build verification (takes time)
-    # if not build_frontend(): sys.exit(1)
-    
-    print("\n" + SEPARATOR)
-    print(" ALL SYSTEMS GO! PROD READY. 🚀")
-    print(SEPARATOR)
+    results = []
+    for step in steps:
+        success = step()
+        results.append(success)
+        if not success:
+            print(f"\n[ABORT] Pipeline halted due to previous failure.")
+            break
+            
+    print(f"\n{SEPARATOR}")
+    if all(results) and len(results) == len(steps):
+        print("  🎉 ALL VERIFICATION CHECKS PASSED SUCCESSFULLY! 🎉")
+        print("  The unified application is ready for production deployment.")
+        print(SEPARATOR)
+        sys.exit(0)
+    else:
+        print("  ❌ VERIFICATION CHECKS FAILED. FIX ISSUES BEFORE PROD. ❌")
+        print(SEPARATOR)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

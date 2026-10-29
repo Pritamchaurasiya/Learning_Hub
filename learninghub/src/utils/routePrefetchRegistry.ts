@@ -103,9 +103,6 @@ const ROUTE_PREFETCH_MAP = new Map<string, RoutePrefetchConfig>(
     '/ai-tutor': {
       loadComponent: () => import('../pages/AITutorPage'),
     },
-    '/visualizer': {
-      loadComponent: () => import('../pages/AlgorithmVisualizerPage'),
-    },
     '/revision': {
       loadComponent: () => import('../pages/RevisionPage'),
     },

@@ -33,6 +33,8 @@ const initialState: UnifiedTestState = {
   isContestMode: false,
   proctorViolations: 0,
   practiceFeedback: {},
+  visitedQuestionIds: [],
+  examLanguage: 'en',
   // Legacy compatibility
   currentAttempt: null,
   quizInfo: null,
@@ -106,6 +108,9 @@ export interface TestSlice {
   setPendingSyncCount: (count: number) => void
   lockSection: (sectionId: string) => void
   updateSectionTimer: (sectionId: string, timeRemaining: number) => void
+  clearQuestionAnswer: (questionId: string) => void
+  setExamLanguage: (lang: 'en' | 'hi') => void
+  markQuestionVisited: (questionId: string) => void
 
   // Legacy compatibility methods (deprecated)
   quizStartAttempt: (
@@ -183,7 +188,30 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
       if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
         return state
       }
+
+      // Check section quota if maxQuestionsToAttempt is set (e.g. JEE Sec B 5/10)
+      const currentSection = state.test.sections?.find(s => s.id === sectionId)
+      if (currentSection?.maxQuestionsToAttempt) {
+        const isAlreadyAnswered = Boolean(state.test.answers[questionId])
+        if (!isAlreadyAnswered) {
+          const sectionQuestionIds = new Set(
+            state.test.questions
+              .filter(q => (q.section_id || q.sectionId) === sectionId)
+              .map(q => q.id)
+          )
+          const currentSectionAnsweredCount = Object.keys(state.test.answers).filter(id =>
+            sectionQuestionIds.has(id)
+          ).length
+          if (currentSectionAnsweredCount >= currentSection.maxQuestionsToAttempt) {
+            return state
+          }
+        }
+      }
+
       const newAnswers = { ...state.test.answers, [questionId]: answerValue }
+      const newVisited = state.test.visitedQuestionIds?.includes(questionId)
+        ? state.test.visitedQuestionIds
+        : [...(state.test.visitedQuestionIds || []), questionId]
       // Backup answers to localStorage for crash recovery
       if (typeof window !== 'undefined') {
         try {
@@ -197,6 +225,7 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
         test: {
           ...state.test,
           answers: newAnswers,
+          visitedQuestionIds: newVisited,
           attempt: state.test.attempt
             ? { ...state.test.attempt, answeredQuestions: Object.keys(newAnswers).length }
             : null,
@@ -264,11 +293,16 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
       const validIndex = Math.max(0, Math.min(index, state.test.questions.length - 1))
       const targetQ = state.test.questions[validIndex]
       const sectionId = targetQ?.section_id || targetQ?.sectionId || state.test.activeSectionId
+      const visited =
+        targetQ && !state.test.visitedQuestionIds?.includes(targetQ.id)
+          ? [...(state.test.visitedQuestionIds || []), targetQ.id]
+          : state.test.visitedQuestionIds || []
       return {
         test: {
           ...state.test,
           currentQuestionIndex: validIndex,
           activeSectionId: sectionId,
+          visitedQuestionIds: visited,
         },
       }
     })
@@ -348,6 +382,8 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
         sectionTimeRemaining: initialSectionTimers,
         answers: mergedAnswers,
         confidences: {},
+        visitedQuestionIds: questions.length > 0 ? [questions[0].id] : [],
+        examLanguage: state.test.examLanguage || 'en',
         testInfo,
         attempt: state.test.attempt
           ? { ...state.test.attempt, attemptId }
@@ -578,6 +614,60 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
         pendingSyncCount: count,
       },
     }))
+  },
+
+  clearQuestionAnswer: (questionId: string) => {
+    set(state => {
+      const targetQ = state.test.questions.find(q => q.id === questionId)
+      const sectionId = targetQ?.section_id || targetQ?.sectionId
+      if (sectionId && state.test.lockedSectionIds?.includes(sectionId)) {
+        return state
+      }
+      const newAnswers = { ...state.test.answers }
+      delete newAnswers[questionId]
+      if (typeof window !== 'undefined') {
+        try {
+          const backupKey = `lh_test_answers_${state.test.attempt?.attemptId}`
+          localStorage.setItem(backupKey, JSON.stringify(newAnswers))
+        } catch {
+          // ignore
+        }
+      }
+      return {
+        test: {
+          ...state.test,
+          answers: newAnswers,
+          attempt: state.test.attempt
+            ? { ...state.test.attempt, answeredQuestions: Object.keys(newAnswers).length }
+            : null,
+          lastAutosavedAt: new Date().toISOString(),
+          currentAttempt: state.test.currentAttempt
+            ? { ...state.test.currentAttempt, answeredQuestions: Object.keys(newAnswers).length }
+            : null,
+        },
+      }
+    })
+  },
+
+  setExamLanguage: (lang: 'en' | 'hi') => {
+    set(state => ({
+      test: {
+        ...state.test,
+        examLanguage: lang,
+      },
+    }))
+  },
+
+  markQuestionVisited: (questionId: string) => {
+    set(state => {
+      if (state.test.visitedQuestionIds?.includes(questionId)) return state
+      return {
+        test: {
+          ...state.test,
+          visitedQuestionIds: [...(state.test.visitedQuestionIds || []), questionId],
+        },
+      }
+    })
   },
 
   lockSection: sectionId => {

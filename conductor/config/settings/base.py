@@ -134,12 +134,16 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    # Distributed Tracing & W3C TraceContext
+    "apps.core.observability.DistributedTracingMiddleware",
     # CORS must be first to handle preflight OPTIONS requests
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # Advanced Security Middleware (after CORS + core security)
     "apps.core.security_middleware.SecurityHeadersMiddleware",
+    # API Versioning, RFC 8594 Sunset & Lifecycle Management (ADR-006)
+    "apps.core.api_versioning.APIVersioningAndDeprecationMiddleware",
     # Resilience
     # Phase 10: Input Sanitization & CORS Hardening
     "apps.core.middleware.InputSanitizationMiddleware",
@@ -175,7 +179,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates", BASE_DIR.parent / "my_flutter_app" / "build" / "web"],
+        "DIRS": [BASE_DIR / "templates", BASE_DIR.parent / "learninghub" / "dist"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -196,6 +200,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
+        conn_health_checks=True,
     )
 }
 
@@ -308,7 +313,7 @@ REST_FRAMEWORK = {
         "semantic_search": "30/minute",
     },
     # Versioning
-    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    "DEFAULT_VERSIONING_CLASS": "apps.core.versioning.HeaderAndPathVersioning",
     "DEFAULT_VERSION": "v1",
     "ALLOWED_VERSIONS": ["v1", "v2"],
     "VERSION_PARAM": "version",
@@ -482,12 +487,22 @@ CELERY_TASK_ANNOTATIONS = {
     },
 }
 
-# Task Routing
+# Task Queues & Routing
+CELERY_TASK_QUEUES = {
+    "default": {"exchange": "default", "routing_key": "default"},
+    "ai_queue": {"exchange": "ai_queue", "routing_key": "ai_queue"},
+    "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
+    "payment_queue": {"exchange": "payment_queue", "routing_key": "payment_queue"},
+    "notifications_queue": {"exchange": "notifications_queue", "routing_key": "notifications_queue"},
+}
+
 CELERY_TASK_ROUTES = {
     "apps.ai_engine.tasks.*": {"queue": "ai_queue"},
+    "apps.ai_engine.*": {"queue": "ai_queue"},
     "apps.payments.tasks.*": {"queue": "payment_queue"},  # Separate queue for critical payments
     "apps.core.background_tasks.*": {"queue": "default"},
     "apps.notifications.tasks.*": {"queue": "notifications_queue"},
+    "*": {"queue": "default"},
 }
 
 # Logging Configuration for Celery
@@ -632,4 +647,10 @@ X_FRAME_OPTIONS = 'DENY'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB max upload
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB in-memory, rest to disk
+
+# ==============================================================================
+# FEATURE FLAGS 🚀
+# ==============================================================================
+FEATURE_COUNTRY_FILTER = os.getenv("FEATURE_COUNTRY_FILTER", "true").lower() in ("true", "1", "yes")
+
 

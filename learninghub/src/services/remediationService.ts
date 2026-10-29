@@ -2,16 +2,11 @@
  * RemediationService
  *
  * Cognitive Mistake Categorization & Targeted Remediation Engine for Test A+.
- * Classifies mistakes into cognitive archetypes:
- *  - Concept Gap: High time spent, wrong answer selected (fundamental conceptual hurdle).
- *  - Calculation Slip / Trap: Moderate time spent, fell for distractor trap or hasty execution.
- *  - Time Crunch: Answered in <15s under low clock or rushed at end of assessment.
- *  - Unanswered / Hesitation: Question skipped due to lack of confidence or time depletion.
- *
- * Generates instant targeted micro-drills, Ebook deep links, and psychometric study recommendations.
+ * Milestone 32: Computerized Adaptive Remediation (CAR) with 3-tier scaffolding drills.
  */
 
 import { TestResult } from './testsAService'
+import { api } from '../utils/api'
 
 export type CognitiveMistakeType =
   | 'CONCEPT_GAP'
@@ -19,6 +14,75 @@ export type CognitiveMistakeType =
   | 'TIME_CRUNCH'
   | 'UNANSWERED'
   | 'CONFIDENCE_MISMATCH'
+
+export type MistakeEtiology = 
+  | 'KNOWLEDGE_DEFICIT'
+  | 'CARELESS_SLIP'
+  | 'LUCKY_GUESS'
+  | 'FATIGUE_FLAG'
+  | 'CONCEPT_CONFUSION'
+
+export interface QuestionTelemetry {
+  questionId: string
+  conceptId: string
+  conceptName: string
+  prerequisiteConceptId?: string
+  prerequisiteConceptName?: string
+  difficulty: number
+  discrimination: number
+  timeSpentSeconds: number
+  benchmarkTimeSeconds: number
+  isCorrect: boolean
+  selectedOptionIndex: number
+  correctOptionIndex: number
+  userPriorMastery: number
+}
+
+export interface DiagnosticAssessment {
+  questionId: string
+  conceptId: string
+  conceptName: string
+  etiology: MistakeEtiology
+  confidence: number
+  explanation: string
+  prescribedScaffold: {
+    prerequisiteId: string
+    prerequisiteName: string
+    targetDifficulty: number
+    drillStepCount: number
+    estimatedRecoveryTimeMinutes: number
+  }
+}
+
+export interface RemediationDrillStep {
+  stepNumber: number
+  tier: 'PREREQUISITE_ANCHOR' | 'CONCEPTUAL_TRANSFER' | 'MASTERY_VERIFICATION'
+  prompt: string
+  options: string[]
+  correctIndex: number
+  hint: string
+  explanation: string
+  difficulty: number
+}
+
+export interface RemediationDrillPayload {
+  conceptId: string
+  conceptName: string
+  etiology: MistakeEtiology
+  steps: RemediationDrillStep[]
+  potentialMasteryDelta: number
+}
+
+export interface DrillSubmissionResult {
+  conceptId: string
+  passed: boolean
+  score: number
+  previousMastery: number
+  updatedMastery: number
+  masteryDelta: number
+  feedback: string
+  recoveredStatus: 'FULLY_RECOVERED' | 'PARTIALLY_RECOVERED' | 'NEEDS_PREREQUISITE_COURSE'
+}
 
 export interface MistakeAnalysisItem {
   questionId: string
@@ -99,31 +163,31 @@ export function classifyMistake(
     mistakeType = 'UNANSWERED'
     mistakeLabel = 'Skipped / Unattempted'
     severity = 'HIGH'
-    diagnosis = 'Question was left unattempted, likely due to uncertainty or pacing bottlenecks.'
-    recommendedAction = 'Practice pacing drills to attempt accessible marks in first-pass sweeps.'
-  } else if (timeSpent > averageTimePerQuestion * 1.5 || timeSpent >= 60) {
-    mistakeType = 'CONCEPT_GAP'
-    mistakeLabel = 'Conceptual Gap'
-    severity = 'CRITICAL'
-    diagnosis = `Dedicated significant cognitive time (${timeSpent}s) but arrived at an incorrect formulation. Signals an underlying conceptual gap in ${topic}.`
-    recommendedAction = `Re-read core chapter theory for "${topic}" and practice 5 standard foundation problems.`
-  } else if (timeSpent < 15 || totalRemainingTimePercent < 15) {
+    diagnosis = 'Question skipped. Indicates lack of confidence or severe time pressure.'
+    recommendedAction = 'Practice rapid elimination of obviously false choices to attempt educated guesses.'
+  } else if (timeSpent < 15 && totalRemainingTimePercent < 20) {
     mistakeType = 'TIME_CRUNCH'
-    mistakeLabel = 'Time Pressure / Rush'
+    mistakeLabel = 'Time Crunch Guess'
+    severity = 'CRITICAL'
+    diagnosis = 'Rushed attempt under depleted test clock (<15s spent).'
+    recommendedAction = 'Improve sectional pacing; allocate strict per-question time caps early.'
+  } else if (timeSpent > averageTimePerQuestion * 1.6) {
+    mistakeType = 'CONCEPT_GAP'
+    mistakeLabel = 'Conceptual Hurdle'
     severity = 'HIGH'
-    diagnosis = `Answered very quickly (${timeSpent}s) under time pressure, likely guessing or rushing.`
-    recommendedAction = 'Improve time budgeting: allocate at least 45 seconds per multi-step problem.'
-  } else if (questionResult.confidence === 'high') {
-    mistakeType = 'CONFIDENCE_MISMATCH'
-    mistakeLabel = 'Overconfidence Trap'
-    severity = 'HIGH'
-    diagnosis = 'Selected wrong answer with high self-reported confidence. Typical of classic distractor traps.'
-    recommendedAction = 'Pay close attention to negative constraints (e.g. "which of the following is NOT true").'
+    diagnosis = 'Substantial time invested (>1.6x average) but resulted in incorrect response.'
+    recommendedAction = 'Revisit foundational theory in the core syllabus and work on step-by-step derivation.'
+  } else if (timeSpent < averageTimePerQuestion * 0.4) {
+    mistakeType = 'CALCULATION_SLIP'
+    mistakeLabel = 'Speed-Induced Trap'
+    severity = 'MEDIUM'
+    diagnosis = 'Answered very rapidly without thorough verification of question constraints.'
+    recommendedAction = 'Slow down on deceptively simple problems; verify edge conditions before submitting.'
   }
 
   return {
     questionId: questionResult.question_id,
-    questionText: questionResult.question_text,
+    questionText: questionResult.question_text || (questionResult as any).text || '',
     topic,
     timeSpent,
     selectedOptionText: selectedText,
@@ -139,18 +203,18 @@ export function classifyMistake(
 }
 
 /**
- * Generate full cognitive mistake analysis and remediation plan from a completed TestResult.
+ * Aggregate all question-level mistakes into a cohesive RemediationSummary.
  */
 export function analyzeMistakes(result: TestResult): RemediationSummary {
+  const totalQuestions = result.total_questions || (result.question_results ? result.question_results.length : 0)
   const questionResults = result.question_results || []
-  const totalQuestions = questionResults.length || result.correct_count + result.incorrect_count + result.unanswered_count || 1
-  const incorrectResults = questionResults.filter(q => q.is_correct === false || (!q.is_correct && q.selected_options?.length === 0))
+  const incorrectOrSkipped = questionResults.filter(q => !q.is_correct)
 
-  const totalTimeTaken = result.time_taken || 60
-  const avgTimePerQuestion = totalQuestions > 0 ? totalTimeTaken / totalQuestions : 60
+  const totalTime = questionResults.reduce((acc, q) => acc + (q.time_spent ?? 0), 0)
+  const averageTime = totalQuestions > 0 ? totalTime / totalQuestions : 60
 
-  const items: MistakeAnalysisItem[] = incorrectResults.map(q =>
-    classifyMistake(q, avgTimePerQuestion)
+  const items: MistakeAnalysisItem[] = incorrectOrSkipped.map(q =>
+    classifyMistake(q, averageTime)
   )
 
   const counts: Record<CognitiveMistakeType, number> = {
@@ -171,38 +235,35 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
   const totalMistakes = items.length
   const denom = totalMistakes > 0 ? totalMistakes : 1
 
-  const categoryMeta: Record<
-    CognitiveMistakeType,
-    { label: string; color: string; description: string; iconName: string }
-  > = {
+  const categoryMeta: Record<CognitiveMistakeType, { label: string; color: string; description: string; iconName: string }> = {
     CONCEPT_GAP: {
-      label: 'Conceptual Gaps',
-      color: 'text-red-600 bg-red-50 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900',
-      description: 'Misunderstanding of core theorems, definitions, or algorithms.',
+      label: 'Conceptual Hurdle',
+      color: '#EF4444',
+      description: 'Struggled with core theoretical principles despite adequate time.',
       iconName: 'BrainCircuit',
     },
     CALCULATION_SLIP: {
-      label: 'Precision Slips',
-      color: 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900',
-      description: 'Minor algebraic, boundary, or distractor oversight.',
+      label: 'Precision & Distractor Slip',
+      color: '#F59E0B',
+      description: 'Fell for trap options or hasty arithmetic under time pressure.',
       iconName: 'AlertTriangle',
     },
     TIME_CRUNCH: {
-      label: 'Time Crunch Rushes',
-      color: 'text-purple-600 bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900',
-      description: 'Rushed answers under low exam clock or rapid guesswork.',
-      iconName: 'Clock',
+      label: 'Time Crunch Rush',
+      color: '#8B5CF6',
+      description: 'Forced to guess rapidly due to depleted section timer.',
+      iconName: 'Timer',
     },
     UNANSWERED: {
-      label: 'Unattempted / Hesitations',
-      color: 'text-slate-600 bg-slate-50 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800',
-      description: 'Questions skipped due to low confidence or exhaustion.',
-      iconName: 'XCircle',
+      label: 'Skipped / Low Confidence',
+      color: '#6B7280',
+      description: 'Left blank due to uncertainty or pacing bottlenecks.',
+      iconName: 'RotateCcw',
     },
     CONFIDENCE_MISMATCH: {
-      label: 'Overconfidence Traps',
-      color: 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900',
-      description: 'High confidence placed on deceptively worded trap choices.',
+      label: 'Confidence Calibration',
+      color: '#3B82F6',
+      description: 'Discrepancy between self-assessed certainty and correctness.',
       iconName: 'Target',
     },
   }
@@ -230,12 +291,10 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
     primaryWeaknessLabel = categories[0].label
   }
 
-  // Sorted target weak topics
   const targetTopics = Object.entries(topicCount)
     .sort((a, b) => b[1] - a[1])
     .map(([topic]) => topic)
 
-  // Generate actionable insights
   const actionableInsights: string[] = []
   if (counts.CONCEPT_GAP > 0) {
     actionableInsights.push(
@@ -300,8 +359,154 @@ export function createRemediationDrillConfig(
   }
 }
 
+/**
+ * CAR Adaptive Remediation Methods
+ */
+export async function diagnose(telemetry: QuestionTelemetry): Promise<DiagnosticAssessment> {
+  try {
+    const res = await api.post<{ data: DiagnosticAssessment }>('/api/v1/remediation/diagnose', telemetry)
+    if (res?.data) {
+      return res.data
+    }
+  } catch (err) {
+    // Local fallback
+  }
+
+  const timeRatio = telemetry.timeSpentSeconds / Math.max(1, telemetry.benchmarkTimeSeconds)
+  const isCareless = !telemetry.isCorrect && timeRatio < 0.35 && telemetry.userPriorMastery >= 0.75
+  const etiology: MistakeEtiology = isCareless ? 'CARELESS_SLIP' : 'KNOWLEDGE_DEFICIT'
+
+  return {
+    questionId: telemetry.questionId,
+    conceptId: telemetry.conceptId,
+    conceptName: telemetry.conceptName,
+    etiology,
+    confidence: 0.9,
+    explanation: isCareless
+      ? 'Rapid response time with high prior mastery indicates an execution slip.'
+      : 'Direct misconception in foundational prerequisite knowledge.',
+    prescribedScaffold: {
+      prerequisiteId: `prereq-${telemetry.conceptId}`,
+      prerequisiteName: `Foundational Principles of ${telemetry.conceptName}`,
+      targetDifficulty: -0.5,
+      drillStepCount: isCareless ? 1 : 3,
+      estimatedRecoveryTimeMinutes: isCareless ? 2 : 6
+    }
+  }
+}
+
+export async function getDrill(conceptId: string, conceptName: string, etiology: MistakeEtiology): Promise<RemediationDrillPayload> {
+  try {
+    const res = await api.get<{ data: RemediationDrillPayload }>(
+      `/api/v1/remediation/drill/${conceptId}?conceptName=${encodeURIComponent(conceptName)}&etiology=${etiology}`
+    )
+    if (res?.data) {
+      return res.data
+    }
+  } catch (err) {
+    // Local fallback
+  }
+
+  return {
+    conceptId,
+    conceptName,
+    etiology,
+    steps: [
+      {
+        stepNumber: 1,
+        tier: 'PREREQUISITE_ANCHOR',
+        prompt: `[Step 1 - Fundamental Anchor] Identify the core property of ${conceptName}:`,
+        options: [
+          `Invariant conservation of bounded state properties`,
+          `Arbitrary divergent iteration without termination guarantee`,
+          `Unchecked heuristic memory mutation`,
+          `Inverse traversal omitting base bounds`
+        ],
+        correctIndex: 0,
+        hint: `Think of deterministic guarantees and conservation rules.`,
+        explanation: `System soundness begins by confirming state invariants.`,
+        difficulty: -0.5
+      },
+      {
+        stepNumber: 2,
+        tier: 'CONCEPTUAL_TRANSFER',
+        prompt: `[Step 2 - Contextual Transfer] How should edge boundary transitions be regulated in ${conceptName}?`,
+        options: [
+          `Apply monotonic bounds clamp and proportional dampening`,
+          `Bypass boundary validation to maximize loop frequency`,
+          `Reset all internal registers to arbitrary offsets`,
+          `Drop exceptions without recording system telemetry`
+        ],
+        correctIndex: 0,
+        hint: `Consider stability constraints and monotonicity.`,
+        explanation: `Monotonic bounds prevent uncontrolled oscillation.`,
+        difficulty: 0.2
+      },
+      {
+        stepNumber: 3,
+        tier: 'MASTERY_VERIFICATION',
+        prompt: `[Step 3 - Mastery Synthesis] In a high-concurrency production workload, what guarantees correctness for ${conceptName}?`,
+        options: [
+          `Idempotent transaction semantics and atomic state transitions`,
+          `Non-locking asynchronous writes without consistency checks`,
+          `Unsynchronized global state mutations`,
+          `Ephemeral cache reads without replica verification`
+        ],
+        correctIndex: 0,
+        hint: `Prioritize atomicity and idempotency.`,
+        explanation: `Atomic transitions preserve systemic integrity under concurrent stress.`,
+        difficulty: 0.8
+      }
+    ],
+    potentialMasteryDelta: 0.18
+  }
+}
+
+export async function submitDrill(
+  conceptId: string,
+  submittedAnswers: number[],
+  correctAnswers: number[],
+  priorMastery: number
+): Promise<DrillSubmissionResult> {
+  try {
+    const res = await api.post<{ data: DrillSubmissionResult }>(
+      '/api/v1/remediation/submit-drill',
+      { conceptId, submittedAnswers, correctAnswers, priorMastery }
+    )
+    if (res?.data) {
+      return res.data
+    }
+  } catch (err) {
+    // Local fallback
+  }
+
+  let correctCount = 0
+  submittedAnswers.forEach((ans, i) => {
+    if (ans === correctAnswers[i]) correctCount++
+  })
+  const passed = correctCount >= Math.ceil(correctAnswers.length * 0.66)
+  const delta = passed ? 0.15 : -0.04
+  const updated = Math.min(1.0, Math.max(0.05, priorMastery + delta))
+
+  return {
+    conceptId,
+    passed,
+    score: correctCount,
+    previousMastery: priorMastery,
+    updatedMastery: parseFloat(updated.toFixed(3)),
+    masteryDelta: parseFloat(delta.toFixed(3)),
+    feedback: passed
+      ? 'Well done! All remediation drill steps verified.'
+      : 'Prerequisite gap detected. Review the concept lesson.',
+    recoveredStatus: passed ? 'FULLY_RECOVERED' : 'NEEDS_PREREQUISITE_COURSE'
+  }
+}
+
 export const remediationService = {
   classifyMistake,
   analyzeMistakes,
   createRemediationDrillConfig,
+  diagnose,
+  getDrill,
+  submitDrill,
 }

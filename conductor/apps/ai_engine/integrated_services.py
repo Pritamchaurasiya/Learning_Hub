@@ -103,3 +103,42 @@ class IntegratedAIService:
             
         return max(0, dot / (norm_a * norm_b))
 
+    def batch_semantic_recommendation_boost(
+        self, user_profile: Dict[str, Any], course_features_list: List[Dict[str, Any]]
+    ) -> List[float]:
+        """
+        Batch compute Neuro-Symbolic boost for candidate courses.
+        Computes user interest/weakness embedding once, eliminating N redundant calculations.
+        """
+        user_wants = Formula(
+            operator=None,
+            left=None,
+            right=None,
+            predicate="Wants",
+            terms=[Term(name=t) for t in user_profile.get("weaknesses", [])],
+        )
+        emb_wants = self.recommender_logic.get_formula_embedding(user_wants)
+        norm_a = sum(a * a for a in emb_wants) ** 0.5
+
+        if norm_a == 0:
+            return [0.0] * len(course_features_list)
+
+        results = []
+        for course_features in course_features_list:
+            course_offers = Formula(
+                operator=None,
+                left=None,
+                right=None,
+                predicate="Offers",
+                terms=[Term(name=t) for t in course_features.get("topics", [])],
+            )
+            emb_offers = self.recommender_logic.get_formula_embedding(course_offers)
+            dot = sum(a * b for a, b in zip(emb_wants, emb_offers))
+            norm_b = sum(b * b for b in emb_offers) ** 0.5
+
+            if norm_b == 0:
+                results.append(0.0)
+            else:
+                results.append(max(0.0, dot / (norm_a * norm_b)))
+        return results
+

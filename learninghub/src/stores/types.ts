@@ -102,6 +102,8 @@ export interface UnifiedTestState {
   isContestMode: boolean
   proctorViolations: number
   practiceFeedback: Record<string, { isCorrect: boolean; explanation: string; points: number }>
+  visitedQuestionIds: string[]
+  examLanguage: 'en' | 'hi'
   // Legacy compatibility
   currentAttempt: TestAttemptState | null
   quizInfo: TestInfo | null
@@ -360,6 +362,9 @@ export interface TestSlice {
   ) => void
   lockSection: (sectionId: string) => void
   updateSectionTimer: (sectionId: string, timeRemaining: number) => void
+  clearQuestionAnswer: (questionId: string) => void
+  setExamLanguage: (lang: 'en' | 'hi') => void
+  markQuestionVisited: (questionId: string) => void
   // Legacy compatibility methods (deprecated)
   quizStartAttempt: (
     quizId: string,

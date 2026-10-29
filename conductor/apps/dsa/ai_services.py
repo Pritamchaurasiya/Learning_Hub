@@ -349,7 +349,7 @@ class AICriticService:
         
         return " ".join(parts)
 
-from apps.ai_engine.neuro_symbolic import NeuroSymbolicEngine
+        from apps.ai_engine.neuro_symbolic import NeuroSymbolicEngine
 
     @classmethod
     def _review_two_sum(cls, code: str) -> Dict[str, Any]:

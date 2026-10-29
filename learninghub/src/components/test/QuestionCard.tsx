@@ -505,6 +505,9 @@ export interface QuestionCardProps {
   onDiagnoseMisconception?: () => void
   sectionTitle?: string
   isSectionLocked?: boolean
+  examLanguage?: 'en' | 'hi'
+  onClearAnswer?: () => void
+  quotaInfo?: { maxAllowed?: number; currentAttempted?: number }
 }
 
 export const QuestionCard = memo(
@@ -525,6 +528,9 @@ export const QuestionCard = memo(
     onDiagnoseMisconception,
     sectionTitle,
     isSectionLocked,
+    examLanguage = 'en',
+    onClearAnswer,
+    quotaInfo,
   }: QuestionCardProps) => {
     const isCodingQuestion =
       question.question_type === 'coding' ||
@@ -572,10 +578,43 @@ export const QuestionCard = memo(
               </div>
             </div>
           )}
-          <MathRenderer
-            text={question.text}
-            className="text-xl font-medium text-gray-900 dark:text-white mb-8 leading-relaxed"
-          />
+          {/* Section Attempt Quota Badge & Warning */}
+          {quotaInfo && typeof quotaInfo.maxAllowed === 'number' && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-xs">
+              <span className="font-semibold text-blue-800 dark:text-blue-300">
+                Optional Section Quota: Attempted {quotaInfo.currentAttempted || 0} of {quotaInfo.maxAllowed} allowed
+              </span>
+              {quotaInfo.currentAttempted !== undefined &&
+                quotaInfo.currentAttempted >= quotaInfo.maxAllowed &&
+                !selectedAnswer && (
+                  <span className="font-bold text-amber-700 dark:text-amber-400">
+                    Quota limit reached. Clear response from another question to attempt this.
+                  </span>
+                )}
+            </div>
+          )}
+
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <MathRenderer
+              text={
+                examLanguage === 'hi'
+                  ? question.text_hi || question.hindi_text || question.text
+                  : question.text
+              }
+              className="text-xl font-medium text-gray-900 dark:text-white leading-relaxed flex-1"
+            />
+            {selectedAnswer && onClearAnswer && !isSectionLocked && (
+              <button
+                type="button"
+                onClick={onClearAnswer}
+                className="shrink-0 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 transition-colors flex items-center gap-1.5"
+                title="Clear selected answer (Prevents negative marks)"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Clear Response</span>
+              </button>
+            )}
+          </div>
 
           <div className="space-y-3">
             {isCodingQuestion ? (
@@ -671,7 +710,11 @@ export const QuestionCard = memo(
                         {isSelected && <CheckCircle className="w-4 h-4 text-white" />}
                       </div>
                       <MathRenderer
-                        text={option.text}
+                        text={
+                          examLanguage === 'hi'
+                            ? option.text_hi || (option as any).hindi_text || option.text
+                            : option.text
+                        }
                         inline
                         className="text-gray-700 dark:text-gray-300"
                       />

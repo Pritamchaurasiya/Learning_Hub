@@ -65,5 +65,5 @@ W3C VERIFIABLE CREDENTIALS & CRYPTOGRAPHIC PROOF
 * Top 99.4th Percentile Competitive Exam & System Architecture — Issued by LearningHub Verifiable Evaluation Authority (2026-09-28)
   Merkle Root: ca978112ca1bbdcafac231b3... | DID: did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7
 
-Digest SHA-256: 1b30bf77a27eebd0b79970c33e62e1f8342e39254a9f0496d86eae645c2ae02d
-HMAC Signature: 69a66e654c617281dcf1c62031e237b7b2ff61b3bb3b39ffca239311845f7856
+Digest SHA-256: 76badadd7402c089785f07394d8d77c020e5310567f4bd6901a868eab9504d45
+HMAC Signature: e37176618c3a5839c6e86d4bfad2fa1368a7c6e1bba311e06396a9d3586c8129

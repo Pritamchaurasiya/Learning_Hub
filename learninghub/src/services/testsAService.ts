@@ -1,4 +1,10 @@
 import { fetchApi } from '../utils/api'
+import {
+  OFFICIAL_PYQ_PAPERS,
+  OFFICIAL_HISTORICAL_BENCHMARKS,
+  calculateShiftPercentileLocally,
+    type PercentilePredictionResult,
+} from './pyqData'
 
 // Types aligned with Express/Prisma test engine API
 export interface TestA {
@@ -26,6 +32,12 @@ export interface TestA {
   shuffle_options?: boolean
   shuffleOptions?: boolean
   sections?: TestSection[]
+  isPYQ?: boolean
+  pyqYear?: number
+  pyqShift?: string
+  pyqPaperName?: string
+  markingScheme?: any
+  benchmarkKey?: string
 }
 
 export interface TestSection {
@@ -44,11 +56,15 @@ export interface TestSection {
   allowBackwardNavigation?: boolean
   is_locked?: boolean
   isLocked?: boolean
+  maxQuestionsToAttempt?: number
+  sectionType?: 'MANDATORY' | 'OPTIONAL_CHOICE' | string
 }
 
 export interface TestQuestion {
   id: string
   text: string
+  text_hi?: string
+  hindi_text?: string
   question_type:
     | 'mcq'
     | 'multiple_select'
@@ -66,6 +82,7 @@ export interface TestQuestion {
   options: {
     id: string
     text: string
+    text_hi?: string
     order: number
     is_correct?: boolean
     isCorrect?: boolean
@@ -73,6 +90,7 @@ export interface TestQuestion {
   order: number
   marks: number
   explanation?: string
+  explanation_hi?: string
   code_template?: string
   starter_code?: string
   language?: string
@@ -230,7 +248,9 @@ interface RawTestData {
   }>
 }
 
-const normalizeTest = (raw: RawTestData): TestA => ({
+const normalizeTest = (raw: RawTestData): TestA => {
+  const r = raw as any
+  return {
   id: raw.id ?? '',
   title: raw.title ?? '',
   description: raw.description ?? '',
@@ -250,6 +270,12 @@ const normalizeTest = (raw: RawTestData): TestA => ({
   is_ai_generated: raw.is_ai_generated ?? false,
   is_featured: raw.is_featured ?? false,
   attempt_count: raw.attempt_count ?? raw.attempts_made ?? 0,
+  isPYQ: Boolean(r.isPYQ ?? r.is_pyq ?? false),
+  pyqYear: r.pyqYear ?? r.pyq_year,
+  pyqShift: r.pyqShift ?? r.pyq_shift,
+  pyqPaperName: r.pyqPaperName ?? r.pyq_paper_name,
+  markingScheme: r.markingScheme ?? r.marking_scheme,
+  benchmarkKey: r.benchmarkKey ?? r.benchmark_key ?? (r.markingScheme?.benchmarkKey),
   created_at: raw.created_at ?? new Date(0).toISOString(),
   shuffle_questions: raw.shuffle_questions ?? raw.shuffleQuestions ?? false,
   shuffleQuestions: raw.shuffleQuestions ?? raw.shuffle_questions ?? false,
@@ -268,9 +294,12 @@ const normalizeTest = (raw: RawTestData): TestA => ({
         cut_off_marks: s.cut_off_marks ?? s.cutOffMarks,
         cutOffMarks: s.cutOffMarks ?? s.cut_off_marks,
         question_count: s.question_count ?? 0,
+        maxQuestionsToAttempt: (s as any).maxQuestionsToAttempt ?? (s as any).max_questions_to_attempt,
+        sectionType: (s as any).sectionType ?? (s as any).section_type ?? 'MANDATORY',
       }))
     : undefined,
-})
+  }
+}
 
 const normalizeAttemptStatus = (rawStatus: unknown): TestAttempt['status'] => {
   const status = normalizeEnum(rawStatus, 'not_started')
@@ -520,6 +549,49 @@ const FALLBACK_TESTS: TestA[] = [
 
 // Service
 export const testsAService = {
+  // Retrieve Official PYQ Papers and Historical Shift Benchmarks
+  getPyqCatalog: () => {
+    return fetchApi('/tests/pyq/catalog')
+      .then(res => {
+        const rawPapers = res.data?.papers ?? (Array.isArray(res.data) ? res.data : [])
+        const benchmarks = res.data?.benchmarks ?? Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({ key, ...val }))
+        const normalized = rawPapers.length > 0
+          ? rawPapers.map(normalizeTest)
+          : OFFICIAL_PYQ_PAPERS.map(p => normalizeTest(p as any))
+        return {
+          status: 'success',
+          data: {
+            papers: normalized,
+            benchmarks,
+          },
+        }
+      })
+      .catch(() => {
+        return {
+          status: 'success',
+          data: {
+            papers: OFFICIAL_PYQ_PAPERS.map(p => normalizeTest(p as any)),
+            benchmarks: Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({ key, ...val })),
+          },
+        }
+      }) as Promise<{ status: string; data: { papers: TestA[]; benchmarks: any[] } }>
+  },
+
+  // Calculate shift percentile, estimated AIR, and category cutoffs
+  getPyqPercentilePrediction: (rawScore: number, benchmarkKey: string) => {
+    return fetchApi('/tests/pyq/predict-percentile', {
+      method: 'POST',
+      body: JSON.stringify({ rawScore, benchmarkKey }),
+    })
+      .then(res => ({
+        status: res.status ?? 'success',
+        data: (res.data ?? calculateShiftPercentileLocally(rawScore, benchmarkKey)) as PercentilePredictionResult,
+      }))
+      .catch(() => ({
+        status: 'success',
+        data: calculateShiftPercentileLocally(rawScore, benchmarkKey),
+      })) as Promise<{ status: string; data: PercentilePredictionResult }>
+  },
   // Get all tests with optional filters
   getTests: (filters?: {
     exam?: string
@@ -700,6 +772,12 @@ export const testsAService = {
         time_limit?: number
         time_remaining_seconds?: number
         sections?: TestSection[]
+  isPYQ?: boolean
+  pyqYear?: number
+  pyqShift?: string
+  pyqPaperName?: string
+  markingScheme?: any
+  benchmarkKey?: string
       }
     }>,
 

@@ -28,10 +28,16 @@ import {
   Calendar,
   Download,
   CreditCard,
-  Cpu,
+
   BellRing,
   FileText,
   Briefcase,
+  Users,
+  CheckSquare,
+  LifeBuoy,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useBreakpoint } from '../hooks/useMediaQuery'
@@ -47,6 +53,8 @@ interface NavSection {
 export default function Sidebar() {
   const sidebarOpen = useStore(s => s.sidebarOpen)
   const setSidebarOpen = useStore(s => s.setSidebarOpen)
+  const theme = useStore(s => s.theme)
+  const setTheme = useStore(s => s.setTheme)
   const currentXp = useStore(s => s.progress.xp || 0)
   const streak = useStore(s => s.progress.streak || 0)
   const completedCoursesCount = useStore(s => s.progress.completedCourses?.length || 0)
@@ -92,7 +100,6 @@ export default function Sidebar() {
         { to: '/interview', icon: Bot, label: 'Technical Mock Interview' },
         { to: '/resume', icon: FileText, label: 'Verifiable Career Resume' },
         { to: '/career', icon: Briefcase, label: 'Recruiter Simulation & Jobs' },
-        { to: '/visualizer', icon: Cpu, label: 'DSA Visualizer' },
         { to: '/tests-a', icon: Brain, label: 'Tests A+' },
         { to: '/revision', icon: Zap, label: 'Spaced Revision' },
         { to: '/tests-a-history', icon: History, label: 'Test History' },
@@ -106,6 +113,8 @@ export default function Sidebar() {
       items: [
         { to: '/discussions', icon: MessageSquare, label: 'Discussions' },
         { to: '/live-class', icon: Video, label: 'Live Classes' },
+        { to: '/study-groups', icon: Users, label: 'Study Groups' },
+        { to: '/peer-review', icon: CheckSquare, label: 'Peer Reviews' },
       ],
     },
     {
@@ -113,9 +122,13 @@ export default function Sidebar() {
       defaultOpen: false,
       items: [
         { to: '/ai-tutor', icon: Bot, label: 'Interactive Mentor' },
+        { to: '/mentorship', icon: Users, label: '1-on-1 Mentors' },
+        { to: '/notes', icon: FileText, label: 'Notes Studio' },
         { to: '/study-planner', icon: Calendar, label: 'Study Planner' },
         { to: '/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/downloads', icon: Download, label: 'Offline Downloads' },
+        { to: '/support', icon: LifeBuoy, label: 'Help & Support' },
+        { to: '/institutions', icon: Briefcase, label: 'Institution Hub' },
         { to: '/pricing', icon: CreditCard, label: 'Plans & Pricing' },
       ],
     },
@@ -172,7 +185,7 @@ export default function Sidebar() {
         initial={false}
         animate={isDesktop || sidebarOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 glass-strong border-r flex flex-col overflow-hidden lg:shadow-none lg:translate-x-0"
+        className="fixed lg:static inset-y-0 left-0 z-[70] w-72 sidebar-glass flex flex-col overflow-hidden lg:shadow-none lg:translate-x-0"
         aria-label="Main navigation"
         role="navigation"
         drag={isDesktop ? false : 'x'}
@@ -184,8 +197,10 @@ export default function Sidebar() {
           }
         }}
       >
-        {/* Sidebar header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/40 dark:border-white/10 shrink-0">
+        {/* Sidebar header — premium glass with subtle gradient line */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/30 dark:border-white/[0.06] shrink-0 relative">
+          {/* Subtle gradient accent line at bottom of header */}
+          <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary-400/30 dark:via-primary-500/20 to-transparent" />
           <PrefetchNavLink
             to="/dashboard"
             onClick={closeMobileSidebar}
@@ -194,7 +209,7 @@ export default function Sidebar() {
             <BrandLogo size="sm" variant="full" subtitle="Pro Platform" animated />
           </PrefetchNavLink>
           <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -210,16 +225,23 @@ export default function Sidebar() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="mx-4 mt-4 px-4 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/30 overflow-hidden relative group"
+            className="mx-4 mt-4 px-4 py-3 rounded-2xl bg-gradient-to-br from-orange-500 via-rose-500 to-pink-500 text-white shadow-lg shadow-orange-500/25 dark:shadow-orange-500/15 overflow-hidden relative group cursor-default"
           >
-            <div className="absolute inset-0 bg-white/10 group-hover:scale-110 transition-transform duration-500" />
+            {/* Shimmer overlay */}
+            <div className="absolute inset-0 shimmer opacity-60" />
+            {/* Hover glow expansion */}
+            <div className="absolute inset-0 bg-white/10 group-hover:bg-white/15 transition-all duration-500" />
             <div className="flex items-center gap-3 relative z-10">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Flame className="w-5 h-5 animate-pulse" />
-              </div>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/20"
+              >
+                <Flame className="w-5 h-5" />
+              </motion.div>
               <div className="flex flex-col">
-                <span className="font-bold text-sm leading-tight">{streak} Day Streak!</span>
-                <span className="text-[10px] text-white/80">You&apos;re doing great!</span>
+                <span className="font-extrabold text-sm leading-tight tracking-tight">{streak} Day Streak!</span>
+                <span className="text-[10px] text-white/80 font-medium">You&apos;re on fire — keep going!</span>
               </div>
             </div>
           </motion.div>
@@ -244,11 +266,11 @@ export default function Sidebar() {
               >
                 {({ isActive }) => (
                   <>
-                    {/* Active route indicator background */}
+                    {/* Active route indicator with glow */}
                     {isActive && (
                       <motion.div
                         layoutId={`sidebar-main-bg-${to}`}
-                        className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
+                        className="absolute inset-0 bg-gradient-to-r from-primary-50 to-purple-50/50 dark:from-primary-900/25 dark:to-purple-900/15 border border-primary-200/60 dark:border-primary-700/30 rounded-xl shadow-sm shadow-primary-500/5 dark:shadow-primary-500/10"
                         initial={false}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
@@ -312,7 +334,7 @@ export default function Sidebar() {
                                 {isActive && (
                                   <motion.div
                                     layoutId={`sidebar-section-bg-${section.label}-${label}`}
-                                    className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30 rounded-xl"
+                                    className="absolute inset-0 bg-gradient-to-r from-primary-50 to-purple-50/50 dark:from-primary-900/25 dark:to-purple-900/15 border border-primary-200/60 dark:border-primary-700/30 rounded-xl shadow-sm shadow-primary-500/5 dark:shadow-primary-500/10"
                                     initial={false}
                                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                   />
@@ -358,33 +380,40 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        {/* Bottom profile card with XP progress */}
-        <div className="p-4 border-t border-gray-200/60 dark:border-gray-700/40 shrink-0 bg-gray-50/50 dark:bg-gray-800/20">
+        {/* Bottom profile card — premium glass with gradient border */}
+        <div className="p-4 border-t border-gray-200/30 dark:border-white/[0.06] shrink-0 relative">
+          {/* Subtle aurora gradient behind profile section */}
+          <div className="absolute inset-0 bg-gradient-to-t from-primary-50/30 via-transparent to-transparent dark:from-primary-950/20 pointer-events-none" />
+          {/* Gradient accent line at top */}
+          <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary-400/25 dark:via-primary-500/15 to-transparent" />
+
           {/* Mini profile */}
           <PrefetchNavLink
             to="/profile"
             onClick={closeMobileSidebar}
-            className="flex items-center gap-3 mb-3 p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors group"
+            className="flex items-center gap-3 mb-3 p-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.04] transition-all duration-200 group relative z-10"
           >
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-shadow">
                 {(username[0] ?? 'L').toUpperCase()}
               </div>
-              {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
+              {/* Online indicator with pulse */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-gray-900">
+                <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">
                 {username}
               </p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                 Level {currentLevel}
               </p>
             </div>
           </PrefetchNavLink>
 
-          {/* XP Progress bar */}
-          <div className="space-y-1.5">
+          {/* XP Progress bar with glow */}
+          <div className="space-y-1.5 relative z-10">
             <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               <span className="flex items-center gap-1">
                 <Zap className="w-3 h-3 text-amber-500" />
@@ -394,17 +423,65 @@ export default function Sidebar() {
                 {xpInLevel}/{xpNeededForLevel} to Lv.{currentLevel + 1}
               </span>
             </div>
-            <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-200/80 dark:bg-gray-700/50 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${xpProgress}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full bg-gradient-to-r from-primary-600 to-purple-600 rounded-full"
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500 rounded-full shadow-[0_0_8px_rgba(139,92,246,0.3)]"
               />
             </div>
             <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 dark:text-gray-400">
               <span>{completedCoursesCount} Completed</span>
               <span>{streak > 0 ? `🔥 ${streak}d` : 'No streak'}</span>
+            </div>
+
+            {/* Theme Selector Pill (Light / Dark / System) */}
+            <div className="pt-2.5 mt-2.5 border-t border-gray-200/40 dark:border-white/[0.08] flex items-center justify-between">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                Theme
+              </span>
+              <div className="flex items-center p-0.5 rounded-lg bg-gray-100 dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setTheme({ mode: 'light' })}
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                    theme.mode === 'light'
+                      ? 'bg-white dark:bg-slate-800 text-amber-500 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                  title="Light Theme"
+                  aria-label="Set light theme"
+                >
+                  <Sun className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme({ mode: 'dark' })}
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                    theme.mode === 'dark'
+                      ? 'bg-slate-800 text-indigo-400 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                  title="Dark Theme"
+                  aria-label="Set dark theme"
+                >
+                  <Moon className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme({ mode: 'system' })}
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
+                    theme.mode === 'system'
+                      ? 'bg-white dark:bg-slate-800 text-cyan-400 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                  title="System Theme"
+                  aria-label="Set system theme"
+                >
+                  <Monitor className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

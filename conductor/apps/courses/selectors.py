@@ -81,11 +81,39 @@ def list_published_courses(
     if instructor_id:
         qs = qs.filter(instructor_id=instructor_id)
     if search_query:
-        qs = qs.filter(
-            Q(title__icontains=search_query)
-            | Q(short_description__icontains=search_query)
-            | Q(description__icontains=search_query)
-        )
+        from django.db import connection
+        cleaned = search_query.strip()
+        is_postgres = "postgresql" in connection.settings_dict.get("ENGINE", "")
+        if is_postgres:
+            try:
+                from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+                vector = (
+                    SearchVector("title", weight="A")
+                    + SearchVector("short_description", weight="B")
+                    + SearchVector("description", weight="C")
+                )
+                query_obj = SearchQuery(cleaned)
+                qs = (
+                    qs.annotate(rank=SearchRank(vector, query_obj))
+                    .filter(
+                        Q(rank__gte=0.05)
+                        | Q(title__icontains=cleaned)
+                        | Q(short_description__icontains=cleaned)
+                    )
+                    .order_by("-rank", "-created_at")
+                )
+            except Exception:
+                qs = qs.filter(
+                    Q(title__icontains=cleaned)
+                    | Q(short_description__icontains=cleaned)
+                    | Q(description__icontains=cleaned)
+                )
+        else:
+            qs = qs.filter(
+                Q(title__icontains=cleaned)
+                | Q(short_description__icontains=cleaned)
+                | Q(description__icontains=cleaned)
+            )
     return qs
 
 
@@ -177,6 +205,47 @@ def list_completed_lesson_ids(user, course: Course) -> List[str]:
             user=user, lesson__module__course=course
         ).values_list("lesson_id", flat=True)
     )
+
+
+def get_course_lessons_progress_map(user, course: Course) -> Dict[str, Dict[str, Any]]:
+    """
+    DataLoader pattern for course lesson progress.
+    Fetches all completed lesson IDs and video playback seconds in 2 bulk queries,
+    returning an O(1) dictionary mapped by lesson_id to eliminate N+1 queries.
+    """
+    if not user or not user.is_authenticated:
+        return {}
+
+    completed_ids = set(
+        LessonCompletion.objects.filter(
+            user=user, lesson__module__course=course
+        ).values_list("lesson_id", flat=True)
+    )
+
+    progress_records = LessonProgress.objects.filter(
+        user=user, lesson__module__course=course
+    ).values("lesson_id", "progress_seconds", "last_updated")
+
+    progress_map = {
+        str(rec["lesson_id"]): {
+            "progress_seconds": rec["progress_seconds"],
+            "last_updated": rec["last_updated"],
+            "is_completed": str(rec["lesson_id"]) in completed_ids or rec["lesson_id"] in completed_ids,
+        }
+        for rec in progress_records
+    }
+
+    # Include completed lessons that might not have a separate video progress record
+    for cid in completed_ids:
+        cid_str = str(cid)
+        if cid_str not in progress_map:
+            progress_map[cid_str] = {
+                "progress_seconds": 0.0,
+                "last_updated": None,
+                "is_completed": True,
+            }
+
+    return progress_map
 
 
 def get_course_reviews(course: Course, *, limit: int = 50) -> QuerySet[Review]:

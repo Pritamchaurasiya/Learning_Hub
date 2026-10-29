@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:learning_hub/core/theme/theme_extensions.dart';
 
 /// Shimmer loading effect widget for skeleton screens
 ///
 /// Creates a shimmering gradient animation over content to indicate loading.
-/// Use [ShimmerBox] for individual placeholder shapes.
+/// Automatically adapts to light/dark theme.
 class ShimmerLoading extends StatefulWidget {
   /// The child widget to apply shimmer effect on
   final Widget child;
@@ -44,6 +45,10 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   Widget build(BuildContext context) {
     if (!widget.isLoading) return widget.child;
 
+    final baseColor = context.shimmerBase;
+    final highlightColor = context.shimmerHighlight;
+    final midColor = Color.lerp(baseColor, highlightColor, 0.5)!;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -52,15 +57,19 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
             return LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              colors: const [
-                Color(0xFFE0E0E0),
-                Color(0xFFF5F5F5),
-                Color(0xFFE0E0E0),
+              colors: [
+                baseColor,
+                midColor,
+                highlightColor,
+                midColor,
+                baseColor,
               ],
               stops: [
-                _controller.value - 0.3,
-                _controller.value,
-                _controller.value + 0.3,
+                (_controller.value - 0.3).clamp(0.0, 1.0),
+                (_controller.value - 0.15).clamp(0.0, 1.0),
+                _controller.value.clamp(0.0, 1.0),
+                (_controller.value + 0.15).clamp(0.0, 1.0),
+                (_controller.value + 0.3).clamp(0.0, 1.0),
               ],
             ).createShader(bounds);
           },
@@ -88,12 +97,11 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.grey[300],
+        color: context.surfaceVariant,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );

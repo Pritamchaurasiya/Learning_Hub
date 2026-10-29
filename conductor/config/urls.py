@@ -72,16 +72,25 @@ try:
 except ImportError:
     pass
 
+from apps.exams.views import GeoDetectView, PreferenceView
+
 urlpatterns += [
     # Admin
     path("god-admin/", god_admin.urls), # God Mode Portal
     path("admin/", admin.site.urls),
+    # Top-level preference routes (as per API contract table)
+    path("api/preference", PreferenceView.as_view(), name="top_preference_bare"),
+    path("api/preference/", PreferenceView.as_view(), name="top_preference"),
     # API v1
     path(
         "api/v1/",
         include(
             [
                 path("auth/", include("apps.users.urls.auth")),
+                path("geo/detect/", GeoDetectView.as_view(), name="v1_geo_detect"),
+                path("geo/detect", GeoDetectView.as_view()),
+                path("preference/", PreferenceView.as_view(), name="v1_preference"),
+                path("preference", PreferenceView.as_view()),
                 path("csrf-token", lambda request: JsonResponse({
                     "status": "success",
                     "csrfToken": __import__("django.middleware.csrf", fromlist=["get_token"]).get_token(request),
@@ -150,7 +159,7 @@ from apps.core.health_check import liveness_view, readiness_view, metrics_view
 # Serve SPA with fallback
 def serve_spa(request, path):
     """
-    Serve Flutter Web assets. If file not found, serve index.html for SPA routing.
+    Serve React Web assets from learninghub/dist. If file not found, serve index.html for SPA routing.
     """
     import posixpath
     from pathlib import Path
@@ -159,10 +168,10 @@ def serve_spa(request, path):
     
     path = posixpath.normpath(path).lstrip('/')
     
-    # GOD MODE: Serve from staticfiles/flutter where deploy script puts them
-    build_root = settings.BASE_DIR / 'staticfiles' / 'flutter'
+    # Unified React Web build root
+    build_root = settings.BASE_DIR.parent / 'learninghub' / 'dist'
     
-    # Try to serve the actual file (e.g. main.dart.js, assets/...)
+    # Try to serve the actual file (e.g. assets/*.js, assets/*.css)
     try:
         file_path = build_root / path
         if file_path.is_file():
@@ -170,8 +179,7 @@ def serve_spa(request, path):
     except Exception:
         pass
         
-    # Fallback to index.html for any other route (SPA)
-    # We serve from TEMPLATES directory where index.html was copied
+    # Fallback to index.html for client-side routing
     return TemplateView.as_view(template_name="index.html")(request)
 
 urlpatterns += [

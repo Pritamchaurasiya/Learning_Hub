@@ -8,8 +8,10 @@ from django.utils.text import slugify
 
 try:
     from django.contrib.postgres.indexes import GinIndex
+    from django.contrib.postgres.search import SearchVectorField
 except ImportError:
     GinIndex = None  # Not available without PostgreSQL
+    SearchVectorField = None
 
 try:
     from pgvector.django import HnswIndex
@@ -173,8 +175,16 @@ class Course(BaseModel):
                 name='course_duration_non_negative'
             ),
         ]
-        # Note: Full-text search GIN indexes removed temporarily
-        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
+        # Full-text search GIN indexes (PostgreSQL only)
+        # Enable with: CREATE EXTENSION IF NOT EXISTS pg_trgm;
+        if GinIndex:
+            indexes += [
+                GinIndex(
+                    fields=['title', 'description', 'short_description'],
+                    name='idx_course_fts',
+                    opclasses=['gin_trgm_ops', 'gin_trgm_ops', 'gin_trgm_ops']
+                ),
+            ]
 
     def __str__(self):
         return self.title
@@ -212,8 +222,15 @@ class Module(BaseModel):
             models.Index(fields=["course", "-created_at"], name='idx_module_recent'),  # Recent modules
             models.Index(fields=["title"], name='idx_module_title'),  # Title search
         ]
-        # Note: Full-text search GIN index removed temporarily
-        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
+        # Full-text search GIN index (PostgreSQL only)
+        if GinIndex:
+            indexes += [
+                GinIndex(
+                    fields=['title', 'description'],
+                    name='idx_module_fts',
+                    opclasses=['gin_trgm_ops', 'gin_trgm_ops']
+                ),
+            ]
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
@@ -251,8 +268,15 @@ class Lesson(BaseModel):
             models.Index(fields=["is_pro_only"], name='idx_lesson_pro'),  # Pro content filtering
             models.Index(fields=["title"], name='idx_lesson_title'),  # Title search
         ]
-        # Note: Full-text search GIN index removed temporarily
-        # See DATABASE_FULLTEXT_SEARCH_IMPLEMENTATION.md for proper implementation
+        # Full-text search GIN index (PostgreSQL only)
+        if GinIndex:
+            indexes += [
+                GinIndex(
+                    fields=['title', 'text_content'],
+                    name='idx_lesson_fts',
+                    opclasses=['gin_trgm_ops', 'gin_trgm_ops']
+                ),
+            ]
 
     def __str__(self):
         return self.title

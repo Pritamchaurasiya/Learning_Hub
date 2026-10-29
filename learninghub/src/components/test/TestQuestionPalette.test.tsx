@@ -21,14 +21,17 @@ describe('TestQuestionPalette Component', () => {
       />
     )
 
-    expect(screen.getByText('1')).toBeInTheDocument()
-    expect(screen.getByText('2')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText('4')).toBeInTheDocument()
+    // Palette buttons by test id
+    expect(screen.getByTestId('palette-question-1')).toBeInTheDocument()
+    expect(screen.getByTestId('palette-question-2')).toBeInTheDocument()
+    expect(screen.getByTestId('palette-question-3')).toBeInTheDocument()
+    expect(screen.getByTestId('palette-question-4')).toBeInTheDocument()
 
-    expect(screen.getByText(/Answered \(2\)/)).toBeInTheDocument()
-    expect(screen.getByText(/Flagged \(2\)/)).toBeInTheDocument()
-    expect(screen.getByText(/Unanswered \(2\)/)).toBeInTheDocument()
+    // 5-state NTA status labels
+    expect(screen.getByText('Answered')).toBeInTheDocument()
+    expect(screen.getByText('Not Answered')).toBeInTheDocument()
+    expect(screen.getByText('Not Visited')).toBeInTheDocument()
+    expect(screen.getByText('Marked for Review')).toBeInTheDocument()
   })
 
   it('calls onSelectQuestion when a question button is clicked', () => {
@@ -43,7 +46,7 @@ describe('TestQuestionPalette Component', () => {
       />
     )
 
-    fireEvent.click(screen.getByText('3'))
+    fireEvent.click(screen.getByTestId('palette-question-3'))
     expect(onSelect).toHaveBeenCalledWith(2)
   })
 
@@ -58,7 +61,7 @@ describe('TestQuestionPalette Component', () => {
       />
     )
 
-    const currentButton = screen.getByText('2')
-    expect(currentButton).toHaveAttribute('aria-current', 'true')
+    const currentBtn = screen.getByTestId('palette-question-2')
+    expect(currentBtn).toHaveAttribute('aria-current', 'true')
   })
 })

@@ -57,17 +57,17 @@ const defaultStages: PathwayStage[] = [
 
 export const TestPathwayMap = memo(function TestPathwayMap({ onStartStage }: TestPathwayMapProps) {
   return (
-    <div className="mb-8 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-indigo-950/40 p-6 backdrop-blur-xl shadow-xl">
+    <div className="mb-8 rounded-3xl border border-purple-100 dark:border-white/10 bg-white/80 dark:bg-gradient-to-br dark:from-slate-900/80 dark:via-slate-900/60 dark:to-indigo-950/40 p-6 backdrop-blur-xl shadow-sm dark:shadow-xl transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            Your Guided Pathway <Sparkles className="w-5 h-5 text-amber-400" />
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Your Guided Pathway <Sparkles className="w-5 h-5 text-amber-500 dark:text-amber-400" />
           </h2>
-          <p className="text-xs sm:text-sm text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             Pass each stage to unlock the next level and increase your IRT mastery rating.
           </p>
         </div>
-        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 self-start sm:self-auto">
+        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 self-start sm:self-auto">
           Stage 3 of 5 In Progress
         </span>
       </div>
@@ -75,7 +75,7 @@ export const TestPathwayMap = memo(function TestPathwayMap({ onStartStage }: Tes
       {/* Pathway Roadmap Nodes */}
       <div className="relative">
         {/* Connecting Progress Line (Hidden on tiny screens, horizontal on md+) */}
-        <div className="hidden lg:block absolute top-7 left-12 right-12 h-1 bg-white/10 z-0">
+        <div className="hidden lg:block absolute top-7 left-12 right-12 h-1 bg-gray-200 dark:bg-white/10 z-0">
           <div className="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-purple-500 w-[50%]" />
         </div>
 
@@ -90,20 +90,20 @@ export const TestPathwayMap = memo(function TestPathwayMap({ onStartStage }: Tes
                 key={stage.id}
                 className={`relative rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-300 ${
                   isCurrent
-                    ? 'bg-purple-950/40 border-2 border-purple-500 shadow-xl shadow-purple-500/20'
+                    ? 'bg-purple-50/80 dark:bg-purple-950/40 border-2 border-purple-500 shadow-lg shadow-purple-500/10 dark:shadow-xl dark:shadow-purple-500/20'
                     : isCompleted
-                      ? 'bg-emerald-950/20 border border-emerald-500/30'
-                      : 'bg-white/5 border border-white/5 opacity-70'
+                      ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/30'
+                      : 'bg-gray-50/80 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 opacity-70'
                 }`}
               >
                 {/* Node Status Badge */}
                 <div
                   className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-sm mb-3 transition-transform ${
                     isCompleted
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30'
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                       : isCurrent
                         ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/40 ring-4 ring-purple-400/30 animate-pulse'
-                        : 'bg-white/10 text-gray-400'
+                        : 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {isCompleted ? (
@@ -119,20 +119,20 @@ export const TestPathwayMap = memo(function TestPathwayMap({ onStartStage }: Tes
                 <span
                   className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full mb-1.5 ${
                     stage.difficulty === 'easy'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
                       : stage.difficulty === 'medium'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                        : 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
                   }`}
                 >
                   {stage.difficulty}
                 </span>
 
-                <h3 className="text-sm font-bold text-white mb-1 leading-snug">{stage.title}</h3>
-                <p className="text-xs text-gray-400 mb-3">{stage.topic}</p>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1 leading-snug">{stage.title}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{stage.topic}</p>
 
                 {isCompleted && (
-                  <span className="mt-auto text-xs font-bold text-emerald-400">
+                  <span className="mt-auto text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     Passed ({stage.score}%)
                   </span>
                 )}
@@ -140,7 +140,7 @@ export const TestPathwayMap = memo(function TestPathwayMap({ onStartStage }: Tes
                 {isCurrent && (
                   <Button
                     onClick={() => onStartStage?.(stage)}
-                    className="mt-auto w-full py-1.5 text-xs font-bold rounded-xl bg-purple-500 hover:bg-purple-400 text-white flex items-center justify-center gap-1.5 shadow-md shadow-purple-500/30"
+                    className="mt-auto w-full py-1.5 text-xs font-bold rounded-xl bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-purple-500/30"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     <span>Start Stage</span>

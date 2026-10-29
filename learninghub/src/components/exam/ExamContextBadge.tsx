@@ -26,31 +26,45 @@ export const ExamContextBadge: React.FC<ExamContextBadgeProps> = ({
     <>
       <motion.button
         type="button"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.03, y: -1 }}
+        whileTap={{ scale: 0.97 }}
         onClick={() => setIsModalOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
-        aria-label={`Target Exam: ${examName}. Click to change.`}
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 select-none shadow-sm ${
+        aria-label={`Target Exam: ${examName}. Click to calibrate.`}
+        className={`group relative inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl border text-xs font-semibold transition-all duration-300 select-none shadow-sm backdrop-blur-xl ${
           isConfigured
-            ? 'bg-primary-50/70 hover:bg-primary-100/80 dark:bg-primary-950/40 dark:hover:bg-primary-900/50 border-primary-200/80 dark:border-primary-800/60 text-primary-900 dark:text-primary-100'
-            : 'bg-amber-50/80 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 animate-pulse'
+            ? 'bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/5 hover:from-indigo-500/20 hover:to-purple-500/15 dark:from-indigo-950/50 dark:via-purple-950/30 dark:to-slate-900/50 border-indigo-200/70 dark:border-indigo-800/60 text-slate-900 dark:text-slate-100 shadow-indigo-500/5'
+            : 'bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/10 border-amber-300 dark:border-amber-700/70 text-amber-950 dark:text-amber-200 shadow-amber-500/10 animate-pulse'
         } ${className}`}
       >
-        <span className="text-sm shrink-0 leading-none">{isConfigured ? flagEmoji : '🎯'}</span>
+        {/* Glowing Indicator Beacon */}
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+              isConfigured ? 'bg-emerald-400' : 'bg-amber-400'
+            }`}
+          />
+          <span
+            className={`relative inline-flex rounded-full h-2 w-2 ${
+              isConfigured ? 'bg-emerald-500' : 'bg-amber-500'
+            }`}
+          />
+        </span>
+
+        <span className="text-sm shrink-0 leading-none select-none">{flagEmoji}</span>
 
         <div className="flex flex-col text-left">
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold tracking-tight truncate max-w-[130px] sm:max-w-[180px]">
+          <div className="flex items-center gap-1">
+            <span className="font-extrabold tracking-tight truncate max-w-[120px] sm:max-w-[170px] text-xs">
               {examName}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:text-slate-500 shrink-0" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:translate-y-0.5 transition-all shrink-0" />
           </div>
 
-          {!compact && isConfigured && subjectIds.length > 0 && (
-            <span className="text-[10px] font-medium text-primary-600/80 dark:text-primary-400/80 leading-none">
-              {subjectIds.length} {subjectIds.length === 1 ? 'subject' : 'subjects'} active
+          {!compact && isConfigured && (
+            <span className="text-[10px] font-bold text-indigo-600/90 dark:text-indigo-400/90 leading-none tracking-tight">
+              {subjectIds.length > 0 ? `${subjectIds.length} Subjects Active` : 'Target Calibrated'}
             </span>
           )}
         </div>
@@ -60,3 +74,4 @@ export const ExamContextBadge: React.FC<ExamContextBadgeProps> = ({
     </>
   )
 }
+

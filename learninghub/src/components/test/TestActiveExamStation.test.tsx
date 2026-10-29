@@ -58,6 +58,8 @@ const createMockTestState = (): UnifiedTestState => ({
   lockedSectionIds: [],
   sectionTimeRemaining: {},
   isOfflineMode: false,
+  visitedQuestionIds: ['q-1'],
+  examLanguage: 'en',
   pendingSyncCount: 0,
   isContestMode: false,
   proctorViolations: 0,

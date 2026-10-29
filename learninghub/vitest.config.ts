@@ -11,7 +11,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['backend/**', 'dist/**', 'node_modules/**'],
     css: true,
-    pool: 'forks',
+    pool: 'threads',
     fileParallelism: false,
     testTimeout: 15000,
     coverage: {

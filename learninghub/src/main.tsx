@@ -103,6 +103,8 @@ if (prefersReducedMotion.matches) {
 // Note: Global event listener for copy code buttons on markdown blocks
 // has been moved to the React-idiomatic CodeCopyHandler component rendered in App.tsx.
 
+import { CountryProvider } from './context/CountryContext'
+
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -110,7 +112,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <HelmetProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ErrorBoundary>
-            <App />
+            <CountryProvider>
+              <App />
+            </CountryProvider>
           </ErrorBoundary>
         </BrowserRouter>
       </HelmetProvider>

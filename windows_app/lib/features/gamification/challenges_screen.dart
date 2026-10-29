@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/api_client.dart';
 import '../../shared/widgets/app_feedback.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_extensions.dart';
 import 'dart:async';
 
 /// Model for Challenge data
@@ -178,17 +180,25 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-              Color(0xFF0F3460),
-            ],
+            colors: isDark 
+                ? [
+                    const Color(0xFF1A1A2E),
+                    const Color(0xFF16213E),
+                    const Color(0xFF0F3460),
+                  ]
+                : [
+                    AppColors.backgroundLight,
+                    AppColors.primaryLight.withValues(alpha: 0.1),
+                    AppColors.accentLight.withValues(alpha: 0.1),
+                  ],
           ),
         ),
         child: SafeArea(
@@ -212,12 +222,17 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
   }
 
   Widget _buildHeader() {
+    final textColor = context.isDarkMode ? Colors.white : context.textPrimary;
+    final secondaryTextColor = context.isDarkMode 
+        ? Colors.white.withValues(alpha: 0.7) 
+        : context.textSecondary;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: textColor),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 8),
@@ -226,10 +241,10 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Challenges',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -237,7 +252,7 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
               Text(
                 'Complete and earn rewards!',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: secondaryTextColor,
                   fontSize: 14,
                 ),
               ),
@@ -245,7 +260,7 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: Icon(Icons.refresh, color: textColor.withValues(alpha: 0.7)),
             onPressed: _loadData,
           ),
         ],
@@ -254,18 +269,28 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
   }
 
   Widget _buildStatsBar() {
+    final isDark = context.isDarkMode;
+    final borderColor = isDark 
+        ? Colors.white.withValues(alpha: 0.1) 
+        : context.borderColor;
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.purple.withValues(alpha: 0.3),
-            Colors.blue.withValues(alpha: 0.3),
-          ],
+          colors: isDark
+              ? [
+                  Colors.purple.withValues(alpha: 0.3),
+                  Colors.blue.withValues(alpha: 0.3),
+                ]
+              : [
+                  AppColors.primaryLight.withValues(alpha: 0.15),
+                  AppColors.accentLight.withValues(alpha: 0.15),
+                ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -286,14 +311,16 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen>
   }
 
   Widget _buildStatItem(String label, String value, IconData icon) {
+    final textColor = context.isDarkMode ? Colors.white : context.textPrimary;
+    
     return Column(
       children: [
         Icon(icon, color: Colors.amber, size: 28),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: textColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),

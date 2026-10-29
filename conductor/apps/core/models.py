@@ -7,16 +7,27 @@ import json
 import ipaddress
 import re
 
+from apps.core.db.managers import BaseModelManager
+
 
 class BaseModel(models.Model):
-    """Abstract base model with UUID primary key and timestamps."""
+    """Abstract base model with UUID primary key, timestamps, and soft-delete."""
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    
+    objects = BaseModelManager()
+    all_objects = models.Manager()  # Access to all records including soft-deleted
+    
     class Meta:
         abstract = True
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_active', '-created_at']),
+            models.Index(fields=['deleted_at']),
+        ]
     
     def to_dict(self, exclude=None):
         """Convert model to dictionary for JSON serialization."""
@@ -31,6 +42,24 @@ class BaseModel(models.Model):
                     value = str(value)
                 data[field.name] = value
         return data
+    
+    def soft_delete(self):
+        """Soft delete this instance."""
+        self.is_active = False
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['is_active', 'deleted_at', 'updated_at'])
+    
+    def restore(self):
+        """Restore this soft-deleted instance."""
+        self.is_active = True
+        self.deleted_at = None
+        self.save(update_fields=['is_active', 'deleted_at', 'updated_at'])
+    
+    def hard_delete(self):
+        """Permanently delete this instance."""
+        super().delete()
+    
+    delete = soft_delete  # Override default delete to soft delete
 
 
 class AuditLog(BaseModel):

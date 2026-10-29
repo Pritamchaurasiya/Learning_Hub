@@ -79,7 +79,7 @@ class CourseEmbedding(BaseModel):
     """
     # Link to any content (Video, Article, etc.)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    object_id = models.CharField(max_length=64, db_index=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
     # The actual text chunk used to generate the embedding
@@ -125,7 +125,7 @@ class ActivityLog(BaseModel):
     
     # Generic relation to any content
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
-    object_id = models.PositiveIntegerField(null=True, blank=True)
+    object_id = models.CharField(max_length=64, null=True, blank=True, db_index=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     
     # Session tracking

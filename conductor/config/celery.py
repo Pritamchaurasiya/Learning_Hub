@@ -30,13 +30,20 @@ app.conf.update(
     # Task execution
     task_acks_late=True,
     task_reject_on_worker_lost=True,
-    # Task routing
+    # Task routing - aligned with config/settings/base.py CELERY_TASK_ROUTES
     task_queues={
         "default": {"exchange": "default", "routing_key": "default"},
+        "ai_queue": {"exchange": "ai_queue", "routing_key": "ai_queue"},
         "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
+        "payment_queue": {"exchange": "payment_queue", "routing_key": "payment_queue"},
+        "notifications_queue": {"exchange": "notifications_queue", "routing_key": "notifications_queue"},
     },
     task_routes={
-        "apps.ai_engine.*": {"queue": "ai_computation"},
+        "apps.ai_engine.tasks.*": {"queue": "ai_queue"},
+        "apps.ai_engine.*": {"queue": "ai_queue"},
+        "apps.payments.tasks.*": {"queue": "payment_queue"},
+        "apps.notifications.tasks.*": {"queue": "notifications_queue"},
+        "apps.core.background_tasks.*": {"queue": "default"},
         "*": {"queue": "default"},
     },
     # Limits

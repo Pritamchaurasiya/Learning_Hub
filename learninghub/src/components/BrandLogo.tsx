@@ -24,47 +24,47 @@ const sizeConfig = {
     taglineSize: 'text-[7.5px]',
     subSize: 'text-[8px]',
     gap: 'gap-2',
-    minWidth: 'min-w-[130px]',
+    minWidth: 'min-w-[140px]',
     cursorHeight: 'h-3.5',
   },
   sm: {
     iconSize: 36,
     textSize: 'text-base font-black',
-    cursiveSize: 'text-[21px] font-extrabold tracking-tight',
+    cursiveSize: 'text-[20px] font-extrabold tracking-tight',
     taglineSize: 'text-[8.5px]',
     subSize: 'text-[9px]',
     gap: 'gap-2.5',
-    minWidth: 'min-w-[150px]',
+    minWidth: 'min-w-[170px]',
     cursorHeight: 'h-4',
   },
   md: {
-    iconSize: 46,
+    iconSize: 44,
     textSize: 'text-xl font-black',
-    cursiveSize: 'text-[27px] font-extrabold tracking-tight',
+    cursiveSize: 'text-[24px] font-extrabold tracking-tight',
     taglineSize: 'text-[9.5px]',
     subSize: 'text-[10px]',
     gap: 'gap-3',
-    minWidth: 'min-w-[185px]',
+    minWidth: 'min-w-[195px]',
     cursorHeight: 'h-5',
   },
   lg: {
-    iconSize: 58,
+    iconSize: 56,
     textSize: 'text-2xl font-black',
-    cursiveSize: 'text-[35px] font-black tracking-tight',
+    cursiveSize: 'text-[32px] font-black tracking-tight',
     taglineSize: 'text-[11px]',
     subSize: 'text-xs',
     gap: 'gap-3.5',
-    minWidth: 'min-w-[225px]',
+    minWidth: 'min-w-[240px]',
     cursorHeight: 'h-6',
   },
   xl: {
-    iconSize: 76,
+    iconSize: 72,
     textSize: 'text-4xl font-black',
-    cursiveSize: 'text-[56px] font-black tracking-tight',
+    cursiveSize: 'text-[48px] font-black tracking-tight',
     taglineSize: 'text-xs',
     subSize: 'text-sm',
     gap: 'gap-4',
-    minWidth: 'min-w-[290px]',
+    minWidth: 'min-w-[300px]',
     cursorHeight: 'h-8',
   },
 }
@@ -428,23 +428,17 @@ const DynamicBrandWord: React.FC<DynamicBrandWordProps> = ({
       {currentStage.isCursive ? (
         /* 1. APPLE-GRADE BOLD CURSIVE "LearningHub" (ChatGPT Keyboard Typing) */
         <span
-          className={`font-brand-cursive tracking-tight font-extrabold bg-clip-text text-transparent bg-gradient-to-r ${currentStage.gradient} dark:${currentStage.darkGradient} ${currentSize.cursiveSize} drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)]`}
+          className={`font-brand-cursive tracking-tight font-extrabold bg-clip-text text-transparent bg-gradient-to-r ${currentStage.gradient} dark:${currentStage.darkGradient} ${currentSize.cursiveSize} drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)] whitespace-nowrap`}
           style={{
             fontFamily: "'Satisfy', 'Dancing Script', 'Caveat', 'Pacifico', cursive, -apple-system, sans-serif",
-            lineHeight: 1.12,
-            paddingRight: '3px',
+            lineHeight: 1.2,
+            paddingRight: '4px',
             WebkitTextStroke: '0.4px currentColor',
             letterSpacing: '-0.015em',
+            display: 'inline-block',
           }}
         >
-          {displayText.length <= 8 ? (
-            displayText
-          ) : (
-            <>
-              <span>{displayText.slice(0, 8)}</span>
-              <span>{displayText.slice(8)}</span>
-            </>
-          )}
+          {displayText}
         </span>
       ) : (
         /* 2, 3, 4. "Learn", "Practice", "Grow" (ChatGPT Keyboard Typing) */

@@ -110,6 +110,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     #     except Exception:
     #         return 1
 
+    country_id = serializers.CharField(source='country.id', read_only=True, allow_null=True)
+    country_code = serializers.CharField(source='country.code', read_only=True, allow_null=True)
+    country_name = serializers.CharField(source='country.name', read_only=True, allow_null=True)
+
     def get_streak(self, obj):
         try:
             return obj.xp_profile.current_streak
@@ -129,6 +133,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "phone",
             "is_verified",
             "preferences",
+            "country",
+            "country_id",
+            "country_code",
+            "country_name",
             "created_at",
             "last_login_at",
             "xp",
@@ -145,6 +153,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "xp",
             "level",
             "streak",
+            "country_id",
+            "country_code",
+            "country_name",
         ]
 
 
@@ -153,7 +164,22 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["display_name", "bio", "phone", "preferences"]
+        fields = ["display_name", "bio", "phone", "preferences", "country"]
+
+
+class UserPreferenceSerializer(serializers.Serializer):
+    """Serializer for exam and country study preferences."""
+    countryId = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    examId = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    subjectIds = serializers.ListField(
+        child=serializers.CharField(), required=False, default=list
+    )
+    difficulty = serializers.ChoiceField(
+        choices=['EASY', 'MEDIUM', 'HARD', 'MIXED', 'ADAPTIVE'],
+        required=False,
+        default='MEDIUM'
+    )
+    dailyGoal = serializers.IntegerField(required=False, default=15)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

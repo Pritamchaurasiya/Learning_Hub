@@ -112,6 +112,11 @@ model Test {
   negativeMarks Float                    @default(0)
   isPublished   Boolean                  @default(true)
   isAiGenerated Boolean                  @default(false)
+  isPYQ         Boolean                  @default(false)
+  pyqYear       Int?
+  pyqShift      String?
+  pyqPaperName  String?
+  markingScheme Json?
   shuffleQuestions Boolean               @default(false)
   shuffleOptions   Boolean               @default(false)
   templateId    String?
@@ -126,6 +131,7 @@ model Test {
   search_vector Unsupported("tsvector")?
 
   @@index([examId, isPublished], map: "idx_test_exam_published")
+  @@index([examId, isPYQ, pyqYear], map: "idx_test_pyq_lookup")
   @@index([isPublished, mode, difficulty, createdAt(sort: Desc)], map: "idx_test_discover")
   @@index([isAiGenerated, isPublished], map: "idx_test_ai_published")
   @@index([deletedAt], map: "idx_test_deleted_at")
@@ -193,6 +199,8 @@ model TestSection {
   durationMinutes Int?
   isTimed         Boolean    @default(false)
   cutOffMarks     Float?
+  maxQuestionsToAttempt Int?
+  sectionType     String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   test            Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
@@ -921,6 +929,7 @@ enum TestMode {
   ADAPTIVE
   FLASHCARD
   CONTEST
+  PYQ
 }
 
 enum TestDifficulty {

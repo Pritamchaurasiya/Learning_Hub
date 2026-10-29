@@ -35,9 +35,8 @@ COPY --from=backend-build /usr/local/lib/python3.11/site-packages /usr/local/lib
 COPY --from=backend-build /usr/local/bin /usr/local/bin
 COPY --from=backend-build /app/backend /app/backend
 
-# Copy Frontend (Pre-built on Host)
-# Ensure deploy_god_mode.py runs before building this image!
-COPY windows_app/build/web /app/frontend/web
+# Copy Frontend (React 18 Production Build from learninghub/dist)
+COPY learninghub/dist /app/frontend/web
 
 # Configure Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
