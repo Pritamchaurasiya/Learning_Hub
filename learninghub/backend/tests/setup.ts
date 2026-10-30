@@ -36,6 +36,8 @@ jest.mock('../src/services/CacheService', () => {
       skillGraphKey: jest.fn().mockImplementation((userId, domain) => `skills:graph:${userId}:${domain || 'all'}`),
       learningPathsKey: jest.fn().mockImplementation((query) => `learning-paths:${query || 'all'}`),
       cacheOrFetch: jest.fn().mockImplementation(async (_key, _ttl, fetcher) => fetcher()),
+      xAdd: jest.fn().mockResolvedValue('1761800000000-0'),
+      xRead: jest.fn().mockResolvedValue([]),
     },
   }
 })

@@ -3,6 +3,7 @@ import logger from '../utils/logger'
 import { IRTScoringEngine } from './IRTScoringEngine'
 import { prisma } from '../prismaClient'
 import { defaultCatItems } from './catItemBank'
+import { domainEvents } from './DomainEventBus'
 
 export type ConfidenceLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 
@@ -561,6 +562,34 @@ export class CatAdaptiveService {
     }
 
     this.sessions.set(session.sessionId, session)
+
+    // Fire-and-forget real-time telemetry streaming to DomainEventBus & Redis Streams
+    void domainEvents.emit('CAT_ITEM_ANSWERED', {
+      sessionId: session.sessionId,
+      userId: session.userId,
+      itemId: currentItem.id,
+      isCorrect,
+      confidence: params.confidence,
+      cbmScore: responseRecord.cbmScore,
+      thetaAfter: responseRecord.thetaAfter,
+      semAfter: responseRecord.semAfter,
+      timeSpentSeconds: responseRecord.timeSpentSeconds,
+    })
+
+    if (session.isCompleted) {
+      void domainEvents.emit('CAT_SESSION_COMPLETED', {
+        sessionId: session.sessionId,
+        userId: session.userId,
+        subject: session.subject,
+        examSlug: session.examSlug,
+        finalTheta: session.currentTheta,
+        finalSem: session.currentSem,
+        abilityBand: session.abilityBand,
+        stoppingReason: session.stoppingReason,
+        totalQuestions: session.questionsAnswered,
+      })
+    }
+
     return { session, stepResult: responseRecord }
   }
 

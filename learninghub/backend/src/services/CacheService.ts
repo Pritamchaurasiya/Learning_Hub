@@ -638,6 +638,51 @@ export class CacheService {
     return fetchPromise
   }
 
+  /**
+   * Appends an entry to a Redis Stream (XADD)
+   */
+  async xAdd(
+    streamKey: string,
+    fields: Record<string, string>,
+    id: string = '*'
+  ): Promise<string | null> {
+    if (!this.client || !this.client.isReady) return null
+    try {
+      return await this.client.xAdd(streamKey, id, fields)
+    } catch (err) {
+      logger.warn(
+        `[CacheService] Failed to xAdd to stream "${streamKey}":`,
+        { error: err instanceof Error ? err.message : String(err) }
+      )
+      return null
+    }
+  }
+
+  /**
+   * Reads entries from a Redis Stream (XREAD)
+   */
+  async xRead(
+    streamKey: string,
+    lastId: string = '0-0',
+    count: number = 50
+  ): Promise<Array<{ id: string; message: Record<string, string> }> | null> {
+    if (!this.client || !this.client.isReady) return null
+    try {
+      const response = await this.client.xRead(
+        [{ key: streamKey, id: lastId }],
+        { COUNT: count }
+      )
+      if (!response || response.length === 0) return []
+      return response[0].messages
+    } catch (err) {
+      logger.warn(
+        `[CacheService] Failed to xRead from stream "${streamKey}":`,
+        { error: err instanceof Error ? err.message : String(err) }
+      )
+      return null
+    }
+  }
+
   isAvailable(): boolean {
     return this.client !== null && this.client.isReady
   }

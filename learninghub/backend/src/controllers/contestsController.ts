@@ -3,6 +3,7 @@ import { contestService } from '../services/ContestService'
 import { asyncHandler } from '../utils/errorHandler'
 import { sendSuccess, sendNotFound, sendValidationError } from '../utils/responseHelper'
 import { prisma } from '../prismaClient'
+import { domainEvents } from '../services/DomainEventBus'
 
 export const listContests = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId
@@ -60,6 +61,11 @@ export const registerContest = asyncHandler(async (req: Request, res: Response) 
     return
   }
   const result = await contestService.register(id, userId)
+  void domainEvents.emit('CONTEST_REGISTERED', {
+    contestId: id,
+    userId,
+    registeredAt: new Date().toISOString(),
+  })
   sendSuccess(res, result, 'Registered for contest successfully')
 })
 
@@ -104,6 +110,13 @@ export const logProctorEvent = asyncHandler(async (req: Request, res: Response) 
   }
 
   const result = await contestService.logProctorEvent(id, userId, event_type, metadata)
+  void domainEvents.emit('PROCTOR_ALERT_TRIGGERED', {
+    contestId: id,
+    userId,
+    eventType: event_type,
+    metadata,
+    timestamp: new Date().toISOString(),
+  })
   sendSuccess(res, result, 'Proctor event recorded')
 })
 

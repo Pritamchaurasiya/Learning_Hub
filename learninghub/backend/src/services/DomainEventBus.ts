@@ -14,6 +14,7 @@
  */
 
 import logger from '../utils/logger'
+import { cacheService } from './CacheService'
 
 // ─── Event Definitions ──────────────────────────────────────────────────────
 
@@ -98,6 +99,40 @@ export interface DomainEventMap {
   PASSWORD_CHANGED: {
     userId: string
   }
+  CAT_ITEM_ANSWERED: {
+    sessionId: string
+    userId: string
+    itemId: string
+    isCorrect: boolean
+    confidence: 'LOW' | 'MEDIUM' | 'HIGH'
+    cbmScore: number
+    thetaAfter: number
+    semAfter: number
+    timeSpentSeconds: number
+  }
+  CAT_SESSION_COMPLETED: {
+    sessionId: string
+    userId: string
+    subject: string
+    examSlug?: string
+    finalTheta: number
+    finalSem: number
+    abilityBand: string
+    stoppingReason?: string
+    totalQuestions: number
+  }
+  CONTEST_REGISTERED: {
+    contestId: string
+    userId: string
+    registeredAt: string
+  }
+  PROCTOR_ALERT_TRIGGERED: {
+    contestId: string
+    userId: string
+    eventType: string
+    metadata?: Record<string, unknown>
+    timestamp: string
+  }
 }
 
 type EventName = keyof DomainEventMap
@@ -109,6 +144,8 @@ type WildcardHandler = (event: string, data: unknown) => Promise<void> | void
 class DomainEventBus {
   private handlers: Map<string, Array<EventHandler<any>>> = new Map()
   private wildcardHandlers: WildcardHandler[] = []
+  private inMemoryAuditLog: Array<{ event: string; data: unknown; timestamp: string }> = []
+  private readonly MAX_AUDIT_LOG_SIZE = 100
 
   /**
    * Register a handler for a specific event type.
@@ -131,6 +168,25 @@ class DomainEventBus {
    * Emit an event. All handlers run async and failures are logged but never propagated.
    */
   async emit<E extends EventName>(event: E, data: DomainEventMap[E]): Promise<void> {
+    const timestamp = new Date().toISOString()
+
+    // Record to circular audit log buffer
+    this.inMemoryAuditLog.push({ event: String(event), data, timestamp })
+    if (this.inMemoryAuditLog.length > this.MAX_AUDIT_LOG_SIZE) {
+      this.inMemoryAuditLog.shift()
+    }
+
+    // Stream event asynchronously to Redis Streams for distributed workers/microservices
+    void cacheService
+      .xAdd('domain:events:stream', {
+        event: String(event),
+        payload: JSON.stringify(data),
+        timestamp,
+      })
+      .catch((err) => {
+        logger.debug(`[DomainEventBus] Redis stream publishing skipped: ${err?.message || err}`)
+      })
+
     const handlers = this.handlers.get(event) ?? []
     const allHandlers = [
       ...handlers.map((h) => () => h(data)),
@@ -138,7 +194,7 @@ class DomainEventBus {
     ]
 
     if (allHandlers.length === 0) {
-      logger.debug(`[DomainEventBus] No handlers for event: ${event}`)
+      logger.debug(`[DomainEventBus] No in-process handlers for event: ${event}`)
       return
     }
 
@@ -171,6 +227,14 @@ class DomainEventBus {
   removeAll(): void {
     this.handlers.clear()
     this.wildcardHandlers = []
+    this.inMemoryAuditLog = []
+  }
+
+  /**
+   * Retrieves recent in-memory audit log entries
+   */
+  getInMemoryAuditLog(): Array<{ event: string; data: unknown; timestamp: string }> {
+    return [...this.inMemoryAuditLog]
   }
 }
 
