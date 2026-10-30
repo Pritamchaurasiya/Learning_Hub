@@ -159,6 +159,7 @@ describe('ProblemsController', () => {
           language: 'javascript',
           timeLimit: 5000,
           memoryLimit: 256,
+          testCases: [{ input: '1 2', output: '3' }],
         })
       )
       expect(statusMock).toHaveBeenCalledWith(200)
