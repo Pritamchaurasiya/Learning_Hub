@@ -5,7 +5,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
   const originalApiKey = process.env.GROQ_API_KEY
 
   beforeEach(() => {
-    process.env.GROQ_API_KEY = 'test-api-key-placeholder'
+    process.env.GROQ_API_KEY = 'mock'
   })
 
   afterEach(() => {
@@ -51,7 +51,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          Authorization: 'Bearer test-api-key-placeholder',
+          Authorization: 'Bearer mock',
         }),
       })
     )
@@ -74,7 +74,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('test-api-key-placeholder', 'llama-3.3-70b-versatile')
+    const adapter = new GroqAdapter('mock', 'llama-3.3-70b-versatile')
     const result = await adapter.generateChat([
       { role: 'user', content: 'How do I invert a binary tree?' },
     ])
@@ -100,7 +100,7 @@ describe('GroqAdapter (Free & Ultra-Fast Cloud Models)', () => {
       json: jest.fn().mockResolvedValue(mockResponse),
     } as any)
 
-    const adapter = new GroqAdapter('test-api-key-placeholder')
+    const adapter = new GroqAdapter('mock')
     const result = await adapter.generateJSON<{ concepts: string[]; difficulty: string }>(
       'Return graph algorithms in json'
     )
