@@ -518,6 +518,10 @@ export class ExamContentService {
     return results
   }
 
+  async getExamCurriculum(examId: string) {
+    return this.getSubjects(examId)
+  }
+
   async getSubjects(examId: string) {
     try {
       const dbSubjects = await prisma.subject.findMany({
@@ -778,7 +782,7 @@ export class ExamContentService {
       ]
     }
 
-    if (lowerId.includes('cat') || lowerId.includes('mba')) {
+    if ((lowerId.includes('cat') && !lowerId.includes('mcat')) || lowerId.includes('mba')) {
       return [
         {
           id: 'sub-cat-quant',
