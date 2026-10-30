@@ -811,6 +811,154 @@ export class ExamContentService {
       ]
     }
 
+    if (lowerId.includes('gre')) {
+      return [
+        {
+          id: 'sub-gre-verbal',
+          name: 'Verbal Reasoning',
+          slug: 'gre-verbal',
+          topics: [
+            { id: 'top-gv-1', name: 'Text Completion & Sentence Equivalence', slug: 'text-completion' },
+            { id: 'top-gv-2', name: 'Critical Reasoning & Argument Analysis', slug: 'argument-analysis' },
+            { id: 'top-gv-3', name: 'Advanced Analytical Reading Passages', slug: 'analytical-reading' },
+          ],
+        },
+        {
+          id: 'sub-gre-quant',
+          name: 'Quantitative Reasoning',
+          slug: 'gre-quant',
+          topics: [
+            { id: 'top-gq-1', name: 'Arithmetic & Number Theory', slug: 'gre-arithmetic' },
+            { id: 'top-gq-2', name: 'Algebraic Equations & Functions', slug: 'gre-algebra' },
+            { id: 'top-gq-3', name: 'Geometry & Coordinate Plane', slug: 'gre-geometry' },
+            { id: 'top-gq-4', name: 'Data Analysis & Combinatorics', slug: 'gre-data-analysis' },
+          ],
+        },
+        {
+          id: 'sub-gre-awa',
+          name: 'Analytical Writing (AWA)',
+          slug: 'gre-awa',
+          topics: [
+            { id: 'top-gaw-1', name: 'Analyze an Issue Synthesis & Counterarguments', slug: 'analyze-issue' },
+          ],
+        },
+      ]
+    }
+
+    if (lowerId.includes('gmat')) {
+      return [
+        {
+          id: 'sub-gmat-quant',
+          name: 'Quantitative Reasoning (Problem Solving)',
+          slug: 'gmat-quant',
+          topics: [
+            { id: 'top-gmq-1', name: 'Advanced Number Properties & Fractions', slug: 'number-properties' },
+            { id: 'top-gmq-2', name: 'Exponents, Roots & Inequalities', slug: 'inequalities' },
+            { id: 'top-gmq-3', name: 'Word Problems & Rates/Work', slug: 'word-problems' },
+          ],
+        },
+        {
+          id: 'sub-gmat-verbal',
+          name: 'Verbal Reasoning (Focus Edition)',
+          slug: 'gmat-verbal',
+          topics: [
+            { id: 'top-gmv-1', name: 'Critical Reasoning (Assumptions & Weaken)', slug: 'critical-reasoning' },
+            { id: 'top-gmv-2', name: 'Complex Business & Academic Reading Passages', slug: 'business-rc' },
+          ],
+        },
+        {
+          id: 'sub-gmat-di',
+          name: 'Data Insights (DI)',
+          slug: 'gmat-data-insights',
+          topics: [
+            { id: 'top-gmd-1', name: 'Data Sufficiency Logic', slug: 'data-sufficiency' },
+            { id: 'top-gmd-2', name: 'Multi-Source Reasoning & Table Analysis', slug: 'multi-source' },
+            { id: 'top-gmd-3', name: 'Two-Part Analysis & Graphics Interpretation', slug: 'two-part' },
+          ],
+        },
+      ]
+    }
+
+    if (lowerId.includes('usmle')) {
+      return [
+        {
+          id: 'sub-usmle-foundations',
+          name: 'Foundational Biomedical Sciences',
+          slug: 'usmle-foundations',
+          topics: [
+            { id: 'top-uf-1', name: 'Pathology & Cellular Injury', slug: 'general-pathology' },
+            { id: 'top-uf-2', name: 'Physiology & Organ System Dynamics', slug: 'organ-physiology' },
+            { id: 'top-uf-3', name: 'Pharmacology, Pharmacokinetics & Receptors', slug: 'pharmacology' },
+            { id: 'top-uf-4', name: 'Biochemistry, Genetics & Molecular Biology', slug: 'molecular-genetics' },
+          ],
+        },
+        {
+          id: 'sub-usmle-organ-systems',
+          name: 'Organ Systems & Clinical Pathophysiology',
+          slug: 'usmle-organ-systems',
+          topics: [
+            { id: 'top-uo-1', name: 'Cardiovascular & Respiratory Systems', slug: 'cardio-pulmonary' },
+            { id: 'top-uo-2', name: 'Renal, Urinary & Electrolyte Balance', slug: 'renal-electrolytes' },
+            { id: 'top-uo-3', name: 'Gastrointestinal & Hepatobiliary', slug: 'gastro-hepatic' },
+            { id: 'top-uo-4', name: 'Neurology & Special Senses', slug: 'neurology' },
+          ],
+        },
+        {
+          id: 'sub-usmle-micro-immuno',
+          name: 'Microbiology, Immunology & Public Health',
+          slug: 'usmle-micro-immuno',
+          topics: [
+            { id: 'top-um-1', name: 'Immunology, Hypersensitivity & Vaccines', slug: 'immunology' },
+            { id: 'top-um-2', name: 'Bacteriology, Virology, Mycology & Parasitology', slug: 'medical-micro' },
+            { id: 'top-um-3', name: 'Biostatistics, Epidemiology & Medical Ethics', slug: 'epidemiology-ethics' },
+          ],
+        },
+      ]
+    }
+
+    if (lowerId.includes('mcat')) {
+      return [
+        {
+          id: 'sub-mcat-cp',
+          name: 'Chemical and Physical Foundations of Biological Systems (CPBS)',
+          slug: 'mcat-cpbs',
+          topics: [
+            { id: 'top-mc-1', name: 'General & Organic Chemistry Mechanisms', slug: 'organic-mechanisms' },
+            { id: 'top-mc-2', name: 'Thermodynamics, Electrochemistry & Kinetics', slug: 'thermodynamics' },
+            { id: 'top-mc-3', name: 'Newtonian Fluids, Optics & Electrostatics', slug: 'fluids-optics' },
+          ],
+        },
+        {
+          id: 'sub-mcat-bb',
+          name: 'Biological and Biochemical Foundations of Living Systems (BBLS)',
+          slug: 'mcat-bbls',
+          topics: [
+            { id: 'top-mb-1', name: 'Enzyme Kinetics (Michaelis-Menten & Lineweaver-Burk)', slug: 'enzyme-kinetics' },
+            { id: 'top-mb-2', name: 'Metabolism: Glycolysis, Krebs & Oxidative Phosphorylation', slug: 'cellular-metabolism' },
+            { id: 'top-mb-3', name: 'Molecular Genetics, Transcription & Epigenetics', slug: 'transcription-epigenetics' },
+          ],
+        },
+        {
+          id: 'sub-mcat-cars',
+          name: 'Critical Analysis and Reasoning Skills (CARS)',
+          slug: 'mcat-cars',
+          topics: [
+            { id: 'top-mr-1', name: 'Humanities & Social Science Analytical Passages', slug: 'humanities-passages' },
+            { id: 'top-mr-2', name: 'Author Voice, Tone, Underlying Rhetoric & Inferences', slug: 'rhetoric-inferences' },
+          ],
+        },
+        {
+          id: 'sub-mcat-ps',
+          name: 'Psychological, Social, and Biological Foundations of Behavior (PSBB)',
+          slug: 'mcat-psbb',
+          topics: [
+            { id: 'top-mp-1', name: 'Cognitive Psychology, Perception & Memory Models', slug: 'cognitive-psych' },
+            { id: 'top-mp-2', name: 'Social Stratification, Demographics & Sociology', slug: 'sociology-demographics' },
+          ],
+        },
+      ]
+    }
+
     // Default Software Engineering & DSA fallback
     return [
       {

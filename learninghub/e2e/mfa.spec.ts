@@ -106,8 +106,8 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
 
     await page.goto('/settings')
 
-    // Wait for the settings tabs to load
-    await page.waitForSelector('text=All Settings', { timeout: 10000 })
+    // Wait for the settings page to load - check for page title or URL
+    await page.waitForURL('**/settings**', { timeout: 10000 })
 
     // Click Security tab (labeled "2FA & Web3") to show 2FA card
     await page.locator('button:has-text("2FA & Web3")').click()

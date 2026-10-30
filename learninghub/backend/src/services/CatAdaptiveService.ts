@@ -376,15 +376,19 @@ export class CatAdaptiveService {
     }
     const cleanSub = subject.toLowerCase().trim()
 
-    // 1. Direct or partial subject match
+    // 1. Direct exact or targeted subject match
+    const exactMatches = availablePool.filter(item => item.subject.toLowerCase() === cleanSub)
+    if (exactMatches.length >= 2) {
+      return exactMatches
+    }
+
     const directMatches = availablePool.filter(item => {
       const itemSub = item.subject.toLowerCase()
       const itemTopic = item.topic.toLowerCase()
       return (
         itemSub.includes(cleanSub) ||
         cleanSub.includes(itemSub) ||
-        itemTopic.includes(cleanSub) ||
-        cleanSub.includes(itemTopic)
+        itemTopic.includes(cleanSub)
       )
     })
 
