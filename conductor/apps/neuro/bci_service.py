@@ -8,6 +8,7 @@ Interfaces with (simulated) Brain-Computer Interfaces.
 """
 
 import logging
+from enum import Enum
 import random
 import time
 from typing import Dict, Any, List

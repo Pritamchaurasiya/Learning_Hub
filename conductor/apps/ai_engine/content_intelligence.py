@@ -10,6 +10,7 @@ Advanced AI capabilities for:
 """
 
 import logging
+from django.utils import timezone
 import json
 import re
 from typing import Dict, Any, List, Optional

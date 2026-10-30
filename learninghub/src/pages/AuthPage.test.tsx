@@ -27,6 +27,12 @@ vi.mock('react-router-dom', async () => {
 describe('AuthPage Component & MFA Challenge Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') {
+        return { data: [] }
+      }
+      return { data: null }
+    })
     useStore.setState({
       auth: {
         isAuthenticated: false,
@@ -45,22 +51,28 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
   })
 
   it('handles standard authentication without MFA', async () => {
-    vi.mocked(apiModule.fetchApi).mockResolvedValueOnce({
-      data: {
-        user: {
-          id: 'usr-123',
-          email: 'student@learninghub.com',
-          username: 'student',
-          role: 'STUDENT',
-          xp: 100,
-          level: 1,
-          streak: 1,
-        },
-        tokens: {
-          accessToken: 'access-token-xyz',
-          refreshToken: 'refresh-token-xyz',
-        },
-      },
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/login') {
+        return {
+          data: {
+            user: {
+              id: 'usr-123',
+              email: 'student@learninghub.com',
+              username: 'student',
+              role: 'STUDENT',
+              xp: 100,
+              level: 1,
+              streak: 1,
+            },
+            tokens: {
+              accessToken: 'access-token-xyz',
+              refreshToken: 'refresh-token-xyz',
+            },
+          },
+        }
+      }
+      return { data: null }
     })
 
     render(<AuthPage />)
@@ -88,11 +100,17 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
   })
 
   it('transitions to MFA challenge when server responds with mfaRequired', async () => {
-    vi.mocked(apiModule.fetchApi).mockResolvedValueOnce({
-      data: {
-        mfaRequired: true,
-        mfaSessionToken: 'session-jwt-token-456',
-      },
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/login') {
+        return {
+          data: {
+            mfaRequired: true,
+            mfaSessionToken: 'session-jwt-token-456',
+          },
+        }
+      }
+      return { data: null }
     })
 
     render(<AuthPage />)
@@ -114,31 +132,38 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
   })
 
   it('submits MFA 6-digit code to /auth/mfa/login and completes authentication', async () => {
-    vi.mocked(apiModule.fetchApi)
-      .mockResolvedValueOnce({
-        data: {
-          mfaRequired: true,
-          mfaSessionToken: 'session-jwt-token-456',
-        },
-      })
-      .mockResolvedValueOnce({
-        data: {
-          user: {
-            id: 'usr-mfa',
-            email: 'mfa.user@learninghub.com',
-            username: 'mfa_user',
-            role: 'STUDENT',
-            xp: 500,
-            level: 2,
-            streak: 3,
-            mfaEnabled: true,
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/login') {
+        return {
+          data: {
+            mfaRequired: true,
+            mfaSessionToken: 'session-jwt-token-456',
           },
-          tokens: {
-            accessToken: 'mfa-verified-token',
-            refreshToken: 'mfa-refresh-token',
+        }
+      }
+      if (url === '/auth/mfa/login') {
+        return {
+          data: {
+            user: {
+              id: 'usr-mfa',
+              email: 'mfa.user@learninghub.com',
+              username: 'mfa_user',
+              role: 'STUDENT',
+              xp: 500,
+              level: 2,
+              streak: 3,
+              mfaEnabled: true,
+            },
+            tokens: {
+              accessToken: 'mfa-verified-token',
+              refreshToken: 'mfa-refresh-token',
+            },
           },
-        },
-      })
+        }
+      }
+      return { data: null }
+    })
 
     render(<AuthPage />)
 
@@ -175,11 +200,17 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
   })
 
   it('allows user to cancel MFA challenge and return to login', async () => {
-    vi.mocked(apiModule.fetchApi).mockResolvedValueOnce({
-      data: {
-        mfaRequired: true,
-        mfaSessionToken: 'session-jwt-token-456',
-      },
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/login') {
+        return {
+          data: {
+            mfaRequired: true,
+            mfaSessionToken: 'session-jwt-token-456',
+          },
+        }
+      }
+      return { data: null }
     })
 
     render(<AuthPage />)

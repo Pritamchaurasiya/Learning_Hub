@@ -14,6 +14,8 @@ import json
 import numpy as np
 from django.apps import apps
 from django.db.models import Q, Count, Avg, Prefetch
+from django.db.models.functions import ExtractHour
+from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
 from prometheus_client import Counter, Histogram, Gauge
@@ -477,6 +479,7 @@ class EnhancedUserBehaviorService:
             }
             
             # Predictions
+            enrollment_data = {'total_enrollments': total, 'completed_enrollments': completed}
             predictions = await EnhancedUserBehaviorService._generate_predictions(user, profile, enrollment_data)
             
             return {

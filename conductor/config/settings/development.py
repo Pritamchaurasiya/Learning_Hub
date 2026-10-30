@@ -83,6 +83,17 @@ STATICFILES_DIRS = [
     pathlib.Path(BASE_DIR) / "static",
 ]
 
+# Observability - Development Settings
+OTEL_ENABLED = os.getenv("OTEL_ENABLED", "false").lower() in ("true", "1", "yes")
+OTEL_SAMPLE_RATE = 1.0
+OTEL_EXPORTER_CONSOLE = True
+OTEL_EXPORTER_JAEGER = False
+
+SENTRY_ENABLED = os.getenv("SENTRY_ENABLED", "false").lower() in ("true", "1", "yes")
+SENTRY_TRACES_SAMPLE_RATE = 1.0
+SENTRY_PROFILES_SAMPLE_RATE = 1.0
+SENTRY_DEBUG = True
+
 # Add N+1 detection middleware (only in development)
 MIDDLEWARE += [
     "apps.core.middleware.n_plus_one_detection.NPlusOneDetectionMiddleware",

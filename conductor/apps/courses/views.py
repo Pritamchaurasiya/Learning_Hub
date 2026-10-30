@@ -2,6 +2,9 @@
 Course views for Learning Hub API.
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action

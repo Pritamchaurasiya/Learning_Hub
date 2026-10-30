@@ -93,6 +93,15 @@ const COMMANDS: CommandItem[] = [
     keywords: ['leetcode', 'code', 'dsa', 'algorithms', 'python', 'javascript', 'cpp'],
   },
   {
+    id: 'practice-visualizer',
+    title: 'Algorithm Visualizer',
+    description: 'Interactive stepping and animated execution of sorting, graph, and tree algorithms',
+    category: 'Practice',
+    icon: Code2,
+    path: '/problems',
+    keywords: ['visualizer', 'algorithm visualizer', 'sorting', 'graph', 'tree', 'animation', 'step'],
+  },
+  {
     id: 'practice-arena-duel',
     title: '1v1 Arena Duel',
     description: 'Real-time 1v1 algorithm battle with Elo rating & live telemetry',

@@ -1,6 +1,7 @@
 """Notification models."""
 
 from django.db import models
+from django.utils import timezone
 from apps.users.models import User
 from apps.core.models import BaseModel
 

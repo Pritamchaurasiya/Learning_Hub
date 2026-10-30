@@ -1,12 +1,17 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
+
 
 def generate_problem_id():
     return f"prob-{uuid.uuid4().hex[:8]}"
 
+
 def generate_submission_id():
     return f"sub-{uuid.uuid4().hex[:10]}"
+
 
 class Problem(models.Model):
     DIFFICULTY_CHOICES = (
@@ -27,7 +32,12 @@ class Problem(models.Model):
     starter_code = models.JSONField(default=dict, blank=True)
     time_limit_sec = models.FloatField(default=2.0)
     memory_limit_mb = models.IntegerField(default=256)
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Full-text search vector field
+    search_vector = SearchVectorField(null=True, editable=False)
 
     class Meta:
         db_table = 'lh_problems'
@@ -35,10 +45,13 @@ class Problem(models.Model):
         indexes = [
             models.Index(fields=['category', 'difficulty']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['is_active', 'deleted_at']),
+            GinIndex(fields=['search_vector'], name='problem_search_vector_idx'),
         ]
 
     def __str__(self):
         return f"{self.title} ({self.difficulty})"
+
 
 class TestCase(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='test_cases')
@@ -53,6 +66,7 @@ class TestCase(models.Model):
 
     def __str__(self):
         return f"TestCase for {self.problem.title} (Hidden: {self.is_hidden})"
+
 
 class ProblemSubmission(models.Model):
     STATUS_CHOICES = (

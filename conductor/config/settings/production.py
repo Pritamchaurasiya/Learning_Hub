@@ -213,11 +213,25 @@ MANAGERS = ADMINS
 USE_X_FORWARDED_HOST = False
 SECURE_REFERRER_POLICY = 'same-origin'
 
-# Content Security Policy - strict for production
+# Content Security Policy - strict for production (handled by SecurityHeadersMiddleware with nonces)
+# These are kept for django-csp package compatibility but overridden by middleware
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net')
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", 'https://fonts.googleapis.com')
+CSP_SCRIPT_SRC = ("'self'", 'https://cdn.jsdelivr.net')
+CSP_STYLE_SRC = ("'self'", 'https://fonts.googleapis.com')
 CSP_FONT_SRC = ("'self'", 'https://fonts.gstatic.com')
 CSP_IMG_SRC = ("'self'", 'data:', 'https:')
 CSP_CONNECT_SRC = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'none'",)  # Prevent iframe embedding
+
+# Observability - Production Settings
+OTEL_ENABLED = True
+OTEL_SAMPLE_RATE = 0.1
+OTEL_EXPORTER_JAEGER = True
+OTEL_EXPORTER_OTLP = False  # Set to True if using OTLP collector
+# OTEL_OTLP_ENDPOINT = "http://jaeger:4317"  # Uncomment if using OTLP
+
+SENTRY_ENABLED = True
+SENTRY_TRACES_SAMPLE_RATE = 0.1
+SENTRY_PROFILES_SAMPLE_RATE = 0.1
+SENTRY_SEND_PII = False
+SENTRY_DEBUG = False

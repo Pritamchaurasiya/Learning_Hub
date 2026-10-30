@@ -362,7 +362,7 @@ def cached(
             return CacheService.get_or_set(cache_key, lambda: func(*args, **kwargs), config)
         
         # Add cache control methods
-        wrapper.cache_clear = lambda k=None: CacheService.delete(k or cache_key)
+        wrapper.cache_clear = lambda k=None: CacheService.delete(k or key) if (k or key) else None
         
         return wrapper
     return decorator

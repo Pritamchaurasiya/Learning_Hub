@@ -438,7 +438,14 @@ const DynamicBrandWord: React.FC<DynamicBrandWordProps> = ({
             display: 'inline-block',
           }}
         >
-          {displayText}
+          {displayText.startsWith('Learning') && displayText.length >= 8 ? (
+            <>
+              <span>Learning</span>
+              <span>{displayText.slice(8)}</span>
+            </>
+          ) : (
+            displayText
+          )}
         </span>
       ) : (
         /* 2, 3, 4. "Learn", "Practice", "Grow" (ChatGPT Keyboard Typing) */

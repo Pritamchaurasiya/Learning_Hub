@@ -42,6 +42,21 @@ vi.mock('../utils/api', () => ({
   fetchApi: vi.fn(),
 }))
 
+vi.mock('../hooks/useCountry', () => ({
+  useCountry: () => ({
+    countryId: 'all',
+    countryCode: 'IN',
+    countryName: 'India',
+    flagEmoji: '🇮🇳',
+    availableCountries: [],
+    setCountry: vi.fn(),
+    openCountrySelector: vi.fn(),
+    closeCountrySelector: vi.fn(),
+    openPermissionModal: vi.fn(),
+    closePermissionModal: vi.fn(),
+  }),
+}))
+
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({

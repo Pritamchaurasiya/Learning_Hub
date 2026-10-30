@@ -9,7 +9,7 @@ Simulates storing digital data in biological DNA sequences.
 
 import logging
 import random
-from typing import List, Dict
+from typing import List, Dict, Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

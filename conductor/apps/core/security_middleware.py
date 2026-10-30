@@ -2,7 +2,7 @@
 Advanced Security Middleware for Learning Hub.
 
 This module provides enterprise-grade security features:
-1. Security Headers (CSP, X-Frame-Options, etc.)
+1. Security Headers (CSP with Nonce, X-Frame-Options, etc.)
 2. Request Logging & Monitoring
 3. SQL Injection Detection
 4. XSS Prevention
@@ -13,6 +13,7 @@ import logging
 import re
 import hashlib
 import json
+import secrets
 import structlog
 from typing import Callable, Optional, Dict, Any
 from datetime import timedelta
@@ -21,8 +22,34 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
+from django.utils.deprecation import MiddlewareMixin
 
 logger = logging.getLogger(__name__)
+
+
+class CSPNonceMiddleware:
+    """
+    Generate and attach CSP nonce to request for template rendering.
+    
+    This middleware generates a cryptographically secure random nonce
+    for each request and makes it available to templates via request.csp_nonce.
+    The nonce is also added to the CSP header via SecurityHeadersMiddleware.
+    """
+    
+    def __init__(self, get_response: Callable):
+        self.get_response = get_response
+    
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        # Generate a secure random nonce for this request
+        nonce = secrets.token_urlsafe(16)
+        request.csp_nonce = nonce
+        
+        response = self.get_response(request)
+        
+        # Store nonce on response for SecurityHeadersMiddleware to use
+        response.csp_nonce = nonce
+        
+        return response
 
 
 class SecurityHeadersMiddleware:
@@ -30,7 +57,7 @@ class SecurityHeadersMiddleware:
     Add essential security headers to all responses.
     
     Headers Added:
-    - Content-Security-Policy (CSP)
+    - Content-Security-Policy (CSP) with nonce support
     - X-Content-Type-Options
     - X-Frame-Options
     - X-XSS-Protection
@@ -45,11 +72,23 @@ class SecurityHeadersMiddleware:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         response = self.get_response(request)
         
-        # Content Security Policy
+        # Get nonce from response (set by CSPNonceMiddleware)
+        nonce = getattr(response, 'csp_nonce', None)
+        nonce_attr = f"'nonce-{nonce}'" if nonce else "'unsafe-inline'"
+        
+        # Build CSP directives - use nonce instead of unsafe-inline in production
+        if not settings.DEBUG and nonce:
+            script_src = f"'self' {nonce_attr} https://cdn.jsdelivr.net https://apis.google.com"
+            style_src = f"'self' {nonce_attr} https://fonts.googleapis.com https://cdnjs.cloudflare.com"
+        else:
+            # Development: allow unsafe-inline for Vite HMR
+            script_src = "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://apis.google.com"
+            style_src = "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com"
+        
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://apis.google.com",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+            f"script-src {script_src}",
+            f"style-src {style_src}",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
             "img-src 'self' data: https: blob:",
             "connect-src 'self' https://api.razorpay.com https://generativelanguage.googleapis.com wss:",
@@ -63,7 +102,7 @@ class SecurityHeadersMiddleware:
         response['X-Content-Type-Options'] = 'nosniff'
         
         # Clickjacking protection
-        response['X-Frame-Options'] = 'SAMEORIGIN'
+        response['X-Frame-Options'] = 'DENY'
         
         # XSS protection (legacy, but still useful for older browsers)
         response['X-XSS-Protection'] = '1; mode=block'

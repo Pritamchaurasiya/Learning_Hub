@@ -159,24 +159,32 @@ export function classifyMistake(
   let diagnosis = 'Minor calculation error or distractor trap.'
   let recommendedAction = 'Review key formulas and double-check step-by-step arithmetic.'
 
+  const userConfidence = (questionResult as Record<string, unknown>).confidence
+
   if (isUnanswered) {
     mistakeType = 'UNANSWERED'
     mistakeLabel = 'Skipped / Unattempted'
     severity = 'HIGH'
     diagnosis = 'Question skipped. Indicates lack of confidence or severe time pressure.'
     recommendedAction = 'Practice rapid elimination of obviously false choices to attempt educated guesses.'
-  } else if (timeSpent < 15 && totalRemainingTimePercent < 20) {
-    mistakeType = 'TIME_CRUNCH'
-    mistakeLabel = 'Time Crunch Guess'
-    severity = 'CRITICAL'
-    diagnosis = 'Rushed attempt under depleted test clock (<15s spent).'
-    recommendedAction = 'Improve sectional pacing; allocate strict per-question time caps early.'
+  } else if (userConfidence === 'high') {
+    mistakeType = 'CONFIDENCE_MISMATCH'
+    mistakeLabel = 'Overconfidence Trap'
+    severity = 'HIGH'
+    diagnosis = 'High confidence indicated, but answer was incorrect. Highlights illusion of competence.'
+    recommendedAction = 'Calibrate confidence against empirical accuracy; practice self-questioning.'
   } else if (timeSpent > averageTimePerQuestion * 1.6) {
     mistakeType = 'CONCEPT_GAP'
     mistakeLabel = 'Conceptual Hurdle'
-    severity = 'HIGH'
+    severity = 'CRITICAL'
     diagnosis = 'Substantial time invested (>1.6x average) but resulted in incorrect response.'
     recommendedAction = 'Revisit foundational theory in the core syllabus and work on step-by-step derivation.'
+  } else if (timeSpent < 15 || (totalRemainingTimePercent < 20 && timeSpent < 25)) {
+    mistakeType = 'TIME_CRUNCH'
+    mistakeLabel = 'Time Crunch Guess'
+    severity = 'HIGH'
+    diagnosis = 'Rushed attempt under depleted test clock (<15s spent).'
+    recommendedAction = 'Improve sectional pacing; allocate strict per-question time caps early.'
   } else if (timeSpent < averageTimePerQuestion * 0.4) {
     mistakeType = 'CALCULATION_SLIP'
     mistakeLabel = 'Speed-Induced Trap'

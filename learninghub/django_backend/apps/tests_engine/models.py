@@ -2,21 +2,29 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
+
 
 def generate_test_id():
     return f"test-{uuid.uuid4().hex[:8]}"
 
+
 def generate_question_id():
     return f"q-{uuid.uuid4().hex[:8]}"
+
 
 def generate_option_id():
     return f"opt-{uuid.uuid4().hex[:8]}"
 
+
 def generate_attempt_id():
     return f"att-{uuid.uuid4().hex[:10]}"
 
+
 def generate_answer_id():
     return f"ans-{uuid.uuid4().hex[:8]}"
+
 
 class Test(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=generate_test_id)
@@ -32,19 +40,30 @@ class Test(models.Model):
     is_adaptive = models.BooleanField(default=False)
     max_attempts = models.IntegerField(default=5)
     is_published = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     shuffle_questions = models.BooleanField(default=False)
     shuffle_options = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Full-text search vector field
+    search_vector = SearchVectorField(null=True, editable=False)
+
     class Meta:
         db_table = 'lh_tests'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_active', 'deleted_at']),
+            GinIndex(fields=['search_vector'], name='test_search_vector_idx'),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.category})"
 
+
 def generate_section_id():
     return f"sec-{uuid.uuid4().hex[:8]}"
+
 
 class TestSection(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=generate_section_id)
@@ -62,6 +81,7 @@ class TestSection(models.Model):
 
     def __str__(self):
         return f"{self.test.title} - {self.title}"
+
 
 class Question(models.Model):
     TYPE_CHOICES = (
@@ -83,13 +103,23 @@ class Question(models.Model):
     negative_marks = models.FloatField(default=1.0)
     explanation = models.TextField(blank=True, default='')
     order = models.IntegerField(default=1)
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    # Full-text search vector field
+    search_vector = SearchVectorField(null=True, editable=False)
 
     class Meta:
         db_table = 'lh_test_questions'
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['is_active', 'deleted_at']),
+            GinIndex(fields=['search_vector'], name='question_search_vector_idx'),
+        ]
 
     def __str__(self):
         return f"Q: {self.prompt[:40]}... ({self.topic})"
+
 
 class Option(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=generate_option_id)
@@ -104,6 +134,7 @@ class Option(models.Model):
 
     def __str__(self):
         return f"Opt: {self.text[:30]} ({'Correct' if self.is_correct else 'Wrong'})"
+
 
 class TestAttempt(models.Model):
     STATUS_CHOICES = (
@@ -141,6 +172,7 @@ class TestAttempt(models.Model):
     def __str__(self):
         return f"Attempt #{self.attempt_number} on {self.test.title} by {self.user.email}"
 
+
 class AttemptAnswer(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=generate_answer_id)
     attempt = models.ForeignKey(TestAttempt, on_delete=models.CASCADE, related_name='answers')
@@ -157,6 +189,7 @@ class AttemptAnswer(models.Model):
         db_table = 'lh_attempt_answers'
         unique_together = ('attempt', 'question')
 
+
 class TopicPerformance(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='topic_performances')
     topic = models.CharField(max_length=100, db_index=True)
@@ -172,6 +205,7 @@ class TopicPerformance(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.topic} ({self.accuracy}%)"
+
 
 class QuestionBookmark(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question_bookmarks')
@@ -336,4 +370,3 @@ class UserSkillMastery(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.skill.name}: {round(self.p_mastery * 100, 1)}% ({self.status})"
-

@@ -30,16 +30,13 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get)
   },
   toggleDarkMode: () => {
     const current = get().theme.mode
-    let newMode: 'light' | 'dark' = 'dark'
-    if (current === 'dark') {
+    let newMode: 'light' | 'dark' | 'system' = 'light'
+    if (current === 'system') {
       newMode = 'light'
     } else if (current === 'light') {
       newMode = 'dark'
     } else {
-      const isSystemDark =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-      newMode = isSystemDark ? 'light' : 'dark'
+      newMode = 'system'
     }
     set({ theme: { mode: newMode } })
     if (typeof window !== 'undefined') {

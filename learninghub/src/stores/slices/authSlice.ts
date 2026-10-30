@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { fetchApi, clearTokens, setAccessToken, setRefreshToken } from '../../utils/api'
+import { fetchApi, clearTokens } from '../../utils/api'
 import { trackEvent } from '../../services/analyticsGA4Service'
 import { useLearningContextStore } from '../useLearningContextStore'
 import { clearWsAuthToken } from '../../services/examStationWebSocketService'
@@ -23,15 +23,9 @@ function extractUserFromResponse(response: unknown): Record<string, unknown> | u
 
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   auth: initialAuthState,
-  setAuth: (token, refreshToken, user) => {
-    // Retain tokens in memory (not localStorage) for dual-mode protection:
-    // httpOnly cookies are primary, and in-memory tokens power Bearer headers & refresh calls.
-    if (token) {
-      void setAccessToken(token)
-    }
-    if (refreshToken) {
-      void setRefreshToken(refreshToken)
-    }
+  setAuth: (_token, _refreshToken, user) => {
+    // Tokens are managed by httpOnly cookies (backend).
+    // No localStorage or in-memory token storage needed.
     set(state => ({
       auth: { isAuthenticated: true, user, isHydrated: state.auth.isHydrated },
       progress: {

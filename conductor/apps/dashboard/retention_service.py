@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from apps.users.models import User
 from apps.courses.models import Course
-# from apps.gamification.models import UserXP
+from apps.gamification.models import UserXP
 
 class RetentionService:
     """

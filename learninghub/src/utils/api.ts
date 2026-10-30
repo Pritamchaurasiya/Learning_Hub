@@ -7,6 +7,7 @@ import {
   setCachedData,
   trackInFlightRequest,
 } from './cache'
+import { normalizeResponse } from './responseNormalizer'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -22,6 +23,10 @@ if (!API_URL) {
  *   COOKIE_ACCESS.name  = 'access_token'  (path: '/', maxAge: 15min)
  *   COOKIE_REFRESH.name = 'refresh_token' (path: '/api/v1/auth', maxAge: 7d)
  * Both are httpOnly + SameSite=strict on the backend.
+ * 
+ * SECURITY: Tokens are stored ONLY in httpOnly cookies. No localStorage, no in-memory fallback.
+ * The browser automatically sends cookies with credentials: 'include'.
+ * We do NOT read tokens from cookies for Authorization headers — the cookie is sent automatically.
  */
 
 const ACCESS_TOKEN_COOKIE = 'access_token'
@@ -29,6 +34,7 @@ const REFRESH_TOKEN_COOKIE = 'refresh_token'
 
 /**
  * Read a cookie value by name. Returns null if not present.
+ * Used only for CSRF token (non-httpOnly) and debugging.
  */
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null
@@ -40,31 +46,39 @@ function getCookie(name: string): string | null {
 
 /**
  * Get the JWT access token from the httpOnly cookie.
- * Backend sets this cookie on login; we read it for Authorization headers.
- * NOTE: We cannot set httpOnly cookies from JS — the backend controls that.
- * This function is read-only from the frontend's perspective.
+ * NOTE: In production with httpOnly cookies, this returns null.
+ * The browser automatically sends the cookie with credentials: 'include'.
+ * This is kept for backward compatibility with non-httpOnly setups.
  */
-let inMemoryAccessToken: string | null = null
-let inMemoryRefreshToken: string | null = null
-
 async function getAccessToken(): Promise<string | null> {
-  return inMemoryAccessToken || getCookie(ACCESS_TOKEN_COOKIE)
+  // httpOnly cookies cannot be read from JavaScript
+  // The browser sends them automatically with credentials: 'include'
+  return getCookie(ACCESS_TOKEN_COOKIE)
 }
 
 /**
- * Get the refresh token from the httpOnly cookie or in-memory fallback.
- * Backend sets this cookie on login; we read it for token refresh calls.
+ * Get the refresh token from the httpOnly cookie.
+ * NOTE: In production with httpOnly cookies, this returns null.
+ * The browser sends it automatically with credentials: 'include' to /api/v1/auth/refresh.
  */
 async function getRefreshToken(): Promise<string | null> {
-  return inMemoryRefreshToken || getCookie(REFRESH_TOKEN_COOKIE)
+  return getCookie(REFRESH_TOKEN_COOKIE)
 }
 
-async function setAccessToken(token: string | null): Promise<void> {
-  inMemoryAccessToken = token
+/**
+ * No-op: httpOnly cookies are set by backend only.
+ * Kept for API compatibility with authSlice.
+ */
+async function setAccessToken(_token: string | null): Promise<void> {
+  // Backend sets httpOnly cookie on login/refresh
 }
 
-async function setRefreshToken(token: string | null): Promise<void> {
-  inMemoryRefreshToken = token
+/**
+ * No-op: httpOnly cookies are set by backend only.
+ * Kept for API compatibility with authSlice.
+ */
+async function setRefreshToken(_token: string | null): Promise<void> {
+  // Backend sets httpOnly cookie on login/refresh
 }
 
 /**
@@ -73,8 +87,6 @@ async function setRefreshToken(token: string | null): Promise<void> {
  * We also clear any legacy localStorage tokens from the old SecureStorage scheme.
  */
 async function clearTokens(): Promise<void> {
-  inMemoryAccessToken = null
-  inMemoryRefreshToken = null
   // Expire any legacy localStorage tokens (old SecureStorage scheme)
   if (typeof document !== 'undefined') {
     document.cookie = `${ACCESS_TOKEN_COOKIE}=; path=/; max-age=0; SameSite=strict`
@@ -129,6 +141,11 @@ function sleep(ms: number): Promise<void> {
 let csrfTokenMemory: string | null = null
 let csrfTokenPromise: Promise<string | null> | null = null
 
+/**
+ * Get CSRF token from httpOnly cookie (set by backend).
+ * Does NOT write to localStorage or document.cookie from JavaScript.
+ * Backend is responsible for setting the httpOnly csrf-token cookie.
+ */
 export const getCsrfToken = (): string | null => {
   if (csrfTokenMemory) return csrfTokenMemory
   const match = document.cookie.match(new RegExp('(^| )csrf-token=([^;]+)'))
@@ -173,10 +190,14 @@ export const getSessionId = (): string => {
   return sessionId
 }
 
-export const setCsrfToken = (token: string): void => {
-  csrfTokenMemory = token
-  const secureSuffix = window.location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `csrf-token=${token}; path=/; SameSite=Lax${secureSuffix}`
+/**
+ * CSRF token is managed entirely by the backend via httpOnly cookie.
+ * This function is kept for backward compatibility but does nothing.
+ * Backend sets the csrf-token cookie on login/CSRF endpoint responses.
+ */
+export const setCsrfToken = (_token: string): void => {
+  // No-op: backend manages CSRF cookie. Do not write from JavaScript.
+  // Kept for API compatibility with existing calls.
 }
 
 export const initCsrfToken = async (forceRefresh = false): Promise<string | null> => {
@@ -199,7 +220,8 @@ export const initCsrfToken = async (forceRefresh = false): Promise<string | null
         const body = await response.json()
         const csrfToken = body?.data?.csrfToken ?? body?.csrfToken
         if (csrfToken) {
-          setCsrfToken(csrfToken)
+          // Update in-memory cache; backend sets httpOnly cookie automatically
+          csrfTokenMemory = csrfToken
           return csrfToken
         }
       } else if (import.meta.env.DEV) {
@@ -249,31 +271,51 @@ const createRateLimiter = () => {
 
 const isRateLimited = createRateLimiter()
 
+/**
+ * Sanitize user input to prevent XSS attacks.
+ * Preserves legitimate content (SQL keywords, code snippets, mathematical notation)
+ * while removing dangerous XSS vectors.
+ * 
+ * DOES NOT strip SQL keywords (UNION, SELECT, etc.) — Prisma uses parameterized queries
+ * and legitimate course content may contain these words.
+ */
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return ''
   return input
     .trim()
     .slice(0, 10_000)
+    // Remove javascript: protocol handlers
     .replace(/javascript:/gi, '')
+    // Remove event handlers (onclick, onload, onerror, etc.)
     .replace(/on\w+\s*=/gi, '')
+    // Remove eval() calls
     .replace(/\beval\s*\(/gi, '')
+    // Remove script tags and content
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/on\w+\s*=/gi, '')
+    // Remove iframe tags and content
     .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    // Remove object tags and content
     .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed\b[^>]*>[\s\S]*?<\/embed>/gi, '')
+    // Remove embed tags
+    .replace(/<embed\b[^>]*>/gi, '')
+    // Remove applet tags
     .replace(/<applet\b[^>]*>[\s\S]*?<\/applet>/gi, '')
+    // Remove meta tags
     .replace(/<meta\b[^>]*>/gi, '')
+    // Remove link tags
     .replace(/<link\b[^>]*>/gi, '')
+    // Remove style tags and content
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Remove CSS expression()
     .replace(/expression\s*\(/gi, '')
-    .replace(/url\s*\(/gi, '')
+    // Remove CSS url() with javascript:
+    .replace(/url\s*\(\s*['"]?\s*javascript:/gi, '')
+    // Remove vbscript: protocol
     .replace(/vbscript\s*:/gi, '')
+    // Remove mocha: protocol
     .replace(/mocha\s*:/gi, '')
+    // Remove livescript: protocol
     .replace(/livescript\s*:/gi, '')
-    .replace(/<link\b[^>]*>/gi, '')
-    .replace(/<meta\b[^>]*>/gi, '')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
 }
 
 export const validateEmail = (email: string): boolean => {
@@ -454,16 +496,10 @@ export async function fetchApi<T = any>(
   if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   headers.set('X-Session-ID', getSessionId())
 
-  // Attach JWT access token if available (non-httpOnly cookie)
   // SECURITY: With httpOnly cookies, the access token CANNOT be read via
   // document.cookie. The browser sends it automatically via credentials:'include'.
-  // We attempt to read it for backward compatibility with non-httpOnly setups,
-  // but if the cookie is httpOnly (production), this returns null and the
-  // request still works because the browser auto-sends the cookie.
-  const accessToken = await getAccessToken()
-  if (accessToken) {
-    headers.set('Authorization', `Bearer ${accessToken}`)
-  }
+  // We do NOT set Authorization header — httpOnly cookie is sent automatically.
+  // This is the secure, recommended approach for SPAs.
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     const csrfToken = getCsrfToken()
@@ -492,9 +528,11 @@ export async function fetchApi<T = any>(
             )
           }
           const data = await response.json()
+          // Normalize response to standard format
+          const normalizedData = normalizeResponse(data, normalizedEndpoint)
           if (method === 'GET' && isCacheable(fullUrl, options) && !options.bypassCache)
-            setCachedData(fullUrl, data, options)
-          return data
+            setCachedData(fullUrl, normalizedData, options)
+          return normalizedData
         }
 
         const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(
@@ -592,9 +630,11 @@ async function handleNonRetryable(
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
           const data = await retryResponse.json()
+          // Normalize response to standard format
+          const normalizedData = normalizeResponse(data, normalizedEndpoint)
           if (method === 'GET' && isCacheable(fullUrl, options))
-            setCachedData(fullUrl, data, options)
-          return data
+            setCachedData(fullUrl, normalizedData, options)
+          return normalizedData
         }
         response = retryResponse
       } catch {
@@ -632,9 +672,11 @@ async function handleNonRetryable(
         if (retryResponse.ok) {
           if (responseType === 'blob') return retryResponse.blob()
           const data = await retryResponse.json()
+          // Normalize response to standard format
+          const normalizedData = normalizeResponse(data, normalizedEndpoint)
           if (method === 'GET' && isCacheable(fullUrl, options))
-            setCachedData(fullUrl, data, options)
-          return data
+            setCachedData(fullUrl, normalizedData, options)
+          return normalizedData
         }
         const retryErrorData = await retryResponse.json().catch(() => ({}))
         const retryErrorMessage =

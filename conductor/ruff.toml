@@ -1,0 +1,44 @@
+# Conductor Ruff Configuration
+target-version = "py312"
+line-length = 120
+
+src = ["apps", "config"]
+
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "*/migrations/*",
+    "migrations",
+    "scripts",
+    "learning_hub_sdk",
+    "__pycache__",
+    "htmlcov",
+    ".pytest_cache",
+    ".ruff_cache",
+    "*.txt",
+    "/*.py",
+    "add_mock.py",
+    "advanced_system_analyzer.py",
+    "auto_fix_*.py",
+    "benchmark_*.py",
+    "conftest*.py",
+    "diagnose_*.py",
+    "export_*.py",
+    "fix_*.py",
+    "generate_*.py",
+    "ml_pipeline_optimizer.py",
+    "optimize_system.py",
+    "run_*.py",
+    "seed_*.py",
+    "setup_*.py",
+    "system_health_check.py",
+    "test_*.py",
+    "verify_*.py",
+]
+
+[lint]
+select = ["E9", "F63", "F7", "F82"]
+ignore = [
+    "E501",
+]

@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from apps.users.models import User
 from apps.courses.models import Course, Module, Lesson

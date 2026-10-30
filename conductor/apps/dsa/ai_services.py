@@ -349,13 +349,13 @@ class AICriticService:
         
         return " ".join(parts)
 
-        from apps.ai_engine.neuro_symbolic import NeuroSymbolicEngine
 
     @classmethod
     def _review_two_sum(cls, code: str) -> Dict[str, Any]:
         """
         Specific review for Two Sum problem with symbolic logic checks.
         """
+        from apps.ai_engine.neuro_symbolic import NeuroSymbolicEngine
         has_hash_map = 'dict()' in code or '{}' in code or 'prevMap' in code
         has_nested_loop = code.count('for ') > 1
         

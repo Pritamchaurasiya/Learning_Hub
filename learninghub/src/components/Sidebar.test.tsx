@@ -9,6 +9,8 @@ const { mockUseStore, setMockStore } = vi.hoisted(() => {
   const createDefaultStore = () => ({
     sidebarOpen: true,
     setSidebarOpen: mockSetSidebarOpen,
+    theme: { mode: 'light' },
+    setTheme: vi.fn(),
     progress: { xp: 1200, streak: 5, completedCourses: ['c1'] },
     auth: {
       isAuthenticated: true,

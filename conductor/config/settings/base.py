@@ -140,6 +140,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # CSP Nonce Generation (must be before SecurityHeadersMiddleware)
+    "apps.core.security_middleware.CSPNonceMiddleware",
     # Advanced Security Middleware (after CORS + core security)
     "apps.core.security_middleware.SecurityHeadersMiddleware",
     # API Versioning, RFC 8594 Sunset & Lifecycle Management (ADR-006)
@@ -647,6 +649,33 @@ X_FRAME_OPTIONS = 'DENY'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB max upload
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB in-memory, rest to disk
+
+# ==============================================================================
+# OBSERVABILITY SETTINGS 📊
+# ==============================================================================
+
+# OpenTelemetry Configuration
+OTEL_ENABLED = os.getenv("OTEL_ENABLED", "true").lower() in ("true", "1", "yes")
+OTEL_SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "learninghub-backend")
+OTEL_SERVICE_VERSION = os.getenv("OTEL_SERVICE_VERSION", "1.0.0")
+OTEL_JAEGER_HOST = os.getenv("OTEL_JAEGER_HOST", "localhost")
+OTEL_JAEGER_PORT = int(os.getenv("OTEL_JAEGER_PORT", "6831"))
+OTEL_OTLP_ENDPOINT = os.getenv("OTEL_OTLP_ENDPOINT", None)
+OTEL_SAMPLE_RATE = float(os.getenv("OTEL_SAMPLE_RATE", "0.1"))
+OTEL_EXPORTER_JAEGER = os.getenv("OTEL_EXPORTER_JAEGER", "true").lower() in ("true", "1", "yes")
+OTEL_EXPORTER_OTLP = os.getenv("OTEL_EXPORTER_OTLP", "false").lower() in ("true", "1", "yes")
+OTEL_EXPORTER_CONSOLE = os.getenv("OTEL_EXPORTER_CONSOLE", "false").lower() in ("true", "1", "yes")
+
+# Sentry Configuration
+SENTRY_ENABLED = os.getenv("SENTRY_ENABLED", "true").lower() in ("true", "1", "yes")
+SENTRY_DSN = os.getenv("SENTRY_DSN", None)
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", os.getenv("ENVIRONMENT", "development"))
+SENTRY_RELEASE = os.getenv("SENTRY_RELEASE", os.getenv("VERSION", "1.0.0"))
+SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
+SENTRY_PROFILES_SAMPLE_RATE = float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1"))
+SENTRY_SEND_PII = os.getenv("SENTRY_SEND_PII", "false").lower() in ("true", "1", "yes")
+SENTRY_DEBUG = os.getenv("SENTRY_DEBUG", "false").lower() in ("true", "1", "yes")
+SENTRY_ENABLE_TRACING = os.getenv("SENTRY_ENABLE_TRACING", "true").lower() in ("true", "1", "yes")
 
 # ==============================================================================
 # FEATURE FLAGS 🚀

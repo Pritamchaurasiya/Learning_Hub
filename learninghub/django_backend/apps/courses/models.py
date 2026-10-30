@@ -11,6 +11,10 @@ def generate_chapter_id():
 def generate_lesson_id():
     return f"lsn-{uuid.uuid4().hex[:8]}"
 
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
+
+
 class Course(models.Model):
     LEVEL_CHOICES = (
         ('Beginner', 'Beginner'),
@@ -43,6 +47,8 @@ class Course(models.Model):
     total_marks = models.IntegerField(default=100)
     negative_marks = models.IntegerField(default=0)
     is_published = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     learning_outcomes = models.JSONField(default=list, blank=True)
@@ -51,6 +57,9 @@ class Course(models.Model):
     language = models.CharField(max_length=32, default='English')
     certificate = models.BooleanField(default=True)
 
+    # Full-text search vector field
+    search_vector = SearchVectorField(null=True, editable=False)
+
     class Meta:
         db_table = 'lh_courses'
         ordering = ['-created_at']
@@ -58,6 +67,8 @@ class Course(models.Model):
             models.Index(fields=['is_published', '-created_at']),
             models.Index(fields=['is_published', 'category']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['is_active', 'deleted_at']),
+            GinIndex(fields=['search_vector'], name='course_search_vector_idx'),
         ]
 
     def __str__(self):

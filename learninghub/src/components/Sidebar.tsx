@@ -446,7 +446,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setTheme({ mode: 'light' })}
                   className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
-                    theme.mode === 'light'
+                    (theme?.mode ?? 'system') === 'light'
                       ? 'bg-white dark:bg-slate-800 text-amber-500 shadow-sm'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   }`}
@@ -459,7 +459,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setTheme({ mode: 'dark' })}
                   className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
-                    theme.mode === 'dark'
+                    (theme?.mode ?? 'system') === 'dark'
                       ? 'bg-slate-800 text-indigo-400 shadow-sm'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   }`}
@@ -472,7 +472,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setTheme({ mode: 'system' })}
                   className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${
-                    theme.mode === 'system'
+                    (theme?.mode ?? 'system') === 'system'
                       ? 'bg-white dark:bg-slate-800 text-cyan-400 shadow-sm'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   }`}

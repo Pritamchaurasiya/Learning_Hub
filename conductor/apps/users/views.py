@@ -17,6 +17,10 @@ from drf_spectacular.utils import (
     OpenApiResponse,
 )
 
+from django.db.models import Count, Prefetch, Q
+from apps.courses.models import Enrollment
+from apps.gamification.models import UserBadge
+from apps.dsa.models import Submission
 from .models import User
 from .serializers import (
     AvatarResponseSerializer,

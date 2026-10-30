@@ -9,7 +9,7 @@ Simulates brain-like computing:
 
 import logging
 import random
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

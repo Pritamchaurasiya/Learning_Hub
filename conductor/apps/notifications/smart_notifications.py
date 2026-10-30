@@ -17,6 +17,7 @@ from typing import Dict, Any, List, Optional
 from enum import Enum
 
 from django.utils import timezone
+from django.db import models
 from django.db.models import Count, Avg
 from django.core.cache import cache
 from django.conf import settings
