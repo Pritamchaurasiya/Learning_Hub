@@ -297,7 +297,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          gitleaks dir --redact --exit-code 2 --report-format json --report-path /tmp/gitleaks-report.json .
+          gitleaks dir --config .gitleaks.toml --redact --exit-code 2 --report-format json --report-path /tmp/gitleaks-report.json .
           scan_exit=$?
           python3 - <<'PY'
           import json
