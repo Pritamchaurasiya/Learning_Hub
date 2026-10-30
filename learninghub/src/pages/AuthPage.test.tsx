@@ -235,4 +235,67 @@ describe('AuthPage Component & MFA Challenge Integration', () => {
       expect(screen.getByPlaceholderText(/Enter your password/i)).toBeInTheDocument()
     })
   })
+
+  it('handles 1-Click Instant Student demo login with remote endpoint', async () => {
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/demo-login') {
+        return {
+          data: {
+            user: {
+              id: 'demo-student-id',
+              email: 'student@learninghub.com',
+              username: 'student',
+              role: 'STUDENT',
+              xp: 1250,
+              level: 5,
+              streak: 7,
+              lastActive: new Date().toISOString(),
+            },
+            tokens: {
+              accessToken: 'instant-demo-access-token',
+              refreshToken: 'instant-demo-refresh-token',
+            },
+          },
+        }
+      }
+      return { data: null }
+    })
+
+    render(<AuthPage />)
+
+    const instantStudentBtn = screen.getByRole('button', { name: /Instant Student/i })
+    fireEvent.click(instantStudentBtn)
+
+    await waitFor(() => {
+      expect(apiModule.fetchApi).toHaveBeenCalledWith('/auth/demo-login', {
+        method: 'POST',
+        body: JSON.stringify({ role: 'STUDENT' }),
+      })
+      expect(useStore.getState().auth.isAuthenticated).toBe(true)
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    })
+  })
+
+  it('handles Instant Student offline fallback gracefully when backend is unreachable', async () => {
+    vi.mocked(apiModule.fetchApi).mockImplementation(async (url: string) => {
+      if (url === '/exam-content/countries') return { data: [] }
+      if (url === '/auth/demo-login') {
+        throw new Error('Failed to fetch')
+      }
+      return { data: null }
+    })
+
+    render(<AuthPage />)
+
+    const instantStudentBtn = screen.getByRole('button', { name: /Instant Student/i })
+    fireEvent.click(instantStudentBtn)
+
+    await waitFor(() => {
+      // Must authenticate in fallback mode and navigate to dashboard
+      expect(useStore.getState().auth.isAuthenticated).toBe(true)
+      expect(useStore.getState().auth.user?.email).toBe('student@learninghub.com')
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    })
+  })
 })

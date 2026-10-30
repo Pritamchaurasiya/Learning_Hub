@@ -84,7 +84,10 @@ export async function csrfProtection(
   const normalizedPath = req.originalUrl.split('?')[0].replace(/\/+$/, '')
   if (
     normalizedPath.match(
-      /^\/api\/v1\/(auth\/(login|register|forgot-password|reset-password|verify-email|mfa\/verify-login)|admin\/auth\/(login|verify-mfa|register\/initial)|credentials\/verify|resume\/(verify|import\/linkedin|anchor-ipfs)|debugger\/(trace|diagnose))$/
+      /^\/api\/v1\/(auth\/(login|demo-login|register|forgot-password|reset-password|verify-email|mfa\/(login|verify-login))|admin\/auth\/(login|demo-login|verify-mfa|register\/initial)|credentials\/verify|resume\/(verify|import\/linkedin|anchor-ipfs)|debugger\/(trace|diagnose))$/
+    ) ||
+    normalizedPath.match(
+      /^\/auth\/(login|demo-login|register|forgot-password|reset-password|verify-email|mfa\/(login|verify-login))$/
     )
   ) {
     // CSRF exemption: Pre-authentication endpoints and public idempotent cryptographic verification endpoints.

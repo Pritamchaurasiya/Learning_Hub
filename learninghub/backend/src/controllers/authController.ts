@@ -210,7 +210,7 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
 export const demoLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const role = req.body?.role === 'ADMIN' ? 'ADMIN' : 'STUDENT'
   const targetEmail = role === 'ADMIN' ? 'admin@learninghub.com' : 'student@learninghub.com'
-  const targetPassword = role === 'ADMIN' ? 'Super@2026#Hub' : 'Student@2026#Hub'
+  const targetPassword = role === 'ADMIN' ? 'Admin@123!' : 'Student@123!'
 
   // Ensure demo account exists with valid state
   let user = await prisma.user.findUnique({ where: { email: targetEmail } })

@@ -150,27 +150,67 @@ export class AuthService {
    * Login user
    */
   async login(input: LoginInput): Promise<LoginResult> {
+    const normalizedEmail = input.email.trim().toLowerCase()
+
     // Find user by email
-    const user = await this.userRepository.findByEmail(input.email)
+    let user = await this.userRepository.findByEmail(normalizedEmail)
+
+    // Demo account auto-provisioning to guarantee frictionless access
+    if (!user && (normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com')) {
+      const isRoleAdmin = normalizedEmail === 'admin@learninghub.com'
+      const role = isRoleAdmin ? 'ADMIN' : 'STUDENT'
+      const targetPassword = isRoleAdmin ? 'Admin@123!' : 'Student@123!'
+      const hashedPassword = await bcrypt.hash(targetPassword, 12)
+      user = await this.prisma.user.upsert({
+        where: { email: normalizedEmail },
+        update: {
+          emailVerified: true,
+          failedLogins: 0,
+          lockedUntil: null,
+        },
+        create: {
+          email: normalizedEmail,
+          password: hashedPassword,
+          role,
+          username: isRoleAdmin ? 'admin' : 'student',
+          emailVerified: true,
+          xp: isRoleAdmin ? 9999 : 1250,
+          level: isRoleAdmin ? 25 : 5,
+          streak: isRoleAdmin ? 21 : 7,
+        },
+      })
+    }
+
     if (!user) {
       throw new Error('Invalid credentials')
     }
 
+    // Demo passwords whitelist for instant recovery and access
+    const isDemo = normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
+    const demoPasswords: Record<string, string[]> = {
+      'student@learninghub.com': ['Student@123!', 'Student@2026#Hub', 'student123', 'student'],
+      'admin@learninghub.com': ['Admin@123!', 'Super@2026#Hub', 'Admin@2026#Hub', 'admin123', 'admin'],
+    }
+
     // Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
-      throw new Error(`Account locked. Try again in ${remainingMinutes} minutes`)
+      if (isDemo && demoPasswords[normalizedEmail]?.includes(input.password)) {
+        // Auto-unlock demo account when valid demo credentials are supplied
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { failedLogins: 0, lockedUntil: null },
+        })
+        user.lockedUntil = null
+        user.failedLogins = 0
+      } else {
+        const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
+        throw new Error(`Account locked. Try again in ${remainingMinutes} minutes`)
+      }
     }
 
     // Verify password
     let isValidPassword = await bcrypt.compare(input.password, user.password)
-    if (!isValidPassword) {
-      // Support alternate demo passwords for demo accounts to guarantee frictionless access
-      const normalizedEmail = input.email.trim().toLowerCase()
-      const demoPasswords: Record<string, string[]> = {
-        'student@learninghub.com': ['Student@123!', 'Student@2026#Hub', 'student123', 'student'],
-        'admin@learninghub.com': ['Admin@123!', 'Super@2026#Hub', 'Admin@2026#Hub', 'admin123', 'admin'],
-      }
+    if (!isValidPassword && isDemo) {
       const allowedPasswords = demoPasswords[normalizedEmail]
       if (allowedPasswords && allowedPasswords.includes(input.password)) {
         isValidPassword = true
