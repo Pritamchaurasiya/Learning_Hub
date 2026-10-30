@@ -4,6 +4,7 @@ import { prisma } from '../config'
 import logger from '../utils/logger'
 import { sanitizeInput } from '../config'
 import { webSocketService } from '../services/WebSocketService'
+import { realtimeEventBridge } from '../services/RealtimeEventBridge'
 import { parseCookies } from '../utils/cookies'
 
 const MAX_ROOM_ID_LENGTH = 128
@@ -53,6 +54,7 @@ async function hasRoomAccess(userId: string, roomId: string): Promise<boolean> {
 
 export const setupWebSockets = (io: Server) => {
   webSocketService.setSocketIO(io)
+  realtimeEventBridge.init()
 
   io.use(async (socket, next) => {
     const authToken = socket.handshake.auth.token
