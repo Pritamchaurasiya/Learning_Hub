@@ -4,6 +4,7 @@
  */
 
 export type ExamDifficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'MIXED' | 'ADAPTIVE'
+export type PreparationStage = 'FOUNDATION' | 'INTERMEDIATE' | 'INTENSIVE_REVISION' | 'MOCK_DRILL'
 
 export interface ActiveCountryInfo {
   id: string
@@ -33,6 +34,8 @@ export interface ActiveExamInfo {
   slug: string
   description?: string | null
   countryId: string
+  authority?: string | null
+  targetExamDate?: string | null
   country?: ActiveCountryInfo | null
   subjects?: ActiveSubjectInfo[]
   category?: string
@@ -47,10 +50,30 @@ export interface ExamCategoryGroup {
   examSlugs: string[]
 }
 
+export interface StudentPreferenceUpdate {
+  countryId?: string | null
+  stateRegion?: string | null
+  examId?: string | null
+  examAuthority?: string | null
+  targetExamDate?: string | null
+  preparationStage?: PreparationStage | null
+  preferredLanguage?: string
+  studyHoursPerDay?: number
+  difficulty?: ExamDifficulty
+  dailyGoal?: number
+  subjectIds?: string[]
+}
+
 export interface LearningContextState {
   // Primary identifiers
   countryId: string | null
+  stateRegion: string | null
   examId: string | null
+  examAuthority: string | null
+  targetExamDate: string | null
+  preparationStage: PreparationStage | null
+  preferredLanguage: string
+  studyHoursPerDay: number
   subjectIds: string[]
   difficulty: ExamDifficulty
   dailyGoal: number
@@ -59,6 +82,7 @@ export interface LearningContextState {
   activeCountry: ActiveCountryInfo | null
   activeExam: ActiveExamInfo | null
   activeSubjects: ActiveSubjectInfo[]
+  targetExams: ActiveExamInfo[]
 
   // Status flags
   isConfigured: boolean
@@ -72,6 +96,9 @@ export interface LearningContextState {
   toggleSubject: (subjectId: string) => Promise<void>
   setDifficulty: (difficulty: ExamDifficulty) => Promise<void>
   setDailyGoal: (dailyGoal: number) => Promise<void>
+  setStudentPreferences: (prefs: Partial<StudentPreferenceUpdate>) => Promise<void>
+  addTargetExam: (exam: ActiveExamInfo) => Promise<void>
+  removeTargetExam: (examId: string) => Promise<void>
   clearContext: () => void
   reconcileWithUser: (userPreference: UserPreferencePayload | null | undefined) => void
 }

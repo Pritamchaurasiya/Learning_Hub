@@ -1,51 +1,61 @@
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, ArrowRight, Zap, Target } from 'lucide-react'
+import { Sparkles, ArrowRight, Zap, Target, Clock } from 'lucide-react'
 import { Card } from '../ui/Card'
 import type { NextBestAction } from '../../services/dashboardService'
 
 interface Props {
   action: NextBestAction
+  personalized?: boolean
 }
 
-export function NextBestActionCard({ action }: Props) {
+export function NextBestActionCard({ action, personalized }: Props) {
   const navigate = useNavigate()
+  const isPersonalized = Boolean(action.personalized ?? personalized)
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-indigo-900 via-indigo-950 to-purple-950 text-white relative overflow-hidden shadow-2xl border border-indigo-500/30">
-      <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-        <Sparkles className="w-36 h-36 text-indigo-400" />
+    <Card className="relative overflow-hidden border border-indigo-500/30 bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950 p-6 text-white shadow-2xl">
+      <div className="pointer-events-none absolute -right-6 -top-6 opacity-10" aria-hidden="true">
+        <Sparkles className="h-40 w-40 text-indigo-300" />
       </div>
+
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2.5 max-w-2xl">
+        <div className="space-y-3 max-w-2xl">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/25 text-indigo-200 border border-indigo-400/30 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
-              AI Recommended Action
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-300" aria-hidden="true" />
+              {isPersonalized ? 'Personalized Diagnostic Action' : 'Suggested Next Step'}
             </span>
             {action.multiplierBonus && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-300" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                <Zap className="w-3.5 h-3.5 text-amber-300" aria-hidden="true" />
                 {action.multiplierBonus}
               </span>
             )}
-            <span className="text-xs font-medium text-indigo-200/80 flex items-center gap-1">
-              • Est. {action.estimatedMinutes} mins
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-200/80">
+              <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+              About {action.estimatedMinutes} mins
             </span>
           </div>
-          <h2 className="text-lg md:text-xl font-bold text-white tracking-tight">
-            {action.title}
-          </h2>
-          <p className="text-xs text-indigo-200/90 font-normal leading-relaxed">{action.reason}</p>
+
+          <div className="space-y-1.5">
+            <h3 className="text-lg md:text-xl font-black text-white tracking-tight leading-snug">
+              {action.title}
+            </h3>
+            <p className="text-xs sm:text-sm text-indigo-200/90 font-normal leading-relaxed">
+              {action.reason}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
           <button
+            type="button"
             onClick={() => navigate(action.actionUrl)}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/30 transition-all hover:scale-102 active:scale-98"
+            className="min-h-[44px] px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
-            <Target className="w-4 h-4" />
+            <Target className="w-4 h-4" aria-hidden="true" />
             <span>{action.actionLabel}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>

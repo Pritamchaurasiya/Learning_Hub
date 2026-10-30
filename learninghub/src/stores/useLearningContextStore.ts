@@ -6,6 +6,7 @@ import type {
   ActiveSubjectInfo,
   ExamDifficulty,
   LearningContextState,
+  StudentPreferenceUpdate,
   UserPreferencePayload,
 } from '../types/learningContext'
 
@@ -22,17 +23,27 @@ const initialState: Omit<
   | 'toggleSubject'
   | 'setDifficulty'
   | 'setDailyGoal'
+  | 'setStudentPreferences'
+  | 'addTargetExam'
+  | 'removeTargetExam'
   | 'clearContext'
   | 'reconcileWithUser'
 > = {
   countryId: null,
+  stateRegion: null,
   examId: null,
+  examAuthority: null,
+  targetExamDate: null,
+  preparationStage: null,
+  preferredLanguage: 'English',
+  studyHoursPerDay: 2,
   subjectIds: [],
   difficulty: 'MEDIUM',
   dailyGoal: 15,
   activeCountry: null,
   activeExam: null,
   activeSubjects: [],
+  targetExams: [],
   isConfigured: false,
   isLoading: false,
   lastUpdated: null,
@@ -85,17 +96,88 @@ export const useLearningContextStore = create<LearningContextStore>()(
         }
       },
 
+      setStudentPreferences: async (prefs: Partial<StudentPreferenceUpdate>) => {
+        set(state => {
+          const nextExam =
+            prefs.examId && prefs.examId !== state.examId && state.activeExam
+              ? { ...state.activeExam, id: prefs.examId }
+              : state.activeExam
+
+          return {
+            ...state,
+            countryId: prefs.countryId !== undefined ? prefs.countryId : state.countryId,
+            stateRegion: prefs.stateRegion !== undefined ? prefs.stateRegion : state.stateRegion,
+            examId: prefs.examId !== undefined ? prefs.examId : state.examId,
+            examAuthority:
+              prefs.examAuthority !== undefined ? prefs.examAuthority : state.examAuthority,
+            targetExamDate:
+              prefs.targetExamDate !== undefined ? prefs.targetExamDate : state.targetExamDate,
+            preparationStage:
+              prefs.preparationStage !== undefined
+                ? prefs.preparationStage
+                : state.preparationStage,
+            preferredLanguage:
+              prefs.preferredLanguage !== undefined
+                ? prefs.preferredLanguage
+                : state.preferredLanguage,
+            studyHoursPerDay:
+              prefs.studyHoursPerDay !== undefined
+                ? prefs.studyHoursPerDay
+                : state.studyHoursPerDay,
+            difficulty: prefs.difficulty !== undefined ? prefs.difficulty : state.difficulty,
+            dailyGoal: prefs.dailyGoal !== undefined ? prefs.dailyGoal : state.dailyGoal,
+            subjectIds: prefs.subjectIds !== undefined ? prefs.subjectIds : state.subjectIds,
+            activeExam: nextExam,
+            isConfigured: true,
+            lastUpdated: new Date().toISOString(),
+          }
+        })
+
+        try {
+          await fetchApi('/auth/preferences', {
+            method: 'PUT',
+            body: JSON.stringify({
+              countryId: get().countryId,
+              examId: get().examId,
+              subjectIds: get().subjectIds,
+              difficulty: get().difficulty,
+              dailyGoal: get().dailyGoal,
+            }),
+          })
+        } catch {
+          // Handled gracefully for offline / guest
+        }
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('lh:exam-context-changed', {
+              detail: {
+                examId: get().examId,
+                subjectIds: get().subjectIds,
+                examName: get().activeExam?.name,
+              },
+            })
+          )
+        }
+      },
+
       switchExam: async (exam: ActiveExamInfo, defaultSubjects?: ActiveSubjectInfo[]) => {
         const subjects = defaultSubjects ?? exam.subjects ?? []
         const subjectIds = subjects.map(s => s.id)
+        const currentTargets = get().targetExams || []
+        const exists = currentTargets.some(t => t.id === exam.id)
+        const updatedTargets = exists ? currentTargets : [...currentTargets, exam]
 
         set({
           countryId: exam.countryId,
           examId: exam.id,
+          examAuthority: exam.authority ?? null,
+          targetExamDate: exam.targetExamDate ?? get().targetExamDate,
           activeExam: exam,
           activeCountry: exam.country ?? null,
           subjectIds,
           activeSubjects: subjects,
+          targetExams: updatedTargets,
           isConfigured: true,
           lastUpdated: new Date().toISOString(),
         })
@@ -127,6 +209,25 @@ export const useLearningContextStore = create<LearningContextStore>()(
             })
           )
         }
+      },
+
+      addTargetExam: async (exam: ActiveExamInfo) => {
+        const currentTargets = get().targetExams || []
+        if (!currentTargets.some(t => t.id === exam.id)) {
+          set({
+            targetExams: [...currentTargets, exam],
+            lastUpdated: new Date().toISOString(),
+          })
+        }
+      },
+
+      removeTargetExam: async (examId: string) => {
+        const currentTargets = get().targetExams || []
+        const updated = currentTargets.filter(t => t.id !== examId)
+        set({
+          targetExams: updated,
+          lastUpdated: new Date().toISOString(),
+        })
       },
 
       setSubjects: async (subjectIds: string[]) => {
@@ -239,6 +340,10 @@ export const useLearningContextStore = create<LearningContextStore>()(
               ? pref.subjectIds
               : activeSubjects.map(s => s.id)
 
+          const currentTargets = state.targetExams || []
+          const hasTarget = currentTargets.some(t => t.id === activeExam.id)
+          const targetExams = hasTarget ? currentTargets : [...currentTargets, activeExam]
+
           return {
             ...state,
             countryId: pref.countryId ?? activeExam.countryId ?? state.countryId,
@@ -247,6 +352,7 @@ export const useLearningContextStore = create<LearningContextStore>()(
             activeCountry: pref.country ?? state.activeCountry,
             subjectIds,
             activeSubjects,
+            targetExams,
             difficulty: pref.difficulty ?? state.difficulty,
             dailyGoal: pref.dailyGoal ?? state.dailyGoal,
             isConfigured: true,

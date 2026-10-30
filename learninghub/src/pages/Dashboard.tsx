@@ -20,6 +20,7 @@ import {
 
 import { SEO } from '../components/SEO'
 import { useStore } from '../stores/useStore'
+import { useLearningContextStore } from '../stores/useLearningContextStore'
 import { fetchApi } from '../utils/api'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
@@ -45,6 +46,8 @@ import { ScholarOnboardingTourCard } from '../components/dashboard/ScholarOnboar
 import { MilestoneRewardModal } from '../components/dashboard/MilestoneRewardModal'
 import { playRewardChime } from '../utils/soundEffects'
 import { PersonalizedExamFeed } from '../components/dashboard/PersonalizedExamFeed'
+import { SmartLearningToolsWidget } from '../components/dashboard/SmartLearningToolsWidget'
+import { ExamPreparationOverviewWidget } from '../components/dashboard/ExamPreparationOverviewWidget'
 
 interface DashboardStats {
   testsAttempted: number
@@ -93,6 +96,8 @@ const Dashboard = memo(function Dashboard() {
   const progressStreak = useStore(state => state.progress.streak)
   const progressLevel = useStore(state => state.progress.level)
   const addToast = useStore(state => state.addToast)
+  const activeExam = useLearningContextStore(state => state.activeExam)
+
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<DashboardTab>('all')
   const [claimedTierReward, setClaimedTierReward] = useState(false)
@@ -178,42 +183,15 @@ const Dashboard = memo(function Dashboard() {
         }))
 
       return {
-        testsAttempted: testResults.length || 14,
-        testsPassed: passedTests.length || 12,
-        totalXp: (profile?.xp as number) ?? progressXp ?? 1450,
-        currentStreak: (profile?.streak as number) ?? progressStreak ?? 5,
-        level: (profile?.level as number) ?? progressLevel ?? 3,
-        recentTests:
-          recentTestsList.length > 0
-            ? recentTestsList
-            : [
-                {
-                  id: 't-1',
-                  title: 'Data Structures & Algorithms Diagnostic',
-                  score: 88,
-                  passed: true,
-                },
-                {
-                  id: 't-2',
-                  title: 'System Design & Scalability Master Test',
-                  score: 82,
-                  passed: true,
-                },
-                {
-                  id: 't-3',
-                  title: 'Dynamic Programming & Recurrences Challenge',
-                  score: 61,
-                  passed: false,
-                },
-              ],
+        testsAttempted: testResults.length,
+        testsPassed: passedTests.length,
+        totalXp: (profile?.xp as number) ?? progressXp ?? 0,
+        currentStreak: (profile?.streak as number) ?? progressStreak ?? 0,
+        level: (profile?.level as number) ?? progressLevel ?? 1,
+        recentTests: recentTestsList,
       }
     },
     staleTime: 2 * 60 * 1000,
-  })
-
-  const { data: nextAction } = useQuery<NextBestAction>({
-    queryKey: ['dashboard-next-action'],
-    queryFn: () => dashboardService.getNextBestAction(),
   })
 
   const { data: analyticsData } = useQuery({
@@ -224,23 +202,35 @@ const Dashboard = memo(function Dashboard() {
   const weakTopic = useMemo(() => {
     if (!analyticsData?.topicMastery) return undefined
     const topics = Object.values(analyticsData.topicMastery)
-    const weak = topics.filter(t => t.accuracy < 75).sort((a, b) => a.accuracy - b.accuracy)[0]
+    const weak = topics
+      .filter(t => t.accuracy < 75 && (t.totalAttempts ?? 0) >= 2)
+      .sort((a, b) => a.accuracy - b.accuracy)[0]
     return weak?.topicName
   }, [analyticsData?.topicMastery])
 
-  if (isLoading) return <DashboardSkeleton />
-
   const stats = dashboardData ?? {
-    testsAttempted: 14,
-    testsPassed: 12,
-    totalXp: progressXp || 1450,
-    currentStreak: progressStreak || 5,
-    level: progressLevel || 3,
+    testsAttempted: 0,
+    testsPassed: 0,
+    totalXp: progressXp || 0,
+    currentStreak: progressStreak || 0,
+    level: progressLevel || 1,
     recentTests: [],
   }
 
+  const { data: nextAction } = useQuery<NextBestAction>({
+    queryKey: ['dashboard-next-action', activeExam?.id, weakTopic, stats.testsAttempted],
+    queryFn: () =>
+      dashboardService.getNextBestAction({
+        activeExam,
+        weakTopic,
+        completedTestsCount: stats.testsAttempted,
+      }),
+  })
+
+  if (isLoading) return <DashboardSkeleton />
+
   const passRate =
-    stats.testsAttempted > 0 ? Math.round((stats.testsPassed / stats.testsAttempted) * 100) : 88
+    stats.testsAttempted > 0 ? Math.round((stats.testsPassed / stats.testsAttempted) * 100) : 0
 
   const currentLevel = stats.level
   const xpInCurrentLevel = stats.totalXp % 1000
@@ -262,16 +252,22 @@ const Dashboard = memo(function Dashboard() {
     <AnimatedPage className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 min-h-screen">
       <SEO
         title="Command Dashboard - LearningHub"
-        description="Monitor your learning trajectory, cognitive benchmarks, and daily focus sprint."
+        description="Monitor your personalized learning trajectory, exam countdown, and daily cognitive milestones."
       />
 
       {/* Aurora-animated ambient background for premium depth */}
       <div className="absolute inset-0 bg-aurora pointer-events-none -z-10" />
       <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-indigo-500/[0.07] dark:bg-indigo-600/[0.08] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" />
-      <div className="absolute top-80 right-10 w-[400px] h-[400px] bg-purple-500/[0.06] dark:bg-purple-600/[0.08] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" style={{ animationDelay: '2s' }} />
-      <div className="absolute bottom-40 left-10 w-[450px] h-[450px] bg-cyan-500/[0.05] dark:bg-cyan-600/[0.07] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe" style={{ animationDelay: '4s' }} />
+      <div
+        className="absolute top-80 right-10 w-[400px] h-[400px] bg-purple-500/[0.06] dark:bg-purple-600/[0.08] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe"
+        style={{ animationDelay: '2s' }}
+      />
+      <div
+        className="absolute bottom-40 left-10 w-[450px] h-[450px] bg-cyan-500/[0.05] dark:bg-cyan-600/[0.07] rounded-full blur-[100px] pointer-events-none -z-10 animate-breathe"
+        style={{ animationDelay: '4s' }}
+      />
 
-      {/* Hero Header & Quick Actions */}
+      {/* Section A: Welcome & Exam Context Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
@@ -283,7 +279,10 @@ const Dashboard = memo(function Dashboard() {
             >
               Welcome back, {username || 'Scholar'}
             </motion.h1>
-            <StreakMultiplierBadge streak={stats.currentStreak} longestStreak={12} />
+            <StreakMultiplierBadge
+              streak={stats.currentStreak}
+              longestStreak={stats.currentStreak}
+            />
           </div>
           <motion.p
             initial={{ opacity: 0 }}
@@ -291,8 +290,9 @@ const Dashboard = memo(function Dashboard() {
             transition={{ delay: 0.15, duration: 0.4 }}
             className="text-sm text-gray-500 dark:text-gray-400"
           >
-            Your personalized learning roadmap is calibrated. Today is day {stats.currentStreak} of
-            your streak!
+            {stats.currentStreak > 0
+              ? `Your personalized learning roadmap is calibrated. Today is day ${stats.currentStreak} of your streak!`
+              : `Your personalized learning roadmap is ready. Take your first practice test today to ignite your streak!`}
           </motion.p>
         </div>
 
@@ -303,9 +303,9 @@ const Dashboard = memo(function Dashboard() {
           whileHover={{ scale: 1.05, boxShadow: '0 8px 30px -5px rgba(245,158,11,0.3)' }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsAIModalOpen(true)}
-          className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-colors shrink-0 relative overflow-hidden"
+          className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-colors shrink-0 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
         >
-          <div className="absolute inset-0 shimmer opacity-40" />
+          <div className="absolute inset-0 shimmer opacity-40 pointer-events-none" />
           <Sparkles className="w-4 h-4 text-slate-950 relative z-10" />
           <span className="relative z-10">Generate Custom AI Test & Diagnostic</span>
         </motion.button>
@@ -317,10 +317,19 @@ const Dashboard = memo(function Dashboard() {
       {/* Target Exam Personalized Command Center & Feed */}
       <PersonalizedExamFeed onLaunchAITest={() => setIsAIModalOpen(true)} />
 
+      {/* Section C & D: Exam Preparation Overview & Practice Shortcuts */}
+      <ExamPreparationOverviewWidget
+        topicMastery={analyticsData?.topicMastery}
+        onOpenCatModal={() => setIsAIModalOpen(true)}
+      />
+
+      {/* Section G: Smart Learning Tools (Blitz, Flashcards, Mistake Notebook, Adaptive CAT Drill) */}
+      <SmartLearningToolsWidget />
+
       {/* Pro Conversion & Monetization Banner */}
       {!isPro && <ProUpsellBanner />}
 
-      {/* Fast-Track Orientation & Onboarding Card (Endowed Progress) */}
+      {/* Fast-Track Orientation & Onboarding Card */}
       <ScholarOnboardingTourCard
         onLaunchAITest={() => setIsAIModalOpen(true)}
         userName={username}
@@ -333,9 +342,9 @@ const Dashboard = memo(function Dashboard() {
         </div>
       )}
 
-      {/* 4 Core Stat Tiles (Premium Gradient-Bordered Bento) */}
+      {/* Section F: 4 Core Stat Tiles (Honest, Real Bento) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 - Assessments */}
+        {/* Metric 1 - Assessments Taken */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -350,16 +359,18 @@ const Dashboard = memo(function Dashboard() {
                 <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {stats.testsAttempted}
                 </div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Assessments Taken</div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">
+                  Assessments Taken
+                </div>
               </div>
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/50">
-              +14% vs avg
+              {stats.testsAttempted > 0 ? `${stats.testsPassed} Passed` : 'Start Today'}
             </span>
           </Card>
         </motion.div>
 
-        {/* Metric 2 - Accuracy */}
+        {/* Metric 2 - Overall Accuracy */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -372,13 +383,17 @@ const Dashboard = memo(function Dashboard() {
               </div>
               <div>
                 <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
-                  {passRate}%
+                  {stats.testsAttempted > 0 ? `${passRate}%` : '0%'}
                 </div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Overall Accuracy Rate</div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">
+                  Overall Accuracy Rate
+                </div>
               </div>
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50">
-              Top 15%
+              {stats.testsAttempted > 0
+                ? `${stats.testsPassed}/${stats.testsAttempted} Correct`
+                : 'No Attempts'}
             </span>
           </Card>
         </motion.div>
@@ -398,7 +413,9 @@ const Dashboard = memo(function Dashboard() {
                 <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {stats.totalXp.toLocaleString()} XP
                 </div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Level {currentLevel} Scholar</div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">
+                  Level {currentLevel} Scholar
+                </div>
               </div>
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/50">
@@ -422,20 +439,22 @@ const Dashboard = memo(function Dashboard() {
                 <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">
                   {stats.currentStreak} Days
                 </div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">Continuous Study Streak</div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500">
+                  Continuous Study Streak
+                </div>
               </div>
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-800/50">
-              Shield Active
+              {stats.currentStreak > 0 ? 'Shield Active' : 'Start Today'}
             </span>
           </Card>
         </motion.div>
       </div>
 
-      {/* Spotlight: AI Next Best Action */}
+      {/* Section B: Spotlight: Next Best Action Card */}
       {nextAction && <NextBestActionCard action={nextAction} />}
 
-      {/* Interactive Bento Navigation Tabs — Premium Pill Nav */}
+      {/* Interactive Bento Navigation Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none p-1 bg-gray-100/60 dark:bg-slate-800/40 rounded-2xl">
         {[
           { id: 'all', label: 'All Command Modules', icon: LayoutGrid },
@@ -448,10 +467,12 @@ const Dashboard = memo(function Dashboard() {
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id as DashboardTab)}
-              className={`relative px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 whitespace-nowrap transition-all duration-200 ${isActive
-                ? 'text-white'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              className={`relative px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                isActive
+                  ? 'text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {isActive && (
@@ -482,19 +503,7 @@ const Dashboard = memo(function Dashboard() {
 
           {/* 7-Day Area Chart (shown in 'all' and 'analytics') */}
           {(activeTab === 'all' || activeTab === 'analytics') && (
-            <WeeklyStudyAreaChart
-              data={
-                analyticsData?.accuracyTrend || [
-                  { date: 'Mon', accuracy: 78, testsCompleted: 2 },
-                  { date: 'Tue', accuracy: 82, testsCompleted: 3 },
-                  { date: 'Wed', accuracy: 80, testsCompleted: 2 },
-                  { date: 'Thu', accuracy: 85, testsCompleted: 4 },
-                  { date: 'Fri', accuracy: 88, testsCompleted: 3 },
-                  { date: 'Sat', accuracy: 91, testsCompleted: 2 },
-                  { date: 'Sun', accuracy: 89, testsCompleted: 3 },
-                ]
-              }
-            />
+            <WeeklyStudyAreaChart data={analyticsData?.accuracyTrend ?? []} />
           )}
 
           {/* Recent Tests Table (shown in 'all' and 'analytics') */}
@@ -505,6 +514,7 @@ const Dashboard = memo(function Dashboard() {
                   Recent Completed Assessments
                 </h3>
                 <button
+                  type="button"
                   onClick={() => navigate('/tests-a-history')}
                   className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
                 >
@@ -513,42 +523,60 @@ const Dashboard = memo(function Dashboard() {
                 </button>
               </div>
 
-              <div className="space-y-2">
-                {stats.recentTests.map((test, index) => (
-                  <motion.div
-                    key={test.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    onClick={() => navigate('/tests-a-history')}
-                    className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-slate-900/50 hover:bg-indigo-50/60 dark:hover:bg-slate-800/60 border border-gray-100/80 dark:border-slate-800/60 flex items-center justify-between cursor-pointer transition-all duration-200 group/test hover:border-indigo-200/50 dark:hover:border-indigo-800/30"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`p-2 rounded-xl text-xs font-black ${
-                          test.passed
-                            ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                        }`}
-                      >
-                        {test.score}%
+              {stats.recentTests.length > 0 ? (
+                <div className="space-y-2">
+                  {stats.recentTests.map((test, index) => (
+                    <motion.div
+                      key={test.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      onClick={() => navigate('/tests-a-history')}
+                      className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-slate-900/50 hover:bg-indigo-50/60 dark:hover:bg-slate-800/60 border border-gray-100/80 dark:border-slate-800/60 flex items-center justify-between cursor-pointer transition-all duration-200 group/test hover:border-indigo-200/50 dark:hover:border-indigo-800/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-2 rounded-xl text-xs font-black ${
+                            test.passed
+                              ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
+                          }`}
+                        >
+                          {test.score}%
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                            {test.title}
+                          </h4>
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                            {test.passed ? 'Benchmark Achieved' : 'Review Recommended'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                          {test.title}
-                        </h4>
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                          {test.passed ? 'Benchmark Achieved' : 'Review Recommended'}
-                        </p>
-                      </div>
-                    </div>
 
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 opacity-70 group-hover/test:opacity-100 transition-opacity">
-                      Review <ArrowRight className="w-3 h-3 group-hover/test:translate-x-0.5 transition-transform" />
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 opacity-70 group-hover/test:opacity-100 transition-opacity">
+                        Review{' '}
+                        <ArrowRight className="w-3 h-3 group-hover/test:translate-x-0.5 transition-transform" />
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center rounded-2xl bg-gray-50/50 dark:bg-slate-950/40 border border-dashed border-gray-200 dark:border-slate-800 space-y-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                    Your first scorecard and learning insights will appear here after you finish a
+                    practice test.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/tests-a')}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  >
+                    <span>Start your first practice test</span>
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
             </Card>
           )}
 
@@ -576,9 +604,8 @@ const Dashboard = memo(function Dashboard() {
             <SpeedTrendWidget data={analyticsData.speedTrend} />
           )}
 
-          {/* Level Progress with Milestone Chest — Premium Card */}
+          {/* Level Progress with Milestone Chest */}
           <Card className="p-5 space-y-3 gradient-border bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl relative overflow-hidden">
-            {/* Subtle neon ambient glow */}
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/[0.05] dark:bg-amber-500/[0.08] rounded-full blur-2xl pointer-events-none" />
             <div className="flex justify-between items-center text-xs font-bold relative z-10">
               <span className="text-gray-900 dark:text-white flex items-center gap-1.5">
@@ -595,16 +622,17 @@ const Dashboard = memo(function Dashboard() {
             <div className="flex items-center justify-between pt-1 relative z-10">
               <p className="text-[10px] text-gray-400 dark:text-gray-500 flex-1 pr-2">
                 Earn {xpForNextLevel - xpInCurrentLevel} more XP to reach Level {currentLevel + 1}{' '}
-                and unlock advanced adaptive mock tests.
+                and keep building your learning momentum.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleClaimTierReward}
                 disabled={claimedTierReward}
-                className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-1 transition-all shrink-0 ${claimedTierReward
-                  ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-default'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md shadow-amber-500/20'
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-1 transition-all shrink-0 ${
+                  claimedTierReward
+                    ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-default'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-md shadow-amber-500/20'
                 }`}
                 title="Claim Level Milestone Perk"
               >
