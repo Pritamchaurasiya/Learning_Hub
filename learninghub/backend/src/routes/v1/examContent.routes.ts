@@ -41,5 +41,11 @@ router.get(
   validate(getSubjectsSchema),
   examContentController.getSubjects
 )
+router.get(
+  '/exams/:examId/curriculum',
+  cacheMiddleware(600),
+  validate(getSubjectsSchema),
+  examContentController.getExamCurriculum
+)
 
 export default router

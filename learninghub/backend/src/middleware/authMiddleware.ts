@@ -23,30 +23,53 @@ export interface DecodedTokenWithIat {
 
 const AUTH_STATUS_CACHE_TTL_SECONDS = 30
 
-const getCachedUserAccountStatus = async (userId: string): Promise<UserAccountStatus | null> => {
+// In-flight single-flight coalescing maps to prevent thundering herds on concurrent requests
+const inFlightStatusPromises = new Map<string, Promise<UserAccountStatus | null>>()
+const inFlightSessionPromises = new Map<
+  string,
+  Promise<{ id: string; lastUsedAt: Date; createdAt: Date } | null>
+>()
+
+export const getCachedUserAccountStatus = async (
+  userId: string
+): Promise<UserAccountStatus | null> => {
   // SECURITY/PERF TRADEOFF: account status (deletedAt/lockedUntil) is cached briefly
   // to avoid a DB hit per request. TTL is intentionally short (30s) so
-  // deactivate/lock propagates quickly. Security-critical transitions (password
-  // change, logout-all, account delete/lock) MUST call
-  // `invalidateUserAccountStatus(userId)` (exported below) to close the window.
+  // deactivate/lock propagates quickly.
   const cacheKey = `auth:user:${userId}`
-  let user = await cacheService.get<UserAccountStatus>(cacheKey)
-
-  if (!user) {
-    user = (await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, deletedAt: true, lockedUntil: true },
-    })) as UserAccountStatus | null
-
-    if (user) {
-      await cacheService.set(cacheKey, user, AUTH_STATUS_CACHE_TTL_SECONDS)
-    }
+  const cached = await cacheService.get<UserAccountStatus>(cacheKey)
+  if (cached) {
+    return cached
   }
 
-  return user
+  // Single-flight coalescing: check if an identical query is already running
+  const inFlight = inFlightStatusPromises.get(userId)
+  if (inFlight) {
+    return inFlight
+  }
+
+  const queryPromise = (async () => {
+    try {
+      const user = (await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, deletedAt: true, lockedUntil: true },
+      })) as UserAccountStatus | null
+
+      if (user) {
+        await cacheService.set(cacheKey, user, AUTH_STATUS_CACHE_TTL_SECONDS)
+      }
+      return user
+    } finally {
+      inFlightStatusPromises.delete(userId)
+    }
+  })()
+
+  inFlightStatusPromises.set(userId, queryPromise)
+  return queryPromise
 }
 
 export const invalidateUserAccountStatus = async (userId: string): Promise<void> => {
+  inFlightStatusPromises.delete(userId)
   await cacheService.delete(`auth:user:${userId}`)
 }
 
@@ -114,6 +137,7 @@ export const authenticate = async (
       const sessionId = (req.headers['x-auth-session-id'] || req.headers['x-user-session-id']) as
         string | undefined
       if (sessionId) {
+        const sessionFlightKey = `${decoded.userId}:${sessionId}`
         const sessionCacheKey = `session:${decoded.userId}:${sessionId}`
         let session = await cacheService.get<{
           id: string
@@ -125,18 +149,38 @@ export const authenticate = async (
           session.lastUsedAt = new Date(session.lastUsedAt)
           session.createdAt = new Date(session.createdAt)
         } else {
-          session = await prisma.userSession.findFirst({
-            where: {
-              userId: decoded.userId,
-              sessionToken: sessionId,
-              isRevoked: false,
-              expiresAt: { gt: new Date() },
-            },
-            select: { id: true, lastUsedAt: true, createdAt: true },
-          })
+          const inFlightSession = inFlightSessionPromises.get(sessionFlightKey)
+          if (inFlightSession) {
+            session = await inFlightSession
+          } else {
+            const querySessionPromise = (async () => {
+              try {
+                const dbSession = await prisma.userSession.findFirst({
+                  where: {
+                    userId: decoded.userId,
+                    sessionToken: sessionId,
+                    isRevoked: false,
+                    expiresAt: { gt: new Date() },
+                  },
+                  select: { id: true, lastUsedAt: true, createdAt: true },
+                })
 
-          if (session) {
-            await cacheService.set(sessionCacheKey, session, 300)
+                if (dbSession) {
+                  await cacheService.set(sessionCacheKey, dbSession, 300)
+                  return {
+                    id: dbSession.id,
+                    lastUsedAt: new Date(dbSession.lastUsedAt),
+                    createdAt: new Date(dbSession.createdAt),
+                  }
+                }
+                return null
+              } finally {
+                inFlightSessionPromises.delete(sessionFlightKey)
+              }
+            })()
+
+            inFlightSessionPromises.set(sessionFlightKey, querySessionPromise)
+            session = await querySessionPromise
           }
         }
 

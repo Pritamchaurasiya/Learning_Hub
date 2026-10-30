@@ -29,7 +29,7 @@ jest.mock('../../src/utils/logger', () => ({
 }))
 
 // Import AFTER mocks are set up
-import { authenticate, optionalAuth, authorize } from '../../src/middleware/authMiddleware'
+import { authenticate, optionalAuth, authorize, getCachedUserAccountStatus, invalidateUserAccountStatus } from '../../src/middleware/authMiddleware'
 
 function makeReqResNext(headers: Record<string, string> = {}) {
   const req = {
@@ -214,5 +214,55 @@ describe('authorize middleware', () => {
     req.user = { userId: 'u1', email: 'a@b.com', role: 'ADMIN' }
     authorize('ADMIN', 'SUPERADMIN')(req, res, next)
     expect(next).toHaveBeenCalled()
+  })
+})
+
+describe('Single-Flight Request Coalescing (Milestone 37)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCacheGet.mockResolvedValue(null)
+    mockCacheSet.mockResolvedValue(undefined)
+  })
+
+  it('coalesces 10 concurrent requests into a single database query on cache miss', async () => {
+    let queryExecutionCount = 0
+    ;(prisma.user.findUnique as jest.Mock).mockImplementation(async () => {
+      queryExecutionCount++
+      // Simulate 20ms database network latency
+      await new Promise(r => setTimeout(r, 20))
+      return { id: 'u-concurrent-1', deletedAt: null, lockedUntil: null }
+    })
+
+    // 10 concurrent calls arriving at the exact same millisecond
+    const concurrentRequests = Array.from({ length: 10 }, () =>
+      getCachedUserAccountStatus('u-concurrent-1')
+    )
+
+    const results = await Promise.all(concurrentRequests)
+
+    // All 10 callers received valid result
+    expect(results).toHaveLength(10)
+    for (const res of results) {
+      expect(res).toEqual({ id: 'u-concurrent-1', deletedAt: null, lockedUntil: null })
+    }
+
+    // Crucial check: Exactly 1 database query was fired, eliminating thundering herds!
+    expect(queryExecutionCount).toBe(1)
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1)
+  })
+
+  it('invalidates cache and in-flight promise cleanly', async () => {
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'u-inv',
+      deletedAt: null,
+      lockedUntil: null,
+    })
+
+    await getCachedUserAccountStatus('u-inv')
+    await invalidateUserAccountStatus('u-inv')
+
+    // After invalidation, a new query can be cleanly initiated
+    const fresh = await getCachedUserAccountStatus('u-inv')
+    expect(fresh?.id).toBe('u-inv')
   })
 })

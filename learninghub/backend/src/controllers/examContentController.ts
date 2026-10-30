@@ -136,4 +136,21 @@ export const examContentController = {
     const subjects = await examContentService.getSubjects(examId)
     sendSuccess(res, subjects)
   }),
+
+  getExamCurriculum: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const examId = Array.isArray(req.params.examId) ? req.params.examId[0] : req.params.examId
+    if (!examId || typeof examId !== 'string') {
+      sendValidationError(res, 'examId is required')
+      return
+    }
+    const cacheKey = `exam-content:curriculum:${examId.toLowerCase()}`
+    const cached = await cacheService.get(cacheKey)
+    if (cached) {
+      sendSuccess(res, cached)
+      return
+    }
+    const curriculum = await examContentService.getExamCurriculum(examId)
+    await cacheService.set(cacheKey, curriculum, 3600)
+    sendSuccess(res, curriculum)
+  }),
 }
