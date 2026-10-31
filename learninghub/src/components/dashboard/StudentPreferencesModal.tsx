@@ -233,7 +233,7 @@ export const StudentPreferencesModal: React.FC<StudentPreferencesModalProps> = (
     }
   }
 
-  const availableRegions = REGIONS_BY_COUNTRY.get(selectedCountryId) || ['National / All Regions']
+  const availableRegions = REGIONS_BY_COUNTRY[selectedCountryId] || ['National / All Regions']
 
   if (!isOpen) return null
 

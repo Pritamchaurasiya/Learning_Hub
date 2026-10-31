@@ -340,7 +340,7 @@ export const ExamPreparationOverviewWidget: React.FC<ExamPreparationOverviewWidg
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {milestones.map((m, idx) => (
             <div
-              key={m.title}
+              key={m.label}
               className={`p-3.5 rounded-xl border ${
                 m.status === 'TARGET'
                   ? 'border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/30'

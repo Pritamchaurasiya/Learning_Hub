@@ -397,21 +397,21 @@ const TestsAPage = memo(() => {
             setTestQuestions(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (data.questions ?? []).map((q: any) => ({
-              id: q.id,
-              text: q.text ?? '',
-              text_hi: q.text_hi ?? q.hindi_text ?? null,
-              hindi_text: q.hindi_text ?? q.text_hi ?? null,
-              explanation_hi: q.explanation_hi ?? null,
-              question_type: q.question_type ?? q.type ?? 'mcq',
-              type: q.type ?? q.question_type ?? 'mcq',
-              difficulty: q.difficulty ?? 0.5,
-              bloom_level: q.bloom_level ?? 'understand',
-              options: q.options ?? [],
-              order: q.order ?? 0,
-              marks: q.points ?? q.marks ?? 1,
-              section_id: q.section_id ?? q.sectionId ?? null,
-              sectionId: q.sectionId ?? q.section_id ?? null,
-            })),
+                id: q.id,
+                text: q.text ?? '',
+                text_hi: q.text_hi ?? q.hindi_text ?? null,
+                hindi_text: q.hindi_text ?? q.text_hi ?? null,
+                explanation_hi: q.explanation_hi ?? null,
+                question_type: q.question_type ?? q.type ?? 'mcq',
+                type: q.type ?? q.question_type ?? 'mcq',
+                difficulty: q.difficulty ?? 0.5,
+                bloom_level: q.bloom_level ?? 'understand',
+                options: q.options ?? [],
+                order: q.order ?? 0,
+                marks: q.points ?? q.marks ?? 1,
+                section_id: q.section_id ?? q.sectionId ?? null,
+                sectionId: q.sectionId ?? q.section_id ?? null,
+              })),
               {
                 testId,
                 testTitle,
@@ -1385,7 +1385,7 @@ const TestsAPage = memo(() => {
           <ResultsView
             result={test.results}
             adaptiveDiagnostics={adaptiveDiagnostics}
-            onReattemptMistakes={(incorrectIds) => {
+            onReattemptMistakes={incorrectIds => {
               const incorrectQuestions = test.questions.filter(q => incorrectIds.includes(q.id))
               if (incorrectQuestions.length > 0) {
                 const drillId = `drill-${test.testInfo?.testId || 'pyq'}-${Date.now()}`
@@ -1514,7 +1514,7 @@ const TestsAPage = memo(() => {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                 <Star className="w-5 h-5 text-primary-500 fill-current" /> Unlock Tests A+ Elite
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-slate-300">
                 You need a premium subscription to start taking mock tests and access deep
                 analytics.
               </p>
@@ -1542,7 +1542,7 @@ const TestsAPage = memo(() => {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             All Practice Tests & Mocks
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-300">
             Explore the complete question repository with filters, difficulty tiers, and timed exam
             modes.
           </p>

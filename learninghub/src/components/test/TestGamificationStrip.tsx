@@ -34,14 +34,18 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {/* 1. Day Streak Tile */}
-      <div className="p-4 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-md flex items-center gap-4 transition-colors">
-        <div className="w-12 h-12 rounded-xl bg-orange-500/15 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+      <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-purple-100 dark:border-slate-800 shadow-sm dark:shadow-md backdrop-blur-md flex items-center gap-4 transition-colors">
+        <div className="w-12 h-12 rounded-xl bg-orange-500/15 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 dark:border-orange-500/40 flex items-center justify-center shrink-0">
           <Flame className="w-6 h-6 animate-bounce" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <b className="text-sm font-bold text-gray-900 dark:text-white">{streakDays}-Day Streak</b>
-            <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400">🔥 On Fire</span>
+            <b className="text-sm font-bold text-gray-900 dark:text-white">
+              {streakDays}-Day Streak
+            </b>
+            <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400">
+              🔥 On Fire
+            </span>
           </div>
           <div className="flex gap-1.5 mt-2">
             {days.map((d, i) => (
@@ -50,7 +54,7 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
                 className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-extrabold ${
                   d.active
                     ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-                    : 'bg-gray-100 dark:bg-white/10 text-gray-400'
+                    : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-400'
                 } ${d.today ? 'ring-2 ring-blue-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900' : ''}`}
                 title={`Day ${d.label}`}
               >
@@ -62,8 +66,8 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
       </div>
 
       {/* 2. Weekly Test Goal */}
-      <div className="p-4 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-md flex items-center gap-4 transition-colors">
-        <div className="w-12 h-12 rounded-xl bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+      <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-purple-100 dark:border-slate-800 shadow-sm dark:shadow-md backdrop-blur-md flex items-center gap-4 transition-colors">
+        <div className="w-12 h-12 rounded-xl bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 dark:border-blue-500/40 flex items-center justify-center shrink-0">
           <Target className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">
@@ -73,24 +77,24 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
               {weeklyGoalCompleted}/{weeklyGoalTotal} tests
             </span>
           </div>
-          <div className="h-2 rounded-full bg-gray-100 dark:bg-white/10 mt-2.5 overflow-hidden">
+          <div className="h-2 rounded-full bg-gray-100 dark:bg-slate-800 mt-2.5 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
               style={{ width: `${(weeklyGoalCompleted / weeklyGoalTotal) * 100}%` }}
             />
           </div>
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 block">
+          <span className="text-[11px] text-gray-500 dark:text-slate-400 mt-1 block">
             1 more test to hit weekly goal
           </span>
         </div>
       </div>
 
       {/* 3. Overall Accuracy Circular Gauge */}
-      <div className="p-4 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-md flex items-center gap-4 transition-colors">
+      <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-purple-100 dark:border-slate-800 shadow-sm dark:shadow-md backdrop-blur-md flex items-center gap-4 transition-colors">
         <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
             <path
-              className="text-gray-200 dark:text-white/10"
+              className="text-gray-200 dark:text-slate-800"
               strokeWidth="3.5"
               stroke="currentColor"
               fill="none"
@@ -106,11 +110,13 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             />
           </svg>
-          <span className="absolute text-[11px] font-black text-gray-900 dark:text-white">{accuracyRate}%</span>
+          <span className="absolute text-[11px] font-black text-gray-900 dark:text-white">
+            {accuracyRate}%
+          </span>
         </div>
         <div className="flex-1 min-w-0">
           <b className="text-sm font-bold text-gray-900 dark:text-white">Overall Accuracy</b>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
             Top 15% across all simulated test takers
           </p>
           <div className="flex items-center gap-1 mt-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -121,8 +127,8 @@ export const TestGamificationStrip = memo(function TestGamificationStrip({
       </div>
 
       {/* 4. Badges Earned */}
-      <div className="p-4 rounded-2xl bg-white/80 dark:bg-white/5 border border-purple-100 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-md flex items-center gap-4 transition-colors">
-        <div className="w-12 h-12 rounded-xl bg-purple-500/15 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+      <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-purple-100 dark:border-slate-800 shadow-sm dark:shadow-md backdrop-blur-md flex items-center gap-4 transition-colors">
+        <div className="w-12 h-12 rounded-xl bg-purple-500/15 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 dark:border-purple-500/40 flex items-center justify-center shrink-0">
           <Award className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">

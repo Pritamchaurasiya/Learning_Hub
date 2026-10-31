@@ -279,10 +279,7 @@ const Dashboard = memo(function Dashboard() {
             >
               Welcome back, {username || 'Scholar'}
             </motion.h1>
-            <StreakMultiplierBadge
-              streak={stats.currentStreak}
-              longestStreak={stats.currentStreak}
-            />
+            <StreakMultiplierBadge streak={stats.currentStreak} />
           </div>
           <motion.p
             initial={{ opacity: 0 }}

@@ -36,12 +36,12 @@ export const OfflineStationBanner = memo(function OfflineStationBanner({
           <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
             Offline Assessment Station
             {offlineBundlesCount > 0 && (
-              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 text-[10px]">
+              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-500/40 text-[10px]">
                 {offlineBundlesCount} Bundles Cached
               </Badge>
             )}
           </h4>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-600 dark:text-slate-300">
             {localPendingSyncCount > 0
               ? `${localPendingSyncCount} completed assessment submissions buffered locally, awaiting server reconciliation.`
               : 'Download assessments now to practice or test on the go with zero network latency.'}
@@ -55,7 +55,7 @@ export const OfflineStationBanner = memo(function OfflineStationBanner({
             disabled={isSyncingQueue || !isOnline}
             size="sm"
             variant="primary"
-            className="text-xs bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5"
+            className="text-xs bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 shadow-md shadow-amber-600/30 transition-all"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${isSyncingQueue ? 'animate-spin' : ''}`}
