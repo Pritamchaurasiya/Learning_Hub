@@ -16,6 +16,8 @@ import {
   Settings,
   ChevronDown,
   ShoppingBag,
+  Minus,
+  Square,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -27,6 +29,7 @@ import { ExamContextBadge } from './exam/ExamContextBadge'
 import { CountrySelectorBadge } from './country/CountrySelectorBadge'
 import { useLearningContextStore } from '../stores/useLearningContextStore'
 import { prefetchRoute } from '../utils/routePrefetchRegistry'
+import { desktopService } from '../services/desktopService'
 
 const LevelProgressionModal = lazy(() =>
   import('./gamification/LevelProgressionModal').then(m => ({ default: m.LevelProgressionModal }))
@@ -508,6 +511,35 @@ const Header = memo(() => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        )}
+        {/* Native Desktop Window Controls */}
+        {desktopService.isDesktop() && (
+          <div className="flex items-center gap-1 pl-2 border-l border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => desktopService.minimize()}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Minimize"
+              aria-label="Minimize Window"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => desktopService.maximize()}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Maximize / Restore"
+              aria-label="Maximize Window"
+            >
+              <Square className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => desktopService.close()}
+              className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              title="Close"
+              aria-label="Close Window"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>

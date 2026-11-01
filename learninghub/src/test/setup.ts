@@ -73,6 +73,10 @@ const localStorageMock = {
     // eslint-disable-next-line security/detect-object-injection
     Object.keys(storageState).forEach(key => delete storageState[key])
   }),
+  key: vi.fn((index: number) => Object.keys(storageState)[index] ?? null),
+  get length() {
+    return Object.keys(storageState).length
+  },
 }
 
 Object.defineProperty(window, 'localStorage', {

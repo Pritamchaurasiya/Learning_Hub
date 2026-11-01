@@ -233,4 +233,32 @@ describe('Header Component', () => {
       expect(logout).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('Native Desktop Mode Window Controls', () => {
+    it('renders native window controls and dispatches actions when in desktop container', () => {
+      const minimize = vi.fn()
+      const maximize = vi.fn()
+      const close = vi.fn()
+      ;(window as any).desktopAPI = {
+        isElectron: true,
+        minimize,
+        maximize,
+        close,
+      }
+      renderHeader()
+      const minBtn = screen.getByLabelText('Minimize Window')
+      const maxBtn = screen.getByLabelText('Maximize Window')
+      const closeBtn = screen.getByLabelText('Close Window')
+      expect(minBtn).toBeInTheDocument()
+      expect(maxBtn).toBeInTheDocument()
+      expect(closeBtn).toBeInTheDocument()
+      fireEvent.click(minBtn)
+      expect(minimize).toHaveBeenCalledTimes(1)
+      fireEvent.click(maxBtn)
+      expect(maximize).toHaveBeenCalledTimes(1)
+      fireEvent.click(closeBtn)
+      expect(close).toHaveBeenCalledTimes(1)
+      delete (window as any).desktopAPI
+    })
+  })
 })
