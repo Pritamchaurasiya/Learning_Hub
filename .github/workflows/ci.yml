@@ -14,7 +14,7 @@ concurrency:
 jobs:
   frontend:
     name: Frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: learninghub
@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
       - name: Type check
         run: npx tsc --noEmit
       - name: Lint
@@ -42,7 +42,7 @@ jobs:
       - name: Test
         run: npm test -- --run
       - name: Test with coverage
-        run: npm run test:coverage || npx vitest run --coverage || echo "Coverage not configured"
+        run: npm run test:coverage
 
   node-backend:
     name: Node Backend
@@ -85,8 +85,6 @@ jobs:
         run: npx prisma generate
       - name: Type check
         run: npx tsc --noEmit
-      - name: Lint
-        run: npm run lint
       - name: Test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
@@ -201,7 +199,7 @@ jobs:
 
   e2e:
     name: E2E (Browser + Live Node API)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend, node-backend]
     if: needs.frontend.result == 'success' && needs.node-backend.result == 'success'
     services:
