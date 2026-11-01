@@ -258,6 +258,96 @@ ipcMain.handle('desktop:window-action', (event, action) => {
     case 'close':
       mainWindow.close();
       break;
+    case 'toggle-fullscreen':
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+      break;
+  }
+});
+
+function createTray(iconPath) {
+  if (appTray || !iconPath || !fs.existsSync(iconPath)) return;
+  try {
+    appTray = new Tray(iconPath);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open LearningHub',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        }
+      },
+      {
+        label: 'Toggle Fullscreen',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        }
+      }
+    ]);
+    appTray.setToolTip('LearningHub Desktop Application');
+    appTray.setContextMenu(contextMenu);
+    appTray.on('click', () => {
+      if (mainWindow) {
+        if (mainWindow.isVisible()) {
+          mainWindow.focus();
+        } else {
+          mainWindow.show();
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Failed to initialize system tray:', err);
+  }
+}
+
+// Native Desktop Notifications
+ipcMain.handle('desktop:notify', (event, { title, body }) => {
+  if (Notification && Notification.isSupported()) {
+    new Notification({
+      title: title || 'LearningHub Desktop',
+      body: body || '',
+      silent: false
+    }).show();
+    return { success: true };
+  }
+  return { success: false, reason: 'unsupported' };
+});
+
+// Offline Secure Vault Storage Handlers
+ipcMain.handle('desktop:offline-save', async (event, { key, data }) => {
+  if (!key || typeof key !== 'string') throw new Error('Invalid storage key');
+  const safeKey = path.basename(key).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+  const filePath = path.join(OFFLINE_VAULT_DIR, `${safeKey}.json`);
+  await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+  return { success: true, key: safeKey };
+});
+
+ipcMain.handle('desktop:offline-load', async (event, { key }) => {
+  if (!key || typeof key !== 'string') throw new Error('Invalid storage key');
+  const safeKey = path.basename(key).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+  const filePath = path.join(OFFLINE_VAULT_DIR, `${safeKey}.json`);
+  if (!fs.existsSync(filePath)) return null;
+  const raw = await fs.promises.readFile(filePath, 'utf8');
+  return JSON.parse(raw);
+});
+
+ipcMain.handle('desktop:offline-list', async () => {
+  if (!fs.existsSync(OFFLINE_VAULT_DIR)) return [];
+  const files = await fs.promises.readdir(OFFLINE_VAULT_DIR);
+  return files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+});
+      break;
   }
 });
 
