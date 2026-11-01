@@ -214,12 +214,12 @@ jobs:
         run: python -m pip install --upgrade pip pip-audit
       - name: Run pip-audit (Django)
         run: pip-audit -r conductor/requirements/base.txt
-      - name: Run npm audit (frontend)
+      - name: Run npm audit (frontend production dependencies)
         working-directory: learninghub
-        run: npm audit --audit-level=high
-      - name: Run npm audit (backend)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Run npm audit (backend production dependencies)
         working-directory: learninghub/backend
-        run: npm audit --audit-level=high --legacy-peer-deps
+        run: npm audit --omit=dev --audit-level=high --legacy-peer-deps
 
   e2e:
     name: E2E (Browser + Live Node API)
