@@ -10,6 +10,7 @@
  * */
 import { testsAService } from '../testsAService'
 import { triggerHaptic } from '../../utils/haptics'
+import desktopService from '../desktopService'
 
 export interface CachedOfflineBundle {
   bundleId: string
@@ -142,6 +143,10 @@ class OfflineAssessmentManager {
    * Save a downloaded test bundle for offline taking
    */
   public async saveTestBundle(bundle: CachedOfflineBundle): Promise<void> {
+    if (desktopService.isDesktop()) {
+      void desktopService.saveOfflineVault(`bundle_${bundle.testId}`, bundle)
+    }
+    if (!this.isSupported()) return
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_BUNDLES, 'readwrite')
@@ -155,16 +160,40 @@ class OfflineAssessmentManager {
    * Retrieve a cached test bundle by testId
    */
   public async getTestBundle(testId: string): Promise<CachedOfflineBundle | null> {
-    if (!this.isSupported()) return null
+    if (!this.isSupported()) {
+      if (desktopService.isDesktop()) {
+        const desktopBundle = (await desktopService.loadOfflineVault(
+          `bundle_${testId}`
+        )) as CachedOfflineBundle | null
+        if (desktopBundle) return desktopBundle
+      }
+      return null
+    }
     try {
       const db = await this.getDB()
-      return new Promise((resolve, reject) => {
+      const bundle = await new Promise<CachedOfflineBundle | null>((resolve, reject) => {
         const tx = db.transaction(STORE_BUNDLES, 'readonly')
         const req = tx.objectStore(STORE_BUNDLES).get(testId)
         req.onsuccess = () => resolve(req.result || null)
         req.onerror = () => reject(req.error)
       })
+      if (bundle) return bundle
+      if (desktopService.isDesktop()) {
+        const desktopBundle = (await desktopService.loadOfflineVault(
+          `bundle_${testId}`
+        )) as CachedOfflineBundle | null
+        if (desktopBundle) {
+          void this.saveTestBundle(desktopBundle)
+          return desktopBundle
+        }
+      }
+      return null
     } catch {
+      if (desktopService.isDesktop()) {
+        return (await desktopService.loadOfflineVault(
+          `bundle_${testId}`
+        )) as CachedOfflineBundle | null
+      }
       return null
     }
   }
@@ -195,14 +224,17 @@ class OfflineAssessmentManager {
     attemptId: string,
     answer: BufferedAnswer
   ): Promise<void> {
-    const db = await this.getDB()
     const record = {
       id: `${attemptId}_${answer.questionId}`,
       testId,
       attemptId,
       ...answer,
     }
-
+    if (desktopService.isDesktop()) {
+      void desktopService.saveOfflineVault(`draft_${record.id}`, record)
+    }
+    if (!this.isSupported()) return
+    const db = await this.getDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_ANSWERS, 'readwrite')
       tx.objectStore(STORE_ANSWERS).put(record)
@@ -238,6 +270,9 @@ class OfflineAssessmentManager {
       tx.onerror = () => reject(tx.error)
     })
 
+    if (desktopService.isDesktop()) {
+      void desktopService.saveOfflineVault(id, queuedItem)
+    }
     this.notifyListeners()
 
     // Trigger sync immediately if online

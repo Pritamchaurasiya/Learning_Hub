@@ -3,7 +3,7 @@
   "productName": "LearningHub",
   "copyright": "Copyright © 2026 LearningHub",
   "directories": {
-    "output": "release-desktop",
+    "output": "dist-desktop-bin",
     "buildResources": "public"
   },
   "asar": true,
@@ -13,11 +13,7 @@
   "win": {
     "target": [
       {
-        "target": "nsis",
-        "arch": ["x64"]
-      },
-      {
-        "target": "portable",
+        "target": "dir",
         "arch": ["x64"]
       }
     ],

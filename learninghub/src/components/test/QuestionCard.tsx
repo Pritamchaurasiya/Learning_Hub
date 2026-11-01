@@ -695,7 +695,7 @@ export const QuestionCard = memo(
                 </span>
               </div>
             ) : (
-              (question.options ?? []).map(option => {
+              (question.options ?? []).map((option, optIdx) => {
                 const isMultiSelect =
                   question.question_type === 'multiple_select' || question.type === 'MSQ'
                 const isSelected = Array.isArray(selectedAnswer)
@@ -744,6 +744,16 @@ export const QuestionCard = memo(
                       >
                         {isSelected && <CheckCircle className="w-4 h-4 text-white" />}
                       </div>
+                      <span
+                        data-testid={`option-badge-${optIdx}`}
+                        className={`w-6 h-6 rounded-md text-xs font-bold font-mono flex items-center justify-center shrink-0 border transition-colors ${
+                          isSelected
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-gray-100 dark:bg-gray-700/80 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {String.fromCharCode(65 + optIdx)}
+                      </span>
                       <MathRenderer
                         text={
                           examLanguage === 'hi'

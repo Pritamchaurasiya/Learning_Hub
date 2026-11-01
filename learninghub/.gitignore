@@ -10,6 +10,8 @@ node_modules/
 # Build outputs
 dist/
 dist-desktop/
+dist-desktop-bin/
+release-desktop-v2/
 release-desktop/
 *.asar
 build/

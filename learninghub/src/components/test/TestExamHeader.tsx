@@ -11,6 +11,7 @@ import {
   Info,
   Calculator,
   PenTool,
+  Keyboard,
   Languages,
   ZoomIn,
   ZoomOut,
@@ -42,6 +43,7 @@ export interface TestExamHeaderProps {
   onOpenInstructions?: () => void
   onOpenCalculator?: () => void
   onOpenScratchpad?: () => void
+  onOpenShortcuts?: () => void
   fontSize?: 'sm' | 'md' | 'lg'
   onChangeFontSize?: (size: 'sm' | 'md' | 'lg') => void
 }
@@ -66,6 +68,7 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
   onOpenInstructions,
   onOpenCalculator,
   onOpenScratchpad,
+  onOpenShortcuts,
   fontSize = 'md',
   onChangeFontSize,
 }) => {
@@ -80,7 +83,8 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
   }, [])
   const minutes = Math.floor(timeRemaining / 60)
   const seconds = String(timeRemaining % 60).padStart(2, '0')
-  const progressPercent = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0
+  const progressPercent =
+    totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0
 
   return (
     <div
@@ -287,7 +291,21 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
               </button>
             )}
 
-                        {/* Official Fullscreen CBT Kiosk Toggle */}
+            {/* Keyboard Shortcuts Dialog */}
+            {onOpenShortcuts && (
+              <button
+                type="button"
+                onClick={onOpenShortcuts}
+                className="px-2.5 py-1 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium border border-gray-200 dark:border-gray-600 transition flex items-center gap-1.5 text-[11px]"
+                title="View Keyboard Shortcuts (?)"
+              >
+                <Keyboard className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="hidden sm:inline">Shortcuts</span>
+                <span className="sm:hidden">Keys</span>
+              </button>
+            )}
+
+            {/* Official Fullscreen CBT Kiosk Toggle */}
             <button
               type="button"
               onClick={() => {
@@ -321,7 +339,9 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
                   type="button"
                   onClick={() => onChangeFontSize('sm')}
                   className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                    fontSize === 'sm' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs' : 'text-gray-500'
+                    fontSize === 'sm'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
+                      : 'text-gray-500'
                   }`}
                   title="Smaller font"
                 >
@@ -332,7 +352,9 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
                   type="button"
                   onClick={() => onChangeFontSize('md')}
                   className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                    fontSize === 'md' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs' : 'text-gray-500'
+                    fontSize === 'md'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
+                      : 'text-gray-500'
                   }`}
                   title="Standard font"
                 >
@@ -342,7 +364,9 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
                   type="button"
                   onClick={() => onChangeFontSize('lg')}
                   className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                    fontSize === 'lg' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs' : 'text-gray-500'
+                    fontSize === 'lg'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-xs'
+                      : 'text-gray-500'
                   }`}
                   title="Larger font"
                 >
@@ -373,7 +397,10 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
               </kbd>{' '}
               Flag
             </span>
-            <span data-testid="question-counter" className="font-bold text-gray-700 dark:text-gray-300 ml-auto sm:ml-0 text-xs sm:text-sm">
+            <span
+              data-testid="question-counter"
+              className="font-bold text-gray-700 dark:text-gray-300 ml-auto sm:ml-0 text-xs sm:text-sm"
+            >
               Question {currentQuestionIndex + 1} of {totalQuestions}
             </span>
           </div>

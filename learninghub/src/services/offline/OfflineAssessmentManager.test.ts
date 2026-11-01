@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import {
-  offlineAssessmentManager,
-  CachedOfflineBundle,
-} from './OfflineAssessmentManager'
+import { offlineAssessmentManager, CachedOfflineBundle } from './OfflineAssessmentManager'
 
 describe('OfflineAssessmentManager', () => {
   beforeEach(() => {
@@ -99,8 +96,16 @@ describe('OfflineAssessmentManager', () => {
         transaction: (_storeNames: string | string[]) => {
           const tx: {
             objectStore: (storeName: string) => {
-              get: (key: string) => { result?: unknown; onsuccess: null | (() => void); onerror: null | (() => void) }
-              getAll: () => { result?: unknown[]; onsuccess: null | (() => void); onerror: null | (() => void) }
+              get: (key: string) => {
+                result?: unknown
+                onsuccess: null | (() => void)
+                onerror: null | (() => void)
+              }
+              getAll: () => {
+                result?: unknown[]
+                onsuccess: null | (() => void)
+                onerror: null | (() => void)
+              }
               put: (val: Record<string, unknown>) => void
               delete: (key: string) => void
             }
@@ -111,7 +116,11 @@ describe('OfflineAssessmentManager', () => {
               const store = mockStores[storeName] || new Map()
               return {
                 get: (key: string) => {
-                  const req: { result?: unknown; onsuccess: null | (() => void); onerror: null | (() => void) } = {
+                  const req: {
+                    result?: unknown
+                    onsuccess: null | (() => void)
+                    onerror: null | (() => void)
+                  } = {
                     result: store.get(key),
                     onsuccess: null,
                     onerror: null,
@@ -120,7 +129,11 @@ describe('OfflineAssessmentManager', () => {
                   return req
                 },
                 getAll: () => {
-                  const req: { result?: unknown[]; onsuccess: null | (() => void); onerror: null | (() => void) } = {
+                  const req: {
+                    result?: unknown[]
+                    onsuccess: null | (() => void)
+                    onerror: null | (() => void)
+                  } = {
                     result: Array.from(store.values()),
                     onsuccess: null,
                     onerror: null,
@@ -129,7 +142,11 @@ describe('OfflineAssessmentManager', () => {
                   return req
                 },
                 put: (val: Record<string, unknown>) => {
-                  const key = (storeName === 'test_bundles' ? (val.testId || val.id) : (val.id || val.testId || 'default_key')) as string
+                  const key = (
+                    storeName === 'test_bundles'
+                      ? val.testId || val.id
+                      : val.id || val.testId || 'default_key'
+                  ) as string
                   store.set(key, val)
                   setTimeout(() => tx.oncomplete?.(), 0)
                 },
@@ -327,6 +344,87 @@ describe('OfflineAssessmentManager', () => {
 
       expect(mockStores['sync_queue'].has('att-sync-1')).toBe(false)
       vi.unstubAllGlobals()
+    })
+  })
+  describe('Native Desktop Vault Dual-Persistence', () => {
+    it('mirrors test bundles, buffered answers, and sync queue into native desktop vault', async () => {
+      const saveOfflineVaultMock = vi.fn().mockResolvedValue({ success: true, key: 'mock' })
+      const loadOfflineVaultMock = vi.fn().mockResolvedValue(null)
+      ;(window as any).desktopAPI = {
+        isElectron: true,
+        saveOfflineData: saveOfflineVaultMock,
+        loadOfflineData: loadOfflineVaultMock,
+        notify: vi.fn().mockResolvedValue(true),
+      }
+
+      const bundle: CachedOfflineBundle = {
+        bundleId: 'bundle-desktop-1',
+        testId: 'test-desktop-1',
+        title: 'Electron Offline Exam',
+        mode: 'standard',
+        timeLimitMinutes: 45,
+        passingScore: 50,
+        totalMarks: 100,
+        negativeMarks: 0,
+        questions: [],
+        downloadedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        signature: 'desktop-sig',
+      }
+
+      await offlineAssessmentManager.saveTestBundle(bundle)
+      expect(saveOfflineVaultMock).toHaveBeenCalledWith('bundle_test-desktop-1', bundle)
+
+      await offlineAssessmentManager.bufferAnswer('test-desktop-1', 'att-desktop-1', {
+        questionId: 'q-desktop-1',
+        answer: 'opt-x',
+        timeSpentSeconds: 15,
+        timestampMs: Date.now(),
+      })
+      expect(saveOfflineVaultMock).toHaveBeenCalledWith(
+        'draft_att-desktop-1_q-desktop-1',
+        expect.objectContaining({
+          testId: 'test-desktop-1',
+          attemptId: 'att-desktop-1',
+          questionId: 'q-desktop-1',
+        })
+      )
+
+      delete (window as any).desktopAPI
+    })
+
+    it('recovers cached test bundle from desktop vault if IndexedDB cache is missing or corrupt', async () => {
+      const cachedDesktopBundle: CachedOfflineBundle = {
+        bundleId: 'bundle-recovered-1',
+        testId: 'test-recovered-1',
+        title: 'Recovered Vault Exam',
+        mode: 'practice',
+        timeLimitMinutes: 30,
+        passingScore: 60,
+        totalMarks: 50,
+        negativeMarks: 0,
+        questions: [],
+        downloadedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        signature: 'recovered-sig',
+      }
+
+      const loadOfflineVaultMock = vi.fn().mockImplementation((key: string) => {
+        if (key === 'bundle_test-recovered-1') return Promise.resolve(cachedDesktopBundle)
+        return Promise.resolve(null)
+      })
+
+      ;(window as any).desktopAPI = {
+        isElectron: true,
+        saveOfflineData: vi.fn().mockResolvedValue({ success: true }),
+        loadOfflineData: loadOfflineVaultMock,
+      }
+
+      const recovered = await offlineAssessmentManager.getTestBundle('test-recovered-1')
+      expect(recovered).toEqual(cachedDesktopBundle)
+      expect(loadOfflineVaultMock).toHaveBeenCalledWith('bundle_test-recovered-1')
+
+      delete (window as any).desktopAPI
     })
   })
 })

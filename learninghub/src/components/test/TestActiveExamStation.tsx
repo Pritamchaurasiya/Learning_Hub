@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useCallback } from 'react'
+import { memo, useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { WifiOff, LayoutGrid, ChevronDown, ChevronUp } from 'lucide-react'
 import { SEO } from '../SEO'
@@ -14,6 +14,7 @@ import { ExamScientificCalculatorModal } from './ExamScientificCalculatorModal'
 import { ExamScratchpadModal } from './ExamScratchpadModal'
 import { ExamQuestionPaperModal } from './ExamQuestionPaperModal'
 import { ExamInstructionsModal } from './ExamInstructionsModal'
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal'
 import { useStore } from '../../stores/useStore'
 import type { UnifiedTestState } from '../../stores/slices/testSlice'
 import type { ProctoringViolation } from '../../hooks/useProctoring'
@@ -112,6 +113,26 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false)
   const [isQuestionPaperOpen, setIsQuestionPaperOpen] = useState(false)
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
+
+  // Listen for '?' keyboard shortcut to toggle examination shortcuts dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return
+      }
+      if (e.key === '?') {
+        e.preventDefault()
+        setIsShortcutsOpen(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md')
 
   // Fallback to store actions if not passed directly in props
@@ -207,6 +228,144 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
     }
   }, [currentQuestion, handleClearAnswer, onToast])
 
+  // Global Keyboard Shortcuts for CBT Examination
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target.closest('.cm-editor'))
+      ) {
+        return
+      }
+
+      if (e.key === 'Escape') {
+        if (isShortcutsOpen) setIsShortcutsOpen(false)
+        if (isCalculatorOpen) setIsCalculatorOpen(false)
+        if (isScratchpadOpen) setIsScratchpadOpen(false)
+        if (isQuestionPaperOpen) setIsQuestionPaperOpen(false)
+        if (isInstructionsOpen) setIsInstructionsOpen(false)
+        if (isSubmitModalOpen) setIsSubmitModalOpen(false)
+        return
+      }
+
+      if (
+        isSubmitModalOpen ||
+        isCalculatorOpen ||
+        isScratchpadOpen ||
+        isQuestionPaperOpen ||
+        isInstructionsOpen ||
+        isShortcutsOpen
+      ) {
+        return
+      }
+
+      const key = e.key
+
+      if (key === '?') {
+        e.preventDefault()
+        setIsShortcutsOpen(prev => !prev)
+        return
+      }
+
+      if (key === 'ArrowRight' || ((e.altKey || !e.ctrlKey) && (key === 'n' || key === 'N'))) {
+        e.preventDefault()
+        handleSaveAndNext()
+        return
+      }
+
+      if (key === 'ArrowLeft' || ((e.altKey || !e.ctrlKey) && (key === 'p' || key === 'P'))) {
+        e.preventDefault()
+        if (test.currentQuestionIndex > 0) {
+          onNavigateToQuestion(test.currentQuestionIndex - 1)
+        }
+        return
+      }
+
+      if ((e.altKey || !e.ctrlKey) && (key === 'm' || key === 'M' || key === 'f' || key === 'F')) {
+        e.preventDefault()
+        handleMarkForReviewAndNext()
+        return
+      }
+
+      if (e.altKey && (key === 'c' || key === 'C')) {
+        e.preventDefault()
+        handleClearCurrentResponse()
+        return
+      }
+
+      if (currentQuestion && currentQuestion.options && currentQuestion.options.length > 0) {
+        const isCoding =
+          currentQuestion.question_type === 'coding' ||
+          currentQuestion.type === 'coding' ||
+          Boolean(currentQuestion.code_template)
+        const isSubjective =
+          currentQuestion.question_type === 'subjective' || currentQuestion.type === 'subjective'
+        const isNumerical =
+          currentQuestion.question_type === 'numerical' || currentQuestion.type === 'numerical'
+
+        if (!isCoding && !isSubjective && !isNumerical && !isCurrentSectionLocked) {
+          let optionIndex = -1
+          if (['1', '2', '3', '4', '5', '6'].includes(key)) {
+            optionIndex = parseInt(key, 10) - 1
+          } else if (
+            ['a', 'b', 'c', 'd', 'e', 'f'].includes(key.toLowerCase()) &&
+            !e.ctrlKey &&
+            !e.altKey
+          ) {
+            optionIndex = key.toLowerCase().charCodeAt(0) - 97
+          }
+
+          if (optionIndex >= 0 && optionIndex < currentQuestion.options.length) {
+            e.preventDefault()
+            const opt = currentQuestion.options[optionIndex]
+            if (opt) {
+              const isMultiSelect =
+                currentQuestion.question_type === 'multiple_select' ||
+                currentQuestion.type === 'MSQ'
+              if (isMultiSelect) {
+                const current = Array.isArray(selectedAnswer)
+                  ? [...selectedAnswer]
+                  : selectedAnswer
+                    ? [selectedAnswer]
+                    : []
+                const next = current.includes(opt.id)
+                  ? current.filter(id => id !== opt.id)
+                  : [...current, opt.id]
+                onAnswerQuestion(currentQuestion.id, next)
+              } else {
+                onAnswerQuestion(currentQuestion.id, opt.id)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [
+    test.currentQuestionIndex,
+    test.questions.length,
+    currentQuestion,
+    selectedAnswer,
+    isCurrentSectionLocked,
+    isShortcutsOpen,
+    isCalculatorOpen,
+    isScratchpadOpen,
+    isQuestionPaperOpen,
+    isInstructionsOpen,
+    isSubmitModalOpen,
+    handleSaveAndNext,
+    handleMarkForReviewAndNext,
+    handleClearCurrentResponse,
+    onNavigateToQuestion,
+    onAnswerQuestion,
+  ])
+
   return (
     <div
       className={`min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 ${
@@ -291,6 +450,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         onOpenInstructions={() => setIsInstructionsOpen(true)}
         onOpenCalculator={() => setIsCalculatorOpen(true)}
         onOpenScratchpad={() => setIsScratchpadOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
         fontSize={fontSize}
         onChangeFontSize={setFontSize}
       />
@@ -541,6 +701,9 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         examName={test.testInfo?.testTitle || 'Target Competitive Exam'}
         examLanguage={currentLanguage}
       />
+
+      {/* CBT Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
 
       {/* Live Proctor Camera Feed */}
       {webcamStream && (

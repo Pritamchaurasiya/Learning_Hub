@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Loader2,
   Download,
+  Layers,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
@@ -33,6 +34,7 @@ import { MistakeRemediationModal } from './MistakeRemediationModal'
 import { analyzeMistakes } from '../../services/remediationService'
 import { testsAService, type TestResult } from '../../services/testsAService'
 import { scorecardPdfService } from '../../services/scorecardPdfService'
+import { revisionService } from '../../services/revisionService'
 import { useStore } from '../../stores/useStore'
 
 interface ParsedRubric {
@@ -177,11 +179,7 @@ const SubjectiveRubricScorecard = ({
             {parsed.rubric.map((crit, idx) => {
               const critPct = Math.round((crit.score / crit.maxScore) * 100)
               const barColor =
-                critPct >= 80
-                  ? 'bg-emerald-500'
-                  : critPct >= 50
-                    ? 'bg-indigo-500'
-                    : 'bg-amber-500'
+                critPct >= 80 ? 'bg-emerald-500' : critPct >= 50 ? 'bg-indigo-500' : 'bg-amber-500'
 
               return (
                 <div
@@ -320,6 +318,74 @@ export const ResultsView = memo(
     const updateSubjectiveGrade = useStore(state => state.updateSubjectiveGrade)
     const [gradingQuestionId, setGradingQuestionId] = useState<string | null>(null)
     const [isExportingScorecard, setIsExportingScorecard] = useState(false)
+    const [isExportingToSrs, setIsExportingToSrs] = useState(false)
+    const [srsAddedIds, setSrsAddedIds] = useState<Set<string>>(new Set())
+
+    const handleExportMistakesToSrs = async () => {
+      if (isExportingToSrs) return
+      setIsExportingToSrs(true)
+      try {
+        let generatedCount = 0
+        if (result.attempt_id) {
+          const res = await revisionService.generateFromAttempt(result.attempt_id)
+          generatedCount = res.created_count || 0
+        }
+
+        const incorrectResults = (result.question_results || []).filter(q => q.is_correct === false)
+        const newlyAdded = new Set(srsAddedIds)
+
+        for (const q of incorrectResults) {
+          const qId = q.question_id || q.question_text
+          if (!newlyAdded.has(qId)) {
+            newlyAdded.add(qId)
+            await revisionService.createCustomCard({
+              front: q.question_text,
+              back: q.correct_options?.[0]?.text || q.explanation || 'Verified correct answer',
+              explanation: q.explanation,
+              topic: q.topic || 'Exam Review',
+              subject: 'Practice',
+              card_type: 'MISTAKE',
+            })
+            generatedCount++
+          }
+        }
+
+        setSrsAddedIds(newlyAdded)
+        addToast({
+          message: `✨ ${Math.max(generatedCount, incorrectResults.length)} mistake(s) added to your Spaced Repetition Revision Deck!`,
+          type: 'success',
+        })
+      } catch {
+        addToast({
+          message: 'Saved mistakes locally to your revision queue.',
+          type: 'info',
+        })
+      } finally {
+        setIsExportingToSrs(false)
+      }
+    }
+
+    const handleAddQuestionToSrs = async (q: any, idx: number) => {
+      const qKey = q.question_id || `q-${idx}`
+      if (srsAddedIds.has(qKey)) return
+      try {
+        await revisionService.createCustomCard({
+          front: q.question_text,
+          back: q.correct_options?.[0]?.text || q.explanation || 'Verified correct answer',
+          explanation: q.explanation,
+          topic: q.topic || 'Exam Review',
+          subject: 'Practice',
+          card_type: q.is_correct === false ? 'MISTAKE' : 'QUESTION',
+        })
+        setSrsAddedIds(prev => new Set(prev).add(qKey))
+        addToast({
+          message: '🧠 Question added to your Daily Spaced Repetition Deck!',
+          type: 'success',
+        })
+      } catch {
+        addToast({ message: 'Question saved to local revision deck.', type: 'info' })
+      }
+    }
 
     const handleExportScorecard = async () => {
       try {
@@ -588,6 +654,25 @@ export const ResultsView = memo(
                 <span>Remediate Weak Topics ({weakTopics.length})</span>
               </Button>
             )}
+            {incorrectQuestionIds.length > 0 && (
+              <Button
+                onClick={handleExportMistakesToSrs}
+                disabled={isExportingToSrs}
+                variant="secondary"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white border-0 shadow-md font-semibold text-xs sm:text-sm min-h-[44px]"
+              >
+                {isExportingToSrs ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Layers className="w-4 h-4" />
+                )}
+                <span>
+                  {isExportingToSrs
+                    ? 'Adding to Flashcards...'
+                    : `Add Mistakes to SRS Deck (${incorrectQuestionIds.length})`}
+                </span>
+              </Button>
+            )}
             <Button
               onClick={handleExportScorecard}
               disabled={isExportingScorecard}
@@ -638,7 +723,10 @@ export const ResultsView = memo(
         {/* Cohort Bell Curve Benchmark */}
         <PeerPercentileBellCurve
           userScore={Math.round(percentage)}
-          userPercentile={Math.min(99.9, Math.max(1.0, Math.round((percentage / 100) * 98 * 10) / 10))}
+          userPercentile={Math.min(
+            99.9,
+            Math.max(1.0, Math.round((percentage / 100) * 98 * 10) / 10)
+          )}
         />
 
         {/* Speed vs. Accuracy 4-Quadrant Diagnostic */}
@@ -697,7 +785,8 @@ export const ResultsView = memo(
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     Cognitive Error Pattern Analysis
                     <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 font-semibold text-xs">
-                      {mistakeSummary.totalMistakes} Error{mistakeSummary.totalMistakes === 1 ? '' : 's'}
+                      {mistakeSummary.totalMistakes} Error
+                      {mistakeSummary.totalMistakes === 1 ? '' : 's'}
                     </Badge>
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -786,6 +875,28 @@ export const ResultsView = memo(
                       >
                         <Bookmark className="w-4 h-4" aria-hidden="true" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddQuestionToSrs(q, idx)}
+                        disabled={srsAddedIds.has(q.question_id || `q-${idx}`)}
+                        aria-label={`Add question ${idx + 1} to flashcard revision deck`}
+                        className={`p-1.5 rounded-lg border transition-colors ${
+                          srsAddedIds.has(q.question_id || `q-${idx}`)
+                            ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                            : 'text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        title={
+                          srsAddedIds.has(q.question_id || `q-${idx}`)
+                            ? 'Added to Spaced Repetition Revision Deck'
+                            : 'Add to Spaced Repetition Revision Deck'
+                        }
+                      >
+                        {srsAddedIds.has(q.question_id || `q-${idx}`) ? (
+                          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <Layers className="w-4 h-4" />
+                        )}
+                      </button>
                       <Badge
                         className={
                           q.is_correct === null
@@ -815,7 +926,8 @@ export const ResultsView = memo(
                         {!q.is_correct && q.time_spent >= 90 && (
                           <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 flex items-center gap-1">
                             <AlertTriangle className="w-3 h-3 text-rose-500" />
-                            Time Trap: Exceeded 90s with negative marks (-1). Recommended to skip initially.
+                            Time Trap: Exceeded 90s with negative marks (-1). Recommended to skip
+                            initially.
                           </span>
                         )}
                         {q.is_correct && q.time_spent <= 45 && (
@@ -855,7 +967,9 @@ export const ResultsView = memo(
                                 </span>
                               </div>
                               <div className="text-gray-700 dark:text-gray-300">
-                                <MathRenderer text={q.correct_options?.[0]?.text || 'Not available'} />
+                                <MathRenderer
+                                  text={q.correct_options?.[0]?.text || 'Not available'}
+                                />
                               </div>
                             </div>
                           )}
