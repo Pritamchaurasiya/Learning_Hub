@@ -3,7 +3,7 @@ import {
   OFFICIAL_PYQ_PAPERS,
   OFFICIAL_HISTORICAL_BENCHMARKS,
   calculateShiftPercentileLocally,
-    type PercentilePredictionResult,
+  type PercentilePredictionResult,
 } from './pyqData'
 
 // Types aligned with Express/Prisma test engine API
@@ -251,53 +251,54 @@ interface RawTestData {
 const normalizeTest = (raw: RawTestData): TestA => {
   const r = raw as any
   return {
-  id: raw.id ?? '',
-  title: raw.title ?? '',
-  description: raw.description ?? '',
-  exam_name: raw.exam_name ?? '',
-  exam_code: raw.exam_code ?? '',
-  country_name: raw.country_name ?? '',
-  mode: normalizeEnum(raw.mode, 'mock') as TestA['mode'],
-  difficulty: normalizeEnum(raw.difficulty, 'mixed') as TestA['difficulty'],
-  ai_mode: normalizeEnum(raw.ai_mode ?? raw.aiMode, 'no_ai'),
-  question_source: normalizeEnum(raw.question_source ?? raw.questionSource, 'database'),
-  time_limit_minutes: raw.time_limit_minutes ?? raw.time_limit ?? raw.duration_minutes ?? 0,
-  passing_score: raw.passing_score ?? raw.passing_marks ?? 0,
-  total_marks: raw.total_marks ?? 0,
-  negative_marks_per_question:
-    raw.negative_marks_per_question ?? raw.negative_marks ?? raw.negative_mark_value ?? 0,
-  question_count: raw.question_count ?? raw.total_questions ?? 0,
-  is_ai_generated: raw.is_ai_generated ?? false,
-  is_featured: raw.is_featured ?? false,
-  attempt_count: raw.attempt_count ?? raw.attempts_made ?? 0,
-  isPYQ: Boolean(r.isPYQ ?? r.is_pyq ?? false),
-  pyqYear: r.pyqYear ?? r.pyq_year,
-  pyqShift: r.pyqShift ?? r.pyq_shift,
-  pyqPaperName: r.pyqPaperName ?? r.pyq_paper_name,
-  markingScheme: r.markingScheme ?? r.marking_scheme,
-  benchmarkKey: r.benchmarkKey ?? r.benchmark_key ?? (r.markingScheme?.benchmarkKey),
-  created_at: raw.created_at ?? new Date(0).toISOString(),
-  shuffle_questions: raw.shuffle_questions ?? raw.shuffleQuestions ?? false,
-  shuffleQuestions: raw.shuffleQuestions ?? raw.shuffle_questions ?? false,
-  shuffle_options: raw.shuffle_options ?? raw.shuffleOptions ?? false,
-  shuffleOptions: raw.shuffleOptions ?? raw.shuffle_options ?? false,
-  sections: Array.isArray(raw.sections)
-    ? raw.sections.map(s => ({
-        id: s.id ?? '',
-        title: s.title ?? '',
-        description: s.description ?? '',
-        order: s.order ?? 1,
-        duration_minutes: s.duration_minutes ?? s.durationMinutes,
-        durationMinutes: s.durationMinutes ?? s.duration_minutes,
-        is_timed: s.is_timed ?? s.isTimed ?? false,
-        isTimed: s.isTimed ?? s.is_timed ?? false,
-        cut_off_marks: s.cut_off_marks ?? s.cutOffMarks,
-        cutOffMarks: s.cutOffMarks ?? s.cut_off_marks,
-        question_count: s.question_count ?? 0,
-        maxQuestionsToAttempt: (s as any).maxQuestionsToAttempt ?? (s as any).max_questions_to_attempt,
-        sectionType: (s as any).sectionType ?? (s as any).section_type ?? 'MANDATORY',
-      }))
-    : undefined,
+    id: raw.id ?? '',
+    title: raw.title ?? '',
+    description: raw.description ?? '',
+    exam_name: raw.exam_name ?? '',
+    exam_code: raw.exam_code ?? '',
+    country_name: raw.country_name ?? '',
+    mode: normalizeEnum(raw.mode, 'mock') as TestA['mode'],
+    difficulty: normalizeEnum(raw.difficulty, 'mixed') as TestA['difficulty'],
+    ai_mode: normalizeEnum(raw.ai_mode ?? raw.aiMode, 'no_ai'),
+    question_source: normalizeEnum(raw.question_source ?? raw.questionSource, 'database'),
+    time_limit_minutes: raw.time_limit_minutes ?? raw.time_limit ?? raw.duration_minutes ?? 0,
+    passing_score: raw.passing_score ?? raw.passing_marks ?? 0,
+    total_marks: raw.total_marks ?? 0,
+    negative_marks_per_question:
+      raw.negative_marks_per_question ?? raw.negative_marks ?? raw.negative_mark_value ?? 0,
+    question_count: raw.question_count ?? raw.total_questions ?? 0,
+    is_ai_generated: raw.is_ai_generated ?? false,
+    is_featured: raw.is_featured ?? false,
+    attempt_count: raw.attempt_count ?? raw.attempts_made ?? 0,
+    isPYQ: Boolean(r.isPYQ ?? r.is_pyq ?? false),
+    pyqYear: r.pyqYear ?? r.pyq_year,
+    pyqShift: r.pyqShift ?? r.pyq_shift,
+    pyqPaperName: r.pyqPaperName ?? r.pyq_paper_name,
+    markingScheme: r.markingScheme ?? r.marking_scheme,
+    benchmarkKey: r.benchmarkKey ?? r.benchmark_key ?? r.markingScheme?.benchmarkKey,
+    created_at: raw.created_at ?? new Date(0).toISOString(),
+    shuffle_questions: raw.shuffle_questions ?? raw.shuffleQuestions ?? false,
+    shuffleQuestions: raw.shuffleQuestions ?? raw.shuffle_questions ?? false,
+    shuffle_options: raw.shuffle_options ?? raw.shuffleOptions ?? false,
+    shuffleOptions: raw.shuffleOptions ?? raw.shuffle_options ?? false,
+    sections: Array.isArray(raw.sections)
+      ? raw.sections.map(s => ({
+          id: s.id ?? '',
+          title: s.title ?? '',
+          description: s.description ?? '',
+          order: s.order ?? 1,
+          duration_minutes: s.duration_minutes ?? s.durationMinutes,
+          durationMinutes: s.durationMinutes ?? s.duration_minutes,
+          is_timed: s.is_timed ?? s.isTimed ?? false,
+          isTimed: s.isTimed ?? s.is_timed ?? false,
+          cut_off_marks: s.cut_off_marks ?? s.cutOffMarks,
+          cutOffMarks: s.cutOffMarks ?? s.cut_off_marks,
+          question_count: s.question_count ?? 0,
+          maxQuestionsToAttempt:
+            (s as any).maxQuestionsToAttempt ?? (s as any).max_questions_to_attempt,
+          sectionType: (s as any).sectionType ?? (s as any).section_type ?? 'MANDATORY',
+        }))
+      : undefined,
   }
 }
 
@@ -550,19 +551,46 @@ const FALLBACK_TESTS: TestA[] = [
 // Service
 export const testsAService = {
   // Retrieve Official PYQ Papers and Historical Shift Benchmarks
-  getPyqCatalog: () => {
-    return fetchApi('/tests/pyq/catalog')
+  getPyqCatalog: (params?: {
+    exam?: string
+    year?: string | number
+    shift?: string
+    difficulty?: string
+    search?: string
+    page?: number
+    limit?: number
+  }) => {
+    let queryStr = ''
+    if (params) {
+      const searchParams = new URLSearchParams()
+      if (params.exam && params.exam !== 'all') searchParams.set('exam', params.exam)
+      if (params.year && params.year !== 'all') searchParams.set('year', String(params.year))
+      if (params.shift && params.shift !== 'all') searchParams.set('shift', params.shift)
+      if (params.difficulty && params.difficulty !== 'all')
+        searchParams.set('difficulty', params.difficulty)
+      if (params.search && params.search.trim()) searchParams.set('search', params.search.trim())
+      if (params.page) searchParams.set('page', String(params.page))
+      if (params.limit) searchParams.set('limit', String(params.limit))
+      const qs = searchParams.toString()
+      if (qs) queryStr = `?${qs}`
+    }
+
+    return fetchApi(`/tests/pyq/catalog${queryStr}`)
       .then(res => {
         const rawPapers = res.data?.papers ?? (Array.isArray(res.data) ? res.data : [])
-        const benchmarks = res.data?.benchmarks ?? Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({ key, ...val }))
-        const normalized = rawPapers.length > 0
-          ? rawPapers.map(normalizeTest)
-          : OFFICIAL_PYQ_PAPERS.map(p => normalizeTest(p as any))
+        const benchmarks =
+          res.data?.benchmarks ??
+          Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({ key, ...val }))
+        const normalized =
+          rawPapers.length > 0
+            ? rawPapers.map(normalizeTest)
+            : OFFICIAL_PYQ_PAPERS.map(p => normalizeTest(p as any))
         return {
           status: 'success',
           data: {
             papers: normalized,
             benchmarks,
+            meta: res.data?.meta,
           },
         }
       })
@@ -571,10 +599,20 @@ export const testsAService = {
           status: 'success',
           data: {
             papers: OFFICIAL_PYQ_PAPERS.map(p => normalizeTest(p as any)),
-            benchmarks: Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({ key, ...val })),
+            benchmarks: Object.entries(OFFICIAL_HISTORICAL_BENCHMARKS).map(([key, val]) => ({
+              key,
+              ...val,
+            })),
           },
         }
-      }) as Promise<{ status: string; data: { papers: TestA[]; benchmarks: any[] } }>
+      }) as Promise<{
+      status: string
+      data: {
+        papers: TestA[]
+        benchmarks: any[]
+        meta?: { total: number; page: number; limit: number; pages: number }
+      }
+    }>
   },
 
   // Calculate shift percentile, estimated AIR, and category cutoffs
@@ -585,7 +623,8 @@ export const testsAService = {
     })
       .then(res => ({
         status: res.status ?? 'success',
-        data: (res.data ?? calculateShiftPercentileLocally(rawScore, benchmarkKey)) as PercentilePredictionResult,
+        data: (res.data ??
+          calculateShiftPercentileLocally(rawScore, benchmarkKey)) as PercentilePredictionResult,
       }))
       .catch(() => ({
         status: 'success',
@@ -772,12 +811,12 @@ export const testsAService = {
         time_limit?: number
         time_remaining_seconds?: number
         sections?: TestSection[]
-  isPYQ?: boolean
-  pyqYear?: number
-  pyqShift?: string
-  pyqPaperName?: string
-  markingScheme?: any
-  benchmarkKey?: string
+        isPYQ?: boolean
+        pyqYear?: number
+        pyqShift?: string
+        pyqPaperName?: string
+        markingScheme?: any
+        benchmarkKey?: string
       }
     }>,
 
