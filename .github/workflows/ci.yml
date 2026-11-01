@@ -59,8 +59,14 @@ jobs:
           VITE_ENABLE_MOCK_API: 'true'
       - name: Test
         run: npm test -- --run
+        env:
+          VITE_API_URL: 'http://localhost:5000/api/v1'
+          VITE_ENABLE_MOCK_API: 'true'
       - name: Test with coverage
         run: npm run test:coverage
+        env:
+          VITE_API_URL: 'http://localhost:5000/api/v1'
+          VITE_ENABLE_MOCK_API: 'true'
 
   node-backend:
     name: Node Backend
