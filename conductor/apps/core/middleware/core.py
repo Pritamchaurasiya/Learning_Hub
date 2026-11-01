@@ -5,6 +5,7 @@ import json
 from django.db import connection, transaction
 from django.core.cache import cache
 from django.conf import settings
+from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 import structlog
@@ -173,31 +174,30 @@ class SignatureVerificationMiddleware:
         signature = request.headers.get('X-API-Signature', '')
         timestamp = request.headers.get('X-API-Timestamp', '')
         
-        # If no signature provided, let it pass but log warning
-        if not signature:
+        if not signature or not timestamp:
             logger.warning("request_missing_signature", path=request.path)
-            return self.get_response(request)
-        
-        # Verify signature
-        if self._verify_signature(request, signature, timestamp):
-            return self.get_response(request)
-        else:
-            logger.warning("request_signature_invalid", path=request.path)
-            return Response(
-                {"error": "Invalid API signature"},
+            return JsonResponse(
+                {"error": "Missing API signature"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        if self._verify_signature(request, signature, timestamp):
+            return self.get_response(request)
+        logger.warning("request_signature_invalid", path=request.path)
+        return JsonResponse(
+            {"error": "Invalid API signature"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
     def _verify_signature(self, request, signature: str, timestamp: str) -> bool:
         """Verify the request signature."""
         try:
             # Check timestamp is within 5 minutes
             import time
-            if timestamp:
-                request_time = int(timestamp)
-                current_time = int(time.time())
-                if abs(current_time - request_time) > 300:
-                    return False
+            request_time = int(timestamp)
+            current_time = int(time.time())
+            if abs(current_time - request_time) > 300:
+                return False
             
             # Build message to sign
             message = f"{request.path}{timestamp}{request.body.decode('utf-8') if request.body else ''}"
