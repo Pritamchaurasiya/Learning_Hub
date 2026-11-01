@@ -45,7 +45,13 @@ jobs:
           mapfile -t changed_files < <(
             git diff --name-only "$PR_BASE_SHA" "$HEAD_SHA" -- learninghub/src learninghub/backend/src |
             sed 's#^learninghub/##' |
-            grep -E '\\.(js|jsx|ts|tsx)
+            grep -E '[.](js|jsx|ts|tsx)$' || true
+          )
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "No changed frontend/Node source files to lint; type-check, build, and tests still run."
+          else
+            npx eslint "${changed_files[@]}"
+          fi
       - name: Build
         run: npm run build
         env:
