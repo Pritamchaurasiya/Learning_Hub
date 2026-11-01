@@ -113,4 +113,20 @@ describe('desktopService — Desktop Bridge & Offline Vault', () => {
     expect(res).toBe(true)
     expect(notify).toHaveBeenCalledWith({ title: 'Quiz Completed', body: 'You scored 100%!' })
   })
+  it('subscribes to native navigation events via onNavigate', () => {
+    const unsubMock = vi.fn()
+    const onNavigate = vi.fn().mockReturnValue(unsubMock)
+    ;(window as any).desktopAPI = {
+      isElectron: true,
+      onNavigate,
+    }
+
+    const callback = vi.fn()
+    const unsub = desktopService.onNavigate(callback)
+    expect(onNavigate).toHaveBeenCalledWith(callback)
+    expect(unsub).toBe(unsubMock)
+
+    unsub?.()
+    expect(unsubMock).toHaveBeenCalledTimes(1)
+  })
 })

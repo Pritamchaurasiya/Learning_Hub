@@ -19,6 +19,7 @@ import { CodeCopyHandler } from './components/CodeCopyHandler'
 import { CountryConsentModal } from './components/country/CountryConsentModal'
 import { CountrySelectorModal } from './components/country/CountrySelectorModal'
 import { useQueryClient } from '@tanstack/react-query'
+import desktopService from './services/desktopService'
 import './index.css'
 
 // Critical entry pages — Home and Auth are eager for instant LCP.
@@ -177,6 +178,20 @@ function App() {
       window.removeEventListener('auth:session-expired', handleSessionExpired)
     }
   }, [logout, addToast, navigate, queryClient, location])
+
+  // Listen for native desktop menu navigation events (CmdOrCtrl+1..6)
+  useEffect(() => {
+    const unsubscribe = desktopService.onNavigate((route: string) => {
+      if (route && typeof route === 'string') {
+        navigate(route)
+      }
+    })
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe()
+      }
+    }
+  }, [navigate])
 
   useEffect(() => {
     if (auth.isAuthenticated && !auth.user) {

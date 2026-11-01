@@ -25,6 +25,7 @@ export interface DesktopAPIBridge {
   saveOfflineData?: (key: string, data: unknown) => Promise<{ success: boolean; key: string }>
   loadOfflineData?: (key: string) => Promise<unknown>
   listOfflineData?: () => Promise<string[]>
+  onNavigate?: (callback: (route: string) => void) => () => void
 }
 
 const getBridge = (): DesktopAPIBridge | undefined => {
@@ -54,6 +55,17 @@ class DesktopService {
       }
     }
     return null
+  }
+
+  /**
+   * Subscribes to navigation events dispatched from native Windows application menu.
+   */
+  public onNavigate(callback: (route: string) => void): (() => void) | undefined {
+    const bridge = getBridge()
+    if (this.isDesktop() && bridge?.onNavigate) {
+      return bridge.onNavigate(callback)
+    }
+    return undefined
   }
 
   /**

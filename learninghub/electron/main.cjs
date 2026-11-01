@@ -24,7 +24,6 @@ if (!gotTheLock) {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
-
     }
   });
 
@@ -42,6 +41,11 @@ function checkPort(port, callback) {
     req.destroy();
     callback(false);
   });
+}
+
+function navigateTo(route) {
+  if (!mainWindow) return;
+  mainWindow.webContents.send('desktop:navigate', route);
 }
 
 function createMenu() {
@@ -103,32 +107,32 @@ function createMenu() {
         {
           label: 'Dashboard',
           accelerator: 'CmdOrCtrl+1',
-          click: () => mainWindow?.loadURL('http://localhost:3000/dashboard')
+          click: () => navigateTo('/dashboard')
         },
         {
           label: 'Courses',
           accelerator: 'CmdOrCtrl+2',
-          click: () => mainWindow?.loadURL('http://localhost:3000/courses')
+          click: () => navigateTo('/courses')
         },
         {
           label: 'Mentorship',
           accelerator: 'CmdOrCtrl+3',
-          click: () => mainWindow?.loadURL('http://localhost:3000/mentorship')
+          click: () => navigateTo('/mentorship')
         },
         {
           label: 'Peer Review',
           accelerator: 'CmdOrCtrl+4',
-          click: () => mainWindow?.loadURL('http://localhost:3000/peer-review')
+          click: () => navigateTo('/peer-review')
         },
         {
           label: 'Study Groups',
           accelerator: 'CmdOrCtrl+5',
-          click: () => mainWindow?.loadURL('http://localhost:3000/study-groups')
+          click: () => navigateTo('/study-groups')
         },
         {
           label: 'Notes Studio',
           accelerator: 'CmdOrCtrl+6',
-          click: () => mainWindow?.loadURL('http://localhost:3000/notes')
+          click: () => navigateTo('/notes')
         }
       ]
     },
@@ -137,7 +141,7 @@ function createMenu() {
       submenu: [
         {
           label: 'Support & FAQs',
-          click: () => mainWindow?.loadURL('http://localhost:3000/support')
+          click: () => navigateTo('/support')
         },
         {
           label: 'About LearningHub Desktop',
@@ -157,6 +161,61 @@ function createMenu() {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+}
+
+function createTray(iconPath) {
+  if (appTray) return;
+  try {
+    let trayIcon = null;
+    if (iconPath && fs.existsSync(iconPath)) {
+      trayIcon = nativeImage.createFromPath(iconPath);
+    } else {
+      // Fallback 16x16 transparent image if no icon is on disk
+      trayIcon = nativeImage.createEmpty();
+    }
+
+    appTray = new Tray(trayIcon);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open LearningHub',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        }
+      },
+      {
+        label: 'Toggle Fullscreen',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        }
+      }
+    ]);
+    appTray.setToolTip('LearningHub Desktop Application');
+    appTray.setContextMenu(contextMenu);
+    appTray.on('click', () => {
+      if (mainWindow) {
+        if (mainWindow.isVisible()) {
+          mainWindow.focus();
+        } else {
+          mainWindow.show();
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Failed to initialize system tray:', err);
+  }
 }
 
 function createWindow() {
@@ -189,19 +248,21 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL(targetUrl).catch(() => {
-      // If dev server not yet responding, try loading built index.html or retry
-      const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html')) ? path.join(app.getAppPath(), 'dist', 'index.html') : path.join(__dirname, '..', 'dist', 'index.html');
+      const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html'))
+        ? path.join(app.getAppPath(), 'dist', 'index.html')
+        : path.join(__dirname, '..', 'dist', 'index.html');
       mainWindow.loadFile(distIndex).catch(() => {
         setTimeout(() => mainWindow.loadURL(targetUrl), 2000);
       });
     });
   } else {
-    // Check if localhost:3000 is running (e.g. unified desktop runner) or load static dist
     checkPort(3000, (isLive) => {
       if (isLive) {
         mainWindow.loadURL(targetUrl);
       } else {
-        const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html')) ? path.join(app.getAppPath(), 'dist', 'index.html') : path.join(__dirname, '..', 'dist', 'index.html');
+        const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html'))
+          ? path.join(app.getAppPath(), 'dist', 'index.html')
+          : path.join(__dirname, '..', 'dist', 'index.html');
         mainWindow.loadFile(distIndex).catch((err) => {
           console.error('Failed to load local build, fallback to localhost:3000', err);
           mainWindow.loadURL(targetUrl);
@@ -213,7 +274,7 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
-
+    createTray(windowIcon);
   });
 
   // Handle external navigation securely: open external links in user's default browser
@@ -264,53 +325,6 @@ ipcMain.handle('desktop:window-action', (event, action) => {
   }
 });
 
-function createTray(iconPath) {
-  if (appTray || !iconPath || !fs.existsSync(iconPath)) return;
-  try {
-    appTray = new Tray(iconPath);
-    const contextMenu = Menu.buildFromTemplate([
-      {
-        label: 'Open LearningHub',
-        click: () => {
-          if (mainWindow) {
-            mainWindow.show();
-            mainWindow.focus();
-          }
-        }
-      },
-      {
-        label: 'Toggle Fullscreen',
-        click: () => {
-          if (mainWindow) {
-            mainWindow.setFullScreen(!mainWindow.isFullScreen());
-          }
-        }
-      },
-      { type: 'separator' },
-      {
-        label: 'Quit',
-        click: () => {
-          app.isQuitting = true;
-          app.quit();
-        }
-      }
-    ]);
-    appTray.setToolTip('LearningHub Desktop Application');
-    appTray.setContextMenu(contextMenu);
-    appTray.on('click', () => {
-      if (mainWindow) {
-        if (mainWindow.isVisible()) {
-          mainWindow.focus();
-        } else {
-          mainWindow.show();
-        }
-      }
-    });
-  } catch (err) {
-    console.error('Failed to initialize system tray:', err);
-  }
-}
-
 // Native Desktop Notifications
 ipcMain.handle('desktop:notify', (event, { title, body }) => {
   if (Notification && Notification.isSupported()) {
@@ -346,9 +360,6 @@ ipcMain.handle('desktop:offline-list', async () => {
   if (!fs.existsSync(OFFLINE_VAULT_DIR)) return [];
   const files = await fs.promises.readdir(OFFLINE_VAULT_DIR);
   return files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
-});
-      break;
-  }
 });
 
 app.on('window-all-closed', () => {
