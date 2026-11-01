@@ -162,7 +162,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/base.txt
       - name: Install test & coverage dependencies
-        run: pip install pytest-cov pytest-asyncio ruff
+        run: pip install pytest-cov pytest-asyncio pytest-django ruff
       - name: Lint
         run: ruff check .
       - name: Django check
