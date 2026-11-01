@@ -514,7 +514,7 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
     fireEvent.click(hintButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Step 1 Hint/i)).toBeInTheDocument()
+      expect(screen.getByText('Step 1 Hint', { exact: true })).toBeInTheDocument()
     })
     expect(getPracticeHintSpy).toHaveBeenCalledWith('practice', 'q-hint-test', 0)
   })
