@@ -1,0 +1,36 @@
+{
+  "appId": "com.learninghub.desktop",
+  "productName": "LearningHub",
+  "copyright": "Copyright © 2026 LearningHub",
+  "directories": {
+    "output": "release-desktop",
+    "buildResources": "public"
+  },
+  "asar": true,
+  "npmRebuild": false,
+  "nodeGypRebuild": false,
+  "files": ["dist/**/*", "electron/**/*", "public/**/*", "package.json", "!**/node_modules/**"],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/app-icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "LearningHub Desktop"
+  },
+  "portable": {
+    "artifactName": "${productName}-Portable-${version}.${ext}"
+  }
+}

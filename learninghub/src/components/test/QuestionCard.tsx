@@ -20,7 +20,7 @@ import { Button } from '../ui/Button'
 import { wasmSandboxService } from '../../services/wasm/WasmSandboxService'
 import { WasmTestResultsView } from '../WasmTestResultsView'
 import type { WasmExecutionResult } from '../../services/wasm/types'
-import type { TestQuestion } from '../../services/testsAService'
+import { testsAService, type TestQuestion } from '../../services/testsAService'
 
 const DEFAULT_CODING_TEMPLATES: Record<string, string> = {
   python: `# Complete your solution below
@@ -499,6 +499,7 @@ export interface QuestionCardProps {
   confidence: string | undefined
   onFlag: () => void
   onUnflag: () => void
+  testId?: string
   assessmentMode?: string
   practiceChecked?: boolean
   onCheckPracticeAnswer?: () => void
@@ -522,6 +523,7 @@ export const QuestionCard = memo(
     onConfidenceChange,
     onFlag,
     onUnflag,
+    testId,
     assessmentMode,
     practiceChecked,
     onCheckPracticeAnswer,
@@ -538,6 +540,38 @@ export const QuestionCard = memo(
       Boolean(question.code_template) ||
       Boolean(question.starter_code) ||
       (Array.isArray(question.test_cases) && question.test_cases.length > 0)
+
+    const [hints, setHints] = useState<Array<{ level: number; hint: string }>>([])
+    const [isLoadingHint, setIsLoadingHint] = useState(false)
+
+    useEffect(() => {
+      setHints([])
+    }, [question.id])
+
+    const handleRequestHint = useCallback(async () => {
+      if (isLoadingHint) return
+      setIsLoadingHint(true)
+      try {
+        const res = await testsAService.getPracticeHint(
+          testId || 'practice',
+          question.id,
+          hints.length
+        )
+        if (res.data?.hint) {
+          setHints(prev => [...prev, { level: res.data.level, hint: res.data.hint }])
+        }
+      } catch {
+        setHints(prev => [
+          ...prev,
+          {
+            level: prev.length + 1,
+            hint: 'Break down the problem into sub-problems: consider the invariants, constraints, and known formulas.',
+          },
+        ])
+      } finally {
+        setIsLoadingHint(false)
+      }
+    }, [isLoadingHint, testId, question.id, hints.length])
 
     return (
       <div className="space-y-6">
@@ -582,7 +616,8 @@ export const QuestionCard = memo(
           {quotaInfo && typeof quotaInfo.maxAllowed === 'number' && (
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-xs">
               <span className="font-semibold text-blue-800 dark:text-blue-300">
-                Optional Section Quota: Attempted {quotaInfo.currentAttempted || 0} of {quotaInfo.maxAllowed} allowed
+                Optional Section Quota: Attempted {quotaInfo.currentAttempted || 0} of{' '}
+                {quotaInfo.maxAllowed} allowed
               </span>
               {quotaInfo.currentAttempted !== undefined &&
                 quotaInfo.currentAttempted >= quotaInfo.maxAllowed &&
@@ -725,37 +760,76 @@ export const QuestionCard = memo(
             )}
           </div>
 
-          {/* Practice Mode Diagnostic & Socratic Scaffolding */}
+          {/* Practice Mode Diagnostic & Progressive Socratic Scaffolding */}
           {assessmentMode === 'practice' && (
-            <div className="mt-6 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-                <Sparkles className="w-4 h-4 text-indigo-500" />
-                <span>Practice Mode: Test your intuition with instant feedback & Socratic AI</span>
+            <div className="mt-6 space-y-3">
+              <div className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                  <Sparkles className="w-4 h-4 text-indigo-500" />
+                  <span>
+                    Practice Mode: Test your intuition with instant feedback & Socratic AI
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {hints.length < 3 && (
+                    <Button
+                      onClick={handleRequestHint}
+                      disabled={isLoadingHint}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700/80 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500 fill-amber-400/20" />
+                      <span>
+                        {isLoadingHint
+                          ? 'Formulating Hint...'
+                          : hints.length === 0
+                            ? 'Need a Hint?'
+                            : `Next Hint (${hints.length + 1}/3)`}
+                      </span>
+                    </Button>
+                  )}
+                  {onCheckPracticeAnswer && !practiceChecked && (
+                    <Button
+                      onClick={onCheckPracticeAnswer}
+                      disabled={!selectedAnswer}
+                      size="sm"
+                      variant="primary"
+                      className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      Check Answer
+                    </Button>
+                  )}
+                  {practiceChecked && onDiagnoseMisconception && (
+                    <Button
+                      onClick={onDiagnoseMisconception}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-1.5"
+                    >
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Socratic AI Hint</span>
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {onCheckPracticeAnswer && !practiceChecked && (
-                  <Button
-                    onClick={onCheckPracticeAnswer}
-                    disabled={!selectedAnswer}
-                    size="sm"
-                    variant="primary"
-                    className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    Check Answer
-                  </Button>
-                )}
-                {practiceChecked && onDiagnoseMisconception && (
-                  <Button
-                    onClick={onDiagnoseMisconception}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-1.5"
-                  >
-                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Socratic AI Hint</span>
-                  </Button>
-                )}
-              </div>
+
+              {/* Progressive Hint Reveal Cards */}
+              {hints.length > 0 && (
+                <div className="space-y-2">
+                  {hints.map((h, i) => (
+                    <div
+                      key={i}
+                      className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5 shadow-xs"
+                    >
+                      <span className="px-2 py-0.5 rounded-md bg-amber-200/80 dark:bg-amber-800/60 font-bold text-[10px] uppercase tracking-wider shrink-0 text-amber-900 dark:text-amber-100">
+                        Step {h.level} Hint
+                      </span>
+                      <p className="leading-relaxed font-medium">{h.hint}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -40,6 +40,13 @@ export interface TestA {
   benchmarkKey?: string
 }
 
+export interface PracticeHintData {
+  hint: string
+  level: number
+  maxLevel: number
+  penaltyPct: number
+}
+
 export interface TestSection {
   id: string
   title: string
@@ -613,6 +620,52 @@ export const testsAService = {
         meta?: { total: number; page: number; limit: number; pages: number }
       }
     }>
+  },
+
+  // Retrieve Progressive Socratic Hint for Practice Assessment
+  getPracticeHint: (
+    testId: string,
+    questionId: string,
+    currentLevel = 0
+  ): Promise<{
+    status: string
+    data: {
+      hint: string
+      level: number
+      maxLevel: number
+      penaltyPct: number
+    }
+  }> => {
+    return fetchApi(`/tests/${testId}/practice/hint`, {
+      method: 'POST',
+      body: JSON.stringify({ questionId, currentLevel }),
+    })
+      .then(res => ({
+        status: res.status ?? 'success',
+        data: res.data as {
+          hint: string
+          level: number
+          maxLevel: number
+          penaltyPct: number
+        },
+      }))
+      .catch(() => {
+        const fallbackHints = [
+          'Deconstruct the question: identify known parameters, given constraints, and the target output variable.',
+          'Recall the foundational physical/mathematical principle or algorithmic invariant governing these entities.',
+          'Formulate the governing equation or intermediate transformation step, then verify dimensional and sign consistency.',
+        ]
+        const nextLevel = Math.min(Math.max(currentLevel + 1, 1), 3)
+        return {
+          status: 'success',
+          data: {
+            hint: fallbackHints[nextLevel - 1] || fallbackHints[0],
+            level: nextLevel,
+            maxLevel: 3,
+            penaltyPct: nextLevel * 10,
+          },
+        }
+      })
   },
 
   // Calculate shift percentile, estimated AIR, and category cutoffs

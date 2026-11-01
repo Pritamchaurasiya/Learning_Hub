@@ -1,10 +1,21 @@
-const { app, BrowserWindow, shell, ipcMain, Menu, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Menu, Tray, nativeImage, Notification } = require('electron');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 
 // Enforce single instance lock for Windows Desktop Application
 const gotTheLock = app.requestSingleInstanceLock();
 let mainWindow = null;
+let appTray = null;
+
+const OFFLINE_VAULT_DIR = path.join(app.getPath('userData'), 'offline_vault');
+if (!fs.existsSync(OFFLINE_VAULT_DIR)) {
+  try {
+    fs.mkdirSync(OFFLINE_VAULT_DIR, { recursive: true });
+  } catch (err) {
+    console.error('Failed to create offline vault directory:', err);
+  }
+}
 
 if (!gotTheLock) {
   app.quit();
@@ -13,6 +24,7 @@ if (!gotTheLock) {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
+
     }
   });
 
@@ -148,7 +160,12 @@ function createMenu() {
 }
 
 function createWindow() {
+  const iconPathPng = path.join(__dirname, '..', 'public', 'app-icon.png');
+  const iconPathIco = path.join(__dirname, '..', 'public', 'favicon.ico');
+  const windowIcon = fs.existsSync(iconPathPng) ? iconPathPng : (fs.existsSync(iconPathIco) ? iconPathIco : undefined);
+
   mainWindow = new BrowserWindow({
+    icon: windowIcon,
     width: 1440,
     height: 900,
     minWidth: 1080,
@@ -173,7 +190,7 @@ function createWindow() {
   if (isDev) {
     mainWindow.loadURL(targetUrl).catch(() => {
       // If dev server not yet responding, try loading built index.html or retry
-      const distIndex = path.join(__dirname, '..', 'dist', 'index.html');
+      const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html')) ? path.join(app.getAppPath(), 'dist', 'index.html') : path.join(__dirname, '..', 'dist', 'index.html');
       mainWindow.loadFile(distIndex).catch(() => {
         setTimeout(() => mainWindow.loadURL(targetUrl), 2000);
       });
@@ -184,7 +201,7 @@ function createWindow() {
       if (isLive) {
         mainWindow.loadURL(targetUrl);
       } else {
-        const distIndex = path.join(__dirname, '..', 'dist', 'index.html');
+        const distIndex = fs.existsSync(path.join(app.getAppPath(), 'dist', 'index.html')) ? path.join(app.getAppPath(), 'dist', 'index.html') : path.join(__dirname, '..', 'dist', 'index.html');
         mainWindow.loadFile(distIndex).catch((err) => {
           console.error('Failed to load local build, fallback to localhost:3000', err);
           mainWindow.loadURL(targetUrl);
@@ -196,6 +213,7 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
+
   });
 
   // Handle external navigation securely: open external links in user's default browser

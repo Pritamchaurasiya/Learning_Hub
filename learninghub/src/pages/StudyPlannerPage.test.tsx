@@ -30,6 +30,19 @@ vi.mock('../services/analyticsService', () => ({
   },
 }))
 
+vi.mock('../services/curriculumService', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/curriculumService')>()
+  return {
+    ...actual,
+    curriculumService: {
+      ...actual.curriculumService,
+      getPlan: vi
+        .fn()
+        .mockResolvedValue({ status: 'success', data: { plan: actual.FALLBACK_DEMO_PLAN } }),
+    },
+  }
+})
+
 describe('StudyPlannerPage Component', () => {
   const mockGoals = [
     {
@@ -162,7 +175,8 @@ describe('StudyPlannerPage Component', () => {
 
   it('automatically imports notice deadline into study schedule when deep linked via URL params', async () => {
     render(<StudyPlannerPage />, {
-      route: '/study-planner?syncUpdate=upd-bca-exam&title=BCA+Exam+Form+Deadline&deadline=2026-10-25',
+      route:
+        '/study-planner?syncUpdate=upd-bca-exam&title=BCA+Exam+Form+Deadline&deadline=2026-10-25',
     })
 
     await waitFor(() => {
@@ -183,7 +197,9 @@ describe('StudyPlannerPage Component', () => {
       expect(screen.getByText(/AI Curriculum Roadmap/i)).toBeInTheDocument()
     })
 
-    const curriculumTabBtn = screen.getByText(/AI Curriculum Roadmap/i)
+    const curriculumTabBtn =
+      screen.getByText(/AI Curriculum Roadmap/i).closest('button') ||
+      screen.getByText(/AI Curriculum Roadmap/i)
     fireEvent.click(curriculumTabBtn)
 
     await waitFor(() => {

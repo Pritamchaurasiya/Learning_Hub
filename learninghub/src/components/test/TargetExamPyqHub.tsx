@@ -14,11 +14,8 @@ import {
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { useLearningContextStore } from '../../stores/useLearningContextStore'
-import {
-  TARGET_EXAMS_REGISTRY,
-  OFFICIAL_PYQ_PAPERS,
-} from '../../services/pyqData'
-import type { TestA } from '../../services/testsAService'
+import { TARGET_EXAMS_REGISTRY, OFFICIAL_PYQ_PAPERS } from '../../services/pyqData'
+import { testsAService, type TestA } from '../../services/testsAService'
 
 export interface TargetExamPyqHubProps {
   onStartTest?: (test: TestA) => void
@@ -42,7 +39,10 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
   const [selectedExamSlug, setSelectedExamSlug] = useState<string>(() => {
     if (activeExam?.slug) {
       const match = TARGET_EXAMS_REGISTRY.find(
-        e => e.slug === activeExam.slug || activeExam.slug.includes(e.slug) || e.slug.includes(activeExam.slug)
+        e =>
+          e.slug === activeExam.slug ||
+          activeExam.slug.includes(e.slug) ||
+          e.slug.includes(activeExam.slug)
       )
       if (match) return match.slug
     }
@@ -53,7 +53,10 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
   useEffect(() => {
     if (activeExam?.slug) {
       const match = TARGET_EXAMS_REGISTRY.find(
-        e => e.slug === activeExam.slug || activeExam.slug.includes(e.slug) || e.slug.includes(activeExam.slug)
+        e =>
+          e.slug === activeExam.slug ||
+          activeExam.slug.includes(e.slug) ||
+          e.slug.includes(activeExam.slug)
       )
       if (match) {
         setSelectedExamSlug(match.slug)
@@ -63,6 +66,28 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
 
   const [selectedYear, setSelectedYear] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [livePapers, setLivePapers] = useState<any[] | null>(null)
+
+  useEffect(() => {
+    let active = true
+    testsAService
+      .getPyqCatalog({
+        exam: selectedExamSlug !== 'all' ? selectedExamSlug : undefined,
+        year: selectedYear !== 'all' ? selectedYear : undefined,
+        search: searchQuery.trim() || undefined,
+      })
+      .then(res => {
+        if (active && res.data?.papers && res.data.papers.length > 0) {
+          setLivePapers(res.data.papers)
+        }
+      })
+      .catch(() => {
+        // Transparent fallback to local catalog
+      })
+    return () => {
+      active = false
+    }
+  }, [selectedExamSlug, selectedYear, searchQuery])
 
   const availableYears = useMemo(() => {
     const years = new Set<number>()
@@ -71,32 +96,38 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
   }, [])
 
   const filteredPapers = useMemo(() => {
-    return OFFICIAL_PYQ_PAPERS.filter(paper => {
-      if (selectedExamSlug !== 'all' && paper.examSlug !== selectedExamSlug) {
+    const baseList = livePapers || OFFICIAL_PYQ_PAPERS
+    return baseList.filter(paper => {
+      const examSlug = (paper as any).examSlug || (paper as any).exam_code
+      if (selectedExamSlug !== 'all' && examSlug && examSlug !== selectedExamSlug) {
         return false
       }
-      if (selectedYear !== 'all' && String(paper.year) !== selectedYear) {
+      const paperYear = (paper as any).year || (paper as any).pyqYear
+      if (selectedYear !== 'all' && paperYear && String(paperYear) !== selectedYear) {
         return false
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
-        const matchTitle = paper.title.toLowerCase().includes(q)
-        const matchDesc = paper.description.toLowerCase().includes(q)
-        const matchShift = paper.shift.toLowerCase().includes(q)
-        const matchExam = paper.examName.toLowerCase().includes(q)
+        const matchTitle = ((paper as any).title || '').toLowerCase().includes(q)
+        const matchDesc = ((paper as any).description || '').toLowerCase().includes(q)
+        const matchShift = ((paper as any).shift || (paper as any).pyqShift || '')
+          .toLowerCase()
+          .includes(q)
+        const matchExam = ((paper as any).examName || (paper as any).exam_name || '')
+          .toLowerCase()
+          .includes(q)
         if (!matchTitle && !matchDesc && !matchShift && !matchExam) {
           return false
         }
       }
       return true
     })
-  }, [selectedExamSlug, selectedYear, searchQuery])
+  }, [livePapers, selectedExamSlug, selectedYear, searchQuery])
 
   const selectedExamMeta = useMemo(() => {
     if (selectedExamSlug === 'all') return null
     return TARGET_EXAMS_REGISTRY.find(e => e.slug === selectedExamSlug) || null
   }, [selectedExamSlug])
-
 
   return (
     <div className="w-full space-y-8" data-testid="target-exam-pyq-hub">
@@ -121,7 +152,9 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
               Target Exam PYQ Mock Station
             </h2>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Practice authentic previous year question papers under exact examination conditions. Features real NTA 5-state question palettes, bilingual Hindi & English translations, shift percentile curves, and AI mistake diagnostics.
+              Practice authentic previous year question papers under exact examination conditions.
+              Features real NTA 5-state question palettes, bilingual Hindi & English translations,
+              shift percentile curves, and AI mistake diagnostics.
             </p>
           </div>
 
@@ -133,11 +166,17 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
               <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">100%</div>
-              <div className="text-[11px] font-medium text-slate-400 mt-0.5">Real CBT Simulation</div>
+              <div className="text-[11px] font-medium text-slate-400 mt-0.5">
+                Real CBT Simulation
+              </div>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl sm:text-2xl font-black text-indigo-400 font-mono">Shift AIR</div>
-              <div className="text-[11px] font-medium text-slate-400 mt-0.5">Historical Predictor</div>
+              <div className="text-xl sm:text-2xl font-black text-indigo-400 font-mono">
+                Shift AIR
+              </div>
+              <div className="text-[11px] font-medium text-slate-400 mt-0.5">
+                Historical Predictor
+              </div>
             </div>
           </div>
         </div>
@@ -150,7 +189,8 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
             Select Target Exam:
           </span>
           <span className="text-xs text-gray-500">
-            {filteredPapers.length} {filteredPapers.length === 1 ? 'Paper Available' : 'Papers Available'}
+            {filteredPapers.length}{' '}
+            {filteredPapers.length === 1 ? 'Paper Available' : 'Papers Available'}
           </span>
         </div>
 
@@ -261,7 +301,9 @@ export const TargetExamPyqHub = memo(function TargetExamPyqHub({
       {filteredPapers.length === 0 ? (
         <div className="p-12 text-center rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/30 space-y-2">
           <BookOpen className="w-8 h-8 text-gray-400 mx-auto" />
-          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">No official papers matched your filter</h4>
+          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+            No official papers matched your filter
+          </h4>
           <p className="text-xs text-gray-500">Try choosing a different year or exam category.</p>
         </div>
       ) : (

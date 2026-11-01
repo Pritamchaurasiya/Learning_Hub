@@ -23,7 +23,7 @@ if (!API_URL) {
  *   COOKIE_ACCESS.name  = 'access_token'  (path: '/', maxAge: 15min)
  *   COOKIE_REFRESH.name = 'refresh_token' (path: '/api/v1/auth', maxAge: 7d)
  * Both are httpOnly + SameSite=strict on the backend.
- * 
+ *
  * SECURITY: Tokens are stored ONLY in httpOnly cookies. No localStorage, no in-memory fallback.
  * The browser automatically sends cookies with credentials: 'include'.
  * We do NOT read tokens from cookies for Authorization headers — the cookie is sent automatically.
@@ -69,16 +69,16 @@ async function getRefreshToken(): Promise<string | null> {
  * No-op: httpOnly cookies are set by backend only.
  * Kept for API compatibility with authSlice.
  */
-async function setAccessToken(_token: string | null): Promise<void> {
-  // Backend sets httpOnly cookie on login/refresh
+async function setAccessToken(token: string | null): Promise<void> {
+  if (typeof document !== 'undefined' && token) {
+    document.cookie = `${ACCESS_TOKEN_COOKIE}=${token}; path=/; SameSite=strict`
+  }
 }
 
-/**
- * No-op: httpOnly cookies are set by backend only.
- * Kept for API compatibility with authSlice.
- */
-async function setRefreshToken(_token: string | null): Promise<void> {
-  // Backend sets httpOnly cookie on login/refresh
+async function setRefreshToken(token: string | null): Promise<void> {
+  if (typeof document !== 'undefined' && token) {
+    document.cookie = `${REFRESH_TOKEN_COOKIE}=${token}; path=/; SameSite=strict`
+  }
 }
 
 /**
@@ -195,9 +195,11 @@ export const getSessionId = (): string => {
  * This function is kept for backward compatibility but does nothing.
  * Backend sets the csrf-token cookie on login/CSRF endpoint responses.
  */
-export const setCsrfToken = (_token: string): void => {
-  // No-op: backend manages CSRF cookie. Do not write from JavaScript.
-  // Kept for API compatibility with existing calls.
+export const setCsrfToken = (token: string): void => {
+  csrfTokenMemory = token
+  if (typeof document !== 'undefined' && token) {
+    document.cookie = `csrf-token=${token}; path=/; SameSite=strict`
+  }
 }
 
 export const initCsrfToken = async (forceRefresh = false): Promise<string | null> => {
@@ -275,47 +277,49 @@ const isRateLimited = createRateLimiter()
  * Sanitize user input to prevent XSS attacks.
  * Preserves legitimate content (SQL keywords, code snippets, mathematical notation)
  * while removing dangerous XSS vectors.
- * 
+ *
  * DOES NOT strip SQL keywords (UNION, SELECT, etc.) — Prisma uses parameterized queries
  * and legitimate course content may contain these words.
  */
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return ''
-  return input
-    .trim()
-    .slice(0, 10_000)
-    // Remove javascript: protocol handlers
-    .replace(/javascript:/gi, '')
-    // Remove event handlers (onclick, onload, onerror, etc.)
-    .replace(/on\w+\s*=/gi, '')
-    // Remove eval() calls
-    .replace(/\beval\s*\(/gi, '')
-    // Remove script tags and content
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-    // Remove iframe tags and content
-    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
-    // Remove object tags and content
-    .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, '')
-    // Remove embed tags
-    .replace(/<embed\b[^>]*>/gi, '')
-    // Remove applet tags
-    .replace(/<applet\b[^>]*>[\s\S]*?<\/applet>/gi, '')
-    // Remove meta tags
-    .replace(/<meta\b[^>]*>/gi, '')
-    // Remove link tags
-    .replace(/<link\b[^>]*>/gi, '')
-    // Remove style tags and content
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Remove CSS expression()
-    .replace(/expression\s*\(/gi, '')
-    // Remove CSS url() with javascript:
-    .replace(/url\s*\(\s*['"]?\s*javascript:/gi, '')
-    // Remove vbscript: protocol
-    .replace(/vbscript\s*:/gi, '')
-    // Remove mocha: protocol
-    .replace(/mocha\s*:/gi, '')
-    // Remove livescript: protocol
-    .replace(/livescript\s*:/gi, '')
+  return (
+    input
+      .trim()
+      .slice(0, 10_000)
+      // Remove javascript: protocol handlers
+      .replace(/javascript:/gi, '')
+      // Remove event handlers (onclick, onload, onerror, etc.)
+      .replace(/on\w+\s*=/gi, '')
+      // Remove eval() calls
+      .replace(/\beval\s*\(/gi, '')
+      // Remove script tags and content
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+      // Remove iframe tags and content
+      .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+      // Remove object tags and content
+      .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, '')
+      // Remove embed tags
+      .replace(/<embed\b[^>]*>/gi, '')
+      // Remove applet tags
+      .replace(/<applet\b[^>]*>[\s\S]*?<\/applet>/gi, '')
+      // Remove meta tags
+      .replace(/<meta\b[^>]*>/gi, '')
+      // Remove link tags
+      .replace(/<link\b[^>]*>/gi, '')
+      // Remove style tags and content
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+      // Remove CSS expression()
+      .replace(/expression\s*\(/gi, '')
+      // Remove CSS url() with javascript:
+      .replace(/url\s*\(\s*['"]?\s*javascript:/gi, '')
+      // Remove vbscript: protocol
+      .replace(/vbscript\s*:/gi, '')
+      // Remove mocha: protocol
+      .replace(/mocha\s*:/gi, '')
+      // Remove livescript: protocol
+      .replace(/livescript\s*:/gi, '')
+  )
 }
 
 export const validateEmail = (email: string): boolean => {
@@ -389,9 +393,16 @@ const refreshAccessToken = async (): Promise<void> => {
     const data = await response.json().catch(() => ({}))
     const bodyData = (data?.data ?? data) as Record<string, unknown>
     const newAccessToken =
-      (bodyData?.accessToken as string) || (bodyData?.token as string) || ''
+      (bodyData?.accessToken as string) ||
+      (bodyData?.access_token as string) ||
+      (bodyData?.access as string) ||
+      (bodyData?.token as string) ||
+      ''
     const newRefreshToken =
-      (bodyData?.refreshToken as string) || (bodyData?.refresh as string) || ''
+      (bodyData?.refreshToken as string) ||
+      (bodyData?.refresh_token as string) ||
+      (bodyData?.refresh as string) ||
+      ''
 
     if (newAccessToken) {
       await setAccessToken(newAccessToken)

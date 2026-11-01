@@ -2,6 +2,8 @@
   "name": "learninghub",
   "private": true,
   "version": "1.0.0",
+  "description": "LearningHub Enterprise Native Windows Desktop Application",
+  "author": "LearningHub",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -22,7 +24,10 @@
     "typecheck": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit",
     "prepare": "cd .. && npx --no-install husky learninghub/.husky 2>nul || exit 0",
     "desktop": "electron .",
-    "desktop:dev": "electron . --dev"
+    "desktop:dev": "electron . --dev",
+    "desktop:pack": "npm run build && electron-builder --dir",
+    "desktop:dist": "npm run build && electron-builder --win",
+    "desktop:portable": "npm run build && electron-builder --win portable"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.3",
@@ -78,6 +83,7 @@
     "@vitest/ui": "^4.1.4",
     "autoprefixer": "^10.4.17",
     "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",

@@ -1,14 +1,29 @@
 @echo off
+setlocal
 title LearningHub Desktop Launcher
 echo ========================================================
-echo Launching LearningHub React Desktop Application (Electron)
+echo  LearningHub Enterprise Native Windows Desktop Application
 echo ========================================================
-start "LearningHub Backend (Port 5000)" /min cmd /c "cd /d C:\Users\shiva\Desktop\windows_app\learninghub\backend && npm run dev"
-start "LearningHub Web Server (Port 3000)" /min cmd /c "cd /d C:\Users\shiva\Desktop\windows_app\learninghub && npm run dev"
+echo.
 
-echo Waiting for services to initialize...
-timeout /t 4 >nul
+set APP_DIR=%~dp0learninghub
+set EXE_PATH=%APP_DIR%\release-desktop\win-unpacked\LearningHub.exe
 
-echo Starting Native Windows Desktop UI...
-cd /d C:\Users\shiva\Desktop\windows_app\learninghub && npm run desktop
+if not exist "%EXE_PATH%" (
+    echo [INFO] Packaged executable not found, compiling desktop build...
+    cd /d "%APP_DIR%" && npm run desktop:pack
+)
 
+echo [1/2] Starting LearningHub Backend Engine (Port 5000)...
+start "LearningHub Backend" /min cmd /c "cd /d "%APP_DIR%\backend" && npm run dev"
+
+echo [2/2] Launching Native Windows Desktop Client...
+start "" "%EXE_PATH%"
+
+echo.
+echo ========================================================
+echo  LearningHub Desktop is now running!
+echo  Backend:  http://localhost:5000
+echo  Frontend: Native Windows App (Chromium + React 18)
+echo ========================================================
+endlocal

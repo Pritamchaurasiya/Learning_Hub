@@ -464,4 +464,45 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
       )
     ).toBeInTheDocument()
   })
+
+  it('allows requesting progressive hints in practice mode and reveals step-by-step guidance', async () => {
+    const question: TestQuestion = {
+      id: 'q-hint-test',
+      text: 'Find the maximum flow in a bipartite matching graph.',
+      question_type: 'mcq',
+      difficulty: 0.8,
+      bloom_level: 'analyze',
+      options: [
+        { id: 'opt-a', text: 'O(V*E)', order: 1, is_correct: true },
+        { id: 'opt-b', text: 'O(V^3)', order: 2, is_correct: false },
+      ],
+      order: 1,
+      marks: 4,
+    }
+
+    render(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer={null}
+        confidence="MEDIUM"
+        isFlagged={false}
+        assessmentMode="practice"
+        onAnswer={vi.fn()}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+      />
+    )
+
+    const hintButton = screen.getByRole('button', { name: /Need a Hint\?/i })
+    expect(hintButton).toBeInTheDocument()
+
+    fireEvent.click(hintButton)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Step 1 Hint/i)).toBeInTheDocument()
+    })
+  })
 })

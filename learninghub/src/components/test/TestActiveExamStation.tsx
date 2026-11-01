@@ -142,16 +142,14 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   )
 
   const currentQuestion = test.questions[test.currentQuestionIndex]
-  const selectedAnswer = currentQuestion ? test.answers[currentQuestion.id] ?? null : null
+  const selectedAnswer = currentQuestion ? (test.answers[currentQuestion.id] ?? null) : null
   const isFlagged = currentQuestion ? test.flaggedQuestions.includes(currentQuestion.id) : false
 
   // Section quota calculation (e.g. JEE Main Section B: attempt 5 of 10)
   const quotaInfo = useMemo(() => {
     if (!activeSection?.maxQuestionsToAttempt) return undefined
     const secQIds = new Set(
-      test.questions
-        .filter(q => (q.section_id || q.sectionId) === activeSection.id)
-        .map(q => q.id)
+      test.questions.filter(q => (q.section_id || q.sectionId) === activeSection.id).map(q => q.id)
     )
     const currentAttempted = Object.keys(test.answers).filter(id => secQIds.has(id)).length
     return {
@@ -174,7 +172,14 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
     if (test.currentQuestionIndex < test.questions.length - 1) {
       onNavigateToQuestion(test.currentQuestionIndex + 1)
     }
-  }, [currentQuestion, isFlagged, onFlagQuestion, test.currentQuestionIndex, test.questions.length, onNavigateToQuestion])
+  }, [
+    currentQuestion,
+    isFlagged,
+    onFlagQuestion,
+    test.currentQuestionIndex,
+    test.questions.length,
+    onNavigateToQuestion,
+  ])
 
   const handleMarkForReviewAndNext = useCallback(() => {
     if (currentQuestion && !isFlagged) {
@@ -183,7 +188,14 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
     if (test.currentQuestionIndex < test.questions.length - 1) {
       onNavigateToQuestion(test.currentQuestionIndex + 1)
     }
-  }, [currentQuestion, isFlagged, onFlagQuestion, test.currentQuestionIndex, test.questions.length, onNavigateToQuestion])
+  }, [
+    currentQuestion,
+    isFlagged,
+    onFlagQuestion,
+    test.currentQuestionIndex,
+    test.questions.length,
+    onNavigateToQuestion,
+  ])
 
   const handleClearCurrentResponse = useCallback(() => {
     if (currentQuestion) {
@@ -196,13 +208,17 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   }, [currentQuestion, handleClearAnswer, onToast])
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 ${
-      fontSize === 'lg' ? 'text-base' : fontSize === 'sm' ? 'text-xs' : 'text-sm'
-    }`}>
+    <div
+      className={`min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 ${
+        fontSize === 'lg' ? 'text-base' : fontSize === 'sm' ? 'text-xs' : 'text-sm'
+      }`}
+    >
       <SEO title={`Tests A+ - ${test.testInfo?.testTitle ?? 'Test'}`} />
 
       {isWsConnected && (
-        <span className="sr-only" data-testid="live-ws-indicator">WebSocket Connected</span>
+        <span className="sr-only" data-testid="live-ws-indicator">
+          WebSocket Connected
+        </span>
       )}
 
       {!isOnline && (
@@ -246,12 +262,13 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         violationCount={proctorViolationCount}
       />
 
-            {/* Official Candidate Session Watermark */}
+      {/* Official Candidate Session Watermark */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center opacity-[0.025] dark:opacity-[0.035] select-none rotate-[-15deg] text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-widest text-gray-900 dark:text-white"
       >
-        {test.testInfo?.testTitle || 'Official CBT Assessment'} • CANDIDATE SESSION {test.attempt?.attemptId ? test.attempt.attemptId.slice(-6).toUpperCase() : 'VERIFIED'}
+        {test.testInfo?.testTitle || 'Official CBT Assessment'} • CANDIDATE SESSION{' '}
+        {test.attempt?.attemptId ? test.attempt.attemptId.slice(-6).toUpperCase() : 'VERIFIED'}
       </div>
 
       <TestExamHeader
@@ -378,6 +395,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                   transition={{ duration: 0.2 }}
                 >
                   <QuestionCard
+                    testId={test.testInfo?.testId || test.attempt?.testId}
                     question={currentQuestion}
                     currentIndex={test.currentQuestionIndex}
                     totalQuestions={test.questions.length}
@@ -402,8 +420,9 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                         : selectedAnswer
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const selOpt = currentQuestion.options?.find((o: any) => o.id === selVal)
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      const corrOpt = currentQuestion.options?.find((o: any) => o.is_correct || o.isCorrect) ||
+
+                      const corrOpt =
+                        currentQuestion.options?.find((o: any) => o.is_correct || o.isCorrect) ||
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         currentQuestion.options?.find((o: any) => o.id !== selVal)
                       setSocraticModalQuestion({
@@ -481,9 +500,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         onClose={() => setIsSubmitModalOpen(false)}
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
-        attemptedCount={
-          Object.values(test.answers).filter(v => v !== undefined && v !== '').length
-        }
+        attemptedCount={Object.values(test.answers).filter(v => v !== undefined && v !== '').length}
         unansweredCount={Math.max(
           0,
           test.questions.length -
@@ -500,10 +517,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
       />
 
       {/* CBT Digital Scratchpad Modal */}
-      <ExamScratchpadModal
-        isOpen={isScratchpadOpen}
-        onClose={() => setIsScratchpadOpen(false)}
-      />
+      <ExamScratchpadModal isOpen={isScratchpadOpen} onClose={() => setIsScratchpadOpen(false)} />
 
       {/* Full Question Paper Preview Modal */}
       <ExamQuestionPaperModal
@@ -551,7 +565,9 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
             <button
               type="button"
               onClick={() => setIsWebcamMinimized(prev => !prev)}
-              aria-label={isWebcamMinimized ? 'Expand proctor camera feed' : 'Minimize proctor camera feed'}
+              aria-label={
+                isWebcamMinimized ? 'Expand proctor camera feed' : 'Minimize proctor camera feed'
+              }
               className="text-slate-400 hover:text-white p-0.5 rounded text-[10px] transition ml-2"
             >
               {isWebcamMinimized ? '▲ Expand' : '▼ Minimize'}

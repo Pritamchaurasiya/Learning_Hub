@@ -11,9 +11,11 @@ const DEMO_CARDS: SpacedCard[] = [
   {
     id: 'srs-demo-1',
     card_type: 'MISTAKE',
-    front: 'Why does 0/1 Knapsack require dynamic programming rather than a greedy choice property?',
+    front:
+      'Why does 0/1 Knapsack require dynamic programming rather than a greedy choice property?',
     back: 'Items cannot be divided. Making a locally optimal choice (e.g., highest value/weight) can prevent reaching the global maximum value because leftover capacity cannot be utilized with fractions.',
-    explanation: 'Optimal substructure holds: DP[i][w] = max(DP[i-1][w], DP[i-1][w-wt[i]] + val[i]). Greedy fails on discrete items.',
+    explanation:
+      'Optimal substructure holds: DP[i][w] = max(DP[i-1][w], DP[i-1][w-wt[i]] + val[i]). Greedy fails on discrete items.',
     topic: 'Dynamic Programming',
     subject: 'Algorithms',
     difficulty: 0.8,
@@ -31,9 +33,10 @@ const DEMO_CARDS: SpacedCard[] = [
   {
     id: 'srs-demo-2',
     card_type: 'FORMULA',
-    front: 'State Bayes\' Theorem formula for probability updating given evidence.',
+    front: "State Bayes' Theorem formula for probability updating given evidence.",
     back: 'P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}',
-    explanation: 'Where P(A|B) is posterior, P(B|A) is likelihood, P(A) is prior, and P(B) is marginal probability.',
+    explanation:
+      'Where P(A|B) is posterior, P(B|A) is likelihood, P(A) is prior, and P(B) is marginal probability.',
     topic: 'Probability & Statistics',
     subject: 'Mathematics',
     difficulty: -0.2,
@@ -53,7 +56,8 @@ const DEMO_CARDS: SpacedCard[] = [
     card_type: 'QUESTION',
     front: 'What is the tight asymptotic lower bound for comparison-based sorting algorithms?',
     back: '\\Omega(N \\log N)',
-    explanation: 'Any comparison sort corresponds to a decision tree with N! leaves. Tree height h >= ceil(log2(N!)) = Theta(N log N) by Stirling\'s approximation.',
+    explanation:
+      "Any comparison sort corresponds to a decision tree with N! leaves. Tree height h >= ceil(log2(N!)) = Theta(N log N) by Stirling's approximation.",
     topic: 'Complexity Theory',
     subject: 'Algorithms',
     difficulty: 0.4,
@@ -71,9 +75,11 @@ const DEMO_CARDS: SpacedCard[] = [
   {
     id: 'srs-demo-4',
     card_type: 'CONCEPT',
-    front: 'Explain the difference between Strong Connectivity and Weak Connectivity in a Directed Graph.',
+    front:
+      'Explain the difference between Strong Connectivity and Weak Connectivity in a Directed Graph.',
     back: 'Strongly Connected: Every vertex is reachable from every other vertex following edge directions.\nWeakly Connected: Vertices are connected if edge directions are replaced by undirected edges.',
-    explanation: 'Kosaraju\'s or Tarjan\'s algorithm finds Strongly Connected Components (SCCs) in O(V + E) time.',
+    explanation:
+      "Kosaraju's or Tarjan's algorithm finds Strongly Connected Components (SCCs) in O(V + E) time.",
     topic: 'Graph Theory',
     subject: 'Algorithms',
     difficulty: 0.6,
@@ -130,7 +136,9 @@ export const revisionService = {
       cards: filtered,
       stats: {
         total_cards: DEMO_CARDS.length,
-        total_due: filtered.filter(c => !c.next_review_at || new Date(c.next_review_at) <= new Date()).length,
+        total_due: filtered.filter(
+          c => !c.next_review_at || new Date(c.next_review_at) <= new Date()
+        ).length,
         mastered_count: DEMO_CARDS.filter(c => c.repetitions >= 4).length,
         learning_count: DEMO_CARDS.filter(c => c.repetitions > 0 && c.repetitions < 4).length,
         new_count: DEMO_CARDS.filter(c => c.repetitions === 0).length,
@@ -155,7 +163,10 @@ export const revisionService = {
         return response.data
       }
     } catch (err) {
-      console.warn('[revisionService] Review submission to backend failed, applying local SM2:', err)
+      console.warn(
+        '[revisionService] Review submission to backend failed, applying local SM2:',
+        err
+      )
     }
 
     // Local calculation fallback
@@ -163,8 +174,16 @@ export const revisionService = {
     const updated = { ...target }
     if (quality >= 3) {
       updated.repetitions += 1
-      updated.interval_days = updated.repetitions === 1 ? 1 : updated.repetitions === 2 ? 6 : Math.round(updated.interval_days * updated.ease_factor)
-      updated.ease_factor = Math.max(1.3, updated.ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
+      updated.interval_days =
+        updated.repetitions === 1
+          ? 1
+          : updated.repetitions === 2
+            ? 6
+            : Math.round(updated.interval_days * updated.ease_factor)
+      updated.ease_factor = Math.max(
+        1.3,
+        updated.ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+      )
       updated.stability = Math.max(0.5, updated.interval_days * 0.9)
     } else {
       updated.repetitions = 0
@@ -174,7 +193,9 @@ export const revisionService = {
     }
     updated.last_quality = quality
     updated.last_reviewed_at = new Date().toISOString()
-    updated.next_review_at = new Date(Date.now() + updated.interval_days * 86400 * 1000).toISOString()
+    updated.next_review_at = new Date(
+      Date.now() + updated.interval_days * 86400 * 1000
+    ).toISOString()
     return { card: updated }
   },
 
@@ -235,7 +256,9 @@ export const revisionService = {
   /**
    * Auto-generate cards from a test attempt's incorrect answers.
    */
-  async generateFromAttempt(attemptId: string): Promise<{ created_count: number; cards: SpacedCard[] }> {
+  async generateFromAttempt(
+    attemptId: string
+  ): Promise<{ created_count: number; cards: SpacedCard[] }> {
     try {
       const response = await fetchApi<{
         status: string
@@ -287,7 +310,15 @@ export const revisionService = {
         '/api/v1/revision/stats'
       )
       if (response?.data?.total_cards !== undefined) {
-        return response.data
+        return {
+          ...response.data,
+          forecast_7d: Array.isArray(response.data.forecast_7d)
+            ? response.data.forecast_7d
+            : [2, 1, 0, 1, 0, 1, 0],
+          topic_breakdown: Array.isArray(response.data.topic_breakdown)
+            ? response.data.topic_breakdown
+            : [],
+        }
       }
     } catch (err) {
       console.warn('[revisionService] Retention stats failed, returning fallback:', err)
@@ -341,10 +372,34 @@ export const revisionService = {
     const easyDays = reps === 0 ? 3 : reps === 1 ? 8 : Math.max(1, Math.round(prevInt * ef * 1.3))
 
     return [
-      { grade: 1, label: 'Again', sublabel: `${againDays}d`, intervalDays: againDays, color: 'text-rose-500 border-rose-500/30 hover:bg-rose-500/10' },
-      { grade: 2, label: 'Hard', sublabel: `${hardDays}d`, intervalDays: hardDays, color: 'text-amber-500 border-amber-500/30 hover:bg-amber-500/10' },
-      { grade: 4, label: 'Good', sublabel: `${goodDays}d`, intervalDays: goodDays, color: 'text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10' },
-      { grade: 5, label: 'Easy', sublabel: `${easyDays}d`, intervalDays: easyDays, color: 'text-sky-500 border-sky-500/30 hover:bg-sky-500/10' },
+      {
+        grade: 1,
+        label: 'Again',
+        sublabel: `${againDays}d`,
+        intervalDays: againDays,
+        color: 'text-rose-500 border-rose-500/30 hover:bg-rose-500/10',
+      },
+      {
+        grade: 2,
+        label: 'Hard',
+        sublabel: `${hardDays}d`,
+        intervalDays: hardDays,
+        color: 'text-amber-500 border-amber-500/30 hover:bg-amber-500/10',
+      },
+      {
+        grade: 4,
+        label: 'Good',
+        sublabel: `${goodDays}d`,
+        intervalDays: goodDays,
+        color: 'text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10',
+      },
+      {
+        grade: 5,
+        label: 'Easy',
+        sublabel: `${easyDays}d`,
+        intervalDays: easyDays,
+        color: 'text-sky-500 border-sky-500/30 hover:bg-sky-500/10',
+      },
     ]
   },
 }

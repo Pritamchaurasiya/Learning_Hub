@@ -12,6 +12,9 @@ jspm_packages/
 
 # ==================== BUILD OUTPUT ====================
 dist/
+dist-desktop/
+release-desktop/
+*.asar
 build/
 *.egg-info/
 *.egg
