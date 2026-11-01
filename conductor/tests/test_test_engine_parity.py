@@ -3,10 +3,13 @@ Tests for Test Engine & Exam Simulation Subsystem Parity.
 Validates complete contract alignment with frontend learninghub/src/services/testsAService.ts.
 """
 
+from datetime import timedelta
+
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from apps.exams.models import Country, Exam, Subject, Topic
 from apps.test_engine.models import (
     Test,
@@ -261,13 +264,21 @@ class TestTestEngineParity:
         start_res = auth_client.post(f"/api/v1/tests/{test.id}/start", {}, format="json")
         attempt_id = start_res.json()["data"]["attempt_id"]
 
-        # Submit test
+        # The backend deliberately records elapsed server time instead of
+        # trusting the client-supplied timer. Backdate the attempt so this
+        # contract can be tested deterministically without sleeping.
+        attempt = TestAttempt.objects.get(id=attempt_id)
+        attempt.started_at = timezone.now() - timedelta(seconds=42)
+        attempt.save(update_fields=["started_at"])
+
+        # Submit test with an intentionally inflated client timer. The result
+        # must reflect server-measured elapsed time, not this client value.
         submit_payload = {
             "answers": {
                 str(q1.id): str(opt1.id),
                 str(q2.id): str(opt2.id),
             },
-            "timeTaken": 42,
+            "timeTaken": 9999,
             "attempt_id": attempt_id,
         }
         res_submit = auth_client.post(f"/api/v1/tests/{test.id}/submit", submit_payload, format="json")
@@ -282,7 +293,7 @@ class TestTestEngineParity:
         assert result["total_marks"] == 8.0
         assert result["percentage"] == 100.0
         assert result["passed"] is True
-        assert result["time_taken"] == 42
+        assert 42 <= result["time_taken"] < 60
         assert result["correct_count"] == 2
         assert result["incorrect_count"] == 0
 
