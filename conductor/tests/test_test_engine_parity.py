@@ -27,6 +27,7 @@ def api_client():
 @pytest.fixture
 def student_user(db):
     import uuid
+
     uid = uuid.uuid4().hex[:6]
     return User.objects.create_user(
         username=f"teststudent_{uid}",
@@ -112,7 +113,9 @@ def published_test(db, exam_setup):
         explanation="The Second Law states that the entropy of an isolated system always increases.",
     )
     Option.objects.create(question=q1, text="Zeroth Law", is_correct=False, order=1)
-    opt1_correct = Option.objects.create(question=q1, text="Second Law", is_correct=True, order=2)
+    opt1_correct = Option.objects.create(
+        question=q1, text="Second Law", is_correct=True, order=2
+    )
     Option.objects.create(question=q1, text="First Law", is_correct=False, order=3)
     Option.objects.create(question=q1, text="Third Law", is_correct=False, order=4)
     TestQuestion.objects.create(test=test, question=q1, order=1, marks=4)
@@ -126,10 +129,14 @@ def published_test(db, exam_setup):
         bloom_level="apply",
         explanation="For an ideal gas, internal energy depends solely on temperature; thus delta U = 0.",
     )
-    opt2_correct = Option.objects.create(question=q2, text="Zero", is_correct=True, order=1)
+    opt2_correct = Option.objects.create(
+        question=q2, text="Zero", is_correct=True, order=1
+    )
     Option.objects.create(question=q2, text="Positive", is_correct=False, order=2)
     Option.objects.create(question=q2, text="Negative", is_correct=False, order=3)
-    Option.objects.create(question=q2, text="Equal to heat added", is_correct=False, order=4)
+    Option.objects.create(
+        question=q2, text="Equal to heat added", is_correct=False, order=4
+    )
     TestQuestion.objects.create(test=test, question=q2, order=2, marks=4)
 
     test.total_marks = 8
@@ -148,7 +155,9 @@ def published_test(db, exam_setup):
 class TestTestEngineParity:
     """Test Suite for frontend testsAService.ts contract parity."""
 
-    def test_get_tests_list_dual_envelope_and_filtering(self, api_client, published_test):
+    def test_get_tests_list_dual_envelope_and_filtering(
+        self, api_client, published_test
+    ):
         """GET /api/v1/tests/ returns standard dual envelope and supports query param filters."""
         # 1. Unfiltered list
         res = api_client.get("/api/v1/tests/")
@@ -211,7 +220,9 @@ class TestTestEngineParity:
         test = published_test["test"]
 
         # 1. Non-trailing slash (frontend default in testsAService.ts)
-        res_noslash = auth_client.post(f"/api/v1/tests/{test.id}/start", {}, format="json")
+        res_noslash = auth_client.post(
+            f"/api/v1/tests/{test.id}/start", {}, format="json"
+        )
         assert res_noslash.status_code == status.HTTP_201_CREATED
         data = res_noslash.json()
         assert data.get("status") == "success"
@@ -233,7 +244,9 @@ class TestTestEngineParity:
         opt1 = published_test["opt1_correct"]
 
         # Start attempt
-        start_res = auth_client.post(f"/api/v1/tests/{test.id}/start", {}, format="json")
+        start_res = auth_client.post(
+            f"/api/v1/tests/{test.id}/start", {}, format="json"
+        )
         attempt_id = start_res.json()["data"]["attempt_id"]
 
         # Batch autosave (as sent by testsAService.batchAutosave / autosaveAnswer)
@@ -243,7 +256,9 @@ class TestTestEngineParity:
             },
             "attempt_id": attempt_id,
         }
-        res_batch = auth_client.post(f"/api/v1/tests/{test.id}/autosave", batch_payload, format="json")
+        res_batch = auth_client.post(
+            f"/api/v1/tests/{test.id}/autosave", batch_payload, format="json"
+        )
         assert res_batch.status_code == status.HTTP_200_OK
         data_batch = res_batch.json()
         assert data_batch.get("status") == "success"
@@ -258,7 +273,9 @@ class TestTestEngineParity:
         opt2 = published_test["opt2_correct"]
 
         # Start attempt
-        start_res = auth_client.post(f"/api/v1/tests/{test.id}/start", {}, format="json")
+        start_res = auth_client.post(
+            f"/api/v1/tests/{test.id}/start", {}, format="json"
+        )
         attempt_id = start_res.json()["data"]["attempt_id"]
 
         # Submit test
@@ -270,7 +287,9 @@ class TestTestEngineParity:
             "timeTaken": 42,
             "attempt_id": attempt_id,
         }
-        res_submit = auth_client.post(f"/api/v1/tests/{test.id}/submit", submit_payload, format="json")
+        res_submit = auth_client.post(
+            f"/api/v1/tests/{test.id}/submit", submit_payload, format="json"
+        )
         assert res_submit.status_code == status.HTTP_200_OK
         data_submit = res_submit.json()
         assert data_submit.get("status") == "success"
@@ -316,21 +335,29 @@ class TestTestEngineParity:
         q1 = published_test["q1"]
 
         # Bookmark question
-        bm_res = auth_client.post("/api/v1/tests/bookmarks", {
-            "question_id": str(q1.id),
-            "notes": "Important second law concept",
-        }, format="json")
+        bm_res = auth_client.post(
+            "/api/v1/tests/bookmarks",
+            {
+                "question_id": str(q1.id),
+                "notes": "Important second law concept",
+            },
+            format="json",
+        )
         assert bm_res.status_code == status.HTTP_200_OK
         assert bm_res.json()["status"] == "success"
         assert bm_res.json()["data"]["bookmarked"] is True
 
         # Diagnose misconception
-        diag_res = auth_client.post("/api/v1/tests/diagnose-misconception", {
-            "question_text": q1.text,
-            "selected_option_text": "Zeroth Law",
-            "correct_option_text": "Second Law",
-            "topic": "Thermodynamics",
-        }, format="json")
+        diag_res = auth_client.post(
+            "/api/v1/tests/diagnose-misconception",
+            {
+                "question_text": q1.text,
+                "selected_option_text": "Zeroth Law",
+                "correct_option_text": "Second Law",
+                "topic": "Thermodynamics",
+            },
+            format="json",
+        )
         assert diag_res.status_code == status.HTTP_200_OK
         assert diag_res.json()["status"] == "success"
         assert "misconception" in diag_res.json()["data"]
@@ -346,17 +373,23 @@ class TestTestEngineParity:
         assert "bundle_version" in res_bundle.json()["data"]
 
         # Offline sync
-        res_sync = auth_client.post(f"/api/v1/tests/{test.id}/offline-sync", {"sync_data": []}, format="json")
+        res_sync = auth_client.post(
+            f"/api/v1/tests/{test.id}/offline-sync", {"sync_data": []}, format="json"
+        )
         assert res_sync.status_code == status.HTTP_200_OK
         assert res_sync.json()["status"] == "success"
         assert res_sync.json()["data"]["reconciled"] is True
 
         # Adaptive step
-        res_step = auth_client.post(f"/api/v1/tests/{test.id}/adaptive/step", {
-            "attempt_id": "none",
-            "question_id": str(published_test["q1"].id),
-            "selected_option_id": "opt1",
-        }, format="json")
+        res_step = auth_client.post(
+            f"/api/v1/tests/{test.id}/adaptive/step",
+            {
+                "attempt_id": "none",
+                "question_id": str(published_test["q1"].id),
+                "selected_option_id": "opt1",
+            },
+            format="json",
+        )
         assert res_step.status_code == status.HTTP_200_OK
         assert res_step.json()["status"] == "success"
 

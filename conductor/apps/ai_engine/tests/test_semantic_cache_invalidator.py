@@ -80,7 +80,9 @@ class TestSemanticCacheInvalidator:
         assert cache.get(f"course_embedding:{self.course.id}") is None
         assert cache.get(f"course_summary:{self.course.id}") is None
         assert SemanticCache.objects.count() == 1
-        assert SemanticCache.objects.first().query_text == "Unrelated query about cooking"
+        assert (
+            SemanticCache.objects.first().query_text == "Unrelated query about cooking"
+        )
 
     def test_course_deletion_purges_embeddings(self):
         ct = ContentType.objects.get_for_model(Course)
@@ -90,7 +92,9 @@ class TestSemanticCacheInvalidator:
             chunk_text="Embedding text chunk for course",
             embedding=[0.5, 0.5],
         )
-        assert CourseEmbedding.objects.filter(content_type=ct, object_id=self.course.id).exists()
+        assert CourseEmbedding.objects.filter(
+            content_type=ct, object_id=self.course.id
+        ).exists()
 
         invalidate_semantic_cache_for_course(
             course_id=self.course.id,
@@ -99,7 +103,9 @@ class TestSemanticCacheInvalidator:
             is_deletion=True,
         )
 
-        assert not CourseEmbedding.objects.filter(content_type=ct, object_id=self.course.id).exists()
+        assert not CourseEmbedding.objects.filter(
+            content_type=ct, object_id=self.course.id
+        ).exists()
 
     def test_invalidate_semantic_cache_for_lesson(self):
         cache.set(f"lesson_content:{self.lesson.id}", "cached content", 3600)

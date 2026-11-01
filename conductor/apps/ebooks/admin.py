@@ -1,4 +1,5 @@
 """Ebook library administration with lightweight inlines and N+1 query elimination."""
+
 from django.contrib import admin
 from .models import (
     Ebook,
@@ -26,7 +27,15 @@ class EbookFlashcardInline(admin.TabularInline):
 
 @admin.register(Ebook)
 class EbookAdmin(admin.ModelAdmin):
-    list_display = ("title", "author", "category", "difficulty", "total_chapters", "rating", "is_published")
+    list_display = (
+        "title",
+        "author",
+        "category",
+        "difficulty",
+        "total_chapters",
+        "rating",
+        "is_published",
+    )
     list_filter = ("category", "difficulty", "is_published")
     search_fields = ("title", "author", "description", "tags")
     prepopulated_fields = {"slug": ("title",)}
@@ -64,7 +73,14 @@ class EbookBookmarkAdmin(admin.ModelAdmin):
 
 @admin.register(EbookReadingProgress)
 class EbookReadingProgressAdmin(admin.ModelAdmin):
-    list_display = ("user", "ebook", "current_chapter", "progress_percentage", "is_completed", "last_read_at")
+    list_display = (
+        "user",
+        "ebook",
+        "current_chapter",
+        "progress_percentage",
+        "is_completed",
+        "last_read_at",
+    )
     list_filter = ("is_completed",)
     search_fields = ("user__email", "ebook__title")
     list_select_related = ("user", "ebook", "current_chapter")

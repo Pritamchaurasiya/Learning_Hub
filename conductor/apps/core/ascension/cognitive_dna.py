@@ -3,6 +3,7 @@ import hashlib
 
 logger = structlog.get_logger(__name__)
 
+
 class CognitiveDNA:
     """
     Decodes the user's "Learning Genome" to hyper-personalize the curriculum.
@@ -15,11 +16,11 @@ class CognitiveDNA:
         Generates a unique Cognitive DNA sequence (e.g., 'V-A-K-Fast').
         """
         logger.info("🧬 Sequencing Cognitive DNA...")
-        
+
         # Mock analysis
         dna = "Visuospatial-Auditory-Reflective"
         unique_hash = hashlib.sha256(dna.encode()).hexdigest()[:8]
-        
+
         logger.info(f"👤 User Genome Sequenced: {dna} [{unique_hash}]")
         return unique_hash
 
@@ -32,5 +33,5 @@ class CognitiveDNA:
         return {
             "modality": "3D_Holograms",
             "pacing": "Accelerated (1.5x)",
-            "reinforcement": "Intermittent_Reward"
+            "reinforcement": "Intermittent_Reward",
         }

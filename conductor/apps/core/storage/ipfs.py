@@ -5,17 +5,18 @@ import base64
 
 logger = structlog.get_logger(__name__)
 
+
 class IPFSClient:
     """
     Interacts with the Inter-Planetary File System (IPFS) to store
     course materials and credentials permanently.
     """
-    
+
     # Common IPFS Gateways
     GATEWAY_URLS = [
         "https://ipfs.io/ipfs/",
         "https://gateway.pinata.cloud/ipfs/",
-        "https://cloudflare-ipfs.com/ipfs/"
+        "https://cloudflare-ipfs.com/ipfs/",
     ]
 
     @staticmethod
@@ -34,7 +35,7 @@ class IPFSClient:
         """
         Pins JSON metadata to IPFS.
         """
-        content = json.dumps(data, indent=2).encode('utf-8')
+        content = json.dumps(data, indent=2).encode("utf-8")
         return IPFSClient.pin_file(content)
 
     @staticmethod

@@ -13,9 +13,19 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.exams.models import Country, Exam, Subject, Topic
-from apps.test_engine.models import Test, Question, Option, TestQuestion, TestAttempt, AttemptAnswer
+from apps.test_engine.models import (
+    Test,
+    Question,
+    Option,
+    TestQuestion,
+    TestAttempt,
+    AttemptAnswer,
+)
 from apps.test_engine.services import TestSessionManager
-from apps.test_engine.tasks import recalculate_question_stats, calibrate_question_bank_irt_parameters
+from apps.test_engine.tasks import (
+    recalculate_question_stats,
+    calibrate_question_bank_irt_parameters,
+)
 
 User = get_user_model()
 
@@ -42,7 +52,9 @@ def test_setup(db):
         pattern={"total_questions": 3, "duration_minutes": 20},
         is_active=True,
     )
-    subject = Subject.objects.create(exam=exam, name="Physics", code="PHY", is_active=True)
+    subject = Subject.objects.create(
+        exam=exam, name="Physics", code="PHY", is_active=True
+    )
     topic = Topic.objects.create(subject=subject, name="Mechanics", is_active=True)
 
     test = Test.objects.create(
@@ -72,8 +84,12 @@ def test_setup(db):
             guess_factor=0.25,
             explanation=f"Explanation for question {i}",
         )
-        opt_c = Option.objects.create(question=q, text=f"Correct Option {i}", is_correct=True, order=1)
-        opt_w = Option.objects.create(question=q, text=f"Incorrect Option {i}", is_correct=False, order=2)
+        opt_c = Option.objects.create(
+            question=q, text=f"Correct Option {i}", is_correct=True, order=1
+        )
+        opt_w = Option.objects.create(
+            question=q, text=f"Incorrect Option {i}", is_correct=False, order=2
+        )
         TestQuestion.objects.create(test=test, question=q, order=i, marks=2)
         questions.append(q)
         options_correct.append(opt_c)
@@ -154,12 +170,16 @@ def test_reconcile_offline_attempt_idempotency(auth_client, test_setup):
         "totalElapsedSeconds": 50,
     }
 
-    res1 = TestSessionManager.reconcile_offline_attempt(user=user, test=test, submission_data=payload)
+    res1 = TestSessionManager.reconcile_offline_attempt(
+        user=user, test=test, submission_data=payload
+    )
     assert res1["is_duplicate"] is False
     first_attempt_id = res1["attempt"].id
 
     # Second submission with identical client attempt ID
-    res2 = TestSessionManager.reconcile_offline_attempt(user=user, test=test, submission_data=payload)
+    res2 = TestSessionManager.reconcile_offline_attempt(
+        user=user, test=test, submission_data=payload
+    )
     assert res2["is_duplicate"] is True
     assert str(res2["attempt"].id) == str(first_attempt_id)
 

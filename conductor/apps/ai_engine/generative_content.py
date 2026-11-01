@@ -11,11 +11,12 @@ logger = logging.getLogger(__name__)
 class ContentGenerator:
     """
     Phase 55: Generative Adaptive Content Factory.
-    
+
     Uses Gemini 2.0 Flash to autonomously synthesize personalized learning
     materials (quizzes, flashcards) targeted at specific knowledge gaps
     identified by the Deep Knowledge Tracing engine.
     """
+
     _client = None
 
     @classmethod
@@ -30,19 +31,16 @@ class ContentGenerator:
 
     @classmethod
     def generate_targeted_quiz(
-        cls,
-        topic: str,
-        difficulty: str = "intermediate",
-        num_questions: int = 5
+        cls, topic: str, difficulty: str = "intermediate", num_questions: int = 5
     ) -> Optional[List[Dict]]:
         """
         Synthesizes a multiple-choice quiz tailored to a specific topic and difficulty.
-        
+
         Args:
             topic: The conceptual domain (e.g., "Python List Comprehensions").
             difficulty: One of 'beginner', 'intermediate', 'advanced'.
             num_questions: Number of questions to generate.
-            
+
         Returns:
             A list of question dictionaries with keys:
             [question, options (list of 4), correct_answer, explanation]
@@ -73,8 +71,7 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
 
         try:
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=prompt
+                model="gemini-2.0-flash", contents=prompt
             )
             raw_text = str(response.text).strip()
 
@@ -94,12 +91,15 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
             for q in quiz_data:
                 required_keys = {"question", "options", "correct_answer", "explanation"}
                 if not required_keys.issubset(q.keys()):
-                    logger.error("ContentGenerator: Quiz question missing required keys.")
+                    logger.error(
+                        "ContentGenerator: Quiz question missing required keys."
+                    )
                     return None
 
             logger.info(
                 "ContentGenerator: Generated %d questions for topic '%s'.",
-                len(quiz_data), topic
+                len(quiz_data),
+                topic,
             )
             return quiz_data
 
@@ -112,17 +112,15 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
 
     @classmethod
     def generate_flashcards(
-        cls,
-        module_content: str,
-        max_cards: int = 10
+        cls, module_content: str, max_cards: int = 10
     ) -> Optional[List[Dict]]:
         """
         Parses course material into spaced-repetition flashcard JSONs.
-        
+
         Args:
             module_content: Raw text content of the learning module.
             max_cards: Maximum number of flashcards to generate.
-            
+
         Returns:
             A list of flashcard dictionaries with keys:
             [front, back, difficulty, tags]
@@ -162,8 +160,7 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
 
         try:
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=prompt
+                model="gemini-2.0-flash", contents=prompt
             )
             raw_text = str(response.text).strip()
 
@@ -197,19 +194,17 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
 
     @classmethod
     def generate_remediation_content(
-        cls,
-        user_id: int,
-        weaknesses: Dict[str, float]
+        cls, user_id: int, weaknesses: Dict[str, float]
     ) -> Dict[str, List[Dict]]:
         """
         Orchestrates the full adaptive content loop:
         1. Takes weaknesses from `KnowledgeTracer.analyze_global_gaps`.
         2. Generates targeted quizzes for every weak domain.
-        
+
         Args:
             user_id: The student's ID.
             weaknesses: Dict mapping domain -> mastery score (all < 0.6).
-            
+
         Returns:
             Dict mapping domain -> list of generated quiz questions.
         """
@@ -225,16 +220,16 @@ Return the raw JSON array only. No markdown, no code fences, no extra text."""
                 difficulty = "advanced"
 
             quiz = cls.generate_targeted_quiz(
-                topic=domain,
-                difficulty=difficulty,
-                num_questions=5
+                topic=domain, difficulty=difficulty, num_questions=5
             )
 
             if quiz:
                 remediation_map[domain] = quiz
                 logger.info(
                     "ContentGenerator: Remediation quiz generated for user %d, domain '%s' (mastery=%.2f).",
-                    user_id, domain, mastery_score
+                    user_id,
+                    domain,
+                    mastery_score,
                 )
 
         return remediation_map

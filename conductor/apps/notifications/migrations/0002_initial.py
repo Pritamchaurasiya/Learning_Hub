@@ -10,40 +10,61 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('notifications', '0001_initial'),
+        ("notifications", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='devicetoken',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='device_tokens', to=settings.AUTH_USER_MODEL),
+            model_name="devicetoken",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="device_tokens",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to=settings.AUTH_USER_MODEL),
+            model_name="notification",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="notifications",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='smartnotification',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='smart_notifications', to=settings.AUTH_USER_MODEL),
+            model_name="smartnotification",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="smart_notifications",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='devicetoken',
-            unique_together={('user', 'token')},
+            name="devicetoken",
+            unique_together={("user", "token")},
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['user', 'is_read', '-created_at'], name='notificatio_user_id_c4e471_idx'),
+            model_name="notification",
+            index=models.Index(
+                fields=["user", "is_read", "-created_at"],
+                name="notificatio_user_id_c4e471_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='smartnotification',
-            index=models.Index(fields=['user', 'is_read', 'created_at'], name='smart_notif_user_id_f375a9_idx'),
+            model_name="smartnotification",
+            index=models.Index(
+                fields=["user", "is_read", "created_at"],
+                name="smart_notif_user_id_f375a9_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='smartnotification',
-            index=models.Index(fields=['scheduled_for', 'is_sent'], name='smart_notif_schedul_0d3395_idx'),
+            model_name="smartnotification",
+            index=models.Index(
+                fields=["scheduled_for", "is_sent"],
+                name="smart_notif_schedul_0d3395_idx",
+            ),
         ),
     ]

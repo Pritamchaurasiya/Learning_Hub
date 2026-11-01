@@ -16,7 +16,9 @@ class APIKeyService:
     SECRET_LENGTH = 32
 
     @classmethod
-    def create_api_key(cls, user: User, name: str, scopes: list = None, expires_in_days: int = None) -> dict:
+    def create_api_key(
+        cls, user: User, name: str, scopes: list = None, expires_in_days: int = None
+    ) -> dict:
         """
         Generate and store a new API Key.
         Returns the plaintext key (displayed only once) and key metadata.
@@ -25,7 +27,7 @@ class APIKeyService:
         raw_secret = secrets.token_urlsafe(cls.SECRET_LENGTH)
         full_key = f"lhub_{prefix}_{raw_secret}"
 
-        hashed_key = hashlib.sha256(full_key.encode('utf-8')).hexdigest()
+        hashed_key = hashlib.sha256(full_key.encode("utf-8")).hexdigest()
 
         expires_at = None
         if expires_in_days and expires_in_days > 0:
@@ -47,14 +49,16 @@ class APIKeyService:
             "key": full_key,  # Returned only upon creation
             "prefix": prefix,
             "scopes": api_key.scopes,
-            "expires_at": api_key.expires_at.isoformat() if api_key.expires_at else None,
+            "expires_at": (
+                api_key.expires_at.isoformat() if api_key.expires_at else None
+            ),
             "created_at": api_key.created_at.isoformat(),
         }
 
     @classmethod
     def list_api_keys(cls, user: User) -> list:
         """List active and revoked API keys (masked) for a user."""
-        keys = APIKey.objects.filter(user=user).order_by('-created_at')
+        keys = APIKey.objects.filter(user=user).order_by("-created_at")
         return [
             {
                 "id": str(k.id),
@@ -76,7 +80,7 @@ class APIKeyService:
         api_key = APIKey.objects.filter(user=user, id=key_id).first()
         if api_key:
             api_key.is_active = False
-            api_key.save(update_fields=['is_active'])
+            api_key.save(update_fields=["is_active"])
             return True
         return False
 
@@ -91,13 +95,17 @@ class APIKeyService:
             return None
 
         prefix = parts[1]
-        hashed_input = hashlib.sha256(raw_key.encode('utf-8')).hexdigest()
+        hashed_input = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
 
-        api_key = APIKey.objects.select_related('user').filter(
-            prefix=prefix,
-            hashed_key=hashed_input,
-            is_active=True,
-        ).first()
+        api_key = (
+            APIKey.objects.select_related("user")
+            .filter(
+                prefix=prefix,
+                hashed_key=hashed_input,
+                is_active=True,
+            )
+            .first()
+        )
 
         if not api_key:
             return None
@@ -110,6 +118,6 @@ class APIKeyService:
 
         # Update last used timestamp
         api_key.last_used_at = timezone.now()
-        api_key.save(update_fields=['last_used_at'])
+        api_key.save(update_fields=["last_used_at"])
 
         return api_key.user

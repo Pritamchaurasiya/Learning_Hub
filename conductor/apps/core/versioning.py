@@ -17,6 +17,7 @@ class HeaderAndPathVersioning(BaseVersioning):
     4. Query Param: '?version=v1' / '?api_version=1.0'
     5. Fallback: settings.DEFAULT_VERSION ('v1')
     """
+
     invalid_version_message = "Invalid API version."
 
     def determine_version(self, request, *args, **kwargs):

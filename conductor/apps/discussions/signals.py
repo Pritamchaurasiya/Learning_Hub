@@ -1,6 +1,7 @@
 """
 Signals for the Discussions app.
 """
+
 import logging
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -38,11 +39,15 @@ def on_comment_created(sender, instance, created, **kwargs):
         if instance.thread.author != instance.author:
             try:
                 from apps.core.event_bus import EventBus
-                EventBus.publish("discussion.commented", {
-                    "discussion_id": str(instance.thread.id),
-                    "comment_id": str(instance.id),
-                    "author_id": instance.thread.author.id,
-                    "commenter_id": instance.author.id
-                })
+
+                EventBus.publish(
+                    "discussion.commented",
+                    {
+                        "discussion_id": str(instance.thread.id),
+                        "comment_id": str(instance.id),
+                        "author_id": instance.thread.author.id,
+                        "commenter_id": instance.author.id,
+                    },
+                )
             except Exception as e:
                 logger.error("Signal on_comment_created EventBus failed: %s", e)

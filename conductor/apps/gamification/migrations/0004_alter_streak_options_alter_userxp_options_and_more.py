@@ -7,103 +7,124 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gamification', '0003_add_performance_indexes'),
+        ("gamification", "0003_add_performance_indexes"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='streak',
-            options={'verbose_name': 'User Streak', 'verbose_name_plural': 'User Streaks'},
+            name="streak",
+            options={
+                "verbose_name": "User Streak",
+                "verbose_name_plural": "User Streaks",
+            },
         ),
         migrations.AlterModelOptions(
-            name='userxp',
-            options={'verbose_name': 'User XP', 'verbose_name_plural': 'User XP'},
+            name="userxp",
+            options={"verbose_name": "User XP", "verbose_name_plural": "User XP"},
         ),
         migrations.RenameIndex(
-            model_name='userxp',
-            new_name='idx_userxp_total',
-            old_name='gamificatio_total_x_37264a_idx',
+            model_name="userxp",
+            new_name="idx_userxp_total",
+            old_name="gamificatio_total_x_37264a_idx",
         ),
         migrations.AddField(
-            model_name='streak',
-            name='streak_frozen_until',
-            field=models.DateField(blank=True, help_text='Streak freeze power-up', null=True),
+            model_name="streak",
+            name="streak_frozen_until",
+            field=models.DateField(
+                blank=True, help_text="Streak freeze power-up", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='userxp',
-            name='weekly_reset_date',
+            model_name="userxp",
+            name="weekly_reset_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='streak',
-            name='current_streak',
+            model_name="streak",
+            name="current_streak",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AlterField(
-            model_name='streak',
-            name='last_activity_date',
+            model_name="streak",
+            name="last_activity_date",
             field=models.DateField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='streak',
-            name='longest_streak',
+            model_name="streak",
+            name="longest_streak",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AlterField(
-            model_name='userxp',
-            name='last_activity_date',
+            model_name="userxp",
+            name="last_activity_date",
             field=models.DateField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='userxp',
-            name='level',
+            model_name="userxp",
+            name="level",
             field=models.PositiveIntegerField(db_index=True, default=1),
         ),
         migrations.AlterField(
-            model_name='userxp',
-            name='total_xp',
+            model_name="userxp",
+            name="total_xp",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AlterField(
-            model_name='userxp',
-            name='weekly_xp',
+            model_name="userxp",
+            name="weekly_xp",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AddIndex(
-            model_name='streak',
-            index=models.Index(fields=['user', '-current_streak'], name='idx_streak_user_current'),
+            model_name="streak",
+            index=models.Index(
+                fields=["user", "-current_streak"], name="idx_streak_user_current"
+            ),
         ),
         migrations.AddIndex(
-            model_name='userxp',
-            index=models.Index(fields=['-level', '-total_xp'], name='idx_userxp_level_total'),
+            model_name="userxp",
+            index=models.Index(
+                fields=["-level", "-total_xp"], name="idx_userxp_level_total"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='streak',
-            constraint=models.CheckConstraint(check=models.Q(('current_streak__gte', 0)), name='streak_current_non_negative'),
+            model_name="streak",
+            constraint=models.CheckConstraint(
+                check=models.Q(("current_streak__gte", 0)),
+                name="streak_current_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='streak',
-            constraint=models.CheckConstraint(check=models.Q(('longest_streak__gte', 0)), name='streak_longest_non_negative'),
+            model_name="streak",
+            constraint=models.CheckConstraint(
+                check=models.Q(("longest_streak__gte", 0)),
+                name="streak_longest_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userxp',
-            constraint=models.CheckConstraint(check=models.Q(('total_xp__gte', 0)), name='userxp_total_non_negative'),
+            model_name="userxp",
+            constraint=models.CheckConstraint(
+                check=models.Q(("total_xp__gte", 0)), name="userxp_total_non_negative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userxp',
-            constraint=models.CheckConstraint(check=models.Q(('weekly_xp__gte', 0)), name='userxp_weekly_non_negative'),
+            model_name="userxp",
+            constraint=models.CheckConstraint(
+                check=models.Q(("weekly_xp__gte", 0)), name="userxp_weekly_non_negative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userxp',
-            constraint=models.CheckConstraint(check=models.Q(('level__gte', 1)), name='userxp_level_minimum_1'),
+            model_name="userxp",
+            constraint=models.CheckConstraint(
+                check=models.Q(("level__gte", 1)), name="userxp_level_minimum_1"
+            ),
         ),
         migrations.AlterModelTable(
-            name='streak',
-            table='user_streaks',
+            name="streak",
+            table="user_streaks",
         ),
         migrations.AlterModelTable(
-            name='userxp',
-            table='user_xp',
+            name="userxp",
+            table="user_xp",
         ),
     ]

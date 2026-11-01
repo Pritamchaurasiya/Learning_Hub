@@ -7,34 +7,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gamification', '0004_alter_streak_options_alter_userxp_options_and_more'),
+        ("gamification", "0004_alter_streak_options_alter_userxp_options_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RenameIndex(
-            model_name='userbadge',
-            new_name='idx_badge_user_recent',
-            old_name='gamificatio_user_id_44649b_idx',
+            model_name="userbadge",
+            new_name="idx_badge_user_recent",
+            old_name="gamificatio_user_id_44649b_idx",
         ),
         migrations.AddIndex(
-            model_name='streak',
-            index=models.Index(fields=['-current_streak', '-longest_streak'], name='idx_streak_top_streaks'),
+            model_name="streak",
+            index=models.Index(
+                fields=["-current_streak", "-longest_streak"],
+                name="idx_streak_top_streaks",
+            ),
         ),
         migrations.AddIndex(
-            model_name='userbadge',
-            index=models.Index(fields=['badge', '-earned_at'], name='idx_badge_type_recent'),
+            model_name="userbadge",
+            index=models.Index(
+                fields=["badge", "-earned_at"], name="idx_badge_type_recent"
+            ),
         ),
         migrations.AddIndex(
-            model_name='userxp',
-            index=models.Index(fields=['level', '-total_xp', '-weekly_xp'], name='idx_xp_leaderboard_full'),
+            model_name="userxp",
+            index=models.Index(
+                fields=["level", "-total_xp", "-weekly_xp"],
+                name="idx_xp_leaderboard_full",
+            ),
         ),
         migrations.AddIndex(
-            model_name='userxp',
-            index=models.Index(fields=['-weekly_xp', 'weekly_reset_date'], name='idx_xp_weekly_leader'),
+            model_name="userxp",
+            index=models.Index(
+                fields=["-weekly_xp", "weekly_reset_date"], name="idx_xp_weekly_leader"
+            ),
         ),
         migrations.AddIndex(
-            model_name='userxp',
-            index=models.Index(fields=['last_activity_date'], name='idx_xp_last_activity'),
+            model_name="userxp",
+            index=models.Index(
+                fields=["last_activity_date"], name="idx_xp_last_activity"
+            ),
         ),
     ]

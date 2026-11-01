@@ -20,7 +20,7 @@ class CurriculumNode:
     id: str
     title: str
     prerequisites: List[str]
-    difficulty: int # 1-10
+    difficulty: int  # 1-10
     estimated_duration_mins: int
 
 
@@ -28,7 +28,7 @@ class AutonomousCurriculumEngine:
     """
     Generates and evolves curricula based on content and learner data.
     """
-    
+
     @classmethod
     def build_prerequisite_graph(cls, topics: List[Dict]) -> Dict[str, CurriculumNode]:
         """
@@ -41,13 +41,15 @@ class AutonomousCurriculumEngine:
                 title=topic.get("title", "Untitled"),
                 prerequisites=topic.get("prerequisites", []),
                 difficulty=topic.get("difficulty", 5),
-                estimated_duration_mins=topic.get("duration", 30)
+                estimated_duration_mins=topic.get("duration", 30),
             )
             graph[node.id] = node
         return graph
 
     @classmethod
-    def detect_knowledge_gaps(cls, learner_completed: Set[str], graph: Dict[str, CurriculumNode]) -> List[str]:
+    def detect_knowledge_gaps(
+        cls, learner_completed: Set[str], graph: Dict[str, CurriculumNode]
+    ) -> List[str]:
         """
         Identify topics the learner attempted but missed prerequisites for.
         """
@@ -61,24 +63,26 @@ class AutonomousCurriculumEngine:
         return list(set(gaps))
 
     @classmethod
-    def generate_learning_path(cls, target_topic: str, graph: Dict[str, CurriculumNode], completed: Set[str]) -> List[str]:
+    def generate_learning_path(
+        cls, target_topic: str, graph: Dict[str, CurriculumNode], completed: Set[str]
+    ) -> List[str]:
         """
         Generate ordered path to reach target_topic.
         """
         path = []
         visited = set()
-        
+
         def dfs(topic_id: str):
             if topic_id in visited or topic_id in completed:
                 return
             visited.add(topic_id)
-            
+
             node = graph.get(topic_id)
             if node:
                 for prereq in node.prerequisites:
                     dfs(prereq)
                 path.append(topic_id)
-                
+
         dfs(target_topic)
         return path
 
@@ -90,7 +94,11 @@ class AutonomousCurriculumEngine:
         return {
             "topic_id": topic.id,
             "title": f"Assessment: {topic.title}",
-            "question_types": ["mcq", "short_answer", "coding"] if topic.difficulty > 5 else ["mcq", "short_answer"],
+            "question_types": (
+                ["mcq", "short_answer", "coding"]
+                if topic.difficulty > 5
+                else ["mcq", "short_answer"]
+            ),
             "suggested_questions": max(3, topic.difficulty),
-            "time_limit_mins": topic.estimated_duration_mins // 2
+            "time_limit_mins": topic.estimated_duration_mins // 2,
         }

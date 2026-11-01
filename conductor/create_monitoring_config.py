@@ -13,19 +13,21 @@ print("=" * 80)
 print("MONITORING & ALERTING CONFIGURATION")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # 1. Prometheus Configuration
 # ============================================================================
 log("Creating Prometheus configuration...")
 
-prometheus_config = '''global:
+prometheus_config = """global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
@@ -64,11 +66,11 @@ scrape_configs:
   - job_name: 'nginx-exporter'
     static_configs:
       - targets: ['nginx-exporter:9113']
-'''
+"""
 
-prometheus_path = BASE_DIR / 'monitoring' / 'prometheus.yml'
+prometheus_path = BASE_DIR / "monitoring" / "prometheus.yml"
 prometheus_path.parent.mkdir(parents=True, exist_ok=True)
-with open(prometheus_path, 'w') as f:
+with open(prometheus_path, "w") as f:
     f.write(prometheus_config)
 
 log(f"  [OK] Created: {prometheus_path}")
@@ -78,7 +80,7 @@ log(f"  [OK] Created: {prometheus_path}")
 # ============================================================================
 log("Creating Prometheus alert rules...")
 
-alert_rules = '''groups:
+alert_rules = """groups:
   - name: django_alerts
     rules:
       - alert: HighErrorRate
@@ -143,10 +145,10 @@ alert_rules = '''groups:
         annotations:
           summary: "Celery worker is down"
           description: "Celery worker has been down for more than 2 minutes"
-'''
+"""
 
-alert_rules_path = BASE_DIR / 'monitoring' / 'alert_rules.yml'
-with open(alert_rules_path, 'w') as f:
+alert_rules_path = BASE_DIR / "monitoring" / "alert_rules.yml"
+with open(alert_rules_path, "w") as f:
     f.write(alert_rules)
 
 log(f"  [OK] Created: {alert_rules_path}")
@@ -156,7 +158,7 @@ log(f"  [OK] Created: {alert_rules_path}")
 # ============================================================================
 log("Creating Grafana dashboard configuration...")
 
-grafana_dashboard = '''{
+grafana_dashboard = """{
   "dashboard": {
     "id": null,
     "title": "Learning Hub Platform Monitoring",
@@ -262,10 +264,10 @@ grafana_dashboard = '''{
     ]
   }
 }
-'''
+"""
 
-grafana_path = BASE_DIR / 'monitoring' / 'grafana-dashboard.json'
-with open(grafana_path, 'w') as f:
+grafana_path = BASE_DIR / "monitoring" / "grafana-dashboard.json"
+with open(grafana_path, "w") as f:
     f.write(grafana_dashboard)
 
 log(f"  [OK] Created: {grafana_path}")
@@ -275,7 +277,7 @@ log(f"  [OK] Created: {grafana_path}")
 # ============================================================================
 log("Creating Docker Compose for monitoring stack...")
 
-monitoring_compose = '''version: '3.8'
+monitoring_compose = """version: '3.8'
 
 services:
   prometheus:
@@ -346,10 +348,10 @@ volumes:
   prometheus_data:
   grafana_data:
   alertmanager_data:
-'''
+"""
 
-monitoring_compose_path = BASE_DIR / 'monitoring' / 'docker-compose.monitoring.yml'
-with open(monitoring_compose_path, 'w') as f:
+monitoring_compose_path = BASE_DIR / "monitoring" / "docker-compose.monitoring.yml"
+with open(monitoring_compose_path, "w") as f:
     f.write(monitoring_compose)
 
 log(f"  [OK] Created: {monitoring_compose_path}")
@@ -359,7 +361,7 @@ log(f"  [OK] Created: {monitoring_compose_path}")
 # ============================================================================
 log("Creating Alertmanager configuration...")
 
-alertmanager_config = '''global:
+alertmanager_config = """global:
   smtp_smarthost: 'localhost:587'
   smtp_from: 'alerts@learninghub.com'
   smtp_auth_username: 'alerts@learninghub.com'
@@ -397,10 +399,10 @@ inhibit_rules:
     target_match:
       severity: 'warning'
     equal: ['alertname', 'dev', 'instance']
-'''
+"""
 
-alertmanager_path = BASE_DIR / 'monitoring' / 'alertmanager.yml'
-with open(alertmanager_path, 'w') as f:
+alertmanager_path = BASE_DIR / "monitoring" / "alertmanager.yml"
+with open(alertmanager_path, "w") as f:
     f.write(alertmanager_config)
 
 log(f"  [OK] Created: {alertmanager_path}")
@@ -501,8 +503,8 @@ def record_request(method, handler, status, duration):
     ).observe(duration)
 '''
 
-django_metrics_path = BASE_DIR / 'monitoring' / 'django_metrics.py'
-with open(django_metrics_path, 'w') as f:
+django_metrics_path = BASE_DIR / "monitoring" / "django_metrics.py"
+with open(django_metrics_path, "w") as f:
     f.write(django_metrics)
 
 log(f"  [OK] Created: {django_metrics_path}")

@@ -5,23 +5,27 @@ from google import genai  # type: ignore[attr-defined]
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 
+
 class Complexity(BaseModel):
     time: str = Field(description="Time complexity, e.g., O(N)")
     space: str = Field(description="Space complexity, e.g., O(1)")
+
 
 class CodeReviewOutput(BaseModel):
     complexity: Complexity
     feedback: str = Field(description="Concise feedback on correctness and style.")
     suggestions: list[str] = Field(description="List of suggestions for improvement")
 
+
 logger = logging.getLogger(__name__)
+
 
 class AIClient:
     """
     Client for interacting with Google Generative AI (Gemini).
     Uses the new google-genai SDK.
     """
-    
+
     # Model constants to avoid duplication
     MODEL_FLASH = "gemini-2.0-flash"
     MODEL_FLASH_LEGACY = "gemini-1.5-flash"
@@ -48,6 +52,7 @@ class AIClient:
     # Prometheus Metrics
     try:
         from prometheus_client import Counter, Histogram
+
         ai_tokens_total = Counter(
             "ai_tokens_total", "Total AI tokens consumed", ["model", "operation"]
         )
@@ -62,14 +67,19 @@ class AIClient:
         class MockMetric:
             def labels(self, *args, **kwargs):
                 return self
+
             def inc(self, *args):
                 pass
+
             def observe(self, *args):
                 pass
+
             def time(self):
                 return self
+
             def __enter__(self):
                 pass
+
             def __exit__(self, *args):
                 pass
 
@@ -86,22 +96,23 @@ class AIClient:
         Phase 52: Obeys Autonomous SOAR fallback routing.
         """
         from django.core.cache import cache
-        
-        # If SOAR Engine has placed us into a degraded fallback state, the circuit is mathematically "closed" 
+
+        # If SOAR Engine has placed us into a degraded fallback state, the circuit is mathematically "closed"
         # (allowing traffic) but using the fallback model instead.
         if cache.get("soar:fallback_model_routing"):
-            return False 
-            
+            return False
+
         return cache.get(cls.circuit_breaker_key) == "open"
 
     @classmethod
     def _record_success(cls):
         """Closes the circuit and resets failure counters dynamically."""
         from django.core.cache import cache
+
         if cache.get(cls.failure_count_key):
             cache.delete(cls.failure_count_key)
         if cache.get(cls.circuit_breaker_key):
-            cache.delete(cls.circuit_breaker_key) # Close the circuit on success
+            cache.delete(cls.circuit_breaker_key)  # Close the circuit on success
 
     @classmethod
     def _record_failure(cls):
@@ -110,18 +121,22 @@ class AIClient:
         Phase 52: Signals the SOAR Engine to initiate graceful degradation fallback.
         """
         from django.core.cache import cache
+
         failures = (cache.get(cls.failure_count_key) or 0) + 1
         cache.set(cls.failure_count_key, failures, timeout=300)
         if failures >= cls.failure_threshold:
             logger.critical("AIClient Circuit Breaker Tripped! Suspended for 60s.")
             cache.set(cls.circuit_breaker_key, "open", timeout=60)
-            
+
             # Phase 52: Trigger SOAR Engine Remediation Protocol
             try:
                 from apps.ai_engine.soar_engine import AutonomousSOAREngine
+
                 AutonomousSOAREngine.handle_circuit_breaker()
             except Exception as e:
-                logger.error(f"Failed to trigger SOAR Engine Circuit Breaker Runbook: {e}")
+                logger.error(
+                    f"Failed to trigger SOAR Engine Circuit Breaker Runbook: {e}"
+                )
 
     @classmethod
     def generate_text(cls, prompt: str, model: str = None) -> str:
@@ -131,7 +146,7 @@ class AIClient:
         client = cls.get_client()
         if not client:
             return "AI Service Unavailable."
-        
+
         if cls._check_circuit():
             return "AI Circuit Open: Service temporarily suspended."
 
@@ -139,8 +154,7 @@ class AIClient:
         try:
             # Add simple retry logic or latency tracking if needed
             response = client.models.generate_content(
-                model=target_model,
-                contents=prompt
+                model=target_model, contents=prompt
             )
             cls._record_success()
             return response.text if response.text else ""
@@ -150,7 +164,9 @@ class AIClient:
             return "Error processing request."
 
     @classmethod
-    def generate_code_review(cls, problem_title: str, problem_description: str, code: str) -> Optional[Dict[str, Any]]:
+    def generate_code_review(
+        cls, problem_title: str, problem_description: str, code: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Calls Gemini to review a DSA submission with strict structured JSON output.
         """
@@ -165,20 +181,25 @@ class AIClient:
         if cls._check_circuit():
             return None
 
-
-
         retries = 3
         delay = 1
 
         # Cache Key
         import hashlib
         from django.core.cache import cache
-        
+
         code_hash = hashlib.md5(code.encode()).hexdigest()
         import re
-        safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', (problem_title or "code").strip())[:40].strip('_')
+
+        safe_title = re.sub(r"[^a-zA-Z0-9_-]", "_", (problem_title or "code").strip())[
+            :40
+        ].strip("_")
         title_hash = hashlib.md5(problem_title.encode()).hexdigest()[:8]
-        cache_key = f"ai_review_v2:{safe_title}_{title_hash}:{code_hash}" if safe_title else f"ai_review_v2:{title_hash}:{code_hash}"
+        cache_key = (
+            f"ai_review_v2:{safe_title}_{title_hash}:{code_hash}"
+            if safe_title
+            else f"ai_review_v2:{title_hash}:{code_hash}"
+        )
         try:
             cached = cache.get(cache_key)
             if cached:
@@ -190,28 +211,30 @@ class AIClient:
             try:
                 # Phase 51: Multi-Agent Expert Chain execution
                 from apps.ai_engine.multi_agent import CodeReviewExpertChain
-                
+
                 result = CodeReviewExpertChain.execute(
-                    problem_title=problem_title, 
-                    problem_description=problem_description, 
-                    code=code
+                    problem_title=problem_title,
+                    problem_description=problem_description,
+                    code=code,
                 )
-                
+
                 if not result:
                     raise Exception("Expert Chain returned None.")
 
                 cls._record_success()
-                
+
                 # Cache success
                 try:
-                    cache.set(cache_key, result, timeout=3600*24)
+                    cache.set(cache_key, result, timeout=3600 * 24)
                 except Exception as e:
                     logger.debug("Cache write failed for code review: %s", e)
                 return result
 
             except Exception as e:
                 cls._record_failure()
-                logger.error(f"Error calling Expert Chain (Attempt {attempt+1}/{retries}): {str(e)}")
+                logger.error(
+                    f"Error calling Expert Chain (Attempt {attempt+1}/{retries}): {str(e)}"
+                )
                 if attempt < retries - 1:
                     time.sleep(delay)
                     delay *= 2  # Exponential backoff
@@ -230,11 +253,14 @@ class AIClient:
             return "AI Service Unavailable (Missing API Key)."
 
         if cls._check_circuit():
-            return "The AI systems are currently cooling down for 60 seconds. Please wait."
+            return (
+                "The AI systems are currently cooling down for 60 seconds. Please wait."
+            )
 
         try:
             # RAG: Retrieve context
             from apps.ai_engine.services import RAGService
+
             context_text = RAGService.get_context_for_query(user_question)
 
             system_persona = """
@@ -250,16 +276,21 @@ class AIClient:
 
             full_prompt = f"{system_persona}\n\nContext:\n{context_text}\n\nStudent Question: {user_question}\n(Respond in the detected language of the question)"
 
-            with cls.ai_request_latency.labels(model='gemini-1.5-flash', operation='dsa_chat').time():
+            with cls.ai_request_latency.labels(
+                model="gemini-1.5-flash", operation="dsa_chat"
+            ).time():
                 response = client.models.generate_content(
-                    model='gemini-1.5-flash',
-                    contents=full_prompt
+                    model="gemini-1.5-flash", contents=full_prompt
                 )
 
             # Metrics
             if response.usage_metadata:
-                 cls.ai_tokens_total.labels(model='gemini-1.5-flash', operation='dsa_chat_input').inc(response.usage_metadata.prompt_token_count)
-                 cls.ai_tokens_total.labels(model='gemini-1.5-flash', operation='dsa_chat_output').inc(response.usage_metadata.candidates_token_count)
+                cls.ai_tokens_total.labels(
+                    model="gemini-1.5-flash", operation="dsa_chat_input"
+                ).inc(response.usage_metadata.prompt_token_count)
+                cls.ai_tokens_total.labels(
+                    model="gemini-1.5-flash", operation="dsa_chat_output"
+                ).inc(response.usage_metadata.candidates_token_count)
 
             if response.text:
                 cls._record_success()
@@ -269,7 +300,6 @@ class AIClient:
             cls._record_failure()
             logger.error(f"Error calling Gemini for Chat: {str(e)}")
             return "Sorry, I encountered an error while processing your request."
-
 
     @classmethod
     def stream_dsa_chat_response(cls, context_prompt: str, user_question: str):
@@ -284,6 +314,7 @@ class AIClient:
         try:
             # RAG: Retrieve context (Even for streaming, we fetch context first)
             from apps.ai_engine.services import RAGService
+
             context_text = RAGService.get_context_for_query(user_question)
 
             system_persona = """
@@ -298,29 +329,30 @@ class AIClient:
             """
 
             full_prompt = f"{system_persona}\n\nContext:\n{context_text}\n\nStudent Question: {user_question}\n(Respond in the detected language of the question)"
-            
+
             # Use generate_content_stream for streaming
             response = client.models.generate_content_stream(
-                model='gemini-1.5-flash',
-                contents=full_prompt
+                model="gemini-1.5-flash", contents=full_prompt
             )
-            
+
             for chunk in response:
                 if chunk.text:
                     yield chunk.text
-                    
+
         except Exception as e:
             logger.error(f"Error calling Gemini for Chat Stream: {str(e)}")
             yield "Sorry, I encountered an error while processing your request."
 
     @classmethod
-    def generate_problem_hint(cls, problem_title: str, problem_description: str, user_level: int = 1) -> str:
+    def generate_problem_hint(
+        cls, problem_title: str, problem_description: str, user_level: int = 1
+    ) -> str:
         """
         Generates a Socratic hint for a DSA problem, adapted to user level.
         """
         client = cls.get_client()
         if not client:
-             # Fallback for when API key is missing
+            # Fallback for when API key is missing
             return "Hint: Break the problem down into smaller parts. (AI Offline)"
 
         try:
@@ -346,8 +378,7 @@ class AIClient:
             """
 
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
-                contents=prompt
+                model="gemini-1.5-flash", contents=prompt
             )
 
             if response.text:
@@ -358,7 +389,9 @@ class AIClient:
             return "Hint: Focus on the constraints and edge cases."
 
     @classmethod
-    def generate_discussion_summary(cls, thread_title: str, replies: list[str]) -> Optional[Dict[str, Any]]:
+    def generate_discussion_summary(
+        cls, thread_title: str, replies: list[str]
+    ) -> Optional[Dict[str, Any]]:
         """
         Summarizes a discussion thread and extracts key takeaways using strict structured outputs.
         """
@@ -367,25 +400,38 @@ class AIClient:
         import json
 
         class DiscussionSummaryOutput(BaseModel):
-            summary: str = Field(description="A concise 2-sentence summary of the main conclusion.")
-            key_takeaways: list[str] = Field(description="List of key takeaways from the discussion")
-            related_question: str = Field(description="A follow-up question the student might ask (e.g. 'What is X?')")
+            summary: str = Field(
+                description="A concise 2-sentence summary of the main conclusion."
+            )
+            key_takeaways: list[str] = Field(
+                description="List of key takeaways from the discussion"
+            )
+            related_question: str = Field(
+                description="A follow-up question the student might ask (e.g. 'What is X?')"
+            )
 
         client = cls.get_client()
         if not client:
             return None
 
         replies_text = "\n".join([f"- {r}" for r in replies])
-        
+
         # Cache Key
         import hashlib
         from django.core.cache import cache
 
         content_hash = hashlib.md5(replies_text.encode()).hexdigest()
         import re
-        safe_thread = re.sub(r'[^a-zA-Z0-9_-]', '_', (thread_title or "thread").strip())[:40].strip('_')
+
+        safe_thread = re.sub(
+            r"[^a-zA-Z0-9_-]", "_", (thread_title or "thread").strip()
+        )[:40].strip("_")
         thread_hash = hashlib.md5(thread_title.encode()).hexdigest()[:8]
-        cache_key = f"ai_summary_v2:{safe_thread}_{thread_hash}:{content_hash}" if safe_thread else f"ai_summary_v2:{thread_hash}:{content_hash}"
+        cache_key = (
+            f"ai_summary_v2:{safe_thread}_{thread_hash}:{content_hash}"
+            if safe_thread
+            else f"ai_summary_v2:{thread_hash}:{content_hash}"
+        )
         try:
             cached = cache.get(cache_key)
             if cached:
@@ -404,31 +450,29 @@ class AIClient:
             """
 
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model="gemini-2.0-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=DiscussionSummaryOutput,
                     temperature=0.3,
-                )
+                ),
             )
 
             if not response.text:
                 return None
 
             result = json.loads(response.text)
-            
+
             # Cache success
             try:
-                cache.set(cache_key, result, timeout=3600*24)
+                cache.set(cache_key, result, timeout=3600 * 24)
             except Exception as e:
                 logger.debug("Cache write failed for discussion summary: %s", e)
             return result
         except Exception as e:
             logger.error(f"Error generating summary: {str(e)}")
             return None
-
-
 
     @classmethod
     def generate_embedding(cls, text: str) -> Optional[list[float]]:
@@ -439,41 +483,43 @@ class AIClient:
         try:
             # Import here to avoid loading at startup if not used
             from sentence_transformers import SentenceTransformer
-            
+
             # Use class-level caching pattern via singleton property if preferred,
             # but simplified here for reliability. Ideally, load once in AppConfig.
-            if not hasattr(cls, '_embedder'):
+            if not hasattr(cls, "_embedder"):
                 logger.info("Loading Encoding Model (all-MiniLM-L6-v2)...")
-                cls._embedder = SentenceTransformer('all-MiniLM-L6-v2')
-            
+                cls._embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
             # Encode
             embeddings = cls._embedder.encode(text)
             return embeddings.tolist()
-            
+
         except Exception as e:
             logger.error(f"Error generating embedding: {str(e)}")
             return None
 
     @classmethod
-    def transcribe_audio(cls, audio_bytes: bytes, mime_type: str = "audio/mp3") -> Optional[str]:
+    def transcribe_audio(
+        cls, audio_bytes: bytes, mime_type: str = "audio/mp3"
+    ) -> Optional[str]:
         """
         Transcribes audio using Gemini 1.5 Flash (Multimodal).
         """
         client = cls.get_client()
         if not client:
             return None
-        
+
         try:
             prompt = "Transcribe this audio file accurately."
-            
+
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model="gemini-1.5-flash",
                 contents=[
                     prompt,
-                    genai.types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
-                ]
+                    genai.types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
+                ],
             )
-            
+
             if response.text:
                 return response.text.strip()
             return None
@@ -492,9 +538,13 @@ class AIClient:
         import json
 
         class ModerationOutput(BaseModel):
-            is_safe: bool = Field(description="True if safe, false if any safety violations found")
+            is_safe: bool = Field(
+                description="True if safe, false if any safety violations found"
+            )
             reason: str = Field(description="Brief explanation if unsafe, else 'Safe'")
-            flags: list[str] = Field(description="List of violations, e.g., 'Toxicity', 'Hate Speech'")
+            flags: list[str] = Field(
+                description="List of violations, e.g., 'Toxicity', 'Hate Speech'"
+            )
 
         client = cls.get_client()
         if not client:
@@ -511,15 +561,15 @@ class AIClient:
 
             Text: "{text}"
             """
-            
+
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model="gemini-2.0-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=ModerationOutput,
                     temperature=0.1,
-                )
+                ),
             )
 
             if not response.text:
@@ -533,7 +583,9 @@ class AIClient:
             return {"is_safe": True, "reason": "Moderation Error", "flags": []}
 
     @classmethod
-    def generate_course_outline(cls, topic: str, level: str = "Beginner") -> Optional[Dict[str, Any]]:
+    def generate_course_outline(
+        cls, topic: str, level: str = "Beginner"
+    ) -> Optional[Dict[str, Any]]:
         """
         Generates a full course outline (JSON) for a given topic via strictly structured outputs.
         """
@@ -545,7 +597,9 @@ class AIClient:
             title: str
             description: str
             content_type: str = Field(description="'text' or 'quiz'")
-            text_content: str = Field(description="Detailed educational content for this lesson (markdown format). At least 3 paragraphs.")
+            text_content: str = Field(
+                description="Detailed educational content for this lesson (markdown format). At least 3 paragraphs."
+            )
 
         class Module(BaseModel):
             title: str
@@ -554,42 +608,54 @@ class AIClient:
 
         class CourseOutline(BaseModel):
             title: str = Field(description="Engaging Course Title")
-            description: str = Field(description="Compelling course description (2-3 sentences).")
-            learning_objectives: list[str] = Field(description="List of learning objectives")
+            description: str = Field(
+                description="Compelling course description (2-3 sentences)."
+            )
+            learning_objectives: list[str] = Field(
+                description="List of learning objectives"
+            )
             modules: list[Module]
 
         client = cls.get_client()
         if not client:
             return None
-        
+
         try:
             prompt = f"""
             You are an Expert Curriculum Designer. Create a comprehensive course outline for: "{topic}" ({level} Level).
             Generate at least 3 Modules and 3 Lessons per module.
             """
-            
-            with cls.ai_request_latency.labels(model='gemini-2.0-pro-exp-02-05', operation='generate_course_outline').time():
+
+            with cls.ai_request_latency.labels(
+                model="gemini-2.0-pro-exp-02-05", operation="generate_course_outline"
+            ).time():
                 response = client.models.generate_content(
-                    model='gemini-2.0-pro-exp-02-05', # Using powerful model for large context
+                    model="gemini-2.0-pro-exp-02-05",  # Using powerful model for large context
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=CourseOutline,
                         temperature=0.4,
-                    )
+                    ),
                 )
 
             # Metrics
             if response.usage_metadata:
                 try:
-                    cls.ai_tokens_total.labels(model='gemini-2.0-pro-exp-02-05', operation='generate_course_outline_input').inc(response.usage_metadata.prompt_token_count)
-                    cls.ai_tokens_total.labels(model='gemini-2.0-pro-exp-02-05', operation='generate_course_outline_output').inc(response.usage_metadata.candidates_token_count)
+                    cls.ai_tokens_total.labels(
+                        model="gemini-2.0-pro-exp-02-05",
+                        operation="generate_course_outline_input",
+                    ).inc(response.usage_metadata.prompt_token_count)
+                    cls.ai_tokens_total.labels(
+                        model="gemini-2.0-pro-exp-02-05",
+                        operation="generate_course_outline_output",
+                    ).inc(response.usage_metadata.candidates_token_count)
                 except Exception as metric_err:
                     logger.debug("Failed to record telemetry: %s", metric_err)
-            
+
             if not response.text:
                 return None
-                
+
             return json.loads(response.text)
         except Exception as e:
             logger.error(f"Error generating course outline: {str(e)}")
@@ -597,10 +663,7 @@ class AIClient:
 
     @classmethod
     def generate_remedial_plan(
-        cls, 
-        topic: str, 
-        weak_concepts: list[str], 
-        student_level: str = "Beginner"
+        cls, topic: str, weak_concepts: list[str], student_level: str = "Beginner"
     ) -> Dict[str, Any]:
         """
         Generates a personalized remedial study plan based on weak concepts, using strict JSON templates.
@@ -614,16 +677,25 @@ class AIClient:
             description: str = Field(description="Detailed step description")
 
         class RemedialPlanOutput(BaseModel):
-            root_cause: str = Field(description="Analyze why they might be struggling with these specific concepts.")
-            action_items: list[ActionItem] = Field(description="List of 3-5 specific, actionable steps")
+            root_cause: str = Field(
+                description="Analyze why they might be struggling with these specific concepts."
+            )
+            action_items: list[ActionItem] = Field(
+                description="List of 3-5 specific, actionable steps"
+            )
             resources: list[str] = Field(description="List of suggested resource types")
 
         client = cls.get_client()
         if not client:
-             return {
+            return {
                 "root_cause": "AI Service Unavailable",
-                "action_items": [{"title": "Review Material", "description": "Please review the course content."}],
-                "resources": []
+                "action_items": [
+                    {
+                        "title": "Review Material",
+                        "description": "Please review the course content.",
+                    }
+                ],
+                "resources": [],
             }
 
         prompt = f"""
@@ -632,9 +704,11 @@ class AIClient:
         Student Level: {student_level}
         Identified Weak Concepts: {', '.join(weak_concepts)}
         """
-        
+
         try:
-            with cls.ai_request_latency.labels(model='gemini-2.0-flash', operation='generate_remedial_plan').time():
+            with cls.ai_request_latency.labels(
+                model="gemini-2.0-flash", operation="generate_remedial_plan"
+            ).time():
                 response = client.models.generate_content(
                     model="gemini-2.0-flash",
                     contents=prompt,
@@ -644,26 +718,32 @@ class AIClient:
                         temperature=0.7,
                     ),
                 )
-            
+
             # Metrics
             if response.usage_metadata:
                 try:
-                    cls.ai_tokens_total.labels(model='gemini-2.0-flash', operation='generate_remedial_plan_input').inc(response.usage_metadata.prompt_token_count)
-                    cls.ai_tokens_total.labels(model='gemini-2.0-flash', operation='generate_remedial_plan_output').inc(response.usage_metadata.candidates_token_count)
+                    cls.ai_tokens_total.labels(
+                        model="gemini-2.0-flash",
+                        operation="generate_remedial_plan_input",
+                    ).inc(response.usage_metadata.prompt_token_count)
+                    cls.ai_tokens_total.labels(
+                        model="gemini-2.0-flash",
+                        operation="generate_remedial_plan_output",
+                    ).inc(response.usage_metadata.candidates_token_count)
                 except Exception as metric_err:
                     logger.debug("Failed to record telemetry: %s", metric_err)
-            
+
             if response.text:
                 return json.loads(response.text)
             return {}
-            
+
         except Exception as e:
             logger.error(f"Error generating remedial plan: {e}")
             # Fallback
             return {
                 "root_cause": "Error generating analysis.",
                 "action_items": [],
-                "resources": []
+                "resources": [],
             }
 
     @classmethod
@@ -674,35 +754,37 @@ class AIClient:
         from gtts import gTTS
         import uuid
         from django.conf import settings
-        
+
         try:
             # 1. Ensure directory exists
             output_dir = settings.MEDIA_ROOT / "audio" / "tts"
             output_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # 2. Generate unique filename
             filename = f"{uuid.uuid4()}.mp3"
             file_path = output_dir / filename
-            
+
             # 3. Generate Audio
-            tts = gTTS(text=text, lang='en', slow=False)
+            tts = gTTS(text=text, lang="en", slow=False)
             tts.save(str(file_path))
-            
+
             # 4. Return URL
             return f"{settings.MEDIA_URL}audio/tts/{filename}"
-            
+
         except Exception as e:
             logger.error(f"Error generating speech: {str(e)}")
             return None
 
     @classmethod
-    def analyze_proctor_frame(cls, image_bytes: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
+    def analyze_proctor_frame(
+        cls, image_bytes: bytes, mime_type: str = "image/jpeg"
+    ) -> Dict[str, Any]:
         """
         Analyzes a webcam frame for exam proctoring flags.
         """
         client = cls.get_client()
         if not client:
-             return {"flagged": False, "reason": "AI Unavailable"}
+            return {"flagged": False, "reason": "AI Unavailable"}
 
         try:
             prompt = """
@@ -721,26 +803,28 @@ class AIClient:
             }
             If safe/clear, flagged should be false.
             """
-            
+
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model="gemini-1.5-flash",
                 contents=[
                     prompt,
-                    genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+                    genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                 ],
-                config={'response_mime_type': 'application/json'}
+                config={"response_mime_type": "application/json"},
             )
-            
+
             if response.text:
                 return json.loads(response.text)
             return {"flagged": False, "reason": "No Response"}
-            
+
         except Exception as e:
             logger.error(f"Error in proctoring: {str(e)}")
             return {"flagged": False, "reason": "Error"}
-            
+
     @classmethod
-    def evaluate_multimodal_assessment(cls, image_bytes: bytes, context_text: str = "", mime_type: str = "image/jpeg") -> Dict[str, Any]:
+    def evaluate_multimodal_assessment(
+        cls, image_bytes: bytes, context_text: str = "", mime_type: str = "image/jpeg"
+    ) -> Dict[str, Any]:
         """
         Phase 141: Multimodal Assessment Evaluation.
         Analyzes an image of student work (handwritten or digital) and provides grading/feedback.
@@ -753,8 +837,12 @@ class AIClient:
             score: int = Field(description="Score from 0-100")
             justification: str = Field(description="Detailed explanation of the grade")
             strengths: list[str] = Field(description="List of things done well")
-            improvements: list[str] = Field(description="List of specific areas for improvement")
-            step_by_step_correction: str = Field(description="Detailed breakdown of how to solve it correctly")
+            improvements: list[str] = Field(
+                description="List of specific areas for improvement"
+            )
+            step_by_step_correction: str = Field(
+                description="Detailed breakdown of how to solve it correctly"
+            )
 
         client = cls.get_client()
         if not client:
@@ -773,36 +861,38 @@ class AIClient:
             4. Offer strengths and constructive improvements.
             5. Provide a step-by-step correct solution if errors are found.
             """
-            
+
             response = client.models.generate_content(
                 model=cls.MODEL_FLASH,
                 contents=[
                     prompt,
-                    genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+                    genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                 ],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=AssessmentOutput,
                     temperature=0.2,
-                )
+                ),
             )
-            
+
             if response.text:
                 return json.loads(response.text)
             return {"error": "Empty response from AI"}
-            
+
         except Exception as e:
             logger.error(f"Error in multimodal assessment: {str(e)}")
             return {"error": str(e)}
 
     @classmethod
-    def generate_learning_insight_narrative(cls, user_name: str, metrics: Dict[str, Any]) -> str:
+    def generate_learning_insight_narrative(
+        cls, user_name: str, metrics: Dict[str, Any]
+    ) -> str:
         """
         Generates a personalized narrative based on learning metrics.
         """
         client = cls.get_client()
         if not client:
-             return "Keep up the good work! (AI Stats Unavailable)"
+            return "Keep up the good work! (AI Stats Unavailable)"
 
         prompt = f"""
         Act as a Learning Coach. Write a short, encouraging, and specific paragraph for {user_name}.
@@ -816,13 +906,17 @@ class AIClient:
         
         Keep it under 3 sentences. Focus on growth mindset.
         """
-        
+
         try:
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
             )
-            return response.text.strip() if response.text else "You are making steady progress."
+            return (
+                response.text.strip()
+                if response.text
+                else "You are making steady progress."
+            )
         except Exception as e:
             logger.error(f"Error generating narrative: {e}")
             return "You are doing great! Keep learning."

@@ -8,66 +8,109 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='DiscussionReply',
+            name="DiscussionReply",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('content', models.TextField()),
-                ('is_accepted_answer', models.BooleanField(default=False)),
-                ('like_count', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("content", models.TextField()),
+                ("is_accepted_answer", models.BooleanField(default=False)),
+                ("like_count", models.PositiveIntegerField(default=0)),
             ],
             options={
-                'ordering': ['-is_accepted_answer', 'created_at'],
+                "ordering": ["-is_accepted_answer", "created_at"],
             },
         ),
         migrations.CreateModel(
-            name='DiscussionThread',
+            name="DiscussionThread",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('title', models.CharField(max_length=255)),
-                ('content', models.TextField()),
-                ('is_pinned', models.BooleanField(default=False)),
-                ('is_resolved', models.BooleanField(default=False)),
-                ('views', models.PositiveIntegerField(default=0)),
-                ('like_count', models.PositiveIntegerField(default=0)),
-                ('ai_summary', models.TextField(blank=True, help_text='AI-generated summary of the discussion')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("title", models.CharField(max_length=255)),
+                ("content", models.TextField()),
+                ("is_pinned", models.BooleanField(default=False)),
+                ("is_resolved", models.BooleanField(default=False)),
+                ("views", models.PositiveIntegerField(default=0)),
+                ("like_count", models.PositiveIntegerField(default=0)),
+                (
+                    "ai_summary",
+                    models.TextField(
+                        blank=True, help_text="AI-generated summary of the discussion"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-is_pinned', '-created_at'],
+                "ordering": ["-is_pinned", "-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='DiscussionVote',
+            name="DiscussionVote",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('object_id', models.CharField(max_length=36)),
-                ('value', models.SmallIntegerField(choices=[(1, 'Upvote'), (-1, 'Downvote')])),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("object_id", models.CharField(max_length=36)),
+                (
+                    "value",
+                    models.SmallIntegerField(choices=[(1, "Upvote"), (-1, "Downvote")]),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ThreadTag',
+            name="ThreadTag",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=50, unique=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=50, unique=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

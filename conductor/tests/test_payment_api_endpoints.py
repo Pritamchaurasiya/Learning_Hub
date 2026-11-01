@@ -50,7 +50,7 @@ def test_create_order_razorpay_success(authenticated_client, test_course):
         "gateway": "razorpay",
     }
     response = authenticated_client.post(url, payload, format="json")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
@@ -67,7 +67,9 @@ def test_create_order_razorpay_success(authenticated_client, test_course):
 
 
 @pytest.mark.django_db
-def test_create_order_razorpay_with_coupon(authenticated_client, test_course, valid_coupon):
+def test_create_order_razorpay_with_coupon(
+    authenticated_client, test_course, valid_coupon
+):
     """Test creating an order with valid discount coupon."""
     url = "/api/v1/payments/create-order/"
     payload = {
@@ -76,7 +78,7 @@ def test_create_order_razorpay_with_coupon(authenticated_client, test_course, va
         "coupon_code": valid_coupon.code,
     }
     response = authenticated_client.post(url, payload, format="json")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
@@ -94,7 +96,7 @@ def test_create_order_stripe_no_duplicate_records(authenticated_client, test_cou
         "gateway": "stripe",
     }
     response = authenticated_client.post(url, payload, format="json")
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
@@ -113,6 +115,7 @@ def test_create_order_stripe_no_duplicate_records(authenticated_client, test_cou
 def test_create_order_course_not_found(authenticated_client):
     """Test error response when course does not exist."""
     import uuid
+
     url = "/api/v1/payments/create-order/"
     payload = {
         "course_id": str(uuid.uuid4()),

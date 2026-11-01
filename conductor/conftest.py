@@ -11,6 +11,7 @@ if "django.utils.itercompat" not in sys.modules:
         sys.modules["django.utils.itercompat"] = itercompat
         try:
             import django.utils
+
             django.utils.itercompat = itercompat
         except Exception:
             pass
@@ -18,13 +19,15 @@ if "django.utils.itercompat" not in sys.modules:
 import pytest
 import django.template.context
 
+
 # Python 3.14 compatibility patch for Django Context/BaseContext.__copy__
 def _patched_context_copy(self):
     duplicate = object.__new__(self.__class__)
     duplicate.__dict__.update(self.__dict__)
-    if hasattr(self, 'dicts'):
+    if hasattr(self, "dicts"):
         duplicate.dicts = self.dicts[:]
     return duplicate
+
 
 try:
     django.template.context.BaseContext.__copy__ = _patched_context_copy
@@ -33,15 +36,15 @@ except Exception:
     pass
 
 
-
-
 @pytest.fixture(autouse=True)
 def clean_test_environment():
     """Ensure cache and global singletons are pristine for each test."""
     from django.core.cache import cache
+
     cache.clear()
     try:
         from apps.ai_engine.ai_client import AIClient
+
         AIClient._client = None
         AIClient._api_key = None
     except Exception:
@@ -50,6 +53,7 @@ def clean_test_environment():
     cache.clear()
     try:
         from apps.ai_engine.ai_client import AIClient
+
         AIClient._client = None
         AIClient._api_key = None
     except Exception:
@@ -60,6 +64,7 @@ def clean_test_environment():
 def api_client():
     """Return an unauthenticated API client."""
     from rest_framework.test import APIClient
+
     return APIClient()
 
 
@@ -123,6 +128,7 @@ def instructor_client(api_client, create_user):
 def user(db):
     """Return a standard user instance."""
     from apps.users.models import User
+
     return User.objects.create_user(
         email="fixtureuser@example.com",
         username="fixtureuser",
@@ -134,6 +140,7 @@ def user(db):
 def instructor(db):
     """Return a user with INSTRUCTOR role."""
     from apps.users.models import User
+
     instr = User.objects.create_user(
         email="instructor@example.com",
         username="instructor",
@@ -148,6 +155,7 @@ def instructor(db):
 def course(db, instructor):
     """Return a published, free course with an instructor."""
     from apps.courses.models import Course, Category
+
     category, _ = Category.objects.get_or_create(name="Programming", slug="programming")
     return Course.objects.create(
         title="Test Course",
@@ -166,6 +174,7 @@ def course(db, instructor):
 def badge(db):
     """Return a Badge instance for gamification tests."""
     from apps.gamification.models import Badge
+
     return Badge.objects.create(
         name="First Steps",
         description="Complete your first course",
@@ -180,6 +189,7 @@ def badge(db):
 def category(db):
     """Return a Category instance."""
     from apps.courses.models import Category
+
     cat, _ = Category.objects.get_or_create(name="Programming", slug="programming")
     return cat
 
@@ -188,6 +198,7 @@ def category(db):
 def user_factory(db):
     """Factory fixture to create users with unique defaults."""
     from apps.users.models import User
+
     _counter = [0]
 
     def _create(**kwargs):
@@ -208,6 +219,7 @@ def user_factory(db):
 def create_course(db, instructor):
     """Factory fixture to create courses."""
     from apps.courses.models import Course, Category
+
     _counter = [0]
 
     def _create(**kwargs):
@@ -236,4 +248,5 @@ def create_course(db, instructor):
 def enrollment(db, user, course):
     """Return an Enrollment linking user and course."""
     from apps.courses.models import Enrollment
+
     return Enrollment.objects.create(user=user, course=course)

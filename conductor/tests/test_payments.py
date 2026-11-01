@@ -90,7 +90,7 @@ class TestCouponModel:
         """Test inactive coupon returns False."""
         coupon.is_active = False
         coupon.save()
-        
+
         assert coupon.is_valid() is False
 
     def test_max_uses_exceeded(self, coupon):
@@ -98,7 +98,7 @@ class TestCouponModel:
         coupon.max_uses = 10
         coupon.used_count = 10
         coupon.save()
-        
+
         assert coupon.is_valid() is False
 
     def test_unlimited_uses(self, coupon):
@@ -106,13 +106,13 @@ class TestCouponModel:
         coupon.max_uses = None
         coupon.used_count = 1000
         coupon.save()
-        
+
         assert coupon.is_valid() is True
 
     def test_coupon_courses_relationship(self, coupon, course):
         """Test coupon can be associated with courses."""
         coupon.courses.add(course)
-        
+
         assert str(course.id) in [str(c.id) for c in coupon.courses.all()]
 
 
@@ -144,7 +144,7 @@ class TestPaymentModel:
             Payment.Status.FAILED,
             Payment.Status.REFUNDED,
         ]
-        
+
         for status in statuses:
             assert status in dict(Payment.Status.choices)
 
@@ -162,7 +162,7 @@ class TestPaymentModel:
             amount=Decimal("200.00"),
             gateway="razorpay",
         )
-        
+
         payments = list(Payment.objects.filter(user=user))
         # Most recent should be first
         assert str(payments[0].id) == str(p2.id)
@@ -178,7 +178,7 @@ class TestPaymentModel:
         payment.completed_at = timezone.now()
         payment.gateway_payment_id = "pay_123456"
         payment.save()
-        
+
         payment.refresh_from_db()
         assert payment.status == Payment.Status.COMPLETED
         assert payment.completed_at is not None

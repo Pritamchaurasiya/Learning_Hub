@@ -41,22 +41,27 @@ pidfile = "/tmp/gunicorn.pid"
 # keyfile = "/path/to/keyfile"
 # certfile = "/path/to/certfile"
 
+
 # Performance tuning
 def on_starting(server):
     """Hook for server starting."""
     pass
 
+
 def on_reload(server):
     """Hook for configuration reload."""
     pass
+
 
 def when_ready(server):
     """Hook for server ready."""
     pass
 
+
 def worker_int(worker):
     """Hook for worker interrupt."""
     pass
+
 
 def on_exit(server):
     """Hook for server exit."""

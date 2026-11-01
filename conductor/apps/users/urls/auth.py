@@ -19,18 +19,20 @@ from apps.exams.views import PreferenceView
 app_name = "auth"
 
 # ViewSet action for /auth/me/
-me_view = UserProfileViewSet.as_view({
-    "get": "profile",
-    "put": "update_profile",
-    "patch": "update_profile"
-})
+me_view = UserProfileViewSet.as_view(
+    {"get": "profile", "put": "update_profile", "patch": "update_profile"}
+)
 
-two_factor_setup_view = UserProfileViewSet.as_view({"get": "two_factor_setup", "post": "two_factor_setup"})
+two_factor_setup_view = UserProfileViewSet.as_view(
+    {"get": "two_factor_setup", "post": "two_factor_setup"}
+)
 two_factor_verify_view = UserProfileViewSet.as_view({"post": "two_factor_verify"})
 two_factor_disable_view = UserProfileViewSet.as_view({"post": "two_factor_disable"})
 sessions_view = UserProfileViewSet.as_view({"get": "list_sessions"})
 sessions_revoke_view = UserProfileViewSet.as_view({"post": "revoke_sessions"})
-api_keys_view = UserProfileViewSet.as_view({"get": "manage_api_keys", "post": "manage_api_keys"})
+api_keys_view = UserProfileViewSet.as_view(
+    {"get": "manage_api_keys", "post": "manage_api_keys"}
+)
 api_keys_revoke_view = UserProfileViewSet.as_view({"delete": "revoke_key"})
 
 urlpatterns = [
@@ -59,4 +61,3 @@ urlpatterns = [
     path("api-keys/", api_keys_view, name="api_keys"),
     path("api-keys/<str:key_id>/", api_keys_revoke_view, name="api_key_revoke"),
 ]
-

@@ -21,6 +21,7 @@ class ContextChunk:
 
 class RoPEScaling:
     """Rotary Position Embedding scaling."""
+
     def __init__(self, base: int = 4096, factor: float = 4.0):
         self.base = base
         self.factor = factor
@@ -42,6 +43,7 @@ class RoPEScaling:
 
 class SlidingWindow:
     """Sliding window attention."""
+
     def __init__(self, size: int = 4096, stride: int = 2048):
         self.size = size
         self.stride = stride
@@ -58,6 +60,7 @@ class SlidingWindow:
 
 class ContextCompressor:
     """Compress long context."""
+
     def __init__(self, target: int = 4096):
         self.target = target
 
@@ -65,17 +68,18 @@ class ContextCompressor:
         if len(tokens) <= self.target:
             return tokens
         # Keep first and last, sample middle
-        first = tokens[:self.target // 4]
-        last = tokens[-self.target // 4:]
+        first = tokens[: self.target // 4]
+        last = tokens[-self.target // 4 :]
         mid_start = self.target // 4
         mid_end = len(tokens) - self.target // 4
         step = max(1, (mid_end - mid_start) // (self.target // 2))
-        middle = tokens[mid_start:mid_end:step][:self.target // 2]
+        middle = tokens[mid_start:mid_end:step][: self.target // 2]
         return first + middle + last
 
 
 class LongContextProcessor:
     """Long context system."""
+
     def __init__(self, max_len: int = 32768):
         self.rope = RoPEScaling()
         self.window = SlidingWindow()
@@ -84,9 +88,9 @@ class LongContextProcessor:
 
     def process(self, tokens: List[int]) -> Dict:
         if len(tokens) > self.max_len:
-            tokens = self.compressor.compress(tokens[:self.max_len])
+            tokens = self.compressor.compress(tokens[: self.max_len])
         return {
-            'tokens': tokens,
-            'length': len(tokens),
-            'windows': self.window.get_windows(len(tokens))
+            "tokens": tokens,
+            "length": len(tokens),
+            "windows": self.window.get_windows(len(tokens)),
         }

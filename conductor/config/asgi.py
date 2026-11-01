@@ -33,10 +33,9 @@ for app_routing in [
     except Exception:
         pass
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": JWTAuthMiddleware(
-        URLRouter(_ws_patterns)
-    ),
-})
-
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": JWTAuthMiddleware(URLRouter(_ws_patterns)),
+    }
+)

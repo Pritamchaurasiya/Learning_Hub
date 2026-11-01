@@ -7,7 +7,11 @@ from .models import (
     EbookBookmark,
     EbookReadingProgress,
 )
-from .validators import validate_hex_color, validate_highlight_text, validate_progress_percentage
+from .validators import (
+    validate_hex_color,
+    validate_highlight_text,
+    validate_progress_percentage,
+)
 
 
 class EbookService:
@@ -24,7 +28,10 @@ class EbookService:
         validate_progress_percentage(progress_percentage)
         is_completed = progress_percentage >= 100.0
 
-        progress, created = EbookReadingProgress.objects.select_for_update().get_or_create(
+        (
+            progress,
+            created,
+        ) = EbookReadingProgress.objects.select_for_update().get_or_create(
             user=user,
             ebook=ebook,
             defaults={
@@ -37,14 +44,19 @@ class EbookService:
 
         if not created:
             progress.current_chapter = chapter
-            progress.progress_percentage = max(progress.progress_percentage, progress_percentage)
+            progress.progress_percentage = max(
+                progress.progress_percentage, progress_percentage
+            )
             progress.time_spent_seconds += time_spent_seconds
             if is_completed and not progress.is_completed:
                 progress.is_completed = True
                 # Trigger gamification completion event
                 try:
                     from apps.gamification.services import GamificationService
-                    GamificationService.award_xp(user, 75, reason=f"Completed Ebook: {ebook.title}")
+
+                    GamificationService.award_xp(
+                        user, 75, reason=f"Completed Ebook: {ebook.title}"
+                    )
                 except Exception:
                     pass
             progress.save()
@@ -77,7 +89,9 @@ class EbookService:
     @staticmethod
     def delete_highlight(user, highlight_id: str) -> bool:
         """Delete a highlight ensuring ownership."""
-        deleted_count, _ = EbookHighlight.objects.filter(id=highlight_id, user=user).delete()
+        deleted_count, _ = EbookHighlight.objects.filter(
+            id=highlight_id, user=user
+        ).delete()
         return deleted_count > 0
 
     @staticmethod
@@ -102,5 +116,7 @@ class EbookService:
     @staticmethod
     def delete_bookmark(user, bookmark_id: str) -> bool:
         """Delete a bookmark ensuring ownership."""
-        deleted_count, _ = EbookBookmark.objects.filter(id=bookmark_id, user=user).delete()
+        deleted_count, _ = EbookBookmark.objects.filter(
+            id=bookmark_id, user=user
+        ).delete()
         return deleted_count > 0

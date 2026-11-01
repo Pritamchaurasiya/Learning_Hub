@@ -6,7 +6,17 @@ from rest_framework import serializers
 
 from apps.users.serializers import UserListSerializer
 
-from .models import Category, Course, Enrollment, Review, Certificate, Module, Lesson, CareerTrack, TrackCourse
+from .models import (
+    Category,
+    Course,
+    Enrollment,
+    Review,
+    Certificate,
+    Module,
+    Lesson,
+    CareerTrack,
+    TrackCourse,
+)
 
 
 from drf_spectacular.utils import extend_schema_field
@@ -53,7 +63,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class CourseListSerializer(serializers.ModelSerializer):
     """
     Serializer for course listings (minimal data).
-    
+
     Performance Optimization:
     - Uses annotated fields from queryset instead of SerializerMethodField
     - Expects queryset to include: review_count, avg_rating, enrollment_count_cached
@@ -62,11 +72,15 @@ class CourseListSerializer(serializers.ModelSerializer):
 
     instructor = UserListSerializer(read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
-    
+
     # Use annotated fields from queryset (see CourseViewSet.get_queryset)
     review_count = serializers.IntegerField(read_only=True)
-    avg_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
-    enrollment_count = serializers.IntegerField(source='enrollment_count_cached', read_only=True)
+    avg_rating = serializers.DecimalField(
+        max_digits=3, decimal_places=2, read_only=True
+    )
+    enrollment_count = serializers.IntegerField(
+        source="enrollment_count_cached", read_only=True
+    )
 
     class Meta:
         model = Course
@@ -92,22 +106,35 @@ class CourseListSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     """Serializer for individual lessons."""
+
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'slug', 'content_type', 'duration_minutes', 'is_preview', 'is_pro_only', 'order']
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "content_type",
+            "duration_minutes",
+            "is_preview",
+            "is_pro_only",
+            "order",
+        ]
+
 
 class ModuleSerializer(serializers.ModelSerializer):
     """Serializer for course modules."""
+
     lessons = LessonSerializer(many=True, read_only=True)
 
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'order', 'lessons']
+        fields = ["id", "title", "description", "order", "lessons"]
+
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for course detail view.
-    
+
     Performance Optimization:
     - Uses annotated fields (review_count, avg_rating, enrollment_count_cached)
     - Expects prefetched relations: modules.lessons, reviews
@@ -119,11 +146,15 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     is_enrolled = serializers.SerializerMethodField()
     user_progress = serializers.SerializerMethodField()
     modules = ModuleSerializer(many=True, read_only=True)
-    
+
     # Use annotated fields from queryset
     review_count = serializers.IntegerField(read_only=True)
-    avg_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
-    enrollment_count = serializers.IntegerField(source='enrollment_count_cached', read_only=True)
+    avg_rating = serializers.DecimalField(
+        max_digits=3, decimal_places=2, read_only=True
+    )
+    enrollment_count = serializers.IntegerField(
+        source="enrollment_count_cached", read_only=True
+    )
 
     class Meta:
         model = Course
@@ -164,9 +195,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         Uses prefetched 'user_enrollment' from queryset to avoid extra query.
         """
         # Use prefetched user_enrollment attribute from CourseViewSet
-        if hasattr(obj, 'user_enrollment'):
+        if hasattr(obj, "user_enrollment"):
             return len(obj.user_enrollment) > 0
-        
+
         # Fallback for cases without prefetch
         request = self.context.get("request")
         if request and request.user.is_authenticated:
@@ -177,9 +208,13 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_user_progress(self, obj):
         """Get current user's progress."""
-        if hasattr(obj, '_user_enrollment'):
-            return obj._user_enrollment.progress_percentage if obj._user_enrollment else None
-        enrollments_map = self.context.get('enrollments_map')
+        if hasattr(obj, "_user_enrollment"):
+            return (
+                obj._user_enrollment.progress_percentage
+                if obj._user_enrollment
+                else None
+            )
+        enrollments_map = self.context.get("enrollments_map")
         if enrollments_map is not None:
             enrollment = enrollments_map.get(obj.id)
             return enrollment.progress_percentage if enrollment else None
@@ -226,6 +261,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Rating must be between 1 and 5.")
         return value
 
+
 class CreateReviewSerializer(serializers.ModelSerializer):
     """Serializer for creating a review."""
 
@@ -242,39 +278,57 @@ class CreateReviewSerializer(serializers.ModelSerializer):
 
 class CertificateSerializer(serializers.ModelSerializer):
     """Serializer for course certificates."""
-    
-    course_title = serializers.CharField(source='course.title', read_only=True)
-    student_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    
+
+    course_title = serializers.CharField(source="course.title", read_only=True)
+    student_name = serializers.CharField(source="user.get_full_name", read_only=True)
+
     class Meta:
         model = Certificate
-        fields = ['id', 'certificate_code', 'course_title', 'student_name', 'issued_at', 'signature']
-        read_only_fields = ['id', 'certificate_code', 'issued_at']
+        fields = [
+            "id",
+            "certificate_code",
+            "course_title",
+            "student_name",
+            "issued_at",
+            "signature",
+        ]
+        read_only_fields = ["id", "certificate_code", "issued_at"]
 
 
 class TrackCourseSerializer(serializers.ModelSerializer):
     """Serializer for courses within a track."""
+
     course = CourseListSerializer()
-    
+
     class Meta:
         model = TrackCourse
-        fields = ['course', 'order', 'is_required']
+        fields = ["course", "order", "is_required"]
+
 
 class CareerTrackSerializer(serializers.ModelSerializer):
     """Serializer for Career Tracks."""
+
     courses = serializers.SerializerMethodField()
     course_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = CareerTrack
-        fields = ['id', 'title', 'slug', 'description', 'thumbnail', 'courses', 'course_count']
-    
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "description",
+            "thumbnail",
+            "courses",
+            "course_count",
+        ]
+
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_courses(self, obj):
         """Get courses in this track."""
-        track_courses = obj.trackcourse_set.select_related('course').order_by('order')
+        track_courses = obj.trackcourse_set.select_related("course").order_by("order")
         return TrackCourseSerializer(track_courses, many=True).data
-    
+
     @extend_schema_field(serializers.IntegerField())
     def get_course_count(self, obj):
         """Get count of courses in this track."""

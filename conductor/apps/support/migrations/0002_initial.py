@@ -10,30 +10,40 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('support', '0001_initial'),
+        ("support", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='feedback',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='feedback', to=settings.AUTH_USER_MODEL),
+            model_name="feedback",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="feedback",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddIndex(
-            model_name='feedback',
-            index=models.Index(fields=['status', '-created_at'], name='feedback_status_711338_idx'),
+            model_name="feedback",
+            index=models.Index(
+                fields=["status", "-created_at"], name="feedback_status_711338_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='feedback',
-            index=models.Index(fields=['user', 'status'], name='feedback_user_id_6a3e47_idx'),
+            model_name="feedback",
+            index=models.Index(
+                fields=["user", "status"], name="feedback_user_id_6a3e47_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='feedback',
-            index=models.Index(fields=['urgency_score', 'status'], name='feedback_urgency_c1d61f_idx'),
+            model_name="feedback",
+            index=models.Index(
+                fields=["urgency_score", "status"], name="feedback_urgency_c1d61f_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='feedback',
-            index=models.Index(fields=['category'], name='feedback_categor_2a8dde_idx'),
+            model_name="feedback",
+            index=models.Index(fields=["category"], name="feedback_categor_2a8dde_idx"),
         ),
     ]

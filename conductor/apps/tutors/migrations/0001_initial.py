@@ -8,43 +8,77 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Booking',
+            name="Booking",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('start_time', models.DateTimeField()),
-                ('end_time', models.DateTimeField()),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled'), ('completed', 'Completed')], default='pending', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('meeting_link', models.URLField(blank=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("start_time", models.DateTimeField()),
+                ("end_time", models.DateTimeField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("confirmed", "Confirmed"),
+                            ("cancelled", "Cancelled"),
+                            ("completed", "Completed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                ("meeting_link", models.URLField(blank=True)),
             ],
             options={
-                'ordering': ['-start_time'],
+                "ordering": ["-start_time"],
             },
         ),
         migrations.CreateModel(
-            name='TutorProfile',
+            name="TutorProfile",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('bio', models.TextField()),
-                ('hourly_rate', models.DecimalField(decimal_places=2, max_digits=6)),
-                ('skills', models.CharField(help_text='Comma separated skills', max_length=255)),
-                ('rating', models.FloatField(default=0.0)),
-                ('total_reviews', models.IntegerField(default=0)),
-                ('is_verified', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("bio", models.TextField()),
+                ("hourly_rate", models.DecimalField(decimal_places=2, max_digits=6)),
+                (
+                    "skills",
+                    models.CharField(
+                        help_text="Comma separated skills", max_length=255
+                    ),
+                ),
+                ("rating", models.FloatField(default=0.0)),
+                ("total_reviews", models.IntegerField(default=0)),
+                ("is_verified", models.BooleanField(default=False)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

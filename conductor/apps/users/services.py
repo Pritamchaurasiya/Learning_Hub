@@ -40,11 +40,15 @@ class UserService:
         # Publish registration event
         try:
             from apps.core.event_bus import EventBus
-            EventBus.publish("user.registered", {
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-            })
+
+            EventBus.publish(
+                "user.registered",
+                {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                },
+            )
         except Exception:
             pass
 
@@ -82,6 +86,7 @@ class UserService:
 
             # Send email asynchronously
             from tasks.tasks import send_password_reset_email
+
             send_password_reset_email.delay(user.id, token)
 
             return True
@@ -98,7 +103,9 @@ class UserService:
         """
         try:
             with transaction.atomic():
-                reset_token = PasswordResetToken.objects.select_for_update().get(token=token)
+                reset_token = PasswordResetToken.objects.select_for_update().get(
+                    token=token
+                )
 
                 if not reset_token.is_valid():
                     return False
@@ -114,7 +121,7 @@ class UserService:
         except PasswordResetToken.DoesNotExist:
             return False
 
-    ALLOWED_AVATAR_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
+    ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
     MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
 
     @staticmethod
@@ -124,7 +131,7 @@ class UserService:
         Returns the new avatar URL.
         """
         # Validate file type
-        content_type = getattr(avatar_file, 'content_type', '')
+        content_type = getattr(avatar_file, "content_type", "")
         if content_type not in UserService.ALLOWED_AVATAR_TYPES:
             raise ValidationError(
                 f"Invalid file type '{content_type}'. Allowed: JPEG, PNG, WebP."
@@ -137,5 +144,5 @@ class UserService:
             )
 
         user.avatar = avatar_file
-        user.save(update_fields=['avatar'])
+        user.save(update_fields=["avatar"])
         return user.avatar.url if user.avatar else ""

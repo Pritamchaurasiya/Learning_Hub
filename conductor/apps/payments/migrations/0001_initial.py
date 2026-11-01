@@ -11,67 +11,146 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0001_initial'),
+        ("courses", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Subscription',
+            name="Subscription",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('plan_type', models.CharField(choices=[('pro', 'Pro Plan'), ('enterprise', 'Enterprise Plan')], default='pro', max_length=20)),
-                ('is_active', models.BooleanField(default=True)),
-                ('start_date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('end_date', models.DateTimeField(blank=True, null=True)),
-                ('auto_renew', models.BooleanField(default=True)),
-                ('gateway_subscription_id', models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "plan_type",
+                    models.CharField(
+                        choices=[
+                            ("pro", "Pro Plan"),
+                            ("enterprise", "Enterprise Plan"),
+                        ],
+                        default="pro",
+                        max_length=20,
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("start_date", models.DateTimeField(default=django.utils.timezone.now)),
+                ("end_date", models.DateTimeField(blank=True, null=True)),
+                ("auto_renew", models.BooleanField(default=True)),
+                (
+                    "gateway_subscription_id",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Coupon',
+            name="Coupon",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=50, unique=True)),
-                ('discount_percent', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('valid_from', models.DateTimeField(blank=True, null=True)),
-                ('valid_until', models.DateTimeField(blank=True, null=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('max_uses', models.PositiveIntegerField(blank=True, null=True)),
-                ('used_count', models.PositiveIntegerField(default=0)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('courses', models.ManyToManyField(blank=True, related_name='coupons', to='courses.course')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("code", models.CharField(max_length=50, unique=True)),
+                (
+                    "discount_percent",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
+                ("valid_from", models.DateTimeField(blank=True, null=True)),
+                ("valid_until", models.DateTimeField(blank=True, null=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("max_uses", models.PositiveIntegerField(blank=True, null=True)),
+                ("used_count", models.PositiveIntegerField(default=0)),
+                ("expires_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "courses",
+                    models.ManyToManyField(
+                        blank=True, related_name="coupons", to="courses.course"
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Payment',
+            name="Payment",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('currency', models.CharField(default='INR', max_length=10)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed'), ('refunded', 'Refunded')], default='pending', max_length=20)),
-                ('gateway', models.CharField(max_length=50)),
-                ('gateway_order_id', models.CharField(blank=True, max_length=100)),
-                ('gateway_payment_id', models.CharField(blank=True, max_length=100)),
-                ('discount_amount', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
-                ('coupon', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='payments.coupon')),
-                ('course', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='courses.course')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("currency", models.CharField(default="INR", max_length=10)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("completed", "Completed"),
+                            ("failed", "Failed"),
+                            ("refunded", "Refunded"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("gateway", models.CharField(max_length=50)),
+                ("gateway_order_id", models.CharField(blank=True, max_length=100)),
+                ("gateway_payment_id", models.CharField(blank=True, max_length=100)),
+                (
+                    "discount_amount",
+                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                ),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "coupon",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="payments.coupon",
+                    ),
+                ),
+                (
+                    "course",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="courses.course",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

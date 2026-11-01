@@ -20,32 +20,54 @@ from apps.test_engine.services import TestSessionManager
 class TestEngineFlowTests(TestCase):
     def setUp(self):
         User = get_user_model()
-        self.user = User.objects.create_user(email='test@example.com', password='pass1234')
+        self.user = User.objects.create_user(
+            email="test@example.com", password="pass1234"
+        )
 
-        self.country = Country.objects.create(code='IN', name='India')
-        self.exam = Exam.objects.create(country=self.country, code='JEE', name='JEE', pattern={'total_marks': 100})
-        self.subject = Subject.objects.create(exam=self.exam, code='MATH', name='Mathematics')
-        self.topic = Topic.objects.create(subject=self.subject, name='Algebra')
+        self.country = Country.objects.create(code="IN", name="India")
+        self.exam = Exam.objects.create(
+            country=self.country, code="JEE", name="JEE", pattern={"total_marks": 100}
+        )
+        self.subject = Subject.objects.create(
+            exam=self.exam, code="MATH", name="Mathematics"
+        )
+        self.topic = Topic.objects.create(subject=self.subject, name="Algebra")
 
         # Create a test and a single MCQ question
-        self.test = TestModel.objects.create(exam=self.exam, title='Sample Test', mode='mock', time_limit_minutes=30, is_published=True)
-        self.question = Question.objects.create(topic=self.topic, text='What is 2+2?', question_type='mcq', explanation='4')
-        self.option1 = Option.objects.create(question=self.question, text='3', is_correct=False, order=1)
-        self.option2 = Option.objects.create(question=self.question, text='4', is_correct=True, order=2)
-        self.tq = TestQuestion.objects.create(test=self.test, question=self.question, order=1, marks=1)
+        self.test = TestModel.objects.create(
+            exam=self.exam,
+            title="Sample Test",
+            mode="mock",
+            time_limit_minutes=30,
+            is_published=True,
+        )
+        self.question = Question.objects.create(
+            topic=self.topic, text="What is 2+2?", question_type="mcq", explanation="4"
+        )
+        self.option1 = Option.objects.create(
+            question=self.question, text="3", is_correct=False, order=1
+        )
+        self.option2 = Option.objects.create(
+            question=self.question, text="4", is_correct=True, order=2
+        )
+        self.tq = TestQuestion.objects.create(
+            test=self.test, question=self.question, order=1, marks=1
+        )
         # Ensure total marks is correct
         self.test.total_marks = 1
         self.test.save()
 
     def test_autosave_and_submit(self):
-        attempt = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        attempt = TestSessionManager.start_attempt(
+            user=self.user, test_id=self.test.id, mode="mock"
+        )
         # Autosave answer
         result = TestSessionManager.autosave_answer(
             attempt=attempt,
             question_id=self.question.id,
-            answer_data={'selected_options': [self.option2.id], 'time_spent': 5}
+            answer_data={"selected_options": [self.option2.id], "time_spent": 5},
         )
-        self.assertIn('answer_id', result)
+        self.assertIn("answer_id", result)
 
         attempt.refresh_from_db()
         self.assertIn(str(self.question.id), attempt.autosave_data)
@@ -53,7 +75,7 @@ class TestEngineFlowTests(TestCase):
 
         # Submit attempt
         submitted = TestSessionManager.submit_attempt(attempt.id)
-        self.assertEqual(submitted.status, 'submitted')
+        self.assertEqual(submitted.status, "submitted")
         self.assertEqual(submitted.score, 1)
         self.assertTrue(submitted.passed)
 
@@ -61,12 +83,18 @@ class TestEngineFlowTests(TestCase):
         # Create multiple questions to force autosave_data to grow and trigger eviction
         created_questions = []
         for i in range(50):
-            q = Question.objects.create(topic=self.topic, text=f'Q {i}', question_type='mcq')
-            Option.objects.create(question=q, text='A', is_correct=True)
-            TestQuestion.objects.create(test=self.test, question=q, order=i + 10, marks=1)
+            q = Question.objects.create(
+                topic=self.topic, text=f"Q {i}", question_type="mcq"
+            )
+            Option.objects.create(question=q, text="A", is_correct=True)
+            TestQuestion.objects.create(
+                test=self.test, question=q, order=i + 10, marks=1
+            )
             created_questions.append(q)
 
-        attempt = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        attempt = TestSessionManager.start_attempt(
+            user=self.user, test_id=self.test.id, mode="mock"
+        )
 
         # Autosave for many different questions
         for q in created_questions:
@@ -76,19 +104,28 @@ class TestEngineFlowTests(TestCase):
             TestSessionManager.autosave_answer(
                 attempt=attempt,
                 question_id=q.id,
-                answer_data={'selected_options': [opt_id] if opt_id else [], 'text_answer': 'x' * 512}
+                answer_data={
+                    "selected_options": [opt_id] if opt_id else [],
+                    "text_answer": "x" * 512,
+                },
             )
 
         attempt.refresh_from_db()
         # autosave_data should not be excessively large; enforce our guard limit check
-        data_size = len(str(attempt.autosave_data).encode('utf-8'))
+        data_size = len(str(attempt.autosave_data).encode("utf-8"))
         from apps.test_engine.services import MAX_AUTOSAVE_BYTES
+
         self.assertLessEqual(data_size, MAX_AUTOSAVE_BYTES)
 
     def test_timeout_auto_submit_marks_expired(self):
-        attempt = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        attempt = TestSessionManager.start_attempt(
+            user=self.user, test_id=self.test.id, mode="mock"
+        )
         # Simulate started_at in the past beyond time limit
-        TestAttempt.objects.filter(id=attempt.id).update(started_at=timezone.now() - timedelta(minutes=self.test.time_limit_minutes + 2))
+        TestAttempt.objects.filter(id=attempt.id).update(
+            started_at=timezone.now()
+            - timedelta(minutes=self.test.time_limit_minutes + 2)
+        )
         attempt.refresh_from_db()
 
         # Invoke timeout check
@@ -97,11 +134,12 @@ class TestEngineFlowTests(TestCase):
 
         attempt.refresh_from_db()
         # After auto-submit, status should be either 'submitted' or 'expired' depending on logic, but submitted_at must be set
-        self.assertIn(attempt.status, ('submitted', 'expired'))
+        self.assertIn(attempt.status, ("submitted", "expired"))
         self.assertIsNotNone(attempt.submitted_at)
 
     def test_ai_test_generation_flow(self):
         from apps.ai_engine.test_generation import AITestGenerationService
+
         service = AITestGenerationService()
         generated_test = service.generate_test(
             user=self.user,
@@ -109,11 +147,11 @@ class TestEngineFlowTests(TestCase):
             subject_id=self.subject.id,
             topic_ids=[self.topic.id],
             config={
-                'mode': 'mock',
-                'difficulty': 'medium',
-                'question_count': 5,
-                'time_limit_minutes': 15,
-            }
+                "mode": "mock",
+                "difficulty": "medium",
+                "question_count": 5,
+                "time_limit_minutes": 15,
+            },
         )
         self.assertIsNotNone(generated_test)
         self.assertEqual(str(generated_test.exam.id), str(self.exam.id))
@@ -125,48 +163,50 @@ class TestEngineFlowTests(TestCase):
     def test_api_endpoints_and_analytics_integration(self):
         from rest_framework.test import APIClient
         from django.urls import reverse
+
         client = APIClient()
         client.force_authenticate(user=self.user)
 
         # 1. Start attempt via API using reversed URL
-        start_url = reverse('test-start-attempt', kwargs={'pk': self.test.id})
-        response = client.post(start_url, {'mode': 'mock'}, format='json')
+        start_url = reverse("test-start-attempt", kwargs={"pk": self.test.id})
+        response = client.post(start_url, {"mode": "mock"}, format="json")
         self.assertEqual(response.status_code, 201)
-        attempt_data = response.data['data']
-        attempt_id = attempt_data['id']
+        attempt_data = response.data["data"]
+        attempt_id = attempt_data["id"]
 
         # 2. Autosave via API
-        autosave_url = reverse('test-autosave', kwargs={'pk': self.test.id})
+        autosave_url = reverse("test-autosave", kwargs={"pk": self.test.id})
         autosave_resp = client.post(
             autosave_url,
             {
-                'question_id': str(self.question.id),
-                'selected_options': [str(self.option2.id)],
-                'time_spent': 12,
+                "question_id": str(self.question.id),
+                "selected_options": [str(self.option2.id)],
+                "time_spent": 12,
             },
-            format='json'
+            format="json",
         )
         self.assertEqual(autosave_resp.status_code, 200)
 
         # 3. Submit attempt via API
-        submit_url = reverse('test-submit-attempt', kwargs={'pk': self.test.id})
-        submit_resp = client.post(submit_url, {}, format='json')
+        submit_url = reverse("test-submit-attempt", kwargs={"pk": self.test.id})
+        submit_resp = client.post(submit_url, {}, format="json")
         self.assertEqual(submit_resp.status_code, 200)
-        self.assertEqual(submit_resp.data['data']['score'], 1.0)
-        self.assertTrue(submit_resp.data['data']['passed'])
+        self.assertEqual(submit_resp.data["data"]["score"], 1.0)
+        self.assertTrue(submit_resp.data["data"]["passed"])
 
         # 4. Get Result via API
-        result_url = reverse('test-get-result', kwargs={'pk': self.test.id})
+        result_url = reverse("test-get-result", kwargs={"pk": self.test.id})
         result_resp = client.get(result_url)
         self.assertEqual(result_resp.status_code, 200)
-        self.assertEqual(result_resp.data['data']['attempt_id'], str(attempt_id))
+        self.assertEqual(result_resp.data["data"]["attempt_id"], str(attempt_id))
 
         # 5. Verify Analytics Engine dashboard
         from apps.analytics_v2.services import AnalyticsEngine
+
         dashboard = AnalyticsEngine.get_dashboard(self.user, exam_id=self.exam.id)
-        self.assertGreaterEqual(dashboard['total_tests_taken'], 1)
-        self.assertGreaterEqual(dashboard['total_questions_answered'], 1)
-        self.assertEqual(dashboard['overall_accuracy'], 100.0)
+        self.assertGreaterEqual(dashboard["total_tests_taken"], 1)
+        self.assertGreaterEqual(dashboard["total_questions_answered"], 1)
+        self.assertEqual(dashboard["overall_accuracy"], 100.0)
 
     def test_celery_periodic_tasks(self):
         from apps.test_engine.tasks import (
@@ -176,54 +216,73 @@ class TestEngineFlowTests(TestCase):
         )
 
         # 1. Test check_expired_attempts
-        attempt = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        attempt = TestSessionManager.start_attempt(
+            user=self.user, test_id=self.test.id, mode="mock"
+        )
         # Backdate started_at
         TestAttempt.objects.filter(id=attempt.id).update(
-            started_at=timezone.now() - timedelta(minutes=self.test.time_limit_minutes + 5)
+            started_at=timezone.now()
+            - timedelta(minutes=self.test.time_limit_minutes + 5)
         )
         res_expired = check_expired_attempts()
-        self.assertGreaterEqual(res_expired['expired'], 1)
+        self.assertGreaterEqual(res_expired["expired"], 1)
 
         # 2. Test cleanup_abandoned_attempts
-        attempt2 = TestSessionManager.start_attempt(user=self.user, test_id=self.test.id, mode='mock')
+        attempt2 = TestSessionManager.start_attempt(
+            user=self.user, test_id=self.test.id, mode="mock"
+        )
         # Backdate last_activity_at to 48 hours ago
         TestAttempt.objects.filter(id=attempt2.id).update(
             last_activity_at=timezone.now() - timedelta(hours=48)
         )
         res_abandoned = cleanup_abandoned_attempts()
-        self.assertGreaterEqual(res_abandoned['abandoned'], 1)
+        self.assertGreaterEqual(res_abandoned["abandoned"], 1)
         attempt2.refresh_from_db()
-        self.assertEqual(attempt2.status, 'abandoned')
+        self.assertEqual(attempt2.status, "abandoned")
 
         # 3. Test recalculate_question_stats bulk update
         res_stats = recalculate_question_stats()
-        self.assertIsInstance(res_stats['updated'], int)
+        self.assertIsInstance(res_stats["updated"], int)
 
     def test_adaptive_assessment_engine_irt_math(self):
         from apps.test_engine.services import AdaptiveAssessmentEngine
 
         # 1. Test 3PL probability bounds and monotonicity
-        p_low = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=-2.0, a=1.5, b=0.0, c=0.25)
-        p_mid = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=0.0, a=1.5, b=0.0, c=0.25)
-        p_high = AdaptiveAssessmentEngine.calculate_3pl_probability(theta=2.0, a=1.5, b=0.0, c=0.25)
+        p_low = AdaptiveAssessmentEngine.calculate_3pl_probability(
+            theta=-2.0, a=1.5, b=0.0, c=0.25
+        )
+        p_mid = AdaptiveAssessmentEngine.calculate_3pl_probability(
+            theta=0.0, a=1.5, b=0.0, c=0.25
+        )
+        p_high = AdaptiveAssessmentEngine.calculate_3pl_probability(
+            theta=2.0, a=1.5, b=0.0, c=0.25
+        )
         self.assertGreaterEqual(p_low, 0.25)
         self.assertGreater(p_mid, p_low)
         self.assertGreater(p_high, p_mid)
         self.assertLessEqual(p_high, 1.0)
 
         # 2. Test Fisher Information peaks near item difficulty b
-        info_at_b = AdaptiveAssessmentEngine.fisher_information(theta=0.0, a=1.5, b=0.0, c=0.25)
-        info_far = AdaptiveAssessmentEngine.fisher_information(theta=3.0, a=1.5, b=0.0, c=0.25)
+        info_at_b = AdaptiveAssessmentEngine.fisher_information(
+            theta=0.0, a=1.5, b=0.0, c=0.25
+        )
+        info_far = AdaptiveAssessmentEngine.fisher_information(
+            theta=3.0, a=1.5, b=0.0, c=0.25
+        )
         self.assertGreater(info_at_b, info_far)
 
         # 3. Test Bayesian EAP estimation
         responses_correct = [1, 1, 1, 1]
-        params = [{'a': 1.2, 'b': 0.0, 'c': 0.25} for _ in range(4)]
-        theta_high, sem_high = AdaptiveAssessmentEngine.estimate_ability_eap(responses_correct, params)
+        params = [{"a": 1.2, "b": 0.0, "c": 0.25} for _ in range(4)]
+        theta_high, sem_high = AdaptiveAssessmentEngine.estimate_ability_eap(
+            responses_correct, params
+        )
         self.assertGreater(theta_high, 0.0)
 
         responses_incorrect = [0, 0, 0, 0]
-        theta_low, sem_low = AdaptiveAssessmentEngine.estimate_ability_eap(responses_incorrect, params)
+        theta_low, sem_low = AdaptiveAssessmentEngine.estimate_ability_eap(
+            responses_incorrect, params
+        )
         self.assertLess(theta_low, 0.0)
         self.assertGreater(sem_high, 0.0)
 
@@ -231,8 +290,12 @@ class TestEngineFlowTests(TestCase):
         pct_high = AdaptiveAssessmentEngine.theta_to_percentile(2.0)
         pct_low = AdaptiveAssessmentEngine.theta_to_percentile(-2.0)
         self.assertGreater(pct_high, pct_low)
-        self.assertEqual(AdaptiveAssessmentEngine.get_ability_band(2.5), 'Advanced Master')
-        self.assertEqual(AdaptiveAssessmentEngine.get_ability_band(-2.5), 'Foundational')
+        self.assertEqual(
+            AdaptiveAssessmentEngine.get_ability_band(2.5), "Advanced Master"
+        )
+        self.assertEqual(
+            AdaptiveAssessmentEngine.get_ability_band(-2.5), "Foundational"
+        )
 
     def test_subjective_ai_rubric_grading_service_and_api(self):
         from rest_framework.test import APIClient
@@ -241,9 +304,9 @@ class TestEngineFlowTests(TestCase):
         # 1. Create subjective question and attach to test
         subj_q = Question.objects.create(
             topic=self.topic,
-            text='Prove the correctness of Dijkstra algorithm with non-negative weights.',
-            question_type='subjective',
-            explanation='Greedy choice invariant: shortest path to settled nodes is guaranteed when weights >= 0.'
+            text="Prove the correctness of Dijkstra algorithm with non-negative weights.",
+            question_type="subjective",
+            explanation="Greedy choice invariant: shortest path to settled nodes is guaranteed when weights >= 0.",
         )
         TestQuestion.objects.create(test=self.test, question=subj_q, order=2, marks=5)
         self.test.total_marks = 6
@@ -258,25 +321,22 @@ class TestEngineFlowTests(TestCase):
                 "Proof by induction on settled vertices. In Dijkstra algorithm, we maintain a priority queue "
                 "of distances. Because edge weights are non-negative, any alternative path through unsettled nodes "
                 "must have length >= distance to the current closest unsettled node."
-            )
+            ),
         )
-        self.assertEqual(res['questionId'], str(subj_q.id))
-        self.assertGreater(res['marksObtained'], 0.0)
-        self.assertTrue(res['isCorrect'])
-        self.assertGreaterEqual(len(res['rubric']), 3)
-        self.assertIn('feedback', res)
-        self.assertIn('strengths', res)
-        self.assertIn('improvements', res)
+        self.assertEqual(res["questionId"], str(subj_q.id))
+        self.assertGreater(res["marksObtained"], 0.0)
+        self.assertTrue(res["isCorrect"])
+        self.assertGreaterEqual(len(res["rubric"]), 3)
+        self.assertIn("feedback", res)
+        self.assertIn("strengths", res)
+        self.assertIn("improvements", res)
 
         # 3. Test SessionManager grading with empty/minimal response
         res_empty = TestSessionManager.grade_subjective_answer(
-            user=self.user,
-            test=self.test,
-            question_id=subj_q.id,
-            answer_text="xyz"
+            user=self.user, test=self.test, question_id=subj_q.id, answer_text="xyz"
         )
-        self.assertEqual(res_empty['marksObtained'], 0.0)
-        self.assertFalse(res_empty['isCorrect'])
+        self.assertEqual(res_empty["marksObtained"], 0.0)
+        self.assertFalse(res_empty["isCorrect"])
 
         # 4. Test API endpoint POST /api/v1/tests/{pk}/grade-subjective
         client = APIClient()
@@ -285,15 +345,15 @@ class TestEngineFlowTests(TestCase):
         response = client.post(
             api_url,
             {
-                'question_id': str(subj_q.id),
-                'answer_text': 'Valid proof with induction step and non-negative constraints.'
+                "question_id": str(subj_q.id),
+                "answer_text": "Valid proof with induction step and non-negative constraints.",
             },
-            format='json'
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['status'], 'success')
-        self.assertEqual(response.data['data']['questionId'], str(subj_q.id))
-        self.assertIn('rubric', response.data['data'])
+        self.assertEqual(response.data["status"], "success")
+        self.assertEqual(response.data["data"]["questionId"], str(subj_q.id))
+        self.assertIn("rubric", response.data["data"])
 
     def test_adaptive_step_endpoint_and_coding_item_propagation(self):
         from rest_framework.test import APIClient
@@ -302,26 +362,30 @@ class TestEngineFlowTests(TestCase):
         # 1. Create a second coding question on the test to be picked by adaptive Fisher Information
         coding_q = Question.objects.create(
             topic=self.topic,
-            text='Write two_sum in O(n) hash map time.',
-            question_type='coding',
+            text="Write two_sum in O(n) hash map time.",
+            question_type="coding",
             difficulty=0.45,
             discrimination=1.7,
-            bloom_level='apply',
-            language='python',
-            code_template='def two_sum(nums, target): pass',
-            test_cases=[{'input': 'nums = [2,7], target = 9', 'output': '[0, 1]'}],
-            explanation='Single-pass hash table'
+            bloom_level="apply",
+            language="python",
+            code_template="def two_sum(nums, target): pass",
+            test_cases=[{"input": "nums = [2,7], target = 9", "output": "[0, 1]"}],
+            explanation="Single-pass hash table",
         )
-        opt_correct = Option.objects.create(question=coding_q, text='[0, 1]', is_correct=True, order=1)
-        TestQuestion.objects.create(test=self.test, question=coding_q, order=3, marks=10)
+        opt_correct = Option.objects.create(
+            question=coding_q, text="[0, 1]", is_correct=True, order=1
+        )
+        TestQuestion.objects.create(
+            test=self.test, question=coding_q, order=3, marks=10
+        )
 
         # 2. Create active attempt
         attempt = TestAttempt.objects.create(
             user=self.user,
             test=self.test,
-            mode='adaptive',
-            status='in_progress',
-            metadata={'adaptive': {'history': []}}
+            mode="adaptive",
+            status="in_progress",
+            metadata={"adaptive": {"history": []}},
         )
 
         client = APIClient()
@@ -332,30 +396,25 @@ class TestEngineFlowTests(TestCase):
         res = client.post(
             url,
             {
-                'attempt_id': str(attempt.id),
-                'question_id': str(self.question.id),
-                'selected_option_id': str(self.option1.id),
-                'time_spent_seconds': 25,
+                "attempt_id": str(attempt.id),
+                "question_id": str(self.question.id),
+                "selected_option_id": str(self.option1.id),
+                "time_spent_seconds": 25,
             },
-            format='json'
+            format="json",
         )
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data['status'], 'success')
-        step_data = res.data['data']
+        self.assertEqual(res.data["status"], "success")
+        step_data = res.data["data"]
 
-        self.assertIn('currentTheta', step_data)
-        self.assertIn('sem', step_data)
-        self.assertIn('isCompleted', step_data)
+        self.assertIn("currentTheta", step_data)
+        self.assertIn("sem", step_data)
+        self.assertIn("isCompleted", step_data)
 
         # If next question is selected, verify coding metadata fields are properly propagated
-        if step_data.get('nextQuestion'):
-            next_q = step_data['nextQuestion']
-            self.assertIn('code_template', next_q)
-            self.assertIn('language', next_q)
-            self.assertIn('test_cases', next_q)
-
-
-
-
-
+        if step_data.get("nextQuestion"):
+            next_q = step_data["nextQuestion"]
+            self.assertIn("code_template", next_q)
+            self.assertIn("language", next_q)
+            self.assertIn("test_cases", next_q)

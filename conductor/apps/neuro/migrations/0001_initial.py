@@ -11,29 +11,71 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0010_trackcourse_created_at_trackcourse_updated_at_and_more'),
+        ("courses", "0010_trackcourse_created_at_trackcourse_updated_at_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BrainwaveSession',
+            name="BrainwaveSession",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('avg_attention', models.FloatField(default=0.0, help_text='Calculated from Low Beta / High Alpha ratios')),
-                ('avg_meditation', models.FloatField(default=0.0, help_text='Calculated from Alpha / Theta ratios')),
-                ('raw_telemetry', models.JSONField(default=list, help_text='List of high-frequency temporal data points')),
-                ('is_completed', models.BooleanField(default=False)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='courses.course')),
-                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='courses.lesson')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bci_sessions', to=settings.AUTH_USER_MODEL)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "avg_attention",
+                    models.FloatField(
+                        default=0.0,
+                        help_text="Calculated from Low Beta / High Alpha ratios",
+                    ),
+                ),
+                (
+                    "avg_meditation",
+                    models.FloatField(
+                        default=0.0, help_text="Calculated from Alpha / Theta ratios"
+                    ),
+                ),
+                (
+                    "raw_telemetry",
+                    models.JSONField(
+                        default=list,
+                        help_text="List of high-frequency temporal data points",
+                    ),
+                ),
+                ("is_completed", models.BooleanField(default=False)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="courses.course"
+                    ),
+                ),
+                (
+                    "lesson",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="courses.lesson"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="bci_sessions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'BCI Session',
-                'verbose_name_plural': 'BCI Sessions',
-                'db_table': 'neuro_bci_sessions',
+                "verbose_name": "BCI Session",
+                "verbose_name_plural": "BCI Sessions",
+                "db_table": "neuro_bci_sessions",
             },
         ),
     ]

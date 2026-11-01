@@ -6,12 +6,13 @@ from celery.schedules import crontab
 
 logger = structlog.get_logger(__name__)
 
+
 class CarbonScheduler:
     """
     Schedules background jobs based on real-time Carbon Intensity of the energy grid.
     """
-    
-    CARBON_API_URL = "https://api.carbonintensity.org.uk/intensity" # Example API
+
+    CARBON_API_URL = "https://api.carbonintensity.org.uk/intensity"  # Example API
 
     @staticmethod
     def get_current_intensity():
@@ -20,9 +21,9 @@ class CarbonScheduler:
             # response = requests.get(CarbonScheduler.CARBON_API_URL, timeout=2)
             # data = response.json()
             # return data['data'][0]['intensity']['actual']
-            return 150 # Mock gCO2/kWh
+            return 150  # Mock gCO2/kWh
         except Exception:
-            return 200 # Default moderate intensity
+            return 200  # Default moderate intensity
 
     @staticmethod
     def is_green_window():
@@ -45,4 +46,3 @@ class CarbonScheduler:
             logger.warning(f"⚠️ Dirty Grid! Delaying {task_name} for 1 hour.")
             # Schedule in future
             celery_app.send_task(task_name, args=args, countdown=3600)
-

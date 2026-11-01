@@ -15,7 +15,8 @@ class ProblemRepository:
         Optimizations: Prefetch tags.
         """
         from django.db.models import Q
-        queryset = Problem.objects.filter(is_active=True).prefetch_related('tags')
+
+        queryset = Problem.objects.filter(is_active=True).prefetch_related("tags")
 
         if difficulty:
             queryset = queryset.filter(difficulty=difficulty.upper())
@@ -23,8 +24,7 @@ class ProblemRepository:
             queryset = queryset.filter(tags__slug=tag_slug)
         if search:
             queryset = queryset.filter(
-                Q(title__icontains=search) | 
-                Q(description__icontains=search)
+                Q(title__icontains=search) | Q(description__icontains=search)
             )
 
         return queryset.distinct()

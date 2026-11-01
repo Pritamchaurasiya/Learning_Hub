@@ -7,29 +7,41 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0005_remove_course_courses_slug_360be0_idx_and_more'),
+        ("courses", "0005_remove_course_courses_slug_360be0_idx_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['is_published', 'is_featured', '-created_at'], name='idx_course_featured'),
+            model_name="course",
+            index=models.Index(
+                fields=["is_published", "is_featured", "-created_at"],
+                name="idx_course_featured",
+            ),
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['category', 'is_published', '-enrollment_count'], name='idx_course_category_popular'),
+            model_name="course",
+            index=models.Index(
+                fields=["category", "is_published", "-enrollment_count"],
+                name="idx_course_category_popular",
+            ),
         ),
         migrations.AddIndex(
-            model_name='enrollment',
-            index=models.Index(fields=['user', '-last_accessed_at'], name='idx_enroll_user_accessed'),
+            model_name="enrollment",
+            index=models.Index(
+                fields=["user", "-last_accessed_at"], name="idx_enroll_user_accessed"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enrollment',
-            index=models.Index(fields=['course', 'progress_percentage'], name='idx_enroll_progress'),
+            model_name="enrollment",
+            index=models.Index(
+                fields=["course", "progress_percentage"], name="idx_enroll_progress"
+            ),
         ),
         migrations.AddIndex(
-            model_name='review',
-            index=models.Index(fields=['user', '-created_at'], name='idx_review_user_recent'),
+            model_name="review",
+            index=models.Index(
+                fields=["user", "-created_at"], name="idx_review_user_recent"
+            ),
         ),
     ]

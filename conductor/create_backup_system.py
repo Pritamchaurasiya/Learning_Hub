@@ -13,19 +13,21 @@ print("=" * 80)
 print("BACKUP & DISASTER RECOVERY SYSTEM")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # 1. Database Backup Script
 # ============================================================================
 log("Creating database backup script...")
 
-db_backup = '''#!/bin/bash
+db_backup = """#!/bin/bash
 # Database Backup Script
 # Automated PostgreSQL backup with compression and rotation
 
@@ -105,11 +107,11 @@ echo "Backup Complete!"
 echo "=================================="
 echo "File: $COMPRESSED_FILE"
 echo "Size: $BACKUP_SIZE"
-'''
+"""
 
-db_backup_path = BASE_DIR / 'scripts' / 'backup-database.sh'
+db_backup_path = BASE_DIR / "scripts" / "backup-database.sh"
 db_backup_path.parent.mkdir(parents=True, exist_ok=True)
-with open(db_backup_path, 'w') as f:
+with open(db_backup_path, "w") as f:
     f.write(db_backup)
 
 log(f"  [OK] Created: {db_backup_path}")
@@ -119,7 +121,7 @@ log(f"  [OK] Created: {db_backup_path}")
 # ============================================================================
 log("Creating media files backup script...")
 
-media_backup = '''#!/bin/bash
+media_backup = """#!/bin/bash
 # Media Files Backup Script
 # Backup user uploads and static files
 
@@ -186,10 +188,10 @@ echo "  [OK] Remaining backups: $BACKUP_COUNT"
 echo "=================================="
 echo "Media Backup Complete!"
 echo "=================================="
-'''
+"""
 
-media_backup_path = BASE_DIR / 'scripts' / 'backup-media.sh'
-with open(media_backup_path, 'w') as f:
+media_backup_path = BASE_DIR / "scripts" / "backup-media.sh"
+with open(media_backup_path, "w") as f:
     f.write(media_backup)
 
 log(f"  [OK] Created: {media_backup_path}")
@@ -199,7 +201,7 @@ log(f"  [OK] Created: {media_backup_path}")
 # ============================================================================
 log("Creating full system backup script...")
 
-full_backup = '''#!/bin/bash
+full_backup = """#!/bin/bash
 # Full System Backup Script
 # Comprehensive backup of database, media, and configuration
 
@@ -287,10 +289,10 @@ echo "=================================="
 echo "File: $FINAL_BACKUP"
 echo "Size: $BACKUP_SIZE"
 echo "Total backups: $BACKUP_COUNT"
-'''
+"""
 
-full_backup_path = BASE_DIR / 'scripts' / 'backup-full.sh'
-with open(full_backup_path, 'w') as f:
+full_backup_path = BASE_DIR / "scripts" / "backup-full.sh"
+with open(full_backup_path, "w") as f:
     f.write(full_backup)
 
 log(f"  [OK] Created: {full_backup_path}")
@@ -300,7 +302,7 @@ log(f"  [OK] Created: {full_backup_path}")
 # ============================================================================
 log("Creating disaster recovery script...")
 
-disaster_recovery = '''#!/bin/bash
+disaster_recovery = """#!/bin/bash
 # Disaster Recovery Script
 # Restore system from backup
 
@@ -551,10 +553,10 @@ else
     echo "Use --help for usage information."
     exit 1
 fi
-'''
+"""
 
-disaster_recovery_path = BASE_DIR / 'scripts' / 'disaster-recovery.sh'
-with open(disaster_recovery_path, 'w') as f:
+disaster_recovery_path = BASE_DIR / "scripts" / "disaster-recovery.sh"
+with open(disaster_recovery_path, "w") as f:
     f.write(disaster_recovery)
 
 log(f"  [OK] Created: {disaster_recovery_path}")
@@ -564,7 +566,7 @@ log(f"  [OK] Created: {disaster_recovery_path}")
 # ============================================================================
 log("Creating automated backup scheduler...")
 
-backup_scheduler = '''#!/bin/bash
+backup_scheduler = """#!/bin/bash
 # Automated Backup Scheduler
 # Setup cron jobs for automated backups
 
@@ -627,10 +629,10 @@ echo "Logs: /var/log/backup-*.log"
 echo ""
 echo "To remove schedule:"
 echo "  crontab -l | grep -v backup- | crontab -"
-'''
+"""
 
-scheduler_path = BASE_DIR / 'scripts' / 'setup-backup-scheduler.sh'
-with open(scheduler_path, 'w') as f:
+scheduler_path = BASE_DIR / "scripts" / "setup-backup-scheduler.sh"
+with open(scheduler_path, "w") as f:
     f.write(backup_scheduler)
 
 log(f"  [OK] Created: {scheduler_path}")

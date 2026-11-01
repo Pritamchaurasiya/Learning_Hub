@@ -5,6 +5,7 @@ import random
 
 logger = structlog.get_logger(__name__)
 
+
 class CodeGeneticsAgent:
     """
     Scans the codebase using AST (Abstract Syntax Tree) to identify
@@ -19,7 +20,7 @@ class CodeGeneticsAgent:
         Recursively scans Python files and identifies optimization opportunities.
         """
         logger.info("🧬 Starting Genetic Code Scan...")
-        
+
         optimizations = []
         for root, _, files in os.walk(self.root_dir):
             for file in files:
@@ -28,7 +29,7 @@ class CodeGeneticsAgent:
                     analysis = self.analyze_file(full_path)
                     if analysis:
                         optimizations.append(analysis)
-        
+
         return optimizations
 
     def analyze_file(self, file_path: str):
@@ -38,19 +39,19 @@ class CodeGeneticsAgent:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 tree = ast.parse(f.read())
-            
+
             # Example Heuristic: Detect excessive use of lists where sets/tuples are better
             for node in ast.walk(tree):
                 if isinstance(node, ast.ListComp):
                     # Stupid simple heuristic for simulation
                     pass
-            
+
             # Simulation of finding an issue
-            if random.random() < 0.05: # 5% chance to find "inefficiency"
+            if random.random() < 0.05:  # 5% chance to find "inefficiency"
                 return {
                     "file": file_path,
                     "suggestion": "Replace List comprehension with Generator expression for memory efficiency.",
-                    "mutation_id": "DNA-GEN-001"
+                    "mutation_id": "DNA-GEN-001",
                 }
         except Exception as e:
             logger.error(f"Failed to parse {file_path}: {e}")

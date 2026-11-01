@@ -32,6 +32,7 @@ from rest_framework.versioning import BaseVersioning, exceptions
 # API VERSION REPRESENTATION
 # =============================================================================
 
+
 class APIVersion:
     """
     Semantic API Version representation (Major.Minor).
@@ -82,7 +83,7 @@ class APIVersion:
         return hash((self.major, self.minor))
 
     @classmethod
-    def parse(cls, version_string: Union[str, 'APIVersion']) -> 'APIVersion':
+    def parse(cls, version_string: Union[str, "APIVersion"]) -> "APIVersion":
         """
         Parse a version string into an APIVersion instance.
         Accepts: 'v1', 'v1.0', '1', '1.0', 'v2', '2.1'
@@ -90,8 +91,8 @@ class APIVersion:
         if isinstance(version_string, APIVersion):
             return version_string
 
-        cleaned = str(version_string).lower().strip().lstrip('v')
-        parts = cleaned.split('.')
+        cleaned = str(version_string).lower().strip().lstrip("v")
+        parts = cleaned.split(".")
         major = int(parts[0])
         minor = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
         return cls(major, minor)
@@ -114,11 +115,13 @@ DEFAULT_DEPRECATION_WINDOW_DAYS = 180
 # LIFECYCLE & DEPRECATION METADATA
 # =============================================================================
 
+
 @dataclass
 class DeprecationMetadata:
     """
     Stores RFC 8594 metadata for an endpoint or version undergoing sunset.
     """
+
     since: datetime
     sunset: datetime
     successor: Optional[str] = None
@@ -161,7 +164,9 @@ class DeprecationMetadata:
             headers["Link"] = ", ".join(links)
 
         # Auxiliary informational headers
-        headers["X-API-Lifecycle-Status"] = "sunset" if self.is_sunset() else "deprecated"
+        headers["X-API-Lifecycle-Status"] = (
+            "sunset" if self.is_sunset() else "deprecated"
+        )
         headers["X-API-Sunset-Date"] = sunset_dt.isoformat()
         if self.message:
             headers["X-API-Deprecation-Notice"] = self.message
@@ -267,6 +272,7 @@ def get_deprecation_metadata(
 # DECORATORS
 # =============================================================================
 
+
 def deprecated_api(
     since: Union[datetime, str],
     sunset: Optional[Union[datetime, str]] = None,
@@ -281,7 +287,11 @@ def deprecated_api(
     Returns HTTP 410 Gone if accessed after sunset.
     """
     since_dt = _parse_datetime(since)
-    sunset_dt = _parse_datetime(sunset) if sunset else since_dt + timedelta(days=DEFAULT_DEPRECATION_WINDOW_DAYS)
+    sunset_dt = (
+        _parse_datetime(sunset)
+        if sunset
+        else since_dt + timedelta(days=DEFAULT_DEPRECATION_WINDOW_DAYS)
+    )
     meta = DeprecationMetadata(
         since=since_dt,
         sunset=sunset_dt,
@@ -301,7 +311,8 @@ def deprecated_api(
                     {
                         "error": "API_SUNSET",
                         "status": 410,
-                        "message": message or f"This endpoint has been retired per the 6-month lifecycle policy (Sunset: {meta.sunset.strftime('%Y-%m-%d')}).",
+                        "message": message
+                        or f"This endpoint has been retired per the 6-month lifecycle policy (Sunset: {meta.sunset.strftime('%Y-%m-%d')}).",
                         "successor": successor,
                         "docs_url": docs_url,
                     },
@@ -310,7 +321,10 @@ def deprecated_api(
                 )
 
             # Warn in runtime logs
-            warn_msg = message or f"{func.__name__} is deprecated since {meta.since.strftime('%Y-%m-%d')} and sunsets on {meta.sunset.strftime('%Y-%m-%d')}."
+            warn_msg = (
+                message
+                or f"{func.__name__} is deprecated since {meta.since.strftime('%Y-%m-%d')} and sunsets on {meta.sunset.strftime('%Y-%m-%d')}."
+            )
             warnings.warn(warn_msg, DeprecationWarning, stacklevel=2)
 
             response = func(*args, **kwargs)
@@ -331,10 +345,13 @@ def deprecated(since_version: str, message: str = None):
     """
     Backward-compatible decorator for marking endpoints deprecated by version string.
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            warn_msg = message or f"{func.__name__} is deprecated since v{since_version}"
+            warn_msg = (
+                message or f"{func.__name__} is deprecated since v{since_version}"
+            )
             warnings.warn(warn_msg, DeprecationWarning, stacklevel=2)
 
             response = func(*args, **kwargs)
@@ -346,7 +363,9 @@ def deprecated(since_version: str, message: str = None):
                 # Attach generic RFC 8594 headers
                 response["Deprecation"] = "true"
             return response
+
         return wrapper
+
     return decorator
 
 
@@ -360,21 +379,29 @@ def version_range(min_version: str = None, max_version: str = None):
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
-            api_version = getattr(request, 'api_version', CURRENT_VERSION)
+            api_version = getattr(request, "api_version", CURRENT_VERSION)
             if min_v and api_version < min_v:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'This endpoint requires API version >= {min_v}',
-                    'current_version': str(api_version),
-                }, status=400)
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"This endpoint requires API version >= {min_v}",
+                        "current_version": str(api_version),
+                    },
+                    status=400,
+                )
             if max_v and api_version > max_v:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'This endpoint is not available in API version > {max_v}',
-                    'current_version': str(api_version),
-                }, status=400)
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"This endpoint is not available in API version > {max_v}",
+                        "current_version": str(api_version),
+                    },
+                    status=400,
+                )
             return func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -389,6 +416,7 @@ from apps.core.versioning import HeaderAndPathVersioning
 # MIDDLEWARE (RFC 8594 SUNSET & LIFECYCLE ENFORCEMENT)
 # =============================================================================
 
+
 class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
     """
     Global middleware enforcing:
@@ -398,7 +426,7 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
     - 6-Month Lifecycle Policy with HTTP 410 Gone for expired endpoints
     """
 
-    URL_VERSION_PATTERN = re.compile(r'/api/v(\d+(?:\.\d+)?)')
+    URL_VERSION_PATTERN = re.compile(r"/api/v(\d+(?:\.\d+)?)")
 
     def process_request(self, request: HttpRequest):
         # Extract version
@@ -408,12 +436,15 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
 
         # If strict version check is enabled
         if version and not self._is_supported(version):
-            return JsonResponse({
-                'status': 'error',
-                'message': f'API version {version} is not supported',
-                'supported_versions': [str(v) for v in SUPPORTED_VERSIONS],
-                'current_version': str(CURRENT_VERSION),
-            }, status=400)
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": f"API version {version} is not supported",
+                    "supported_versions": [str(v) for v in SUPPORTED_VERSIONS],
+                    "current_version": str(CURRENT_VERSION),
+                },
+                status=400,
+            )
 
         # Check deprecation & sunset status
         meta = get_deprecation_metadata(request.path, version)
@@ -422,13 +453,18 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
         if meta:
             now = timezone.now()
             if meta.is_sunset(now) and meta.strict_sunset:
-                return JsonResponse({
-                    "error": "API_SUNSET",
-                    "status": 410,
-                    "message": meta.message or f"This endpoint has been retired per the 6-month lifecycle policy (Sunset: {meta.sunset.strftime('%Y-%m-%d')}).",
-                    "successor": meta.successor,
-                    "docs_url": meta.docs_url,
-                }, status=410, headers=meta.to_http_headers())
+                return JsonResponse(
+                    {
+                        "error": "API_SUNSET",
+                        "status": 410,
+                        "message": meta.message
+                        or f"This endpoint has been retired per the 6-month lifecycle policy (Sunset: {meta.sunset.strftime('%Y-%m-%d')}).",
+                        "successor": meta.successor,
+                        "docs_url": meta.docs_url,
+                    },
+                    status=410,
+                    headers=meta.to_http_headers(),
+                )
 
         return None
 
@@ -449,7 +485,7 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
 
     def _extract_version(self, request: HttpRequest) -> APIVersion:
         # 1. Custom Header: X-API-Version
-        x_ver = request.META.get('HTTP_X_API_VERSION')
+        x_ver = request.META.get("HTTP_X_API_VERSION")
         if x_ver:
             try:
                 return APIVersion.parse(x_ver)
@@ -457,8 +493,8 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
                 pass
 
         # 2. Content Negotiation: Accept: application/json; version=1.0
-        accept = request.META.get('HTTP_ACCEPT', '')
-        match = re.search(r'version=(\d+(?:\.\d+)?)', accept, re.IGNORECASE)
+        accept = request.META.get("HTTP_ACCEPT", "")
+        match = re.search(r"version=(\d+(?:\.\d+)?)", accept, re.IGNORECASE)
         if match:
             try:
                 return APIVersion.parse(match.group(1))
@@ -474,7 +510,7 @@ class APIVersioningAndDeprecationMiddleware(MiddlewareMixin):
                 pass
 
         # 4. Query param
-        q_ver = request.GET.get('api_version') or request.GET.get('version')
+        q_ver = request.GET.get("api_version") or request.GET.get("version")
         if q_ver:
             try:
                 return APIVersion.parse(q_ver)
@@ -495,31 +531,39 @@ APIVersionMiddleware = APIVersioningAndDeprecationMiddleware
 # VERSIONED API VIEW & SERIALIZER HELPERS
 # =============================================================================
 
+
 class VersionedAPIView(APIView):
     """
     Base class for versioned API views.
     """
+
     min_version: str = None
     max_version: str = None
 
     def dispatch(self, request, *args, **kwargs):
-        api_version = getattr(request, 'api_version', CURRENT_VERSION)
+        api_version = getattr(request, "api_version", CURRENT_VERSION)
 
         if self.min_version:
             min_v = APIVersion.parse(self.min_version)
             if api_version < min_v:
-                return Response({
-                    'status': 'error',
-                    'message': f'This endpoint requires API version >= {min_v}',
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "status": "error",
+                        "message": f"This endpoint requires API version >= {min_v}",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         if self.max_version:
             max_v = APIVersion.parse(self.max_version)
             if api_version > max_v:
-                return Response({
-                    'status': 'error',
-                    'message': f'This endpoint is not available in API version > {max_v}',
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "status": "error",
+                        "message": f"This endpoint is not available in API version > {max_v}",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -528,8 +572,8 @@ def get_versioned_serializer(request: Request, serializers_map: Dict[str, type])
     """
     Get the appropriate serializer based on API version.
     """
-    api_version = getattr(request, 'api_version', CURRENT_VERSION)
-    version_key = f'v{api_version.major}'
+    api_version = getattr(request, "api_version", CURRENT_VERSION)
+    version_key = f"v{api_version.major}"
 
     if version_key in serializers_map:
         return serializers_map[version_key]

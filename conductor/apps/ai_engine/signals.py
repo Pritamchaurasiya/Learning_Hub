@@ -14,14 +14,15 @@ def generate_course_embedding(sender, instance, created, **kwargs):
     Guarded — embedding failure never prevents course save.
     """
     # Skip if using loaddata or raw
-    if kwargs.get('raw', False):
+    if kwargs.get("raw", False):
         return
 
     try:
         from apps.ai_engine.tasks import update_course_embedding
         from django.db import transaction
         from django.conf import settings
-        if not getattr(settings, 'CELERY_TASK_ALWAYS_EAGER', False):
+
+        if not getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
             transaction.on_commit(lambda: update_course_embedding.delay(instance.id))
         else:
             try:

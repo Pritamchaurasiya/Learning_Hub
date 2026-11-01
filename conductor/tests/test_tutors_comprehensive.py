@@ -22,7 +22,7 @@ class TestTutorProfileModel:
             is_verified=True,
             skills="Python, Django, AI",
         )
-        
+
         assert profile.user == instructor
         assert profile.hourly_rate == 50.00
         assert profile.is_verified is True
@@ -38,12 +38,12 @@ class TestTutorProfileModel:
             total_reviews=10,
             skills="Testing",
         )
-        
+
         # Add new review
         profile.rating = 4.6
         profile.total_reviews = 11
         profile.save()
-        
+
         profile.refresh_from_db()
         assert profile.rating == 4.6
         assert profile.total_reviews == 11
@@ -56,7 +56,7 @@ class TestTutorProfileModel:
             hourly_rate=75.00,
             skills="Django, Python",
         )
-        
+
         result = str(profile)
         assert "Tutor" in result
 
@@ -73,19 +73,19 @@ class TestBookingModel:
             hourly_rate=50.00,
             skills="Python",
         )
-        
+
         now = timezone.now()
         booking = Booking.objects.create(
             student=user,
             tutor=profile,
             start_time=now + timedelta(hours=1),
             end_time=now + timedelta(hours=2),
-            status='pending',
+            status="pending",
         )
-        
+
         assert booking.student == user
         assert booking.tutor == profile
-        assert booking.status == 'pending'
+        assert booking.status == "pending"
 
     def test_booking_status_transitions(self, instructor, user):
         """Test booking status transitions."""
@@ -95,7 +95,7 @@ class TestBookingModel:
             hourly_rate=50.00,
             skills="Python",
         )
-        
+
         now = timezone.now()
         booking = Booking.objects.create(
             student=user,
@@ -103,17 +103,17 @@ class TestBookingModel:
             start_time=now + timedelta(hours=1),
             end_time=now + timedelta(hours=2),
         )
-        
+
         # Confirm booking
-        booking.status = 'confirmed'
+        booking.status = "confirmed"
         booking.save()
-        
+
         booking.refresh_from_db()
-        assert booking.status == 'confirmed'
-        
+        assert booking.status == "confirmed"
+
         # Complete booking
-        booking.status = 'completed'
+        booking.status = "completed"
         booking.save()
-        
+
         booking.refresh_from_db()
-        assert booking.status == 'completed'
+        assert booking.status == "completed"

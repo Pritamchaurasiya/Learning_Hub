@@ -13,7 +13,7 @@ import time
 from typing import Dict, Any, List
 from enum import Enum
 
-logger = logging.getLogger('ops.guardian')
+logger = logging.getLogger("ops.guardian")
 
 
 class SystemState(Enum):
@@ -33,7 +33,7 @@ class GuardianAgent:
     """
     Autonomous SRE Agent.
     """
-    
+
     @classmethod
     def monitor_loop(cls, metrics: Dict[str, Any]):
         """
@@ -41,14 +41,14 @@ class GuardianAgent:
         """
         latency = metrics.get("avg_latency_ms", 50)
         error_rate = metrics.get("error_rate_percent", 0.1)
-        
+
         # 1. Detection
         anomalies = []
         if latency > 1000:
             anomalies.append(AnomalyType.HIGH_LATENCY)
         if error_rate > 5.0:
             anomalies.append(AnomalyType.ERROR_SPIKE)
-            
+
         # 2. Decision
         if anomalies:
             logger.warning(f"Guardian detected anomalies: {anomalies}")
@@ -70,17 +70,19 @@ class GuardianAgent:
     # ==========================================================================
     # ACTIONS (MOCKED)
     # ==========================================================================
-    
+
     @classmethod
     def _action_scale_up(cls):
         logger.info("⚡ GUARDIAN ACTION: Scaling up worker replicas (+2)")
         # In prod: Kubernetes API call
-        
+
     @classmethod
     def _action_rollback_deployment(cls):
-        logger.critical("⚡ GUARDIAN ACTION: Initiating fast rollback to previous stable version")
+        logger.critical(
+            "⚡ GUARDIAN ACTION: Initiating fast rollback to previous stable version"
+        )
         # In prod: CICD trigger
-        
+
     @classmethod
     def _action_restart_db_pool(cls):
         logger.warning("⚡ GUARDIAN ACTION: Flushing and restarting connection pool")
@@ -88,7 +90,7 @@ class GuardianAgent:
     # ==========================================================================
     # CHAOS ENGINEERING
     # ==========================================================================
-    
+
     @classmethod
     def unleash_chaos_monkey(cls):
         """Randomly terminate components to test resilience."""

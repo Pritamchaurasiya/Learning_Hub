@@ -44,7 +44,11 @@ class TestW3CTraceContext:
     def test_parse_invalid_or_none_traceparent(self):
         assert ObservabilityService.parse_traceparent(None) == (None, None, False)
         assert ObservabilityService.parse_traceparent("") == (None, None, False)
-        assert ObservabilityService.parse_traceparent("invalid-header") == (None, None, False)
+        assert ObservabilityService.parse_traceparent("invalid-header") == (
+            None,
+            None,
+            False,
+        )
         # All zeros are illegal per W3C spec
         assert ObservabilityService.parse_traceparent(
             "00-00000000000000000000000000000000-0000000000000000-01"
@@ -59,7 +63,9 @@ class TestW3CTraceContext:
 
 class TestSpanLifecycle:
     def test_span_execution_and_timing(self):
-        with ObservabilityService.start_span("test_operation", attributes={"env": "test"}) as span:
+        with ObservabilityService.start_span(
+            "test_operation", attributes={"env": "test"}
+        ) as span:
             span.set_attribute("user.id", "usr-123")
             span.add_event("cache_check", {"hit": True})
             assert span.status == SpanStatus.UNSET
@@ -125,7 +131,9 @@ class TestDistributedTracingMiddleware:
 
         assert "traceparent" in response
         assert "X-Trace-ID" in response
-        trace_id, span_id, sampled = ObservabilityService.parse_traceparent(response["traceparent"])
+        trace_id, span_id, sampled = ObservabilityService.parse_traceparent(
+            response["traceparent"]
+        )
         assert trace_id == response["X-Trace-ID"]
         assert sampled is True
 

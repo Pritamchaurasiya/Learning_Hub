@@ -8,42 +8,89 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ChatRoom',
+            name="ChatRoom",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(blank=True, max_length=255)),
-                ('type', models.CharField(choices=[('direct', 'Direct Message'), ('group', 'Group Chat')], default='direct', max_length=10)),
-                ('last_message_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(blank=True, max_length=255)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[("direct", "Direct Message"), ("group", "Group Chat")],
+                        default="direct",
+                        max_length=10,
+                    ),
+                ),
+                ("last_message_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'chat_rooms',
-                'ordering': ['-last_message_at'],
+                "db_table": "chat_rooms",
+                "ordering": ["-last_message_at"],
             },
         ),
         migrations.CreateModel(
-            name='Message',
+            name="Message",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('content', models.TextField()),
-                ('type', models.CharField(choices=[('text', 'Text'), ('image', 'Image'), ('file', 'File'), ('audio', 'Audio'), ('video', 'Video')], default='text', max_length=10)),
-                ('is_edited', models.BooleanField(default=False)),
-                ('is_encrypted', models.BooleanField(default=False, help_text='True if content is E2E encrypted')),
-                ('attachment', models.FileField(blank=True, null=True, upload_to='chat_attachments/')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("content", models.TextField()),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("text", "Text"),
+                            ("image", "Image"),
+                            ("file", "File"),
+                            ("audio", "Audio"),
+                            ("video", "Video"),
+                        ],
+                        default="text",
+                        max_length=10,
+                    ),
+                ),
+                ("is_edited", models.BooleanField(default=False)),
+                (
+                    "is_encrypted",
+                    models.BooleanField(
+                        default=False, help_text="True if content is E2E encrypted"
+                    ),
+                ),
+                (
+                    "attachment",
+                    models.FileField(
+                        blank=True, null=True, upload_to="chat_attachments/"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'messages',
-                'ordering': ['created_at'],
+                "db_table": "messages",
+                "ordering": ["created_at"],
             },
         ),
     ]

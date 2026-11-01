@@ -20,21 +20,21 @@ class Particle:
     position: List[float]
     velocity: List[float]
     personal_best: List[float]
-    personal_best_fitness: float = float('-inf')
+    personal_best_fitness: float = float("-inf")
 
 
 class ParticleSwarmOptimizer:
     """
     PSO: Birds flocking to find global optimum.
     """
-    
+
     def __init__(
-        self, 
-        swarm_size: int = 30, 
+        self,
+        swarm_size: int = 30,
         dimensions: int = 10,
         inertia: float = 0.7,
         cognitive: float = 1.5,
-        social: float = 1.5
+        social: float = 1.5,
     ):
         self.swarm_size = swarm_size
         self.dimensions = dimensions
@@ -43,7 +43,7 @@ class ParticleSwarmOptimizer:
         self.social = social
         self.particles: List[Particle] = []
         self.global_best: List[float] = []
-        self.global_best_fitness = float('-inf')
+        self.global_best_fitness = float("-inf")
 
     def initialize_swarm(self):
         self.particles = []
@@ -58,15 +58,23 @@ class ParticleSwarmOptimizer:
         for p in self.particles:
             for i in range(self.dimensions):
                 r1, r2 = random.random(), random.random()
-                cognitive_component = self.cognitive * r1 * (p.personal_best[i] - p.position[i])
-                social_component = self.social * r2 * (self.global_best[i] - p.position[i])
-                p.velocity[i] = self.inertia * p.velocity[i] + cognitive_component + social_component
+                cognitive_component = (
+                    self.cognitive * r1 * (p.personal_best[i] - p.position[i])
+                )
+                social_component = (
+                    self.social * r2 * (self.global_best[i] - p.position[i])
+                )
+                p.velocity[i] = (
+                    self.inertia * p.velocity[i]
+                    + cognitive_component
+                    + social_component
+                )
 
     def update_positions(self):
         for p in self.particles:
             for i in range(self.dimensions):
                 p.position[i] += p.velocity[i]
-                p.position[i] = max(-10, min(10, p.position[i])) # Bounds
+                p.position[i] = max(-10, min(10, p.position[i]))  # Bounds
 
     def evaluate(self, fitness_fn: Callable):
         for p in self.particles:
@@ -78,7 +86,9 @@ class ParticleSwarmOptimizer:
                 self.global_best = p.position.copy()
                 self.global_best_fitness = fit
 
-    def optimize(self, fitness_fn: Callable, iterations: int = 100) -> Tuple[List[float], float]:
+    def optimize(
+        self, fitness_fn: Callable, iterations: int = 100
+    ) -> Tuple[List[float], float]:
         self.initialize_swarm()
         for it in range(iterations):
             self.evaluate(fitness_fn)
@@ -93,8 +103,14 @@ class AntColonyOptimizer:
     """
     ACO: Ants finding shortest path using pheromones.
     """
-    
-    def __init__(self, n_ants: int = 20, evaporation: float = 0.5, alpha: float = 1.0, beta: float = 2.0):
+
+    def __init__(
+        self,
+        n_ants: int = 20,
+        evaporation: float = 0.5,
+        alpha: float = 1.0,
+        beta: float = 2.0,
+    ):
         self.n_ants = n_ants
         self.evaporation = evaporation
         self.alpha = alpha
@@ -106,10 +122,10 @@ class AntColonyOptimizer:
         """
         n = len(distance_matrix)
         pheromone = [[1.0] * n for _ in range(n)]
-        
+
         best_tour = list(range(n))
         best_length = self._tour_length(best_tour, distance_matrix)
-        
+
         for iteration in range(50):
             all_tours = []
             for ant in range(self.n_ants):
@@ -119,9 +135,9 @@ class AntColonyOptimizer:
                 if length < best_length:
                     best_tour = tour
                     best_length = length
-                    
+
             self._update_pheromones(pheromone, all_tours)
-            
+
         return best_tour, best_length
 
     def _construct_tour(self, pheromone, distances, n) -> List[int]:
@@ -143,14 +159,16 @@ class AntColonyOptimizer:
         return tour
 
     def _tour_length(self, tour, distances) -> float:
-        return sum(distances[tour[i]][tour[(i+1) % len(tour)]] for i in range(len(tour)))
+        return sum(
+            distances[tour[i]][tour[(i + 1) % len(tour)]] for i in range(len(tour))
+        )
 
     def _update_pheromones(self, pheromone, all_tours):
         n = len(pheromone)
         for i in range(n):
             for j in range(n):
-                pheromone[i][j] *= (1 - self.evaporation)
+                pheromone[i][j] *= 1 - self.evaporation
         for tour, length in all_tours:
             deposit = 1.0 / length
             for i in range(len(tour)):
-                pheromone[tour[i]][tour[(i+1) % len(tour)]] += deposit
+                pheromone[tour[i]][tour[(i + 1) % len(tour)]] += deposit

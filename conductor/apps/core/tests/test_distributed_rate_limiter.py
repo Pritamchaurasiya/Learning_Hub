@@ -27,7 +27,9 @@ def limiter():
 
 class TestTokenBucketCore:
     def test_initial_tokens_and_deduction(self, limiter):
-        res1 = limiter.check_rate_limit("test-client-1", tier=RateLimitTier.FREE, cost=1)
+        res1 = limiter.check_rate_limit(
+            "test-client-1", tier=RateLimitTier.FREE, cost=1
+        )
         assert res1.allowed is True
         assert res1.capacity == 60
         assert res1.remaining == 59
@@ -37,11 +39,15 @@ class TestTokenBucketCore:
         identifier = "burst-client"
         # Anonymous capacity is 20 tokens
         for _ in range(20):
-            res = limiter.check_rate_limit(identifier, tier=RateLimitTier.ANONYMOUS, cost=1)
+            res = limiter.check_rate_limit(
+                identifier, tier=RateLimitTier.ANONYMOUS, cost=1
+            )
             assert res.allowed is True
 
         # 21st request should be throttled
-        res_throttled = limiter.check_rate_limit(identifier, tier=RateLimitTier.ANONYMOUS, cost=1)
+        res_throttled = limiter.check_rate_limit(
+            identifier, tier=RateLimitTier.ANONYMOUS, cost=1
+        )
         assert res_throttled.allowed is False
         assert res_throttled.remaining == 0
         assert res_throttled.retry_after > 0
@@ -57,8 +63,12 @@ class TestTokenBucketCore:
 
     def test_endpoint_profile_restriction(self, limiter):
         # Auth profile limits capacity to 25% of tier budget
-        res_auth = limiter.check_rate_limit("user-1", tier=RateLimitTier.FREE, endpoint_category="auth")
-        res_default = limiter.check_rate_limit("user-2", tier=RateLimitTier.FREE, endpoint_category="default")
+        res_auth = limiter.check_rate_limit(
+            "user-1", tier=RateLimitTier.FREE, endpoint_category="auth"
+        )
+        res_default = limiter.check_rate_limit(
+            "user-2", tier=RateLimitTier.FREE, endpoint_category="default"
+        )
 
         assert res_auth.capacity < res_default.capacity
         assert res_auth.capacity == 15  # 60 * 0.25 = 15

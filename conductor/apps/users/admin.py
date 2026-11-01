@@ -98,9 +98,19 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
     Tokens are strictly masked to prevent unauthorized account takeover.
     """
 
-    list_display = ["user", "masked_token", "created_at", "expires_at", "is_used", "is_valid_badge"]
+    list_display = [
+        "user",
+        "masked_token",
+        "created_at",
+        "expires_at",
+        "is_used",
+        "is_valid_badge",
+    ]
     list_filter = ["is_used", "created_at"]
-    search_fields = ["user__email", "user__username"]  # Never allow searching plaintext tokens
+    search_fields = [
+        "user__email",
+        "user__username",
+    ]  # Never allow searching plaintext tokens
     readonly_fields = ["token", "created_at", "expires_at"]
     list_select_related = ["user"]
     autocomplete_fields = ["user"]
@@ -138,7 +148,14 @@ class OrganizationMemberInline(admin.TabularInline):
 class OrganizationAdmin(admin.ModelAdmin):
     """Enterprise B2B Organization Admin."""
 
-    list_display = ["name", "slug", "subscription_plan", "max_seats", "owner", "created_at"]
+    list_display = [
+        "name",
+        "slug",
+        "subscription_plan",
+        "max_seats",
+        "owner",
+        "created_at",
+    ]
     list_filter = ["subscription_plan", "created_at"]
     search_fields = ["name", "slug", "owner__email"]
     list_select_related = ["owner"]
@@ -170,7 +187,10 @@ class TwoFactorAuthAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("User", {"fields": ("user", "is_enabled")}),
-        ("Security Credentials (Protected)", {"fields": ("secret", "recovery_codes", "last_verified_at")}),
+        (
+            "Security Credentials (Protected)",
+            {"fields": ("secret", "recovery_codes", "last_verified_at")},
+        ),
     )
 
 

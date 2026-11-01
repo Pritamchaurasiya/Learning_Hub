@@ -1,4 +1,3 @@
-
 from typing import List, Dict, Any, Optional
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Avg, F
@@ -16,13 +15,16 @@ logger = logging.getLogger(__name__)
 
 REC_CACHE_TIMEOUT = 600  # 10 minutes
 
+
 class RecommendationService:
     """
     Service to provide smart course recommendations using RAG / Vectors.
     """
 
     @staticmethod
-    def get_recommendations_for_user(user: User, limit: int = 5) -> List[Dict[str, Any]]:
+    def get_recommendations_for_user(
+        user: User, limit: int = 5
+    ) -> List[Dict[str, Any]]:
         """
         Get recommended courses based on user's past enrollments using Vector Similarity.
         Results are cached per-user to reduce DB/vector queries.
@@ -34,7 +36,7 @@ class RecommendationService:
 
         # 1. Get user's enrolled courses ID
         enrolled_course_ids = list(
-            Enrollment.objects.filter(user=user).values_list('course_id', flat=True)
+            Enrollment.objects.filter(user=user).values_list("course_id", flat=True)
         )
 
         if not enrolled_course_ids:
@@ -45,15 +47,16 @@ class RecommendationService:
         # 2. Get Embeddings for these courses
         # We assume CourseEmbedding is linked to Course model
         course_ct = ContentType.objects.get_for_model(Course)
-        
+
         user_vectors = CourseEmbedding.objects.filter(
-            content_type=course_ct,
-            object_id__in=enrolled_course_ids
-        ).values_list('embedding', flat=True)
+            content_type=course_ct, object_id__in=enrolled_course_ids
+        ).values_list("embedding", flat=True)
 
         if not user_vectors:
-             # Fallback if no embeddings generated yet
-            return RecommendationService._get_popular_courses(limit, exclude_ids=enrolled_course_ids)
+            # Fallback if no embeddings generated yet
+            return RecommendationService._get_popular_courses(
+                limit, exclude_ids=enrolled_course_ids
+            )
 
         # 3. Compute Average User Vector (Centroid)
         # Convert to numpy for easy averaging
@@ -67,9 +70,11 @@ class RecommendationService:
                 except (ValueError, TypeError) as e:
                     logger.warning(f"Failed to convert embedding vector: {e}")
                     continue
-        
+
         if not vectors:
-            result = RecommendationService._get_popular_courses(limit, exclude_ids=enrolled_course_ids)
+            result = RecommendationService._get_popular_courses(
+                limit, exclude_ids=enrolled_course_ids
+            )
             cache.set(cache_key, result, timeout=REC_CACHE_TIMEOUT)
             return result
 
@@ -77,35 +82,35 @@ class RecommendationService:
             user_pref_vector = np.mean(vectors, axis=0).tolist()
         except ValueError as e:
             logger.error("Failed to compute mean vector: %s", e)
-            result = RecommendationService._get_popular_courses(limit, exclude_ids=enrolled_course_ids)
+            result = RecommendationService._get_popular_courses(
+                limit, exclude_ids=enrolled_course_ids
+            )
             cache.set(cache_key, result, timeout=REC_CACHE_TIMEOUT)
             return result
 
         # 4. Vector Search for Similar Courses
         # Exclude enrolled
-        candidates = CourseEmbedding.objects.filter(
-            content_type=course_ct
-        ).exclude(
-            object_id__in=enrolled_course_ids
-        ).order_by(
-            L2Distance('embedding', user_pref_vector)
-        )[:limit]
-        
+        candidates = (
+            CourseEmbedding.objects.filter(content_type=course_ct)
+            .exclude(object_id__in=enrolled_course_ids)
+            .order_by(L2Distance("embedding", user_pref_vector))[:limit]
+        )
+
         # 5. Fetch Course Objects
         candidate_course_ids = [emb.object_id for emb in candidates]
         course_dict = Course.objects.in_bulk(candidate_course_ids)
-        
+
         recommended_courses = []
         for c_id in candidate_course_ids:
             if c_id in course_dict:
                 recommended_courses.append(course_dict[c_id])
 
         if len(recommended_courses) < limit:
-             popular = RecommendationService._get_popular_courses(
-                 limit - len(recommended_courses), 
-                 exclude_ids=enrolled_course_ids + [c.id for c in recommended_courses]
-             )
-             recommended_courses.extend(popular)
+            popular = RecommendationService._get_popular_courses(
+                limit - len(recommended_courses),
+                exclude_ids=enrolled_course_ids + [c.id for c in recommended_courses],
+            )
+            recommended_courses.extend(popular)
 
         result = [
             {
@@ -113,7 +118,7 @@ class RecommendationService:
                 "title": c.title,
                 "description": c.description,
                 "thumbnail": c.thumbnail.url if c.thumbnail else None,
-                "reason": "AI matched your learning path"
+                "reason": "AI matched your learning path",
             }
             for c in recommended_courses
         ]
@@ -127,7 +132,7 @@ class RecommendationService:
         exclude_ids: Optional[List[int]] = None,
     ) -> List[Dict[str, Any]]:
         """Get most enrolled courses as a fallback recommendation."""
-        qs = Course.objects.all().order_by('-enrollment_count')
+        qs = Course.objects.all().order_by("-enrollment_count")
         if exclude_ids:
             qs = qs.exclude(id__in=exclude_ids)
         return [

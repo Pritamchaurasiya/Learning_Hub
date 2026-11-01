@@ -7,205 +7,276 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dsa', '0003_dailyproblem_usercodedraft'),
+        ("dsa", "0003_dailyproblem_usercodedraft"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tag',
-            options={'ordering': ['name'], 'verbose_name': 'Problem Tag', 'verbose_name_plural': 'Problem Tags'},
+            name="tag",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "Problem Tag",
+                "verbose_name_plural": "Problem Tags",
+            },
         ),
         migrations.RenameIndex(
-            model_name='problem',
-            new_name='idx_problem_diff_active',
-            old_name='dsa_problem_difficu_95ce15_idx',
+            model_name="problem",
+            new_name="idx_problem_diff_active",
+            old_name="dsa_problem_difficu_95ce15_idx",
         ),
         migrations.RenameIndex(
-            model_name='problem',
-            new_name='idx_problem_active',
-            old_name='dsa_problem_is_acti_54f1b1_idx',
+            model_name="problem",
+            new_name="idx_problem_active",
+            old_name="dsa_problem_is_acti_54f1b1_idx",
         ),
         migrations.RenameIndex(
-            model_name='submission',
-            new_name='idx_sub_user_prob_status',
-            old_name='dsa_submiss_user_id_012946_idx',
+            model_name="submission",
+            new_name="idx_sub_user_prob_status",
+            old_name="dsa_submiss_user_id_012946_idx",
         ),
         migrations.RenameIndex(
-            model_name='submission',
-            new_name='idx_submission_status',
-            old_name='dsa_submiss_status_4d2db4_idx',
+            model_name="submission",
+            new_name="idx_submission_status",
+            old_name="dsa_submiss_status_4d2db4_idx",
         ),
         migrations.RenameIndex(
-            model_name='submission',
-            new_name='idx_submission_recent',
-            old_name='dsa_submiss_submitt_88a51d_idx',
+            model_name="submission",
+            new_name="idx_submission_recent",
+            old_name="dsa_submiss_submitt_88a51d_idx",
         ),
         migrations.RenameIndex(
-            model_name='submission',
-            new_name='idx_submission_user_recent',
-            old_name='dsa_submiss_user_id_ed9615_idx',
+            model_name="submission",
+            new_name="idx_submission_user_recent",
+            old_name="dsa_submiss_user_id_ed9615_idx",
         ),
         migrations.AddField(
-            model_name='problem',
-            name='acceptance_rate',
+            model_name="problem",
+            name="acceptance_rate",
             field=models.FloatField(db_index=True, default=0.0),
         ),
         migrations.AddField(
-            model_name='problem',
-            name='accepted_submissions',
+            model_name="problem",
+            name="accepted_submissions",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='problem',
-            name='total_submissions',
+            model_name="problem",
+            name="total_submissions",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='submission',
-            name='test_cases_passed',
+            model_name="submission",
+            name="test_cases_passed",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='submission',
-            name='test_cases_total',
+            model_name="submission",
+            name="test_cases_total",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='tag',
-            name='description',
+            model_name="tag",
+            name="description",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='tag',
-            name='problem_count',
+            model_name="tag",
+            name="problem_count",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='created_at',
+            model_name="problem",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='difficulty',
-            field=models.CharField(choices=[('EASY', 'Easy'), ('MEDIUM', 'Medium'), ('HARD', 'Hard')], db_index=True, default='EASY', max_length=10),
+            model_name="problem",
+            name="difficulty",
+            field=models.CharField(
+                choices=[("EASY", "Easy"), ("MEDIUM", "Medium"), ("HARD", "Hard")],
+                db_index=True,
+                default="EASY",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='is_active',
+            model_name="problem",
+            name="is_active",
             field=models.BooleanField(db_index=True, default=True),
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='points',
+            model_name="problem",
+            name="points",
             field=models.IntegerField(db_index=True, default=10),
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='slug',
+            model_name="problem",
+            name="slug",
             field=models.SlugField(max_length=280, unique=True),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='language',
-            field=models.CharField(choices=[('python', 'Python'), ('javascript', 'JavaScript'), ('cpp', 'C++'), ('java', 'Java'), ('c', 'C'), ('go', 'Go')], db_index=True, default='python', max_length=50),
+            model_name="submission",
+            name="language",
+            field=models.CharField(
+                choices=[
+                    ("python", "Python"),
+                    ("javascript", "JavaScript"),
+                    ("cpp", "C++"),
+                    ("java", "Java"),
+                    ("c", "C"),
+                    ("go", "Go"),
+                ],
+                db_index=True,
+                default="python",
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='runtime_ms',
+            model_name="submission",
+            name="runtime_ms",
             field=models.IntegerField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='status',
-            field=models.CharField(choices=[('PENDING', 'Pending'), ('AC', 'Accepted'), ('WA', 'Wrong Answer'), ('TLE', 'Time Limit Exceeded'), ('RE', 'Runtime Error'), ('CE', 'Compilation Error')], db_index=True, default='PENDING', max_length=20),
+            model_name="submission",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("PENDING", "Pending"),
+                    ("AC", "Accepted"),
+                    ("WA", "Wrong Answer"),
+                    ("TLE", "Time Limit Exceeded"),
+                    ("RE", "Runtime Error"),
+                    ("CE", "Compilation Error"),
+                ],
+                db_index=True,
+                default="PENDING",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='submitted_at',
+            model_name="submission",
+            name="submitted_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='name',
+            model_name="tag",
+            name="name",
             field=models.CharField(db_index=True, max_length=50, unique=True),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='slug',
+            model_name="tag",
+            name="slug",
             field=models.SlugField(max_length=60, unique=True),
         ),
         migrations.AddIndex(
-            model_name='problem',
-            index=models.Index(fields=['is_active', '-created_at'], name='idx_problem_active_recent'),
+            model_name="problem",
+            index=models.Index(
+                fields=["is_active", "-created_at"], name="idx_problem_active_recent"
+            ),
         ),
         migrations.AddIndex(
-            model_name='problem',
-            index=models.Index(fields=['difficulty', 'points'], name='idx_problem_diff_points'),
+            model_name="problem",
+            index=models.Index(
+                fields=["difficulty", "points"], name="idx_problem_diff_points"
+            ),
         ),
         migrations.AddIndex(
-            model_name='problem',
-            index=models.Index(fields=['-acceptance_rate'], name='idx_problem_acceptance'),
+            model_name="problem",
+            index=models.Index(
+                fields=["-acceptance_rate"], name="idx_problem_acceptance"
+            ),
         ),
         migrations.AddIndex(
-            model_name='problem',
-            index=models.Index(fields=['title'], name='idx_problem_title'),
+            model_name="problem",
+            index=models.Index(fields=["title"], name="idx_problem_title"),
         ),
         migrations.AddIndex(
-            model_name='submission',
-            index=models.Index(fields=['problem', '-submitted_at'], name='idx_submission_problem_recent'),
+            model_name="submission",
+            index=models.Index(
+                fields=["problem", "-submitted_at"],
+                name="idx_submission_problem_recent",
+            ),
         ),
         migrations.AddIndex(
-            model_name='submission',
-            index=models.Index(fields=['user', 'status', '-submitted_at'], name='idx_submission_user_status'),
+            model_name="submission",
+            index=models.Index(
+                fields=["user", "status", "-submitted_at"],
+                name="idx_submission_user_status",
+            ),
         ),
         migrations.AddIndex(
-            model_name='submission',
-            index=models.Index(fields=['language', 'status'], name='idx_submission_lang_status'),
+            model_name="submission",
+            index=models.Index(
+                fields=["language", "status"], name="idx_submission_lang_status"
+            ),
         ),
         migrations.AddIndex(
-            model_name='submission',
-            index=models.Index(fields=['runtime_ms'], name='idx_submission_runtime'),
+            model_name="submission",
+            index=models.Index(fields=["runtime_ms"], name="idx_submission_runtime"),
         ),
         migrations.AddIndex(
-            model_name='tag',
-            index=models.Index(fields=['name'], name='idx_dsa_tag_name'),
+            model_name="tag",
+            index=models.Index(fields=["name"], name="idx_dsa_tag_name"),
         ),
         migrations.AddIndex(
-            model_name='tag',
-            index=models.Index(fields=['-problem_count'], name='idx_tag_popular'),
+            model_name="tag",
+            index=models.Index(fields=["-problem_count"], name="idx_tag_popular"),
         ),
         migrations.AddConstraint(
-            model_name='problem',
-            constraint=models.CheckConstraint(check=models.Q(('points__gte', 0)), name='problem_points_non_negative'),
+            model_name="problem",
+            constraint=models.CheckConstraint(
+                check=models.Q(("points__gte", 0)), name="problem_points_non_negative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='problem',
-            constraint=models.CheckConstraint(check=models.Q(('acceptance_rate__gte', 0), ('acceptance_rate__lte', 100)), name='problem_acceptance_rate_range'),
+            model_name="problem",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("acceptance_rate__gte", 0), ("acceptance_rate__lte", 100)
+                ),
+                name="problem_acceptance_rate_range",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='submission',
-            constraint=models.CheckConstraint(check=models.Q(('runtime_ms__isnull', True), ('runtime_ms__gte', 0), _connector='OR'), name='submission_runtime_non_negative'),
+            model_name="submission",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("runtime_ms__isnull", True),
+                    ("runtime_ms__gte", 0),
+                    _connector="OR",
+                ),
+                name="submission_runtime_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='submission',
-            constraint=models.CheckConstraint(check=models.Q(('memory_kb__isnull', True), ('memory_kb__gte', 0), _connector='OR'), name='submission_memory_non_negative'),
+            model_name="submission",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("memory_kb__isnull", True), ("memory_kb__gte", 0), _connector="OR"
+                ),
+                name="submission_memory_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='submission',
-            constraint=models.CheckConstraint(check=models.Q(('test_cases_passed__lte', models.F('test_cases_total'))), name='submission_passed_less_than_total'),
+            model_name="submission",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("test_cases_passed__lte", models.F("test_cases_total"))
+                ),
+                name="submission_passed_less_than_total",
+            ),
         ),
         migrations.AlterModelTable(
-            name='problem',
-            table='dsa_problems',
+            name="problem",
+            table="dsa_problems",
         ),
         migrations.AlterModelTable(
-            name='submission',
-            table='dsa_submissions',
+            name="submission",
+            table="dsa_submissions",
         ),
         migrations.AlterModelTable(
-            name='tag',
-            table='dsa_tags',
+            name="tag",
+            table="dsa_tags",
         ),
     ]

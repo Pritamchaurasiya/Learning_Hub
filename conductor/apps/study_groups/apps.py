@@ -2,8 +2,8 @@ from django.apps import AppConfig
 
 
 class StudyGroupsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.study_groups'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.study_groups"
 
     def ready(self):
         """
@@ -11,4 +11,3 @@ class StudyGroupsConfig(AppConfig):
         This enables background Celery tasks (like Welcome Emails) to listen for ORM saves.
         """
         import apps.study_groups.signals
-

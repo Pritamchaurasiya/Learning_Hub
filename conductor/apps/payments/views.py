@@ -35,7 +35,7 @@ class CreateOrderView(generics.GenericAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = CreateOrderSerializer
-    throttle_scope = 'payment'
+    throttle_scope = "payment"
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -64,9 +64,11 @@ class CreateOrderView(generics.GenericAPIView):
 
         # Duplicate-order guard: lock + check to prevent race conditions
         with transaction.atomic():
-            existing_pending = Payment.objects.select_for_update().filter(
-                user=request.user, course=course, status="pending"
-            ).first()
+            existing_pending = (
+                Payment.objects.select_for_update()
+                .filter(user=request.user, course=course, status="pending")
+                .first()
+            )
             if existing_pending:
                 return Response(
                     {
@@ -86,17 +88,19 @@ class CreateOrderView(generics.GenericAPIView):
                 try:
                     coupon = Coupon.objects.get(code=coupon_code.upper())
                     if coupon.is_valid():
-                        discount = amount * (Decimal(coupon.discount_percent) / Decimal(100))
+                        discount = amount * (
+                            Decimal(coupon.discount_percent) / Decimal(100)
+                        )
                         amount -= discount
                 except Coupon.DoesNotExist:
                     pass
 
             # Create payment record
-            gateway = request.data.get('gateway', 'razorpay')
-            
+            gateway = request.data.get("gateway", "razorpay")
+
             # Determine currency based on gateway
-            currency = 'USD' if gateway == 'stripe' else 'INR'
-            
+            currency = "USD" if gateway == "stripe" else "INR"
+
             payment = Payment.objects.create(
                 user=request.user,
                 course=course,
@@ -108,46 +112,49 @@ class CreateOrderView(generics.GenericAPIView):
             )
 
         try:
-            if gateway == 'stripe':
+            if gateway == "stripe":
                 from .services import StripeService
+
                 stripe_service = StripeService()
-                
+
                 # Success/Cancel URLs (Frontend)
-                success_url = settings.FRONTEND_URL + '/payment/success'
-                cancel_url = settings.FRONTEND_URL + '/payment/cancel'
-                
+                success_url = settings.FRONTEND_URL + "/payment/success"
+                cancel_url = settings.FRONTEND_URL + "/payment/cancel"
+
                 session_data = stripe_service.create_checkout_session(
                     request.user, course, success_url, cancel_url, payment=payment
                 )
-                
+
                 payment.gateway_payment_id = session_data["id"]
-                payment.save(update_fields=['gateway_payment_id'])
-                
-                return Response({
-                    "status": "success",
-                    "data": {
-                        "payment_id": str(payment.id),
-                        "session_id": session_data["id"], # Stripe Session
-                        "payment_url": session_data["url"],
-                        "gateway": "stripe"
+                payment.save(update_fields=["gateway_payment_id"])
+
+                return Response(
+                    {
+                        "status": "success",
+                        "data": {
+                            "payment_id": str(payment.id),
+                            "session_id": session_data["id"],  # Stripe Session
+                            "payment_url": session_data["url"],
+                            "gateway": "stripe",
+                        },
                     }
-                })
-                
+                )
+
             else:
                 # Default: Razorpay
                 from .services import RazorpayService
+
                 razorpay_service = RazorpayService()
-                
+
                 # Create order linked to our internal payment ID
                 order = razorpay_service.create_order(
-                    amount=amount, 
-                    receipt=str(payment.id)
+                    amount=amount, receipt=str(payment.id)
                 )
-                
+
                 # Save the specific Razorpay order ID to our payment record
-                payment.gateway_payment_id = order['id']
+                payment.gateway_payment_id = order["id"]
                 payment.save()
-    
+
                 return Response(
                     {
                         "status": "success",
@@ -155,19 +162,26 @@ class CreateOrderView(generics.GenericAPIView):
                             "payment_id": str(payment.id),
                             "amount": float(amount),
                             "discount": float(discount),
-                            "order_id": order['id'],  # Return actual Razorpay Order ID
-                            "key": getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_mock'),
-                            "gateway": "razorpay"
+                            "order_id": order["id"],  # Return actual Razorpay Order ID
+                            "key": getattr(
+                                settings, "RAZORPAY_KEY_ID", "rzp_test_mock"
+                            ),
+                            "gateway": "razorpay",
                         },
                     }
                 )
         except Exception as e:
-            payment.status = 'failed'
+            payment.status = "failed"
             payment.save()
-            logger.error("Payment initiation failed for user %s: %s", request.user.id, str(e))
+            logger.error(
+                "Payment initiation failed for user %s: %s", request.user.id, str(e)
+            )
             return Response(
-                {"status": "error", "message": "Payment initiation failed. Please try again."}, 
-                status=500
+                {
+                    "status": "error",
+                    "message": "Payment initiation failed. Please try again.",
+                },
+                status=500,
             )
 
 
@@ -191,7 +205,7 @@ class VerifyPaymentView(generics.GenericAPIView):
 
         try:
             from django.core.cache import cache
-            
+
             # Idempotency Layer (Redis-backed)
             idempotency_key = f"payment_verify_idemp_{gateway_payment_id}"
             cached_response = cache.get(idempotency_key)
@@ -200,20 +214,29 @@ class VerifyPaymentView(generics.GenericAPIView):
 
             with transaction.atomic():
                 # Database-level Duplicate Guard
-                existing_payment = Payment.objects.select_for_update().filter(
-                    gateway_payment_id=gateway_payment_id, 
-                    status="completed"
-                ).first()
-                
+                existing_payment = (
+                    Payment.objects.select_for_update()
+                    .filter(gateway_payment_id=gateway_payment_id, status="completed")
+                    .first()
+                )
+
                 if existing_payment:
                     if existing_payment.user == request.user:
-                        success_data = {"status": "success", "message": "Payment already verified (DB Check)"}
-                        cache.set(idempotency_key, success_data, timeout=86400) # Cache for 24 hours
+                        success_data = {
+                            "status": "success",
+                            "message": "Payment already verified (DB Check)",
+                        }
+                        cache.set(
+                            idempotency_key, success_data, timeout=86400
+                        )  # Cache for 24 hours
                         return Response(success_data)
                     else:
                         return Response(
-                            {"status": "error", "message": "Duplicate payment ID detected"}, 
-                            status=400
+                            {
+                                "status": "error",
+                                "message": "Duplicate payment ID detected",
+                            },
+                            status=400,
                         )
 
                 payment = Payment.objects.select_for_update().get(
@@ -221,8 +244,13 @@ class VerifyPaymentView(generics.GenericAPIView):
                 )
         except Payment.DoesNotExist:
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.warning("Payment %s not found or not pending for user %s", payment_id, request.user.id)
+            logger.warning(
+                "Payment %s not found or not pending for user %s",
+                payment_id,
+                request.user.id,
+            )
             return Response(
                 {"status": "error", "message": "Payment not found"}, status=404
             )
@@ -230,47 +258,59 @@ class VerifyPaymentView(generics.GenericAPIView):
         # Verify with Razorpay via Service (Atomic)
         try:
             from .services import RazorpayService
+
             razorpay_service = RazorpayService()
-            
-            signature = request.data.get('razorpay_signature')
-            order_id = request.data.get('razorpay_order_id') # This is the gateway_order_id
-            
+
+            signature = request.data.get("razorpay_signature")
+            order_id = request.data.get(
+                "razorpay_order_id"
+            )  # This is the gateway_order_id
+
             # gateway_payment_id from serializer is the actual payment ID
-            
+
             if not signature or not order_id:
                 return Response(
-                    {"status": "error", "message": "Missing verification parameters"}, 
-                    status=400
+                    {"status": "error", "message": "Missing verification parameters"},
+                    status=400,
                 )
 
             payment = razorpay_service.verify_payment(
-                payment_id=order_id, # order_id matched gateway_order_id in DB
+                payment_id=order_id,  # order_id matched gateway_order_id in DB
                 gateway_payment_id=gateway_payment_id,
-                gateway_signature=signature
+                gateway_signature=signature,
             )
 
         except Exception as e:
-             return Response(
-                {"status": "error", "message": f"Verification failed: {str(e)}"}, 
-                status=400
+            return Response(
+                {"status": "error", "message": f"Verification failed: {str(e)}"},
+                status=400,
             )
 
         # Publish payment event — fires audit log + confirmation notification
         try:
             from apps.core.event_bus import EventBus
-            EventBus.publish("payment.completed", {
-                "user_id": request.user.id,
-                "username": request.user.username,
-                "payment_id": str(payment.id),
-                "amount": str(payment.amount),
-                "course_title": payment.course.title if hasattr(payment, 'course') else "N/A",
-            })
+
+            EventBus.publish(
+                "payment.completed",
+                {
+                    "user_id": request.user.id,
+                    "username": request.user.username,
+                    "payment_id": str(payment.id),
+                    "amount": str(payment.amount),
+                    "course_title": (
+                        payment.course.title if hasattr(payment, "course") else "N/A"
+                    ),
+                },
+            )
         except Exception:
             pass  # EventBus is non-critical
 
         # Cache the success response for idempotent retries
-        success_response = {"status": "success", "message": "Payment verified, enrolled successfully"}
-        cache.set(idempotency_key, success_response, timeout=86400) # 24 Hours
+        success_response = {
+            "status": "success",
+            "message": "Payment verified, enrolled successfully",
+        }
+        cache.set(idempotency_key, success_response, timeout=86400)  # 24 Hours
 
         return Response(success_response)
 
@@ -325,46 +365,53 @@ class SubscriptionView(generics.GenericAPIView):
     Handle Subscription Creation and Verification.
     Simplified flow using Orders (Pre-paid) instead of Recurring Plans API for MVP.
     """
+
     permission_classes = [IsAuthenticated]
-    throttle_scope = 'subscription'
-    
+    throttle_scope = "subscription"
+
     def get_serializer_class(self):
-        if self.request.method == 'POST' and 'razorpay_signature' in self.request.data:
+        if self.request.method == "POST" and "razorpay_signature" in self.request.data:
             from .serializers import VerifySubscriptionSerializer
+
             return VerifySubscriptionSerializer
         from .serializers import CreateOrderSerializer
+
         return CreateOrderSerializer
 
     def post(self, request):
         # 1. Verification Flow
-        if 'razorpay_signature' in request.data:
+        if "razorpay_signature" in request.data:
             from .models import Subscription
             from .serializers import VerifySubscriptionSerializer
             from .services import RazorpayService
-            
+
             serializer = VerifySubscriptionSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            
-            pay_id = serializer.validated_data['razorpay_payment_id']
-            ord_id = serializer.validated_data['razorpay_order_id']
-            sig = serializer.validated_data['razorpay_signature']
-            plan = serializer.validated_data['plan_type']
-            
+
+            pay_id = serializer.validated_data["razorpay_payment_id"]
+            ord_id = serializer.validated_data["razorpay_order_id"]
+            sig = serializer.validated_data["razorpay_signature"]
+            plan = serializer.validated_data["plan_type"]
+
             service = RazorpayService()
             # Verify Signature (Atomic ignored for brevity here, but should be used)
             try:
-                service.client.utility.verify_payment_signature({
-                    'razorpay_order_id': ord_id,
-                    'razorpay_payment_id': pay_id,
-                    'razorpay_signature': sig
-                })
+                service.client.utility.verify_payment_signature(
+                    {
+                        "razorpay_order_id": ord_id,
+                        "razorpay_payment_id": pay_id,
+                        "razorpay_signature": sig,
+                    }
+                )
             except Exception:
-                return Response({"status": "error", "message": "Invalid Signature"}, status=400)
-            
+                return Response(
+                    {"status": "error", "message": "Invalid Signature"}, status=400
+                )
+
             # Create Subscription Record
             # 1 Year Validity
             from datetime import timedelta
-            
+
             try:
                 # Update or Create
                 sub, _ = Subscription.objects.get_or_create(user=request.user)
@@ -374,47 +421,50 @@ class SubscriptionView(generics.GenericAPIView):
                 sub.end_date = timezone.now() + timedelta(days=365)
                 sub.save()
             except Exception as e:
-                 return Response({"status": "error", "message": str(e)}, status=500)
-            
+                return Response({"status": "error", "message": str(e)}, status=500)
+
             return Response({"status": "success", "message": "Subscription Activated"})
 
         # 2. Creation Flow
         else:
             # Create Order for Subscription Amount
             from .services import RazorpayService
+
             service = RazorpayService()
-            
+
             # Database-driven pricing from Subscription model
-            plan = request.data.get('plan_type', 'pro')
+            plan = request.data.get("plan_type", "pro")
             plan_prices = {
-                'pro': Decimal('999'),
-                'enterprise': Decimal('4999'),
-                'basic': Decimal('499'),
+                "pro": Decimal("999"),
+                "enterprise": Decimal("4999"),
+                "basic": Decimal("499"),
             }
-            amount = plan_prices.get(plan, plan_prices['pro'])
-            
+            amount = plan_prices.get(plan, plan_prices["pro"])
+
             try:
                 # We reuse create_order logic but we don't have a 'course_id'.
                 # Need to decouple create_order from Course.
                 # For now, using direct client call.
-                
+
                 amount_paise = int(amount * 100)
                 order_data = {
                     "amount": amount_paise,
                     "currency": "INR",
                     "receipt": f"sub_{request.user.id}_{timezone.now().timestamp()}",
-                    "payment_capture": 1
+                    "payment_capture": 1,
                 }
                 order = service.client.order.create(data=order_data)
-                
-                return Response({
-                    "status": "success",
-                    "data": {
-                        "order_id": order['id'],
-                        "amount": amount_paise,
-                        "key": settings.RAZORPAY_KEY_ID
+
+                return Response(
+                    {
+                        "status": "success",
+                        "data": {
+                            "order_id": order["id"],
+                            "amount": amount_paise,
+                            "key": settings.RAZORPAY_KEY_ID,
+                        },
                     }
-                })
+                )
             except Exception as e:
                 return Response({"status": "error", "message": str(e)}, status=500)
 
@@ -464,15 +514,18 @@ class RefundView(generics.GenericAPIView):
         with transaction.atomic():
             # Process refund through actual gateway
             from .advanced_payment import AdvancedPaymentService
+
             refund_result = AdvancedPaymentService.process_refund(
-                payment_id=str(payment.id),
-                reason="User requested refund"
+                payment_id=str(payment.id), reason="User requested refund"
             )
-            
-            if not refund_result.get('success'):
+
+            if not refund_result.get("success"):
                 return Response(
-                    {"status": "error", "message": refund_result.get('error', 'Refund failed')},
-                    status=502
+                    {
+                        "status": "error",
+                        "message": refund_result.get("error", "Refund failed"),
+                    },
+                    status=502,
                 )
 
             # Remove enrollment if exists
@@ -481,7 +534,9 @@ class RefundView(generics.GenericAPIView):
                     user=request.user, course=payment.course
                 ).delete()
 
-        logger.info("Refund processed for payment %s by user %s", payment_id, request.user.id)
+        logger.info(
+            "Refund processed for payment %s by user %s", payment_id, request.user.id
+        )
 
         return Response(
             {"status": "success", "message": "Refund processed, enrollment removed"}
@@ -497,7 +552,7 @@ class PaymentStatsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        payments = Payment.objects.filter(user=request.user).select_related('course')
+        payments = Payment.objects.filter(user=request.user).select_related("course")
 
         stats = payments.aggregate(
             total_spent=Sum("amount", filter=Q(status="completed")),
@@ -528,55 +583,84 @@ class ValidateCouponView(generics.GenericAPIView):
 
     POST /api/v1/payments/validate-coupon/
     """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        code = request.data.get('code', '').strip().upper()
-        amount_raw = request.data.get('amount')
-        course_id = request.data.get('course_id')
+        code = request.data.get("code", "").strip().upper()
+        amount_raw = request.data.get("amount")
+        course_id = request.data.get("course_id")
 
         if not code:
-            return Response({"status": "error", "message": "Coupon code is required."}, status=400)
+            return Response(
+                {"status": "error", "message": "Coupon code is required."}, status=400
+            )
 
         coupon = Coupon.objects.filter(code=code, is_active=True).first()
         if not coupon or not coupon.is_valid():
-            return Response({"status": "error", "valid": False, "message": "Invalid or expired coupon."}, status=400)
+            return Response(
+                {
+                    "status": "error",
+                    "valid": False,
+                    "message": "Invalid or expired coupon.",
+                },
+                status=400,
+            )
 
         # Check course-specific restriction if configured
         if course_id and coupon.courses.exists():
             if not coupon.courses.filter(id=course_id).exists():
-                return Response({"status": "error", "valid": False, "message": "Coupon not applicable to this course."}, status=400)
+                return Response(
+                    {
+                        "status": "error",
+                        "valid": False,
+                        "message": "Coupon not applicable to this course.",
+                    },
+                    status=400,
+                )
 
         base_amount = Decimal(str(amount_raw)) if amount_raw is not None else Decimal(0)
-        discount_amount = base_amount * (Decimal(coupon.discount_percent) / Decimal(100))
+        discount_amount = base_amount * (
+            Decimal(coupon.discount_percent) / Decimal(100)
+        )
         final_amount = max(Decimal(0), base_amount - discount_amount)
 
-        return Response({
-            "status": "success",
-            "valid": True,
-            "data": {
-                "code": coupon.code,
-                "discount_percent": float(coupon.discount_percent),
-                "original_amount": float(base_amount),
-                "discount_amount": float(discount_amount),
-                "final_amount": float(final_amount),
-                "currency": "INR"
+        return Response(
+            {
+                "status": "success",
+                "valid": True,
+                "data": {
+                    "code": coupon.code,
+                    "discount_percent": float(coupon.discount_percent),
+                    "original_amount": float(base_amount),
+                    "discount_amount": float(discount_amount),
+                    "final_amount": float(final_amount),
+                    "currency": "INR",
+                },
             }
-        })
+        )
 
 
 class InvoiceListView(generics.GenericAPIView):
     """List student invoices."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         from .models import Invoice
-        invoices = Invoice.objects.filter(user=request.user).select_related('payment', 'payment__course')
+
+        invoices = Invoice.objects.filter(user=request.user).select_related(
+            "payment", "payment__course"
+        )
         data = [
             {
                 "id": str(inv.id),
                 "invoice_number": inv.invoice_number,
-                "course_title": inv.payment.course.title if inv.payment.course else "Subscription / Platform Service",
+                "course_title": (
+                    inv.payment.course.title
+                    if inv.payment.course
+                    else "Subscription / Platform Service"
+                ),
                 "amount": float(inv.total_amount),
                 "tax_amount": float(inv.tax_amount),
                 "issued_at": inv.issued_at.isoformat(),
@@ -589,27 +673,43 @@ class InvoiceListView(generics.GenericAPIView):
 
 class InvoiceDetailView(generics.GenericAPIView):
     """Retrieve digital invoice receipt details."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, invoice_number):
         from .models import Invoice
-        inv = Invoice.objects.filter(user=request.user, invoice_number=invoice_number).select_related('payment', 'payment__course').first()
-        if not inv:
-            return Response({"status": "error", "message": "Invoice not found."}, status=404)
 
-        return Response({
-            "status": "success",
-            "data": {
-                "invoice_number": inv.invoice_number,
-                "billing_name": inv.billing_name or request.user.get_full_name() or request.user.username,
-                "billing_email": inv.billing_email or request.user.email,
-                "item_description": inv.payment.course.title if inv.payment.course else "Pro Tier Access",
-                "subtotal": float(inv.total_amount - inv.tax_amount),
-                "tax_amount": float(inv.tax_amount),
-                "total_amount": float(inv.total_amount),
-                "currency": inv.payment.currency,
-                "payment_gateway": inv.payment.gateway,
-                "payment_status": inv.payment.status,
-                "issued_at": inv.issued_at.isoformat(),
+        inv = (
+            Invoice.objects.filter(user=request.user, invoice_number=invoice_number)
+            .select_related("payment", "payment__course")
+            .first()
+        )
+        if not inv:
+            return Response(
+                {"status": "error", "message": "Invoice not found."}, status=404
+            )
+
+        return Response(
+            {
+                "status": "success",
+                "data": {
+                    "invoice_number": inv.invoice_number,
+                    "billing_name": inv.billing_name
+                    or request.user.get_full_name()
+                    or request.user.username,
+                    "billing_email": inv.billing_email or request.user.email,
+                    "item_description": (
+                        inv.payment.course.title
+                        if inv.payment.course
+                        else "Pro Tier Access"
+                    ),
+                    "subtotal": float(inv.total_amount - inv.tax_amount),
+                    "tax_amount": float(inv.tax_amount),
+                    "total_amount": float(inv.total_amount),
+                    "currency": inv.payment.currency,
+                    "payment_gateway": inv.payment.gateway,
+                    "payment_status": inv.payment.status,
+                    "issued_at": inv.issued_at.isoformat(),
+                },
             }
-        })
+        )

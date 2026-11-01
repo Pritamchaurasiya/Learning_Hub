@@ -31,7 +31,7 @@ __all__ = [
     "LearningHubClient",
     "Auth",
     "LearningHubError",
-    "AuthenticationError", 
+    "AuthenticationError",
     "APIError",
     "NotFoundError",
     "ValidationError",

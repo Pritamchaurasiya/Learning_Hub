@@ -8,68 +8,157 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Problem',
+            name="Problem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(db_index=True, max_length=255)),
-                ('slug', models.SlugField(unique=True)),
-                ('description', models.TextField(help_text='Markdown supported')),
-                ('difficulty', models.CharField(choices=[('EASY', 'Easy'), ('MEDIUM', 'Medium'), ('HARD', 'Hard')], default='EASY', max_length=10)),
-                ('points', models.IntegerField(default=10)),
-                ('constraints', models.TextField(help_text='Time & Memory constraints')),
-                ('input_format', models.TextField()),
-                ('output_format', models.TextField()),
-                ('examples', models.JSONField(default=list, help_text='Structured examples for UI')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(db_index=True, max_length=255)),
+                ("slug", models.SlugField(unique=True)),
+                ("description", models.TextField(help_text="Markdown supported")),
+                (
+                    "difficulty",
+                    models.CharField(
+                        choices=[
+                            ("EASY", "Easy"),
+                            ("MEDIUM", "Medium"),
+                            ("HARD", "Hard"),
+                        ],
+                        default="EASY",
+                        max_length=10,
+                    ),
+                ),
+                ("points", models.IntegerField(default=10)),
+                (
+                    "constraints",
+                    models.TextField(help_text="Time & Memory constraints"),
+                ),
+                ("input_format", models.TextField()),
+                ("output_format", models.TextField()),
+                (
+                    "examples",
+                    models.JSONField(
+                        default=list, help_text="Structured examples for UI"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Tag',
+            name="Tag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('slug', models.SlugField(unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("slug", models.SlugField(unique=True)),
             ],
             options={
-                'ordering': ['name'],
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='TestCase',
+            name="TestCase",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('input_data', models.TextField()),
-                ('expected_output', models.TextField()),
-                ('is_hidden', models.BooleanField(default=True, help_text='Hidden cases are for evaluation, visible for example')),
-                ('explanation', models.TextField(blank=True, help_text='Explanation for example cases')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("input_data", models.TextField()),
+                ("expected_output", models.TextField()),
+                (
+                    "is_hidden",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Hidden cases are for evaluation, visible for example",
+                    ),
+                ),
+                (
+                    "explanation",
+                    models.TextField(
+                        blank=True, help_text="Explanation for example cases"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Submission',
+            name="Submission",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.TextField()),
-                ('language', models.CharField(default='python', max_length=50)),
-                ('status', models.CharField(choices=[('PENDING', 'Pending'), ('AC', 'Accepted'), ('WA', 'Wrong Answer'), ('TLE', 'Time Limit Exceeded'), ('RE', 'Runtime Error'), ('CE', 'Compilation Error')], default='PENDING', max_length=20)),
-                ('runtime_ms', models.IntegerField(blank=True, null=True)),
-                ('memory_kb', models.IntegerField(blank=True, null=True)),
-                ('error_log', models.TextField(blank=True)),
-                ('ai_feedback', models.JSONField(blank=True, help_text='AI generated code review and hints', null=True)),
-                ('submitted_at', models.DateTimeField(auto_now_add=True)),
-                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='submissions', to='dsa.problem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.TextField()),
+                ("language", models.CharField(default="python", max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("PENDING", "Pending"),
+                            ("AC", "Accepted"),
+                            ("WA", "Wrong Answer"),
+                            ("TLE", "Time Limit Exceeded"),
+                            ("RE", "Runtime Error"),
+                            ("CE", "Compilation Error"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("runtime_ms", models.IntegerField(blank=True, null=True)),
+                ("memory_kb", models.IntegerField(blank=True, null=True)),
+                ("error_log", models.TextField(blank=True)),
+                (
+                    "ai_feedback",
+                    models.JSONField(
+                        blank=True,
+                        help_text="AI generated code review and hints",
+                        null=True,
+                    ),
+                ),
+                ("submitted_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "problem",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="submissions",
+                        to="dsa.problem",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-submitted_at'],
+                "ordering": ["-submitted_at"],
             },
         ),
     ]

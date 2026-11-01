@@ -13,7 +13,7 @@ def search_test_data(db, create_user):
     instructor = create_user(email="search_instructor@test.com", username="search_inst")
     student = create_user(email="search_student@test.com", username="search_stud")
     category = Category.objects.create(name="AI & ML", slug="ai-ml-search")
-    
+
     course_cert = Course.objects.create(
         title="Deep Learning with PyTorch",
         slug="deep-learning-pytorch",
@@ -25,7 +25,7 @@ def search_test_data(db, create_user):
         avg_rating=Decimal("4.8"),
         is_published=True,
     )
-    
+
     course_no_cert = Course.objects.create(
         title="Introduction to Python",
         slug="intro-python",
@@ -38,21 +38,22 @@ def search_test_data(db, create_user):
         avg_rating=Decimal("4.5"),
         is_published=True,
     )
-    
+
     from django.utils import timezone
+
     enrollment = Enrollment.objects.create(
         user=student,
         course=course_cert,
         completed_at=timezone.now(),
         progress_percentage=100,
     )
-    
+
     Certificate.objects.create(
         user=student,
         course=course_cert,
         enrollment=enrollment,
     )
-    
+
     return {
         "course_cert": course_cert,
         "course_no_cert": course_no_cert,

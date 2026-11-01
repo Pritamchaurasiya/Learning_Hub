@@ -88,7 +88,9 @@ class EbookDetailSerializer(serializers.ModelSerializer):
     def get_user_progress(self, obj):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
-            prog = EbookReadingProgress.objects.filter(user=request.user, ebook=obj).first()
+            prog = EbookReadingProgress.objects.filter(
+                user=request.user, ebook=obj
+            ).first()
             if prog:
                 return {
                     "progress_percentage": prog.progress_percentage,

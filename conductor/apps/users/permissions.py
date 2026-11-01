@@ -50,7 +50,9 @@ class IsSuperAdmin(BasePermission):
     """Allows access strictly to Django superusers."""
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
+        return bool(
+            request.user and request.user.is_authenticated and request.user.is_superuser
+        )
 
 
 class IsModerator(BasePermission):
@@ -61,7 +63,8 @@ class IsModerator(BasePermission):
             request.user
             and request.user.is_authenticated
             and (
-                getattr(request.user, "role", None) in ["moderator", "MODERATOR", "admin", "ADMIN"]
+                getattr(request.user, "role", None)
+                in ["moderator", "MODERATOR", "admin", "ADMIN"]
                 or request.user.is_staff
                 or request.user.is_superuser
             )
@@ -75,4 +78,6 @@ class IsOwnerOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         user = getattr(obj, "user", None) or getattr(obj, "owner", None) or obj
-        return bool(request.user and request.user.is_authenticated and user == request.user)
+        return bool(
+            request.user and request.user.is_authenticated and user == request.user
+        )

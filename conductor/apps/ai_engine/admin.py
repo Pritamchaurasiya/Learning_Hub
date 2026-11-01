@@ -43,7 +43,13 @@ class ResearchQuizAdmin(admin.ModelAdmin):
 
 @admin.register(ModuleProgress)
 class ModuleProgressAdmin(admin.ModelAdmin):
-    list_display = ["user", "module_slug", "is_completed", "quiz_passed", "completed_at"]
+    list_display = [
+        "user",
+        "module_slug",
+        "is_completed",
+        "quiz_passed",
+        "completed_at",
+    ]
     list_filter = ["is_completed", "quiz_passed"]
     search_fields = ["user__email", "module_slug"]
     list_select_related = ["user"]
@@ -52,7 +58,14 @@ class ModuleProgressAdmin(admin.ModelAdmin):
 
 @admin.register(LearningInsight)
 class LearningInsightAdmin(admin.ModelAdmin):
-    list_display = ["user", "engagement_score", "consistency_score", "completion_rate", "burnout_risk", "created_at"]
+    list_display = [
+        "user",
+        "engagement_score",
+        "consistency_score",
+        "completion_rate",
+        "burnout_risk",
+        "created_at",
+    ]
     list_filter = ["preferred_time", "created_at"]
     search_fields = ["user__email", "user__username", "preferred_time"]
     list_select_related = ["user"]
@@ -77,7 +90,15 @@ class ChallengeParticipantInline(admin.TabularInline):
 
 @admin.register(Challenge)
 class ChallengeAdmin(admin.ModelAdmin):
-    list_display = ["title", "challenge_type", "difficulty", "xp_reward", "is_active", "starts_at", "ends_at"]
+    list_display = [
+        "title",
+        "challenge_type",
+        "difficulty",
+        "xp_reward",
+        "is_active",
+        "starts_at",
+        "ends_at",
+    ]
     list_filter = ["is_active", "challenge_type", "difficulty"]
     search_fields = ["title", "description"]
     inlines = [ChallengeParticipantInline]
@@ -87,8 +108,16 @@ class ChallengeAdmin(admin.ModelAdmin):
 class SemanticCacheAdmin(admin.ModelAdmin):
     list_display = ["id", "query_text_short", "created_at", "updated_at"]
     search_fields = ["query_text"]
-    readonly_fields = ["query_text", "response_payload", "query_embedding", "created_at", "updated_at"]
+    readonly_fields = [
+        "query_text",
+        "response_payload",
+        "query_embedding",
+        "created_at",
+        "updated_at",
+    ]
 
     @admin.display(description="Query Text")
     def query_text_short(self, obj):
-        return obj.query_text[:60] + "..." if len(obj.query_text) > 60 else obj.query_text
+        return (
+            obj.query_text[:60] + "..." if len(obj.query_text) > 60 else obj.query_text
+        )

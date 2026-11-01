@@ -9,7 +9,7 @@ class CodeValidator:
     """
     Secure static analysis for untrusted Python code using AST.
     Far superior to regex-based filtering as it parses structure/intent.
-    
+
     Security Features:
     1. Forbidden module imports
     2. Forbidden built-in calls
@@ -20,33 +20,94 @@ class CodeValidator:
 
     # Modules that are completely forbidden
     FORBIDDEN_MODULES = {
-        'os', 'sys', 'subprocess', 'socket', 'requests', 'shutil',
-        'pathlib', 'pickle', 'importlib', 'inspect', 'traceback',
-        'ctypes', 'multiprocessing', 'threading', 'asyncio',
-        'signal', 'resource', 'pty', 'pwd', 'grp', 'crypt',
-        'tempfile', 'glob', 'fnmatch', 'codecs', 'marshal'
+        "os",
+        "sys",
+        "subprocess",
+        "socket",
+        "requests",
+        "shutil",
+        "pathlib",
+        "pickle",
+        "importlib",
+        "inspect",
+        "traceback",
+        "ctypes",
+        "multiprocessing",
+        "threading",
+        "asyncio",
+        "signal",
+        "resource",
+        "pty",
+        "pwd",
+        "grp",
+        "crypt",
+        "tempfile",
+        "glob",
+        "fnmatch",
+        "codecs",
+        "marshal",
     }
 
     # Safe modules explicitly allowed
     ALLOWED_MODULES = {
-        'math', 'collections', 'itertools', 'functools', 'heapq',
-        'bisect', 'random', 'string', 're', 'typing', 'dataclasses',
-        'enum', 'copy', 'operator', 'fractions', 'decimal', 'statistics'
+        "math",
+        "collections",
+        "itertools",
+        "functools",
+        "heapq",
+        "bisect",
+        "random",
+        "string",
+        "re",
+        "typing",
+        "dataclasses",
+        "enum",
+        "copy",
+        "operator",
+        "fractions",
+        "decimal",
+        "statistics",
     }
 
     # Built-ins that are forbidden to CALL
     FORBIDDEN_CALLS = {
-        'exec', 'eval', 'compile', 'open', 'globals', 'locals', 'vars',
-        'getattr', 'setattr', 'delattr', '__import__', 'input',
-        'breakpoint', 'memoryview', 'bytearray', 'bytes'
+        "exec",
+        "eval",
+        "compile",
+        "open",
+        "globals",
+        "locals",
+        "vars",
+        "getattr",
+        "setattr",
+        "delattr",
+        "__import__",
+        "input",
+        "breakpoint",
+        "memoryview",
+        "bytearray",
+        "bytes",
     }
 
     # Attributes/Dunders that are forbidden to ACCESS
     FORBIDDEN_ATTRIBUTES = {
-        '__subclasses__', '__bases__', '__globals__', '__code__',
-        '__closure__', '__func__', '__self__', '__module__', '__dict__',
-        '__mro__', '__class__', '__call__', '__reduce__', '__reduce_ex__',
-        '__getstate__', '__setstate__', '__builtins__'
+        "__subclasses__",
+        "__bases__",
+        "__globals__",
+        "__code__",
+        "__closure__",
+        "__func__",
+        "__self__",
+        "__module__",
+        "__dict__",
+        "__mro__",
+        "__class__",
+        "__call__",
+        "__reduce__",
+        "__reduce_ex__",
+        "__getstate__",
+        "__setstate__",
+        "__builtins__",
     }
 
     # Limits
@@ -65,7 +126,7 @@ class CodeValidator:
 
         def visit_Import(self, node):
             for alias in node.names:
-                module_name = alias.name.split('.')[0]
+                module_name = alias.name.split(".")[0]
                 if module_name in CodeValidator.FORBIDDEN_MODULES:
                     self.errors.append(f"Importing '{alias.name}' is forbidden.")
                 elif module_name not in CodeValidator.ALLOWED_MODULES:
@@ -74,11 +135,13 @@ class CodeValidator:
 
         def visit_ImportFrom(self, node):
             if node.module:
-                module_name = node.module.split('.')[0]
+                module_name = node.module.split(".")[0]
                 if module_name in CodeValidator.FORBIDDEN_MODULES:
                     self.errors.append(f"Importing from '{node.module}' is forbidden.")
                 elif module_name not in CodeValidator.ALLOWED_MODULES:
-                    self.errors.append(f"Import from '{module_name}' not in allowed list.")
+                    self.errors.append(
+                        f"Import from '{module_name}' not in allowed list."
+                    )
             self.generic_visit(node)
 
         def visit_Call(self, node):
@@ -91,20 +154,26 @@ class CodeValidator:
         def visit_Attribute(self, node):
             # Check attribute access: obj.attr
             if node.attr in CodeValidator.FORBIDDEN_ATTRIBUTES:
-                self.errors.append(f"Accessing sensitive attribute '{node.attr}' is forbidden.")
+                self.errors.append(
+                    f"Accessing sensitive attribute '{node.attr}' is forbidden."
+                )
             self.generic_visit(node)
 
         def visit_FunctionDef(self, node):
             self.function_count += 1
             if self.function_count > CodeValidator.MAX_FUNCTION_COUNT:
-                self.errors.append(f"Too many functions (max {CodeValidator.MAX_FUNCTION_COUNT}).")
+                self.errors.append(
+                    f"Too many functions (max {CodeValidator.MAX_FUNCTION_COUNT})."
+                )
             self.generic_visit(node)
 
         def visit_For(self, node):
             self.loop_depth += 1
             self.max_loop_depth_seen = max(self.max_loop_depth_seen, self.loop_depth)
             if self.loop_depth > CodeValidator.MAX_LOOP_DEPTH:
-                self.errors.append(f"Loop nesting too deep (max {CodeValidator.MAX_LOOP_DEPTH}).")
+                self.errors.append(
+                    f"Loop nesting too deep (max {CodeValidator.MAX_LOOP_DEPTH})."
+                )
             self.generic_visit(node)
             self.loop_depth -= 1
 
@@ -112,7 +181,9 @@ class CodeValidator:
             self.loop_depth += 1
             self.max_loop_depth_seen = max(self.max_loop_depth_seen, self.loop_depth)
             if self.loop_depth > CodeValidator.MAX_LOOP_DEPTH:
-                self.errors.append(f"Loop nesting too deep (max {CodeValidator.MAX_LOOP_DEPTH}).")
+                self.errors.append(
+                    f"Loop nesting too deep (max {CodeValidator.MAX_LOOP_DEPTH})."
+                )
             self.generic_visit(node)
             self.loop_depth -= 1
 
@@ -124,9 +195,11 @@ class CodeValidator:
         """
         # Size limits
         if len(code) > CodeValidator.MAX_CODE_LENGTH:
-            raise ValueError(f"Code too long (max {CodeValidator.MAX_CODE_LENGTH // 1000}KB).")
-        
-        line_count = code.count('\n') + 1
+            raise ValueError(
+                f"Code too long (max {CodeValidator.MAX_CODE_LENGTH // 1000}KB)."
+            )
+
+        line_count = code.count("\n") + 1
         if line_count > CodeValidator.MAX_LINE_COUNT:
             raise ValueError(f"Too many lines (max {CodeValidator.MAX_LINE_COUNT}).")
 
@@ -154,18 +227,17 @@ class CodeValidator:
             tree = ast.parse(code)
             visitor = CodeValidator.SecurityVisitor()
             visitor.visit(tree)
-            
+
             return {
-                'line_count': code.count('\n') + 1,
-                'char_count': len(code),
-                'function_count': visitor.function_count,
-                'max_loop_depth': visitor.max_loop_depth_seen,
-                'is_valid': len(visitor.errors) == 0
+                "line_count": code.count("\n") + 1,
+                "char_count": len(code),
+                "function_count": visitor.function_count,
+                "max_loop_depth": visitor.max_loop_depth_seen,
+                "is_valid": len(visitor.errors) == 0,
             }
         except Exception:
             return {
-                'line_count': code.count('\n') + 1,
-                'char_count': len(code),
-                'is_valid': False
+                "line_count": code.count("\n") + 1,
+                "char_count": len(code),
+                "is_valid": False,
             }
-

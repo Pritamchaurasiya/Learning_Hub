@@ -11,13 +11,19 @@ from .models import (
 )
 
 
-def list_published_ebooks(category: Optional[str] = None, search: Optional[str] = None) -> QuerySet[Ebook]:
+def list_published_ebooks(
+    category: Optional[str] = None, search: Optional[str] = None
+) -> QuerySet[Ebook]:
     """Retrieve all published ebooks with optional category and search filters."""
     qs = Ebook.objects.filter(is_published=True)
     if category and category.lower() != "all":
         qs = qs.filter(category__iexact=category)
     if search:
-        qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search) | Q(author__icontains=search))
+        qs = qs.filter(
+            Q(title__icontains=search)
+            | Q(description__icontains=search)
+            | Q(author__icontains=search)
+        )
     return qs.prefetch_related("chapters")
 
 
@@ -41,17 +47,25 @@ def get_chapter_by_order(ebook_id_or_slug: str, order: int) -> Optional[EbookCha
 
 def list_user_highlights(user, ebook_id: str) -> QuerySet[EbookHighlight]:
     """List all highlights for an authenticated user on a specific ebook."""
-    return EbookHighlight.objects.filter(user=user, ebook__id=ebook_id).select_related("chapter")
+    return EbookHighlight.objects.filter(user=user, ebook__id=ebook_id).select_related(
+        "chapter"
+    )
 
 
 def list_user_bookmarks(user, ebook_id: str) -> QuerySet[EbookBookmark]:
     """List all bookmarks for an authenticated user on a specific ebook."""
-    return EbookBookmark.objects.filter(user=user, ebook__id=ebook_id).select_related("chapter")
+    return EbookBookmark.objects.filter(user=user, ebook__id=ebook_id).select_related(
+        "chapter"
+    )
 
 
 def get_user_reading_progress(user, ebook_id: str) -> Optional[EbookReadingProgress]:
     """Get the current reading progress record for a user."""
-    return EbookReadingProgress.objects.filter(user=user, ebook__id=ebook_id).select_related("current_chapter").first()
+    return (
+        EbookReadingProgress.objects.filter(user=user, ebook__id=ebook_id)
+        .select_related("current_chapter")
+        .first()
+    )
 
 
 def list_chapter_flashcards(chapter_id: str) -> QuerySet[EbookFlashcard]:

@@ -8,18 +8,22 @@ from .services import SandboxService
 def send_update(user_id, status, submission_id=None):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'user_{user_id}_submissions',
+        f"user_{user_id}_submissions",
         {
-            'type': 'submission_update',
-            'message': {
-                'status': status,
-                'submission_id': submission_id
-            }
-        }
+            "type": "submission_update",
+            "message": {"status": status, "submission_id": submission_id},
+        },
     )
 
 
-@shared_task(bind=True, time_limit=10, soft_time_limit=8, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 2})
+@shared_task(
+    bind=True,
+    time_limit=10,
+    soft_time_limit=8,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
 def evaluate_submission_task(self, submission_id):
     """
     Asynchronous task to evaluate a submission and generate AI feedback.
@@ -29,7 +33,7 @@ def evaluate_submission_task(self, submission_id):
         submission = Submission.objects.get(id=submission_id)
         user_id = submission.user.id
 
-        send_update(user_id, 'PROCESSING', submission_id)
+        send_update(user_id, "PROCESSING", submission_id)
 
         SandboxService.evaluate(submission)
 

@@ -72,7 +72,14 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "dev-anthropic-key")
 # N+1 Query Detection (Development Only)
 NPLUS_ONE_DETECTION_ENABLED = True
 NPLUS_ONE_THRESHOLD = 10
-NPLUS_ONE_IGNORED_PATHS = ['/health/', '/admin/', '/static/', '/media/', '/api/schema/', '/api/docs/']
+NPLUS_ONE_IGNORED_PATHS = [
+    "/health/",
+    "/admin/",
+    "/static/",
+    "/media/",
+    "/api/schema/",
+    "/api/docs/",
+]
 
 # Query Count Logging
 QUERY_COUNT_LOGGING = True

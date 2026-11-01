@@ -10,39 +10,63 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('chat', '0001_initial'),
+        ("chat", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chatroom',
-            name='created_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_rooms', to=settings.AUTH_USER_MODEL),
+            model_name="chatroom",
+            name="created_by",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="created_rooms",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='chatroom',
-            name='participants',
-            field=models.ManyToManyField(related_name='chat_rooms', to=settings.AUTH_USER_MODEL),
+            model_name="chatroom",
+            name="participants",
+            field=models.ManyToManyField(
+                related_name="chat_rooms", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='conversation',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='chat.chatroom'),
+            model_name="message",
+            name="conversation",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="messages",
+                to="chat.chatroom",
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='read_by',
-            field=models.ManyToManyField(blank=True, related_name='read_messages', to=settings.AUTH_USER_MODEL),
+            model_name="message",
+            name="read_by",
+            field=models.ManyToManyField(
+                blank=True, related_name="read_messages", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='room',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='room_messages', to='chat.chatroom'),
+            model_name="message",
+            name="room",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="room_messages",
+                to="chat.chatroom",
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='sender',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sent_messages', to=settings.AUTH_USER_MODEL),
+            model_name="message",
+            name="sender",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sent_messages",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

@@ -10,13 +10,9 @@ from apps.dsa.models import Problem, TestCase, Submission, Tag
 from apps.dsa.services import SandboxService
 
 
-
 # ==============================================================================
 # TESTS
 # ==============================================================================
-
-
-
 
 
 # ==============================================================================
@@ -115,25 +111,25 @@ class TestProblemListAPI:
     def test_list_problems_unauthenticated(self, api_client, problem):
         """Anyone can view problems list."""
         response = api_client.get("/api/v1/dsa/problems/")
-        
+
         assert response.status_code == status.HTTP_200_OK
 
     def test_list_problems_authenticated(self, authenticated_client, problem):
         """Authenticated users can view problems."""
         response = authenticated_client.get("/api/v1/dsa/problems/")
-        
+
         assert response.status_code == status.HTTP_200_OK
 
     def test_filter_by_difficulty(self, api_client, problem, problem_medium):
         """Test filtering problems by difficulty."""
         response = api_client.get("/api/v1/dsa/problems/?difficulty=easy")
-        
+
         assert response.status_code == status.HTTP_200_OK
 
     def test_filter_by_tag(self, api_client, problem, tag):
         """Test filtering problems by tag."""
         response = api_client.get(f"/api/v1/dsa/problems/?tag={tag.slug}")
-        
+
         assert response.status_code == status.HTTP_200_OK
 
 
@@ -144,7 +140,7 @@ class TestProblemDetailAPI:
     def test_get_problem_detail(self, api_client, problem, test_case):
         """Test retrieving problem by slug."""
         response = api_client.get(f"/api/v1/dsa/problems/{problem.slug}/")
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["title"] == "Two Sum"
         assert response.data["difficulty"] == "EASY"
@@ -152,13 +148,13 @@ class TestProblemDetailAPI:
     def test_problem_not_found(self, api_client):
         """Test 404 for non-existent problem slug."""
         response = api_client.get("/api/v1/dsa/problems/nonexistent/")
-        
+
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_example_cases_included(self, api_client, problem, test_case):
         """Test example cases are included in detail view."""
         response = api_client.get(f"/api/v1/dsa/problems/{problem.slug}/")
-        
+
         assert response.status_code == status.HTTP_200_OK
         # Either examples or example_cases should be present
         assert "examples" in response.data or "example_cases" in response.data
@@ -176,7 +172,7 @@ class TestSubmissionAPI:
             "code": "def solution():\n    pass",
             "language": "python",
         }
-        response = api_client.post("/api/v1/dsa/submissions/", data, format='json')
+        response = api_client.post("/api/v1/dsa/submissions/", data, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -187,9 +183,10 @@ class TestSubmissionAPI:
             "code": "def solution():\n    pass",
             "language": "python",
         }
-        response = api_client.post("/api/v1/dsa/submissions/", data, format='json')
+        response = api_client.post("/api/v1/dsa/submissions/", data, format="json")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
     def test_list_own_submissions(self, api_client, user, submission):
         """Users see only their own submissions."""
         api_client.force_authenticate(user=user)
@@ -205,6 +202,7 @@ class TestSubmissionAPI:
         assert response.status_code == status.HTTP_200_OK
         assert "status" in response.data
 
+
 @pytest.mark.django_db
 class TestTagAPI:
     """Tests for tag endpoints."""
@@ -212,7 +210,7 @@ class TestTagAPI:
     def test_list_tags(self, api_client, tag, tag_dp):
         """Test listing all tags."""
         response = api_client.get("/api/v1/dsa/tags/")
-        
+
         assert response.status_code == status.HTTP_200_OK
 
 
@@ -235,35 +233,35 @@ class TestSandboxService:
     def test_sanitize_blocks_os_import(self):
         """Test os import is blocked."""
         malicious_code = "import os\nos.system('rm -rf /')"
-        
+
         with pytest.raises(ValueError, match="Security Violation|Dangerous"):
             SandboxService.sanitize_code(malicious_code)
 
     def test_sanitize_blocks_subprocess(self):
         """Test subprocess import is blocked."""
         malicious_code = "import subprocess\nsubprocess.run(['ls'])"
-        
+
         with pytest.raises(ValueError, match="Security Violation|Dangerous"):
             SandboxService.sanitize_code(malicious_code)
 
     def test_sanitize_blocks_eval(self):
         """Test eval is blocked."""
-        malicious_code = "eval('__import__(\"os\").system(\"pwd\")')"
-        
+        malicious_code = 'eval(\'__import__("os").system("pwd")\')'
+
         with pytest.raises(ValueError, match="Security Violation|Dangerous|eval"):
             SandboxService.sanitize_code(malicious_code)
 
     def test_sanitize_blocks_exec(self):
         """Test exec is blocked."""
         malicious_code = "exec('print(1)')"
-        
+
         with pytest.raises(ValueError, match="Security Violation|Dangerous|exec"):
             SandboxService.sanitize_code(malicious_code)
 
     def test_sanitize_blocks_open(self):
         """Test open is blocked."""
         malicious_code = "with open('/etc/passwd') as f:\n    print(f.read())"
-        
+
         with pytest.raises(ValueError, match="Security Violation|Dangerous|open"):
             SandboxService.sanitize_code(malicious_code)
 
@@ -281,16 +279,18 @@ class TestSecurityEdgeCases:
         """Test inactive problems are not returned."""
         problem.is_active = False
         problem.save()
-        
+
         response = api_client.get("/api/v1/dsa/problems/")
-        
+
         assert response.status_code == status.HTTP_200_OK
         # Problem should not be in results
         for p in response.data.get("results", response.data):
             if isinstance(p, dict):
                 assert p.get("slug") != "two-sum"
 
-    def test_cannot_access_others_submissions(self, authenticated_client, submission, create_user):
+    def test_cannot_access_others_submissions(
+        self, authenticated_client, submission, create_user
+    ):
         """Users cannot access other users' submissions."""
         # Create another user's submission
         other_user = create_user(email="other@example.com", username="otheruser")
@@ -300,9 +300,14 @@ class TestSecurityEdgeCases:
             code="print(1)",
             language="python",
         )
-        
+
         # Try to access other user's submission
-        response = authenticated_client.get(f"/api/v1/dsa/submissions/{other_submission.id}/")
-        
+        response = authenticated_client.get(
+            f"/api/v1/dsa/submissions/{other_submission.id}/"
+        )
+
         # Should be 404 (filtered out) or 403 (forbidden)
-        assert response.status_code in [status.HTTP_404_NOT_FOUND, status.HTTP_403_FORBIDDEN]
+        assert response.status_code in [
+            status.HTTP_404_NOT_FOUND,
+            status.HTTP_403_FORBIDDEN,
+        ]

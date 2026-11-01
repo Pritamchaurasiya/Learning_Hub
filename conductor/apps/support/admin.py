@@ -10,16 +10,31 @@ from .models import Feedback
 class FeedbackAdmin(admin.ModelAdmin):
     """Customer support and bug ticket administration."""
 
-    list_display = ["subject", "user", "category", "urgency_score", "status", "created_at"]
+    list_display = [
+        "subject",
+        "user",
+        "category",
+        "urgency_score",
+        "status",
+        "created_at",
+    ]
     list_filter = ["status", "category", "urgency_score", "created_at"]
     search_fields = ["subject", "message", "user__email", "admin_response"]
     list_select_related = ["user"]
     autocomplete_fields = ["user"]
-    readonly_fields = ["created_at", "updated_at", "urgency_score", "ai_suggested_response"]
+    readonly_fields = [
+        "created_at",
+        "updated_at",
+        "urgency_score",
+        "ai_suggested_response",
+    ]
     actions = ["mark_resolved", "escalate_ticket"]
 
     fieldsets = (
-        ("Ticket Overview", {"fields": ("user", "category", "status", "subject", "message")}),
+        (
+            "Ticket Overview",
+            {"fields": ("user", "category", "status", "subject", "message")},
+        ),
         ("AI Triage Analysis", {"fields": ("urgency_score", "ai_suggested_response")}),
         ("Staff Resolution", {"fields": ("admin_response",)}),
         ("Audit", {"fields": ("created_at", "updated_at")}),

@@ -56,7 +56,9 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         group = serializer.save(creator=self.request.user)
-        GroupMembership.objects.create(group=group, user=self.request.user, role="admin")
+        GroupMembership.objects.create(
+            group=group, user=self.request.user, role="admin"
+        )
 
     # ------------------------------------------------------------------
     # Membership Actions
@@ -68,12 +70,15 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
         """Join a study group (capacity-checked, locked)."""
         try:
             from django.db import NotSupportedError
+
             with transaction.atomic():
                 try:
-                    group = StudyGroup.objects.select_for_update().get(pk=self.get_object().pk)
+                    group = StudyGroup.objects.select_for_update().get(
+                        pk=self.get_object().pk
+                    )
                 except NotSupportedError:
                     group = StudyGroup.objects.get(pk=self.get_object().pk)
-                
+
                 if group.memberships.count() >= group.max_members:
                     return Response(
                         {"status": "error", "message": "Group is full"},
@@ -87,6 +92,7 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
             return Response({"status": "success", "message": msg})
         except Exception as e:
             import traceback
+
             traceback.print_exc()
             raise e
 
@@ -95,7 +101,9 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
     def leave(self, request, pk=None):
         """Leave a study group (admin must transfer first)."""
         group = self.get_object()
-        membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+        membership = GroupMembership.objects.filter(
+            group=group, user=request.user
+        ).first()
 
         if not membership:
             return Response(
@@ -136,7 +144,11 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
                 "email": m.user.email,
                 "name": m.user.get_full_name(),
                 "role": m.role,
-                "joined_at": m.created_at.isoformat() if hasattr(m, "created_at") and m.created_at else None,
+                "joined_at": (
+                    m.created_at.isoformat()
+                    if hasattr(m, "created_at") and m.created_at
+                    else None
+                ),
             }
             for m in memberships
         ]
@@ -166,7 +178,11 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
             target_user_id = validated_data.user_id
         except ValidationError as e:
             return Response(
-                {"status": "error", "message": "Invalid payload", "details": e.errors()},
+                {
+                    "status": "error",
+                    "message": "Invalid payload",
+                    "details": e.errors(),
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -184,9 +200,10 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
             # Sort PKs to prevent Postgres deadlocks across concurrent transfers
             pks = sorted([caller_membership.pk, target_membership.pk])
             locked_memberships = {
-                m.pk: m for m in GroupMembership.objects.select_for_update().filter(pk__in=pks)
+                m.pk: m
+                for m in GroupMembership.objects.select_for_update().filter(pk__in=pks)
             }
-            
+
             caller_locked = locked_memberships[caller_membership.pk]
             target_locked = locked_memberships[target_membership.pk]
 
@@ -195,10 +212,12 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
             caller_locked.save(update_fields=["role"])
             target_locked.save(update_fields=["role"])
 
-        return Response({
-            "status": "success",
-            "message": f"Admin role transferred to {target_membership.user.email}",
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": f"Admin role transferred to {target_membership.user.email}",
+            }
+        )
 
     @extend_schema(description="Admin kicks a member from the group.")
     @action(detail=True, methods=["post"])
@@ -223,7 +242,11 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
             target_user_id = validated_data.user_id
         except ValidationError as e:
             return Response(
-                {"status": "error", "message": "Invalid payload", "details": e.errors()},
+                {
+                    "status": "error",
+                    "message": "Invalid payload",
+                    "details": e.errors(),
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

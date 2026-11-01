@@ -25,6 +25,7 @@ class SearchResult:
 
 class BM25:
     """BM25 sparse retrieval."""
+
     def __init__(self, k1: float = 1.5, b: float = 0.75):
         self.k1 = k1
         self.b = b
@@ -61,7 +62,9 @@ class BM25:
                     freq = tf[term]
                     idf = self.idf.get(term, 0)
                     numerator = freq * (self.k1 + 1)
-                    denominator = freq + self.k1 * (1 - self.b + self.b * doc_len / self.avg_len)
+                    denominator = freq + self.k1 * (
+                        1 - self.b + self.b * doc_len / self.avg_len
+                    )
                     score += idf * numerator / denominator
             scores.append((doc_id, score))
         scores.sort(key=lambda x: -x[1])
@@ -70,6 +73,7 @@ class BM25:
 
 class DenseRetriever:
     """Dense embedding retrieval."""
+
     def __init__(self, dim: int = 128):
         self.dim = dim
         self.docs: Dict[str, List[float]] = {}
@@ -78,7 +82,7 @@ class DenseRetriever:
         emb = [0.0] * self.dim
         for i, c in enumerate(text.lower()):
             emb[ord(c) % self.dim] += 1.0 / (i + 1)
-        norm = math.sqrt(sum(e*e for e in emb)) + 1e-8
+        norm = math.sqrt(sum(e * e for e in emb)) + 1e-8
         return [e / norm for e in emb]
 
     def add_doc(self, doc_id: str, text: str):
@@ -96,6 +100,7 @@ class DenseRetriever:
 
 class HybridSearch:
     """Hybrid BM25 + Dense search."""
+
     def __init__(self, alpha: float = 0.5):
         self.alpha = alpha
         self.bm25 = BM25()
@@ -110,22 +115,24 @@ class HybridSearch:
     def search(self, query: str, top_k: int = 10) -> List[SearchResult]:
         bm25_results = dict(self.bm25.search(query, top_k * 2))
         dense_results = dict(self.dense.search(query, top_k * 2))
-        
+
         all_docs = set(bm25_results.keys()) | set(dense_results.keys())
         results = []
         for doc_id in all_docs:
             bm25_s = bm25_results.get(doc_id, 0)
             dense_s = dense_results.get(doc_id, 0)
             fused = self.alpha * bm25_s + (1 - self.alpha) * dense_s
-            results.append(SearchResult(doc_id, self.texts.get(doc_id, ''), bm25_s, dense_s, fused))
-        
+            results.append(
+                SearchResult(doc_id, self.texts.get(doc_id, ""), bm25_s, dense_s, fused)
+            )
+
         results.sort(key=lambda r: -r.fused_score)
         return results[:top_k]
 
     def rewrite_query(self, query: str) -> str:
         # Simple expansion
-        expansions = {'find': 'search locate', 'get': 'retrieve obtain'}
+        expansions = {"find": "search locate", "get": "retrieve obtain"}
         for word, expansion in expansions.items():
             if word in query.lower():
-                return query + ' ' + expansion
+                return query + " " + expansion
         return query

@@ -33,7 +33,11 @@ class TutorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TutorProfile.objects.filter(is_verified=True).select_related("user")
     serializer_class = TutorProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [
+        filters.SearchFilter,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
     search_fields = ["skills", "user__first_name", "user__last_name"]
     ordering_fields = ["rating", "total_reviews", "hourly_rate"]
     ordering = ["-rating"]
@@ -85,31 +89,34 @@ class BookingViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         from django.db import transaction
         from rest_framework.exceptions import ValidationError
-        
-        tutor = serializer.validated_data.get('tutor')
-        start_time = serializer.validated_data.get('start_time')
-        end_time = serializer.validated_data.get('end_time')
-        
+
+        tutor = serializer.validated_data.get("tutor")
+        start_time = serializer.validated_data.get("start_time")
+        end_time = serializer.validated_data.get("end_time")
+
         if start_time >= end_time:
             raise ValidationError({"error": "Start time must be before end time."})
-            
+
         with transaction.atomic():
             # Pessimistic Locking: Lock the tutor profile row until the transaction completes.
             # This serializes concurrent booking requests, 100% preventing double-booking race conditions.
             from .models import TutorProfile
+
             locked_tutor = TutorProfile.objects.select_for_update().get(id=tutor.id)
-            
+
             # Check for overlapping active bookings (Pending or Confirmed)
             overlapping = Booking.objects.filter(
                 tutor=locked_tutor,
-                status__in=['pending', 'confirmed'],
+                status__in=["pending", "confirmed"],
                 start_time__lt=end_time,
-                end_time__gt=start_time
+                end_time__gt=start_time,
             ).exists()
-            
+
             if overlapping:
-                raise ValidationError({"error": "This time slot has already been booked."})
-                
+                raise ValidationError(
+                    {"error": "This time slot has already been booked."}
+                )
+
             serializer.save(student=self.request.user)
 
     @extend_schema(description="Tutor confirms a pending booking.")
@@ -117,31 +124,42 @@ class BookingViewSet(viewsets.ModelViewSet):
     def confirm(self, request, pk=None):
         """Tutor confirms a booking — only the assigned tutor can confirm."""
         from django.db import transaction
-        
+
         with transaction.atomic():
             # Use pessimistic locking to prevent race conditions during state transition
             booking = Booking.objects.select_for_update().get(pk=self.get_object().pk)
 
-            if not hasattr(request.user, "tutor_profile") or booking.tutor != request.user.tutor_profile:
+            if (
+                not hasattr(request.user, "tutor_profile")
+                or booking.tutor != request.user.tutor_profile
+            ):
                 return Response(
-                    {"status": "error", "message": "Only the assigned tutor can confirm"},
+                    {
+                        "status": "error",
+                        "message": "Only the assigned tutor can confirm",
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
             if booking.status != "pending":
                 return Response(
-                    {"status": "error", "message": f"Cannot confirm a {booking.status} booking"},
+                    {
+                        "status": "error",
+                        "message": f"Cannot confirm a {booking.status} booking",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             booking.status = "confirmed"
             booking.save(update_fields=["status", "updated_at"])
-            
-        return Response({
-            "status": "success",
-            "message": "Booking confirmed",
-            "data": BookingSerializer(booking).data,
-        })
+
+        return Response(
+            {
+                "status": "success",
+                "message": "Booking confirmed",
+                "data": BookingSerializer(booking).data,
+            }
+        )
 
     @extend_schema(description="Cancel a booking with optional reason.")
     @action(detail=True, methods=["post"])
@@ -154,23 +172,28 @@ class BookingViewSet(viewsets.ModelViewSet):
 
             if booking.status in ("cancelled", "completed"):
                 return Response(
-                    {"status": "error", "message": f"Cannot cancel a {booking.status} booking"},
+                    {
+                        "status": "error",
+                        "message": f"Cannot cancel a {booking.status} booking",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             reason = request.data.get("reason", "")
             if not isinstance(reason, str):
                 reason = "Invalid reason format."
-                
+
             booking.status = "cancelled"
             booking.notes = f"{booking.notes or ''}\n[Cancelled] {reason}".strip()
             booking.save(update_fields=["status", "notes", "updated_at"])
-            
-        return Response({
-            "status": "success",
-            "message": "Booking cancelled",
-            "data": BookingSerializer(booking).data,
-        })
+
+        return Response(
+            {
+                "status": "success",
+                "message": "Booking cancelled",
+                "data": BookingSerializer(booking).data,
+            }
+        )
 
     @extend_schema(description="Mark a booking as completed.")
     @action(detail=True, methods=["post"])
@@ -181,26 +204,37 @@ class BookingViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             booking = Booking.objects.select_for_update().get(pk=self.get_object().pk)
 
-            if not hasattr(request.user, "tutor_profile") or booking.tutor != request.user.tutor_profile:
+            if (
+                not hasattr(request.user, "tutor_profile")
+                or booking.tutor != request.user.tutor_profile
+            ):
                 return Response(
-                    {"status": "error", "message": "Only the tutor can mark as completed"},
+                    {
+                        "status": "error",
+                        "message": "Only the tutor can mark as completed",
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
             if booking.status != "confirmed":
                 return Response(
-                    {"status": "error", "message": "Only confirmed bookings can be completed"},
+                    {
+                        "status": "error",
+                        "message": "Only confirmed bookings can be completed",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             booking.status = "completed"
             booking.save(update_fields=["status", "updated_at"])
-            
-        return Response({
-            "status": "success",
-            "message": "Booking completed",
-            "data": BookingSerializer(booking).data,
-        })
+
+        return Response(
+            {
+                "status": "success",
+                "message": "Booking completed",
+                "data": BookingSerializer(booking).data,
+            }
+        )
 
     @extend_schema(description="Get upcoming confirmed bookings.")
     @action(detail=False, methods=["get"])

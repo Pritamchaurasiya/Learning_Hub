@@ -6,18 +6,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('test_engine', '0004_question_status_test_ai_mode_test_question_source'),
+        ("test_engine", "0004_question_status_test_ai_mode_test_question_source"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='test',
-            name='mode',
-            field=models.CharField(choices=[('practice', 'Practice Mode (untimed, instant feedback)'), ('mock', 'Mock Test (timed, no feedback until submit)'), ('timed_challenge', 'Timed Challenge (strict timer, leaderboard)'), ('adaptive', 'Adaptive Test (difficulty adjusts in real-time)'), ('review', 'Review Mode (see answers and explanations)'), ('offline', 'Offline Mode (completed locally and reconciled)')], default='mock', max_length=20),
+            model_name="test",
+            name="mode",
+            field=models.CharField(
+                choices=[
+                    ("practice", "Practice Mode (untimed, instant feedback)"),
+                    ("mock", "Mock Test (timed, no feedback until submit)"),
+                    ("timed_challenge", "Timed Challenge (strict timer, leaderboard)"),
+                    ("adaptive", "Adaptive Test (difficulty adjusts in real-time)"),
+                    ("review", "Review Mode (see answers and explanations)"),
+                    ("offline", "Offline Mode (completed locally and reconciled)"),
+                ],
+                default="mock",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='testattempt',
-            name='mode',
-            field=models.CharField(choices=[('practice', 'Practice Mode (untimed, instant feedback)'), ('mock', 'Mock Test (timed, no feedback until submit)'), ('timed_challenge', 'Timed Challenge (strict timer, leaderboard)'), ('adaptive', 'Adaptive Test (difficulty adjusts in real-time)'), ('review', 'Review Mode (see answers and explanations)'), ('offline', 'Offline Mode (completed locally and reconciled)')], default='mock', max_length=20),
+            model_name="testattempt",
+            name="mode",
+            field=models.CharField(
+                choices=[
+                    ("practice", "Practice Mode (untimed, instant feedback)"),
+                    ("mock", "Mock Test (timed, no feedback until submit)"),
+                    ("timed_challenge", "Timed Challenge (strict timer, leaderboard)"),
+                    ("adaptive", "Adaptive Test (difficulty adjusts in real-time)"),
+                    ("review", "Review Mode (see answers and explanations)"),
+                    ("offline", "Offline Mode (completed locally and reconciled)"),
+                ],
+                default="mock",
+                max_length=20,
+            ),
         ),
     ]

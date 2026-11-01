@@ -21,6 +21,7 @@ class Vector3:
     y: float
     z: float
 
+
 @dataclass
 class Quaternion:
     x: float
@@ -28,10 +29,11 @@ class Quaternion:
     z: float
     w: float
 
+
 @dataclass
 class SpatialObject:
     id: str
-    type: str # 'whiteboard', 'desk', '3d_model'
+    type: str  # 'whiteboard', 'desk', '3d_model'
     position: Vector3
     rotation: Quaternion
     scale: Vector3
@@ -43,8 +45,9 @@ class SpatialRoomService:
     """
     Manages 3D virtual classroom instances.
     """
-    _rooms: Dict[str, Dict[str, SpatialObject]] = {} # room_id -> {obj_id: Object}
-    
+
+    _rooms: Dict[str, Dict[str, SpatialObject]] = {}  # room_id -> {obj_id: Object}
+
     @classmethod
     def create_room(cls, host_id: str) -> str:
         room_id = str(uuid.uuid4())
@@ -54,18 +57,15 @@ class SpatialRoomService:
 
     @classmethod
     def update_object_transform(
-        cls, 
-        room_id: str, 
-        obj_id: str, 
-        position: Dict, 
-        rotation: Dict
+        cls, room_id: str, obj_id: str, position: Dict, rotation: Dict
     ) -> bool:
         """
         Sync object movement.
         """
         room = cls._rooms.get(room_id)
-        if room is None: return False
-        
+        if room is None:
+            return False
+
         obj = room.get(obj_id)
         if not obj:
             # Auto-create for demo
@@ -74,15 +74,16 @@ class SpatialRoomService:
                 type="generic",
                 position=Vector3(**position),
                 rotation=Quaternion(**rotation),
-                scale=Vector3(1,1,1),
-                owner_id="system"
+                scale=Vector3(1, 1, 1),
+                owner_id="system",
             )
             room[obj_id] = obj
         else:
-            if obj.locked: return False
+            if obj.locked:
+                return False
             obj.position = Vector3(**position)
             obj.rotation = Quaternion(**rotation)
-            
+
         return True
 
     @classmethod
@@ -93,12 +94,23 @@ class SpatialRoomService:
         room = cls._rooms.get(room_id, {})
         snapshot = []
         for obj in room.values():
-            snapshot.append({
-                "id": obj.id,
-                "pos": {"x": obj.position.x, "y": obj.position.y, "z": obj.position.z},
-                "rot": {"x": obj.rotation.x, "y": obj.rotation.y, "z": obj.rotation.z, "w": obj.rotation.w},
-                "type": obj.type
-            })
+            snapshot.append(
+                {
+                    "id": obj.id,
+                    "pos": {
+                        "x": obj.position.x,
+                        "y": obj.position.y,
+                        "z": obj.position.z,
+                    },
+                    "rot": {
+                        "x": obj.rotation.x,
+                        "y": obj.rotation.y,
+                        "z": obj.rotation.z,
+                        "w": obj.rotation.w,
+                    },
+                    "type": obj.type,
+                }
+            )
         return snapshot
 
     @classmethod
@@ -107,12 +119,12 @@ class SpatialRoomService:
         obj_id = str(uuid.uuid4())
         room = cls._rooms.get(room_id)
         if room is not None:
-             room[obj_id] = SpatialObject(
+            room[obj_id] = SpatialObject(
                 id=obj_id,
                 type=asset_type,
                 position=Vector3(**position),
-                rotation=Quaternion(0,0,0,1),
-                scale=Vector3(1,1,1),
-                owner_id="system"
+                rotation=Quaternion(0, 0, 0, 1),
+                scale=Vector3(1, 1, 1),
+                owner_id="system",
             )
         return obj_id

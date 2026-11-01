@@ -1,4 +1,3 @@
-
 import logging
 import time
 import json
@@ -11,6 +10,7 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 standard_logger = logging.getLogger(__name__)
+
 
 class SelfHealingMiddleware:
     """
@@ -33,7 +33,7 @@ class SelfHealingMiddleware:
                 "request_completed",
                 method=request.method,
                 path=request.path,
-                status=getattr(response, 'status_code', 0),
+                status=getattr(response, "status_code", 0),
                 duration_ms=round(duration_ms, 2),
             )
             # Flag slow requests (> 2 seconds) as warnings
@@ -74,36 +74,37 @@ class SelfHealingMiddleware:
                 # return a Service Unavailable with a "Retry-After" header
                 # OR we could replay the request if it's safe (GET/HEAD).
                 if request.method in ["GET", "HEAD"]:
-                   # We can't easily replay the view logic here without complex re-routing
-                   # But we fixed the connection for the NEXT request.
-                   pass
+                    # We can't easily replay the view logic here without complex re-routing
+                    # But we fixed the connection for the NEXT request.
+                    pass
             except Exception as heal_error:
                 logger.error("db_healing_failed", error=str(heal_error))
                 return self.emergency_response(
-                    "Database is restarting. Please try again in 5 seconds.", 
+                    "Database is restarting. Please try again in 5 seconds.",
                     status.HTTP_503_SERVICE_UNAVAILABLE,
-                    retry_after=5
+                    retry_after=5,
                 )
 
         # 2. Cache Failures (Redis down)
         if "RedisError" in error_type or "ConnectionError" in str(exception):
-             logger.warning("cache_degradation_active")
-             # Disable cache for this request context if possible, or just fail open.
-             # In Django, cache failure usually raises exception if not configured to ignore.
-             # We can assume the view failed because of this.
-             return self.emergency_response(
-                 "System performance degraded but operational.",
-                 status.HTTP_503_SERVICE_UNAVAILABLE
-             )
-        
+            logger.warning("cache_degradation_active")
+            # Disable cache for this request context if possible, or just fail open.
+            # In Django, cache failure usually raises exception if not configured to ignore.
+            # We can assume the view failed because of this.
+            return self.emergency_response(
+                "System performance degraded but operational.",
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
         # Default: 500 Error
         return self.emergency_response(
             "An internal error occurred. Our self-healing systems have been notified.",
-            status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     def emergency_response(self, message, status_code, retry_after=None):
         from rest_framework.renderers import JSONRenderer
+
         data = {"status": "error", "message": message, "code": "system_healing"}
         response = Response(data, status=status_code)
         response.accepted_renderer = JSONRenderer()
@@ -113,6 +114,7 @@ class SelfHealingMiddleware:
             response["Retry-After"] = str(retry_after)
         return response
 
+
 from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
@@ -121,10 +123,12 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 import hashlib
 import hmac
 
+
 @database_sync_to_async
 def get_user_from_token(token_key):
     try:
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         # Validate the token
         validated_token = UntypedToken(token_key)
@@ -135,11 +139,13 @@ def get_user_from_token(token_key):
         logger.warning("websocket_auth_failed: %s", str(e))
         return AnonymousUser()
 
+
 class JWTAuthMiddleware:
     """
     Custom ASGI Middleware that authenticates WebSocket connections using JWTs.
     Extracts the token from the query string (`?token=...`).
     """
+
     def __init__(self, app):
         self.app = app
 
@@ -161,31 +167,31 @@ class SignatureVerificationMiddleware:
     Middleware for verifying API request signatures.
     Provides additional security layer for API endpoints.
     """
+
     def __init__(self, get_response):
         self.get_response = get_response
-        self.secret_key = getattr(settings, 'API_SECRET_KEY', None)
+        self.secret_key = getattr(settings, "API_SECRET_KEY", None)
 
     def __call__(self, request):
         # Skip signature verification for safe methods or if no secret configured
-        if not self.secret_key or request.method in ['GET', 'HEAD', 'OPTIONS']:
+        if not self.secret_key or request.method in ["GET", "HEAD", "OPTIONS"]:
             return self.get_response(request)
-        
-        signature = request.headers.get('X-API-Signature', '')
-        timestamp = request.headers.get('X-API-Timestamp', '')
-        
+
+        signature = request.headers.get("X-API-Signature", "")
+        timestamp = request.headers.get("X-API-Timestamp", "")
+
         # If no signature provided, let it pass but log warning
         if not signature:
             logger.warning("request_missing_signature", path=request.path)
             return self.get_response(request)
-        
+
         # Verify signature
         if self._verify_signature(request, signature, timestamp):
             return self.get_response(request)
         else:
             logger.warning("request_signature_invalid", path=request.path)
             return Response(
-                {"error": "Invalid API signature"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "Invalid API signature"}, status=status.HTTP_401_UNAUTHORIZED
             )
 
     def _verify_signature(self, request, signature: str, timestamp: str) -> bool:
@@ -193,20 +199,19 @@ class SignatureVerificationMiddleware:
         try:
             # Check timestamp is within 5 minutes
             import time
+
             if timestamp:
                 request_time = int(timestamp)
                 current_time = int(time.time())
                 if abs(current_time - request_time) > 300:
                     return False
-            
+
             # Build message to sign
             message = f"{request.path}{timestamp}{request.body.decode('utf-8') if request.body else ''}"
             expected_signature = hmac.new(
-                self.secret_key.encode(),
-                message.encode(),
-                hashlib.sha256
+                self.secret_key.encode(), message.encode(), hashlib.sha256
             ).hexdigest()
-            
+
             return hmac.compare_digest(signature, expected_signature)
         except Exception as e:
             logger.error("signature_verification_error", error=str(e))
@@ -283,9 +288,7 @@ class CORSHardeningMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self.allowed_origins = set(
-            getattr(settings, "CORS_ALLOWED_ORIGINS", [])
-        )
+        self.allowed_origins = set(getattr(settings, "CORS_ALLOWED_ORIGINS", []))
         self.allow_all = getattr(settings, "CORS_ALLOW_ALL_ORIGINS", False)
 
     def __call__(self, request):
@@ -305,6 +308,7 @@ class CORSHardeningMiddleware:
                 request.method,
             )
             from django.http import JsonResponse
+
             return JsonResponse(
                 {"status": "error", "message": "Origin not allowed"},
                 status=403,

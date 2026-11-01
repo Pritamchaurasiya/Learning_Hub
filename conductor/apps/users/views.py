@@ -45,51 +45,60 @@ from django.db.models import Prefetch, Count, Q
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Optimized User Profile endpoints.
-    
+
     Prevents N+1 queries by prefetching related data.
     """
+
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
-    
+
     def get_queryset(self):
         """Optimize user queries based on action."""
         queryset = User.objects.all()
-        
-        if self.action == 'retrieve':
+
+        if self.action == "retrieve":
             # Full profile with all relations
-            queryset = queryset.select_related(
-                'xp_profile',
-                'streak_profile'
-            ).prefetch_related(
-                Prefetch(
-                    'enrollments',
-                    queryset=Enrollment.objects.select_related('course').annotate(
-                        completed_lessons=Count('course__modules__lessons')
-                    )
-                ),
-                Prefetch(
-                    'badges',
-                    queryset=UserBadge.objects.select_related('badge')
-                ),
-                Prefetch(
-                    'submissions',
-                    queryset=Submission.objects.select_related('problem').filter(
-                        status='AC'
-                    ).order_by('-submitted_at')[:10]
+            queryset = (
+                queryset.select_related("xp_profile", "streak_profile")
+                .prefetch_related(
+                    Prefetch(
+                        "enrollments",
+                        queryset=Enrollment.objects.select_related("course").annotate(
+                            completed_lessons=Count("course__modules__lessons")
+                        ),
+                    ),
+                    Prefetch(
+                        "badges", queryset=UserBadge.objects.select_related("badge")
+                    ),
+                    Prefetch(
+                        "submissions",
+                        queryset=Submission.objects.select_related("problem")
+                        .filter(status="AC")
+                        .order_by("-submitted_at")[:10],
+                    ),
                 )
-            ).annotate(
-                total_courses=Count('enrollments'),
-                completed_courses=Count('enrollments', filter=Q(enrollments__completed_at__isnull=False)),
-                total_submissions=Count('submissions'),
-                accepted_submissions=Count('submissions', filter=Q(submissions__status='AC'))
+                .annotate(
+                    total_courses=Count("enrollments"),
+                    completed_courses=Count(
+                        "enrollments", filter=Q(enrollments__completed_at__isnull=False)
+                    ),
+                    total_submissions=Count("submissions"),
+                    accepted_submissions=Count(
+                        "submissions", filter=Q(submissions__status="AC")
+                    ),
+                )
             )
-        elif self.action == 'list':
+        elif self.action == "list":
             # Minimal fields for list
-            queryset = queryset.select_related('xp_profile').only(
-                'id', 'username', 'display_name', 'avatar',
-                'xp_profile__total_xp', 'xp_profile__level'
+            queryset = queryset.select_related("xp_profile").only(
+                "id",
+                "username",
+                "display_name",
+                "avatar",
+                "xp_profile__total_xp",
+                "xp_profile__level",
             )
-        
+
         return queryset
 
 
@@ -117,11 +126,15 @@ class RegisterView(generics.CreateAPIView):
         # Publish to EventBus — fires welcome notification + gamification XP
         try:
             from apps.core.event_bus import EventBus
-            EventBus.publish("user.registered", {
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-            })
+
+            EventBus.publish(
+                "user.registered",
+                {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                },
+            )
         except Exception:
             pass  # EventBus is non-critical
 
@@ -412,7 +425,7 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             )
 
         avatar_file = request.FILES["avatar"]
-        
+
         # Validate file size (max 5MB)
         max_size = 5 * 1024 * 1024  # 5MB
         if avatar_file.size > max_size:
@@ -420,12 +433,15 @@ class UserProfileViewSet(viewsets.GenericViewSet):
                 {"status": "error", "message": "File too large. Maximum size is 5MB."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         # Validate file type
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
         if avatar_file.content_type not in allowed_types:
             return Response(
-                {"status": "error", "message": "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed."},
+                {
+                    "status": "error",
+                    "message": "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -439,46 +455,46 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             }
         )
 
-    @extend_schema(
-        description="Get user's bookmarked courses",
-        responses={200: dict}
-    )
+    @extend_schema(description="Get user's bookmarked courses", responses={200: dict})
     @action(detail=False, methods=["get"], throttle_classes=[])
     def bookmarks(self, request):
         """Get user's bookmarked courses."""
         from apps.courses.serializers import CourseListSerializer
         from .models import Bookmark
 
-        bookmarks = Bookmark.objects.filter(
-            user=request.user
-        ).select_related('course', 'course__instructor', 'course__category').order_by('-created_at')
+        bookmarks = (
+            Bookmark.objects.filter(user=request.user)
+            .select_related("course", "course__instructor", "course__category")
+            .order_by("-created_at")
+        )
 
         data = []
         for bookmark in bookmarks:
             course = bookmark.course
-            data.append({
-                'id': str(course.id),
-                'title': course.title,
-                'description': course.short_description or course.description[:200],
-                'duration': f"{course.duration_hours} hours" if course.duration_hours else "Self-paced",
-                'level': course.difficulty,
-                'thumbnail': course.thumbnail.url if course.thumbnail else None,
-                'instructor': course.instructor.display_name or course.instructor.username,
-                'bookmark_id': str(bookmark.id),
-                'bookmarked_at': bookmark.created_at.isoformat(),
-                'notes': bookmark.notes,
-            })
+            data.append(
+                {
+                    "id": str(course.id),
+                    "title": course.title,
+                    "description": course.short_description or course.description[:200],
+                    "duration": (
+                        f"{course.duration_hours} hours"
+                        if course.duration_hours
+                        else "Self-paced"
+                    ),
+                    "level": course.difficulty,
+                    "thumbnail": course.thumbnail.url if course.thumbnail else None,
+                    "instructor": course.instructor.display_name
+                    or course.instructor.username,
+                    "bookmark_id": str(bookmark.id),
+                    "bookmarked_at": bookmark.created_at.isoformat(),
+                    "notes": bookmark.notes,
+                }
+            )
 
-        return Response({
-            'status': 'success',
-            'count': len(data),
-            'data': data
-        })
+        return Response({"status": "success", "count": len(data), "data": data})
 
     @extend_schema(
-        description="Add a course to bookmarks",
-        request=None,
-        responses={201: dict}
+        description="Add a course to bookmarks", request=None, responses={201: dict}
     )
     @bookmarks.mapping.post
     @throttle_classes([ScopedRateThrottle])
@@ -487,48 +503,54 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         from apps.courses.models import Course
         from .models import Bookmark
 
-        course_id = request.data.get('course_id')
-        notes = request.data.get('notes', '')
+        course_id = request.data.get("course_id")
+        notes = request.data.get("notes", "")
 
         if not course_id:
             return Response(
-                {'status': 'error', 'message': 'course_id is required'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "course_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             return Response(
-                {'status': 'error', 'message': 'Course not found'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Course not found"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Check if already bookmarked
         bookmark, created = Bookmark.objects.get_or_create(
-            user=request.user,
-            course=course,
-            defaults={'notes': notes}
+            user=request.user, course=course, defaults={"notes": notes}
         )
 
         if not created:
-            return Response({
-                'status': 'error',
-                'error': 'Course already in bookmarks',
-                'message': 'Course already in bookmarks'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "status": "error",
+                    "error": "Course already in bookmarks",
+                    "message": "Course already in bookmarks",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return Response({
-            'status': 'success',
-            'message': 'Course bookmarked successfully',
-            'data': {'bookmark_id': str(bookmark.id)}
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "status": "success",
+                "message": "Course bookmarked successfully",
+                "data": {"bookmark_id": str(bookmark.id)},
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
-    @extend_schema(
-        description="Remove a course from bookmarks",
-        responses={200: dict}
+    @extend_schema(description="Remove a course from bookmarks", responses={200: dict})
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path="bookmarks/(?P<course_id>[^/.]+)",
+        throttle_classes=[],
     )
-    @action(detail=False, methods=["delete"], url_path='bookmarks/(?P<course_id>[^/.]+)', throttle_classes=[])
     def remove_bookmark(self, request, course_id=None):
         """Remove a course from bookmarks."""
         from .models import Bookmark
@@ -536,37 +558,51 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         try:
             bookmark = Bookmark.objects.get(user=request.user, course_id=course_id)
             bookmark.delete()
-            return Response({
-                'status': 'success',
-                'message': 'Bookmark removed successfully'
-            })
+            return Response(
+                {"status": "success", "message": "Bookmark removed successfully"}
+            )
         except Bookmark.DoesNotExist:
             return Response(
                 {
-                    'status': 'error',
-                    'error': 'Bookmark not found',
-                    'message': 'Bookmark not found'
+                    "status": "error",
+                    "error": "Bookmark not found",
+                    "message": "Bookmark not found",
                 },
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
     # =========================================================================
     # TWO-FACTOR AUTHENTICATION (2FA / TOTP)
     # =========================================================================
 
-    @extend_schema(description="Initialize 2FA setup and get TOTP secret/QR URL", responses={200: dict})
-    @action(detail=False, methods=["get", "post"], url_path="2fa/setup", permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Initialize 2FA setup and get TOTP secret/QR URL",
+        responses={200: dict},
+    )
+    @action(
+        detail=False,
+        methods=["get", "post"],
+        url_path="2fa/setup",
+        permission_classes=[IsAuthenticated],
+    )
     def two_factor_setup(self, request):
         """Generate/retrieve TOTP secret and provisioning URI."""
         from .two_factor_service import TwoFactorService
+
         data = TwoFactorService.setup_2fa(request.user)
         return Response({"status": "success", "data": data})
 
     @extend_schema(description="Verify TOTP code and enable 2FA", responses={200: dict})
-    @action(detail=False, methods=["post"], url_path="2fa/verify", permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="2fa/verify",
+        permission_classes=[IsAuthenticated],
+    )
     def two_factor_verify(self, request):
         """Verify TOTP code and enable 2FA."""
         from .two_factor_service import TwoFactorService
+
         code = request.data.get("code", "")
         if not code:
             return Response(
@@ -577,13 +613,24 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             result = TwoFactorService.enable_2fa(request.user, code)
             return Response({"status": "success", "data": result})
         except ValueError as e:
-            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    @extend_schema(description="Disable 2FA with password confirmation", responses={200: dict})
-    @action(detail=False, methods=["post"], url_path="2fa/disable", permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Disable 2FA with password confirmation", responses={200: dict}
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="2fa/disable",
+        permission_classes=[IsAuthenticated],
+    )
     def two_factor_disable(self, request):
         """Disable 2FA with password check."""
         from .two_factor_service import TwoFactorService
+
         password = request.data.get("password", "")
         if not password:
             return Response(
@@ -592,55 +639,95 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             )
         try:
             TwoFactorService.disable_2fa(request.user, password)
-            return Response({"status": "success", "message": "2FA disabled successfully."})
+            return Response(
+                {"status": "success", "message": "2FA disabled successfully."}
+            )
         except ValueError as e:
-            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     # =========================================================================
     # ACTIVE SESSIONS & DEVICE SECURITY
     # =========================================================================
 
-    @extend_schema(description="List active user sessions and devices", responses={200: dict})
-    @action(detail=False, methods=["get"], url_path="sessions", permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="List active user sessions and devices", responses={200: dict}
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="sessions",
+        permission_classes=[IsAuthenticated],
+    )
     def list_sessions(self, request):
         """List active login sessions."""
         from .session_service import SessionService
+
         SessionService.record_session(request.user, request)
         sessions = SessionService.list_active_sessions(request.user)
         return Response({"status": "success", "count": len(sessions), "data": sessions})
 
-    @extend_schema(description="Revoke an active session or all other sessions", responses={200: dict})
-    @action(detail=False, methods=["post"], url_path="sessions/revoke", permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Revoke an active session or all other sessions",
+        responses={200: dict},
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="sessions/revoke",
+        permission_classes=[IsAuthenticated],
+    )
     def revoke_sessions(self, request):
         """Revoke a session by ID or revoke all other sessions."""
         from .session_service import SessionService
+
         session_id = request.data.get("session_id")
         revoke_all_others = request.data.get("revoke_all_others", False)
 
         if revoke_all_others:
             count = SessionService.revoke_all_other_sessions(request.user)
-            return Response({"status": "success", "message": f"{count} other sessions revoked."})
+            return Response(
+                {"status": "success", "message": f"{count} other sessions revoked."}
+            )
 
         if not session_id:
             return Response(
-                {"status": "error", "message": "session_id is required or set revoke_all_others=True."},
+                {
+                    "status": "error",
+                    "message": "session_id is required or set revoke_all_others=True.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         success = SessionService.revoke_session(request.user, session_id)
         if success:
-            return Response({"status": "success", "message": "Session revoked successfully."})
-        return Response({"status": "error", "message": "Session not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"status": "success", "message": "Session revoked successfully."}
+            )
+        return Response(
+            {"status": "error", "message": "Session not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # =========================================================================
     # DEVELOPER API KEYS
     # =========================================================================
 
-    @extend_schema(description="List or create developer API keys", responses={200: dict})
-    @action(detail=False, methods=["get", "post"], url_path="api-keys", permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="List or create developer API keys", responses={200: dict}
+    )
+    @action(
+        detail=False,
+        methods=["get", "post"],
+        url_path="api-keys",
+        permission_classes=[IsAuthenticated],
+    )
     def manage_api_keys(self, request):
         """List API keys on GET, create new API key on POST."""
         from .api_key_service import APIKeyService
+
         if request.method == "GET":
             keys = APIKeyService.list_api_keys(request.user)
             return Response({"status": "success", "count": len(keys), "data": keys})
@@ -654,15 +741,35 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         except (ValueError, TypeError):
             expires_in_days = None
 
-        new_key = APIKeyService.create_api_key(request.user, name=name, scopes=scopes, expires_in_days=expires_in_days)
-        return Response({"status": "success", "message": "API key generated successfully.", "data": new_key}, status=status.HTTP_201_CREATED)
+        new_key = APIKeyService.create_api_key(
+            request.user, name=name, scopes=scopes, expires_in_days=expires_in_days
+        )
+        return Response(
+            {
+                "status": "success",
+                "message": "API key generated successfully.",
+                "data": new_key,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     @extend_schema(description="Revoke a developer API key", responses={200: dict})
-    @action(detail=False, methods=["delete"], url_path="api-keys/(?P<key_id>[^/.]+)", permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path="api-keys/(?P<key_id>[^/.]+)",
+        permission_classes=[IsAuthenticated],
+    )
     def revoke_key(self, request, key_id=None):
         """Revoke an API key."""
         from .api_key_service import APIKeyService
+
         success = APIKeyService.revoke_api_key(request.user, key_id)
         if success:
-            return Response({"status": "success", "message": "API key revoked successfully."})
-        return Response({"status": "error", "message": "API key not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"status": "success", "message": "API key revoked successfully."}
+            )
+        return Response(
+            {"status": "error", "message": "API key not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )

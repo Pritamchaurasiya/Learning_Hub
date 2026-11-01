@@ -23,13 +23,26 @@ class PaymentAdmin(admin.ModelAdmin):
         "created_at",
     ]
     list_filter = ["status", "gateway", "currency", "created_at"]
-    search_fields = ["user__email", "course__title", "gateway_order_id", "gateway_payment_id"]
+    search_fields = [
+        "user__email",
+        "course__title",
+        "gateway_order_id",
+        "gateway_payment_id",
+    ]
     list_select_related = ["user", "course", "coupon"]
     autocomplete_fields = ["user", "course"]
-    readonly_fields = ["gateway_order_id", "gateway_payment_id", "completed_at", "created_at", "updated_at"]
+    readonly_fields = [
+        "gateway_order_id",
+        "gateway_payment_id",
+        "completed_at",
+        "created_at",
+        "updated_at",
+    ]
     actions = ["refund_payments"]
 
-    @admin.action(description="Safely refund selected completed payments and revoke access")
+    @admin.action(
+        description="Safely refund selected completed payments and revoke access"
+    )
     def refund_payments(self, request, queryset):
         success_count = 0
         for payment in queryset:
@@ -42,10 +55,14 @@ class PaymentAdmin(admin.ModelAdmin):
                 # Revoke associated enrollment
                 if payment.course and payment.user:
                     from apps.courses.models import Enrollment
-                    Enrollment.objects.filter(user=payment.user, course=payment.course).delete()
+
+                    Enrollment.objects.filter(
+                        user=payment.user, course=payment.course
+                    ).delete()
 
                 # Audit Log entry
                 from apps.core.models import AuditLog
+
                 AuditLog.objects.create(
                     actor=request.user,
                     action="PAYMENT_REFUND",
@@ -79,7 +96,14 @@ class CouponAdmin(admin.ModelAdmin):
 class SubscriptionAdmin(admin.ModelAdmin):
     """User recurring subscription plan admin."""
 
-    list_display = ["user", "plan_type", "is_active", "start_date", "end_date", "auto_renew"]
+    list_display = [
+        "user",
+        "plan_type",
+        "is_active",
+        "start_date",
+        "end_date",
+        "auto_renew",
+    ]
     list_filter = ["plan_type", "is_active", "auto_renew"]
     search_fields = ["user__email", "gateway_subscription_id"]
     list_select_related = ["user"]
@@ -95,7 +119,14 @@ class InvoiceAdmin(admin.ModelAdmin):
     search_fields = ["invoice_number", "user__email", "billing_name"]
     list_select_related = ["user", "payment"]
     autocomplete_fields = ["user"]
-    readonly_fields = ["invoice_number", "payment", "user", "total_amount", "tax_amount", "issued_at"]
+    readonly_fields = [
+        "invoice_number",
+        "payment",
+        "user",
+        "total_amount",
+        "tax_amount",
+        "issued_at",
+    ]
 
 
 class CartItemInline(admin.TabularInline):
@@ -108,7 +139,15 @@ class CartItemInline(admin.TabularInline):
 class CartAdmin(admin.ModelAdmin):
     """Shopping cart management."""
 
-    list_display = ["id", "user", "session_id", "total_items", "subtotal", "total", "created_at"]
+    list_display = [
+        "id",
+        "user",
+        "session_id",
+        "total_items",
+        "subtotal",
+        "total",
+        "created_at",
+    ]
     list_select_related = ["user", "coupon"]
     autocomplete_fields = ["user"]
     inlines = [CartItemInline]

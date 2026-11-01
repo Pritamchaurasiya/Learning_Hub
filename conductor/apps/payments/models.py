@@ -3,13 +3,23 @@ from django.conf import settings
 from django.utils import timezone
 from apps.core.models import BaseModel
 
+
 class Coupon(BaseModel):
     """
     Discount Coupons for payments.
     """
+
     code = models.CharField(max_length=50, unique=True, db_index=True)
-    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, db_index=True)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Fixed amount discount (alternative to percentage)")
+    discount_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, db_index=True
+    )
+    discount_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Fixed amount discount (alternative to percentage)",
+    )
     valid_from = models.DateTimeField(null=True, blank=True, db_index=True)
     valid_until = models.DateTimeField(null=True, blank=True, db_index=True)
     is_active = models.BooleanField(default=True, db_index=True)
@@ -18,38 +28,44 @@ class Coupon(BaseModel):
     # Legacy field - kept for backwards compatibility
     expires_at = models.DateTimeField(null=True, blank=True)
     # Courses this coupon applies to (empty = all courses)
-    courses = models.ManyToManyField('courses.Course', blank=True, related_name='coupons')
-    minimum_order_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    
+    courses = models.ManyToManyField(
+        "courses.Course", blank=True, related_name="coupons"
+    )
+    minimum_order_value = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
     class Meta:
         db_table = "payment_coupons"
         verbose_name = "Coupon"
         verbose_name_plural = "Coupons"
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['code', 'is_active'], name='idx_coupon_code_active'),
-            models.Index(fields=['is_active', 'valid_until'], name='idx_coupon_active_valid'),
-            models.Index(fields=['-used_count'], name='idx_coupon_popular'),
+            models.Index(fields=["code", "is_active"], name="idx_coupon_code_active"),
+            models.Index(
+                fields=["is_active", "valid_until"], name="idx_coupon_active_valid"
+            ),
+            models.Index(fields=["-used_count"], name="idx_coupon_popular"),
         ]
         constraints = [
             models.CheckConstraint(
                 check=models.Q(discount_percent__gte=0, discount_percent__lte=100),
-                name='coupon_discount_percent_range'
+                name="coupon_discount_percent_range",
             ),
             models.CheckConstraint(
-                check=models.Q(discount_amount__isnull=True) | models.Q(discount_amount__gte=0),
-                name='coupon_discount_amount_non_negative'
+                check=models.Q(discount_amount__isnull=True)
+                | models.Q(discount_amount__gte=0),
+                name="coupon_discount_amount_non_negative",
             ),
             models.CheckConstraint(
-                check=models.Q(used_count__gte=0),
-                name='coupon_used_count_non_negative'
+                check=models.Q(used_count__gte=0), name="coupon_used_count_non_negative"
             ),
             models.CheckConstraint(
                 check=models.Q(max_uses__isnull=True) | models.Q(max_uses__gte=0),
-                name='coupon_max_uses_non_negative'
+                name="coupon_max_uses_non_negative",
             ),
         ]
-    
+
     def is_valid(self):
         now = timezone.now()
         # Check active status
@@ -67,47 +83,66 @@ class Coupon(BaseModel):
         if self.max_uses and self.used_count >= self.max_uses:
             return False
         return True
-    
+
     def increment_usage(self):
         """Increment coupon usage count."""
         self.used_count += 1
-        self.save(update_fields=['used_count'])
+        self.save(update_fields=["used_count"])
 
     def __str__(self):
         return f"{self.code} - {self.discount_percent}%"
+
 
 class Payment(BaseModel):
     """
     Payment transaction record.
     """
-    class Status(models.TextChoices):
-        PENDING = 'pending', 'Pending'
-        COMPLETED = 'completed', 'Completed'
-        FAILED = 'failed', 'Failed'
-        REFUNDED = 'refunded', 'Refunded'
-        CANCELLED = 'cancelled', 'Cancelled'
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments', db_index=True)
-    course = models.ForeignKey('courses.Course', on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+        REFUNDED = "refunded", "Refunded"
+        CANCELLED = "cancelled", "Cancelled"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="payments",
+        db_index=True,
+    )
+    course = models.ForeignKey(
+        "courses.Course",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2, db_index=True)
-    currency = models.CharField(max_length=10, default='INR', db_index=True)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
-    
+    currency = models.CharField(max_length=10, default="INR", db_index=True)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True
+    )
+
     # Gateway info
-    gateway = models.CharField(max_length=50, db_index=True) # 'razorpay', 'stripe'
+    gateway = models.CharField(max_length=50, db_index=True)  # 'razorpay', 'stripe'
     gateway_order_id = models.CharField(max_length=100, blank=True, db_index=True)
     gateway_payment_id = models.CharField(max_length=100, blank=True, db_index=True)
     gateway_signature = models.CharField(max_length=256, blank=True)
-    
+
     # Coupon
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    coupon = models.ForeignKey(
+        Coupon, on_delete=models.SET_NULL, null=True, blank=True, db_index=True
+    )
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    original_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    
+    original_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     failed_at = models.DateTimeField(null=True, blank=True)
     refunded_at = models.DateTimeField(null=True, blank=True)
-    
+
     # Additional metadata
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
@@ -115,64 +150,75 @@ class Payment(BaseModel):
 
     class Meta:
         db_table = "payments"
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name = "Payment"
         verbose_name_plural = "Payments"
         indexes = [
-            models.Index(fields=['status', '-created_at'], name='idx_payment_status_created'),
-            models.Index(fields=['gateway_payment_id'], name='idx_payment_gateway_id'),
-            models.Index(fields=['user', '-created_at'], name='idx_payment_user_created'),
-            models.Index(fields=['course', 'status'], name='idx_payment_course_status'),
-            models.Index(fields=['user', 'status'], name='idx_payment_user_status'),
-            models.Index(fields=['-completed_at'], name='idx_payment_completed'),
-            models.Index(fields=['gateway', 'status'], name='idx_payment_gateway_status'),
+            models.Index(
+                fields=["status", "-created_at"], name="idx_payment_status_created"
+            ),
+            models.Index(fields=["gateway_payment_id"], name="idx_payment_gateway_id"),
+            models.Index(
+                fields=["user", "-created_at"], name="idx_payment_user_created"
+            ),
+            models.Index(fields=["course", "status"], name="idx_payment_course_status"),
+            models.Index(fields=["user", "status"], name="idx_payment_user_status"),
+            models.Index(fields=["-completed_at"], name="idx_payment_completed"),
+            models.Index(
+                fields=["gateway", "status"], name="idx_payment_gateway_status"
+            ),
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(amount__gte=0),
-                name='payment_amount_non_negative'
+                check=models.Q(amount__gte=0), name="payment_amount_non_negative"
             ),
             models.CheckConstraint(
                 check=models.Q(discount_amount__gte=0),
-                name='payment_discount_non_negative'
+                name="payment_discount_non_negative",
             ),
             models.CheckConstraint(
-                check=models.Q(original_amount__isnull=True) | models.Q(original_amount__gte=0),
-                name='payment_original_amount_non_negative'
+                check=models.Q(original_amount__isnull=True)
+                | models.Q(original_amount__gte=0),
+                name="payment_original_amount_non_negative",
             ),
         ]
 
     def __str__(self):
         return f"{self.user.email} - {self.amount} {self.currency} - {self.status}"
-    
+
     def mark_completed(self):
         """Mark payment as completed."""
         self.status = self.Status.COMPLETED
         self.completed_at = timezone.now()
-        self.save(update_fields=['status', 'completed_at'])
-    
+        self.save(update_fields=["status", "completed_at"])
+
     def mark_failed(self):
         """Mark payment as failed."""
         self.status = self.Status.FAILED
         self.failed_at = timezone.now()
-        self.save(update_fields=['status', 'failed_at'])
+        self.save(update_fields=["status", "failed_at"])
 
 
 class Subscription(BaseModel):
     """
     User Subscription Plan (Pro, Enterprise).
     """
-    class PlanType(models.TextChoices):
-        PRO = 'pro', 'Pro Plan'
-        ENTERPRISE = 'enterprise', 'Enterprise Plan'
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscription')
-    plan_type = models.CharField(max_length=20, choices=PlanType.choices, default=PlanType.PRO)
+    class PlanType(models.TextChoices):
+        PRO = "pro", "Pro Plan"
+        ENTERPRISE = "enterprise", "Enterprise Plan"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="subscription"
+    )
+    plan_type = models.CharField(
+        max_length=20, choices=PlanType.choices, default=PlanType.PRO
+    )
     is_active = models.BooleanField(default=True)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
     auto_renew = models.BooleanField(default=True)
-    
+
     # Gateway Subscription ID (if recurring)
     gateway_subscription_id = models.CharField(max_length=100, blank=True, null=True)
 
@@ -189,9 +235,14 @@ class Subscription(BaseModel):
 
 class Invoice(BaseModel):
     """Digital tax invoice generated for completed payments."""
+
     invoice_number = models.CharField(max_length=50, unique=True, db_index=True)
-    payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name='invoice')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
+    payment = models.OneToOneField(
+        Payment, on_delete=models.CASCADE, related_name="invoice"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="invoices"
+    )
     billing_name = models.CharField(max_length=150, blank=True)
     billing_email = models.EmailField(blank=True)
     billing_address = models.TextField(blank=True)
@@ -217,20 +268,17 @@ class Cart(BaseModel):
     Shopping cart for purchasing courses.
     Supports authenticated users and guest sessions.
     """
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="carts"
+        related_name="carts",
     )
     session_id = models.CharField(max_length=255, blank=True, db_index=True)
     coupon = models.ForeignKey(
-        Coupon,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="carts"
+        Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name="carts"
     )
 
     class Meta:
@@ -247,7 +295,10 @@ class Cart(BaseModel):
 
     @property
     def subtotal(self) -> float:
-        total = sum(float(item.course.price or 0) * item.quantity for item in self.items.select_related('course'))
+        total = sum(
+            float(item.course.price or 0) * item.quantity
+            for item in self.items.select_related("course")
+        )
         return round(total, 2)
 
     @property
@@ -265,16 +316,23 @@ class Cart(BaseModel):
 
     @property
     def currency(self) -> str:
-        first_item = self.items.select_related('course').first()
-        return getattr(first_item.course, 'currency', 'INR') if first_item and getattr(first_item, 'course', None) else 'INR'
+        first_item = self.items.select_related("course").first()
+        return (
+            getattr(first_item.course, "currency", "INR")
+            if first_item and getattr(first_item, "course", None)
+            else "INR"
+        )
 
 
 class CartItem(BaseModel):
     """
     Individual course item inside a Cart.
     """
+
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE, related_name="cart_items")
+    course = models.ForeignKey(
+        "courses.Course", on_delete=models.CASCADE, related_name="cart_items"
+    )
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 

@@ -6,6 +6,7 @@ from apps.dsa.consumers import SubmissionConsumer
 
 User = get_user_model()
 
+
 @pytest.mark.asyncio
 async def test_submission_consumer_connect_authorized():
     """
@@ -13,7 +14,8 @@ async def test_submission_consumer_connect_authorized():
     """
     # Create user (needs DB access, so use sync_to_async or database cleaner if needed)
     # For async tests with DB, we need @pytest.mark.django_db
-    pass # Real implementation requires careful async DB setup in pytest
+    pass  # Real implementation requires careful async DB setup in pytest
+
 
 # Mocking connection for basic logic test
 @pytest.mark.asyncio

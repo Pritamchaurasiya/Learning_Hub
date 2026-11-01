@@ -35,17 +35,16 @@ def get_course_by_id(course_id: str) -> Optional[Course]:
         return None
 
 
-def get_course_by_slug(slug: str, *, include_unpublished: bool = False) -> Optional[Course]:
+def get_course_by_slug(
+    slug: str, *, include_unpublished: bool = False
+) -> Optional[Course]:
     """Retrieve a course by its unique slug."""
-    qs = (
-        Course.objects.select_related("instructor", "category")
-        .prefetch_related(
-            Prefetch(
-                "modules",
-                queryset=Module.objects.order_by("order").prefetch_related(
-                    Prefetch("lessons", queryset=Lesson.objects.order_by("order"))
-                ),
-            )
+    qs = Course.objects.select_related("instructor", "category").prefetch_related(
+        Prefetch(
+            "modules",
+            queryset=Module.objects.order_by("order").prefetch_related(
+                Prefetch("lessons", queryset=Lesson.objects.order_by("order"))
+            ),
         )
     )
     if not include_unpublished:
@@ -82,11 +81,17 @@ def list_published_courses(
         qs = qs.filter(instructor_id=instructor_id)
     if search_query:
         from django.db import connection
+
         cleaned = search_query.strip()
         is_postgres = "postgresql" in connection.settings_dict.get("ENGINE", "")
         if is_postgres:
             try:
-                from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+                from django.contrib.postgres.search import (
+                    SearchVector,
+                    SearchQuery,
+                    SearchRank,
+                )
+
                 vector = (
                     SearchVector("title", weight="A")
                     + SearchVector("short_description", weight="B")
@@ -167,9 +172,8 @@ def list_user_enrollments(user) -> QuerySet[Enrollment]:
 def get_lesson_by_id(lesson_id: str) -> Optional[Lesson]:
     """Retrieve a single lesson by ID."""
     try:
-        return (
-            Lesson.objects.select_related("module", "module__course")
-            .get(id=lesson_id)
+        return Lesson.objects.select_related("module", "module__course").get(
+            id=lesson_id
         )
     except (Lesson.DoesNotExist, ValueError):
         return None
@@ -178,9 +182,8 @@ def get_lesson_by_id(lesson_id: str) -> Optional[Lesson]:
 def get_lesson_by_slug(course_slug: str, lesson_slug: str) -> Optional[Lesson]:
     """Retrieve a lesson by course slug and lesson slug."""
     try:
-        return (
-            Lesson.objects.select_related("module", "module__course")
-            .get(module__course__slug=course_slug, slug=lesson_slug)
+        return Lesson.objects.select_related("module", "module__course").get(
+            module__course__slug=course_slug, slug=lesson_slug
         )
     except Lesson.DoesNotExist:
         return None
@@ -230,7 +233,8 @@ def get_course_lessons_progress_map(user, course: Course) -> Dict[str, Dict[str,
         str(rec["lesson_id"]): {
             "progress_seconds": rec["progress_seconds"],
             "last_updated": rec["last_updated"],
-            "is_completed": str(rec["lesson_id"]) in completed_ids or rec["lesson_id"] in completed_ids,
+            "is_completed": str(rec["lesson_id"]) in completed_ids
+            or rec["lesson_id"] in completed_ids,
         }
         for rec in progress_records
     }
@@ -266,7 +270,9 @@ def list_categories(*, parent_only: bool = True) -> QuerySet[Category]:
         qs.prefetch_related(
             Prefetch(
                 "subcategories",
-                queryset=Category.objects.filter(is_active=True).order_by("order", "name"),
+                queryset=Category.objects.filter(is_active=True).order_by(
+                    "order", "name"
+                ),
                 to_attr="active_subcategories",
             )
         )
@@ -282,7 +288,9 @@ def list_categories(*, parent_only: bool = True) -> QuerySet[Category]:
 def get_category_by_slug(slug: str) -> Optional[Category]:
     """Retrieve a category by slug."""
     try:
-        return Category.objects.prefetch_related("subcategories").get(slug=slug, is_active=True)
+        return Category.objects.prefetch_related("subcategories").get(
+            slug=slug, is_active=True
+        )
     except Category.DoesNotExist:
         return None
 
@@ -290,9 +298,8 @@ def get_category_by_slug(slug: str) -> Optional[Category]:
 def get_certificate_by_code(certificate_code: str) -> Optional[Certificate]:
     """Retrieve a verified certificate by unique cryptographic code."""
     try:
-        return (
-            Certificate.objects.select_related("user", "course", "enrollment")
-            .get(certificate_code=certificate_code)
+        return Certificate.objects.select_related("user", "course", "enrollment").get(
+            certificate_code=certificate_code
         )
     except Certificate.DoesNotExist:
         return None
@@ -309,7 +316,9 @@ def list_user_certificates(user) -> QuerySet[Certificate]:
     )
 
 
-def list_course_notes(user, course: Course, *, lesson_id: Optional[str] = None) -> QuerySet[CourseNote]:
+def list_course_notes(
+    user, course: Course, *, lesson_id: Optional[str] = None
+) -> QuerySet[CourseNote]:
     """List student's timestamped notes for a course."""
     if not user or not user.is_authenticated:
         return CourseNote.objects.none()
@@ -319,7 +328,9 @@ def list_course_notes(user, course: Course, *, lesson_id: Optional[str] = None) 
     return qs.order_by("-created_at")
 
 
-def list_course_resources(course: Course, *, lesson_id: Optional[str] = None) -> QuerySet[CourseResource]:
+def list_course_resources(
+    course: Course, *, lesson_id: Optional[str] = None
+) -> QuerySet[CourseResource]:
     """List downloadable resources for a course."""
     qs = CourseResource.objects.filter(course=course).select_related("lesson")
     if lesson_id:
@@ -344,14 +355,11 @@ def list_career_tracks(*, is_active: bool = True) -> QuerySet[CareerTrack]:
 def get_career_track_by_slug(slug: str) -> Optional[CareerTrack]:
     """Retrieve a career track by slug."""
     try:
-        return (
-            CareerTrack.objects.prefetch_related(
-                Prefetch(
-                    "trackcourse_set",
-                    queryset=TrackCourse.objects.select_related("course").order_by("order"),
-                )
+        return CareerTrack.objects.prefetch_related(
+            Prefetch(
+                "trackcourse_set",
+                queryset=TrackCourse.objects.select_related("course").order_by("order"),
             )
-            .get(slug=slug, is_active=True)
-        )
+        ).get(slug=slug, is_active=True)
     except CareerTrack.DoesNotExist:
         return None

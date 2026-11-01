@@ -7,6 +7,7 @@ Replaces default DRF exception handler to:
 3. Handle Django ValidationError alongside DRF exceptions
 4. Never leak internal details in production
 """
+
 import logging
 from rest_framework.views import exception_handler as drf_exception_handler
 from rest_framework.response import Response
@@ -23,7 +24,7 @@ def custom_exception_handler(exc, context):
     """
     # Convert Django ValidationError to DRF format
     if isinstance(exc, DjangoValidationError):
-        if hasattr(exc, 'message_dict'):
+        if hasattr(exc, "message_dict"):
             data = {
                 "status": "error",
                 "message": "Validation failed",
@@ -33,7 +34,7 @@ def custom_exception_handler(exc, context):
         else:
             data = {
                 "status": "error",
-                "message": str(exc.message) if hasattr(exc, 'message') else str(exc),
+                "message": str(exc.message) if hasattr(exc, "message") else str(exc),
                 "code": "validation_error",
             }
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
@@ -43,12 +44,12 @@ def custom_exception_handler(exc, context):
 
     if response is not None:
         # Structured envelope for DRF-handled exceptions
-        view = context.get('view', None)
-        view_name = view.__class__.__name__ if view else 'Unknown'
+        view = context.get("view", None)
+        view_name = view.__class__.__name__ if view else "Unknown"
 
         # Extract error details
         if isinstance(response.data, dict):
-            detail = response.data.get('detail', None)
+            detail = response.data.get("detail", None)
             if detail:
                 message = str(detail)
                 errors = None
@@ -62,7 +63,7 @@ def custom_exception_handler(exc, context):
             message = str(response.data)
             errors = None
 
-        error_code = getattr(exc, 'default_code', 'error')
+        error_code = getattr(exc, "default_code", "error")
 
         response.data = {
             "status": "error",
@@ -80,7 +81,7 @@ def custom_exception_handler(exc, context):
                     "status_code": response.status_code,
                     "view": view_name,
                     "error": message,
-                }
+                },
             )
         elif response.status_code >= 400:
             logger.warning(
@@ -89,7 +90,7 @@ def custom_exception_handler(exc, context):
                     "status_code": response.status_code,
                     "view": view_name,
                     "error": message,
-                }
+                },
             )
 
         return response

@@ -23,6 +23,9 @@ def on_user_created(sender, instance, created, **kwargs):
         # Attempt to award initial signup XP via gamification
         try:
             from apps.gamification.services import GamificationService
-            GamificationService.award_xp(instance, 50, reason="Account Registration Bonus")
+
+            GamificationService.award_xp(
+                instance, 50, reason="Account Registration Bonus"
+            )
         except Exception:
             pass

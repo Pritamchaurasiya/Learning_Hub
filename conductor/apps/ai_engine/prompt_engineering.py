@@ -39,25 +39,24 @@ class Example:
 
 class TemplateManager:
     """Manage prompt templates."""
+
     def __init__(self):
         self.templates: Dict[str, PromptTemplate] = {}
         self._register_defaults()
 
     def _register_defaults(self):
-        self.templates['qa'] = PromptTemplate(
-            name='qa',
-            template='Question: {question}\nAnswer:',
-            variables=['question']
+        self.templates["qa"] = PromptTemplate(
+            name="qa", template="Question: {question}\nAnswer:", variables=["question"]
         )
-        self.templates['summarize'] = PromptTemplate(
-            name='summarize',
-            template='Summarize the following text:\n{text}\nSummary:',
-            variables=['text']
+        self.templates["summarize"] = PromptTemplate(
+            name="summarize",
+            template="Summarize the following text:\n{text}\nSummary:",
+            variables=["text"],
         )
-        self.templates['classify'] = PromptTemplate(
-            name='classify',
+        self.templates["classify"] = PromptTemplate(
+            name="classify",
             template='Classify "{text}" into one of: {categories}\nCategory:',
-            variables=['text', 'categories']
+            variables=["text", "categories"],
         )
 
     def add(self, template: PromptTemplate):
@@ -69,16 +68,17 @@ class TemplateManager:
     def render(self, name: str, **kwargs) -> str:
         template = self.templates.get(name)
         if not template:
-            return ''
+            return ""
         result = template.template
         for var in template.variables:
             if var in kwargs:
-                result = result.replace(f'{{{var}}}', str(kwargs[var]))
+                result = result.replace(f"{{{var}}}", str(kwargs[var]))
         return result
 
 
 class FewShotBuilder:
     """Build few-shot prompts."""
+
     def __init__(self, max_examples: int = 5):
         self.max_examples = max_examples
         self.examples: List[Example] = []
@@ -92,13 +92,17 @@ class FewShotBuilder:
         parts = []
         for ex in self.examples:
             if include_reasoning and ex.reasoning:
-                parts.append(f'Input: {ex.input}\nReasoning: {ex.reasoning}\nOutput: {ex.output}')
+                parts.append(
+                    f"Input: {ex.input}\nReasoning: {ex.reasoning}\nOutput: {ex.output}"
+                )
             else:
-                parts.append(f'Input: {ex.input}\nOutput: {ex.output}')
-        parts.append(f'Input: {query}\nOutput:')
-        return '\n\n'.join(parts)
+                parts.append(f"Input: {ex.input}\nOutput: {ex.output}")
+        parts.append(f"Input: {query}\nOutput:")
+        return "\n\n".join(parts)
 
-    def select_examples(self, query: str, all_examples: List[Example], k: int = 3) -> List[Example]:
+    def select_examples(
+        self, query: str, all_examples: List[Example], k: int = 3
+    ) -> List[Example]:
         # Simple selection based on word overlap
         query_words = set(query.lower().split())
         scored = []
@@ -112,6 +116,7 @@ class FewShotBuilder:
 
 class ChainPrompt:
     """Chain multiple prompts."""
+
     def __init__(self):
         self.steps: List[Tuple[str, PromptTemplate]] = []
 
@@ -124,7 +129,7 @@ class ChainPrompt:
             prompt = template.template
             for var in template.variables:
                 if var in context:
-                    prompt = prompt.replace(f'{{{var}}}', context[var])
+                    prompt = prompt.replace(f"{{{var}}}", context[var])
             result = executor(prompt)
             context[name] = result
         return context
@@ -132,6 +137,7 @@ class ChainPrompt:
 
 class SelfConsistency:
     """Self-consistency sampling."""
+
     def __init__(self, n_samples: int = 5):
         self.n_samples = n_samples
 
@@ -142,12 +148,14 @@ class SelfConsistency:
             responses.append(response)
         # Majority voting (simplified)
         from collections import Counter
+
         counts = Counter(responses)
         return counts.most_common(1)[0][0]
 
 
 class PromptOptimizer:
     """Optimize prompts."""
+
     def __init__(self):
         self.history: List[Tuple[str, float]] = []
 
@@ -160,16 +168,17 @@ class PromptOptimizer:
     def suggest_improvements(self, prompt: str) -> List[str]:
         suggestions = []
         if len(prompt) < 50:
-            suggestions.append('Add more context to the prompt')
-        if 'step by step' not in prompt.lower():
+            suggestions.append("Add more context to the prompt")
+        if "step by step" not in prompt.lower():
             suggestions.append('Add "step by step" for better reasoning')
-        if not any(word in prompt.lower() for word in ['please', 'provide', 'give']):
+        if not any(word in prompt.lower() for word in ["please", "provide", "give"]):
             suggestions.append('Use action verbs like "provide" or "give"')
         return suggestions
 
 
 class PromptEngineer:
     """Complete prompt engineering system."""
+
     def __init__(self):
         self.templates = TemplateManager()
         self.few_shot = FewShotBuilder()
@@ -181,26 +190,26 @@ class PromptEngineer:
         query: str,
         strategy: PromptStrategy = PromptStrategy.ZERO_SHOT,
         examples: Optional[List[Example]] = None,
-        **kwargs
+        **kwargs,
     ) -> str:
         if strategy == PromptStrategy.ZERO_SHOT:
             return self.templates.render(task, query=query, **kwargs)
-        
+
         elif strategy == PromptStrategy.FEW_SHOT:
             if examples:
                 for ex in examples:
                     self.few_shot.add_example(ex)
             return self.few_shot.build(query)
-        
+
         elif strategy == PromptStrategy.CHAIN_OF_THOUGHT:
             base = self.templates.render(task, query=query, **kwargs)
             return base + "\nLet's think step by step:"
-        
+
         return query
 
     def optimize(self, prompt: str, feedback: str) -> str:
         suggestions = self.optimizer.suggest_improvements(prompt)
         # Apply first suggestion if available
-        if suggestions and 'step by step' in suggestions[0]:
+        if suggestions and "step by step" in suggestions[0]:
             return prompt + "\nLet's think step by step."
         return prompt

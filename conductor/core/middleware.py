@@ -30,7 +30,9 @@ class RequestLoggingMiddleware:
         duration_ms = (time.monotonic() - start) * 1000
 
         user = getattr(request, "user", None)
-        user_id = getattr(user, "id", "anon") if user and user.is_authenticated else "anon"
+        user_id = (
+            getattr(user, "id", "anon") if user and user.is_authenticated else "anon"
+        )
 
         logger.info(
             "%s %s | user=%s | status=%s | %.0fms",
@@ -42,7 +44,7 @@ class RequestLoggingMiddleware:
         )
 
         # Inject server-timing header (useful for debugging)
-        response["Server-Timing"] = f'total;dur={duration_ms:.1f}'
+        response["Server-Timing"] = f"total;dur={duration_ms:.1f}"
         return response
 
 
@@ -108,9 +110,7 @@ class CORSHardeningMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self.allowed_origins = set(
-            getattr(settings, "CORS_ALLOWED_ORIGINS", [])
-        )
+        self.allowed_origins = set(getattr(settings, "CORS_ALLOWED_ORIGINS", []))
         self.allow_all = getattr(settings, "CORS_ALLOW_ALL_ORIGINS", False)
 
     def __call__(self, request):

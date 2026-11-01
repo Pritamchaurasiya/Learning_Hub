@@ -8,146 +8,394 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Option',
+            name="Option",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('text', models.TextField()),
-                ('is_correct', models.BooleanField(default=False)),
-                ('explanation', models.TextField(blank=True, help_text='Why this option is correct/incorrect')),
-                ('order', models.IntegerField(default=0)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("text", models.TextField()),
+                ("is_correct", models.BooleanField(default=False)),
+                (
+                    "explanation",
+                    models.TextField(
+                        blank=True, help_text="Why this option is correct/incorrect"
+                    ),
+                ),
+                ("order", models.IntegerField(default=0)),
             ],
             options={
-                'db_table': 'question_options',
-                'ordering': ['order'],
+                "db_table": "question_options",
+                "ordering": ["order"],
             },
         ),
         migrations.CreateModel(
-            name='Question',
+            name="Question",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('text', models.TextField()),
-                ('question_type', models.CharField(choices=[('mcq', 'Multiple Choice (Single Correct)'), ('multiple_select', 'Multiple Choice (Multiple Correct)'), ('true_false', 'True/False'), ('numerical', 'Numerical Answer'), ('fill_blank', 'Fill in the Blank')], default='mcq', max_length=20)),
-                ('difficulty', models.FloatField(default=0.5, help_text='IRT difficulty parameter (0-5)')),
-                ('discrimination', models.FloatField(default=1.0, help_text='IRT discrimination parameter')),
-                ('guess_factor', models.FloatField(default=0.25, help_text='IRT guessing parameter')),
-                ('bloom_level', models.CharField(choices=[('remember', 'Remember'), ('understand', 'Understand'), ('apply', 'Apply'), ('analyze', 'Analyze'), ('evaluate', 'Evaluate'), ('create', 'Create')], default='understand', max_length=15)),
-                ('explanation', models.TextField(help_text='Detailed explanation of the correct answer')),
-                ('solution_steps', models.JSONField(blank=True, default=list, help_text='Step-by-step solution')),
-                ('tags', models.JSONField(blank=True, default=list, help_text='List of topic tags')),
-                ('is_ai_generated', models.BooleanField(default=False)),
-                ('ai_model', models.CharField(blank=True, max_length=50, null=True)),
-                ('ai_prompt_version', models.CharField(blank=True, max_length=20, null=True)),
-                ('ai_generation_id', models.CharField(blank=True, db_index=True, max_length=100, null=True)),
-                ('usage_count', models.IntegerField(default=0)),
-                ('correct_count', models.IntegerField(default=0)),
-                ('incorrect_count', models.IntegerField(default=0)),
-                ('avg_time_seconds', models.FloatField(default=0, help_text='Average time users take to answer')),
-                ('is_verified', models.BooleanField(default=False, help_text='Manually verified by instructor')),
-                ('reported_count', models.IntegerField(default=0)),
-                ('is_deleted', models.BooleanField(db_index=True, default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("text", models.TextField()),
+                (
+                    "question_type",
+                    models.CharField(
+                        choices=[
+                            ("mcq", "Multiple Choice (Single Correct)"),
+                            ("multiple_select", "Multiple Choice (Multiple Correct)"),
+                            ("true_false", "True/False"),
+                            ("numerical", "Numerical Answer"),
+                            ("fill_blank", "Fill in the Blank"),
+                        ],
+                        default="mcq",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "difficulty",
+                    models.FloatField(
+                        default=0.5, help_text="IRT difficulty parameter (0-5)"
+                    ),
+                ),
+                (
+                    "discrimination",
+                    models.FloatField(
+                        default=1.0, help_text="IRT discrimination parameter"
+                    ),
+                ),
+                (
+                    "guess_factor",
+                    models.FloatField(default=0.25, help_text="IRT guessing parameter"),
+                ),
+                (
+                    "bloom_level",
+                    models.CharField(
+                        choices=[
+                            ("remember", "Remember"),
+                            ("understand", "Understand"),
+                            ("apply", "Apply"),
+                            ("analyze", "Analyze"),
+                            ("evaluate", "Evaluate"),
+                            ("create", "Create"),
+                        ],
+                        default="understand",
+                        max_length=15,
+                    ),
+                ),
+                (
+                    "explanation",
+                    models.TextField(
+                        help_text="Detailed explanation of the correct answer"
+                    ),
+                ),
+                (
+                    "solution_steps",
+                    models.JSONField(
+                        blank=True, default=list, help_text="Step-by-step solution"
+                    ),
+                ),
+                (
+                    "tags",
+                    models.JSONField(
+                        blank=True, default=list, help_text="List of topic tags"
+                    ),
+                ),
+                ("is_ai_generated", models.BooleanField(default=False)),
+                ("ai_model", models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    "ai_prompt_version",
+                    models.CharField(blank=True, max_length=20, null=True),
+                ),
+                (
+                    "ai_generation_id",
+                    models.CharField(
+                        blank=True, db_index=True, max_length=100, null=True
+                    ),
+                ),
+                ("usage_count", models.IntegerField(default=0)),
+                ("correct_count", models.IntegerField(default=0)),
+                ("incorrect_count", models.IntegerField(default=0)),
+                (
+                    "avg_time_seconds",
+                    models.FloatField(
+                        default=0, help_text="Average time users take to answer"
+                    ),
+                ),
+                (
+                    "is_verified",
+                    models.BooleanField(
+                        default=False, help_text="Manually verified by instructor"
+                    ),
+                ),
+                ("reported_count", models.IntegerField(default=0)),
+                ("is_deleted", models.BooleanField(db_index=True, default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'question_bank',
-                'ordering': ['-created_at'],
+                "db_table": "question_bank",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Test',
+            name="Test",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('title', models.CharField(max_length=300)),
-                ('description', models.TextField(blank=True)),
-                ('mode', models.CharField(choices=[('practice', 'Practice Mode (untimed, instant feedback)'), ('mock', 'Mock Test (timed, no feedback until submit)'), ('timed_challenge', 'Timed Challenge (strict timer, leaderboard)'), ('adaptive', 'Adaptive Test (difficulty adjusts in real-time)'), ('review', 'Review Mode (see answers and explanations)')], default='mock', max_length=20)),
-                ('difficulty', models.CharField(choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard'), ('mixed', 'Mixed (auto-distributed)'), ('adaptive', 'Adaptive')], default='mixed', max_length=15)),
-                ('time_limit_minutes', models.IntegerField(default=60)),
-                ('passing_score', models.FloatField(default=50.0, help_text='Minimum percentage to pass')),
-                ('total_marks', models.FloatField(default=0)),
-                ('negative_marks_per_question', models.FloatField(default=0)),
-                ('marks_per_correct', models.FloatField(default=1)),
-                ('is_ai_generated', models.BooleanField(default=False)),
-                ('generation_config', models.JSONField(blank=True, default=dict, help_text='AI generation parameters used')),
-                ('ai_generation_id', models.CharField(blank=True, db_index=True, max_length=100, null=True)),
-                ('cache_key', models.CharField(blank=True, max_length=255, null=True, unique=True)),
-                ('cache_ttl', models.IntegerField(default=86400, help_text='Cache TTL in seconds (default 24h)')),
-                ('is_published', models.BooleanField(db_index=True, default=False)),
-                ('is_featured', models.BooleanField(default=False)),
-                ('attempt_count', models.IntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('published_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("title", models.CharField(max_length=300)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "mode",
+                    models.CharField(
+                        choices=[
+                            ("practice", "Practice Mode (untimed, instant feedback)"),
+                            ("mock", "Mock Test (timed, no feedback until submit)"),
+                            (
+                                "timed_challenge",
+                                "Timed Challenge (strict timer, leaderboard)",
+                            ),
+                            (
+                                "adaptive",
+                                "Adaptive Test (difficulty adjusts in real-time)",
+                            ),
+                            ("review", "Review Mode (see answers and explanations)"),
+                        ],
+                        default="mock",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "difficulty",
+                    models.CharField(
+                        choices=[
+                            ("easy", "Easy"),
+                            ("medium", "Medium"),
+                            ("hard", "Hard"),
+                            ("mixed", "Mixed (auto-distributed)"),
+                            ("adaptive", "Adaptive"),
+                        ],
+                        default="mixed",
+                        max_length=15,
+                    ),
+                ),
+                ("time_limit_minutes", models.IntegerField(default=60)),
+                (
+                    "passing_score",
+                    models.FloatField(
+                        default=50.0, help_text="Minimum percentage to pass"
+                    ),
+                ),
+                ("total_marks", models.FloatField(default=0)),
+                ("negative_marks_per_question", models.FloatField(default=0)),
+                ("marks_per_correct", models.FloatField(default=1)),
+                ("is_ai_generated", models.BooleanField(default=False)),
+                (
+                    "generation_config",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="AI generation parameters used",
+                    ),
+                ),
+                (
+                    "ai_generation_id",
+                    models.CharField(
+                        blank=True, db_index=True, max_length=100, null=True
+                    ),
+                ),
+                (
+                    "cache_key",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, unique=True
+                    ),
+                ),
+                (
+                    "cache_ttl",
+                    models.IntegerField(
+                        default=86400, help_text="Cache TTL in seconds (default 24h)"
+                    ),
+                ),
+                ("is_published", models.BooleanField(db_index=True, default=False)),
+                ("is_featured", models.BooleanField(default=False)),
+                ("attempt_count", models.IntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("published_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'tests',
-                'ordering': ['-created_at'],
+                "db_table": "tests",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='TestAttempt',
+            name="TestAttempt",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('session_token', models.CharField(db_index=True, max_length=64, unique=True)),
-                ('status', models.CharField(choices=[('not_started', 'Not Started'), ('in_progress', 'In Progress'), ('submitted', 'Submitted'), ('expired', 'Expired (time ran out)'), ('abandoned', 'Abandoned')], default='not_started', max_length=20)),
-                ('mode', models.CharField(choices=[('practice', 'Practice Mode (untimed, instant feedback)'), ('mock', 'Mock Test (timed, no feedback until submit)'), ('timed_challenge', 'Timed Challenge (strict timer, leaderboard)'), ('adaptive', 'Adaptive Test (difficulty adjusts in real-time)'), ('review', 'Review Mode (see answers and explanations)')], default='mock', max_length=20)),
-                ('score', models.FloatField(default=0)),
-                ('total_marks', models.FloatField(default=0)),
-                ('percentage', models.FloatField(default=0)),
-                ('passed', models.BooleanField(blank=True, null=True)),
-                ('started_at', models.DateTimeField(auto_now_add=True)),
-                ('submitted_at', models.DateTimeField(blank=True, null=True)),
-                ('time_taken_seconds', models.IntegerField(default=0)),
-                ('last_activity_at', models.DateTimeField(auto_now=True)),
-                ('attempt_number', models.IntegerField(default=1)),
-                ('device_info', models.JSONField(blank=True, default=dict, null=True)),
-                ('ip_address', models.GenericIPAddressField(blank=True, null=True)),
-                ('autosave_data', models.JSONField(blank=True, default=dict)),
-                ('autosave_version', models.IntegerField(default=0)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "session_token",
+                    models.CharField(db_index=True, max_length=64, unique=True),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("not_started", "Not Started"),
+                            ("in_progress", "In Progress"),
+                            ("submitted", "Submitted"),
+                            ("expired", "Expired (time ran out)"),
+                            ("abandoned", "Abandoned"),
+                        ],
+                        default="not_started",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "mode",
+                    models.CharField(
+                        choices=[
+                            ("practice", "Practice Mode (untimed, instant feedback)"),
+                            ("mock", "Mock Test (timed, no feedback until submit)"),
+                            (
+                                "timed_challenge",
+                                "Timed Challenge (strict timer, leaderboard)",
+                            ),
+                            (
+                                "adaptive",
+                                "Adaptive Test (difficulty adjusts in real-time)",
+                            ),
+                            ("review", "Review Mode (see answers and explanations)"),
+                        ],
+                        default="mock",
+                        max_length=20,
+                    ),
+                ),
+                ("score", models.FloatField(default=0)),
+                ("total_marks", models.FloatField(default=0)),
+                ("percentage", models.FloatField(default=0)),
+                ("passed", models.BooleanField(blank=True, null=True)),
+                ("started_at", models.DateTimeField(auto_now_add=True)),
+                ("submitted_at", models.DateTimeField(blank=True, null=True)),
+                ("time_taken_seconds", models.IntegerField(default=0)),
+                ("last_activity_at", models.DateTimeField(auto_now=True)),
+                ("attempt_number", models.IntegerField(default=1)),
+                ("device_info", models.JSONField(blank=True, default=dict, null=True)),
+                ("ip_address", models.GenericIPAddressField(blank=True, null=True)),
+                ("autosave_data", models.JSONField(blank=True, default=dict)),
+                ("autosave_version", models.IntegerField(default=0)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'test_attempts',
-                'ordering': ['-started_at'],
+                "db_table": "test_attempts",
+                "ordering": ["-started_at"],
             },
         ),
         migrations.CreateModel(
-            name='TestQuestion',
+            name="TestQuestion",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('order', models.IntegerField()),
-                ('marks', models.FloatField(default=1)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("order", models.IntegerField()),
+                ("marks", models.FloatField(default=1)),
             ],
             options={
-                'db_table': 'test_questions',
-                'ordering': ['order'],
+                "db_table": "test_questions",
+                "ordering": ["order"],
             },
         ),
         migrations.CreateModel(
-            name='AttemptAnswer',
+            name="AttemptAnswer",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('text_answer', models.TextField(blank=True, help_text='For numerical/fill-blank questions')),
-                ('is_correct', models.BooleanField(blank=True, help_text='Null = not yet graded', null=True)),
-                ('marks_obtained', models.FloatField(default=0)),
-                ('time_spent_seconds', models.IntegerField(default=0)),
-                ('first_answered_at', models.DateTimeField(blank=True, null=True)),
-                ('answered_at', models.DateTimeField(blank=True, null=True)),
-                ('is_flagged', models.BooleanField(default=False, help_text='Marked for review')),
-                ('is_bookmarked', models.BooleanField(default=False, help_text='Bookmarked by user')),
-                ('answer_changes', models.IntegerField(default=0)),
-                ('selected_options', models.ManyToManyField(blank=True, related_name='attempt_answers', to='test_engine.option')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "text_answer",
+                    models.TextField(
+                        blank=True, help_text="For numerical/fill-blank questions"
+                    ),
+                ),
+                (
+                    "is_correct",
+                    models.BooleanField(
+                        blank=True, help_text="Null = not yet graded", null=True
+                    ),
+                ),
+                ("marks_obtained", models.FloatField(default=0)),
+                ("time_spent_seconds", models.IntegerField(default=0)),
+                ("first_answered_at", models.DateTimeField(blank=True, null=True)),
+                ("answered_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "is_flagged",
+                    models.BooleanField(default=False, help_text="Marked for review"),
+                ),
+                (
+                    "is_bookmarked",
+                    models.BooleanField(default=False, help_text="Bookmarked by user"),
+                ),
+                ("answer_changes", models.IntegerField(default=0)),
+                (
+                    "selected_options",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="attempt_answers",
+                        to="test_engine.option",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'attempt_answers',
-                'ordering': ['answered_at'],
+                "db_table": "attempt_answers",
+                "ordering": ["answered_at"],
             },
         ),
     ]

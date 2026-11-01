@@ -2,11 +2,17 @@
 Tests for seed_exam_question_bank management command.
 Validates question bank generation, exam blueprints, IRT parameters, and idempotency.
 """
+
 import pytest
 from io import StringIO
 from django.core.management import call_command
 from apps.exams.models import Exam, Subject, Topic
-from apps.test_engine.models import Question, Option, Test as TestModel, TestQuestion as TestQuestionModel
+from apps.test_engine.models import (
+    Question,
+    Option,
+    Test as TestModel,
+    TestQuestion as TestQuestionModel,
+)
 
 
 @pytest.mark.django_db
@@ -16,7 +22,7 @@ class TestSeedExamQuestionBankCommand:
     def test_seed_command_execution(self):
         """Verify command runs successfully and populates taxonomy, questions, and test papers."""
         out = StringIO()
-        call_command('seed_exam_question_bank', stdout=out)
+        call_command("seed_exam_question_bank", stdout=out)
         output = out.getvalue()
 
         assert "Successfully seeded" in output
@@ -47,10 +53,18 @@ class TestSeedExamQuestionBankCommand:
             assert q.options.filter(is_correct=True).exists()
 
         # Verify Test Blueprints
-        assert TestModel.objects.filter(title="JEE Advanced Grand Simulation Paper 1").exists()
-        assert TestModel.objects.filter(title="GATE CS Algorithms & Systems Sprint").exists()
-        assert TestModel.objects.filter(title="Adaptive IRT Diagnostic Battery").exists()
-        assert TestModel.objects.filter(title="Digital SAT Math Mastery Practice").exists()
+        assert TestModel.objects.filter(
+            title="JEE Advanced Grand Simulation Paper 1"
+        ).exists()
+        assert TestModel.objects.filter(
+            title="GATE CS Algorithms & Systems Sprint"
+        ).exists()
+        assert TestModel.objects.filter(
+            title="Adaptive IRT Diagnostic Battery"
+        ).exists()
+        assert TestModel.objects.filter(
+            title="Digital SAT Math Mastery Practice"
+        ).exists()
 
         jee_test = TestModel.objects.get(title="JEE Advanced Grand Simulation Paper 1")
         assert jee_test.test_questions.count() > 0
@@ -61,14 +75,14 @@ class TestSeedExamQuestionBankCommand:
     def test_seed_command_idempotence(self):
         """Verify calling seed command multiple times does not produce duplicate exams or questions."""
         out1 = StringIO()
-        call_command('seed_exam_question_bank', stdout=out1)
+        call_command("seed_exam_question_bank", stdout=out1)
 
         count_exams_1 = Exam.objects.count()
         count_questions_1 = Question.objects.count()
         count_tests_1 = TestModel.objects.count()
 
         out2 = StringIO()
-        call_command('seed_exam_question_bank', stdout=out2)
+        call_command("seed_exam_question_bank", stdout=out2)
 
         count_exams_2 = Exam.objects.count()
         count_questions_2 = Question.objects.count()

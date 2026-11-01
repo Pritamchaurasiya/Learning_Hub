@@ -73,7 +73,9 @@ class UUIDMixin(models.Model):
     Mixin that uses UUID as primary key.
     """
 
-    id = models.CharField(primary_key=True, max_length=36, default=default_uuid_str, editable=False)
+    id = models.CharField(
+        primary_key=True, max_length=36, default=default_uuid_str, editable=False
+    )
 
     class Meta:
         abstract = True

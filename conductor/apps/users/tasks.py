@@ -38,7 +38,10 @@ def send_password_reset_email_task(self, email: str, reset_token: str):
 def cleanup_expired_sessions_task():
     """Periodic job to deactivate expired user sessions (older than 30 days)."""
     from .models import UserSession
+
     cutoff = timezone.now() - timedelta(days=30)
-    deactivated = UserSession.objects.filter(is_active=True, last_active__lt=cutoff).update(is_active=False)
+    deactivated = UserSession.objects.filter(
+        is_active=True, last_active__lt=cutoff
+    ).update(is_active=False)
     logger.info("Deactivated %d expired user sessions", deactivated)
     return deactivated

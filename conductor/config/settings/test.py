@@ -11,26 +11,29 @@ This settings module:
 from config.settings.development import *  # type: ignore[assignment]  # noqa: F401, F403  # Django settings inheritance pattern
 
 # Override URL configuration to exclude problematic AI endpoints
-ROOT_URLCONF = 'config.urls_test'
+ROOT_URLCONF = "config.urls_test"
 
 # Use in-memory database for faster tests
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
     }
 }
+
 
 class DisableMigrations:
     def __contains__(self, item):
         return True
+
     def __getitem__(self, item):
         return None
+
 
 MIGRATION_MODULES = DisableMigrations()
 
 # Strip daphne from test app runner to prevent Twisted bytecode memory spikes
-INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'daphne']  # type: ignore[name-defined]  # noqa: F405
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app != "daphne"]  # type: ignore[name-defined]  # noqa: F405
 
 # ============================================================================
 # MIDDLEWARE — Strip all custom middleware that depends on external services
@@ -104,8 +107,8 @@ ANTHROPIC_API_KEY = "test-anthropic-key"
 AI_ENGINE_MOCK_MODE = True
 
 # Disable rate limiting in tests
-REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []  # type: ignore[name-defined]  # noqa: F405
-REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {  # type: ignore[name-defined]  # noqa: F405
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []  # type: ignore[name-defined]  # noqa: F405
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # type: ignore[name-defined]  # noqa: F405
     "anon": "99999/minute",
     "user": "99999/minute",
     "login": "99999/minute",
@@ -144,14 +147,14 @@ CSRF_COOKIE_SECURE = False
 
 # Faster password hashing for tests
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.MD5PasswordHasher',
+    "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
 # Use lightweight MinimumLengthValidator in tests (avoids heavy common-passwords.txt.gz decompression)
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {'min_length': 8},
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
     },
 ]
 
@@ -159,4 +162,5 @@ AUTH_PASSWORD_VALIDATORS = [
 # LOGGING — Reduce noise during tests
 # ============================================================================
 import logging
+
 logging.disable(logging.WARNING)

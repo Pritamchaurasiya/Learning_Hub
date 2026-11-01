@@ -47,6 +47,7 @@ class ServerInstance:
 
 class ModelRegistry:
     """Central model registry."""
+
     def __init__(self):
         self.models: Dict[str, ModelInfo] = {}
         self.versions: Dict[str, List[str]] = {}
@@ -77,6 +78,7 @@ class ModelRegistry:
 
 class LoadBalancer:
     """Load balancer for model replicas."""
+
     def __init__(self, strategy: str = "round_robin"):
         self.strategy = strategy
         self.servers: List[ServerInstance] = []
@@ -89,7 +91,9 @@ class LoadBalancer:
         self.servers = [s for s in self.servers if s.id != server_id]
 
     def _round_robin(self, model_name: str) -> Optional[ServerInstance]:
-        eligible = [s for s in self.servers if s.status == "healthy" and model_name in s.models]
+        eligible = [
+            s for s in self.servers if s.status == "healthy" and model_name in s.models
+        ]
         if not eligible:
             return None
         server = eligible[self.current_idx % len(eligible)]
@@ -97,7 +101,9 @@ class LoadBalancer:
         return server
 
     def _least_load(self, model_name: str) -> Optional[ServerInstance]:
-        eligible = [s for s in self.servers if s.status == "healthy" and model_name in s.models]
+        eligible = [
+            s for s in self.servers if s.status == "healthy" and model_name in s.models
+        ]
         if not eligible:
             return None
         return min(eligible, key=lambda s: s.load)
@@ -112,14 +118,15 @@ class LoadBalancer:
 
 class HealthMonitor:
     """Monitor model and server health."""
+
     def __init__(self):
         self.checks: Dict[str, List[Dict]] = {}
-        self.thresholds = {'latency_ms': 1000, 'error_rate': 0.1, 'memory_pct': 90}
+        self.thresholds = {"latency_ms": 1000, "error_rate": 0.1, "memory_pct": 90}
 
     def record_check(self, server_id: str, result: Dict):
         if server_id not in self.checks:
             self.checks[server_id] = []
-        self.checks[server_id].append({**result, 'timestamp': datetime.now()})
+        self.checks[server_id].append({**result, "timestamp": datetime.now()})
         # Keep last 100
         self.checks[server_id] = self.checks[server_id][-100:]
 
@@ -127,17 +134,18 @@ class HealthMonitor:
         if server_id not in self.checks or not self.checks[server_id]:
             return "unknown"
         recent = self.checks[server_id][-10:]
-        errors = sum(1 for c in recent if c.get('error'))
+        errors = sum(1 for c in recent if c.get("error"))
         if errors > 5:
             return "unhealthy"
-        avg_latency = sum(c.get('latency_ms', 0) for c in recent) / len(recent)
-        if avg_latency > self.thresholds['latency_ms']:
+        avg_latency = sum(c.get("latency_ms", 0) for c in recent) / len(recent)
+        if avg_latency > self.thresholds["latency_ms"]:
             return "degraded"
         return "healthy"
 
 
 class ModelServer:
     """Complete model serving system."""
+
     def __init__(self):
         self.registry = ModelRegistry()
         self.balancer = LoadBalancer()
@@ -149,43 +157,45 @@ class ModelServer:
         model.status = ModelStatus.READY
         model.loaded_at = datetime.now()
         self.registry.register(model)
-        
+
         # Create server instances
         for i in range(replicas):
             server = ServerInstance(
                 id=f"{model.name}-{model.version}-{i}",
                 host="localhost",
                 port=8000 + i,
-                models=[model.name]
+                models=[model.name],
             )
             self.balancer.add_server(server)
 
     def infer(self, model_name: str, inputs: Dict) -> Dict:
         server = self.balancer.route(model_name)
         if not server:
-            return {'error': 'No available server'}
-        
+            return {"error": "No available server"}
+
         start = time.time()
         # Simulate inference
-        result = {'output': f"Result from {server.id}", 'model': model_name}
+        result = {"output": f"Result from {server.id}", "model": model_name}
         latency = (time.time() - start) * 1000 + random.uniform(10, 100)
-        
+
         # Update stats
         self.request_count += 1
         server.load = min(1.0, server.load + 0.01)
-        self.monitor.record_check(server.id, {'latency_ms': latency, 'error': False})
-        
+        self.monitor.record_check(server.id, {"latency_ms": latency, "error": False})
+
         model = self.registry.get(model_name)
         if model:
             model.requests_served += 1
             model.avg_latency_ms = (model.avg_latency_ms * 0.9) + (latency * 0.1)
-        
-        return {**result, 'latency_ms': latency, 'server': server.id}
+
+        return {**result, "latency_ms": latency, "server": server.id}
 
     def status(self) -> Dict:
         return {
-            'models': len(self.registry.models),
-            'servers': len(self.balancer.servers),
-            'total_requests': self.request_count,
-            'healthy_servers': sum(1 for s in self.balancer.servers if s.status == "healthy")
+            "models": len(self.registry.models),
+            "servers": len(self.balancer.servers),
+            "total_requests": self.request_count,
+            "healthy_servers": sum(
+                1 for s in self.balancer.servers if s.status == "healthy"
+            ),
         }

@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class SupportedLanguage(Enum):
     """Supported programming languages."""
+
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     JAVA = "java"
@@ -35,6 +36,7 @@ class SupportedLanguage(Enum):
 @dataclass
 class ExecutionResult:
     """Result of code execution."""
+
     stdout: str
     stderr: str
     exit_code: int
@@ -48,11 +50,11 @@ class CodeSandboxService:
     """
     Secure sandbox for executing untrusted code.
     """
-    
+
     # Configuration
     TIMEOUT_SECONDS = 5
     MAX_MEMORY_MB = 128
-    
+
     # Docker images for languages
     DOCKER_IMAGES = {
         SupportedLanguage.PYTHON: "python:3.9-slim",
@@ -60,77 +62,81 @@ class CodeSandboxService:
         SupportedLanguage.JAVA: "openjdk:11-slim",
         SupportedLanguage.CPP: "gcc:latest",
     }
-    
+
     @classmethod
     def execute_code(
-        cls,
-        code: str,
-        language: SupportedLanguage,
-        stdin_input: str = ""
+        cls, code: str, language: SupportedLanguage, stdin_input: str = ""
     ) -> ExecutionResult:
         """
         Execute code in a secure sandbox.
         """
         # In production, use Docker client (docker-py) or specialized service (Firecracker)
-        # For this implementation, we will mock the "Docker" call with a subprocess 
+        # For this implementation, we will mock the "Docker" call with a subprocess
         # that mimics isolation, or actually run limited local commands if safe.
         #
         # SECURITY WARNING: Running subprocess directly is not safe for production untrusted code.
         # This implementation requires docker to be installed to function securely.
         # Fallback to "Mock Execution" if docker is missing to prevent errors in Dev.
-        
+
         if not cls._is_docker_available():
             return cls._mock_execution(code, language, stdin_input)
-            
+
         return cls._docker_execution(code, language, stdin_input)
 
     @classmethod
-    def _mock_execution(cls, code: str, language: SupportedLanguage, stdin: str) -> ExecutionResult:
+    def _mock_execution(
+        cls, code: str, language: SupportedLanguage, stdin: str
+    ) -> ExecutionResult:
         """Safe mock execution for development without Docker."""
         import time
-        
+
         # Simulate processing time
         time.sleep(0.1)
-        
+
         # Basic parsing to simulate output
         stdout = ""
         stderr = ""
         exit_code = 0
-        
+
         if language == SupportedLanguage.PYTHON:
             if "print" in code:
                 # Extract print content crudely
                 import re
-                matches = re.findall(r'print\((.*?)\)', code)
-                stdout = "\n".join([m.strip('"\'') for m in matches])
+
+                matches = re.findall(r"print\((.*?)\)", code)
+                stdout = "\n".join([m.strip("\"'") for m in matches])
             if "raise" in code or "Error" in code:
-                stderr = "Traceback (most recent call last)...\nMockError: Application error"
+                stderr = (
+                    "Traceback (most recent call last)...\nMockError: Application error"
+                )
                 exit_code = 1
-                
+
         elif language == SupportedLanguage.JAVASCRIPT:
             if "console.log" in code:
                 stdout = "Output from console.log"
-                
+
         return ExecutionResult(
             stdout=stdout or "Process finished successfully",
             stderr=stderr,
             exit_code=exit_code,
             execution_time=0.15,
-            memory_usage=1024 * 1024 * 15, # 15MB
-            timed_out=False
+            memory_usage=1024 * 1024 * 15,  # 15MB
+            timed_out=False,
         )
 
     @classmethod
-    def _docker_execution(cls, code: str, language: SupportedLanguage, stdin: str) -> ExecutionResult:
+    def _docker_execution(
+        cls, code: str, language: SupportedLanguage, stdin: str
+    ) -> ExecutionResult:
         """Run code inside a Docker container securely."""
         import tempfile
         import os
         import subprocess
         import time
         import sys
-        
+
         image = cls.DOCKER_IMAGES.get(language, "python:3.9-slim")
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             # Write code to file based on language
             if language == SupportedLanguage.PYTHON:
@@ -148,33 +154,40 @@ class CodeSandboxService:
             else:
                 filename = "main.py"
                 run_cmd = ["python", filename]
-                
+
             code_path = os.path.join(temp_dir, filename)
             with open(code_path, "w", encoding="utf-8") as f:
                 f.write(code)
-                
+
             input_path = os.path.join(temp_dir, "input.txt")
             with open(input_path, "w", encoding="utf-8") as f:
                 f.write(stdin or "")
-                
+
             docker_cmd = [
-                "docker", "run", "--rm",
-                "--network", "none",
-                "--memory", f"{cls.MAX_MEMORY_MB}m",
-                "--cpus", "0.5",
-                "-v", f"{temp_dir}:/app",
-                "-w", "/app",
-                image
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--memory",
+                f"{cls.MAX_MEMORY_MB}m",
+                "--cpus",
+                "0.5",
+                "-v",
+                f"{temp_dir}:/app",
+                "-w",
+                "/app",
+                image,
             ]
-            
+
             if stdin:
                 if run_cmd[0] == "sh":
                     run_cmd[2] += " < input.txt"
                 else:
                     run_cmd = ["sh", "-c", " ".join(run_cmd) + " < input.txt"]
-            
+
             docker_cmd.extend(run_cmd)
-            
+
             start_time = time.time()
             try:
                 # Use subprocess to run the docker container securely
@@ -182,7 +195,7 @@ class CodeSandboxService:
                     docker_cmd,
                     capture_output=True,
                     text=True,
-                    timeout=cls.TIMEOUT_SECONDS
+                    timeout=cls.TIMEOUT_SECONDS,
                 )
                 execution_time = time.time() - start_time
                 return ExecutionResult(
@@ -191,7 +204,7 @@ class CodeSandboxService:
                     exit_code=result.returncode,
                     execution_time=execution_time,
                     memory_usage=0,
-                    timed_out=False
+                    timed_out=False,
                 )
             except subprocess.TimeoutExpired:
                 # Force kill container if it times out
@@ -203,7 +216,7 @@ class CodeSandboxService:
                     execution_time=execution_time,
                     memory_usage=0,
                     timed_out=True,
-                    error="Timeout"
+                    error="Timeout",
                 )
             except Exception as e:
                 execution_time = time.time() - start_time
@@ -213,15 +226,18 @@ class CodeSandboxService:
                     exit_code=1,
                     execution_time=execution_time,
                     memory_usage=0,
-                    error=str(e)
+                    error=str(e),
                 )
 
     @classmethod
     def _is_docker_available(cls) -> bool:
         """Check if docker is available."""
         import subprocess
+
         try:
-            result = subprocess.run(["docker", "--version"], capture_output=True, check=True)
+            result = subprocess.run(
+                ["docker", "--version"], capture_output=True, check=True
+            )
             return True
         except (subprocess.SubprocessError, FileNotFoundError):
             return False

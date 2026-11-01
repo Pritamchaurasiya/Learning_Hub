@@ -16,6 +16,7 @@ Architecture:
 This gives variable-depth processing per token within a fixed-depth model.
 Achieves 50% FLOPs reduction with minimal quality loss.
 """
+
 import math
 import random
 import logging
@@ -35,11 +36,12 @@ class DepthRouter:
 
     Uses a capacity budget: at most C% of tokens can be computed per layer.
     """
+
     def __init__(self, d_model: int, capacity: float = 0.5, seed: int = 0):
         self.d_model = d_model
         self.capacity = capacity  # Max fraction of tokens to process
         rng = random.Random(seed)
-        self.w = [rng.gauss(0, math.sqrt(2.0/d_model)) for _ in range(d_model)]
+        self.w = [rng.gauss(0, math.sqrt(2.0 / d_model)) for _ in range(d_model)]
         self.b = 0.0
 
     def route(self, x: List[float]) -> float:
@@ -75,8 +77,15 @@ class MoDLayer:
     For tokens that ARE NOT routed (skip path):
       y = x  (identity / residual only)
     """
-    def __init__(self, d_model: int, d_ff: int = 64, capacity: float = 0.5,
-                 layer_id: int = 0, seed: int = 0):
+
+    def __init__(
+        self,
+        d_model: int,
+        d_ff: int = 64,
+        capacity: float = 0.5,
+        layer_id: int = 0,
+        seed: int = 0,
+    ):
         self.d_model = d_model
         self.router = DepthRouter(d_model, capacity, seed=seed + layer_id)
 
@@ -101,7 +110,9 @@ class MoDLayer:
             output[j] = sum(hidden[i] * self.W2[i][j] for i in range(len(hidden)))
         return output
 
-    def forward(self, x_seq: List[List[float]]) -> Tuple[List[List[float]], Dict[str, Any]]:
+    def forward(
+        self, x_seq: List[List[float]]
+    ) -> Tuple[List[List[float]], Dict[str, Any]]:
         """Process sequence with dynamic depth routing."""
         routing = self.router.route_batch(x_seq)
         output = []
@@ -127,8 +138,15 @@ class MixtureOfDepths:
     """
     Full MoD model — variable depth per token across multiple layers.
     """
-    def __init__(self, d_model: int = 16, n_layers: int = 6, d_ff: int = 64,
-                 capacity: float = 0.5, seed: int = 42):
+
+    def __init__(
+        self,
+        d_model: int = 16,
+        n_layers: int = 6,
+        d_ff: int = 64,
+        capacity: float = 0.5,
+        seed: int = 42,
+    ):
         self.d_model = d_model
         self.n_layers = n_layers
         self.capacity = capacity
@@ -144,9 +162,9 @@ class MixtureOfDepths:
 
         for i, layer in enumerate(self.layers):
             current, stats = layer.forward(current)
-            per_layer_stats.append({
-                "layer": i, "computed": stats["computed"], "skipped": stats["skipped"]
-            })
+            per_layer_stats.append(
+                {"layer": i, "computed": stats["computed"], "skipped": stats["skipped"]}
+            )
 
         total_compute = sum(s["computed"] for s in per_layer_stats)
         total_skip = sum(s["skipped"] for s in per_layer_stats)
@@ -169,5 +187,7 @@ def run_mod_experiment() -> Dict[str, Any]:
     rng = random.Random(42)
     x_seq = [[rng.gauss(0, 1) for _ in range(8)] for _ in range(10)]
     result = mod.forward(x_seq)
-    result["insight"] = "MoD skips layers for easy tokens, allocating compute to hard tokens. Achieves ~50% FLOPs reduction."
+    result["insight"] = (
+        "MoD skips layers for easy tokens, allocating compute to hard tokens. Achieves ~50% FLOPs reduction."
+    )
     return result

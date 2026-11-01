@@ -20,7 +20,9 @@ class TestAIEbookEndpoints:
             "chapterContent": content,
         }
 
-        response = api_client.post("/api/v1/ai/ebook/summarize-chapter/", data=payload, format="json")
+        response = api_client.post(
+            "/api/v1/ai/ebook/summarize-chapter/", data=payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["status"] == "success"
@@ -40,7 +42,9 @@ class TestAIEbookEndpoints:
             "chapterTitle": "Distributed Consensus & Raft",
             "chapterContent": "",
         }
-        response = api_client.post("/api/v1/ai/ebook/summarize-chapter/", data=payload, format="json")
+        response = api_client.post(
+            "/api/v1/ai/ebook/summarize-chapter/", data=payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["status"] == "success"
@@ -53,7 +57,9 @@ class TestAIEbookEndpoints:
             "paragraphText": "When an array reaches its capacity, allocating a new buffer of 2C requires O(N) time.",
             "chapterContext": "Dynamic Array Resizing",
         }
-        response = api_client.post("/api/v1/ai/ebook/explain-paragraph/", data=payload, format="json")
+        response = api_client.post(
+            "/api/v1/ai/ebook/explain-paragraph/", data=payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["status"] == "success"
@@ -68,11 +74,15 @@ class TestAIEbookEndpoints:
             "chapterTitle": "No Slash Test",
             "chapterContent": "Testing route without trailing slash.",
         }
-        res_sum = api_client.post("/api/v1/ai/ebook/summarize-chapter", data=payload, format="json")
+        res_sum = api_client.post(
+            "/api/v1/ai/ebook/summarize-chapter", data=payload, format="json"
+        )
         assert res_sum.status_code == status.HTTP_200_OK
 
         payload_exp = {
             "paragraphText": "Testing paragraph explanation without trailing slash.",
         }
-        res_exp = api_client.post("/api/v1/ai/ebook/explain-paragraph", data=payload_exp, format="json")
+        res_exp = api_client.post(
+            "/api/v1/ai/ebook/explain-paragraph", data=payload_exp, format="json"
+        )
         assert res_exp.status_code == status.HTTP_200_OK

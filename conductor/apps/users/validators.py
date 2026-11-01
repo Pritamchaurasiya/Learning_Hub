@@ -24,7 +24,9 @@ def validate_password_strength(password: str) -> None:
     if not re.search(r"\d", password):
         raise ValidationError("Password must contain at least one numeric digit.")
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        raise ValidationError("Password must contain at least one special character (!@#$%^&*).")
+        raise ValidationError(
+            "Password must contain at least one special character (!@#$%^&*)."
+        )
 
 
 ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -49,4 +51,6 @@ def validate_avatar_file(avatar_file) -> None:
 def validate_phone_number(phone: str) -> None:
     """Validate E.164 international phone number format."""
     if phone and not re.match(r"^\+?[1-9]\d{1,14}$", phone.strip()):
-        raise ValidationError("Invalid phone number. Must follow international E.164 format (e.g. +1234567890).")
+        raise ValidationError(
+            "Invalid phone number. Must follow international E.164 format (e.g. +1234567890)."
+        )

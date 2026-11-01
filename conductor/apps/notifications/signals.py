@@ -15,7 +15,11 @@ def notify_new_problem(sender, instance, created, **kwargs):
     if created and instance.is_active:
         try:
             from apps.notifications.tasks import notify_all_users_new_content
+
             notify_all_users_new_content.delay(instance.id, "problem")
         except Exception as e:
-            logger.error("New problem notification signal failed for problem %s: %s",
-                         instance.id, e)
+            logger.error(
+                "New problem notification signal failed for problem %s: %s",
+                instance.id,
+                e,
+            )
