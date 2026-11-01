@@ -198,29 +198,95 @@ jobs:
         run: npm audit --audit-level=high --legacy-peer-deps
 
   e2e:
-    name: E2E (Live Backend)
+    name: E2E (Browser + Live Node API)
     runs-on: ubuntu-latest
-    needs: [frontend, django-backend]
-    if: always()
+    needs: [frontend, node-backend]
+    if: needs.frontend.result == 'success' && needs.node-backend.result == 'success'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+          cache: 'npm'
+          cache-dependency-path: |
+            learninghub/package-lock.json
+            learninghub/backend/package-lock.json
+      - name: Install backend dependencies
+        working-directory: learninghub/backend
+        run: npm ci --legacy-peer-deps
+      - name: Generate Prisma client
+        working-directory: learninghub/backend
+        run: npx prisma generate
+      - name: Apply database migrations
+        working-directory: learninghub/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          DIRECT_URL: postgresql://test:test@localhost:5432/test_db
+        run: npx prisma migrate deploy
+      - name: Start Node backend
+        working-directory: learninghub/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          DIRECT_URL: postgresql://test:test@localhost:5432/test_db
+          JWT_SECRET: test-secret-key-for-ci-only-min-32-chars
+          JWT_REFRESH_SECRET: test-refresh-secret-for-ci-only-min-32-chars-xyz
+          JWT_EXPIRES_IN: 1h
+          REFRESH_TOKEN_EXPIRES_IN: 7d
+          CSRF_SECRET: test-csrf-secret-for-ci-only-min-32-chars-abc
+          ADMIN_SECRET: test-admin-secret-min-16-chars
+          ADMIN_EMAIL: admin@test.com
+          ADMIN_DEFAULT_PASSWORD: TestAdminPassword123!
+          CORS_ORIGIN: http://localhost:3000
+          FRONTEND_URL: http://localhost:3000
+          REDIS_URL: redis://localhost:6379
+          REDIS_ENABLED: 'false'
+          NODE_ENV: test
+          PORT: '5000'
+        run: |
+          npm run build
+          nohup npm start > /tmp/learninghub-backend.log 2>&1 &
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:5000/health > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/learninghub-backend.log
+          exit 1
       - name: Install frontend dependencies
         working-directory: learninghub
         run: npm install --no-audit --no-fund
       - name: Install Playwright browsers
         working-directory: learninghub
-        run: npx playwright install --with-deps
-      - name: Install Django dependencies
-        working-directory: conductor
-        run: pip install -r requirements/base.txt
-      - name: Verify E2E setup
+        run: npx playwright install --with-deps chromium
+      - name: Run browser E2E suite
         working-directory: learninghub
-        run: npm run test:e2e -- --list || npx playwright test --list || echo "E2E list check done"
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          VITE_API_URL: http://localhost:5000/api/v1
+          VITE_ENABLE_MOCK_API: 'false'
+        run: npm run test:e2e
