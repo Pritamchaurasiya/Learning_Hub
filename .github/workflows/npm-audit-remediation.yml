@@ -1,0 +1,71 @@
+name: Remediate npm audit findings (one-shot)
+
+on:
+  push:
+    branches: [fix/ci-cd-stabilization]
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    name: Apply non-breaking npm audit fixes
+    runs-on: ubuntu-24.04
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - name: Checkout stabilization branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ci-cd-stabilization
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply frontend fixes without force
+        working-directory: learninghub
+        shell: bash
+        run: |
+          set +e
+          npm audit fix --no-fund --no-progress
+          audit_exit=$?
+          set -e
+          echo "FRONTEND_AUDIT_EXIT=$audit_exit" >> "$GITHUB_ENV"
+
+      - name: Apply Node backend fixes without force
+        working-directory: learninghub/backend
+        shell: bash
+        run: |
+          set +e
+          npm audit fix --legacy-peer-deps --no-fund --no-progress
+          audit_exit=$?
+          set -e
+          echo "BACKEND_AUDIT_EXIT=$audit_exit" >> "$GITHUB_ENV"
+
+      - name: Validate generated lockfiles
+        working-directory: learninghub
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate backend lockfile
+        working-directory: learninghub/backend
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Commit only dependency manifests and lockfiles
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add learninghub/package.json learninghub/package-lock.json learninghub/backend/package.json learninghub/backend/package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency manifest or lockfile changes were produced."
+            exit 1
+          fi
+          git commit -m "chore(deps): apply non-breaking npm audit fixes"
+          git push origin HEAD:fix/ci-cd-stabilization
+
+          if [ "${FRONTEND_AUDIT_EXIT:-0}" -ne 0 ] || [ "${BACKEND_AUDIT_EXIT:-0}" -ne 0 ]; then
+            echo "Non-breaking updates were committed, but npm audit still reports unresolved findings."
+            exit 1
+          fi
