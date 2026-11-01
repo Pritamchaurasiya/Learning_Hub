@@ -20,6 +20,7 @@ from .serializers import (
     AttemptListSerializer,
     AttemptDetailSerializer,
     AttemptResultSerializer,
+    QuestionSerializer,
     QuestionDetailSerializer,
 )
 from .services import TestSessionManager, AdaptiveAssessmentEngine
@@ -927,8 +928,13 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/tests/questions/{id}/ - Question detail
     """
     permission_classes = [IsAuthenticated]
-    serializer_class = QuestionDetailSerializer
     lookup_field = 'pk'
+
+    def get_serializer_class(self):
+        user = getattr(self.request, 'user', None)
+        if user and (getattr(user, 'is_staff', False) or getattr(user, 'role', '') in ['admin', 'instructor']):
+            return QuestionDetailSerializer
+        return QuestionSerializer
 
     def get_queryset(self):
         queryset = Question.objects.filter(is_deleted=False).select_related(

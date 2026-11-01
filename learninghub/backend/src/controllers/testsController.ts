@@ -873,7 +873,7 @@ export const getTestAttemptDetails = asyncHandler(
 export const autosaveTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
   const testId = req.params.id as string
-  const { answers, attempt_id, locked_section_ids, lockedSectionIds } = req.body
+  const { answers, attempt_id, locked_section_ids, lockedSectionIds, version } = req.body
 
   if (!answers || typeof answers !== 'object') {
     sendValidationError(res, 'Answers are required and must be an object')
@@ -891,11 +891,33 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
         ? { id: attempt_id, userId, testId, status: 'IN_PROGRESS' }
         : { userId, testId, status: 'IN_PROGRESS' },
       orderBy: { attemptNumber: 'desc' },
-      select: { id: true },
+      select: {
+        id: true,
+        startedAt: true,
+        test: {
+          select: {
+            timeLimit: true,
+            mode: true,
+          },
+        },
+      },
     })
 
     if (!attempt) {
       return null
+    }
+
+    // Server-authoritative timer deadline enforcement (60s network grace)
+    const timeLimitSecs = (attempt.test?.timeLimit ?? 0) * 60
+    if (timeLimitSecs > 0 && attempt.startedAt && attempt.test?.mode !== 'PRACTICE') {
+      const elapsedSecs = Math.floor((Date.now() - attempt.startedAt.getTime()) / 1000)
+      if (elapsedSecs > timeLimitSecs + 60) {
+        await tx.testResult.update({
+          where: { id: attempt.id },
+          data: { status: 'TIMEOUT' },
+        })
+        return { expired: true }
+      }
     }
 
     const lockedSections: string[] = locked_section_ids ?? lockedSectionIds ?? []
@@ -944,14 +966,22 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
     return
   }
 
+  if (typeof result === 'object' && (result as any).expired) {
+    sendForbidden(res, 'Test time limit has expired. Responses are sealed.', 'TEST_EXPIRED')
+    return
+  }
+
+  const savedCount = typeof result === 'number' ? result : (result as any).count ?? 0
+
   // Canonical contract: include both `saved: true` (boolean) and `saved_count` (number)
   // so frontend TypeScript types align with backend response.
   sendSuccess(
     res,
     {
       saved: true,
-      saved_count: result,
+      saved_count: savedCount,
       attempt_id: req.body.attempt_id ?? null,
+      version: typeof version === 'number' ? version : undefined,
     },
     'Answer autosaved'
   )
@@ -1607,43 +1637,97 @@ export const verifyScorecardEndpoint = asyncHandler(
 
 
 export const getPyqCatalog = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  let tests = await prisma.test.findMany({
-    where: { isPublished: true, deletedAt: null, isPYQ: true },
-    orderBy: [{ pyqYear: 'desc' }, { createdAt: 'desc' }],
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      examId: true,
-      timeLimit: true,
-      totalMarks: true,
-      negativeMarks: true,
-      difficulty: true,
-      isPYQ: true,
-      pyqYear: true,
-      pyqShift: true,
-      pyqPaperName: true,
-      markingScheme: true,
-      exam: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
+  const { exam, year, shift, difficulty, search, page, limit } = req.query
+
+  const whereClause: any = {
+    isPublished: true,
+    deletedAt: null,
+    isPYQ: true,
+  }
+
+  if (exam && exam !== 'all') {
+    whereClause.OR = [
+      { exam: { slug: { equals: String(exam), mode: 'insensitive' } } },
+      { examId: String(exam) },
+      { title: { contains: String(exam), mode: 'insensitive' } },
+    ]
+  }
+
+  if (year && year !== 'all') {
+    const yrNum = parseInt(String(year), 10)
+    if (!isNaN(yrNum)) {
+      whereClause.pyqYear = yrNum
+    }
+  }
+
+  if (shift && shift !== 'all') {
+    whereClause.pyqShift = { contains: String(shift), mode: 'insensitive' }
+  }
+
+  if (difficulty && difficulty !== 'all') {
+    whereClause.difficulty = { equals: String(difficulty).toUpperCase() as any }
+  }
+
+  if (search && String(search).trim()) {
+    const q = String(search).trim()
+    whereClause.AND = [
+      {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+          { pyqPaperName: { contains: q, mode: 'insensitive' } },
+          { pyqShift: { contains: q, mode: 'insensitive' } },
+        ],
       },
-      sections: {
-        orderBy: { order: 'asc' },
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          maxQuestionsToAttempt: true,
-          sectionType: true,
+    ]
+  }
+
+  const pageNum = Math.max(1, parseInt(String(page || '1'), 10))
+  const limitNum = Math.min(100, Math.max(1, parseInt(String(limit || '50'), 10)))
+  const skip = (pageNum - 1) * limitNum
+
+  let [tests, totalCount] = await Promise.all([
+    prisma.test.findMany({
+      where: whereClause,
+      skip,
+      take: limitNum,
+      orderBy: [{ pyqYear: 'desc' }, { createdAt: 'desc' }],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        examId: true,
+        timeLimit: true,
+        totalMarks: true,
+        negativeMarks: true,
+        difficulty: true,
+        isPYQ: true,
+        pyqYear: true,
+        pyqShift: true,
+        pyqPaperName: true,
+        markingScheme: true,
+        exam: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
         },
+        sections: {
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            order: true,
+            maxQuestionsToAttempt: true,
+            sectionType: true,
+          },
+        },
+        _count: { select: { questions: true } },
       },
-      _count: { select: { questions: true } },
-    },
-  })
+    }),
+    prisma.test.count({ where: whereClause }),
+  ])
 
   // Auto-seed if database doesn't have official PYQ papers yet
   if (tests.length === 0) {
@@ -1702,6 +1786,12 @@ export const getPyqCatalog = asyncHandler(async (req: Request, res: Response): P
       question_count: t._count.questions,
     })),
     benchmarks,
+    meta: {
+      total: totalCount,
+      page: pageNum,
+      limit: limitNum,
+      pages: Math.ceil(totalCount / limitNum),
+    },
   })
 })
 

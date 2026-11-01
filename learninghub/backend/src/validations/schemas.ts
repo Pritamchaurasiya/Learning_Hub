@@ -79,6 +79,16 @@ export const autosaveTestSchema = z.object({
     attemptId: z.string().min(1).max(128).optional(),
     locked_section_ids: z.array(z.string().max(128)).optional(),
     lockedSectionIds: z.array(z.string().max(128)).optional(),
+    version: z.number().int().optional(),
+  }),
+})
+
+export const practiceHintSchema = z.object({
+  body: z.object({
+    question_id: z.string().min(1).max(128).optional(),
+    questionId: z.string().min(1).max(128).optional(),
+    hint_level: z.union([z.number(), z.string()]).optional(),
+    hintLevel: z.union([z.number(), z.string()]).optional(),
   }),
 })
 

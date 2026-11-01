@@ -108,6 +108,15 @@ class TestSessionManager:
         if attempt.status != 'in_progress':
             raise ValueError("Attempt is not in progress")
 
+        # Server-authoritative time check for timed tests (with 60s grace period)
+        if attempt.test.time_limit_minutes and attempt.started_at:
+            elapsed = (timezone.now() - attempt.started_at).total_seconds()
+            max_allowed = (attempt.test.time_limit_minutes * 60) + 60
+            if elapsed > max_allowed and attempt.mode in ['mock', 'contest', 'timed_challenge']:
+                attempt.status = 'expired'
+                attempt.save(update_fields=['status'])
+                raise ValueError("Test time limit has expired")
+
         # Verify question belongs to this test
         try:
             test_question = TestQuestion.objects.select_related('question').get(
@@ -285,12 +294,14 @@ class TestSessionManager:
         attempt.passed = percentage >= test.passing_score
         attempt.status = 'submitted'
         attempt.submitted_at = timezone.now()
-        if time_taken_seconds is not None:
-            attempt.time_taken_seconds = int(time_taken_seconds)
-        elif not attempt.time_taken_seconds or attempt.time_taken_seconds == 0:
-            attempt.time_taken_seconds = int(
-                (attempt.submitted_at - attempt.started_at).total_seconds()
-            )
+        actual_server_elapsed = max(0, int((attempt.submitted_at - attempt.started_at).total_seconds())) if attempt.started_at else 0
+        time_limit_secs = (test.time_limit_minutes or 0) * 60
+        if time_limit_secs > 0:
+            attempt.time_taken_seconds = min(actual_server_elapsed, time_limit_secs)
+        elif time_taken_seconds is not None:
+            attempt.time_taken_seconds = min(int(time_taken_seconds), actual_server_elapsed)
+        else:
+            attempt.time_taken_seconds = actual_server_elapsed
         attempt.save()
 
         # Update analytics asynchronously (best-effort)

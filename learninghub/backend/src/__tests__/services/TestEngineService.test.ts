@@ -515,4 +515,83 @@ describe('TestEngineService', () => {
       })
     })
   })
+
+  // ── getPracticeHint ───────────────────────────────────────────────────────
+
+  describe('getPracticeHint', () => {
+    it('should throw an error when question does not exist', async () => {
+      ;(prisma.question.findUnique as jest.Mock).mockResolvedValue(null)
+
+      await expect(
+        service.getPracticeHint({
+          userId: 'u1',
+          testId: 't1',
+          questionId: 'q-missing',
+          hintLevel: 1,
+        })
+      ).rejects.toThrow('Question not found')
+    })
+
+    it('should return Level 1 Concept Clue with topic name', async () => {
+      ;(prisma.question.findUnique as jest.Mock).mockResolvedValue({
+        id: 'q1',
+        topic: { name: 'Rotational Dynamics' },
+        tags: ['Physics', 'Mechanics'],
+        solutionSteps: ['Step 1: Calculate moment of inertia', 'Step 2: Apply torque relation'],
+      })
+
+      const hint = await service.getPracticeHint({
+        userId: 'u1',
+        testId: 't1',
+        questionId: 'q1',
+        hintLevel: 1,
+      })
+
+      expect(hint.hintLevel).toBe(1)
+      expect(hint.title).toBe('Concept Clue')
+      expect(hint.hint).toContain('Rotational Dynamics')
+      expect(hint.questionId).toBe('q1')
+      expect(hint.revealedAt).toBeDefined()
+    })
+
+    it('should return Level 2 Formula & Key Relation from solution steps', async () => {
+      ;(prisma.question.findUnique as jest.Mock).mockResolvedValue({
+        id: 'q1',
+        topic: { name: 'Thermodynamics' },
+        solutionSteps: ['Apply PV = nRT to determine initial moles', 'Then evaluate work done W = P delta V'],
+      })
+
+      const hint = await service.getPracticeHint({
+        userId: 'u1',
+        testId: 't1',
+        questionId: 'q1',
+        hintLevel: 2,
+      })
+
+      expect(hint.hintLevel).toBe(2)
+      expect(hint.title).toBe('Formula & Key Relation')
+      expect(hint.hint).toBe('Apply PV = nRT to determine initial moles')
+    })
+
+    it('should sanitize answer declarations from explanation in Level 2/3 hints', async () => {
+      ;(prisma.question.findUnique as jest.Mock).mockResolvedValue({
+        id: 'q1',
+        topic: { name: 'Algebra' },
+        solutionSteps: null,
+        explanation: 'Use the quadratic equation x = (-b +- sqrt(D)) / (2a). Therefore, correct option is B.',
+      })
+
+      const hint = await service.getPracticeHint({
+        userId: 'u1',
+        testId: 't1',
+        questionId: 'q1',
+        hintLevel: 3,
+      })
+
+      expect(hint.hintLevel).toBe(3)
+      expect(hint.title).toBe('Step-by-Step Approach')
+      expect(hint.hint).toContain('quadratic equation')
+      expect(hint.hint).not.toContain('correct option is B')
+    })
+  })
 })

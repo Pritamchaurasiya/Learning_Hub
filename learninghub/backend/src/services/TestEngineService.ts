@@ -225,6 +225,107 @@ export class TestEngineService {
   }
 
   /**
+   * Request progressive hint for a question in practice mode.
+   * Level 1: Concept Clue
+   * Level 2: Formula & Key Identity
+   * Level 3: Step-by-Step Approach
+   * Answers are NEVER revealed prematurely.
+   */
+  async getPracticeHint(req: {
+    userId: string
+    testId: string
+    questionId: string
+    hintLevel: 1 | 2 | 3
+  }): Promise<{
+    questionId: string
+    hintLevel: 1 | 2 | 3
+    title: string
+    hint: string
+    revealedAt: string
+  }> {
+    const question = await prisma.question.findUnique({
+      where: { id: req.questionId },
+      include: {
+        topic: { select: { name: true } },
+        test: { select: { id: true, mode: true } },
+      },
+    })
+
+    if (!question) {
+      throw new Error('Question not found')
+    }
+
+    const level = (req.hintLevel || 1) as 1 | 2 | 3
+    const topicName =
+      question.topic?.name ||
+      (question.tags && question.tags.length > 0 ? question.tags[0] : 'General Assessment')
+
+    let title = 'Concept Clue'
+    let hint = ''
+
+    let steps: string[] = []
+    if (question.solutionSteps) {
+      if (Array.isArray(question.solutionSteps)) {
+        steps = (question.solutionSteps as any[]).map(s =>
+          typeof s === 'string' ? s : s?.content || s?.step || String(s)
+        )
+      } else if (typeof question.solutionSteps === 'object') {
+        steps = Object.values(question.solutionSteps as Record<string, string>)
+      }
+    }
+
+    if (level === 1) {
+      title = 'Concept Clue'
+      if (steps.length > 0) {
+        hint = `Focus on the core concept: "${topicName}". Notice the governing conditions given in the problem statement.`
+      } else if (question.tags && question.tags.length > 0) {
+        hint = `Consider foundational principles under ${question.tags.join(', ')}. Identify what fundamental law or theorem governs this setup.`
+      } else {
+        hint = `Examine the problem setup in ${topicName}. Identify the given variables and the target relation.`
+      }
+    } else if (level === 2) {
+      title = 'Formula & Key Relation'
+      if (steps.length > 1) {
+        hint = steps[0]
+      } else if (question.explanation && question.explanation.length > 30) {
+        const sanitized = question.explanation
+          .replace(/therefore[,.\s].*$/i, '')
+          .replace(/hence[,.\s].*$/i, '')
+          .replace(/correct option is.*$/i, '')
+          .replace(/answer is.*$/i, '')
+          .trim()
+        const sentences = sanitized.split(/[.!?]\s+/)
+        hint = sentences[0] || `Set up the fundamental equation relating the initial parameters in ${topicName}.`
+      } else {
+        hint = `Express the relation mathematically before plugging in the given numerical values.`
+      }
+    } else {
+      title = 'Step-by-Step Approach'
+      if (steps.length >= 2) {
+        hint = `${steps[0]}\n\n${steps[1]}`
+      } else if (question.explanation) {
+        const sanitized = question.explanation
+          .replace(/therefore[,.\s].*$/i, '')
+          .replace(/hence[,.\s].*$/i, '')
+          .replace(/correct option is.*$/i, '')
+          .replace(/option\s+[A-D]\s+is correct/i, '')
+          .trim()
+        hint = sanitized
+      } else {
+        hint = `Break the problem down: first solve for the intermediate state, then apply boundary conditions.`
+      }
+    }
+
+    return {
+      questionId: req.questionId,
+      hintLevel: level,
+      title,
+      hint,
+      revealedAt: new Date().toISOString(),
+    }
+  }
+
+  /**
    * Get questions for a test with randomized order (or IRT adaptive ordering).
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

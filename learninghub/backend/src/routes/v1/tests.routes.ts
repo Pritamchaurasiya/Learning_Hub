@@ -25,6 +25,7 @@ import {
 } from '../../controllers/testsController'
 import {
   practiceAnswer,
+  practiceHint,
   getTestQuestions,
   getNextAdaptiveTestQuestion,
   getTestAnalytics,
@@ -39,6 +40,7 @@ import {
   removeBookmarkSchema,
   receiveTestTelemetrySchema,
   gradeSubjectiveAnswerSchema,
+  practiceHintSchema,
 } from '../../validations/schemas'
 import {
   bookmarkQuestion,
@@ -123,6 +125,13 @@ router.post(
   receiveTestTelemetry
 )
 router.post('/:id/practice/answer', authenticate, testMutationLimiter, practiceAnswer)
+router.post(
+  '/:id/practice/hint',
+  authenticate,
+  testMutationLimiter,
+  validate(practiceHintSchema),
+  practiceHint
+)
 router.post('/:id/adaptive/step', authenticate, testMutationLimiter, processAdaptiveStep)
 router.post('/:id/offline-sync', authenticate, testMutationLimiter, submitOfflineSync)
 router.post(

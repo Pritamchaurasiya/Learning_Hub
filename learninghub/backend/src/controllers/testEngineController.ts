@@ -28,6 +28,32 @@ export const practiceAnswer = asyncHandler(async (req: Request, res: Response): 
 })
 
 /**
+ * POST /api/v1/tests/:id/practice/hint
+ * Request progressive hint (level 1, 2, or 3) for a question in practice mode.
+ */
+export const practiceHint = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const testId = req.params.id as string
+  const { question_id, questionId, hint_level, hintLevel } = req.body
+  const qId = questionId || question_id
+  const level = Number(hintLevel || hint_level || 1) as 1 | 2 | 3
+
+  if (!qId) {
+    sendValidationError(res, 'question_id or questionId is required')
+    return
+  }
+
+  const hint = await testEngineService.getPracticeHint({
+    userId,
+    testId,
+    questionId: qId,
+    hintLevel: level,
+  })
+
+  sendSuccess(res, hint)
+})
+
+/**
  * GET /api/v1/tests/:id/questions
  * Get test questions (shuffled for practice mode).
  */

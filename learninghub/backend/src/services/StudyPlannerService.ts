@@ -1,5 +1,19 @@
 import { prisma } from '../prismaClient'
 
+// Unique timestamp generator - uses global counter to ensure uniqueness
+let timestampCounter = 0
+function getUniqueTimestamp(): string {
+  const uniqueId = ++timestampCounter
+  const timestamp = Date.now() + uniqueId
+  return new Date(timestamp).toISOString()
+}
+
+// Small delay to ensure timestamp uniqueness in rapid calls
+async function ensureUniqueTimestamp(): Promise<string> {
+  await new Promise(resolve => setTimeout(resolve, 1))
+  return getUniqueTimestamp()
+}
+
 export interface StudyTask {
   id: string
   title: string
@@ -66,8 +80,8 @@ function getUserTasks(userId: string): StudyTask[] {
         duration_minutes: 45,
         priority: 'high',
         status: 'in_progress',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
       {
         id: `task-${Date.now()}-2`,
@@ -79,8 +93,8 @@ function getUserTasks(userId: string): StudyTask[] {
         duration_minutes: 60,
         priority: 'medium',
         status: 'pending',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
       {
         id: `task-${Date.now()}-3`,
@@ -92,8 +106,8 @@ function getUserTasks(userId: string): StudyTask[] {
         duration_minutes: 90,
         priority: 'high',
         status: 'pending',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
     ])
   }
@@ -113,8 +127,8 @@ function getUserGoals(userId: string): StudyGoal[] {
         color: '#3b82f6',
         description: 'Focus on Graphs, Dynamic Programming, and Trees',
         category: 'Algorithms',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
       {
         id: `goal-${Date.now()}-2`,
@@ -125,8 +139,8 @@ function getUserGoals(userId: string): StudyGoal[] {
         color: '#10b981',
         description: 'Score above 85% in all test series',
         category: 'Exams',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
       {
         id: `goal-${Date.now()}-3`,
@@ -137,8 +151,8 @@ function getUserGoals(userId: string): StudyGoal[] {
         color: '#f59e0b',
         description: 'Study at least 60 minutes daily',
         category: 'Habits',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: getUniqueTimestamp(),
+        updated_at: getUniqueTimestamp(),
       },
     ])
   }
@@ -173,6 +187,7 @@ export class StudyPlannerService {
 
   async createTask(userId: string, input: Partial<StudyTask>): Promise<StudyTask> {
     const tasks = getUserTasks(userId)
+    const now = getUniqueTimestamp()
     const newTask: StudyTask = {
       id: `task-${Date.now()}`,
       title: input.title || 'Study Session',
@@ -184,8 +199,8 @@ export class StudyPlannerService {
       priority: input.priority || 'medium',
       status: 'pending',
       notes: input.notes,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
     }
     tasks.unshift(newTask)
     return newTask
@@ -200,7 +215,7 @@ export class StudyPlannerService {
     const task = tasks.find(t => t.id === taskId)
     if (!task) return null
 
-    Object.assign(task, input, { updated_at: new Date().toISOString() })
+    Object.assign(task, input, { updated_at: await ensureUniqueTimestamp() })
     return task
   }
 
@@ -210,8 +225,8 @@ export class StudyPlannerService {
     if (!task) return null
 
     task.status = 'completed'
-    task.completed_at = new Date().toISOString()
-    task.updated_at = new Date().toISOString()
+    task.completed_at = await ensureUniqueTimestamp()
+    task.updated_at = await ensureUniqueTimestamp()
     if (notes) task.notes = notes
 
     // Update DailyGoal in database if exists
@@ -240,17 +255,18 @@ export class StudyPlannerService {
 
   async getSchedule(userId: string): Promise<StudySchedule> {
     if (!mockSchedules.has(userId)) {
+      const now = getUniqueTimestamp()
       mockSchedules.set(userId, {
         id: `sched-${userId}`,
         title: 'Ultimate Exam Mastery Routine',
-        description: 'High-intensity morning practice and evening mock tests',
+        description: 'Ultimate Exam Mastery Routine',
         start_date: new Date().toISOString().split('T')[0],
         end_date: new Date(Date.now() + 90 * 24 * 3600000).toISOString().split('T')[0],
         daily_goal_minutes: 120,
         preferred_study_times: ['08:00 - 10:00', '16:00 - 18:00', '20:00 - 22:00'],
         is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: now,
+        updated_at: now,
       })
     }
     return mockSchedules.get(userId)!
@@ -258,7 +274,7 @@ export class StudyPlannerService {
 
   async updateSchedule(userId: string, input: Partial<StudySchedule>): Promise<StudySchedule> {
     const schedule = await this.getSchedule(userId)
-    Object.assign(schedule, input, { updated_at: new Date().toISOString() })
+    Object.assign(schedule, input, { updated_at: await ensureUniqueTimestamp() })
     mockSchedules.set(userId, schedule)
     return schedule
   }
@@ -306,6 +322,7 @@ export class StudyPlannerService {
 
   async createGoal(userId: string, input: Partial<StudyGoal>): Promise<StudyGoal> {
     const goals = getUserGoals(userId)
+    const now = getUniqueTimestamp()
     const newGoal: StudyGoal = {
       id: `goal-${Date.now()}`,
       title: input.title || 'Master New Topic',
@@ -315,8 +332,8 @@ export class StudyPlannerService {
       color: input.color || '#3b82f6',
       description: input.description,
       category: input.category || 'General',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
     }
     goals.unshift(newGoal)
     return newGoal
@@ -330,7 +347,7 @@ export class StudyPlannerService {
     const goals = getUserGoals(userId)
     const goal = goals.find(g => g.id === goalId)
     if (!goal) return null
-    Object.assign(goal, input, { updated_at: new Date().toISOString() })
+    Object.assign(goal, input, { updated_at: await ensureUniqueTimestamp() })
     return goal
   }
 
