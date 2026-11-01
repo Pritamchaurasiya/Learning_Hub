@@ -236,7 +236,10 @@ jobs:
         run: |
           helm template learninghub ./conductor/charts/learning-hub --namespace learninghub > /tmp/learninghub-rendered.yaml
           test -s /tmp/learninghub-rendered.yaml
-          grep -q '^kind: Deployment    name: E2E (Browser + Live Node API)
+          test -s /tmp/learninghub-rendered.yaml
+
+  e2e:
+    name: E2E (Browser + Live Node API)
     runs-on: ubuntu-24.04
     needs: [frontend, node-backend]
     if: needs.frontend.result == 'success' && needs.node-backend.result == 'success'
