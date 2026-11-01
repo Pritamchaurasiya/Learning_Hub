@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QuestionCard } from './QuestionCard'
 import { wasmSandboxService } from '../../services/wasm/WasmSandboxService'
-import type { TestQuestion } from '../../services/testsAService'
+import { testsAService, type TestQuestion } from '../../services/testsAService'
 
 vi.mock('../MathRenderer', () => ({
   MathRenderer: ({ text }: { text: string }) => <div data-testid="math-renderer">{text}</div>,
@@ -480,6 +480,18 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
       marks: 4,
     }
 
+    const getPracticeHintSpy = vi
+      .spyOn(testsAService, 'getPracticeHint')
+      .mockResolvedValueOnce({
+        status: 'success',
+        data: {
+          hint: 'Step 1 Hint: interpret the matching problem as a maximum-flow network.',
+          level: 1,
+          maxLevel: 3,
+          penaltyPct: 10,
+        },
+      })
+
     render(
       <QuestionCard
         question={question}
@@ -504,5 +516,6 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
     await waitFor(() => {
       expect(screen.getByText(/Step 1 Hint/i)).toBeInTheDocument()
     })
+    expect(getPracticeHintSpy).toHaveBeenCalledWith('practice', 'q-hint-test', 0)
   })
 })
