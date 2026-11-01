@@ -1,0 +1,41 @@
+name: Refresh lockfiles (one-shot)
+
+on:
+  push:
+    branches: [fix/ci-cd-stabilization]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    name: Regenerate npm lockfiles
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - name: Checkout stabilization branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ci-cd-stabilization
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate frontend lockfile
+        working-directory: learninghub
+        run: npm install --package-lock-only --no-audit --no-fund
+      - name: Regenerate backend lockfile
+        working-directory: learninghub/backend
+        run: npm install --package-lock-only --legacy-peer-deps --no-audit --no-fund
+      - name: Commit regenerated lockfiles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- learninghub/package-lock.json learninghub/backend/package-lock.json; then
+            echo "No lockfile changes detected."
+            exit 0
+          fi
+          git add learninghub/package-lock.json learninghub/backend/package-lock.json
+          git commit -m "chore(deps): refresh npm lockfiles"
+          git push origin HEAD:fix/ci-cd-stabilization
