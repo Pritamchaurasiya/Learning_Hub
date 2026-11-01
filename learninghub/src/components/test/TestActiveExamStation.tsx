@@ -1,6 +1,6 @@
 import { memo, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { WifiOff } from 'lucide-react'
+import { WifiOff, LayoutGrid, ChevronDown, ChevronUp } from 'lucide-react'
 import { SEO } from '../SEO'
 import { TestExamHeader } from './TestExamHeader'
 import { TestSectionTabBar } from './TestSectionTabBar'
@@ -105,6 +105,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
   onLanguageChange: propOnLanguageChange,
 }: TestActiveExamStationProps) {
   const [isWebcamMinimized, setIsWebcamMinimized] = useState(false)
+  const [isMobilePaletteOpen, setIsMobilePaletteOpen] = useState(false)
 
   // CBT Exam Station Tool Modals
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
@@ -306,18 +307,65 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
               }}
             />
 
-            {/* Mobile/Tablet Inline Palette (hidden on lg+ desktop) */}
-            <div className="block lg:hidden">
-              <TestQuestionPalette
-                questions={test.questions}
-                currentIndex={test.currentQuestionIndex}
-                answers={test.answers}
-                flaggedQuestions={test.flaggedQuestions}
-                visitedQuestions={test.visitedQuestionIds}
-                onSelectQuestion={onNavigateToQuestion}
-                sections={test.sections}
-                activeSectionId={activeSection?.id || test.activeSectionId || undefined}
-              />
+            {/* Mobile/Tablet Collapsible Palette Bar (hidden on lg+ desktop) */}
+            <div className="block lg:hidden bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    Q {test.currentQuestionIndex + 1} / {test.questions.length}
+                  </span>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                    {
+                      Object.values(test.answers).filter(
+                        v => v !== undefined && v !== '' && (!Array.isArray(v) || v.length > 0)
+                      ).length
+                    }{' '}
+                    Answered
+                  </span>
+                  {test.flaggedQuestions.length > 0 && (
+                    <>
+                      <span className="text-gray-300 dark:text-gray-600">•</span>
+                      <span className="text-purple-600 dark:text-purple-400 font-medium">
+                        {test.flaggedQuestions.length} Marked
+                      </span>
+                    </>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobilePaletteOpen(prev => !prev)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors border border-blue-200 dark:border-blue-800 cursor-pointer"
+                  aria-expanded={isMobilePaletteOpen}
+                  aria-label="Toggle Question Grid"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>{isMobilePaletteOpen ? 'Hide Grid' : 'Question Grid'}</span>
+                  {isMobilePaletteOpen ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+
+              {isMobilePaletteOpen && (
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 max-h-72 overflow-y-auto">
+                  <TestQuestionPalette
+                    questions={test.questions}
+                    currentIndex={test.currentQuestionIndex}
+                    answers={test.answers}
+                    flaggedQuestions={test.flaggedQuestions}
+                    visitedQuestions={test.visitedQuestionIds}
+                    onSelectQuestion={idx => {
+                      onNavigateToQuestion(idx)
+                      setIsMobilePaletteOpen(false)
+                    }}
+                    sections={test.sections}
+                    activeSectionId={activeSection?.id || test.activeSectionId || undefined}
+                  />
+                </div>
+              )}
             </div>
 
             {currentQuestion && (

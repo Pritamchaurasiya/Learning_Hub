@@ -541,8 +541,8 @@ export const QuestionCard = memo(
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Question {currentIndex + 1} of {totalQuestions}
             </span>
@@ -553,7 +553,7 @@ export const QuestionCard = memo(
             )}
             <button
               onClick={isFlagged ? onUnflag : onFlag}
-              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors cursor-pointer ${
                 isFlagged
                   ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200'
@@ -563,7 +563,7 @@ export const QuestionCard = memo(
               {isFlagged ? 'Flagged' : 'Flag'}
             </button>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-xs sm:text-sm text-gray-500">
             {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
           </div>
         </div>
@@ -594,20 +594,20 @@ export const QuestionCard = memo(
             </div>
           )}
 
-          <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
             <MathRenderer
               text={
                 examLanguage === 'hi'
                   ? question.text_hi || question.hindi_text || question.text
                   : question.text
               }
-              className="text-xl font-medium text-gray-900 dark:text-white leading-relaxed flex-1"
+              className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white leading-relaxed flex-1"
             />
             {selectedAnswer && onClearAnswer && !isSectionLocked && (
               <button
                 type="button"
                 onClick={onClearAnswer}
-                className="shrink-0 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 transition-colors flex items-center gap-1.5"
+                className="shrink-0 self-start sm:self-auto text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 transition-colors flex items-center gap-1.5 cursor-pointer"
                 title="Clear selected answer (Prevents negative marks)"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -693,11 +693,11 @@ export const QuestionCard = memo(
                     whileTap={isSectionLocked ? undefined : { scale: 0.99 }}
                     onClick={handleSelect}
                     disabled={isSectionLocked}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 min-h-[52px] ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    } ${isSectionLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    } ${isSectionLocked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <div className="flex items-center gap-3">
                       <div

@@ -196,9 +196,9 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
         </div>
 
         {/* CBT Utility Toolbar: Bilingual Toggle, Question Paper, Instructions, Calculator, Scratchpad, Font Zoom */}
-        <div className="mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs">
           {/* Left tools: Bilingual Selector & Exam Utilities */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 shrink-0">
             {/* Language Toggle */}
             {onLanguageChange && (
               <div className="flex items-center bg-gray-100 dark:bg-gray-700/70 p-0.5 rounded-lg border border-gray-200 dark:border-gray-600">
@@ -354,7 +354,7 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
           </div>
 
           {/* Right side: Keyboard hints & Question counter */}
-          <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between sm:justify-end gap-3 text-gray-500 dark:text-gray-400 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-gray-800">
             <span className="hidden lg:inline font-mono text-[11px]">
               Shortcuts:{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-sans">
@@ -373,7 +373,7 @@ export const TestExamHeader: FC<TestExamHeaderProps> = ({
               </kbd>{' '}
               Flag
             </span>
-            <span data-testid="question-counter" className="font-bold text-gray-700 dark:text-gray-300">
+            <span data-testid="question-counter" className="font-bold text-gray-700 dark:text-gray-300 ml-auto sm:ml-0 text-xs sm:text-sm">
               Question {currentQuestionIndex + 1} of {totalQuestions}
             </span>
           </div>

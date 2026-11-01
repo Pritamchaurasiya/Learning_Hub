@@ -89,14 +89,14 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
         className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3"
       >
         {/* Left Side: Previous, Clear Response, Mark for Review & Next */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <Button
             data-testid="prev-question-btn"
             onClick={onPreviousQuestion}
             disabled={currentIndex === 0}
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 min-h-[40px] text-xs font-medium"
+            className="flex items-center justify-center gap-1 min-h-[44px] text-xs sm:text-sm font-medium px-3.5 flex-1 sm:flex-initial"
             aria-label="Previous Question"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -110,7 +110,7 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
               disabled={!isCurrentAnswered && !hasSelectedAnswer}
               variant="outline"
               size="sm"
-              className="flex items-center gap-1.5 min-h-[40px] text-xs font-medium text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 disabled:opacity-40"
+              className="flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-medium text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 disabled:opacity-40 px-3"
               title="Clear selected option for this question"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
               disabled={totalQuestions <= 0 || currentIndex === totalQuestions - 1}
               variant="outline"
               size="sm"
-              className="flex items-center gap-1.5 min-h-[40px] text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/30 hover:bg-amber-100"
+              className="flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-semibold text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/30 hover:bg-amber-100 px-3"
               title="Mark for review and proceed to next question"
             >
               <Bookmark className="w-3.5 h-3.5" />
@@ -135,14 +135,14 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
         </div>
 
         {/* Right Side: Save & Mark for Review, Save & Next, Next */}
-        <div className="flex flex-wrap items-center gap-2 justify-end">
+        <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end w-full md:w-auto">
           {onSaveAndMarkForReview && (
             <Button
               type="button"
               onClick={onSaveAndMarkForReview}
               variant="secondary"
               size="sm"
-              className="flex items-center gap-1.5 min-h-[40px] text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/50"
+              className="flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/50 px-3"
               title="Save answer and mark for review"
             >
               <BookmarkCheck className="w-3.5 h-3.5 text-purple-600" />
@@ -156,7 +156,7 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
               onClick={onSaveAndNext}
               variant="primary"
               size="sm"
-              className="flex items-center gap-1.5 min-h-[40px] text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+              className="flex items-center justify-center gap-1.5 min-h-[44px] text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs px-4 flex-1 sm:flex-initial"
               title="Save answer and navigate to next question"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -172,7 +172,7 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
               disabled={totalQuestions <= 0 || currentIndex === totalQuestions - 1}
               variant="outline"
               size="sm"
-              className="flex items-center gap-1 min-h-[40px] text-xs font-medium"
+              className="flex items-center justify-center gap-1 min-h-[44px] text-xs sm:text-sm font-medium px-4 flex-1 sm:flex-initial"
               aria-label="Next Question"
             >
               <span>Next</span>
