@@ -25,6 +25,7 @@ async def test_instructor_dashboard_connection():
     # Create test user
     user = await User.objects.acreate(
         email="instructor_ws@example.com",
+        username="instructor_ws",
         password="TestPassword123!",
         role="instructor"
     )
