@@ -113,7 +113,9 @@ class TestProblemListParity:
 
         # Check initial state
         resp1 = api_client.get("/api/v1/problems/")
-        first = [p for p in resp1.data["data"]["results"] if p["slug"] == dsa_problem.slug][0]
+        first = [
+            p for p in resp1.data["data"]["results"] if p["slug"] == dsa_problem.slug
+        ][0]
         assert first["user_status"] == "UNATTEMPTED"
 
         # Create submission
@@ -128,12 +130,16 @@ class TestProblemListParity:
         )
 
         resp2 = api_client.get("/api/v1/problems/")
-        first2 = [p for p in resp2.data["data"]["results"] if p["slug"] == dsa_problem.slug][0]
+        first2 = [
+            p for p in resp2.data["data"]["results"] if p["slug"] == dsa_problem.slug
+        ][0]
         assert first2["user_status"] == "SOLVED"
 
         # Status filter test
         resp_solved = api_client.get("/api/v1/problems/?status=SOLVED")
-        assert any(p["slug"] == dsa_problem.slug for p in resp_solved.data["data"]["results"])
+        assert any(
+            p["slug"] == dsa_problem.slug for p in resp_solved.data["data"]["results"]
+        )
 
 
 @pytest.mark.django_db
@@ -173,7 +179,9 @@ class TestCodeExecutionAndSubmission:
             "code": "print('hello')",
         }
         # Test with trailing slash and without trailing slash
-        response = api_client.post(f"/api/v1/problems/{dsa_problem.slug}/run/", payload, format="json")
+        response = api_client.post(
+            f"/api/v1/problems/{dsa_problem.slug}/run/", payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "success"
         data = response.data["data"]
@@ -184,7 +192,9 @@ class TestCodeExecutionAndSubmission:
 
     def test_run_code_no_trailing_slash(self, api_client, dsa_problem):
         payload = {"language": "python", "code": "x = 10"}
-        response = api_client.post(f"/api/v1/problems/{dsa_problem.slug}/run", payload, format="json")
+        response = api_client.post(
+            f"/api/v1/problems/{dsa_problem.slug}/run", payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "success"
 
@@ -194,7 +204,9 @@ class TestCodeExecutionAndSubmission:
             "language": "python",
             "code": "def two_sum(nums, target): return [0, 1]",
         }
-        response = api_client.post(f"/api/v1/problems/{dsa_problem.slug}/submit/", payload, format="json")
+        response = api_client.post(
+            f"/api/v1/problems/{dsa_problem.slug}/submit/", payload, format="json"
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "success"
         sub_data = response.data["data"]

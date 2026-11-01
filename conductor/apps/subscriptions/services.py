@@ -2,13 +2,20 @@
 Subscription management service.
 Handles plan upgrades, downgrades, usage enforcement, and billing.
 """
+
 import logging
 from datetime import timedelta
 from decimal import Decimal
 from django.utils import timezone
 from django.db import transaction
 
-from .models import SubscriptionPlan, UserSubscription, UsageTracking, PaymentTransaction, Coupon
+from .models import (
+    SubscriptionPlan,
+    UserSubscription,
+    UsageTracking,
+    PaymentTransaction,
+    Coupon,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +26,12 @@ class SubscriptionManager:
     @classmethod
     def get_user_subscription(cls, user):
         """Get the user's current active subscription."""
-        return UserSubscription.objects.filter(
-            user=user, status__in=['active', 'trial']
-        ).select_related('plan').order_by('-started_at').first()
+        return (
+            UserSubscription.objects.filter(user=user, status__in=["active", "trial"])
+            .select_related("plan")
+            .order_by("-started_at")
+            .first()
+        )
 
     @classmethod
     def get_user_plan(cls, user):
@@ -31,7 +41,7 @@ class SubscriptionManager:
             return sub.plan
 
         # Return free plan
-        return SubscriptionPlan.objects.filter(code='free', is_active=True).first()
+        return SubscriptionPlan.objects.filter(code="free", is_active=True).first()
 
     @classmethod
     def check_usage_limit(cls, user, limit_field):
@@ -49,18 +59,20 @@ class SubscriptionManager:
         today_usage = UsageTracking.get_today(user)
 
         limit = getattr(plan, limit_field, 0)
-        current = getattr(today_usage, limit_field.replace('_limit', ''), 0)
+        current = getattr(today_usage, limit_field.replace("_limit", ""), 0)
 
         # Free plan with 0 limit means unlimited (or change to strict limit)
         if limit == 0 and plan.is_free:
-            return (True, current, float('inf'))
+            return (True, current, float("inf"))
 
         has_remaining = current < limit
         return (has_remaining, current, limit)
 
     @classmethod
     @transaction.atomic
-    def create_subscription(cls, user, plan_code, billing_cycle='monthly', coupon_code=None):
+    def create_subscription(
+        cls, user, plan_code, billing_cycle="monthly", coupon_code=None
+    ):
         """
         Create a new subscription for a user.
 
@@ -84,14 +96,16 @@ class SubscriptionManager:
         # Cancel existing active subscription
         existing = cls.get_user_subscription(user)
         if existing and existing.is_active:
-            existing.status = 'cancelled'
+            existing.status = "cancelled"
             existing.cancelled_at = timezone.now()
             existing.cancel_at_period_end = False
-            existing.save(update_fields=['status', 'cancelled_at', 'cancel_at_period_end'])
+            existing.save(
+                update_fields=["status", "cancelled_at", "cancel_at_period_end"]
+            )
 
         # Calculate period
         now = timezone.now()
-        if billing_cycle == 'yearly':
+        if billing_cycle == "yearly":
             period_end = now + timedelta(days=365)
             price = plan.price_yearly
         else:
@@ -108,7 +122,7 @@ class SubscriptionManager:
         subscription = UserSubscription.objects.create(
             user=user,
             plan=plan,
-            status='active',
+            status="active",
             billing_cycle=billing_cycle,
             current_period_start=now,
             current_period_end=period_end,
@@ -121,17 +135,23 @@ class SubscriptionManager:
             subscription=subscription,
             amount=price,
             currency=plan.currency,
-            status='completed',
-            transaction_type='subscription_payment',
+            status="completed",
+            transaction_type="subscription_payment",
             description=f"{plan.name} {billing_cycle} subscription",
             metadata={
-                'original_price': str(plan.price_yearly if billing_cycle == 'yearly' else plan.price_monthly),
-                'discount': str(discount),
-                'coupon_code': coupon_code,
-            }
+                "original_price": str(
+                    plan.price_yearly
+                    if billing_cycle == "yearly"
+                    else plan.price_monthly
+                ),
+                "discount": str(discount),
+                "coupon_code": coupon_code,
+            },
         )
 
-        logger.info(f"Created subscription for {user.email}: {plan.code} ({billing_cycle})")
+        logger.info(
+            f"Created subscription for {user.email}: {plan.code} ({billing_cycle})"
+        )
         return subscription
 
     @classmethod
@@ -145,19 +165,21 @@ class SubscriptionManager:
         if cancel_at_period_end:
             subscription.cancel_at_period_end = True
             subscription.cancelled_at = timezone.now()
-            subscription.save(update_fields=['cancel_at_period_end', 'cancelled_at'])
+            subscription.save(update_fields=["cancel_at_period_end", "cancelled_at"])
         else:
-            subscription.status = 'cancelled'
+            subscription.status = "cancelled"
             subscription.cancelled_at = timezone.now()
             subscription.current_period_end = timezone.now()
-            subscription.save(update_fields=['status', 'cancelled_at', 'current_period_end'])
+            subscription.save(
+                update_fields=["status", "cancelled_at", "current_period_end"]
+            )
 
         logger.info(f"Cancelled subscription for {user.email}")
         return subscription
 
     @classmethod
     @transaction.atomic
-    def start_trial(cls, user, plan_code='pro', trial_days=7):
+    def start_trial(cls, user, plan_code="pro", trial_days=7):
         """Start a free trial for a user."""
         try:
             plan = SubscriptionPlan.objects.get(code=plan_code, is_active=True)
@@ -165,9 +187,7 @@ class SubscriptionManager:
             raise ValueError(f"Plan '{plan_code}' not found")
 
         # Check if user already had a trial
-        had_trial = UserSubscription.objects.filter(
-            user=user, is_trial=True
-        ).exists()
+        had_trial = UserSubscription.objects.filter(user=user, is_trial=True).exists()
 
         if had_trial:
             raise ValueError("User already used a trial")
@@ -178,8 +198,8 @@ class SubscriptionManager:
         subscription = UserSubscription.objects.create(
             user=user,
             plan=plan,
-            status='trial',
-            billing_cycle='monthly',
+            status="trial",
+            billing_cycle="monthly",
             current_period_start=now,
             current_period_end=trial_end,
             is_trial=True,
@@ -210,7 +230,7 @@ class SubscriptionManager:
             raise ValueError("Coupon already used maximum times")
 
         # Calculate discount
-        if coupon.discount_type == 'percentage':
+        if coupon.discount_type == "percentage":
             discount = price * (coupon.discount_value / 100)
             if coupon.max_discount:
                 discount = min(discount, coupon.max_discount)
@@ -219,7 +239,7 @@ class SubscriptionManager:
 
         # Increment coupon uses
         coupon.current_uses += 1
-        coupon.save(update_fields=['current_uses'])
+        coupon.save(update_fields=["current_uses"])
 
         return discount
 
@@ -230,21 +250,23 @@ class SubscriptionManager:
 
         # Expire active subscriptions past their period end
         expired = UserSubscription.objects.filter(
-            status='active',
+            status="active",
             current_period_end__lt=now,
             auto_renew=False,
         )
-        expired_count = expired.update(status='expired')
+        expired_count = expired.update(status="expired")
 
         # Expire trials past their trial end
         expired_trials = UserSubscription.objects.filter(
-            status='trial',
+            status="trial",
             trial_ends_at__lt=now,
         )
-        expired_trial_count = expired_trials.update(status='expired')
+        expired_trial_count = expired_trials.update(status="expired")
 
-        logger.info(f"Expired {expired_count} subscriptions, {expired_trial_count} trials")
-        return {'expired': expired_count, 'expired_trials': expired_trial_count}
+        logger.info(
+            f"Expired {expired_count} subscriptions, {expired_trial_count} trials"
+        )
+        return {"expired": expired_count, "expired_trials": expired_trial_count}
 
     @classmethod
     def get_usage_summary(cls, user):
@@ -256,18 +278,26 @@ class SubscriptionManager:
         ai_limit = plan.monthly_ai_generations
 
         return {
-            'date': today_usage.date,
-            'plan_code': plan.code,
-            'plan_name': plan.name,
-            'tests_taken': today_usage.tests_taken,
-            'tests_limit': tests_limit if tests_limit > 0 else float('inf'),
-            'tests_remaining': max(0, tests_limit - today_usage.tests_taken) if tests_limit > 0 else float('inf'),
-            'ai_generations': today_usage.ai_generations,
-            'ai_generations_limit': ai_limit if ai_limit > 0 else float('inf'),
-            'ai_generations_remaining': max(0, ai_limit - today_usage.ai_generations) if ai_limit > 0 else float('inf'),
-            'minutes_practiced': today_usage.minutes_practiced,
-            'is_over_limit': (
-                (tests_limit > 0 and today_usage.tests_taken >= tests_limit) or
-                (ai_limit > 0 and today_usage.ai_generations >= ai_limit)
+            "date": today_usage.date,
+            "plan_code": plan.code,
+            "plan_name": plan.name,
+            "tests_taken": today_usage.tests_taken,
+            "tests_limit": tests_limit if tests_limit > 0 else float("inf"),
+            "tests_remaining": (
+                max(0, tests_limit - today_usage.tests_taken)
+                if tests_limit > 0
+                else float("inf")
+            ),
+            "ai_generations": today_usage.ai_generations,
+            "ai_generations_limit": ai_limit if ai_limit > 0 else float("inf"),
+            "ai_generations_remaining": (
+                max(0, ai_limit - today_usage.ai_generations)
+                if ai_limit > 0
+                else float("inf")
+            ),
+            "minutes_practiced": today_usage.minutes_practiced,
+            "is_over_limit": (
+                (tests_limit > 0 and today_usage.tests_taken >= tests_limit)
+                or (ai_limit > 0 and today_usage.ai_generations >= ai_limit)
             ),
         }

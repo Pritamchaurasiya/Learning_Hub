@@ -13,12 +13,14 @@ print("=" * 80)
 print("EDGE CASE TEST SUITE")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # Edge Case Tests for Courses
@@ -171,8 +173,8 @@ class TestCourseReviewEdgeCases:
         ]
 '''
 
-edge_test_path = BASE_DIR / 'tests' / 'test_edge_cases_courses.py'
-with open(edge_test_path, 'w') as f:
+edge_test_path = BASE_DIR / "tests" / "test_edge_cases_courses.py"
+with open(edge_test_path, "w") as f:
     f.write(course_edge_cases)
 
 log(f"  [OK] Created: {edge_test_path}")
@@ -321,8 +323,8 @@ class TestUserProfileEdgeCases:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 '''
 
-user_edge_path = BASE_DIR / 'tests' / 'test_edge_cases_users.py'
-with open(user_edge_path, 'w') as f:
+user_edge_path = BASE_DIR / "tests" / "test_edge_cases_users.py"
+with open(user_edge_path, "w") as f:
     f.write(user_edge_cases)
 
 log(f"  [OK] Created: {user_edge_path}")
@@ -433,8 +435,8 @@ class TestGamificationPerformanceEdgeCases:
         assert any(r is not None for r in results)
 '''
 
-gamification_edge_path = BASE_DIR / 'tests' / 'test_edge_cases_gamification.py'
-with open(gamification_edge_path, 'w') as f:
+gamification_edge_path = BASE_DIR / "tests" / "test_edge_cases_gamification.py"
+with open(gamification_edge_path, "w") as f:
     f.write(gamification_edge_cases)
 
 log(f"  [OK] Created: {gamification_edge_path}")

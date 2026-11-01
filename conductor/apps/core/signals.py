@@ -1,6 +1,7 @@
 """
 Core signals for the application.
 """
+
 from django.dispatch import Signal
 
 # Signal triggered when a user enrolls in a course

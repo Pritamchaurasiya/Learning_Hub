@@ -3,9 +3,10 @@
 import os
 import sys
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 import django
+
 django.setup()
 
 from django.core.management import call_command
@@ -15,8 +16,8 @@ from django.db import connections
 pending = []
 for db in connections:
     try:
-        result = call_command('showmigrations', '--list', database=db, verbosity=0)
-        if '[ ]' in str(result):
+        result = call_command("showmigrations", "--list", database=db, verbosity=0)
+        if "[ ]" in str(result):
             pending.append(db)
     except:
         pass

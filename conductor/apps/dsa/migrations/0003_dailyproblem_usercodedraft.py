@@ -8,40 +8,82 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dsa', '0002_initial'),
+        ("dsa", "0002_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DailyProblem',
+            name="DailyProblem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(db_index=True, unique=True)),
-                ('bonus_xp', models.PositiveIntegerField(default=50)),
-                ('solved_count', models.PositiveIntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_features', to='dsa.problem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField(db_index=True, unique=True)),
+                ("bonus_xp", models.PositiveIntegerField(default=50)),
+                ("solved_count", models.PositiveIntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "problem",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="daily_features",
+                        to="dsa.problem",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Problem of the Day',
-                'verbose_name_plural': 'Problems of the Day',
-                'ordering': ['-date'],
+                "verbose_name": "Problem of the Day",
+                "verbose_name_plural": "Problems of the Day",
+                "ordering": ["-date"],
             },
         ),
         migrations.CreateModel(
-            name='UserCodeDraft',
+            name="UserCodeDraft",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('language', models.CharField(default='python', max_length=50)),
-                ('code', models.TextField()),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_drafts', to='dsa.problem')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dsa_drafts', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("language", models.CharField(default="python", max_length=50)),
+                ("code", models.TextField()),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "problem",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_drafts",
+                        to="dsa.problem",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="dsa_drafts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'indexes': [models.Index(fields=['user', 'problem'], name='dsa_usercod_user_id_06863e_idx')],
-                'unique_together': {('user', 'problem', 'language')},
+                "indexes": [
+                    models.Index(
+                        fields=["user", "problem"],
+                        name="dsa_usercod_user_id_06863e_idx",
+                    )
+                ],
+                "unique_together": {("user", "problem", "language")},
             },
         ),
     ]

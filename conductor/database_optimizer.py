@@ -13,12 +13,14 @@ print("=" * 80)
 print("DATABASE QUERY OPTIMIZER")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # Create Database Index Optimization Script
@@ -136,9 +138,9 @@ if __name__ == "__main__":
     print("=" * 60)
 '''
 
-index_script_path = BASE_DIR / 'scripts' / 'optimize_db_indexes.py'
+index_script_path = BASE_DIR / "scripts" / "optimize_db_indexes.py"
 index_script_path.parent.mkdir(parents=True, exist_ok=True)
-with open(index_script_path, 'w') as f:
+with open(index_script_path, "w") as f:
     f.write(index_script)
 
 log(f"  [OK] Created: {index_script_path}")
@@ -283,8 +285,8 @@ if __name__ == "__main__":
     main()
 '''
 
-query_analysis_path = BASE_DIR / 'scripts' / 'analyze_queries.py'
-with open(query_analysis_path, 'w') as f:
+query_analysis_path = BASE_DIR / "scripts" / "analyze_queries.py"
+with open(query_analysis_path, "w") as f:
     f.write(query_analysis)
 
 log(f"  [OK] Created: {query_analysis_path}")
@@ -391,8 +393,8 @@ def apply_connection_pooling():
 # DATABASES = get_optimized_database_settings()
 '''
 
-pooling_path = BASE_DIR / 'config' / 'connection_pooling_v2.py'
-with open(pooling_path, 'w') as f:
+pooling_path = BASE_DIR / "config" / "connection_pooling_v2.py"
+with open(pooling_path, "w") as f:
     f.write(connection_pool)
 
 log(f"  [OK] Created: {pooling_path}")

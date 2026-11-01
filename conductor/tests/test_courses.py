@@ -146,9 +146,7 @@ class TestCourseReview:
         Enrollment.objects.create(user=user, course=course)
 
         data = {"rating": 5, "title": "Great!", "content": "Loved it"}
-        response = api_client.post(
-            f"/api/v1/courses/{course.slug}/review/", data
-        )
+        response = api_client.post(f"/api/v1/courses/{course.slug}/review/", data)
 
         assert response.status_code == status.HTTP_201_CREATED
 

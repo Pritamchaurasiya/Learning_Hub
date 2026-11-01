@@ -24,6 +24,7 @@ class InferenceConfig:
 
 class KVCache:
     """Key-Value cache for attention."""
+
     def __init__(self, max_size: int = 1000):
         self.max_size = max_size
         self.cache: OrderedDict = OrderedDict()
@@ -54,11 +55,12 @@ class KVCache:
         self.cache.clear()
 
     def stats(self) -> Dict:
-        return {'size': len(self.cache), 'max_size': self.max_size}
+        return {"size": len(self.cache), "max_size": self.max_size}
 
 
 class StaticBatcher:
     """Static batching."""
+
     def __init__(self, batch_size: int = 8):
         self.batch_size = batch_size
         self.queue: List[Dict] = []
@@ -68,8 +70,8 @@ class StaticBatcher:
 
     def get_batch(self) -> List[Dict]:
         if len(self.queue) >= self.batch_size:
-            batch = self.queue[:self.batch_size]
-            self.queue = self.queue[self.batch_size:]
+            batch = self.queue[: self.batch_size]
+            self.queue = self.queue[self.batch_size :]
             return batch
         return []
 
@@ -81,6 +83,7 @@ class StaticBatcher:
 
 class ContinuousBatcher:
     """Continuous batching for LLM inference."""
+
     def __init__(self, max_batch: int = 32, max_tokens: int = 4096):
         self.max_batch = max_batch
         self.max_tokens = max_tokens
@@ -94,19 +97,19 @@ class ContinuousBatcher:
         # Add new requests if capacity
         while self.waiting and len(self.active) < self.max_batch:
             req = self.waiting.pop(0)
-            req['tokens_generated'] = 0
+            req["tokens_generated"] = 0
             self.active.append(req)
         return self.active
 
     def complete(self, request_id: str):
-        self.active = [r for r in self.active if r.get('id') != request_id]
+        self.active = [r for r in self.active if r.get("id") != request_id]
 
     def step(self) -> Tuple[List[Dict], List[str]]:
         completed = []
         for req in self.active:
-            req['tokens_generated'] = req.get('tokens_generated', 0) + 1
-            if req['tokens_generated'] >= req.get('max_tokens', 100):
-                completed.append(req['id'])
+            req["tokens_generated"] = req.get("tokens_generated", 0) + 1
+            if req["tokens_generated"] >= req.get("max_tokens", 100):
+                completed.append(req["id"])
         for cid in completed:
             self.complete(cid)
         return self.active, completed
@@ -114,13 +117,14 @@ class ContinuousBatcher:
 
 class ChunkedPrefill:
     """Chunked prefill for long prompts."""
+
     def __init__(self, chunk_size: int = 512):
         self.chunk_size = chunk_size
 
     def chunk(self, tokens: List[int]) -> List[List[int]]:
         chunks = []
         for i in range(0, len(tokens), self.chunk_size):
-            chunks.append(tokens[i:i + self.chunk_size])
+            chunks.append(tokens[i : i + self.chunk_size])
         return chunks
 
     def prefill(self, chunks: List[List[int]], process_fn) -> List:
@@ -133,6 +137,7 @@ class ChunkedPrefill:
 
 class PagedAttention:
     """Paged attention for memory efficiency."""
+
     def __init__(self, page_size: int = 16, num_pages: int = 1000):
         self.page_size = page_size
         self.num_pages = num_pages
@@ -162,6 +167,7 @@ class PagedAttention:
 
 class InferenceOptimizer:
     """Complete inference optimization."""
+
     def __init__(self, config: InferenceConfig = None):
         self.config = config or InferenceConfig()
         self.kv_cache = KVCache(self.config.kv_cache_size)
@@ -170,26 +176,26 @@ class InferenceOptimizer:
         self.paged = PagedAttention()
 
     def process_request(self, request: Dict) -> Dict:
-        request_id = request.get('id', str(random.randint(1000, 9999)))
-        tokens = request.get('tokens', [])
-        
+        request_id = request.get("id", str(random.randint(1000, 9999)))
+        tokens = request.get("tokens", [])
+
         # Check cache
         cache_key = f"{request_id}_kv"
         cached = self.kv_cache.get(cache_key)
-        
+
         if cached:
-            return {'status': 'cache_hit', 'request_id': request_id}
-        
+            return {"status": "cache_hit", "request_id": request_id}
+
         # Allocate paged attention
         pages = self.paged.allocate(request_id, len(tokens) + 100)
-        
+
         # Add to batch
-        self.batcher.add({**request, 'id': request_id, 'pages': pages})
-        
-        return {'status': 'queued', 'request_id': request_id, 'pages': len(pages)}
+        self.batcher.add({**request, "id": request_id, "pages": pages})
+
+        return {"status": "queued", "request_id": request_id, "pages": len(pages)}
 
     def step(self) -> Dict:
         active, completed = self.batcher.step()
         for cid in completed:
             self.paged.free(cid)
-        return {'active': len(active), 'completed': completed}
+        return {"active": len(active), "completed": completed}

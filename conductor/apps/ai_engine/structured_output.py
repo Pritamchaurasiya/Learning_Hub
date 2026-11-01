@@ -41,7 +41,7 @@ class SchemaProperty:
     min_length: Optional[int] = None
     max_length: Optional[int] = None
     pattern: Optional[str] = None
-    items: Optional['JSONSchema'] = None
+    items: Optional["JSONSchema"] = None
 
 
 @dataclass
@@ -61,6 +61,7 @@ class JSONSchema:
 
 class SchemaValidator:
     """Validate data against JSON schema."""
+
     def __init__(self):
         self.errors: List[str] = []
 
@@ -85,17 +86,19 @@ class SchemaValidator:
     def _validate_property(self, value: Any, prop: SchemaProperty, path: str) -> bool:
         """Validate a property value."""
         valid = True
-        
+
         # Type check
         if not self._validate_type(value, prop.type):
-            self.errors.append(f"{path}: expected {prop.type.value}, got {type(value).__name__}")
+            self.errors.append(
+                f"{path}: expected {prop.type.value}, got {type(value).__name__}"
+            )
             return False
-        
+
         # Enum check
         if prop.enum and value not in prop.enum:
             self.errors.append(f"{path}: value must be one of {prop.enum}")
             valid = False
-        
+
         # Number constraints
         if prop.type in [JSONType.NUMBER, JSONType.INTEGER]:
             if prop.min_value is not None and value < prop.min_value:
@@ -104,7 +107,7 @@ class SchemaValidator:
             if prop.max_value is not None and value > prop.max_value:
                 self.errors.append(f"{path}: value must be <= {prop.max_value}")
                 valid = False
-        
+
         # String constraints
         if prop.type == JSONType.STRING:
             if prop.min_length is not None and len(value) < prop.min_length:
@@ -116,40 +119,41 @@ class SchemaValidator:
             if prop.pattern and not re.match(prop.pattern, value):
                 self.errors.append(f"{path}: must match pattern {prop.pattern}")
                 valid = False
-        
+
         return valid
 
     def validate(self, data: Dict, schema: JSONSchema) -> Tuple[bool, List[str]]:
         """Validate data against schema."""
         self.errors = []
-        
+
         if schema.type != JSONType.OBJECT:
             if not self._validate_type(data, schema.type):
                 self.errors.append(f"Root: expected {schema.type.value}")
                 return False, self.errors
             return True, []
-        
+
         if not isinstance(data, dict):
             self.errors.append("Root: expected object")
             return False, self.errors
-        
+
         # Check required fields
         for req in schema.required:
             if req not in data:
                 self.errors.append(f"Missing required field: {req}")
-        
+
         # Validate each property
         for name, prop in schema.properties.items():
             if name in data:
                 self._validate_property(data[name], prop, name)
             elif prop.required:
                 self.errors.append(f"Missing required field: {name}")
-        
+
         return len(self.errors) == 0, self.errors
 
 
 class TypeCoercer:
     """Coerce values to expected types."""
+
     def coerce(self, value: Any, target: JSONType) -> Any:
         """Coerce value to target type."""
         if target == JSONType.STRING:
@@ -166,7 +170,7 @@ class TypeCoercer:
                 return 0
         elif target == JSONType.BOOLEAN:
             if isinstance(value, str):
-                return value.lower() in ('true', 'yes', '1')
+                return value.lower() in ("true", "yes", "1")
             return bool(value)
         elif target == JSONType.ARRAY:
             if isinstance(value, list):
@@ -189,7 +193,7 @@ class TypeCoercer:
                         return parsed
                 except json.JSONDecodeError:
                     pass
-            return {'value': value}
+            return {"value": value}
         elif target == JSONType.NULL:
             return None
         return value
@@ -197,6 +201,7 @@ class TypeCoercer:
 
 class ConstrainedDecoder:
     """Generate text with structural constraints."""
+
     def __init__(self):
         self.type_coercer = TypeCoercer()
 
@@ -204,56 +209,52 @@ class ConstrainedDecoder:
         """Generate a valid value for property."""
         if prop.enum:
             return random.choice(prop.enum)
-        
+
         if prop.default is not None:
             return prop.default
-        
+
         if prop.type == JSONType.STRING:
             length = prop.min_length or 10
             if prop.max_length:
                 length = min(length, prop.max_length)
-            return ''.join(random.choices('abcdefghij', k=length))
-        
+            return "".join(random.choices("abcdefghij", k=length))
+
         elif prop.type == JSONType.INTEGER:
             min_v = int(prop.min_value or 0)
             max_v = int(prop.max_value or 100)
             return random.randint(min_v, max_v)
-        
+
         elif prop.type == JSONType.NUMBER:
             min_v = prop.min_value or 0.0
             max_v = prop.max_value or 100.0
             return random.uniform(min_v, max_v)
-        
+
         elif prop.type == JSONType.BOOLEAN:
             return random.choice([True, False])
-        
+
         elif prop.type == JSONType.ARRAY:
             return []
-        
+
         elif prop.type == JSONType.OBJECT:
             return {}
-        
+
         return None
 
     def generate(self, schema: JSONSchema) -> Dict:
         """Generate JSON conforming to schema."""
         result = {}
-        
+
         for name, prop in schema.properties.items():
             result[name] = self._generate_value(prop)
-        
+
         return result
 
-    def constrain_output(
-        self, 
-        raw_output: str, 
-        schema: JSONSchema
-    ) -> Dict:
+    def constrain_output(self, raw_output: str, schema: JSONSchema) -> Dict:
         """Parse and constrain raw output to schema."""
         # Try to extract JSON
         try:
             # Find JSON in text
-            match = re.search(r'\{[^{}]*\}', raw_output, re.DOTALL)
+            match = re.search(r"\{[^{}]*\}", raw_output, re.DOTALL)
             if match:
                 data = json.loads(match.group())
             else:
@@ -261,20 +262,25 @@ class ConstrainedDecoder:
         except json.JSONDecodeError:
             # Generate from schema
             data = self.generate(schema)
-        
+
         # Coerce types
         result = {}
         for name, prop in schema.properties.items():
             if name in data:
                 result[name] = self.type_coercer.coerce(data[name], prop.type)
             elif prop.required or prop.default is not None:
-                result[name] = prop.default if prop.default is not None else self._generate_value(prop)
-        
+                result[name] = (
+                    prop.default
+                    if prop.default is not None
+                    else self._generate_value(prop)
+                )
+
         return result
 
 
 class StructuredOutputGenerator:
     """Complete structured output system."""
+
     def __init__(self):
         self.validator = SchemaValidator()
         self.decoder = ConstrainedDecoder()
@@ -283,31 +289,31 @@ class StructuredOutputGenerator:
     def create_schema(self, spec: Dict) -> JSONSchema:
         """Create schema from specification."""
         properties = {}
-        required = spec.get('required', [])
-        
-        for name, prop_spec in spec.get('properties', {}).items():
-            prop_type = JSONType(prop_spec.get('type', 'string'))
-            
+        required = spec.get("required", [])
+
+        for name, prop_spec in spec.get("properties", {}).items():
+            prop_type = JSONType(prop_spec.get("type", "string"))
+
             properties[name] = SchemaProperty(
                 name=name,
                 type=prop_type,
                 required=name in required,
-                description=prop_spec.get('description', ''),
-                enum=prop_spec.get('enum'),
-                default=prop_spec.get('default'),
-                min_value=prop_spec.get('minimum'),
-                max_value=prop_spec.get('maximum'),
-                min_length=prop_spec.get('minLength'),
-                max_length=prop_spec.get('maxLength'),
-                pattern=prop_spec.get('pattern')
+                description=prop_spec.get("description", ""),
+                enum=prop_spec.get("enum"),
+                default=prop_spec.get("default"),
+                min_value=prop_spec.get("minimum"),
+                max_value=prop_spec.get("maximum"),
+                min_length=prop_spec.get("minLength"),
+                max_length=prop_spec.get("maxLength"),
+                pattern=prop_spec.get("pattern"),
             )
-        
+
         return JSONSchema(
             type=JSONType.OBJECT,
             properties=properties,
             required=required,
-            title=spec.get('title', ''),
-            description=spec.get('description', '')
+            title=spec.get("title", ""),
+            description=spec.get("description", ""),
         )
 
     def generate(self, schema: JSONSchema) -> Dict:

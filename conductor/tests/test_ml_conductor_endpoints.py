@@ -60,7 +60,7 @@ class TestMLConductorEndpoints:
                 {"questionId": "q1", "timeSpentSeconds": 45.2, "difficulty": 1.0},
                 {"questionId": "q2", "timeSpentSeconds": 62.1, "difficulty": 2.0},
                 {"questionId": "q3", "timeSpentSeconds": 38.4, "difficulty": 1.5},
-            ]
+            ],
         }
         response = api_client.post("/api/v1/ai/anomaly/detect/", payload, format="json")
         assert response.status_code == status.HTTP_200_OK
@@ -77,7 +77,7 @@ class TestMLConductorEndpoints:
                 {"questionId": "q2", "timeSpentSeconds": 1.1, "difficulty": 3.0},
                 {"questionId": "q3", "timeSpentSeconds": 1.3, "difficulty": 2.0},
                 {"questionId": "q4", "timeSpentSeconds": 50.0, "difficulty": 1.0},
-            ]
+            ],
         }
         response = api_client.post("/api/v1/ai/anomaly/detect/", payload, format="json")
         assert response.status_code == status.HTTP_200_OK

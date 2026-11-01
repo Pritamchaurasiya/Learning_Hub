@@ -21,6 +21,7 @@ Loss:
 The L1 penalty forces most features to be ZERO, making the representation
 sparse and interpretable — each active feature means something specific.
 """
+
 import math
 import random
 import logging
@@ -41,8 +42,15 @@ class SparseAutoencoder:
       - sparsity_coeff (λ): Controls how sparse the features are.
         Higher = fewer active features per input = more interpretable.
     """
-    def __init__(self, d_model: int, expansion_factor: int = 8,
-                 sparsity_coeff: float = 0.04, lr: float = 0.01, seed: int = 42):
+
+    def __init__(
+        self,
+        d_model: int,
+        expansion_factor: int = 8,
+        sparsity_coeff: float = 0.04,
+        lr: float = 0.01,
+        seed: int = 42,
+    ):
         self.d_model = d_model
         self.n_features = d_model * expansion_factor
         self.sparsity_coeff = sparsity_coeff
@@ -52,13 +60,17 @@ class SparseAutoencoder:
         scale = math.sqrt(2.0 / (d_model + self.n_features))
 
         # Encoder: maps activations → sparse feature space
-        self.W_enc = [[rng.gauss(0, scale) for _ in range(self.n_features)]
-                      for _ in range(d_model)]
+        self.W_enc = [
+            [rng.gauss(0, scale) for _ in range(self.n_features)]
+            for _ in range(d_model)
+        ]
         self.b_enc = [0.0] * self.n_features
 
         # Decoder: maps sparse features → reconstructed activations
-        self.W_dec = [[rng.gauss(0, scale) for _ in range(d_model)]
-                      for _ in range(self.n_features)]
+        self.W_dec = [
+            [rng.gauss(0, scale) for _ in range(d_model)]
+            for _ in range(self.n_features)
+        ]
         self.b_dec = [0.0] * d_model
 
         # Training stats
@@ -105,7 +117,9 @@ class SparseAutoencoder:
         x_hat, z, _ = self.forward(x)
 
         # MSE reconstruction loss
-        recon_loss = sum((x[i] - x_hat[i])**2 for i in range(self.d_model)) / self.d_model
+        recon_loss = (
+            sum((x[i] - x_hat[i]) ** 2 for i in range(self.d_model)) / self.d_model
+        )
 
         # L1 sparsity loss
         l1_loss = sum(abs(zi) for zi in z) / self.n_features
@@ -137,7 +151,9 @@ class SparseAutoencoder:
 
     def get_feature_analysis(self, total_samples: int) -> Dict[str, Any]:
         """Analyze which features are used and how often."""
-        active_features = [(i, c) for i, c in enumerate(self.feature_activations) if c > 0]
+        active_features = [
+            (i, c) for i, c in enumerate(self.feature_activations) if c > 0
+        ]
         active_features.sort(key=lambda x: x[1], reverse=True)
 
         dead_features = sum(1 for c in self.feature_activations if c == 0)
@@ -148,8 +164,11 @@ class SparseAutoencoder:
             "dead_features": dead_features,
             "dead_feature_ratio": round(dead_features / self.n_features, 3),
             "top_10_features": [
-                {"feature_id": fid, "activation_count": cnt,
-                 "frequency": round(cnt / max(1, total_samples), 3)}
+                {
+                    "feature_id": fid,
+                    "activation_count": cnt,
+                    "frequency": round(cnt / max(1, total_samples), 3),
+                }
                 for fid, cnt in active_features[:10]
             ],
         }
@@ -180,5 +199,5 @@ def run_sae_experiment() -> Dict[str, Any]:
             "final_sparsity": metrics["sparsity"],
         },
         "feature_analysis": analysis,
-        "insight": "SAEs decompose neural activations into interpretable features. Anthropic uses these to find 'safety-relevant' features inside Claude."
+        "insight": "SAEs decompose neural activations into interpretable features. Anthropic uses these to find 'safety-relevant' features inside Claude.",
     }

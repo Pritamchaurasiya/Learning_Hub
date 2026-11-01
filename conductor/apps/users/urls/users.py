@@ -39,5 +39,9 @@ urlpatterns = [
     path("profile/", profile_view, name="profile"),
     path("avatar/", avatar_view, name="avatar"),
     path("profile/bookmarks/", bookmarks_view, name="bookmarks"),
-    path("profile/bookmarks/<uuid:course_id>/", bookmark_detail_view, name="bookmark-detail"),
+    path(
+        "profile/bookmarks/<uuid:course_id>/",
+        bookmark_detail_view,
+        name="bookmark-detail",
+    ),
 ]

@@ -32,7 +32,7 @@ class FeatureStoreService:
     """
     Centralized repository for ML features.
     """
-    
+
     @classmethod
     def get_features(cls, entity_id: str, feature_names: List[str]) -> Dict[str, Any]:
         """
@@ -64,7 +64,7 @@ class FeatureStoreService:
             "name": name,
             "description": description,
             "created_at": timezone.now().isoformat(),
-            "status": "active"
+            "status": "active",
         }
 
 
@@ -72,18 +72,14 @@ class ModelRegistryService:
     """
     Manage ML model lifecycle.
     """
-    
+
     @classmethod
     def register_model(
-        cls, 
-        name: str, 
-        version: str, 
-        artifact_path: str,
-        metrics: Dict[str, float]
+        cls, name: str, version: str, artifact_path: str, metrics: Dict[str, float]
     ) -> Dict[str, Any]:
         """Register a new model version."""
         logger.info(f"Registering model {name} v{version}")
-        
+
         # Save metadata to DB (simulated)
         model_meta = {
             "id": str(uuid.uuid4()),
@@ -92,7 +88,7 @@ class ModelRegistryService:
             "path": artifact_path,
             "metrics": metrics,
             "status": ModelStatus.STAGING.value,
-            "registered_at": timezone.now().isoformat()
+            "registered_at": timezone.now().isoformat(),
         }
         return model_meta
 
@@ -111,7 +107,7 @@ class ModelRegistryService:
             "name": name,
             "version": "1.2.0",
             "path": f"s3://models/{name}/v1.2.0.pkl",
-            "status": "production"
+            "status": "production",
         }
 
 
@@ -119,7 +115,7 @@ class ABTestingService:
     """
     Framework for running A/B experiments.
     """
-    
+
     @classmethod
     def get_variant(cls, user_id: str, experiment_name: str) -> str:
         """
@@ -128,17 +124,17 @@ class ABTestingService:
         """
         # Define variants (could be fetched from config/DB)
         variants = ["control", "variant_a", "variant_b"]
-        
+
         # Deterministic hashing
-        hash_input = f"{user_id}:{experiment_name}".encode('utf-8')
+        hash_input = f"{user_id}:{experiment_name}".encode("utf-8")
         hash_val = int(hashlib.sha256(hash_input).hexdigest(), 16)
-        
+
         variant_idx = hash_val % len(variants)
         assigned_variant = variants[variant_idx]
-        
+
         # Log exposure (async)
         cls._log_exposure(user_id, experiment_name, assigned_variant)
-        
+
         return assigned_variant
 
     @classmethod

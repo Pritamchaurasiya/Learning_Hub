@@ -19,7 +19,7 @@ class HomomorphicEngine:
     Simulates Partially Homomorphic Encryption (e.g., Paillier).
     Allows addition of encrypted numbers.
     """
-    
+
     @classmethod
     def encrypt(cls, value: int, public_key: int) -> int:
         """
@@ -43,7 +43,7 @@ class HomomorphicEngine:
         Mock Decryption.
         """
         # This is purely illustrative logic
-        return enc_value // private_key # Placeholder
+        return enc_value // private_key  # Placeholder
 
 
 class ZKPVerifier:
@@ -51,17 +51,17 @@ class ZKPVerifier:
     Zero-Knowledge Proof Simulator (Schnorr Protocol style).
     Prover proves they know 'x' such that y = g^x, without revealing 'x'.
     """
-    
-    G = 2 # Generator
-    P = 1000000007 # Large prime
-    
+
+    G = 2  # Generator
+    P = 1000000007  # Large prime
+
     @classmethod
     def create_proof(cls, secret_x: int) -> Dict[str, int]:
         """
         Prover step 1: Commit.
         """
-        r = random.randint(1, cls.P - 1) # Random nonce
-        t = pow(cls.G, r, cls.P) # Commitment
+        r = random.randint(1, cls.P - 1)  # Random nonce
+        t = pow(cls.G, r, cls.P)  # Commitment
         return {"t": t, "r_secret": r}
 
     @classmethod

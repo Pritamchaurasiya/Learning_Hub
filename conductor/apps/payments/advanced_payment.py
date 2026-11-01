@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 class PaymentGateway(Enum):
     """Supported payment gateways."""
+
     RAZORPAY = "razorpay"
     STRIPE = "stripe"
     PAYPAL = "paypal"
@@ -38,6 +39,7 @@ class PaymentGateway(Enum):
 
 class PaymentStatus(Enum):
     """Payment status types."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -48,6 +50,7 @@ class PaymentStatus(Enum):
 
 class SubscriptionPlan(Enum):
     """Subscription plan types."""
+
     FREE = "free"
     BASIC = "basic"
     PRO = "pro"
@@ -57,6 +60,7 @@ class SubscriptionPlan(Enum):
 @dataclass
 class PaymentResult:
     """Result of a payment operation."""
+
     success: bool
     payment_id: Optional[str]
     order_id: Optional[str]
@@ -71,6 +75,7 @@ class PaymentResult:
 @dataclass
 class SubscriptionInfo:
     """Subscription information."""
+
     plan: SubscriptionPlan
     start_date: str
     end_date: str
@@ -83,48 +88,48 @@ class AdvancedPaymentService:
     """
     Enterprise payment processing service.
     """
-    
+
     # Plan pricing (INR)
     PLAN_PRICES = {
-        SubscriptionPlan.FREE: Decimal('0'),
-        SubscriptionPlan.BASIC: Decimal('499'),
-        SubscriptionPlan.PRO: Decimal('999'),
-        SubscriptionPlan.ENTERPRISE: Decimal('2999'),
+        SubscriptionPlan.FREE: Decimal("0"),
+        SubscriptionPlan.BASIC: Decimal("499"),
+        SubscriptionPlan.PRO: Decimal("999"),
+        SubscriptionPlan.ENTERPRISE: Decimal("2999"),
     }
-    
+
     # Plan features
     PLAN_FEATURES = {
         SubscriptionPlan.FREE: [
             "Access to free courses",
             "Basic DSA problems",
-            "Community discussions"
+            "Community discussions",
         ],
         SubscriptionPlan.BASIC: [
             "All Free features",
             "Unlimited course access",
             "50+ DSA problems",
-            "Certificates"
+            "Certificates",
         ],
         SubscriptionPlan.PRO: [
             "All Basic features",
             "AI tutor assistance",
             "Live sessions",
             "Priority support",
-            "Advanced analytics"
+            "Advanced analytics",
         ],
         SubscriptionPlan.ENTERPRISE: [
             "All Pro features",
             "Team management",
             "Custom branding",
             "API access",
-            "Dedicated support"
+            "Dedicated support",
         ],
     }
-    
+
     # ==========================================================================
     # PAYMENT INITIATION
     # ==========================================================================
-    
+
     @classmethod
     def create_payment(
         cls,
@@ -135,27 +140,27 @@ class AdvancedPaymentService:
         course_id: Optional[str] = None,
         subscription_plan: Optional[SubscriptionPlan] = None,
         promo_code: Optional[str] = None,
-        gateway: PaymentGateway = PaymentGateway.RAZORPAY
+        gateway: PaymentGateway = PaymentGateway.RAZORPAY,
     ) -> PaymentResult:
         """
         Create a new payment order.
         """
         from apps.payments.models import Payment
         import uuid
-        
+
         # Apply promo code discount
         final_amount = amount
         if promo_code:
             discount = cls._apply_promo_code(promo_code, amount)
             final_amount = amount - discount
-        
+
         # Handle free transactions
         if final_amount <= 0:
             return cls._process_free_transaction(user, course_id, subscription_plan)
-        
+
         # Create payment record
         order_id = f"order_{uuid.uuid4().hex[:16]}"
-        
+
         payment = Payment.objects.create(
             user=user,
             amount=final_amount,
@@ -163,9 +168,9 @@ class AdvancedPaymentService:
             course_id=course_id,
             gateway_order_id=order_id,
             gateway=gateway.value,
-            status=PaymentStatus.PENDING.value
+            status=PaymentStatus.PENDING.value,
         )
-        
+
         # Initialize with gateway
         if gateway == PaymentGateway.RAZORPAY:
             result = cls._init_razorpay_payment(payment, final_amount, currency)
@@ -180,28 +185,25 @@ class AdvancedPaymentService:
                 gateway=gateway,
                 amount=final_amount,
                 currency=currency,
-                error_message="Unsupported gateway"
+                error_message="Unsupported gateway",
             )
-        
+
         # Log for audit
         cls._log_payment_event(payment, "initiated", result)
-        
+
         return result
-    
+
     @classmethod
     def _init_razorpay_payment(
-        cls,
-        payment,
-        amount: Decimal,
-        currency: str
+        cls, payment, amount: Decimal, currency: str
     ) -> PaymentResult:
         """Initialize Razorpay payment."""
         # In production, use actual Razorpay SDK
         # For now, return mock success
-        
+
         payment.gateway_order_id = f"rzp_{payment.gateway_order_id}"
         payment.save()
-        
+
         return PaymentResult(
             success=True,
             payment_id=str(payment.id),
@@ -210,21 +212,18 @@ class AdvancedPaymentService:
             gateway=PaymentGateway.RAZORPAY,
             amount=amount,
             currency=currency,
-            redirect_url=f"/checkout/razorpay/{payment.id}/"
+            redirect_url=f"/checkout/razorpay/{payment.id}/",
         )
-    
+
     @classmethod
     def _init_stripe_payment(
-        cls,
-        payment,
-        amount: Decimal,
-        currency: str
+        cls, payment, amount: Decimal, currency: str
     ) -> PaymentResult:
         """Initialize Stripe payment."""
         # Mock implementation
         payment.gateway_order_id = f"pi_{payment.gateway_order_id}"
         payment.save()
-        
+
         return PaymentResult(
             success=True,
             payment_id=str(payment.id),
@@ -233,62 +232,59 @@ class AdvancedPaymentService:
             gateway=PaymentGateway.STRIPE,
             amount=amount,
             currency=currency,
-            redirect_url=f"/checkout/stripe/{payment.id}/"
+            redirect_url=f"/checkout/stripe/{payment.id}/",
         )
-    
+
     @classmethod
     def _process_free_transaction(
         cls,
         user,
         course_id: Optional[str],
-        subscription_plan: Optional[SubscriptionPlan]
+        subscription_plan: Optional[SubscriptionPlan],
     ) -> PaymentResult:
         """Process free transaction (after promo or free plan)."""
         from apps.payments.models import Payment
         import uuid
-        
+
         payment = Payment.objects.create(
             user=user,
-            amount=Decimal('0'),
+            amount=Decimal("0"),
             currency="INR",
             course_id=course_id,
             gateway_order_id=f"free_{uuid.uuid4().hex[:16]}",
             gateway=PaymentGateway.FREE.value,
-            status=PaymentStatus.COMPLETED.value
+            status=PaymentStatus.COMPLETED.value,
         )
-        
+
         # Grant access
         if course_id:
             cls._grant_course_access(user, course_id)
         if subscription_plan:
             cls._activate_subscription(user, subscription_plan)
-        
+
         return PaymentResult(
             success=True,
             payment_id=str(payment.id),
             order_id=payment.gateway_order_id,
             status=PaymentStatus.COMPLETED,
             gateway=PaymentGateway.FREE,
-            amount=Decimal('0'),
-            currency="INR"
+            amount=Decimal("0"),
+            currency="INR",
         )
-    
+
     # ==========================================================================
     # PAYMENT VERIFICATION
     # ==========================================================================
-    
+
     @classmethod
     def verify_payment(
-        cls,
-        payment_id: str,
-        gateway_payment_id: str,
-        gateway_signature: str
+        cls, payment_id: str, gateway_payment_id: str, gateway_signature: str
     ) -> PaymentResult:
         """
         Verify payment completion from gateway callback.
         """
         from apps.payments.models import Payment
-        
+
         try:
             payment = Payment.objects.get(id=payment_id)
         except Payment.DoesNotExist:
@@ -298,41 +294,38 @@ class AdvancedPaymentService:
                 order_id=None,
                 status=PaymentStatus.FAILED,
                 gateway=PaymentGateway.RAZORPAY,
-                amount=Decimal('0'),
+                amount=Decimal("0"),
                 currency="INR",
-                error_message="Payment not found"
+                error_message="Payment not found",
             )
-        
+
         # Verify signature based on gateway
         if payment.gateway == PaymentGateway.RAZORPAY.value:
             is_valid = cls._verify_razorpay_signature(
-                payment.gateway_order_id,
-                gateway_payment_id,
-                gateway_signature
+                payment.gateway_order_id, gateway_payment_id, gateway_signature
             )
         elif payment.gateway == PaymentGateway.STRIPE.value:
             is_valid = cls._verify_stripe_signature(
-                gateway_payment_id,
-                gateway_signature
+                gateway_payment_id, gateway_signature
             )
         else:
             is_valid = True  # Free transaction
-        
+
         if is_valid:
             payment.status = PaymentStatus.COMPLETED.value
             payment.gateway_payment_id = gateway_payment_id
             payment.completed_at = timezone.now()
             payment.save()
-            
+
             # Grant access
             if payment.course_id:
                 cls._grant_course_access(payment.user, str(payment.course_id))
-            
+
             # Note: subscription_plan tracking removed (no metadata field on Payment model)
             # Subscription activation should be handled via a separate service call
-            
+
             cls._log_payment_event(payment, "completed", None)
-            
+
             return PaymentResult(
                 success=True,
                 payment_id=str(payment.id),
@@ -340,12 +333,12 @@ class AdvancedPaymentService:
                 status=PaymentStatus.COMPLETED,
                 gateway=PaymentGateway(payment.gateway),
                 amount=payment.amount,
-                currency=payment.currency
+                currency=payment.currency,
             )
         else:
             payment.status = PaymentStatus.FAILED.value
             payment.save()
-            
+
             return PaymentResult(
                 success=False,
                 payment_id=str(payment.id),
@@ -354,19 +347,16 @@ class AdvancedPaymentService:
                 gateway=PaymentGateway(payment.gateway),
                 amount=payment.amount,
                 currency=payment.currency,
-                error_message="Signature verification failed"
+                error_message="Signature verification failed",
             )
-    
+
     @classmethod
     def _verify_razorpay_signature(
-        cls,
-        order_id: str,
-        payment_id: str,
-        signature: str
+        cls, order_id: str, payment_id: str, signature: str
     ) -> bool:
         """Verify Razorpay payment signature (HMAC-SHA256)."""
-        key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
-        
+        key_secret = getattr(settings, "RAZORPAY_KEY_SECRET", None)
+
         # Security: Always require secret - no bypass allowed
         if not key_secret:
             logger.error("Security Risk: RAZORPAY_KEY_SECRET is not configured.")
@@ -375,24 +365,18 @@ class AdvancedPaymentService:
         msg = f"{order_id}|{payment_id}"
         try:
             expected = hmac.new(
-                key_secret.encode('utf-8'),
-                msg.encode('utf-8'),
-                hashlib.sha256
+                key_secret.encode("utf-8"), msg.encode("utf-8"), hashlib.sha256
             ).hexdigest()
             return hmac.compare_digest(expected, signature)
         except Exception as e:
             logger.error(f"Razorpay Verification Error: {e}")
             return False
-    
+
     @classmethod
-    def _verify_stripe_signature(
-        cls,
-        payment_id: str,
-        signature: str
-    ) -> bool:
+    def _verify_stripe_signature(cls, payment_id: str, signature: str) -> bool:
         """Verify Stripe webhook signature using HMAC-SHA256."""
-        webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
-        
+        webhook_secret = getattr(settings, "STRIPE_WEBHOOK_SECRET", None)
+
         # Security: Always require secret in production
         if not webhook_secret:
             logger.error("Security Risk: STRIPE_WEBHOOK_SECRET is not configured.")
@@ -400,63 +384,63 @@ class AdvancedPaymentService:
 
         # Stripe signatures are in format: t=timestamp,v1=signature,v0=signature
         try:
-            parts = signature.split(',')
+            parts = signature.split(",")
             timestamp = None
             sig_v1 = None
             for part in parts:
-                if part.startswith('t='):
+                if part.startswith("t="):
                     timestamp = part[2:]
-                elif part.startswith('v1='):
+                elif part.startswith("v1="):
                     sig_v1 = part[3:]
-            
+
             if not timestamp or not sig_v1:
                 logger.error("Invalid Stripe signature format")
                 return False
-            
+
             # Verify timestamp is within 5 minutes (prevent replay attacks)
             if abs(int(timezone.now().timestamp()) - int(timestamp)) > 300:
-                logger.error("Stripe webhook timestamp expired (replay attack prevention)")
+                logger.error(
+                    "Stripe webhook timestamp expired (replay attack prevention)"
+                )
                 return False
-            
+
             # Verify HMAC signature
             payload = f"{timestamp}|{payment_id}"
             expected = hmac.new(
-                webhook_secret.encode('utf-8'),
-                payload.encode('utf-8'),
-                hashlib.sha256
+                webhook_secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
             ).hexdigest()
-            
+
             return hmac.compare_digest(expected, sig_v1)
         except Exception as e:
             logger.error(f"Stripe Signature Verification Error: {e}")
             return False
-    
+
     # ==========================================================================
     # REFUND PROCESSING
     # ==========================================================================
-    
+
     @classmethod
     def process_refund(
         cls,
         payment_id: str,
         reason: str,
-        amount: Optional[Decimal] = None  # None = full refund
+        amount: Optional[Decimal] = None,  # None = full refund
     ) -> Dict[str, Any]:
         """
         Process a refund request.
         """
         from apps.payments.models import Payment
-        
+
         try:
             payment = Payment.objects.get(id=payment_id)
         except Payment.DoesNotExist:
-            return {'success': False, 'error': 'Payment not found'}
-        
+            return {"success": False, "error": "Payment not found"}
+
         if payment.status != PaymentStatus.COMPLETED.value:
-            return {'success': False, 'error': 'Payment not eligible for refund'}
-        
+            return {"success": False, "error": "Payment not eligible for refund"}
+
         refund_amount = amount or payment.amount
-        
+
         # Process with gateway first before updating DB
         if payment.gateway == PaymentGateway.RAZORPAY.value:
             success = cls._razorpay_refund(payment, refund_amount)
@@ -464,83 +448,86 @@ class AdvancedPaymentService:
             success = cls._stripe_refund(payment, refund_amount)
         else:
             success = True  # Free transaction
-        
+
         if success:
             # Update payment status
             payment.status = PaymentStatus.REFUNDED.value
-            payment.save(update_fields=['status'])
-            
+            payment.save(update_fields=["status"])
+
             # Full refund - revoke access
             if refund_amount >= payment.amount:
                 if payment.course_id:
                     cls._revoke_course_access(payment.user, str(payment.course_id))
-            
+
             # Log refund event
             cls._log_payment_event(payment, "refunded", None)
-            
+
             return {
-                'success': True,
-                'refund_id': str(payment.id),
-                'amount': float(refund_amount)
+                "success": True,
+                "refund_id": str(payment.id),
+                "amount": float(refund_amount),
             }
-        
-        return {'success': False, 'error': 'Refund processing failed at gateway'}
-    
+
+        return {"success": False, "error": "Refund processing failed at gateway"}
+
     @classmethod
     def _razorpay_refund(cls, payment, amount: Decimal) -> bool:
         """Process Razorpay refund via API."""
         try:
             import razorpay
-            client = razorpay.Client(auth=(
-                getattr(settings, 'RAZORPAY_KEY_ID', ''),
-                getattr(settings, 'RAZORPAY_KEY_SECRET', '')
-            ))
+
+            client = razorpay.Client(
+                auth=(
+                    getattr(settings, "RAZORPAY_KEY_ID", ""),
+                    getattr(settings, "RAZORPAY_KEY_SECRET", ""),
+                )
+            )
             refund_amount_paise = int(amount * 100)
-            client.payment.refund(payment.gateway_payment_id, {
-                'amount': refund_amount_paise,
-                'notes': {'reason': 'refund'}
-            })
+            client.payment.refund(
+                payment.gateway_payment_id,
+                {"amount": refund_amount_paise, "notes": {"reason": "refund"}},
+            )
             return True
         except Exception as e:
             logger.error(f"Razorpay refund failed: {e}")
             return False
-    
+
     @classmethod
     def _stripe_refund(cls, payment, amount: Decimal) -> bool:
         """Process Stripe refund via API."""
         try:
             import stripe
-            stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
+
+            stripe.api_key = getattr(settings, "STRIPE_SECRET_KEY", "")
             amount_cents = int(amount * 100)
             stripe.Refund.create(
-                payment_intent=payment.gateway_payment_id,
-                amount=amount_cents
+                payment_intent=payment.gateway_payment_id, amount=amount_cents
             )
             return True
         except Exception as e:
             logger.error(f"Stripe refund failed: {e}")
             return False
-    
+
     # ==========================================================================
     # SUBSCRIPTION MANAGEMENT
     # ==========================================================================
-    
+
     @classmethod
     def get_subscription_info(cls, user) -> SubscriptionInfo:
         """Get user's current subscription."""
         from apps.payments.models import Subscription
-        
+
         try:
             sub = Subscription.objects.get(user=user, is_active=True)
             plan = SubscriptionPlan(sub.plan)
-            
+
             return SubscriptionInfo(
                 plan=plan,
                 start_date=sub.start_date.isoformat(),
                 end_date=sub.end_date.isoformat() if sub.end_date else None,
                 is_active=sub.is_active,
                 auto_renew=sub.auto_renew,
-                features=cls.PLAN_FEATURES.get(plan, [])
+                features=cls.PLAN_FEATURES.get(plan, []),
             )
         except Subscription.DoesNotExist:
             return SubscriptionInfo(
@@ -549,135 +536,136 @@ class AdvancedPaymentService:
                 end_date=None,
                 is_active=True,
                 auto_renew=False,
-                features=cls.PLAN_FEATURES[SubscriptionPlan.FREE]
+                features=cls.PLAN_FEATURES[SubscriptionPlan.FREE],
             )
-    
+
     @classmethod
     def _activate_subscription(cls, user, plan: SubscriptionPlan) -> None:
         """Activate a subscription plan for user."""
         from apps.payments.models import Subscription
-        
+
         # Deactivate existing
         Subscription.objects.filter(user=user, is_active=True).update(is_active=False)
-        
+
         # Create new subscription
         duration = timedelta(days=30)  # Monthly
-        
+
         Subscription.objects.create(
             user=user,
             plan=plan.value,
             start_date=timezone.now(),
             end_date=timezone.now() + duration,
             is_active=True,
-            auto_renew=True
+            auto_renew=True,
         )
-    
+
     # ==========================================================================
     # PROMO CODES
     # ==========================================================================
-    
+
     @classmethod
     def validate_promo_code(cls, code: str, amount: Decimal) -> Dict[str, Any]:
         """Validate a promo code."""
         from apps.payments.models import PromoCode
-        
+
         try:
             promo = PromoCode.objects.get(code=code.upper(), is_active=True)
         except PromoCode.DoesNotExist:
-            return {'valid': False, 'error': 'Invalid promo code'}
-        
+            return {"valid": False, "error": "Invalid promo code"}
+
         # Check expiry
         if promo.expires_at and promo.expires_at < timezone.now():
-            return {'valid': False, 'error': 'Promo code expired'}
-        
+            return {"valid": False, "error": "Promo code expired"}
+
         # Check usage limit
         if promo.max_uses and promo.use_count >= promo.max_uses:
-            return {'valid': False, 'error': 'Promo code usage limit reached'}
-        
+            return {"valid": False, "error": "Promo code usage limit reached"}
+
         # Calculate discount
-        if promo.discount_type == 'percentage':
+        if promo.discount_type == "percentage":
             discount = amount * (promo.discount_value / 100)
             discount = min(discount, promo.max_discount or discount)
         else:
             discount = min(promo.discount_value, amount)
-        
+
         return {
-            'valid': True,
-            'discount': float(discount),
-            'final_amount': float(amount - discount),
-            'description': promo.description
+            "valid": True,
+            "discount": float(discount),
+            "final_amount": float(amount - discount),
+            "description": promo.description,
         }
-    
+
     @classmethod
     def _apply_promo_code(cls, code: str, amount: Decimal) -> Decimal:
         """Apply promo code and return discount amount."""
         result = cls.validate_promo_code(code, amount)
-        if result['valid']:
-            return Decimal(str(result['discount']))
-        return Decimal('0')
-    
+        if result["valid"]:
+            return Decimal(str(result["discount"]))
+        return Decimal("0")
+
     # ==========================================================================
     # ANALYTICS
     # ==========================================================================
-    
+
     @classmethod
     def get_revenue_analytics(cls, days: int = 30) -> Dict[str, Any]:
         """Get revenue analytics for admin."""
         from apps.payments.models import Payment
-        
+
         since = timezone.now() - timedelta(days=days)
-        
+
         payments = Payment.objects.filter(
-            status=PaymentStatus.COMPLETED.value,
-            completed_at__gte=since
+            status=PaymentStatus.COMPLETED.value, completed_at__gte=since
         )
-        
-        total_revenue = payments.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+        total_revenue = payments.aggregate(total=Sum("amount"))["total"] or Decimal("0")
         total_transactions = payments.count()
-        
+
         # Daily breakdown
-        daily = payments.values('completed_at__date').annotate(
-            revenue=Sum('amount'),
-            count=Count('id')
-        ).order_by('completed_at__date')
-        
-        # By gateway
-        by_gateway = payments.values('gateway').annotate(
-            revenue=Sum('amount'),
-            count=Count('id')
+        daily = (
+            payments.values("completed_at__date")
+            .annotate(revenue=Sum("amount"), count=Count("id"))
+            .order_by("completed_at__date")
         )
-        
+
+        # By gateway
+        by_gateway = payments.values("gateway").annotate(
+            revenue=Sum("amount"), count=Count("id")
+        )
+
         return {
-            'total_revenue': float(total_revenue),
-            'total_transactions': total_transactions,
-            'average_order_value': float(total_revenue / total_transactions) if total_transactions > 0 else 0,
-            'daily': list(daily),
-            'by_gateway': {g['gateway']: float(g['revenue']) for g in by_gateway},
-            'period_days': days
+            "total_revenue": float(total_revenue),
+            "total_transactions": total_transactions,
+            "average_order_value": (
+                float(total_revenue / total_transactions)
+                if total_transactions > 0
+                else 0
+            ),
+            "daily": list(daily),
+            "by_gateway": {g["gateway"]: float(g["revenue"]) for g in by_gateway},
+            "period_days": days,
         }
-    
+
     # ==========================================================================
     # HELPERS
     # ==========================================================================
-    
+
     @classmethod
     def _grant_course_access(cls, user, course_id: str) -> None:
         """Grant course access after payment."""
         from apps.courses.models import Enrollment
-        
+
         Enrollment.objects.get_or_create(
-            user=user,
-            course_id=course_id,
-            defaults={'enrolled_at': timezone.now()}
+            user=user, course_id=course_id, defaults={"enrolled_at": timezone.now()}
         )
-    
+
     @classmethod
     def _revoke_course_access(cls, user, course_id: str) -> None:
         """Revoke course access after refund."""
         from apps.courses.models import Enrollment
-        
+
         Enrollment.objects.filter(user=user, course_id=course_id).delete()
-    
+
     @classmethod
     def _log_payment_event(cls, payment, event: str, result) -> None:
         """Log payment event for audit trail."""
@@ -689,32 +677,34 @@ class AdvancedPaymentService:
             )
         except Exception as e:
             logger.error(f"Failed to log payment event: {e}")
-    
+
     # ==========================================================================
     # AI INTELLIGENCE & INVOICING
     # ==========================================================================
 
     @classmethod
-    def detect_fraud_ai(cls, user, amount: Decimal, ip_address: str = None) -> Dict[str, Any]:
+    def detect_fraud_ai(
+        cls, user, amount: Decimal, ip_address: str = None
+    ) -> Dict[str, Any]:
         """
         AI-driven Fraud Detection.
         Analyzes transaction patterns for anomalies.
         """
         risk_score = 0
         reasons = []
-        
+
         # Rule-based checks (Base Layer)
         if amount > 50000:
             risk_score += 40
             reasons.append("High transaction amount")
-        
+
         # In a real system, we'd check velocity (tx per min) via Cache/Redis
         # And IP geolocation mismatch
-        
+
         # AI Layer (Simulation of Anomaly Detection Model)
         # from apps.ai_engine.models import AnomalyDetector
         # score = AnomalyDetector.predict(user_history)
-        
+
         ai_confidence = 0.95
         if risk_score > 50:
             recommendation = "Reject"
@@ -722,12 +712,12 @@ class AdvancedPaymentService:
             recommendation = "Manual Review"
         else:
             recommendation = "Approve"
-            
+
         return {
-            'risk_score': risk_score, # 0-100
-            'recommendation': recommendation,
-            'reasons': reasons,
-            'ai_confidence': ai_confidence
+            "risk_score": risk_score,  # 0-100
+            "recommendation": recommendation,
+            "reasons": reasons,
+            "ai_confidence": ai_confidence,
         }
 
     @classmethod
@@ -739,5 +729,5 @@ class AdvancedPaymentService:
         # In production, use reportlab or weasyprint
         # pdf = SimpleDocTemplate(f"invoice_{payment_id}.pdf")
         # pdf.build([Paragraph(f"Invoice for {payment_id}", style)])
-        
+
         return f"/media/invoices/inv_{payment_id}.pdf"

@@ -10,28 +10,38 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('live_sessions', '0001_initial'),
+        ("live_sessions", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='livesession',
-            name='host',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hosted_sessions', to=settings.AUTH_USER_MODEL),
+            model_name="livesession",
+            name="host",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="hosted_sessions",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='sessionattendee',
-            name='session',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendees', to='live_sessions.livesession'),
+            model_name="sessionattendee",
+            name="session",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="attendees",
+                to="live_sessions.livesession",
+            ),
         ),
         migrations.AddField(
-            model_name='sessionattendee',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="sessionattendee",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='sessionattendee',
-            unique_together={('session', 'user')},
+            name="sessionattendee",
+            unique_together={("session", "user")},
         ),
     ]

@@ -1,6 +1,7 @@
 """
 Signals for the Payments app.
 """
+
 from django.dispatch import Signal
 
 # Signal sent when a payment is successfully completed

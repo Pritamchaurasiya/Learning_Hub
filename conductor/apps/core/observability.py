@@ -84,7 +84,7 @@ class Span:
         self.start_time = time.time()
         self._previous_span_id = _span_context.get()
         _span_context.set(self.span_id)
-        
+
         # Maintain span hierarchy stack
         current_stack = list(_span_stack_context.get())
         current_stack.append(self.span_id)
@@ -123,13 +123,17 @@ class Span:
         self.attributes.update(attributes)
         return self
 
-    def add_event(self, name: str, attributes: Optional[Dict[str, Any]] = None) -> "Span":
+    def add_event(
+        self, name: str, attributes: Optional[Dict[str, Any]] = None
+    ) -> "Span":
         """Record an in-span milestone event."""
-        self.events.append({
-            "name": name,
-            "timestamp": time.time(),
-            "attributes": attributes or {},
-        })
+        self.events.append(
+            {
+                "name": name,
+                "timestamp": time.time(),
+                "attributes": attributes or {},
+            }
+        )
         return self
 
     def record_exception(self, exception: Exception) -> "Span":
@@ -142,7 +146,9 @@ class Span:
                 "exception.type": type(exception).__name__,
                 "exception.message": str(exception),
                 "exception.stacktrace": "".join(
-                    traceback.format_exception(type(exception), exception, exception.__traceback__)
+                    traceback.format_exception(
+                        type(exception), exception, exception.__traceback__
+                    )
                 ),
             },
         )
@@ -193,7 +199,11 @@ class Span:
                 for k, v in self.attributes.items()
             ],
             "status": {
-                "code": 1 if self.status == SpanStatus.OK else (2 if self.status == SpanStatus.ERROR else 0),
+                "code": (
+                    1
+                    if self.status == SpanStatus.OK
+                    else (2 if self.status == SpanStatus.ERROR else 0)
+                ),
                 "message": self.status_description,
             },
         }
@@ -218,7 +228,9 @@ class ObservabilityService:
         return uuid.uuid4().hex[:16]
 
     @classmethod
-    def parse_traceparent(cls, header: Optional[str]) -> Tuple[Optional[str], Optional[str], bool]:
+    def parse_traceparent(
+        cls, header: Optional[str]
+    ) -> Tuple[Optional[str], Optional[str], bool]:
         """
         Parse standard W3C traceparent header: 00-{trace_id}-{parent_id}-{flags}
         Returns: (trace_id, parent_span_id, sampled)
@@ -238,7 +250,9 @@ class ObservabilityService:
         return trace_id, parent_id, sampled
 
     @classmethod
-    def format_traceparent(cls, trace_id: str, span_id: str, sampled: bool = True) -> str:
+    def format_traceparent(
+        cls, trace_id: str, span_id: str, sampled: bool = True
+    ) -> str:
         """Format W3C traceparent header."""
         flags = "01" if sampled else "00"
         return f"00-{trace_id:0>32}-{span_id:0>16}-{flags}"
@@ -309,7 +323,9 @@ class ObservabilityService:
         cls._recent_spans.clear()
 
     @classmethod
-    def log_error(cls, error: Exception, context: Optional[Dict[str, Any]] = None) -> None:
+    def log_error(
+        cls, error: Exception, context: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Log error correlated with active distributed trace ID."""
         tid = cls.get_trace_id()
         payload = {
@@ -336,9 +352,8 @@ class DistributedTracingMiddleware:
 
     def __call__(self, request):
         # 1. Parse or generate W3C TraceContext
-        header = (
-            request.headers.get("traceparent")
-            or request.META.get("HTTP_TRACEPARENT")
+        header = request.headers.get("traceparent") or request.META.get(
+            "HTTP_TRACEPARENT"
         )
         trace_id, parent_span_id, _ = ObservabilityService.parse_traceparent(header)
         if not trace_id:

@@ -8,94 +8,184 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Badge',
+            name="Badge",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('icon', models.CharField(default='🏅', help_text='Emoji or icon identifier', max_length=50)),
-                ('criteria_type', models.CharField(help_text="Type of action required (e.g., 'courses_completed')", max_length=50)),
-                ('criteria_value', models.PositiveIntegerField(help_text='Count required to earn')),
-                ('xp_reward', models.PositiveIntegerField(default=50)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                (
+                    "icon",
+                    models.CharField(
+                        default="🏅",
+                        help_text="Emoji or icon identifier",
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "criteria_type",
+                    models.CharField(
+                        help_text="Type of action required (e.g., 'courses_completed')",
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "criteria_value",
+                    models.PositiveIntegerField(help_text="Count required to earn"),
+                ),
+                ("xp_reward", models.PositiveIntegerField(default=50)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Guild',
+            name="Guild",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('emblem', models.CharField(default='🛡️', help_text='Emoji or Icon', max_length=20)),
-                ('total_xp', models.PositiveIntegerField(default=0)),
-                ('level', models.PositiveIntegerField(default=1)),
-                ('max_members', models.PositiveIntegerField(default=50)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "emblem",
+                    models.CharField(
+                        default="🛡️", help_text="Emoji or Icon", max_length=20
+                    ),
+                ),
+                ("total_xp", models.PositiveIntegerField(default=0)),
+                ("level", models.PositiveIntegerField(default=1)),
+                ("max_members", models.PositiveIntegerField(default=50)),
             ],
             options={
-                'ordering': ['-total_xp'],
+                "ordering": ["-total_xp"],
             },
         ),
         migrations.CreateModel(
-            name='GuildMembership',
+            name="GuildMembership",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('role', models.CharField(choices=[('leader', 'Leader'), ('elder', 'Elder'), ('member', 'Member')], default='member', max_length=20)),
-                ('contribution_xp', models.PositiveIntegerField(default=0, help_text='XP contributed to this guild')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "role",
+                    models.CharField(
+                        choices=[
+                            ("leader", "Leader"),
+                            ("elder", "Elder"),
+                            ("member", "Member"),
+                        ],
+                        default="member",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "contribution_xp",
+                    models.PositiveIntegerField(
+                        default=0, help_text="XP contributed to this guild"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Streak',
+            name="Streak",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('current_streak', models.PositiveIntegerField(default=0)),
-                ('longest_streak', models.PositiveIntegerField(default=0)),
-                ('last_activity_date', models.DateField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("current_streak", models.PositiveIntegerField(default=0)),
+                ("longest_streak", models.PositiveIntegerField(default=0)),
+                ("last_activity_date", models.DateField(blank=True, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='UserBadge',
+            name="UserBadge",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('earned_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("earned_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='UserXP',
+            name="UserXP",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('total_xp', models.PositiveIntegerField(default=0)),
-                ('weekly_xp', models.PositiveIntegerField(default=0)),
-                ('level', models.PositiveIntegerField(default=1)),
-                ('current_streak', models.PositiveIntegerField(default=0)),
-                ('last_activity_date', models.DateField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("total_xp", models.PositiveIntegerField(default=0)),
+                ("weekly_xp", models.PositiveIntegerField(default=0)),
+                ("level", models.PositiveIntegerField(default=1)),
+                ("current_streak", models.PositiveIntegerField(default=0)),
+                ("last_activity_date", models.DateField(blank=True, null=True)),
             ],
         ),
     ]

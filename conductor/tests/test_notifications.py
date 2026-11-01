@@ -26,7 +26,7 @@ class TestNotificationModel:
             title="Welcome!",
             message="Welcome to Learning Hub",
         )
-        
+
         assert notification.user == user
         assert notification.title == "Welcome!"
         assert notification.is_read is False
@@ -39,7 +39,7 @@ class TestNotificationModel:
             title="Test",
             message="Test message",
         )
-        
+
         assert user.email in str(notification)
 
     def test_notification_types(self, user):
@@ -65,7 +65,7 @@ class TestNotificationModel:
             title="Second",
             message="Second notification",
         )
-        
+
         notifications = list(Notification.objects.filter(user=user))
         # Most recent should be first
         assert str(notifications[0].id) == str(n2.id)
@@ -79,7 +79,7 @@ class TestNotificationModel:
             type=Notification.Type.ACHIEVEMENT,
             data={"badge_id": 1, "xp_earned": 50},
         )
-        
+
         assert notification.data["badge_id"] == 1
         assert notification.data["xp_earned"] == 50
 
@@ -90,11 +90,11 @@ class TestNotificationModel:
             title="Test",
             message="Test message",
         )
-        
+
         notification.is_read = True
         notification.read_at = timezone.now()
         notification.save()
-        
+
         notification.refresh_from_db()
         assert notification.is_read is True
         assert notification.read_at is not None
@@ -111,7 +111,7 @@ class TestDeviceTokenModel:
             token="fake-fcm-token-123",
             platform=DeviceToken.Platform.WEB,
         )
-        
+
         assert token.user == user
         assert token.is_active is True
 
@@ -122,7 +122,7 @@ class TestDeviceTokenModel:
             DeviceToken.Platform.IOS,
             DeviceToken.Platform.WEB,
         ]
-        
+
         for i, platform in enumerate(platforms):
             token = DeviceToken.objects.create(
                 user=user,
@@ -138,8 +138,9 @@ class TestDeviceTokenModel:
             token="same-token",
             platform=DeviceToken.Platform.WEB,
         )
-        
+
         from django.db import IntegrityError
+
         with pytest.raises(IntegrityError):
             DeviceToken.objects.create(
                 user=user,
@@ -164,15 +165,15 @@ class TestNotificationAPI:
             title="Test",
             message="Test message",
         )
-        
+
         response = authenticated_client.get("/api/v1/notifications/")
-        
+
         assert response.status_code == 200
 
     def test_list_notifications_unauthenticated(self, api_client):
         """Test unauthenticated users cannot list notifications."""
         response = api_client.get("/api/v1/notifications/")
-        
+
         assert response.status_code == 401
 
     def test_mark_notification_read(self, authenticated_client, user):
@@ -182,10 +183,10 @@ class TestNotificationAPI:
             title="Test",
             message="Test message",
         )
-        
+
         response = authenticated_client.post(
             f"/api/v1/notifications/{notification.id}/read/"
         )
-        
+
         # Either 200 or endpoint exists
         assert response.status_code in [200, 404, 405]

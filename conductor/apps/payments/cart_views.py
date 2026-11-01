@@ -27,7 +27,9 @@ def _get_or_create_cart(request) -> Cart:
         return cart
 
     # Guest session cart
-    session_id = request.headers.get("X-Session-ID") or request.query_params.get("session_id")
+    session_id = request.headers.get("X-Session-ID") or request.query_params.get(
+        "session_id"
+    )
     if not session_id:
         if not request.session.session_key:
             request.session.create()
@@ -120,11 +122,13 @@ def manage_cart_item(request, item_id):
                 status=status.HTTP_404_NOT_FOUND,
             )
         serializer = CartSerializer(cart, context={"request": request})
-        return Response({
-            "status": "success",
-            "message": "Item removed from cart.",
-            "data": serializer.data
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": "Item removed from cart.",
+                "data": serializer.data,
+            }
+        )
 
     item = CartItem.objects.filter(cart=cart, id=item_id).first()
     if not item:
@@ -190,11 +194,13 @@ def apply_cart_coupon(request):
     cart.save(update_fields=["coupon", "updated_at"])
 
     serializer = CartSerializer(cart, context={"request": request})
-    return Response({
-        "status": "success",
-        "message": f"Coupon '{coupon.code}' applied ({coupon.discount_percent}% off).",
-        "data": serializer.data,
-    })
+    return Response(
+        {
+            "status": "success",
+            "message": f"Coupon '{coupon.code}' applied ({coupon.discount_percent}% off).",
+            "data": serializer.data,
+        }
+    )
 
 
 @extend_schema(description="Initiate checkout and create payment order for the cart.")
@@ -208,10 +214,16 @@ def cart_checkout(request):
         course_id = request.data.get("course_id")
         if not course_id:
             return Response(
-                {"status": "error", "message": "Cart is empty. Add a course to checkout."},
+                {
+                    "status": "error",
+                    "message": "Cart is empty. Add a course to checkout.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        course = Course.objects.filter(id=course_id).first() or Course.objects.filter(slug=course_id).first()
+        course = (
+            Course.objects.filter(id=course_id).first()
+            or Course.objects.filter(slug=course_id).first()
+        )
         if not course:
             return Response(
                 {"status": "error", "message": f"Course '{course_id}' not found."},
@@ -250,8 +262,14 @@ def cart_checkout(request):
                 "currency": currency,
                 "gateway": gateway,
                 "status": "created",
-                "razorpay_order_id": gateway_order_id if gateway == "razorpay" else None,
-                "stripe_client_secret": f"pi_{uuid.uuid4().hex}_secret_{uuid.uuid4().hex[:16]}" if gateway == "stripe" else None,
+                "razorpay_order_id": (
+                    gateway_order_id if gateway == "razorpay" else None
+                ),
+                "stripe_client_secret": (
+                    f"pi_{uuid.uuid4().hex}_secret_{uuid.uuid4().hex[:16]}"
+                    if gateway == "stripe"
+                    else None
+                ),
                 "course_id": str(first_course.id) if first_course else None,
                 "total_items": cart.total_items,
             },

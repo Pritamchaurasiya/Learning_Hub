@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web3', '0001_initial'),
+        ("web3", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nftcertificate',
-            name='is_active',
+            model_name="nftcertificate",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='userprofileweb3',
-            name='is_active',
+            model_name="userprofileweb3",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
     ]

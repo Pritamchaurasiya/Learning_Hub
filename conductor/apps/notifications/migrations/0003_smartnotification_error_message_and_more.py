@@ -6,23 +6,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notifications', '0002_initial'),
+        ("notifications", "0002_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='smartnotification',
-            name='error_message',
-            field=models.TextField(blank=True, default=''),
+            model_name="smartnotification",
+            name="error_message",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='smartnotification',
-            name='retry_count',
+            model_name="smartnotification",
+            name="retry_count",
             field=models.PositiveSmallIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='smartnotification',
-            name='status',
-            field=models.CharField(choices=[('PENDING', 'Pending'), ('SENT', 'Sent'), ('FAILED', 'Failed')], default='PENDING', max_length=10),
+            model_name="smartnotification",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("PENDING", "Pending"),
+                    ("SENT", "Sent"),
+                    ("FAILED", "Failed"),
+                ],
+                default="PENDING",
+                max_length=10,
+            ),
         ),
     ]

@@ -12,4 +12,3 @@ class CoursesConfig(AppConfig):
 
     def ready(self):
         import apps.courses.signals  # noqa
-

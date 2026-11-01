@@ -13,12 +13,14 @@ print("=" * 80)
 print("LEARNING HUB JAVASCRIPT/TYPESCRIPT SDK DEVELOPMENT")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # Create JavaScript SDK Package Structure
@@ -27,12 +29,12 @@ log("Creating JavaScript SDK package structure...")
 
 # Create SDK directory structure
 js_dirs = [
-    'learning-hub-js-sdk',
-    'learning-hub-js-sdk/src',
-    'learning-hub-js-sdk/dist',
-    'learning-hub-js-sdk/tests',
-    'learning-hub-js-sdk/examples',
-    'learning-hub-js-sdk/docs'
+    "learning-hub-js-sdk",
+    "learning-hub-js-sdk/src",
+    "learning-hub-js-sdk/dist",
+    "learning-hub-js-sdk/tests",
+    "learning-hub-js-sdk/examples",
+    "learning-hub-js-sdk/docs",
 ]
 
 for dir_path in js_dirs:
@@ -45,7 +47,7 @@ for dir_path in js_dirs:
 log("Creating package configuration files...")
 
 # package.json
-package_json = '''{
+package_json = """{
   "name": "learning-hub-sdk",
   "version": "1.0.0",
   "description": "JavaScript/TypeScript SDK for Learning Hub API",
@@ -102,15 +104,15 @@ package_json = '''{
     "node": ">=14.0.0"
   }
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/package.json', 'w') as f:
+with open("learning-hub-js-sdk/package.json", "w") as f:
     f.write(package_json)
 
 log("  [OK] Created package.json")
 
 # tsconfig.json
-tsconfig_json = '''{
+tsconfig_json = """{
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
@@ -146,15 +148,15 @@ tsconfig_json = '''{
     "tests"
   ]
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/tsconfig.json', 'w') as f:
+with open("learning-hub-js-sdk/tsconfig.json", "w") as f:
     f.write(tsconfig_json)
 
 log("  [OK] Created tsconfig.json")
 
 # rollup.config.js
-rollup_config = '''import typescript from 'rollup-plugin-typescript2';
+rollup_config = """import typescript from 'rollup-plugin-typescript2';
 
 export default {
   input: 'src/index.ts',
@@ -178,15 +180,15 @@ export default {
   ],
   external: ['axios'],
 };
-'''
+"""
 
-with open('learning-hub-js-sdk/rollup.config.js', 'w') as f:
+with open("learning-hub-js-sdk/rollup.config.js", "w") as f:
     f.write(rollup_config)
 
 log("  [OK] Created rollup.config.js")
 
 # jest.config.js
-jest_config = '''module.exports = {
+jest_config = """module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
@@ -201,9 +203,9 @@ jest_config = '''module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
 };
-'''
+"""
 
-with open('learning-hub-js-sdk/jest.config.js', 'w') as f:
+with open("learning-hub-js-sdk/jest.config.js", "w") as f:
     f.write(jest_config)
 
 log("  [OK] Created jest.config.js")
@@ -214,7 +216,7 @@ log("  [OK] Created jest.config.js")
 log("Creating core SDK files...")
 
 # src/index.ts
-index_ts = '''/**
+index_ts = """/**
  * Learning Hub JavaScript/TypeScript SDK
  * 
  * A comprehensive SDK for the Learning Hub API, providing easy integration
@@ -246,15 +248,15 @@ export * from './types';
 
 // Version
 export const VERSION = '1.0.0';
-'''
+"""
 
-with open('learning-hub-js-sdk/src/index.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/index.ts", "w") as f:
     f.write(index_ts)
 
 log("  [OK] Created src/index.ts")
 
 # src/types.ts
-types_ts = '''/**
+types_ts = """/**
  * Learning Hub SDK Types
  */
 
@@ -380,15 +382,15 @@ export interface ClientConfig {
   password?: string;
   timeout?: number;
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/src/types.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/types.ts", "w") as f:
     f.write(types_ts)
 
 log("  [OK] Created src/types.ts")
 
 # src/exceptions.ts
-exceptions_ts = '''/**
+exceptions_ts = """/**
  * Learning Hub SDK Exceptions
  */
 
@@ -445,9 +447,9 @@ export class ServerError extends APIError {
     this.name = 'ServerError';
   }
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/src/exceptions.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/exceptions.ts", "w") as f:
     f.write(exceptions_ts)
 
 log("  [OK] Created src/exceptions.ts")
@@ -457,7 +459,7 @@ log("  [OK] Created src/exceptions.ts")
 # ============================================================================
 log("Creating authentication module...")
 
-auth_ts = '''/**
+auth_ts = """/**
  * Learning Hub SDK Authentication
  */
 
@@ -571,9 +573,9 @@ export class Auth {
     return this.accessToken!;
   }
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/src/auth.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/auth.ts", "w") as f:
     f.write(auth_ts)
 
 log("  [OK] Created src/auth.ts")
@@ -583,7 +585,7 @@ log("  [OK] Created src/auth.ts")
 # ============================================================================
 log("Creating data models...")
 
-models_ts = '''/**
+models_ts = """/**
  * Learning Hub SDK Data Models
  */
 
@@ -743,9 +745,9 @@ export class APIResponseWrapper<T> implements APIResponse<T> {
     return !!this.previous;
   }
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/src/models.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/models.ts", "w") as f:
     f.write(models_ts)
 
 log("  [OK] Created src/models.ts")
@@ -755,7 +757,7 @@ log("  [OK] Created src/models.ts")
 # ============================================================================
 log("Creating main client...")
 
-client_ts = '''/**
+client_ts = """/**
  * Learning Hub SDK Main Client
  */
 
@@ -1018,9 +1020,9 @@ export class LearningHubClient {
     return this.makeRequest('GET', '/health/');
   }
 }
-'''
+"""
 
-with open('learning-hub-js-sdk/src/client.ts', 'w') as f:
+with open("learning-hub-js-sdk/src/client.ts", "w") as f:
     f.write(client_ts)
 
 log("  [OK] Created src/client.ts")
@@ -1031,7 +1033,7 @@ log("  [OK] Created src/client.ts")
 log("Creating documentation...")
 
 # README.md
-readme_md = '''# Learning Hub JavaScript/TypeScript SDK
+readme_md = """# Learning Hub JavaScript/TypeScript SDK
 
 A comprehensive JavaScript/TypeScript SDK for the Learning Hub API, providing easy integration with authentication, course management, user management, and more.
 
@@ -1308,9 +1310,9 @@ This SDK is licensed under the MIT License. See the LICENSE file for details.
 ## Support
 
 For support, please contact support@learninghub.com or create an issue on GitHub.
-'''
+"""
 
-with open('learning-hub-js-sdk/README.md', 'w') as f:
+with open("learning-hub-js-sdk/README.md", "w") as f:
     f.write(readme_md)
 
 log("  [OK] Created README.md")
@@ -1321,7 +1323,7 @@ log("  [OK] Created README.md")
 log("Creating examples...")
 
 # quick-start.ts
-quick_start_ts = '''/**
+quick_start_ts = """/**
  * Quick Start Example for Learning Hub JavaScript/TypeScript SDK
  */
 
@@ -1384,15 +1386,15 @@ async function main() {
 }
 
 main();
-'''
+"""
 
-with open('learning-hub-js-sdk/examples/quick-start.ts', 'w') as f:
+with open("learning-hub-js-sdk/examples/quick-start.ts", "w") as f:
     f.write(quick_start_ts)
 
 log("  [OK] Created examples/quick-start.ts")
 
 # browser-example.html
-browser_example = '''<!DOCTYPE html>
+browser_example = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1631,9 +1633,9 @@ browser_example = '''<!DOCTYPE html>
     </script>
 </body>
 </html>
-'''
+"""
 
-with open('learning-hub-js-sdk/examples/browser-example.html', 'w') as f:
+with open("learning-hub-js-sdk/examples/browser-example.html", "w") as f:
     f.write(browser_example)
 
 log("  [OK] Created examples/browser-example.html")

@@ -11,306 +11,682 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Challenge',
+            name="Challenge",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('challenge_type', models.CharField(choices=[('daily', 'Daily Quest'), ('weekly', 'Weekly Challenge'), ('monthly', 'Monthly Challenge'), ('event', 'Special Event'), ('learning', 'Learning Sprint')], max_length=20)),
-                ('difficulty', models.CharField(choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard'), ('legendary', 'Legendary')], default='medium', max_length=20)),
-                ('xp_reward', models.PositiveIntegerField(default=100)),
-                ('requirements', models.JSONField(default=dict, help_text='\n        Example: {"action": "lesson_complete", "count": 5, "course_id": null}\n    ')),
-                ('starts_at', models.DateTimeField()),
-                ('ends_at', models.DateTimeField()),
-                ('is_active', models.BooleanField(default=True)),
-                ('participant_count', models.PositiveIntegerField(default=0)),
-                ('completion_count', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                (
+                    "challenge_type",
+                    models.CharField(
+                        choices=[
+                            ("daily", "Daily Quest"),
+                            ("weekly", "Weekly Challenge"),
+                            ("monthly", "Monthly Challenge"),
+                            ("event", "Special Event"),
+                            ("learning", "Learning Sprint"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "difficulty",
+                    models.CharField(
+                        choices=[
+                            ("easy", "Easy"),
+                            ("medium", "Medium"),
+                            ("hard", "Hard"),
+                            ("legendary", "Legendary"),
+                        ],
+                        default="medium",
+                        max_length=20,
+                    ),
+                ),
+                ("xp_reward", models.PositiveIntegerField(default=100)),
+                (
+                    "requirements",
+                    models.JSONField(
+                        default=dict,
+                        help_text='\n        Example: {"action": "lesson_complete", "count": 5, "course_id": null}\n    ',
+                    ),
+                ),
+                ("starts_at", models.DateTimeField()),
+                ("ends_at", models.DateTimeField()),
+                ("is_active", models.BooleanField(default=True)),
+                ("participant_count", models.PositiveIntegerField(default=0)),
+                ("completion_count", models.PositiveIntegerField(default=0)),
             ],
             options={
-                'db_table': 'challenges',
-                'ordering': ['-starts_at'],
+                "db_table": "challenges",
+                "ordering": ["-starts_at"],
             },
         ),
         migrations.CreateModel(
-            name='ChallengeParticipant',
+            name="ChallengeParticipant",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('progress', models.PositiveIntegerField(default=0, help_text='Current progress count')),
-                ('is_completed', models.BooleanField(default=False)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "progress",
+                    models.PositiveIntegerField(
+                        default=0, help_text="Current progress count"
+                    ),
+                ),
+                ("is_completed", models.BooleanField(default=False)),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'challenge_participants',
+                "db_table": "challenge_participants",
             },
         ),
         migrations.CreateModel(
-            name='CourseEmbedding',
+            name="CourseEmbedding",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('object_id', models.PositiveIntegerField()),
-                ('chunk_text', models.TextField(help_text='Text segment used for embedding')),
-                ('embedding', models.JSONField(blank=True, help_text='Semantic Vector', null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("object_id", models.PositiveIntegerField()),
+                (
+                    "chunk_text",
+                    models.TextField(help_text="Text segment used for embedding"),
+                ),
+                (
+                    "embedding",
+                    models.JSONField(
+                        blank=True, help_text="Semantic Vector", null=True
+                    ),
+                ),
             ],
             options={
-                'db_table': 'course_embeddings',
+                "db_table": "course_embeddings",
             },
         ),
         migrations.CreateModel(
-            name='HumanPreference',
+            name="HumanPreference",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('prompt', models.TextField(help_text='The context or question posed to the AI')),
-                ('chosen', models.TextField(help_text='The AI generation that the user preferred (Thumbs Up)')),
-                ('rejected', models.TextField(help_text='The AI generation that the user rejected (Thumbs Down)')),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('applied_to_dpo', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "prompt",
+                    models.TextField(
+                        help_text="The context or question posed to the AI"
+                    ),
+                ),
+                (
+                    "chosen",
+                    models.TextField(
+                        help_text="The AI generation that the user preferred (Thumbs Up)"
+                    ),
+                ),
+                (
+                    "rejected",
+                    models.TextField(
+                        help_text="The AI generation that the user rejected (Thumbs Down)"
+                    ),
+                ),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                ("applied_to_dpo", models.BooleanField(default=False)),
             ],
             options={
-                'db_table': 'ai_human_preferences',
-                'ordering': ['-created_at'],
+                "db_table": "ai_human_preferences",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='LearningInsight',
+            name="LearningInsight",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('engagement_score', models.FloatField(default=0.0, help_text='Overall engagement level')),
-                ('consistency_score', models.FloatField(default=0.0, help_text='How regularly user studies')),
-                ('completion_rate', models.FloatField(default=0.0, help_text='Lessons completed vs started')),
-                ('preferred_time', models.CharField(blank=True, help_text='morning/afternoon/evening/night', max_length=20)),
-                ('preferred_duration', models.PositiveIntegerField(default=30, help_text='Avg session length in minutes')),
-                ('learning_velocity', models.FloatField(default=1.0, help_text='Speed relative to average')),
-                ('predicted_topics', models.JSONField(default=list, help_text='Topics user might enjoy')),
-                ('strength_areas', models.JSONField(default=list, help_text="User's strong subjects")),
-                ('improvement_areas', models.JSONField(default=list, help_text='Areas needing work')),
-                ('burnout_risk', models.FloatField(default=0.0, help_text='Risk of user disengaging')),
-                ('ai_narrative', models.TextField(blank=True, default='', help_text='AI-generated summary of learning patterns')),
-                ('total_learning_hours', models.FloatField(default=0.0)),
-                ('weekly_average_hours', models.FloatField(default=0.0)),
-                ('last_analyzed_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "engagement_score",
+                    models.FloatField(
+                        default=0.0, help_text="Overall engagement level"
+                    ),
+                ),
+                (
+                    "consistency_score",
+                    models.FloatField(
+                        default=0.0, help_text="How regularly user studies"
+                    ),
+                ),
+                (
+                    "completion_rate",
+                    models.FloatField(
+                        default=0.0, help_text="Lessons completed vs started"
+                    ),
+                ),
+                (
+                    "preferred_time",
+                    models.CharField(
+                        blank=True,
+                        help_text="morning/afternoon/evening/night",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "preferred_duration",
+                    models.PositiveIntegerField(
+                        default=30, help_text="Avg session length in minutes"
+                    ),
+                ),
+                (
+                    "learning_velocity",
+                    models.FloatField(
+                        default=1.0, help_text="Speed relative to average"
+                    ),
+                ),
+                (
+                    "predicted_topics",
+                    models.JSONField(default=list, help_text="Topics user might enjoy"),
+                ),
+                (
+                    "strength_areas",
+                    models.JSONField(default=list, help_text="User's strong subjects"),
+                ),
+                (
+                    "improvement_areas",
+                    models.JSONField(default=list, help_text="Areas needing work"),
+                ),
+                (
+                    "burnout_risk",
+                    models.FloatField(
+                        default=0.0, help_text="Risk of user disengaging"
+                    ),
+                ),
+                (
+                    "ai_narrative",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="AI-generated summary of learning patterns",
+                    ),
+                ),
+                ("total_learning_hours", models.FloatField(default=0.0)),
+                ("weekly_average_hours", models.FloatField(default=0.0)),
+                ("last_analyzed_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'learning_insights',
+                "db_table": "learning_insights",
             },
         ),
         migrations.CreateModel(
-            name='LearningSchedule',
+            name="LearningSchedule",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('week_start_date', models.DateField()),
-                ('days_json', models.JSONField(default=dict)),
-                ('goal', models.CharField(help_text='Goal for this week', max_length=255)),
-                ('is_active', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("week_start_date", models.DateField()),
+                ("days_json", models.JSONField(default=dict)),
+                (
+                    "goal",
+                    models.CharField(help_text="Goal for this week", max_length=255),
+                ),
+                ("is_active", models.BooleanField(default=True)),
             ],
             options={
-                'db_table': 'learning_schedules',
-                'ordering': ['-week_start_date'],
+                "db_table": "learning_schedules",
+                "ordering": ["-week_start_date"],
             },
         ),
         migrations.CreateModel(
-            name='ModuleProgress',
+            name="ModuleProgress",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('module_slug', models.CharField(max_length=100)),
-                ('is_completed', models.BooleanField(default=False)),
-                ('quiz_passed', models.BooleanField(default=False)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("module_slug", models.CharField(max_length=100)),
+                ("is_completed", models.BooleanField(default=False)),
+                ("quiz_passed", models.BooleanField(default=False)),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'module_progress',
+                "db_table": "module_progress",
             },
         ),
         migrations.CreateModel(
-            name='QuizChoice',
+            name="QuizChoice",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('text', models.CharField(max_length=255)),
-                ('is_correct', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("text", models.CharField(max_length=255)),
+                ("is_correct", models.BooleanField(default=False)),
             ],
             options={
-                'db_table': 'quiz_choices',
+                "db_table": "quiz_choices",
             },
         ),
         migrations.CreateModel(
-            name='QuizQuestion',
+            name="QuizQuestion",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('text', models.TextField()),
-                ('order', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("text", models.TextField()),
+                ("order", models.PositiveIntegerField(default=0)),
             ],
             options={
-                'db_table': 'research_quiz_questions',
-                'ordering': ['order'],
+                "db_table": "research_quiz_questions",
+                "ordering": ["order"],
             },
         ),
         migrations.CreateModel(
-            name='RemedialPlan',
+            name="RemedialPlan",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('module_slug', models.CharField(max_length=100)),
-                ('root_cause_analysis', models.TextField(help_text='AI Analysis of weak areas')),
-                ('suggested_actions', models.JSONField(default=list)),
-                ('is_resolved', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("module_slug", models.CharField(max_length=100)),
+                (
+                    "root_cause_analysis",
+                    models.TextField(help_text="AI Analysis of weak areas"),
+                ),
+                ("suggested_actions", models.JSONField(default=list)),
+                ("is_resolved", models.BooleanField(default=False)),
             ],
             options={
-                'db_table': 'remedial_plans',
-                'ordering': ['-created_at'],
+                "db_table": "remedial_plans",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='ResearchQuiz',
+            name="ResearchQuiz",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('module_slug', models.CharField(max_length=100, unique=True)),
-                ('title', models.CharField(max_length=200)),
-                ('xp_reward', models.PositiveIntegerField(default=50)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("module_slug", models.CharField(max_length=100, unique=True)),
+                ("title", models.CharField(max_length=200)),
+                ("xp_reward", models.PositiveIntegerField(default=50)),
             ],
             options={
-                'verbose_name_plural': 'Research Quizzes',
-                'db_table': 'research_quizzes',
+                "verbose_name_plural": "Research Quizzes",
+                "db_table": "research_quizzes",
             },
         ),
         migrations.CreateModel(
-            name='SemanticCache',
+            name="SemanticCache",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('query_text', models.TextField(help_text='The exact prompt or query asked by the user')),
-                ('response_payload', models.JSONField(help_text='The structured JSON or text response from the LLM')),
-                ('query_embedding', models.JSONField(blank=True, help_text='Semantic Vector of the query', null=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "query_text",
+                    models.TextField(
+                        help_text="The exact prompt or query asked by the user"
+                    ),
+                ),
+                (
+                    "response_payload",
+                    models.JSONField(
+                        help_text="The structured JSON or text response from the LLM"
+                    ),
+                ),
+                (
+                    "query_embedding",
+                    models.JSONField(
+                        blank=True, help_text="Semantic Vector of the query", null=True
+                    ),
+                ),
             ],
             options={
-                'db_table': 'semantic_cache',
+                "db_table": "semantic_cache",
             },
         ),
         migrations.CreateModel(
-            name='UserBehavior',
+            name="UserBehavior",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('behavior_type', models.CharField(choices=[('course_view', 'Course Viewed'), ('course_click', 'Course Clicked'), ('search', 'Search Performed'), ('category_filter', 'Category Filtered'), ('difficulty_filter', 'Difficulty Filtered'), ('price_filter', 'Price Filtered'), ('enroll', 'Course Enrolled'), ('wishlist', 'Added to Wishlist'), ('review_view', 'Reviews Viewed'), ('instructor_view', 'Instructor Profile Viewed'), ('time_spent', 'Time Spent on Page')], max_length=50)),
-                ('value', models.CharField(blank=True, help_text='Search query or filter value', max_length=255)),
-                ('duration_seconds', models.PositiveIntegerField(default=0, help_text='Time spent on action')),
-                ('source_page', models.CharField(blank=True, help_text='Page where action originated', max_length=100)),
-                ('device_type', models.CharField(blank=True, max_length=20)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "behavior_type",
+                    models.CharField(
+                        choices=[
+                            ("course_view", "Course Viewed"),
+                            ("course_click", "Course Clicked"),
+                            ("search", "Search Performed"),
+                            ("category_filter", "Category Filtered"),
+                            ("difficulty_filter", "Difficulty Filtered"),
+                            ("price_filter", "Price Filtered"),
+                            ("enroll", "Course Enrolled"),
+                            ("wishlist", "Added to Wishlist"),
+                            ("review_view", "Reviews Viewed"),
+                            ("instructor_view", "Instructor Profile Viewed"),
+                            ("time_spent", "Time Spent on Page"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "value",
+                    models.CharField(
+                        blank=True,
+                        help_text="Search query or filter value",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "duration_seconds",
+                    models.PositiveIntegerField(
+                        default=0, help_text="Time spent on action"
+                    ),
+                ),
+                (
+                    "source_page",
+                    models.CharField(
+                        blank=True,
+                        help_text="Page where action originated",
+                        max_length=100,
+                    ),
+                ),
+                ("device_type", models.CharField(blank=True, max_length=20)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
             ],
             options={
-                'db_table': 'user_behaviors',
-                'ordering': ['-created_at'],
+                "db_table": "user_behaviors",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UserEngagement',
+            name="UserEngagement",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('date', models.DateField(default=django.utils.timezone.now)),
-                ('total_actions', models.PositiveIntegerField(default=0)),
-                ('learning_actions', models.PositiveIntegerField(default=0)),
-                ('social_actions', models.PositiveIntegerField(default=0)),
-                ('last_activity', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("date", models.DateField(default=django.utils.timezone.now)),
+                ("total_actions", models.PositiveIntegerField(default=0)),
+                ("learning_actions", models.PositiveIntegerField(default=0)),
+                ("social_actions", models.PositiveIntegerField(default=0)),
+                ("last_activity", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'ai_user_engagement',
+                "db_table": "ai_user_engagement",
             },
         ),
         migrations.CreateModel(
-            name='UserPreferences',
+            name="UserPreferences",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('preferred_difficulty', models.CharField(default='intermediate', max_length=20)),
-                ('preferred_format', models.CharField(default='video', max_length=20)),
-                ('preferred_duration', models.PositiveIntegerField(default=30)),
-                ('adaptation_frequency', models.CharField(default='moderate', max_length=20)),
-                ('difficulty_adjustment', models.CharField(default='gradual', max_length=20)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "preferred_difficulty",
+                    models.CharField(default="intermediate", max_length=20),
+                ),
+                ("preferred_format", models.CharField(default="video", max_length=20)),
+                ("preferred_duration", models.PositiveIntegerField(default=30)),
+                (
+                    "adaptation_frequency",
+                    models.CharField(default="moderate", max_length=20),
+                ),
+                (
+                    "difficulty_adjustment",
+                    models.CharField(default="gradual", max_length=20),
+                ),
             ],
             options={
-                'db_table': 'ai_user_preferences',
+                "db_table": "ai_user_preferences",
             },
         ),
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('lessons_completed', models.PositiveIntegerField(default=0)),
-                ('quizzes_passed', models.PositiveIntegerField(default=0)),
-                ('courses_enrolled', models.PositiveIntegerField(default=0)),
-                ('average_quiz_score', models.FloatField(default=0.0)),
-                ('learning_style', models.CharField(default='visual', max_length=20)),
-                ('learning_velocity', models.CharField(default='normal', max_length=20)),
-                ('engagement_score', models.FloatField(default=0.5)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("lessons_completed", models.PositiveIntegerField(default=0)),
+                ("quizzes_passed", models.PositiveIntegerField(default=0)),
+                ("courses_enrolled", models.PositiveIntegerField(default=0)),
+                ("average_quiz_score", models.FloatField(default=0.0)),
+                ("learning_style", models.CharField(default="visual", max_length=20)),
+                (
+                    "learning_velocity",
+                    models.CharField(default="normal", max_length=20),
+                ),
+                ("engagement_score", models.FloatField(default=0.5)),
             ],
             options={
-                'db_table': 'ai_user_profiles',
+                "db_table": "ai_user_profiles",
             },
         ),
         migrations.CreateModel(
-            name='ActivityLog',
+            name="ActivityLog",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('action', models.CharField(choices=[('lesson_view', 'Lesson Viewed'), ('lesson_complete', 'Lesson Completed'), ('quiz_start', 'Quiz Started'), ('quiz_complete', 'Quiz Completed'), ('code_submit', 'Code Submitted'), ('code_run', 'Code Run'), ('ai_question', 'AI Question Asked'), ('search', 'Search Performed'), ('note_create', 'Note Created'), ('bookmark', 'Bookmark Added'), ('session_start', 'Session Started'), ('session_end', 'Session Ended')], max_length=50)),
-                ('object_id', models.PositiveIntegerField(blank=True, null=True)),
-                ('session_id', models.CharField(blank=True, help_text='Browser/App session ID', max_length=64)),
-                ('duration_seconds', models.PositiveIntegerField(default=0, help_text='Time spent on activity')),
-                ('metadata', models.JSONField(blank=True, default=dict, help_text='Additional context')),
-                ('device_type', models.CharField(blank=True, max_length=20)),
-                ('content_type', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("lesson_view", "Lesson Viewed"),
+                            ("lesson_complete", "Lesson Completed"),
+                            ("quiz_start", "Quiz Started"),
+                            ("quiz_complete", "Quiz Completed"),
+                            ("code_submit", "Code Submitted"),
+                            ("code_run", "Code Run"),
+                            ("ai_question", "AI Question Asked"),
+                            ("search", "Search Performed"),
+                            ("note_create", "Note Created"),
+                            ("bookmark", "Bookmark Added"),
+                            ("session_start", "Session Started"),
+                            ("session_end", "Session Ended"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("object_id", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "session_id",
+                    models.CharField(
+                        blank=True, help_text="Browser/App session ID", max_length=64
+                    ),
+                ),
+                (
+                    "duration_seconds",
+                    models.PositiveIntegerField(
+                        default=0, help_text="Time spent on activity"
+                    ),
+                ),
+                (
+                    "metadata",
+                    models.JSONField(
+                        blank=True, default=dict, help_text="Additional context"
+                    ),
+                ),
+                ("device_type", models.CharField(blank=True, max_length=20)),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contenttypes.contenttype",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'activity_logs',
-                'ordering': ['-created_at'],
+                "db_table": "activity_logs",
+                "ordering": ["-created_at"],
             },
         ),
     ]

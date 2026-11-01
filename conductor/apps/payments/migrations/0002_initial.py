@@ -10,27 +10,39 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('payments', '0001_initial'),
+        ("payments", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payment',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to=settings.AUTH_USER_MODEL),
+            model_name="payment",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="payments",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='subscription', to=settings.AUTH_USER_MODEL),
+            model_name="subscription",
+            name="user",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subscription",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['status', 'created_at'], name='payments_pa_status_343680_idx'),
+            model_name="payment",
+            index=models.Index(
+                fields=["status", "created_at"], name="payments_pa_status_343680_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['gateway_payment_id'], name='payments_pa_gateway_9ebf66_idx'),
+            model_name="payment",
+            index=models.Index(
+                fields=["gateway_payment_id"], name="payments_pa_gateway_9ebf66_idx"
+            ),
         ),
     ]

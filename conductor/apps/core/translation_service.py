@@ -1,14 +1,14 @@
-
 import logging
 from apps.ai_engine.ai_client import AIClient
 
 logger = logging.getLogger(__name__)
 
+
 class TranslationService:
     """
     Service for AI-powered content translation.
     """
-    
+
     @staticmethod
     def translate_text(text: str, target_language: str) -> str:
         """
@@ -37,15 +37,14 @@ class TranslationService:
             Text to Translate:
             {text}
             """
-            
+
             response = client.models.generate_content(
-                model='gemini-1.5-flash', # Fast model is sufficient
-                contents=prompt
+                model="gemini-1.5-flash", contents=prompt  # Fast model is sufficient
             )
 
             if response.text:
                 return response.text.strip()
-            
+
             return text
 
         except Exception as e:
@@ -61,37 +60,49 @@ class TranslationService:
         to avoid destroying the original data.
         """
         from apps.courses.models import Course
-        
+
         try:
             course = Course.objects.get(id=course_id)
             logger.info(f"Translating Course '{course.title}' to {target_language}...")
-            
+
             translated_data = {
                 "course_id": course.id,
                 "language": target_language,
-                "title": TranslationService.translate_text(course.title, target_language),
-                "description": TranslationService.translate_text(course.description, target_language),
-                "modules": []
+                "title": TranslationService.translate_text(
+                    course.title, target_language
+                ),
+                "description": TranslationService.translate_text(
+                    course.description, target_language
+                ),
+                "modules": [],
             }
-            
+
             for module in course.modules.all():
                 m_data = {
-                    "title": TranslationService.translate_text(module.title, target_language),
-                    "description": TranslationService.translate_text(module.description, target_language),
-                    "lessons": []
+                    "title": TranslationService.translate_text(
+                        module.title, target_language
+                    ),
+                    "description": TranslationService.translate_text(
+                        module.description, target_language
+                    ),
+                    "lessons": [],
                 }
-                
+
                 for lesson in module.lessons.all():
                     l_data = {
-                        "title": TranslationService.translate_text(lesson.title, target_language),
-                        "content": TranslationService.translate_text(lesson.text_content, target_language)
+                        "title": TranslationService.translate_text(
+                            lesson.title, target_language
+                        ),
+                        "content": TranslationService.translate_text(
+                            lesson.text_content, target_language
+                        ),
                     }
                     m_data["lessons"].append(l_data)
-                    
+
                 translated_data["modules"].append(m_data)
-                
+
             return translated_data
-            
+
         except Exception as e:
             logger.error(f"Course Translation failed: {e}")
             return None

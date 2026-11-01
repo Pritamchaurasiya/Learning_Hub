@@ -9,7 +9,7 @@ from django.contrib.postgres.operations import TrigramExtension
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0006_course_idx_course_featured_and_more'),
+        ("courses", "0006_course_idx_course_featured_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -17,15 +17,27 @@ class Migration(migrations.Migration):
         # Enable pg_trgm extension for GIN trigram indexes
         TrigramExtension(),
         migrations.AddIndex(
-            model_name='course',
-            index=django.contrib.postgres.indexes.GinIndex(fields=['title', 'description', 'short_description'], name='idx_course_fts', opclasses=['gin_trgm_ops', 'gin_trgm_ops', 'gin_trgm_ops']),
+            model_name="course",
+            index=django.contrib.postgres.indexes.GinIndex(
+                fields=["title", "description", "short_description"],
+                name="idx_course_fts",
+                opclasses=["gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops"],
+            ),
         ),
         migrations.AddIndex(
-            model_name='lesson',
-            index=django.contrib.postgres.indexes.GinIndex(fields=['title', 'text_content'], name='idx_lesson_fts', opclasses=['gin_trgm_ops', 'gin_trgm_ops']),
+            model_name="lesson",
+            index=django.contrib.postgres.indexes.GinIndex(
+                fields=["title", "text_content"],
+                name="idx_lesson_fts",
+                opclasses=["gin_trgm_ops", "gin_trgm_ops"],
+            ),
         ),
         migrations.AddIndex(
-            model_name='module',
-            index=django.contrib.postgres.indexes.GinIndex(fields=['title', 'description'], name='idx_module_fts', opclasses=['gin_trgm_ops', 'gin_trgm_ops']),
+            model_name="module",
+            index=django.contrib.postgres.indexes.GinIndex(
+                fields=["title", "description"],
+                name="idx_module_fts",
+                opclasses=["gin_trgm_ops", "gin_trgm_ops"],
+            ),
         ),
     ]

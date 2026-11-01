@@ -34,9 +34,15 @@ app.conf.update(
     task_queues={
         "default": {"exchange": "default", "routing_key": "default"},
         "ai_queue": {"exchange": "ai_queue", "routing_key": "ai_queue"},
-        "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
+        "ai_computation": {
+            "exchange": "ai_computation",
+            "routing_key": "ai_computation",
+        },
         "payment_queue": {"exchange": "payment_queue", "routing_key": "payment_queue"},
-        "notifications_queue": {"exchange": "notifications_queue", "routing_key": "notifications_queue"},
+        "notifications_queue": {
+            "exchange": "notifications_queue",
+            "routing_key": "notifications_queue",
+        },
     },
     task_routes={
         "apps.ai_engine.tasks.*": {"queue": "ai_queue"},

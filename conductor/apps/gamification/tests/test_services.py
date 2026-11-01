@@ -6,6 +6,7 @@ from apps.gamification.models import UserXP, Streak
 from apps.gamification.services import GamificationService
 import hashlib
 
+
 @pytest.mark.django_db
 class TestGamificationService:
 
@@ -19,41 +20,41 @@ class TestGamificationService:
         xp_init.save()
 
         result = GamificationService.award_xp(test_user, 50, reason="test_reason")
-        
-        assert result['awarded'] == 50
-        assert result['leveled_up'] is False
-        
+
+        assert result["awarded"] == 50
+        assert result["leveled_up"] is False
+
         xp_obj = UserXP.objects.get(user=test_user)
         assert xp_obj.total_xp == 50
         assert xp_obj.level == 1
-        
+
         # Award more to trigger level up (100 XP per level)
         result_2 = GamificationService.award_xp(test_user, 60, reason="test_reason_2")
-        assert result_2['awarded'] == 60
-        assert result_2['leveled_up'] is True
-        
+        assert result_2["awarded"] == 60
+        assert result_2["leveled_up"] is True
+
         xp_obj.refresh_from_db()
         assert xp_obj.total_xp == 110
         assert xp_obj.level == 2
 
-    @patch('apps.gamification.services.cache.add')
+    @patch("apps.gamification.services.cache.add")
     def test_award_xp_anti_cheat(self, mock_cache_add, test_user):
         """Test that anti-cheat prevents rapid XP farming for the same action."""
         reason = "lesson_complete"
-        
+
         # Ensure UserXP exists (created by signal) but has 0 XP
         xp_obj, _ = UserXP.objects.get_or_create(user=test_user)
         xp_obj.total_xp = 0
         xp_obj.save()
-        
+
         # Mock cache.add to return False (rate limited/already present)
         mock_cache_add.return_value = False
-        
+
         result = GamificationService.award_xp(test_user, 50, reason=reason)
-        
-        assert result['blocked'] is True
-        assert result['awarded'] == 0
-        
+
+        assert result["blocked"] is True
+        assert result["awarded"] == 0
+
         # Ensure XP remained 0
         xp_obj.refresh_from_db()
         assert xp_obj.total_xp == 0
@@ -65,15 +66,15 @@ class TestGamificationService:
         streak, _ = Streak.objects.update_or_create(
             user=test_user,
             defaults={
-                'current_streak': 5,
-                'longest_streak': 5,
-                'last_activity_date': yesterday.date()
-            }
+                "current_streak": 5,
+                "longest_streak": 5,
+                "last_activity_date": yesterday.date(),
+            },
         )
-        
+
         # Update streak for today
         GamificationService.check_streaks(test_user)
-        
+
         streak.refresh_from_db()
         assert streak.current_streak == 6
         assert streak.longest_streak == 6
@@ -85,14 +86,14 @@ class TestGamificationService:
         streak, _ = Streak.objects.update_or_create(
             user=test_user,
             defaults={
-                'current_streak': 5,
-                'longest_streak': 5,
-                'last_activity_date': two_days_ago.date()
-            }
+                "current_streak": 5,
+                "longest_streak": 5,
+                "last_activity_date": two_days_ago.date(),
+            },
         )
-        
+
         GamificationService.check_streaks(test_user)
-        
+
         streak.refresh_from_db()
         assert streak.current_streak == 1  # Reset to 1 for today's activity
         assert streak.longest_streak == 5  # Preserved

@@ -1,6 +1,7 @@
 import sys
-content = open('c:\\Users\\shiva\\Desktop\\windows_app\\conductor\\conftest.py').read()
-mock_code = '''
+
+content = open("c:\\Users\\shiva\\Desktop\\windows_app\\conductor\\conftest.py").read()
+mock_code = """
 @pytest.fixture(autouse=True)
 def mock_genai_client(monkeypatch):
     import google.genai as genai
@@ -21,10 +22,12 @@ def mock_genai_client(monkeypatch):
         def __init__(self, *args, **kwargs):
             self.models = self.Models()
     monkeypatch.setattr(genai, "Client", MockClient)
-'''
-if 'mock_genai_client' not in content:
-    with open('c:\\Users\\shiva\\Desktop\\windows_app\\conductor\\conftest.py', 'a') as f:
-        f.write('\n' + mock_code + '\n')
-    print('Mock added')
+"""
+if "mock_genai_client" not in content:
+    with open(
+        "c:\\Users\\shiva\\Desktop\\windows_app\\conductor\\conftest.py", "a"
+    ) as f:
+        f.write("\n" + mock_code + "\n")
+    print("Mock added")
 else:
-    print('Mock already present')
+    print("Mock already present")

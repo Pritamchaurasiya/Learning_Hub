@@ -10,71 +10,110 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('courses', '0002_initial'),
-        ('discussions', '0001_initial'),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("courses", "0002_initial"),
+        ("discussions", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='discussionreply',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='discussion_replies', to=settings.AUTH_USER_MODEL),
+            model_name="discussionreply",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="discussion_replies",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='discussionreply',
-            name='parent',
-            field=models.ForeignKey(blank=True, help_text='Parent reply for nested threaded discussions.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='nested_replies', to='discussions.discussionreply'),
+            model_name="discussionreply",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Parent reply for nested threaded discussions.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="nested_replies",
+                to="discussions.discussionreply",
+            ),
         ),
         migrations.AddField(
-            model_name='discussionthread',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='discussion_threads', to=settings.AUTH_USER_MODEL),
+            model_name="discussionthread",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="discussion_threads",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='discussionthread',
-            name='course',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='discussion_threads', to='courses.course'),
+            model_name="discussionthread",
+            name="course",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="discussion_threads",
+                to="courses.course",
+            ),
         ),
         migrations.AddField(
-            model_name='discussionreply',
-            name='thread',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='replies', to='discussions.discussionthread'),
+            model_name="discussionreply",
+            name="thread",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="replies",
+                to="discussions.discussionthread",
+            ),
         ),
         migrations.AddField(
-            model_name='discussionvote',
-            name='content_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
+            model_name="discussionvote",
+            name="content_type",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="contenttypes.contenttype",
+            ),
         ),
         migrations.AddField(
-            model_name='discussionvote',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="discussionvote",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='threadtag',
-            name='threads',
-            field=models.ManyToManyField(blank=True, related_name='tags', to='discussions.discussionthread'),
+            model_name="threadtag",
+            name="threads",
+            field=models.ManyToManyField(
+                blank=True, related_name="tags", to="discussions.discussionthread"
+            ),
         ),
         migrations.AddIndex(
-            model_name='discussionthread',
-            index=models.Index(fields=['course', '-created_at'], name='discussions_course__1294fc_idx'),
+            model_name="discussionthread",
+            index=models.Index(
+                fields=["course", "-created_at"], name="discussions_course__1294fc_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='discussionthread',
-            index=models.Index(fields=['author', '-created_at'], name='discussions_author__bdb7a7_idx'),
+            model_name="discussionthread",
+            index=models.Index(
+                fields=["author", "-created_at"], name="discussions_author__bdb7a7_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='discussionreply',
-            index=models.Index(fields=['thread', '-created_at'], name='discussions_thread__9f0a3b_idx'),
+            model_name="discussionreply",
+            index=models.Index(
+                fields=["thread", "-created_at"], name="discussions_thread__9f0a3b_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='discussionvote',
-            index=models.Index(fields=['user', 'content_type', 'object_id'], name='discussions_user_id_d040d7_idx'),
+            model_name="discussionvote",
+            index=models.Index(
+                fields=["user", "content_type", "object_id"],
+                name="discussions_user_id_d040d7_idx",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='discussionvote',
-            unique_together={('user', 'content_type', 'object_id')},
+            name="discussionvote",
+            unique_together={("user", "content_type", "object_id")},
         ),
     ]

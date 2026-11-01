@@ -5,7 +5,9 @@ import re
 def validate_hex_color(value: str):
     """Validates 3 or 6 hex digits color string, with optional leading #."""
     if not re.match(r"^#(?:[0-9a-fA-F]{3}){1,2}$", value):
-        raise ValidationError("Invalid hex color format. Expected format: #RRGGBB or #RGB.")
+        raise ValidationError(
+            "Invalid hex color format. Expected format: #RRGGBB or #RGB."
+        )
 
 
 def validate_highlight_text(value: str):
@@ -14,7 +16,9 @@ def validate_highlight_text(value: str):
     if not stripped:
         raise ValidationError("Highlight text cannot be empty.")
     if len(stripped) > 5000:
-        raise ValidationError("Highlight text exceeds maximum allowable length (5000 chars).")
+        raise ValidationError(
+            "Highlight text exceeds maximum allowable length (5000 chars)."
+        )
 
 
 def validate_progress_percentage(value: float):

@@ -59,7 +59,9 @@ class TestHeaderAndPathVersioning:
         assert version == "v2"
 
     def test_accept_header_negotiation(self):
-        req = self.factory.get("/api/courses/", HTTP_ACCEPT="application/json; version=2.0")
+        req = self.factory.get(
+            "/api/courses/", HTTP_ACCEPT="application/json; version=2.0"
+        )
         version = self.versioning.determine_version(req)
         assert version == "v2"
 

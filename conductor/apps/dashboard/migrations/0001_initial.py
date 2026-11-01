@@ -10,40 +10,86 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0001_initial'),
+        ("courses", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='VideoInteraction',
+            name="VideoInteraction",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('event_type', models.CharField(choices=[('play', 'Play'), ('pause', 'Pause'), ('seek', 'Seek'), ('complete', 'Complete'), ('heartbeat', 'Heartbeat')], max_length=20)),
-                ('video_timestamp', models.FloatField(help_text='Position in video (seconds)')),
-                ('real_timestamp', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[
+                            ("play", "Play"),
+                            ("pause", "Pause"),
+                            ("seek", "Seek"),
+                            ("complete", "Complete"),
+                            ("heartbeat", "Heartbeat"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "video_timestamp",
+                    models.FloatField(help_text="Position in video (seconds)"),
+                ),
+                ("real_timestamp", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'analytics_video_interactions',
+                "db_table": "analytics_video_interactions",
             },
         ),
         migrations.CreateModel(
-            name='LessonActivity',
+            name="LessonActivity",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('session_id', models.CharField(help_text='Client-generated unique ID for the viewing session', max_length=100)),
-                ('started_at', models.DateTimeField(auto_now_add=True)),
-                ('last_heartbeat', models.DateTimeField(auto_now=True)),
-                ('duration_seconds', models.PositiveIntegerField(default=0)),
-                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='activities', to='courses.lesson')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "session_id",
+                    models.CharField(
+                        help_text="Client-generated unique ID for the viewing session",
+                        max_length=100,
+                    ),
+                ),
+                ("started_at", models.DateTimeField(auto_now_add=True)),
+                ("last_heartbeat", models.DateTimeField(auto_now=True)),
+                ("duration_seconds", models.PositiveIntegerField(default=0)),
+                (
+                    "lesson",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="activities",
+                        to="courses.lesson",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'analytics_lesson_activity',
+                "db_table": "analytics_lesson_activity",
             },
         ),
     ]

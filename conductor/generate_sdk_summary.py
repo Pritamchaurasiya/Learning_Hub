@@ -13,12 +13,14 @@ print("=" * 80)
 print("SDK DEVELOPMENT SUMMARY REPORT")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # Generate SDK Development Summary
@@ -383,8 +385,10 @@ Developer Experience: EXCELLENT
 """
 
 # Save summary report
-summary_file = BASE_DIR / f'SDK_DEVELOPMENT_SUMMARY_{int(datetime.now().timestamp())}.md'
-with open(summary_file, 'w') as f:
+summary_file = (
+    BASE_DIR / f"SDK_DEVELOPMENT_SUMMARY_{int(datetime.now().timestamp())}.md"
+)
+with open(summary_file, "w") as f:
     f.write(summary_report)
 
 print(summary_report)

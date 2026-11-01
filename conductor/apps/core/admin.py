@@ -13,9 +13,22 @@ class AuditLogAdmin(admin.ModelAdmin):
     Tamper-proof: deletion and additions are strictly disabled.
     """
 
-    list_display = ["actor", "action", "resource", "severity", "ip_address", "created_at"]
+    list_display = [
+        "actor",
+        "action",
+        "resource",
+        "severity",
+        "ip_address",
+        "created_at",
+    ]
     list_filter = ["severity", "action", "created_at"]
-    search_fields = ["resource", "details", "actor__username", "actor__email", "ip_address"]
+    search_fields = [
+        "resource",
+        "details",
+        "actor__username",
+        "actor__email",
+        "ip_address",
+    ]
     list_select_related = ["actor"]
     autocomplete_fields = ["actor"]
     date_hierarchy = "created_at"

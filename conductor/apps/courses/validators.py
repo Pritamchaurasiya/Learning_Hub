@@ -15,7 +15,9 @@ def validate_course_pricing(price: Decimal, is_free: bool) -> None:
             raise ValidationError("Free courses must have a price of 0.00.")
     else:
         if not price or price <= Decimal("0.00"):
-            raise ValidationError("Paid courses must specify a price greater than 0.00.")
+            raise ValidationError(
+                "Paid courses must specify a price greater than 0.00."
+            )
 
 
 def validate_review_rating(rating: int) -> None:
@@ -49,7 +51,9 @@ def validate_learning_objectives(objectives: Any) -> None:
         raise ValidationError("Course cannot have more than 50 learning objectives.")
     for item in objectives:
         if not isinstance(item, str) or len(item.strip()) == 0:
-            raise ValidationError("Learning objective entries must be non-empty strings.")
+            raise ValidationError(
+                "Learning objective entries must be non-empty strings."
+            )
 
 
 def validate_note_content(content: str) -> str:

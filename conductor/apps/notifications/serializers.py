@@ -7,7 +7,16 @@ from .models import Notification
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ["id", "type", "title", "message", "data", "is_read", "read_at", "created_at"]
+        fields = [
+            "id",
+            "type",
+            "title",
+            "message",
+            "data",
+            "is_read",
+            "read_at",
+            "created_at",
+        ]
 
 
 class MarkReadSerializer(serializers.Serializer):
@@ -18,11 +27,12 @@ class MarkReadSerializer(serializers.Serializer):
 
 class DeleteNotificationsSerializer(serializers.Serializer):
     """Serializer for batch delete — accepts list of notification IDs."""
+
     ids = serializers.ListField(
         child=serializers.IntegerField(),
         required=False,
         allow_empty=True,
-        help_text="List of notification IDs to delete. Empty = delete all read."
+        help_text="List of notification IDs to delete. Empty = delete all read.",
     )
 
 

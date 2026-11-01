@@ -10,7 +10,14 @@ from .models import Booking, TutorProfile
 class TutorProfileAdmin(admin.ModelAdmin):
     """Tutor profile and verification administration."""
 
-    list_display = ["user", "hourly_rate", "rating", "total_reviews", "is_verified", "created_at"]
+    list_display = [
+        "user",
+        "hourly_rate",
+        "rating",
+        "total_reviews",
+        "is_verified",
+        "created_at",
+    ]
     list_filter = ["is_verified"]
     search_fields = ["user__email", "user__username", "skills"]
     list_select_related = ["user"]
@@ -32,7 +39,14 @@ class TutorProfileAdmin(admin.ModelAdmin):
 class BookingAdmin(admin.ModelAdmin):
     """Tutor booking session administration."""
 
-    list_display = ["student", "tutor", "start_time", "end_time", "status", "created_at"]
+    list_display = [
+        "student",
+        "tutor",
+        "start_time",
+        "end_time",
+        "status",
+        "created_at",
+    ]
     list_filter = ["status", "start_time"]
     search_fields = ["student__email", "tutor__user__email", "meeting_link"]
     list_select_related = ["student", "tutor", "tutor__user"]

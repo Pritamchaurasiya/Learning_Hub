@@ -1,11 +1,12 @@
 import os
 import py_compile
 
+
 def check_syntax(start_path):
     print(f"Checking syntax in {start_path}...")
     error_count = 0
     for root, dirs, files in os.walk(start_path):
-        if 'venv' in root or '.git' in root:
+        if "venv" in root or ".git" in root:
             continue
         for file in files:
             if file.endswith(".py"):
@@ -19,11 +20,12 @@ def check_syntax(start_path):
                 except Exception as e:
                     print(f"Error checking {full_path}: {e}")
                     error_count += 1
-    
+
     if error_count == 0:
         print("No syntax errors found.")
     else:
         print(f"Found {error_count} files with syntax errors.")
+
 
 if __name__ == "__main__":
     check_syntax(".")

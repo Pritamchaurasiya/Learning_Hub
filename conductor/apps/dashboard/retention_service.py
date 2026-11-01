@@ -1,10 +1,10 @@
-
 from django.db.models import Avg, Count
 from django.utils import timezone
 from datetime import timedelta
 from apps.users.models import User
 from apps.courses.models import Course
 from apps.gamification.models import UserXP
+
 
 class RetentionService:
     """
@@ -38,19 +38,19 @@ class RetentionService:
         # 2. Gamification / XP (Engagement)
         try:
             user_xp = UserXP.objects.get(user=student)
-            if user_xp.monthly_xp < 50: # Low activity threshold
+            if user_xp.monthly_xp < 50:  # Low activity threshold
                 score += 20
                 reasons.append("Low Monthly XP")
         except UserXP.DoesNotExist:
-            score += 10 # Neutral if no XP record found yet
+            score += 10  # Neutral if no XP record found yet
 
         # 3. Discussion Participation (Social)
         # Lazy import to avoid circular dependency
         from apps.discussions.models import DiscussionThread, DiscussionReply
-        
+
         thread_count = DiscussionThread.objects.filter(author=student).count()
         reply_count = DiscussionReply.objects.filter(author=student).count()
-        
+
         if thread_count + reply_count == 0:
             score += 10
             reasons.append("Zero Social Participation")
@@ -73,7 +73,7 @@ class RetentionService:
             "student_name": student.display_name,
             "risk_score": score,
             "risk_level": risk_level,
-            "reasons": reasons
+            "reasons": reasons,
         }
 
     @staticmethod
@@ -82,15 +82,15 @@ class RetentionService:
         Returns a list of students in a course who are At Risk.
         """
         from apps.courses.models import Enrollment
-        
+
         enrollments = Enrollment.objects.filter(course_id=course_id, active=True)
         results = []
-        
+
         for enrollment in enrollments:
             risk_data = RetentionService.calculate_risk_score(enrollment.user)
-            if risk_data['risk_score'] >= 40: # Filter for Medium/High
+            if risk_data["risk_score"] >= 40:  # Filter for Medium/High
                 results.append(risk_data)
-                
+
         # Sort by highest risk first
-        results.sort(key=lambda x: x['risk_score'], reverse=True)
+        results.sort(key=lambda x: x["risk_score"], reverse=True)
         return results

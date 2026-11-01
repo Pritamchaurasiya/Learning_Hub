@@ -19,7 +19,7 @@ class TestChatRoomModel:
             type=ChatRoom.Type.GROUP,
             created_by=user,
         )
-        
+
         assert room.name == "Test Room"
         assert room.type == ChatRoom.Type.GROUP
         assert room.created_by == user
@@ -31,7 +31,7 @@ class TestChatRoomModel:
             type=ChatRoom.Type.DIRECT,
             created_by=user,
         )
-        
+
         assert "Test Room" in str(room)
 
 
@@ -46,14 +46,14 @@ class TestMessageModel:
             type=ChatRoom.Type.GROUP,
             created_by=user,
         )
-        
+
         message = Message.objects.create(
             room=room,
             sender=user,
             content="Hello World!",
             type=Message.Type.TEXT,
         )
-        
+
         assert message.room == room
         assert message.sender == user
         assert message.content == "Hello World!"
@@ -66,18 +66,18 @@ class TestMessageModel:
             type=ChatRoom.Type.GROUP,
             created_by=user,
         )
-        
+
         message = Message.objects.create(
             room=room,
             sender=user,
             content="Original",
             type=Message.Type.TEXT,
         )
-        
+
         message.content = "Edited"
         message.is_edited = True
         message.save()
-        
+
         message.refresh_from_db()
         assert message.content == "Edited"
         assert message.is_edited is True

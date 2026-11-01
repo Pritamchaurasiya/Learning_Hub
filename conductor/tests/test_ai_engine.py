@@ -81,7 +81,6 @@ def enrollment(db, user, course):
     )
 
 
-
 # ==============================================================================
 # USER BEHAVIOR SERVICE TESTS
 # ==============================================================================
@@ -94,7 +93,7 @@ class TestUserBehaviorService:
     def test_get_user_learning_stats_no_enrollments(self, user):
         """Test stats for user with no enrollments."""
         stats = UserBehaviorService.get_user_learning_stats(user)
-        
+
         assert stats["total_courses"] == 0
         assert stats["completed_courses"] == 0
         assert stats["completion_rate"] == 0
@@ -103,7 +102,7 @@ class TestUserBehaviorService:
     def test_get_user_learning_stats_with_enrollments(self, user, enrollment):
         """Test stats for user with enrollments."""
         stats = UserBehaviorService.get_user_learning_stats(user)
-        
+
         assert stats["total_courses"] == 1
         assert stats["average_progress"] == 50.0
 
@@ -114,19 +113,21 @@ class TestUserBehaviorService:
             course=course,
             progress_percentage=100,
         )
-        
+
         stats = UserBehaviorService.get_user_learning_stats(user)
-        
+
         assert stats["completed_courses"] == 1
         assert stats["completion_rate"] == 100
 
     def test_predict_course_completion_no_history(self, user, course):
         """Test prediction for user with no history."""
         prediction = UserBehaviorService.predict_course_completion(user, course)
-        
+
         assert prediction == 0.5  # Neutral prediction
 
-    def test_predict_course_completion_with_history(self, user, course, category, instructor):
+    def test_predict_course_completion_with_history(
+        self, user, course, category, instructor
+    ):
         """Test prediction with completion history."""
         # Create completed enrollment
         Enrollment.objects.create(
@@ -134,7 +135,7 @@ class TestUserBehaviorService:
             course=course,
             progress_percentage=100,
         )
-        
+
         # Create new course in same category
         new_course = Course.objects.create(
             title="Python Advanced",
@@ -143,9 +144,9 @@ class TestUserBehaviorService:
             instructor=instructor,
             is_published=True,
         )
-        
+
         prediction = UserBehaviorService.predict_course_completion(user, new_course)
-        
+
         # Should be higher due to familiarity
         assert prediction >= 0.5
 
@@ -162,7 +163,7 @@ class TestCourseAnalyticsService:
     def test_get_course_performance_no_enrollments(self, course):
         """Test performance metrics for course with no enrollments."""
         metrics = CourseAnalyticsService.get_course_performance(course)
-        
+
         assert metrics["total_enrollments"] == 0
         assert metrics["active_students"] == 0
         assert metrics["completion_rate"] == 0
@@ -170,14 +171,14 @@ class TestCourseAnalyticsService:
     def test_get_course_performance_with_enrollments(self, course, enrollment):
         """Test performance metrics with enrollments."""
         metrics = CourseAnalyticsService.get_course_performance(course)
-        
+
         assert metrics["total_enrollments"] == 1
         assert metrics["average_progress"] == 50.0
 
     def test_get_popular_categories(self, category, category_web, course, course_web):
         """Test getting popular categories."""
         categories = CourseAnalyticsService.get_popular_categories(limit=10)
-        
+
         assert isinstance(categories, list)
         # Categories should have expected fields
         if categories:

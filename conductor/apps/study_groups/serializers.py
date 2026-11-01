@@ -8,7 +8,7 @@ class GroupMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroupMembership
-        fields = ['id', 'user', 'role', 'joined_at']
+        fields = ["id", "user", "role", "joined_at"]
 
 
 class StudyGroupSerializer(serializers.ModelSerializer):
@@ -18,11 +18,21 @@ class StudyGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudyGroup
-        fields = ['id', 'name', 'description', 'topic', 'creator', 
-                  'max_members', 'is_public', 'member_count', 'is_member', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "description",
+            "topic",
+            "creator",
+            "max_members",
+            "is_public",
+            "member_count",
+            "is_member",
+            "created_at",
+        ]
 
     def get_is_member(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request and request.user.is_authenticated:
             return obj.memberships.filter(user=request.user).exists()
         return False
@@ -31,4 +41,4 @@ class StudyGroupSerializer(serializers.ModelSerializer):
 class StudyGroupCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudyGroup
-        fields = ['name', 'description', 'topic', 'max_members', 'is_public']
+        fields = ["name", "description", "topic", "max_members", "is_public"]

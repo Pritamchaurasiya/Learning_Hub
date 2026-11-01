@@ -3,6 +3,7 @@ Management command to seed a rich, calibrated, multi-disciplinary question bank
 for national competitive exams (JEE, NEET, GATE, SAT, and Test A+ All-India Battery)
 with LaTeX math, IRT difficulty, Bloom taxonomy, and pre-packaged test blueprints.
 """
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from apps.exams.models import Country, Exam, Subject, Topic
@@ -14,9 +15,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--clean',
-            action='store_true',
-            help='Clear existing seeded questions and test blueprints before loading',
+            "--clean",
+            action="store_true",
+            help="Clear existing seeded questions and test blueprints before loading",
         )
 
     @transaction.atomic
@@ -24,8 +25,10 @@ class Command(BaseCommand):
         self.stdout.write("Seeding national competitive exam question bank...")
 
         # 0. Clean old blueprints if requested
-        if options.get('clean'):
-            self.stdout.write("Cleaning existing seeded test blueprints and questions...")
+        if options.get("clean"):
+            self.stdout.write(
+                "Cleaning existing seeded test blueprints and questions..."
+            )
             managed_test_titles = [
                 "JEE Advanced Grand Simulation Paper 1",
                 "GATE CS Algorithms & Systems Sprint",
@@ -38,8 +41,12 @@ class Command(BaseCommand):
             Test.objects.filter(title__in=managed_test_titles).delete()
 
         # 1. Countries
-        india, _ = Country.objects.get_or_create(code="IN", defaults={"name": "India", "currency": "INR"})
-        usa, _ = Country.objects.get_or_create(code="US", defaults={"name": "United States", "currency": "USD"})
+        india, _ = Country.objects.get_or_create(
+            code="IN", defaults={"name": "India", "currency": "INR"}
+        )
+        usa, _ = Country.objects.get_or_create(
+            code="US", defaults={"name": "United States", "currency": "USD"}
+        )
 
         # 2. Exams
         jee_exam, _ = Exam.objects.get_or_create(
@@ -57,7 +64,7 @@ class Command(BaseCommand):
                 },
                 "difficulty_distribution": {"easy": 25, "medium": 50, "hard": 25},
                 "is_active": True,
-            }
+            },
         )
 
         gate_exam, _ = Exam.objects.get_or_create(
@@ -75,7 +82,7 @@ class Command(BaseCommand):
                 },
                 "difficulty_distribution": {"easy": 30, "medium": 45, "hard": 25},
                 "is_active": True,
-            }
+            },
         )
 
         sat_exam, _ = Exam.objects.get_or_create(
@@ -93,7 +100,7 @@ class Command(BaseCommand):
                 },
                 "difficulty_distribution": {"easy": 40, "medium": 40, "hard": 20},
                 "is_active": True,
-            }
+            },
         )
 
         test_a_exam, _ = Exam.objects.get_or_create(
@@ -111,7 +118,7 @@ class Command(BaseCommand):
                 },
                 "difficulty_distribution": {"easy": 30, "medium": 45, "hard": 25},
                 "is_active": True,
-            }
+            },
         )
 
         # 3. Subjects & Topics across 7 Core Disciplines
@@ -119,156 +126,192 @@ class Command(BaseCommand):
         phys_sub, _ = Subject.objects.get_or_create(
             exam=jee_exam,
             code="PHYS_JEE",
-            defaults={"name": "Physics", "weightage": 50}
+            defaults={"name": "Physics", "weightage": 50},
         )
         mech_topic, _ = Topic.objects.get_or_create(
             subject=phys_sub,
             name="Classical Mechanics & Kinematics",
-            defaults={"description": "Newtonian mechanics, kinematics, and rotational dynamics"}
+            defaults={
+                "description": "Newtonian mechanics, kinematics, and rotational dynamics"
+            },
         )
         electro_topic, _ = Topic.objects.get_or_create(
             subject=phys_sub,
             name="Electrostatics & Gauss Law",
-            defaults={"description": "Electric fields, Gauss law, potential and dipoles"}
+            defaults={
+                "description": "Electric fields, Gauss law, potential and dipoles"
+            },
         )
         modern_phys_topic, _ = Topic.objects.get_or_create(
             subject=phys_sub,
             name="Modern Physics & Atomic Structure",
-            defaults={"description": "Photoelectric effect, Bohr model, de Broglie matter waves"}
+            defaults={
+                "description": "Photoelectric effect, Bohr model, de Broglie matter waves"
+            },
         )
 
         # Discipline 2: Mathematics
         math_sub, _ = Subject.objects.get_or_create(
             exam=jee_exam,
             code="MATH_JEE",
-            defaults={"name": "Mathematics", "weightage": 50}
+            defaults={"name": "Mathematics", "weightage": 50},
         )
         calc_topic, _ = Topic.objects.get_or_create(
             subject=math_sub,
             name="Integral Calculus & Differential Equations",
-            defaults={"description": "Definite integrals, area under curves, ODEs"}
+            defaults={"description": "Definite integrals, area under curves, ODEs"},
         )
         linear_topic, _ = Topic.objects.get_or_create(
             subject=math_sub,
             name="Vector Algebra & 3D Geometry",
-            defaults={"description": "Dot & cross products, planes, skew lines"}
+            defaults={"description": "Dot & cross products, planes, skew lines"},
         )
         matrix_topic, _ = Topic.objects.get_or_create(
             subject=math_sub,
             name="Matrices, Determinants & Eigenvalues",
-            defaults={"description": "Cayley-Hamilton theorem, characteristic roots, transformations"}
+            defaults={
+                "description": "Cayley-Hamilton theorem, characteristic roots, transformations"
+            },
         )
 
         # Discipline 3: Chemistry
         chem_sub, _ = Subject.objects.get_or_create(
             exam=jee_exam,
             code="CHEM_JEE",
-            defaults={"name": "Chemistry", "weightage": 50}
+            defaults={"name": "Chemistry", "weightage": 50},
         )
         org_chem_topic, _ = Topic.objects.get_or_create(
             subject=chem_sub,
             name="Organic Reaction Mechanisms",
-            defaults={"description": "Aldol condensation, electrophilic aromatic substitution, nucleophiles"}
+            defaults={
+                "description": "Aldol condensation, electrophilic aromatic substitution, nucleophiles"
+            },
         )
         thermo_topic, _ = Topic.objects.get_or_create(
             subject=chem_sub,
             name="Chemical Thermodynamics & Equilibria",
-            defaults={"description": "Gibbs free energy, Hess law, equilibrium constants, entropy"}
+            defaults={
+                "description": "Gibbs free energy, Hess law, equilibrium constants, entropy"
+            },
         )
         coordination_topic, _ = Topic.objects.get_or_create(
             subject=chem_sub,
             name="Coordination Chemistry & Crystal Field Theory",
-            defaults={"description": "Octahedral splitting, spectrochemical series, isomerism"}
+            defaults={
+                "description": "Octahedral splitting, spectrochemical series, isomerism"
+            },
         )
 
         # Discipline 4: CS Core (GATE)
         cs_sub, _ = Subject.objects.get_or_create(
             exam=gate_exam,
             code="CS_CORE",
-            defaults={"name": "Computer Science Core", "weightage": 100}
+            defaults={"name": "Computer Science Core", "weightage": 100},
         )
         os_topic, _ = Topic.objects.get_or_create(
             subject=cs_sub,
             name="Operating Systems & Virtual Memory",
-            defaults={"description": "Paging, page tables, TLB, scheduling, memory management"}
+            defaults={
+                "description": "Paging, page tables, TLB, scheduling, memory management"
+            },
         )
         network_topic, _ = Topic.objects.get_or_create(
             subject=cs_sub,
             name="Computer Networks & Transport Layer",
-            defaults={"description": "TCP congestion control, flow control, subnetting, sliding window"}
+            defaults={
+                "description": "TCP congestion control, flow control, subnetting, sliding window"
+            },
         )
         db_topic, _ = Topic.objects.get_or_create(
             subject=cs_sub,
             name="Database Systems & Concurrency Control",
-            defaults={"description": "Two-phase locking, serializability, ACID properties, indexing"}
+            defaults={
+                "description": "Two-phase locking, serializability, ACID properties, indexing"
+            },
         )
 
         # Discipline 5: Data Structures & Algorithms (DSA)
         dsa_sub, _ = Subject.objects.get_or_create(
             exam=gate_exam,
             code="DSA_CORE",
-            defaults={"name": "Data Structures & Algorithms", "weightage": 100}
+            defaults={"name": "Data Structures & Algorithms", "weightage": 100},
         )
         dsa_topic, _ = Topic.objects.get_or_create(
             subject=dsa_sub,
             name="Algorithms & Asymptotic Analysis",
-            defaults={"description": "Divide and conquer, greedy, dynamic programming, shortest paths"}
+            defaults={
+                "description": "Divide and conquer, greedy, dynamic programming, shortest paths"
+            },
         )
         trees_topic, _ = Topic.objects.get_or_create(
             subject=dsa_sub,
             name="Self-Balancing Trees & Graphs",
-            defaults={"description": "Red-Black trees, AVL rotations, topological sort, BFS/DFS"}
+            defaults={
+                "description": "Red-Black trees, AVL rotations, topological sort, BFS/DFS"
+            },
         )
 
         # Discipline 6: Coding & Systems
         coding_sub, _ = Subject.objects.get_or_create(
             exam=test_a_exam,
             code="CODING_DEV",
-            defaults={"name": "Software Engineering & Coding", "weightage": 100}
+            defaults={"name": "Software Engineering & Coding", "weightage": 100},
         )
         two_pointers_topic, _ = Topic.objects.get_or_create(
             subject=coding_sub,
             name="Sliding Window & Two Pointers",
-            defaults={"description": "Optimal subsegment algorithms, subarray sums, monotonic queues"}
+            defaults={
+                "description": "Optimal subsegment algorithms, subarray sums, monotonic queues"
+            },
         )
         concurrency_topic, _ = Topic.objects.get_or_create(
             subject=coding_sub,
             name="Multithreading & Concurrency",
-            defaults={"description": "Deadlocks, Coffman conditions, mutexes, semaphores, race conditions"}
+            defaults={
+                "description": "Deadlocks, Coffman conditions, mutexes, semaphores, race conditions"
+            },
         )
 
         # Discipline 7: Aptitude & Reasoning
         aptitude_sub, _ = Subject.objects.get_or_create(
             exam=test_a_exam,
             code="GEN_APTITUDE",
-            defaults={"name": "General Aptitude & Reasoning", "weightage": 100}
+            defaults={"name": "General Aptitude & Reasoning", "weightage": 100},
         )
         quant_topic, _ = Topic.objects.get_or_create(
             subject=aptitude_sub,
             name="Quantitative Aptitude & Combinatorics",
-            defaults={"description": "Permutations, derangements, relative speeds, work & rates"}
+            defaults={
+                "description": "Permutations, derangements, relative speeds, work & rates"
+            },
         )
         logic_topic, _ = Topic.objects.get_or_create(
             subject=aptitude_sub,
             name="Analytical Reasoning & Syllogisms",
-            defaults={"description": "Deductive logic, syllogistic Venn relations, critical thinking"}
+            defaults={
+                "description": "Deductive logic, syllogistic Venn relations, critical thinking"
+            },
         )
 
         # SAT Math Topics
         sat_sub, _ = Subject.objects.get_or_create(
             exam=sat_exam,
             code="SAT_MATH_CORE",
-            defaults={"name": "Mathematics (Advanced)", "weightage": 100}
+            defaults={"name": "Mathematics (Advanced)", "weightage": 100},
         )
         sat_alg_topic, _ = Topic.objects.get_or_create(
             subject=sat_sub,
             name="Advanced Math & Quadratics",
-            defaults={"description": "Non-linear equations, systems of quadratics, vertex form"}
+            defaults={
+                "description": "Non-linear equations, systems of quadratics, vertex form"
+            },
         )
         sat_geo_topic, _ = Topic.objects.get_or_create(
             subject=sat_sub,
             name="Coordinate Geometry & Circles",
-            defaults={"description": "Equations of circles, radian measures, trigonometry"}
+            defaults={
+                "description": "Equations of circles, radian measures, trigonometry"
+            },
         )
 
         # 4. Question Databank Definitions (IRT-Calibrated & LaTeX Formatted)
@@ -286,15 +329,37 @@ class Command(BaseCommand):
                     "Calculate velocity from conservation of mechanical energy: $v = \\sqrt{2gax_0^2}$",
                     "Compute radius of curvature at origin: $\\rho = \\frac{[1 + (y')^2]^{3/2}}{|y''|} = \\frac{1}{2a}$",
                     "Apply radial equation of motion: $N - mg = \\frac{m v^2}{\\rho}$",
-                    "Substitute $v^2$ and $\\rho$ to obtain $N = mg(1 + 4a^2 x_0^2)$"
+                    "Substitute $v^2$ and $\\rho$ to obtain $N = mg(1 + 4a^2 x_0^2)$",
                 ],
-                "tags": ["mechanics", "radius-of-curvature", "energy-conservation", "physics", "jee-advanced"],
+                "tags": [
+                    "mechanics",
+                    "radius-of-curvature",
+                    "energy-conservation",
+                    "physics",
+                    "jee-advanced",
+                ],
                 "options": [
-                    {"text": "$N = mg(1 + 4a^2 x_0^2)$", "is_correct": True, "explanation": "Correct. Energy conservation and curvature radius combine to yield this result."},
-                    {"text": "$N = mg(1 + 2ax_0^2)$", "is_correct": False, "explanation": "Incorrect. Forgets that curvature has a factor of 2 in denominator."},
-                    {"text": "$N = mg$", "is_correct": False, "explanation": "Incorrect. Ignores centrifugal acceleration at the curve inflection."},
-                    {"text": "$N = 4mg a^2 x_0^2$", "is_correct": False, "explanation": "Incorrect. Neglects the gravitational weight baseline."},
-                ]
+                    {
+                        "text": "$N = mg(1 + 4a^2 x_0^2)$",
+                        "is_correct": True,
+                        "explanation": "Correct. Energy conservation and curvature radius combine to yield this result.",
+                    },
+                    {
+                        "text": "$N = mg(1 + 2ax_0^2)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Forgets that curvature has a factor of 2 in denominator.",
+                    },
+                    {
+                        "text": "$N = mg$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Ignores centrifugal acceleration at the curve inflection.",
+                    },
+                    {
+                        "text": "$N = 4mg a^2 x_0^2$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Neglects the gravitational weight baseline.",
+                    },
+                ],
             },
             {
                 "topic": mech_topic,
@@ -308,15 +373,31 @@ class Command(BaseCommand):
                     "Formulate torque about contact axis: $\\tau = I \\alpha$",
                     "Newton's 2nd Law: $Mg\\sin\\theta - f_s = Ma$",
                     "Constraint condition: $a = R\\alpha$",
-                    "Solving simultaneously yields $a = \\frac{2}{3} g\\sin\\theta$"
+                    "Solving simultaneously yields $a = \\frac{2}{3} g\\sin\\theta$",
                 ],
                 "tags": ["rotational-dynamics", "pure-rolling", "mechanics", "physics"],
                 "options": [
-                    {"text": "$a = \\frac{2}{3} g \\sin\\theta$", "is_correct": True, "explanation": "Correct. Moment of inertia $I = \\frac{1}{2} M R^2$ gives $a = \\frac{2}{3}g\\sin\\theta$."},
-                    {"text": "$a = \\frac{1}{2} g \\sin\\theta$", "is_correct": False, "explanation": "Incorrect. That corresponds to a hollow ring."},
-                    {"text": "$a = \\frac{5}{7} g \\sin\\theta$", "is_correct": False, "explanation": "Incorrect. That corresponds to a solid sphere."},
-                    {"text": "$a = g \\sin\\theta$", "is_correct": False, "explanation": "Incorrect. Pure sliding without friction gives $g\\sin\\theta$."},
-                ]
+                    {
+                        "text": "$a = \\frac{2}{3} g \\sin\\theta$",
+                        "is_correct": True,
+                        "explanation": "Correct. Moment of inertia $I = \\frac{1}{2} M R^2$ gives $a = \\frac{2}{3}g\\sin\\theta$.",
+                    },
+                    {
+                        "text": "$a = \\frac{1}{2} g \\sin\\theta$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That corresponds to a hollow ring.",
+                    },
+                    {
+                        "text": "$a = \\frac{5}{7} g \\sin\\theta$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That corresponds to a solid sphere.",
+                    },
+                    {
+                        "text": "$a = g \\sin\\theta$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Pure sliding without friction gives $g\\sin\\theta$.",
+                    },
+                ],
             },
             {
                 "topic": electro_topic,
@@ -329,15 +410,37 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Use dipole force formula in non-uniform field: $\\vec{F} = (\\vec{p} \\cdot \\nabla)\\vec{E}$",
                     "Compute gradient component along $x$: $\\frac{\\partial E_x}{\\partial x} = E_0$",
-                    "Multiply by dipole moment magnitude $p$ to find $\\vec{F} = p E_0 \\hat{i}$"
+                    "Multiply by dipole moment magnitude $p$ to find $\\vec{F} = p E_0 \\hat{i}$",
                 ],
-                "tags": ["electrostatics", "dipole", "gradient", "physics", "jee-advanced"],
+                "tags": [
+                    "electrostatics",
+                    "dipole",
+                    "gradient",
+                    "physics",
+                    "jee-advanced",
+                ],
                 "options": [
-                    {"text": "$\\vec{F} = p E_0 \\hat{i}$", "is_correct": True, "explanation": "Correct. Non-uniform field produces net force $\\vec{F} = (\\vec{p} \\cdot \\nabla)\\vec{E}$."},
-                    {"text": "$\\vec{F} = 0$", "is_correct": False, "explanation": "Incorrect. Net force is zero only in a uniform electric field."},
-                    {"text": "$\\vec{F} = -p E_0 \\hat{i}$", "is_correct": False, "explanation": "Incorrect. Field increases in $+x$ direction."},
-                    {"text": "$\\vec{F} = 2p E_0 \\hat{k}$", "is_correct": False, "explanation": "Incorrect. No orthogonal forces exist."},
-                ]
+                    {
+                        "text": "$\\vec{F} = p E_0 \\hat{i}$",
+                        "is_correct": True,
+                        "explanation": "Correct. Non-uniform field produces net force $\\vec{F} = (\\vec{p} \\cdot \\nabla)\\vec{E}$.",
+                    },
+                    {
+                        "text": "$\\vec{F} = 0$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Net force is zero only in a uniform electric field.",
+                    },
+                    {
+                        "text": "$\\vec{F} = -p E_0 \\hat{i}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Field increases in $+x$ direction.",
+                    },
+                    {
+                        "text": "$\\vec{F} = 2p E_0 \\hat{k}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. No orthogonal forces exist.",
+                    },
+                ],
             },
             {
                 "topic": modern_phys_topic,
@@ -350,17 +453,32 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Formulate Rydberg transition: $\\frac{1}{\\lambda} = R_H(1/1^2 - 1/3^2)$",
                     "Evaluate $1 - 1/9 = 8/9$",
-                    "Invert to solve for wavelength: $\\lambda = \\frac{9}{8 R_H}$"
+                    "Invert to solve for wavelength: $\\lambda = \\frac{9}{8 R_H}$",
                 ],
                 "tags": ["modern-physics", "bohr-model", "rydberg", "physics"],
                 "options": [
-                    {"text": "$\\lambda = \\frac{9}{8 R_H}$", "is_correct": True, "explanation": "Correct. $\\frac{1}{\\lambda} = R_H(1 - 1/9) = 8/9 R_H$."},
-                    {"text": "$\\lambda = \\frac{8}{9 R_H}$", "is_correct": False, "explanation": "Incorrect. Inverted wavenumber fraction."},
-                    {"text": "$\\lambda = \\frac{4}{3 R_H}$", "is_correct": False, "explanation": "Incorrect. That corresponds to the $n=2 \\to n=1$ Lyman-alpha transition."},
-                    {"text": "$\\lambda = \\frac{1}{R_H}$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$\\lambda = \\frac{9}{8 R_H}$",
+                        "is_correct": True,
+                        "explanation": "Correct. $\\frac{1}{\\lambda} = R_H(1 - 1/9) = 8/9 R_H$.",
+                    },
+                    {
+                        "text": "$\\lambda = \\frac{8}{9 R_H}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Inverted wavenumber fraction.",
+                    },
+                    {
+                        "text": "$\\lambda = \\frac{4}{3 R_H}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That corresponds to the $n=2 \\to n=1$ Lyman-alpha transition.",
+                    },
+                    {
+                        "text": "$\\lambda = \\frac{1}{R_H}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
-
             # ======================== 2. MATHEMATICS ========================
             {
                 "topic": calc_topic,
@@ -374,15 +492,27 @@ class Command(BaseCommand):
                     "Apply King's property: replace $x$ with $\\frac{\\pi}{2} - x$",
                     "Recognize that $\\sin(\\pi/2 - x) = \\cos x$ and $\\cos(\\pi/2 - x) = \\sin x$",
                     "Add both expressions: $2I = \\int_0^{\\pi/2} 1 dx = \\frac{\\pi}{2}$",
-                    "Divide by 2 to arrive at $I = \\frac{\\pi}{4}$"
+                    "Divide by 2 to arrive at $I = \\frac{\\pi}{4}$",
                 ],
                 "tags": ["calculus", "definite-integrals", "kings-property", "maths"],
                 "options": [
-                    {"text": "$\\frac{\\pi}{4}$", "is_correct": True, "explanation": "Correct. King's Property symmetrizes the integrand to 1 over $[0, \\pi/2]$."},
-                    {"text": "$\\frac{\\pi}{2}$", "is_correct": False, "explanation": "Incorrect. Forgot to divide by 2 from the $2I$ sum."},
+                    {
+                        "text": "$\\frac{\\pi}{4}$",
+                        "is_correct": True,
+                        "explanation": "Correct. King's Property symmetrizes the integrand to 1 over $[0, \\pi/2]$.",
+                    },
+                    {
+                        "text": "$\\frac{\\pi}{2}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Forgot to divide by 2 from the $2I$ sum.",
+                    },
                     {"text": "$1$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "$\\frac{\\pi}{8}$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$\\frac{\\pi}{8}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": calc_topic,
@@ -396,15 +526,36 @@ class Command(BaseCommand):
                     "Identify $P(x) = \\tan x$ and $Q(x) = \\sec x$",
                     "Compute integrating factor: $\\text{IF} = e^{\\int \\tan x dx} = \\sec x$",
                     "Integrate: $y \\cdot \\text{IF} = \\int \\sec^2 x dx = \\tan x + C$",
-                    "Multiply across by $\\cos x$: $y = \\sin x + C\\cos x$"
+                    "Multiply across by $\\cos x$: $y = \\sin x + C\\cos x$",
                 ],
-                "tags": ["calculus", "differential-equations", "integrating-factor", "maths"],
+                "tags": [
+                    "calculus",
+                    "differential-equations",
+                    "integrating-factor",
+                    "maths",
+                ],
                 "options": [
-                    {"text": "$y = \\sin x + C \\cos x$", "is_correct": True, "explanation": "Correct. Integrating factor is $\\sec x$, yielding $y = \\sin x + C\\cos x$."},
-                    {"text": "$y = \\cos x + C \\sin x$", "is_correct": False, "explanation": "Incorrect. Transposed trigonometric identities."},
-                    {"text": "$y = \\sec x + C \\tan x$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "$y = e^{\\tan x} + C$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$y = \\sin x + C \\cos x$",
+                        "is_correct": True,
+                        "explanation": "Correct. Integrating factor is $\\sec x$, yielding $y = \\sin x + C\\cos x$.",
+                    },
+                    {
+                        "text": "$y = \\cos x + C \\sin x$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Transposed trigonometric identities.",
+                    },
+                    {
+                        "text": "$y = \\sec x + C \\tan x$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "$y = e^{\\tan x} + C$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": linear_topic,
@@ -417,15 +568,31 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Compute cross product: $\\vec{b}_1 \\times \\vec{b}_2 = (3, -1, -7)$",
                     "Compute displacement: $\\vec{a}_2 - \\vec{a}_1 = (1, 0, -1)$",
-                    "Evaluate scalar projection: $d = \\frac{10}{\\sqrt{59}}$"
+                    "Evaluate scalar projection: $d = \\frac{10}{\\sqrt{59}}$",
                 ],
                 "tags": ["3d-geometry", "skew-lines", "shortest-distance", "maths"],
                 "options": [
-                    {"text": "$\\frac{10}{\\sqrt{59}}$", "is_correct": True, "explanation": "Correct projection calculation along common normal unit vector."},
-                    {"text": "$\\sqrt{59}$", "is_correct": False, "explanation": "Incorrect. Normal vector magnitude."},
-                    {"text": "$0$", "is_correct": False, "explanation": "Incorrect. Lines are skew and non-intersecting."},
-                    {"text": "$\\frac{5}{\\sqrt{59}}$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$\\frac{10}{\\sqrt{59}}$",
+                        "is_correct": True,
+                        "explanation": "Correct projection calculation along common normal unit vector.",
+                    },
+                    {
+                        "text": "$\\sqrt{59}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Normal vector magnitude.",
+                    },
+                    {
+                        "text": "$0$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Lines are skew and non-intersecting.",
+                    },
+                    {
+                        "text": "$\\frac{5}{\\sqrt{59}}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": matrix_topic,
@@ -439,17 +606,24 @@ class Command(BaseCommand):
                     "Determine eigenvalues: $\\lambda_1 = 2, \\lambda_2 = 3$",
                     "Form characteristic polynomial: $p(\\lambda) = \\lambda^2 - 5\\lambda + 6$",
                     "Apply Cayley-Hamilton theorem: $A^2 - 5A + 6I = O$",
-                    "Multiply by $A$: $A^3 - 5A^2 + 6A = O$"
+                    "Multiply by $A$: $A^3 - 5A^2 + 6A = O$",
                 ],
                 "tags": ["linear-algebra", "cayley-hamilton", "eigenvalues", "maths"],
                 "options": [
-                    {"text": "$O$ (Zero Matrix)", "is_correct": True, "explanation": "Correct. By Cayley-Hamilton Theorem, $A^2 - 5A + 6I = O$, so multiplying by $A$ yields $O$."},
-                    {"text": "$I$ (Identity Matrix)", "is_correct": False, "explanation": "Incorrect."},
+                    {
+                        "text": "$O$ (Zero Matrix)",
+                        "is_correct": True,
+                        "explanation": "Correct. By Cayley-Hamilton Theorem, $A^2 - 5A + 6I = O$, so multiplying by $A$ yields $O$.",
+                    },
+                    {
+                        "text": "$I$ (Identity Matrix)",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
                     {"text": "$6A$", "is_correct": False, "explanation": "Incorrect."},
                     {"text": "$A^2$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                ],
             },
-
             # ======================== 3. CHEMISTRY ========================
             {
                 "topic": org_chem_topic,
@@ -463,15 +637,36 @@ class Command(BaseCommand):
                     "Deprotonate $\\alpha$-carbon to generate nucleophilic enolate: $CH_2=CH-O^-$",
                     "Enolate attacks carbonyl carbon of another ethanal molecule",
                     "Protonation forms 3-hydroxybutanal (aldol adduct)",
-                    "Heating causes base-catalyzed dehydration (E1cB) to form but-2-enal (crotonaldehyde)"
+                    "Heating causes base-catalyzed dehydration (E1cB) to form but-2-enal (crotonaldehyde)",
                 ],
-                "tags": ["organic-chemistry", "aldol-condensation", "reaction-mechanism", "chemistry"],
+                "tags": [
+                    "organic-chemistry",
+                    "aldol-condensation",
+                    "reaction-mechanism",
+                    "chemistry",
+                ],
                 "options": [
-                    {"text": "But-2-enal (Crotonaldehyde)", "is_correct": True, "explanation": "Correct. Aldol addition followed by dehydration yields conjugated but-2-enal."},
-                    {"text": "Butan-1-ol", "is_correct": False, "explanation": "Incorrect. That would require catalytic hydrogenation/reduction."},
-                    {"text": "Ethyl ethanoate", "is_correct": False, "explanation": "Incorrect. That is the Tishchenko reaction product with aluminium alkoxide."},
-                    {"text": "Acetic acid", "is_correct": False, "explanation": "Incorrect. Dilute NaOH does not oxidize ethanal."},
-                ]
+                    {
+                        "text": "But-2-enal (Crotonaldehyde)",
+                        "is_correct": True,
+                        "explanation": "Correct. Aldol addition followed by dehydration yields conjugated but-2-enal.",
+                    },
+                    {
+                        "text": "Butan-1-ol",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That would require catalytic hydrogenation/reduction.",
+                    },
+                    {
+                        "text": "Ethyl ethanoate",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is the Tishchenko reaction product with aluminium alkoxide.",
+                    },
+                    {
+                        "text": "Acetic acid",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Dilute NaOH does not oxidize ethanal.",
+                    },
+                ],
             },
             {
                 "topic": thermo_topic,
@@ -484,15 +679,36 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Set Gibbs free energy to zero: $\\Delta G^\\circ = \\Delta H^\\circ - T\\Delta S^\\circ = 0$",
                     "Align units: $\\Delta H^\\circ = -40,000\\text{ J/mol}$, $\\Delta S^\\circ = -100\\text{ J/(mol}\\cdot\\text{K)}$",
-                    "Solve for crossover temperature: $T = \\frac{-40,000}{-100} = 400\\text{ K}$"
+                    "Solve for crossover temperature: $T = \\frac{-40,000}{-100} = 400\\text{ K}$",
                 ],
-                "tags": ["thermodynamics", "gibbs-free-energy", "equilibrium", "chemistry"],
+                "tags": [
+                    "thermodynamics",
+                    "gibbs-free-energy",
+                    "equilibrium",
+                    "chemistry",
+                ],
                 "options": [
-                    {"text": "$400\\text{ K}$", "is_correct": True, "explanation": "Correct. $T = \\Delta H^\\circ / \\Delta S^\\circ = -40,000 / -100 = 400\\text{ K}$."},
-                    {"text": "$250\\text{ K}$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "$500\\text{ K}$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "Never spontaneous at any temperature", "is_correct": False, "explanation": "Incorrect. Since $\\Delta H^\\circ < 0$, it is spontaneous at lower temperatures."},
-                ]
+                    {
+                        "text": "$400\\text{ K}$",
+                        "is_correct": True,
+                        "explanation": "Correct. $T = \\Delta H^\\circ / \\Delta S^\\circ = -40,000 / -100 = 400\\text{ K}$.",
+                    },
+                    {
+                        "text": "$250\\text{ K}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "$500\\text{ K}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "Never spontaneous at any temperature",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Since $\\Delta H^\\circ < 0$, it is spontaneous at lower temperatures.",
+                    },
+                ],
             },
             {
                 "topic": coordination_topic,
@@ -506,17 +722,33 @@ class Command(BaseCommand):
                     "Identify low-spin octahedral electronic configuration: $t_{2g}^6 e_g^0$",
                     "Calculate $t_{2g}$ energy contribution: $6 \\times (-0.4\\Delta_o) = -2.4\\Delta_o$",
                     "Add net extra pairing energy: $2P$",
-                    "CFSE is $-2.4\\Delta_o + 2P$"
+                    "CFSE is $-2.4\\Delta_o + 2P$",
                 ],
-                "tags": ["coordination-chemistry", "crystal-field-theory", "cfse", "chemistry"],
+                "tags": [
+                    "coordination-chemistry",
+                    "crystal-field-theory",
+                    "cfse",
+                    "chemistry",
+                ],
                 "options": [
-                    {"text": "$-2.4\\Delta_o + 2P$", "is_correct": True, "explanation": "Correct. All 6 electrons in $t_{2g}$ yield $6 \\times (-0.4\\Delta_o) = -2.4\\Delta_o$ with 2 extra pairs."},
-                    {"text": "$-0.4\\Delta_o$", "is_correct": False, "explanation": "Incorrect. That is the high-spin $d^6$ value ($t_{2g}^4 e_g^2$)."},
-                    {"text": "$-1.8\\Delta_o$", "is_correct": False, "explanation": "Incorrect."},
+                    {
+                        "text": "$-2.4\\Delta_o + 2P$",
+                        "is_correct": True,
+                        "explanation": "Correct. All 6 electrons in $t_{2g}$ yield $6 \\times (-0.4\\Delta_o) = -2.4\\Delta_o$ with 2 extra pairs.",
+                    },
+                    {
+                        "text": "$-0.4\\Delta_o$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is the high-spin $d^6$ value ($t_{2g}^4 e_g^2$).",
+                    },
+                    {
+                        "text": "$-1.8\\Delta_o$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
                     {"text": "$0$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                ],
             },
-
             # ======================== 4. CS CORE ========================
             {
                 "topic": os_topic,
@@ -530,15 +762,37 @@ class Command(BaseCommand):
                     "Compute offset bits: $\\log_2(4096) = 12$ bits",
                     "Compute VPN bits: $32 - 12 = 20$ bits",
                     "Calculate entries per frame: $4096 / 4 = 1024 = 2^{10}$ entries (10 bits)",
-                    "Divide total VPN bits by bits per page table: $20 / 10 = 2$ levels"
+                    "Divide total VPN bits by bits per page table: $20 / 10 = 2$ levels",
                 ],
-                "tags": ["operating-systems", "paging", "virtual-memory", "cs-core", "gate-cs"],
+                "tags": [
+                    "operating-systems",
+                    "paging",
+                    "virtual-memory",
+                    "cs-core",
+                    "gate-cs",
+                ],
                 "options": [
-                    {"text": "2 levels", "is_correct": True, "explanation": "Correct. 10 bits Level 1, 10 bits Level 2, and 12 bits byte offset."},
-                    {"text": "1 level", "is_correct": False, "explanation": "Incorrect. Would require 4 MB per process table."},
-                    {"text": "3 levels", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "4 levels", "is_correct": False, "explanation": "Incorrect. Standard x86-64 uses 4 levels for 48-bit address spaces."},
-                ]
+                    {
+                        "text": "2 levels",
+                        "is_correct": True,
+                        "explanation": "Correct. 10 bits Level 1, 10 bits Level 2, and 12 bits byte offset.",
+                    },
+                    {
+                        "text": "1 level",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Would require 4 MB per process table.",
+                    },
+                    {
+                        "text": "3 levels",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "4 levels",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Standard x86-64 uses 4 levels for 48-bit address spaces.",
+                    },
+                ],
             },
             {
                 "topic": network_topic,
@@ -551,15 +805,36 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Recognize triple duplicate ACK triggers Fast Retransmit and Fast Recovery",
                     "Update slow start threshold: $\\text{ssthresh} = \\text{cwnd} / 2 = 16\\text{ MSS}$",
-                    "Fast Recovery inflates window: $\\text{cwnd} = \\text{ssthresh} + 3 = 19\\text{ MSS}$"
+                    "Fast Recovery inflates window: $\\text{cwnd} = \\text{ssthresh} + 3 = 19\\text{ MSS}$",
                 ],
-                "tags": ["computer-networks", "tcp-reno", "congestion-control", "cs-core"],
+                "tags": [
+                    "computer-networks",
+                    "tcp-reno",
+                    "congestion-control",
+                    "cs-core",
+                ],
                 "options": [
-                    {"text": "$\\text{ssthresh} = 16\\text{ MSS}, \\text{cwnd} = 19\\text{ MSS}$", "is_correct": True, "explanation": "Correct. Fast Recovery sets $\\text{ssthresh} = 16$ and inflates window to $\\text{ssthresh} + 3 = 19\\text{ MSS}$."},
-                    {"text": "$\\text{ssthresh} = 16\\text{ MSS}, \\text{cwnd} = 1\\text{ MSS}$", "is_correct": False, "explanation": "Incorrect. That is TCP Tahoe behavior, or Reno upon Timeout."},
-                    {"text": "$\\text{ssthresh} = 32\\text{ MSS}, \\text{cwnd} = 16\\text{ MSS}$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "$\\text{ssthresh} = 8\\text{ MSS}, \\text{cwnd} = 8\\text{ MSS}$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$\\text{ssthresh} = 16\\text{ MSS}, \\text{cwnd} = 19\\text{ MSS}$",
+                        "is_correct": True,
+                        "explanation": "Correct. Fast Recovery sets $\\text{ssthresh} = 16$ and inflates window to $\\text{ssthresh} + 3 = 19\\text{ MSS}$.",
+                    },
+                    {
+                        "text": "$\\text{ssthresh} = 16\\text{ MSS}, \\text{cwnd} = 1\\text{ MSS}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is TCP Tahoe behavior, or Reno upon Timeout.",
+                    },
+                    {
+                        "text": "$\\text{ssthresh} = 32\\text{ MSS}, \\text{cwnd} = 16\\text{ MSS}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "$\\text{ssthresh} = 8\\text{ MSS}, \\text{cwnd} = 8\\text{ MSS}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": db_topic,
@@ -572,17 +847,38 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Analyze Basic 2PL: Guarantees conflict serializability but permits cascading aborts",
                     "Analyze Conservative 2PL: Prevents deadlocks but does not prevent cascading aborts",
-                    "Analyze Strict 2PL: Holds all exclusive locks until commit, guaranteeing serializability AND cascadelessness"
+                    "Analyze Strict 2PL: Holds all exclusive locks until commit, guaranteeing serializability AND cascadelessness",
                 ],
-                "tags": ["databases", "strict-2pl", "serializability", "acid", "cs-core"],
+                "tags": [
+                    "databases",
+                    "strict-2pl",
+                    "serializability",
+                    "acid",
+                    "cs-core",
+                ],
                 "options": [
-                    {"text": "Strict Two-Phase Locking (Strict 2PL)", "is_correct": True, "explanation": "Correct. Holding write locks until commit prevents other transactions from reading uncommitted modifications."},
-                    {"text": "Basic Two-Phase Locking (Basic 2PL)", "is_correct": False, "explanation": "Incorrect. Basic 2PL can suffer from cascading aborts."},
-                    {"text": "Timestamp Ordering without Thomas Write Rule", "is_correct": False, "explanation": "Incorrect. Timestamp ordering can lead to cascading aborts without commit buffering."},
-                    {"text": "Snapshot Isolation without write skew detection", "is_correct": False, "explanation": "Incorrect. Can produce non-serializable histories (write skew)."},
-                ]
+                    {
+                        "text": "Strict Two-Phase Locking (Strict 2PL)",
+                        "is_correct": True,
+                        "explanation": "Correct. Holding write locks until commit prevents other transactions from reading uncommitted modifications.",
+                    },
+                    {
+                        "text": "Basic Two-Phase Locking (Basic 2PL)",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Basic 2PL can suffer from cascading aborts.",
+                    },
+                    {
+                        "text": "Timestamp Ordering without Thomas Write Rule",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Timestamp ordering can lead to cascading aborts without commit buffering.",
+                    },
+                    {
+                        "text": "Snapshot Isolation without write skew detection",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Can produce non-serializable histories (write skew).",
+                    },
+                ],
             },
-
             # ======================== 5. DATA STRUCTURES & ALGORITHMS (DSA) ========================
             {
                 "topic": dsa_topic,
@@ -596,15 +892,37 @@ class Command(BaseCommand):
                     "Analyze operations: $V$ extract-mins and $E$ decrease-keys",
                     "Evaluate Binary Heap: $O((V + E)\\log V) = O(V^2 \\log V)$ on dense graph",
                     "Evaluate Fibonacci Heap: $O(V\\log V + E) = O(V^2)$",
-                    "Evaluate Flat Array: $O(V \\cdot V + E \\cdot 1) = O(V^2)$"
+                    "Evaluate Flat Array: $O(V \\cdot V + E \\cdot 1) = O(V^2)$",
                 ],
-                "tags": ["dsa", "dijkstras-algorithm", "graph-theory", "dense-graphs", "gate-cs"],
+                "tags": [
+                    "dsa",
+                    "dijkstras-algorithm",
+                    "graph-theory",
+                    "dense-graphs",
+                    "gate-cs",
+                ],
                 "options": [
-                    {"text": "Fibonacci Heap ($O(V \\log V + E)$) or Unordered Array ($O(V^2)$)", "is_correct": True, "explanation": "Correct. When $E = \\Theta(V^2)$, both achieve $O(V^2)$, beating a Binary Heap $O(V^2 \\log V)$."},
-                    {"text": "Binary Heap ($O((V+E)\\log V)$)", "is_correct": False, "explanation": "Incorrect. Introduces unnecessary $\\log V$ factor for each of $V^2$ decrease-keys."},
-                    {"text": "Linked List ($O(V^3)$)", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "Red-Black Tree ($O(E \\log V)$)", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "Fibonacci Heap ($O(V \\log V + E)$) or Unordered Array ($O(V^2)$)",
+                        "is_correct": True,
+                        "explanation": "Correct. When $E = \\Theta(V^2)$, both achieve $O(V^2)$, beating a Binary Heap $O(V^2 \\log V)$.",
+                    },
+                    {
+                        "text": "Binary Heap ($O((V+E)\\log V)$)",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Introduces unnecessary $\\log V$ factor for each of $V^2$ decrease-keys.",
+                    },
+                    {
+                        "text": "Linked List ($O(V^3)$)",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "Red-Black Tree ($O(E \\log V)$)",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": dsa_topic,
@@ -617,15 +935,31 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Formulate recurrence: $dp[i][w] = \\max(dp[i-1][w], v_i + dp[i-1][w - w_i])$",
                     "Matrix dimensions: $n \\times W$",
-                    "Conclude time complexity is $O(nW)$, pseudo-polynomial"
+                    "Conclude time complexity is $O(nW)$, pseudo-polynomial",
                 ],
                 "tags": ["dsa", "dynamic-programming", "knapsack", "pseudo-polynomial"],
                 "options": [
-                    {"text": "$O(nW)$ (Pseudo-polynomial)", "is_correct": True, "explanation": "Correct. $O(nW)$ is linear in capacity $W$ but exponential in input bit-length $\\log W$."},
-                    {"text": "$O(n \\log W)$", "is_correct": False, "explanation": "Incorrect. Sublinear general 0/1 knapsack is impossible."},
-                    {"text": "$O(2^n)$", "is_correct": False, "explanation": "Incorrect. That is naive recursive brute force."},
-                    {"text": "$O(n^2)$", "is_correct": False, "explanation": "Incorrect. Capacity $W$ is independent of $n$."},
-                ]
+                    {
+                        "text": "$O(nW)$ (Pseudo-polynomial)",
+                        "is_correct": True,
+                        "explanation": "Correct. $O(nW)$ is linear in capacity $W$ but exponential in input bit-length $\\log W$.",
+                    },
+                    {
+                        "text": "$O(n \\log W)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Sublinear general 0/1 knapsack is impossible.",
+                    },
+                    {
+                        "text": "$O(2^n)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is naive recursive brute force.",
+                    },
+                    {
+                        "text": "$O(n^2)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Capacity $W$ is independent of $n$.",
+                    },
+                ],
             },
             {
                 "topic": trees_topic,
@@ -639,17 +973,32 @@ class Command(BaseCommand):
                     "Recall black-height invariant: all simple paths to leaves contain same number of black nodes $bh$",
                     "A tree with black-height $bh$ has at least $2^{bh} - 1$ internal nodes: $N \\ge 2^{bh} - 1 \\implies bh \\le \\log_2(N + 1)$",
                     "Red-child rule: red nodes cannot have red children, so at most half the nodes on any path can be red",
-                    "Maximum height: $h \\le 2 \\cdot bh \\le 2 \\log_2(N + 1)$"
+                    "Maximum height: $h \\le 2 \\cdot bh \\le 2 \\log_2(N + 1)$",
                 ],
                 "tags": ["dsa", "red-black-tree", "tree-height", "data-structures"],
                 "options": [
-                    {"text": "$2 \\log_2(N + 1)$", "is_correct": True, "explanation": "Correct. Strict alternating red-black path cannot exceed twice the minimum black height."},
-                    {"text": "$1.44 \\log_2(N)$", "is_correct": False, "explanation": "Incorrect. That is the upper bound for AVL trees."},
-                    {"text": "$\\log_2(N)$", "is_correct": False, "explanation": "Incorrect. That is for a perfectly balanced complete binary tree."},
-                    {"text": "$N$", "is_correct": False, "explanation": "Incorrect. Red-black trees are balanced and cannot degenerate to linear chains."},
-                ]
+                    {
+                        "text": "$2 \\log_2(N + 1)$",
+                        "is_correct": True,
+                        "explanation": "Correct. Strict alternating red-black path cannot exceed twice the minimum black height.",
+                    },
+                    {
+                        "text": "$1.44 \\log_2(N)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is the upper bound for AVL trees.",
+                    },
+                    {
+                        "text": "$\\log_2(N)$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. That is for a perfectly balanced complete binary tree.",
+                    },
+                    {
+                        "text": "$N$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Red-black trees are balanced and cannot degenerate to linear chains.",
+                    },
+                ],
             },
-
             # ======================== 6. CODING & SOFTWARE SYSTEMS ========================
             {
                 "topic": two_pointers_topic,
@@ -663,15 +1012,31 @@ class Command(BaseCommand):
                     "Initialize `left = 0`, `current_sum = 0`, `min_len = infinity`",
                     "Iterate `right` from 0 to $n - 1$, adding `arr[right]` to `current_sum`",
                     "While `current_sum >= S`: record length `right - left + 1`, subtract `arr[left]`, increment `left`",
-                    "Each pointer moves forward at most $n$ times: $O(n)$ time and $O(1)$ space"
+                    "Each pointer moves forward at most $n$ times: $O(n)$ time and $O(1)$ space",
                 ],
                 "tags": ["coding", "sliding-window", "two-pointers", "complexity"],
                 "options": [
-                    {"text": "$O(n)$ time and $O(1)$ space", "is_correct": True, "explanation": "Correct. Two-pointer sliding window traverses array with amortized $O(1)$ per step."},
-                    {"text": "$O(n \\log n)$ time and $O(n)$ space", "is_correct": False, "explanation": "Incorrect. Prefix sums with binary search takes $O(n \\log n)$, which is suboptimal."},
-                    {"text": "$O(n^2)$ time and $O(1)$ space", "is_correct": False, "explanation": "Incorrect. Brute-force nested loops."},
-                    {"text": "$O(2^n)$ time and $O(n)$ space", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$O(n)$ time and $O(1)$ space",
+                        "is_correct": True,
+                        "explanation": "Correct. Two-pointer sliding window traverses array with amortized $O(1)$ per step.",
+                    },
+                    {
+                        "text": "$O(n \\log n)$ time and $O(n)$ space",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Prefix sums with binary search takes $O(n \\log n)$, which is suboptimal.",
+                    },
+                    {
+                        "text": "$O(n^2)$ time and $O(1)$ space",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Brute-force nested loops.",
+                    },
+                    {
+                        "text": "$O(2^n)$ time and $O(n)$ space",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": two_pointers_topic,
@@ -685,7 +1050,7 @@ class Command(BaseCommand):
                     "Initialize an empty hash table `seen = {}`",
                     "Iterate `i, val` in enumerate(nums)",
                     "Check if `target - val` is present in `seen`",
-                    "If found, return `[seen[target - val], i]`; otherwise record `seen[val] = i`"
+                    "If found, return `[seen[target - val], i]`; otherwise record `seen[val] = i`",
                 ],
                 "tags": ["coding", "two-sum", "hash-map", "algorithms", "dsa"],
                 "language": "python",
@@ -702,13 +1067,29 @@ class Command(BaseCommand):
                     "    return []\n"
                 ),
                 "test_cases": [
-                    {"input": "nums = [2, 7, 11, 15], target = 9", "output": "[0, 1]", "explanation": "nums[0] + nums[1] = 2 + 7 = 9"},
-                    {"input": "nums = [3, 2, 4], target = 6", "output": "[1, 2]", "explanation": "nums[1] + nums[2] = 2 + 4 = 6"},
-                    {"input": "nums = [3, 3], target = 6", "output": "[0, 1]", "explanation": "nums[0] + nums[1] = 3 + 3 = 6"},
+                    {
+                        "input": "nums = [2, 7, 11, 15], target = 9",
+                        "output": "[0, 1]",
+                        "explanation": "nums[0] + nums[1] = 2 + 7 = 9",
+                    },
+                    {
+                        "input": "nums = [3, 2, 4], target = 6",
+                        "output": "[1, 2]",
+                        "explanation": "nums[1] + nums[2] = 2 + 4 = 6",
+                    },
+                    {
+                        "input": "nums = [3, 3], target = 6",
+                        "output": "[0, 1]",
+                        "explanation": "nums[0] + nums[1] = 3 + 3 = 6",
+                    },
                 ],
                 "options": [
-                    {"text": "[0, 1]", "is_correct": True, "explanation": "Correct index pair for standard test case"},
-                ]
+                    {
+                        "text": "[0, 1]",
+                        "is_correct": True,
+                        "explanation": "Correct index pair for standard test case",
+                    },
+                ],
             },
             {
                 "topic": two_pointers_topic,
@@ -722,7 +1103,7 @@ class Command(BaseCommand):
                     "Maintain `left = 0`, `max_len = 0`, and dictionary `pos = {}`",
                     "Iterate `right` from 0 to len(s) - 1",
                     "If `s[right]` in `pos` and `pos[s[right]] >= left`, jump `left = pos[s[right]] + 1`",
-                    "Update `pos[s[right]] = right` and `max_len = max(max_len, right - left + 1)`"
+                    "Update `pos[s[right]] = right` and `max_len = max(max_len, right - left + 1)`",
                 ],
                 "tags": ["coding", "longest-substring", "sliding-window", "strings"],
                 "language": "python",
@@ -740,13 +1121,29 @@ class Command(BaseCommand):
                     "    return max_len\n"
                 ),
                 "test_cases": [
-                    {"input": "s = \"abcabcbb\"", "output": "3", "explanation": "The answer is 'abc' with length 3"},
-                    {"input": "s = \"bbbbb\"", "output": "1", "explanation": "The answer is 'b' with length 1"},
-                    {"input": "s = \"pwwkew\"", "output": "3", "explanation": "The answer is 'wke' with length 3"},
+                    {
+                        "input": 's = "abcabcbb"',
+                        "output": "3",
+                        "explanation": "The answer is 'abc' with length 3",
+                    },
+                    {
+                        "input": 's = "bbbbb"',
+                        "output": "1",
+                        "explanation": "The answer is 'b' with length 1",
+                    },
+                    {
+                        "input": 's = "pwwkew"',
+                        "output": "3",
+                        "explanation": "The answer is 'wke' with length 3",
+                    },
                 ],
                 "options": [
-                    {"text": "3", "is_correct": True, "explanation": "Length 3 for abcabcbb"},
-                ]
+                    {
+                        "text": "3",
+                        "is_correct": True,
+                        "explanation": "Length 3 for abcabcbb",
+                    },
+                ],
             },
             {
                 "topic": concurrency_topic,
@@ -760,17 +1157,38 @@ class Command(BaseCommand):
                     "Recall Coffman conditions: Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait",
                     "Hierarchical resource allocation requires threads to acquire resources in increasing index order",
                     "A cycle in the resource allocation graph requires at least one thread to wait for a lower-indexed resource while holding a higher-indexed resource",
-                    "This is forbidden by the protocol, thus preventing Circular Wait"
+                    "This is forbidden by the protocol, thus preventing Circular Wait",
                 ],
-                "tags": ["coding", "concurrency", "deadlocks", "coffman-conditions", "systems"],
+                "tags": [
+                    "coding",
+                    "concurrency",
+                    "deadlocks",
+                    "coffman-conditions",
+                    "systems",
+                ],
                 "options": [
-                    {"text": "Circular Wait", "is_correct": True, "explanation": "Correct. Strict linear ordering eliminates the possibility of cycles in the Resource Allocation Graph."},
-                    {"text": "Mutual Exclusion", "is_correct": False, "explanation": "Incorrect. Resources still remain mutually exclusive."},
-                    {"text": "Hold and Wait", "is_correct": False, "explanation": "Incorrect. Threads can still hold resources while waiting for higher-order ones."},
-                    {"text": "No Preemption", "is_correct": False, "explanation": "Incorrect. Preemption is not introduced by lock ordering."},
-                ]
+                    {
+                        "text": "Circular Wait",
+                        "is_correct": True,
+                        "explanation": "Correct. Strict linear ordering eliminates the possibility of cycles in the Resource Allocation Graph.",
+                    },
+                    {
+                        "text": "Mutual Exclusion",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Resources still remain mutually exclusive.",
+                    },
+                    {
+                        "text": "Hold and Wait",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Threads can still hold resources while waiting for higher-order ones.",
+                    },
+                    {
+                        "text": "No Preemption",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Preemption is not introduced by lock ordering.",
+                    },
+                ],
             },
-
             # ======================== 7. APTITUDE & REASONING ========================
             {
                 "topic": quant_topic,
@@ -783,15 +1201,23 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "State derangement formula: $D_n = (n-1)(D_{n-1} + D_{n-2})$ or $n! \\sum \\frac{(-1)^k}{k!}$",
                     "Base values: $D_1 = 0$, $D_2 = 1$, $D_3 = 2$",
-                    "Compute: $D_4 = (4 - 1)(D_3 + D_2) = 3(2 + 1) = 9$"
+                    "Compute: $D_4 = (4 - 1)(D_3 + D_2) = 3(2 + 1) = 9$",
                 ],
                 "tags": ["aptitude", "combinatorics", "derangements", "quant"],
                 "options": [
-                    {"text": "9", "is_correct": True, "explanation": "Correct. $D_4 = 3(D_3 + D_2) = 3(2 + 1) = 9$."},
+                    {
+                        "text": "9",
+                        "is_correct": True,
+                        "explanation": "Correct. $D_4 = 3(D_3 + D_2) = 3(2 + 1) = 9$.",
+                    },
                     {"text": "8", "is_correct": False, "explanation": "Incorrect."},
                     {"text": "12", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "24", "is_correct": False, "explanation": "Incorrect. 24 is the total permutations $4!$ without constraint."},
-                ]
+                    {
+                        "text": "24",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 24 is the total permutations $4!$ without constraint.",
+                    },
+                ],
             },
             {
                 "topic": quant_topic,
@@ -804,15 +1230,31 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Total distance: $2d$",
                     "Total time: $\\frac{d}{60} + \\frac{d}{40} = \\frac{5d}{120} = \\frac{d}{24}$",
-                    "Average speed: $\\frac{2d}{d/24} = 48\\text{ km/h}$"
+                    "Average speed: $\\frac{2d}{d/24} = 48\\text{ km/h}$",
                 ],
                 "tags": ["aptitude", "average-speed", "harmonic-mean", "quant"],
                 "options": [
-                    {"text": "$48\\text{ km/h}$", "is_correct": True, "explanation": "Correct. Harmonic mean $\\frac{2 \\times 60 \\times 40}{60 + 40} = 48\\text{ km/h}$."},
-                    {"text": "$50\\text{ km/h}$", "is_correct": False, "explanation": "Incorrect. $50\\text{ km/h}$ is arithmetic mean, which is flawed because more time is spent at the slower speed."},
-                    {"text": "$45\\text{ km/h}$", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "$52\\text{ km/h}$", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                    {
+                        "text": "$48\\text{ km/h}$",
+                        "is_correct": True,
+                        "explanation": "Correct. Harmonic mean $\\frac{2 \\times 60 \\times 40}{60 + 40} = 48\\text{ km/h}$.",
+                    },
+                    {
+                        "text": "$50\\text{ km/h}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect. $50\\text{ km/h}$ is arithmetic mean, which is flawed because more time is spent at the slower speed.",
+                    },
+                    {
+                        "text": "$45\\text{ km/h}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "$52\\text{ km/h}$",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                ],
             },
             {
                 "topic": logic_topic,
@@ -826,17 +1268,32 @@ class Command(BaseCommand):
                     "Map statement 1: $A \\subset P$ (All $A$ is $P$)",
                     "Map statement 2: $P \\cap H \\neq \\emptyset$ (Some $P$ is $H$)",
                     "Conclusion I ($A \\cap H \\neq \\emptyset$): Indeterminate, does not necessarily follow",
-                    "Conclusion II ($P \\cap A \\neq \\emptyset$): Sub-alternation from $A \\subset P$, definitely follows"
+                    "Conclusion II ($P \\cap A \\neq \\emptyset$): Sub-alternation from $A \\subset P$, definitely follows",
                 ],
                 "tags": ["aptitude", "syllogisms", "deductive-logic", "reasoning"],
                 "options": [
-                    {"text": "Only Conclusion II follows", "is_correct": True, "explanation": "Correct. Conversion of universal affirmative 'All A are P' yields 'Some P are A'."},
-                    {"text": "Only Conclusion I follows", "is_correct": False, "explanation": "Incorrect. Undistributed middle prevents concluding that algorithms overlap with heuristics."},
-                    {"text": "Both Conclusions I and II follow", "is_correct": False, "explanation": "Incorrect."},
-                    {"text": "Neither conclusion follows", "is_correct": False, "explanation": "Incorrect. Conclusion II is valid."},
-                ]
+                    {
+                        "text": "Only Conclusion II follows",
+                        "is_correct": True,
+                        "explanation": "Correct. Conversion of universal affirmative 'All A are P' yields 'Some P are A'.",
+                    },
+                    {
+                        "text": "Only Conclusion I follows",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Undistributed middle prevents concluding that algorithms overlap with heuristics.",
+                    },
+                    {
+                        "text": "Both Conclusions I and II follow",
+                        "is_correct": False,
+                        "explanation": "Incorrect.",
+                    },
+                    {
+                        "text": "Neither conclusion follows",
+                        "is_correct": False,
+                        "explanation": "Incorrect. Conclusion II is valid.",
+                    },
+                ],
             },
-
             # ======================== 8. DIGITAL SAT MATH ========================
             {
                 "topic": sat_alg_topic,
@@ -849,15 +1306,27 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Identify vertex form: $y = a(x - h)^2 + k$",
                     "Note $a = -16 < 0$, ensuring maximum occurs at vertex $(h, k)$",
-                    "Read maximum value directly as $k = 144$ feet"
+                    "Read maximum value directly as $k = 144$ feet",
                 ],
                 "tags": ["sat-math", "quadratics", "vertex-form", "algebra"],
                 "options": [
-                    {"text": "144", "is_correct": True, "explanation": "Correct. The vertex is $(3, 144)$, meaning maximum height is 144 feet."},
-                    {"text": "16", "is_correct": False, "explanation": "Incorrect. 16 is the gravitational coefficient $g/2$."},
-                    {"text": "3", "is_correct": False, "explanation": "Incorrect. 3 is the time in seconds when maximum height is achieved."},
+                    {
+                        "text": "144",
+                        "is_correct": True,
+                        "explanation": "Correct. The vertex is $(3, 144)$, meaning maximum height is 144 feet.",
+                    },
+                    {
+                        "text": "16",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 16 is the gravitational coefficient $g/2$.",
+                    },
+                    {
+                        "text": "3",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 3 is the time in seconds when maximum height is achieved.",
+                    },
                     {"text": "48", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                ],
             },
             {
                 "topic": sat_geo_topic,
@@ -871,15 +1340,27 @@ class Command(BaseCommand):
                     "Complete the square for $x$: $(x - 4)^2 - 16$",
                     "Complete the square for $y$: $(y + 3)^2 - 9$",
                     "Rearrange: $(x - 4)^2 + (y + 3)^2 = 24 + 16 + 9 = 49$",
-                    "Take square root of constant term: $r = \\sqrt{49} = 7$"
+                    "Take square root of constant term: $r = \\sqrt{49} = 7$",
                 ],
                 "tags": ["sat-math", "circle-geometry", "completing-the-square"],
                 "options": [
-                    {"text": "7", "is_correct": True, "explanation": "Correct. $r^2 = 49 \\implies r = 7$."},
-                    {"text": "49", "is_correct": False, "explanation": "Incorrect. 49 is $r^2$, not $r$."},
-                    {"text": "24", "is_correct": False, "explanation": "Incorrect. 24 is constant before completing square."},
+                    {
+                        "text": "7",
+                        "is_correct": True,
+                        "explanation": "Correct. $r^2 = 49 \\implies r = 7$.",
+                    },
+                    {
+                        "text": "49",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 49 is $r^2$, not $r$.",
+                    },
+                    {
+                        "text": "24",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 24 is constant before completing square.",
+                    },
                     {"text": "5", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                ],
             },
             {
                 "topic": sat_alg_topic,
@@ -892,15 +1373,23 @@ class Command(BaseCommand):
                 "solution_steps": [
                     "Relate decay factor to decay rate: $b = 1 - r$",
                     "Substitute base: $0.85 = 1 - r \\implies r = 0.15$",
-                    "Convert to percentage: $0.15 \\times 100\\% = 15\\%$"
+                    "Convert to percentage: $0.15 \\times 100\\% = 15\\%$",
                 ],
                 "tags": ["sat-math", "exponential-decay", "modeling", "percentages"],
                 "options": [
-                    {"text": "15%", "is_correct": True, "explanation": "Correct. Decay rate $r = 1 - 0.85 = 0.15 = 15\\%$."},
-                    {"text": "85%", "is_correct": False, "explanation": "Incorrect. 85% is remaining fraction, not decrease."},
+                    {
+                        "text": "15%",
+                        "is_correct": True,
+                        "explanation": "Correct. Decay rate $r = 1 - 0.85 = 0.15 = 15\\%$.",
+                    },
+                    {
+                        "text": "85%",
+                        "is_correct": False,
+                        "explanation": "Incorrect. 85% is remaining fraction, not decrease.",
+                    },
                     {"text": "1.5%", "is_correct": False, "explanation": "Incorrect."},
                     {"text": "0.85%", "is_correct": False, "explanation": "Incorrect."},
-                ]
+                ],
             },
         ]
 
@@ -931,7 +1420,14 @@ class Command(BaseCommand):
                 q_obj.code_template = q_item.get("code_template", "")
                 q_obj.language = q_item.get("language", "python")
                 q_obj.test_cases = q_item.get("test_cases", [])
-                q_obj.save(update_fields=["question_type", "code_template", "language", "test_cases"])
+                q_obj.save(
+                    update_fields=[
+                        "question_type",
+                        "code_template",
+                        "language",
+                        "test_cases",
+                    ]
+                )
 
             created_questions.append(q_obj)
 
@@ -944,10 +1440,12 @@ class Command(BaseCommand):
                         "is_correct": opt_item["is_correct"],
                         "explanation": opt_item["explanation"],
                         "order": idx,
-                    }
+                    },
                 )
 
-        self.stdout.write(f"Successfully seeded {len(created_questions)} verified exam questions across 7 core disciplines.")
+        self.stdout.write(
+            f"Successfully seeded {len(created_questions)} verified exam questions across 7 core disciplines."
+        )
 
         # 6. Pre-packaged Tests (Mock and Practice Test Blueprints)
         # Test 1: JEE Advanced Physics & Math Diagnostic Mock
@@ -965,7 +1463,7 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 1,
                 "is_published": True,
                 "is_featured": True,
-            }
+            },
         )
 
         # Test 2: GATE CS Algorithmic Mastery Challenge
@@ -983,7 +1481,7 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 0.66,
                 "is_published": True,
                 "is_featured": True,
-            }
+            },
         )
 
         # Test 3: CAT Adaptive Test Blueprint
@@ -1001,7 +1499,7 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 1,
                 "is_published": True,
                 "is_featured": False,
-            }
+            },
         )
 
         # Test 4: Digital SAT Math Official Benchmark
@@ -1019,7 +1517,7 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 0,
                 "is_published": True,
                 "is_featured": True,
-            }
+            },
         )
 
         # Test 5: Test A+ All-India Grand Diagnostic Mock (All 7 Axes)
@@ -1037,7 +1535,7 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 1,
                 "is_published": True,
                 "is_featured": True,
-            }
+            },
         )
 
         # Test 6: 60-Second Blitz High-Speed Drill
@@ -1055,43 +1553,45 @@ class Command(BaseCommand):
                 "negative_marks_per_question": 0,
                 "is_published": True,
                 "is_featured": True,
-            }
+            },
         )
 
         # Link questions to tests systematically
         # 1. JEE Mock (Physics + Maths)
-        jee_subset = [q for q in created_questions if q.topic.subject.code in ("PHYS_JEE", "MATH_JEE")][:8]
+        jee_subset = [
+            q
+            for q in created_questions
+            if q.topic.subject.code in ("PHYS_JEE", "MATH_JEE")
+        ][:8]
         for i, q in enumerate(jee_subset):
             TestQuestion.objects.get_or_create(
-                test=jee_mock_test,
-                question=q,
-                defaults={"order": i + 1, "marks": 4}
+                test=jee_mock_test, question=q, defaults={"order": i + 1, "marks": 4}
             )
 
         # 2. GATE CS Sprint (CS Core + DSA + Coding)
-        gate_subset = [q for q in created_questions if q.topic.subject.code in ("CS_CORE", "DSA_CORE", "CODING_DEV")][:6]
+        gate_subset = [
+            q
+            for q in created_questions
+            if q.topic.subject.code in ("CS_CORE", "DSA_CORE", "CODING_DEV")
+        ][:6]
         for i, q in enumerate(gate_subset):
             TestQuestion.objects.get_or_create(
-                test=gate_algo_test,
-                question=q,
-                defaults={"order": i + 1, "marks": 2}
+                test=gate_algo_test, question=q, defaults={"order": i + 1, "marks": 2}
             )
 
         # 3. Adaptive IRT Battery
         for i, q in enumerate(created_questions[:6]):
             TestQuestion.objects.get_or_create(
-                test=adaptive_test,
-                question=q,
-                defaults={"order": i + 1, "marks": 4}
+                test=adaptive_test, question=q, defaults={"order": i + 1, "marks": 4}
             )
 
         # 4. SAT Math Practice
-        sat_subset = [q for q in created_questions if q.topic.subject.code == "SAT_MATH_CORE"]
+        sat_subset = [
+            q for q in created_questions if q.topic.subject.code == "SAT_MATH_CORE"
+        ]
         for i, q in enumerate(sat_subset):
             TestQuestion.objects.get_or_create(
-                test=sat_paper,
-                question=q,
-                defaults={"order": i + 1, "marks": 1}
+                test=sat_paper, question=q, defaults={"order": i + 1, "marks": 1}
             )
 
         # 5. Test A+ Grand Mock (14 questions across all 7 axes)
@@ -1099,15 +1599,17 @@ class Command(BaseCommand):
             TestQuestion.objects.get_or_create(
                 test=test_a_grand_mock,
                 question=q,
-                defaults={"order": i + 1, "marks": 4}
+                defaults={"order": i + 1, "marks": 4},
             )
 
         # 6. Blitz High-Speed Drill (10 rapid-fire questions)
         for i, q in enumerate(created_questions[:10]):
             TestQuestion.objects.get_or_create(
-                test=blitz_test,
-                question=q,
-                defaults={"order": i + 1, "marks": 2}
+                test=blitz_test, question=q, defaults={"order": i + 1, "marks": 2}
             )
 
-        self.stdout.write(self.style.SUCCESS("Successfully seeded multi-disciplinary question bank and 6 test blueprints."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully seeded multi-disciplinary question bank and 6 test blueprints."
+            )
+        )

@@ -7,8 +7,17 @@ import pytest
 from rest_framework.exceptions import ValidationError
 from apps.users.models import User
 from apps.courses.models import (
-    Category, Course, Module, Lesson, Enrollment, Review,
-    Certificate, CourseNote, CourseResource, CareerTrack, TrackCourse
+    Category,
+    Course,
+    Module,
+    Lesson,
+    Enrollment,
+    Review,
+    Certificate,
+    CourseNote,
+    CourseResource,
+    CareerTrack,
+    TrackCourse,
 )
 from apps.courses import selectors, validators, permissions
 from apps.courses.services import LessonService, NoteService, ResourceService
@@ -20,7 +29,7 @@ def instructor(db):
         username="course_instructor",
         email="instructor@learninghub.com",
         password="TestPassword123!",
-        role="instructor"
+        role="instructor",
     )
 
 
@@ -30,7 +39,7 @@ def student(db):
         username="course_student",
         email="student@learninghub.com",
         password="TestPassword123!",
-        role="student"
+        role="student",
     )
 
 
@@ -40,16 +49,14 @@ def other_student(db):
         username="other_student",
         email="other@learninghub.com",
         password="TestPassword123!",
-        role="student"
+        role="student",
     )
 
 
 @pytest.fixture
 def category(db):
     cat = Category.objects.create(
-        name="Computer Science",
-        slug="computer-science",
-        description="Core CS concepts"
+        name="Computer Science", slug="computer-science", description="Core CS concepts"
     )
     cat.refresh_from_db()
     return cat
@@ -75,11 +82,7 @@ def sample_course(db, instructor, category):
 
 @pytest.fixture
 def sample_module(db, sample_course):
-    mod = Module.objects.create(
-        course=sample_course,
-        title="Module 1: Basics",
-        order=1
-    )
+    mod = Module.objects.create(course=sample_course, title="Module 1: Basics", order=1)
     mod.refresh_from_db()
     return mod
 
@@ -91,7 +94,7 @@ def sample_lesson(db, sample_module):
         title="Lesson 1: Sorting",
         slug="lesson-1-sorting",
         order=1,
-        duration_minutes=30
+        duration_minutes=30,
     )
     les.refresh_from_db()
     return les
@@ -100,6 +103,7 @@ def sample_lesson(db, sample_module):
 # ==============================================================================
 # 1. SELECTOR TESTS
 # ==============================================================================
+
 
 @pytest.mark.django_db
 class TestCourseSelectors:
@@ -143,7 +147,9 @@ class TestCourseSelectors:
         assert lesson_by_id is not None
         assert str(lesson_by_id.id) == str(sample_lesson.id)
 
-        lesson_by_slug = selectors.get_lesson_by_slug("algorithms-101", "lesson-1-sorting")
+        lesson_by_slug = selectors.get_lesson_by_slug(
+            "algorithms-101", "lesson-1-sorting"
+        )
         assert lesson_by_slug is not None
         assert str(lesson_by_slug.id) == str(sample_lesson.id)
 
@@ -159,7 +165,7 @@ class TestCourseSelectors:
             title="Software Engineering",
             slug="software-engineering",
             description="Full track",
-            is_active=True
+            is_active=True,
         )
         track.refresh_from_db()
         TrackCourse.objects.create(track=track, course=sample_course, order=1)
@@ -175,6 +181,7 @@ class TestCourseSelectors:
 # ==============================================================================
 # 2. VALIDATOR TESTS
 # ==============================================================================
+
 
 class TestCourseValidators:
     def test_validate_course_pricing(self):
@@ -203,7 +210,10 @@ class TestCourseValidators:
             validators.validate_lesson_progress(-1.0)
 
     def test_validate_note_content(self):
-        assert validators.validate_note_content("Great explanation!") == "Great explanation!"
+        assert (
+            validators.validate_note_content("Great explanation!")
+            == "Great explanation!"
+        )
         with pytest.raises(ValidationError):
             validators.validate_note_content("   ")
 
@@ -211,6 +221,7 @@ class TestCourseValidators:
 # ==============================================================================
 # 3. PERMISSION TESTS
 # ==============================================================================
+
 
 @pytest.mark.django_db
 class TestCoursePermissions:
@@ -229,7 +240,9 @@ class TestCoursePermissions:
         # POST as instructor
         assert perm.has_permission(DummyRequest(instructor, "POST"), None) is True
 
-    def test_is_course_instructor_or_admin(self, instructor, other_student, sample_course):
+    def test_is_course_instructor_or_admin(
+        self, instructor, other_student, sample_course
+    ):
         perm = permissions.IsCourseInstructorOrAdmin()
 
         class DummyRequest:
@@ -237,17 +250,30 @@ class TestCoursePermissions:
                 self.user = user
                 self.method = method
 
-        assert perm.has_object_permission(DummyRequest(instructor, "DELETE"), None, sample_course) is True
-        assert perm.has_object_permission(DummyRequest(other_student, "DELETE"), None, sample_course) is False
+        assert (
+            perm.has_object_permission(
+                DummyRequest(instructor, "DELETE"), None, sample_course
+            )
+            is True
+        )
+        assert (
+            perm.has_object_permission(
+                DummyRequest(other_student, "DELETE"), None, sample_course
+            )
+            is False
+        )
 
 
 # ==============================================================================
 # 4. SERVICE TESTS (LessonService, NoteService, ResourceService)
 # ==============================================================================
 
+
 @pytest.mark.django_db
 class TestCourseDomainServices:
-    def test_lesson_service_complete_lesson(self, student, sample_course, sample_lesson):
+    def test_lesson_service_complete_lesson(
+        self, student, sample_course, sample_lesson
+    ):
         # Create initial enrollment
         enrollment = Enrollment.objects.create(user=student, course=sample_course)
 
@@ -261,17 +287,21 @@ class TestCourseDomainServices:
         assert enrollment.completed_at is not None
 
     def test_lesson_service_update_progress(self, student, sample_lesson):
-        progress = LessonService.update_lesson_progress(student, sample_lesson.id, 145.0)
+        progress = LessonService.update_lesson_progress(
+            student, sample_lesson.id, 145.0
+        )
         assert progress.progress_seconds == 145.0
         assert progress.user == student
 
-    def test_note_service_create_and_delete(self, student, sample_course, sample_lesson):
+    def test_note_service_create_and_delete(
+        self, student, sample_course, sample_lesson
+    ):
         note = NoteService.create_note(
             user=student,
             course=sample_course,
             lesson=sample_lesson,
             content="Binary search requires sorted array.",
-            timestamp_seconds=45
+            timestamp_seconds=45,
         )
         assert note.content == "Binary search requires sorted array."
         assert note.timestamp_seconds == 45
@@ -286,7 +316,7 @@ class TestCourseDomainServices:
             title="Algorithm Cheat Sheet",
             resource_type="pdf",
             external_url="https://learninghub.com/resources/algos.pdf",
-            description="Quick reference"
+            description="Quick reference",
         )
         assert resource.title == "Algorithm Cheat Sheet"
         assert resource.course == sample_course

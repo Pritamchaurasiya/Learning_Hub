@@ -71,5 +71,9 @@ def run_jamba(request):
         return Response({"status": "error", "message": str(e)}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)
 """
 
-with open(r'c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\views.py', 'a', encoding='utf-8') as f:
+with open(
+    r"c:\Users\shiva\Desktop\windows_app\conductor\apps\ai_engine\views.py",
+    "a",
+    encoding="utf-8",
+) as f:
     f.write(views_content)

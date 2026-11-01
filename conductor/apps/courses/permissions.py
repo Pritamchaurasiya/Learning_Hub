@@ -61,7 +61,9 @@ class IsEnrolledInCourse(BasePermission):
         if course_slug:
             return (
                 Course.objects.filter(slug=course_slug, instructor=user).exists()
-                or Enrollment.objects.filter(user=user, course__slug=course_slug).exists()
+                or Enrollment.objects.filter(
+                    user=user, course__slug=course_slug
+                ).exists()
             )
         if course_id:
             return (

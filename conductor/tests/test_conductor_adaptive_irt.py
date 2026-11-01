@@ -39,7 +39,9 @@ def adaptive_exam_battery(db):
         pattern={"total_questions": 10, "duration_minutes": 30},
         is_active=True,
     )
-    subject = Subject.objects.create(exam=exam, name="Mathematics", code="MATH", is_active=True)
+    subject = Subject.objects.create(
+        exam=exam, name="Mathematics", code="MATH", is_active=True
+    )
     topic = Topic.objects.create(subject=subject, name="Calculus", is_active=True)
 
     test = Test.objects.create(
@@ -120,9 +122,9 @@ class TestAdaptiveIRTCATMathematics:
     def test_bayesian_eap_progression(self):
         # High performers with correct responses achieve positive theta
         items = [
-            {'a': 1.2, 'b': -1.0, 'c': 0.25},
-            {'a': 1.2, 'b': 0.0, 'c': 0.25},
-            {'a': 1.2, 'b': 1.0, 'c': 0.25},
+            {"a": 1.2, "b": -1.0, "c": 0.25},
+            {"a": 1.2, "b": 0.0, "c": 0.25},
+            {"a": 1.2, "b": 1.0, "c": 0.25},
         ]
         theta_correct, sem_correct = AdaptiveAssessmentEngine.estimate_ability_eap(
             responses=[1, 1, 1], item_params=items
@@ -144,11 +146,13 @@ class TestAdaptiveIRTCATMathematics:
         pct_neutral = AdaptiveAssessmentEngine.theta_to_percentile(0.0)
         assert abs(pct_neutral - 50.0) < 0.5
 
-        assert AdaptiveAssessmentEngine.get_ability_band(2.2) == 'Advanced Master'
-        assert AdaptiveAssessmentEngine.get_ability_band(1.2) == 'Proficient / Competitive'
-        assert AdaptiveAssessmentEngine.get_ability_band(0.2) == 'Competent'
-        assert AdaptiveAssessmentEngine.get_ability_band(-0.5) == 'Developing'
-        assert AdaptiveAssessmentEngine.get_ability_band(-2.0) == 'Foundational'
+        assert AdaptiveAssessmentEngine.get_ability_band(2.2) == "Advanced Master"
+        assert (
+            AdaptiveAssessmentEngine.get_ability_band(1.2) == "Proficient / Competitive"
+        )
+        assert AdaptiveAssessmentEngine.get_ability_band(0.2) == "Competent"
+        assert AdaptiveAssessmentEngine.get_ability_band(-0.5) == "Developing"
+        assert AdaptiveAssessmentEngine.get_ability_band(-2.0) == "Foundational"
 
 
 @pytest.mark.django_db
@@ -159,7 +163,9 @@ class TestAdaptiveAPIEndpoints:
         client, user = auth_client
         test, questions = adaptive_exam_battery
 
-        attempt = TestSessionManager.start_attempt(user=user, test_id=test.id, mode="adaptive")
+        attempt = TestSessionManager.start_attempt(
+            user=user, test_id=test.id, mode="adaptive"
+        )
 
         # Step 1: Submit answer for first question
         q1, opt_c1, _ = questions[0]
@@ -170,7 +176,9 @@ class TestAdaptiveAPIEndpoints:
             "time_spent_seconds": 25,
         }
 
-        res = client.post(f"/api/v1/tests/{test.id}/adaptive/step/", payload, format="json")
+        res = client.post(
+            f"/api/v1/tests/{test.id}/adaptive/step/", payload, format="json"
+        )
         assert res.status_code == status.HTTP_200_OK
         data = res.json()
         assert data["status"] == "success"
@@ -184,11 +192,15 @@ class TestAdaptiveAPIEndpoints:
         assert step_data["nextQuestion"]["id"] != str(q1.id)
         assert "confidenceInterval" in step_data["diagnostics"]
 
-    def test_attempt_detail_adaptive_step_endpoint(self, auth_client, adaptive_exam_battery):
+    def test_attempt_detail_adaptive_step_endpoint(
+        self, auth_client, adaptive_exam_battery
+    ):
         client, user = auth_client
         test, questions = adaptive_exam_battery
 
-        attempt = TestSessionManager.start_attempt(user=user, test_id=test.id, mode="adaptive")
+        attempt = TestSessionManager.start_attempt(
+            user=user, test_id=test.id, mode="adaptive"
+        )
 
         q1, opt_c1, _ = questions[0]
         res = client.post(

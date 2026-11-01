@@ -23,42 +23,46 @@ class Goal:
     priority: int
     description: str = field(compare=False)
     id: str = field(compare=False, default_factory=lambda: str(uuid.uuid4()))
-    subtasks: List['Goal'] = field(compare=False, default_factory=list)
+    subtasks: List["Goal"] = field(compare=False, default_factory=list)
 
 
 class MemoryStream:
     """
     Simulates vector memory stream for an agent.
     """
+
     def __init__(self):
-        self.memories = [] # List of (timestamp, vector, text, importance)
+        self.memories = []  # List of (timestamp, vector, text, importance)
 
     def add_memory(self, text: str, importance: float = 0.5):
         # In prod: Compute embeddings
-        embedding = [0.1, 0.2] # Mock
-        self.memories.append({
-            "timestamp": datetime.now(),
-            "vector": embedding,
-            "text": text,
-            "importance": importance
-        })
+        embedding = [0.1, 0.2]  # Mock
+        self.memories.append(
+            {
+                "timestamp": datetime.now(),
+                "vector": embedding,
+                "text": text,
+                "importance": importance,
+            }
+        )
 
     def retrieve(self, query: str, k: int = 3) -> List[str]:
         """Retrieve relevant memories (Recency + Importance + Relevance)."""
         # Mock retrieval: just return most important/recent
-        sorted_mem = sorted(self.memories, key=lambda x: x['importance'], reverse=True)
-        return [m['text'] for m in sorted_mem[:k]]
+        sorted_mem = sorted(self.memories, key=lambda x: x["importance"], reverse=True)
+        return [m["text"] for m in sorted_mem[:k]]
 
 
 class CognitiveAgent:
     """
     An autonomous tutor agent.
     """
+
     def __init__(self, name: str, persona: str):
         self.name = name
         self.persona = persona
         self.memory = MemoryStream()
-        self.goal_queue = [] # Priority Queue
+        self.goal_queue = []  # Priority Queue
         self.state = "IDLE"
 
     def perceieve(self, observation: str):
@@ -73,23 +77,23 @@ class CognitiveAgent:
         """Decompose top goal into actions."""
         if not self.goal_queue:
             return "No goals. Idle."
-            
-        current_goal = self.goal_queue[0] # Peek
-        
+
+        current_goal = self.goal_queue[0]  # Peek
+
         # Deconstruct (Mock LLM Planning)
         if not current_goal.subtasks and "teach" in current_goal.description:
             # Dynamically generate subtasks
             current_goal.subtasks = [
                 Goal(1, "Assess current knowledge"),
                 Goal(2, "Explain concept"),
-                Goal(3, "Verify understanding")
+                Goal(3, "Verify understanding"),
             ]
-            
+
         action = f"Working on {current_goal.description}"
         if current_goal.subtasks:
             sub = current_goal.subtasks.pop(0)
             action += f" -> Step: {sub.description}"
-            
+
         return action
 
     def reflect(self):
@@ -105,6 +109,7 @@ class AgentSwarm:
     """
     Manages multiple agents.
     """
+
     _agents: Dict[str, CognitiveAgent] = {}
 
     @classmethod

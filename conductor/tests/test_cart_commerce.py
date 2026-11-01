@@ -83,7 +83,9 @@ class TestCartCommerce:
 
     def test_update_cart_item(self, api_client, student, course):
         api_client.force_authenticate(user=student)
-        api_client.post("/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json")
+        api_client.post(
+            "/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json"
+        )
         cart = Cart.objects.get(user=student)
         item = cart.items.first()
 
@@ -99,7 +101,9 @@ class TestCartCommerce:
 
     def test_remove_from_cart(self, api_client, student, course):
         api_client.force_authenticate(user=student)
-        api_client.post("/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json")
+        api_client.post(
+            "/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json"
+        )
         cart = Cart.objects.get(user=student)
         item = cart.items.first()
 
@@ -109,7 +113,9 @@ class TestCartCommerce:
 
     def test_apply_coupon(self, api_client, student, course, coupon):
         api_client.force_authenticate(user=student)
-        api_client.post("/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json")
+        api_client.post(
+            "/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json"
+        )
 
         coupon_resp = api_client.post(
             "/api/v1/commerce/cart/apply-coupon/",
@@ -124,7 +130,9 @@ class TestCartCommerce:
 
     def test_cart_checkout(self, api_client, student, course):
         api_client.force_authenticate(user=student)
-        api_client.post("/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json")
+        api_client.post(
+            "/api/v1/commerce/cart/add/", {"course_id": str(course.id)}, format="json"
+        )
 
         checkout_resp = api_client.post(
             "/api/v1/commerce/cart/checkout/",

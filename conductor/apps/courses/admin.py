@@ -67,7 +67,9 @@ class CourseAdmin(admin.ModelAdmin):
                         les.slug = f"{les.slug}-copy"
                         les.save()
 
-        self.message_user(request, f"{queryset.count()} courses duplicated successfully.")
+        self.message_user(
+            request, f"{queryset.count()} courses duplicated successfully."
+        )
 
     @admin.action(description="Publish selected courses")
     def publish_courses(self, request, queryset):
@@ -123,7 +125,14 @@ class CourseAdmin(admin.ModelAdmin):
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 0
-    fields = ("order", "title", "content_type", "duration_minutes", "is_preview", "is_pro_only")
+    fields = (
+        "order",
+        "title",
+        "content_type",
+        "duration_minutes",
+        "is_preview",
+        "is_pro_only",
+    )
     show_change_link = True
     ordering = ("order",)
 
@@ -145,7 +154,15 @@ class ModuleAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     """Individual Lesson Admin."""
 
-    list_display = ["title", "module", "content_type", "duration_minutes", "is_preview", "is_pro_only", "order"]
+    list_display = [
+        "title",
+        "module",
+        "content_type",
+        "duration_minutes",
+        "is_preview",
+        "is_pro_only",
+        "order",
+    ]
     list_filter = ["content_type", "is_preview", "is_pro_only"]
     search_fields = ["title", "module__title", "module__course__title"]
     list_select_related = ["module", "module__course"]
@@ -220,4 +237,3 @@ class CareerTrackAdmin(admin.ModelAdmin):
     search_fields = ["title", "description"]
     prepopulated_fields = {"slug": ("title",)}
     inlines = [TrackCourseInline]
-

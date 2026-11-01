@@ -31,51 +31,61 @@ class ModelWeight:
 
 class WeightAverager:
     """Average model weights."""
+
     def average(self, models: List[ModelWeight]) -> Dict[str, List[float]]:
         if not models:
             return {}
-        
+
         result = {}
         all_keys = set()
         for m in models:
             all_keys.update(m.weights.keys())
-        
+
         for key in all_keys:
             values = [m.weights.get(key, []) for m in models if key in m.weights]
             if values:
                 n_params = len(values[0])
-                result[key] = [sum(v[i] for v in values) / len(values) for i in range(n_params)]
-        
+                result[key] = [
+                    sum(v[i] for v in values) / len(values) for i in range(n_params)
+                ]
+
         return result
 
     def weighted_average(self, models: List[ModelWeight]) -> Dict[str, List[float]]:
         if not models:
             return {}
-        
+
         total_coef = sum(m.coefficient for m in models)
         result = {}
         all_keys = set()
         for m in models:
             all_keys.update(m.weights.keys())
-        
+
         for key in all_keys:
-            values = [(m.weights.get(key, []), m.coefficient) for m in models if key in m.weights]
+            values = [
+                (m.weights.get(key, []), m.coefficient)
+                for m in models
+                if key in m.weights
+            ]
             if values:
                 n_params = len(values[0][0])
                 result[key] = [
-                    sum(v[i] * c for v, c in values) / total_coef 
+                    sum(v[i] * c for v, c in values) / total_coef
                     for i in range(n_params)
                 ]
-        
+
         return result
 
 
 class TIESMerger:
     """TIES: Trim, Elect, Merge."""
+
     def __init__(self, trim_ratio: float = 0.2):
         self.trim_ratio = trim_ratio
 
-    def _compute_task_vector(self, finetuned: List[float], base: List[float]) -> List[float]:
+    def _compute_task_vector(
+        self, finetuned: List[float], base: List[float]
+    ) -> List[float]:
         return [f - b for f, b in zip(finetuned, base)]
 
     def _trim(self, vector: List[float]) -> List[float]:
@@ -91,7 +101,9 @@ class TIESMerger:
             signs.append(1 if pos_sum >= abs(neg_sum) else -1)
         return signs
 
-    def merge(self, base: Dict[str, List[float]], models: List[ModelWeight]) -> Dict[str, List[float]]:
+    def merge(
+        self, base: Dict[str, List[float]], models: List[ModelWeight]
+    ) -> Dict[str, List[float]]:
         result = {}
         for key, base_weights in base.items():
             task_vectors = []
@@ -100,7 +112,7 @@ class TIESMerger:
                     tv = self._compute_task_vector(m.weights[key], base_weights)
                     trimmed = self._trim(tv)
                     task_vectors.append(trimmed)
-            
+
             if task_vectors:
                 signs = self._elect_sign(task_vectors)
                 merged = []
@@ -113,19 +125,22 @@ class TIESMerger:
                 result[key] = merged
             else:
                 result[key] = base_weights
-        
+
         return result
 
 
 class DAREMerger:
     """DARE: Drop And REscale."""
+
     def __init__(self, drop_rate: float = 0.9):
         self.drop_rate = drop_rate
 
-    def merge(self, base: Dict[str, List[float]], delta: Dict[str, List[float]]) -> Dict[str, List[float]]:
+    def merge(
+        self, base: Dict[str, List[float]], delta: Dict[str, List[float]]
+    ) -> Dict[str, List[float]]:
         result = {}
         scale = 1.0 / (1.0 - self.drop_rate)
-        
+
         for key, base_weights in base.items():
             if key in delta:
                 merged = []
@@ -137,35 +152,37 @@ class DAREMerger:
                 result[key] = merged
             else:
                 result[key] = base_weights
-        
+
         return result
 
 
 class SLERPMerger:
     """Spherical Linear Interpolation."""
+
     def interpolate(self, w1: List[float], w2: List[float], t: float) -> List[float]:
         dot = sum(a * b for a, b in zip(w1, w2))
         norm1 = math.sqrt(sum(a * a for a in w1))
         norm2 = math.sqrt(sum(b * b for b in w2))
-        
+
         if norm1 * norm2 < 1e-8:
             return [(1 - t) * a + t * b for a, b in zip(w1, w2)]
-        
+
         cos_theta = max(-1, min(1, dot / (norm1 * norm2)))
         theta = math.acos(cos_theta)
-        
+
         if abs(theta) < 1e-6:
             return [(1 - t) * a + t * b for a, b in zip(w1, w2)]
-        
+
         sin_theta = math.sin(theta)
         s1 = math.sin((1 - t) * theta) / sin_theta
         s2 = math.sin(t * theta) / sin_theta
-        
+
         return [s1 * a + s2 * b for a, b in zip(w1, w2)]
 
 
 class ModelMerger:
     """Complete model merging system."""
+
     def __init__(self):
         self.averager = WeightAverager()
         self.ties = TIESMerger()
@@ -176,7 +193,7 @@ class ModelMerger:
         self,
         method: MergeMethod,
         models: List[ModelWeight],
-        base: Optional[Dict[str, List[float]]] = None
+        base: Optional[Dict[str, List[float]]] = None,
     ) -> Dict[str, List[float]]:
         if method == MergeMethod.AVERAGE:
             return self.averager.average(models)
@@ -185,8 +202,11 @@ class ModelMerger:
         elif method == MergeMethod.TIES and base:
             return self.ties.merge(base, models)
         elif method == MergeMethod.DARE and base and len(models) == 1:
-            delta = {k: [m - b for m, b in zip(models[0].weights[k], base[k])] 
-                     for k in base if k in models[0].weights}
+            delta = {
+                k: [m - b for m, b in zip(models[0].weights[k], base[k])]
+                for k in base
+                if k in models[0].weights
+            }
             return self.dare.merge(base, delta)
         else:
             return self.averager.average(models)

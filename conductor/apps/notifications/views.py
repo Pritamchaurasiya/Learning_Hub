@@ -19,19 +19,21 @@ from .serializers import (
 
 class NotificationPagination(PageNumberPagination):
     """Standard pagination for notifications."""
+
     page_size = 20
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
 class NotificationFilter(filters.FilterSet):
     """Filter notifications by type and read status."""
+
     type = filters.ChoiceFilter(choices=Notification.Type.choices)
     is_read = filters.BooleanFilter()
 
     class Meta:
         model = Notification
-        fields = ['type', 'is_read']
+        fields = ["type", "is_read"]
 
 
 @extend_schema(tags=["Notifications"])
@@ -50,10 +52,16 @@ class NotificationListView(generics.ListAPIView):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(name='type', description='Filter by notification type', required=False),
-            OpenApiParameter(name='is_read', description='Filter by read status', required=False),
-            OpenApiParameter(name='page', description='Page number', required=False),
-            OpenApiParameter(name='page_size', description='Items per page (max 100)', required=False),
+            OpenApiParameter(
+                name="type", description="Filter by notification type", required=False
+            ),
+            OpenApiParameter(
+                name="is_read", description="Filter by read status", required=False
+            ),
+            OpenApiParameter(name="page", description="Page number", required=False),
+            OpenApiParameter(
+                name="page_size", description="Items per page (max 100)", required=False
+            ),
         ],
         responses={200: NotificationSerializer(many=True)},
     )
@@ -65,7 +73,7 @@ class NotificationListView(generics.ListAPIView):
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             response = self.get_paginated_response(serializer.data)
-            response.data['unread_count'] = unread_count
+            response.data["unread_count"] = unread_count
             return response
 
         serializer = self.get_serializer(qs, many=True)
@@ -82,7 +90,7 @@ class NotificationListView(generics.ListAPIView):
 
 @extend_schema(
     tags=["Notifications"],
-    responses={200: OpenApiResponse(description="Notifications marked as read")}
+    responses={200: OpenApiResponse(description="Notifications marked as read")},
 )
 class MarkReadView(generics.GenericAPIView):
     """Mark notifications as read."""
@@ -100,9 +108,9 @@ class MarkReadView(generics.GenericAPIView):
                 user=request.user, id__in=notification_ids, is_read=False
             ).update(is_read=True, read_at=timezone.now())
         else:
-            updated = Notification.objects.filter(user=request.user, is_read=False).update(
-                is_read=True, read_at=timezone.now()
-            )
+            updated = Notification.objects.filter(
+                user=request.user, is_read=False
+            ).update(is_read=True, read_at=timezone.now())
         return Response(
             {"status": "success", "message": f"{updated} notifications marked as read"}
         )
@@ -110,7 +118,7 @@ class MarkReadView(generics.GenericAPIView):
 
 @extend_schema(
     tags=["Notifications"],
-    responses={200: OpenApiResponse(description="Notification marked as read")}
+    responses={200: OpenApiResponse(description="Notification marked as read")},
 )
 class MarkSingleNotificationReadView(generics.GenericAPIView):
     """Mark a single notification as read by ID."""
@@ -134,7 +142,7 @@ class MarkSingleNotificationReadView(generics.GenericAPIView):
 
 @extend_schema(
     tags=["Notifications"],
-    responses={200: OpenApiResponse(description="Notifications deleted")}
+    responses={200: OpenApiResponse(description="Notifications deleted")},
 )
 class DeleteNotificationsView(generics.GenericAPIView):
     """Delete notifications — single or batch.
@@ -169,7 +177,7 @@ class DeleteNotificationsView(generics.GenericAPIView):
 
 @extend_schema(
     tags=["Notifications"],
-    responses={200: OpenApiResponse(description="Device registered successfully")}
+    responses={200: OpenApiResponse(description="Device registered successfully")},
 )
 class RegisterDeviceView(generics.GenericAPIView):
     """Register FCM device token."""

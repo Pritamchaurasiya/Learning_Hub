@@ -23,10 +23,10 @@ class TestLiveSessionModel:
             scheduled_time=timezone.now() + timedelta(hours=1),
             duration_minutes=60,
         )
-        
+
         assert session.title == "Test Live Session"
         assert session.host == instructor
-        assert session.status == 'scheduled'
+        assert session.status == "scheduled"
 
     def test_live_session_status_transitions(self, instructor, course):
         """Test live session status transitions."""
@@ -37,13 +37,13 @@ class TestLiveSessionModel:
             scheduled_time=timezone.now(),
             duration_minutes=60,
         )
-        
+
         # Start session
-        session.status = 'live'
+        session.status = "live"
         session.save()
-        
+
         session.refresh_from_db()
-        assert session.status == 'live'
+        assert session.status == "live"
 
     def test_session_attendee_creation(self, instructor, user, course):
         """Test session attendee is created correctly."""
@@ -54,12 +54,12 @@ class TestLiveSessionModel:
             scheduled_time=timezone.now(),
             duration_minutes=60,
         )
-        
+
         attendee = SessionAttendee.objects.create(
             session=session,
             user=user,
         )
-        
+
         assert attendee.session == session
         assert attendee.user == user
 
@@ -72,9 +72,10 @@ class TestLiveSessionModel:
             scheduled_time=timezone.now(),
             duration_minutes=60,
         )
-        
+
         SessionAttendee.objects.create(session=session, user=user)
-        
+
         from django.db import IntegrityError
+
         with pytest.raises(IntegrityError):
             SessionAttendee.objects.create(session=session, user=user)

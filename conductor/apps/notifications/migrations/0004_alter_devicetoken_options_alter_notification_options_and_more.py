@@ -7,114 +7,154 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notifications', '0003_smartnotification_error_message_and_more'),
+        ("notifications", "0003_smartnotification_error_message_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='devicetoken',
-            options={'verbose_name': 'Device Token', 'verbose_name_plural': 'Device Tokens'},
+            name="devicetoken",
+            options={
+                "verbose_name": "Device Token",
+                "verbose_name_plural": "Device Tokens",
+            },
         ),
         migrations.AlterModelOptions(
-            name='notification',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Notification', 'verbose_name_plural': 'Notifications'},
+            name="notification",
+            options={
+                "ordering": ["-created_at"],
+                "verbose_name": "Notification",
+                "verbose_name_plural": "Notifications",
+            },
         ),
         migrations.RenameIndex(
-            model_name='notification',
-            new_name='idx_notif_user_read_created',
-            old_name='notificatio_user_id_c4e471_idx',
+            model_name="notification",
+            new_name="idx_notif_user_read_created",
+            old_name="notificatio_user_id_c4e471_idx",
         ),
         migrations.AddField(
-            model_name='devicetoken',
-            name='device_name',
+            model_name="devicetoken",
+            name="device_name",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='devicetoken',
-            name='last_used_at',
+            model_name="devicetoken",
+            name="last_used_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='action_url',
+            model_name="notification",
+            name="action_url",
             field=models.CharField(blank=True, max_length=500),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='expires_at',
+            model_name="notification",
+            name="expires_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='priority',
+            model_name="notification",
+            name="priority",
             field=models.PositiveSmallIntegerField(db_index=True, default=2),
         ),
         migrations.AlterField(
-            model_name='devicetoken',
-            name='is_active',
+            model_name="devicetoken",
+            name="is_active",
             field=models.BooleanField(db_index=True, default=True),
         ),
         migrations.AlterField(
-            model_name='devicetoken',
-            name='platform',
-            field=models.CharField(choices=[('android', 'Android'), ('ios', 'iOS'), ('web', 'Web'), ('windows', 'Windows')], db_index=True, max_length=20),
+            model_name="devicetoken",
+            name="platform",
+            field=models.CharField(
+                choices=[
+                    ("android", "Android"),
+                    ("ios", "iOS"),
+                    ("web", "Web"),
+                    ("windows", "Windows"),
+                ],
+                db_index=True,
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='devicetoken',
-            name='token',
+            model_name="devicetoken",
+            name="token",
             field=models.TextField(db_index=True),
         ),
         migrations.AlterField(
-            model_name='notification',
-            name='is_read',
+            model_name="notification",
+            name="is_read",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='notification',
-            name='read_at',
+            model_name="notification",
+            name="read_at",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='notification',
-            name='title',
+            model_name="notification",
+            name="title",
             field=models.CharField(db_index=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='notification',
-            name='type',
-            field=models.CharField(choices=[('system', 'System'), ('course', 'Course Update'), ('achievement', 'Achievement'), ('reminder', 'Reminder'), ('payment', 'Payment'), ('social', 'Social')], db_index=True, default='system', max_length=20),
+            model_name="notification",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("system", "System"),
+                    ("course", "Course Update"),
+                    ("achievement", "Achievement"),
+                    ("reminder", "Reminder"),
+                    ("payment", "Payment"),
+                    ("social", "Social"),
+                ],
+                db_index=True,
+                default="system",
+                max_length=20,
+            ),
         ),
         migrations.AddIndex(
-            model_name='devicetoken',
-            index=models.Index(fields=['user', 'is_active'], name='idx_device_user_active'),
+            model_name="devicetoken",
+            index=models.Index(
+                fields=["user", "is_active"], name="idx_device_user_active"
+            ),
         ),
         migrations.AddIndex(
-            model_name='devicetoken',
-            index=models.Index(fields=['platform', 'is_active'], name='idx_device_platform_active'),
+            model_name="devicetoken",
+            index=models.Index(
+                fields=["platform", "is_active"], name="idx_device_platform_active"
+            ),
         ),
         migrations.AddIndex(
-            model_name='devicetoken',
-            index=models.Index(fields=['-last_used_at'], name='idx_device_recent'),
+            model_name="devicetoken",
+            index=models.Index(fields=["-last_used_at"], name="idx_device_recent"),
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['user', 'type', '-created_at'], name='idx_notif_user_type'),
+            model_name="notification",
+            index=models.Index(
+                fields=["user", "type", "-created_at"], name="idx_notif_user_type"
+            ),
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['user', '-priority', '-created_at'], name='idx_notif_user_priority'),
+            model_name="notification",
+            index=models.Index(
+                fields=["user", "-priority", "-created_at"],
+                name="idx_notif_user_priority",
+            ),
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['type', 'is_read'], name='idx_notif_type_read'),
+            model_name="notification",
+            index=models.Index(fields=["type", "is_read"], name="idx_notif_type_read"),
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['-created_at'], name='idx_notif_recent'),
+            model_name="notification",
+            index=models.Index(fields=["-created_at"], name="idx_notif_recent"),
         ),
         migrations.AddConstraint(
-            model_name='notification',
-            constraint=models.CheckConstraint(check=models.Q(('priority__gte', 1), ('priority__lte', 5)), name='notification_priority_range'),
+            model_name="notification",
+            constraint=models.CheckConstraint(
+                check=models.Q(("priority__gte", 1), ("priority__lte", 5)),
+                name="notification_priority_range",
+            ),
         ),
     ]

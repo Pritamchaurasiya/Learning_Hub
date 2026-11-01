@@ -7,6 +7,7 @@ from .gnn_knowledge import KnowledgeGraphTracer
 
 logger = logging.getLogger(__name__)
 
+
 class GNNKnowledgeService:
     """
     Service to bridge the GNN Engine with the Django Database.
@@ -18,10 +19,10 @@ class GNNKnowledgeService:
         """
         Builds an adjacency matrix where nodes are Courses and edges are relationships.
         """
-        Course = apps.get_model('courses', 'Course')
-        courses = list(Course.objects.filter(is_published=True).order_by('id'))
+        Course = apps.get_model("courses", "Course")
+        courses = list(Course.objects.filter(is_published=True).order_by("id"))
         node_count = len(courses)
-        
+
         if node_count < 2:
             return {"error": "Not enough courses to build a graph."}
 
@@ -35,9 +36,11 @@ class GNNKnowledgeService:
         # 3. Add Edges (Prerequisites)
         # Note: Assuming a 'prerequisites' ManyToManyField exists or simulating relationships
         for course in courses:
-            if hasattr(course, 'category'):
+            if hasattr(course, "category"):
                 # Link courses in the same category
-                peers = Course.objects.filter(category=course.category, is_published=True).exclude(id=course.id)
+                peers = Course.objects.filter(
+                    category=course.category, is_published=True
+                ).exclude(id=course.id)
                 for peer in peers:
                     if peer.id in id_to_idx:
                         u, v = id_to_idx[course.id], id_to_idx[peer.id]
@@ -55,7 +58,7 @@ class GNNKnowledgeService:
         return {
             "node_mapping": idx_to_title,
             "embeddings": predictions["final_embeddings"],
-            "message": "Curriculum Knowledge Graph processed via GCN."
+            "message": "Curriculum Knowledge Graph processed via GCN.",
         }
 
     @classmethod
@@ -65,7 +68,16 @@ class GNNKnowledgeService:
         Calculates random walks to find implicit conceptual clusters.
         """
         # Simulated random walk logic
-        concepts = ["React", "Vue", "Angular", "Django", "Flask", "FastAPI", "Postgres", "MongoDB"]
+        concepts = [
+            "React",
+            "Vue",
+            "Angular",
+            "Django",
+            "Flask",
+            "FastAPI",
+            "Postgres",
+            "MongoDB",
+        ]
         walks = []
         for _ in range(3):
             walk = [random.choice(concepts)]
@@ -74,10 +86,14 @@ class GNNKnowledgeService:
                 if walk[-1] in ["React", "Vue", "Angular"]:
                     walk.append(random.choice(["React", "Vue", "Angular", "Postgres"]))
                 else:
-                    walk.append(random.choice(["Django", "Flask", "FastAPI", "Postgres", "MongoDB"]))
+                    walk.append(
+                        random.choice(
+                            ["Django", "Flask", "FastAPI", "Postgres", "MongoDB"]
+                        )
+                    )
             walks.append(walk)
-            
+
         return {
             "random_walks": walks,
-            "concept_clustering": "Node2Vec revealed strong clusters in 'Frontend' and 'Python Backend' concepts."
+            "concept_clustering": "Node2Vec revealed strong clusters in 'Frontend' and 'Python Backend' concepts.",
         }

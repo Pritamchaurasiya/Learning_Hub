@@ -6,28 +6,51 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('test_engine', '0005_alter_test_mode_alter_testattempt_mode'),
+        ("test_engine", "0005_alter_test_mode_alter_testattempt_mode"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='code_template',
-            field=models.TextField(blank=True, default='', help_text='Starter code or solution skeleton'),
+            model_name="question",
+            name="code_template",
+            field=models.TextField(
+                blank=True, default="", help_text="Starter code or solution skeleton"
+            ),
         ),
         migrations.AddField(
-            model_name='question',
-            name='language',
-            field=models.CharField(blank=True, default='python', help_text='Default programming language', max_length=30),
+            model_name="question",
+            name="language",
+            field=models.CharField(
+                blank=True,
+                default="python",
+                help_text="Default programming language",
+                max_length=30,
+            ),
         ),
         migrations.AddField(
-            model_name='question',
-            name='test_cases',
-            field=models.JSONField(blank=True, default=list, help_text='List of test cases: [{input, output, explanation}]'),
+            model_name="question",
+            name="test_cases",
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text="List of test cases: [{input, output, explanation}]",
+            ),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='question_type',
-            field=models.CharField(choices=[('mcq', 'Multiple Choice (Single Correct)'), ('multiple_select', 'Multiple Choice (Multiple Correct)'), ('true_false', 'True/False'), ('numerical', 'Numerical Answer'), ('fill_blank', 'Fill in the Blank'), ('subjective', 'Subjective / Free-Text Answer'), ('coding', 'Interactive Code / Algorithm Execution')], default='mcq', max_length=20),
+            model_name="question",
+            name="question_type",
+            field=models.CharField(
+                choices=[
+                    ("mcq", "Multiple Choice (Single Correct)"),
+                    ("multiple_select", "Multiple Choice (Multiple Correct)"),
+                    ("true_false", "True/False"),
+                    ("numerical", "Numerical Answer"),
+                    ("fill_blank", "Fill in the Blank"),
+                    ("subjective", "Subjective / Free-Text Answer"),
+                    ("coding", "Interactive Code / Algorithm Execution"),
+                ],
+                default="mcq",
+                max_length=20,
+            ),
         ),
     ]

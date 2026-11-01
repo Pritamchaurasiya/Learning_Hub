@@ -2,6 +2,7 @@
 AI Test Generation Service.
 Production-grade test generation with caching, retry, validation, and deduplication.
 """
+
 import json
 import hashlib
 import logging
@@ -104,7 +105,7 @@ class AITestGenerationService:
 
     def __init__(self):
         self.prompt_templates = PromptTemplate()
-        self.cache_prefix = 'ai_test_gen'
+        self.cache_prefix = "ai_test_gen"
 
     def generate_test(
         self,
@@ -128,7 +129,7 @@ class AITestGenerationService:
             Test object with generated questions
         """
         config = config or {}
-        exam = Exam.objects.select_related('country').get(id=exam_id)
+        exam = Exam.objects.select_related("country").get(id=exam_id)
 
         # Build cache key
         cache_key = self._build_cache_key(exam_id, subject_id, topic_ids, config)
@@ -145,7 +146,7 @@ class AITestGenerationService:
         topics = self._get_topics(exam, subject_id, topic_ids)
 
         # Calculate questions per topic
-        question_count = config.get('question_count', 30)
+        question_count = config.get("question_count", 30)
         questions_per_topic = self._distribute_questions(topics, question_count)
 
         # Generate questions
@@ -155,8 +156,8 @@ class AITestGenerationService:
                 exam=exam,
                 topic=topic,
                 count=count,
-                difficulty=config.get('difficulty', 'mixed'),
-                bloom_level=config.get('bloom_level', 'apply'),
+                difficulty=config.get("difficulty", "mixed"),
+                bloom_level=config.get("bloom_level", "apply"),
             )
             all_questions.extend(topic_questions)
 
@@ -173,10 +174,12 @@ class AITestGenerationService:
             self._save_questions(test, all_questions)
 
         # Cache the test
-        cache_ttl = config.get('cache_ttl', 86400)
+        cache_ttl = config.get("cache_ttl", 86400)
         cache.set(cache_key, str(test.id), timeout=cache_ttl)
 
-        logger.info(f"Generated test {test.id} with {len(all_questions)} questions for {exam.code}")
+        logger.info(
+            f"Generated test {test.id} with {len(all_questions)} questions for {exam.code}"
+        )
         return test
 
     def _build_cache_key(self, exam_id, subject_id, topic_ids, config) -> str:
@@ -227,18 +230,23 @@ class AITestGenerationService:
         return distribution
 
     def _generate_questions_for_topic(
-        self, exam, topic, count, difficulty='mixed', bloom_level='apply',
+        self,
+        exam,
+        topic,
+        count,
+        difficulty="mixed",
+        bloom_level="apply",
     ) -> List[Dict[str, Any]]:
         """Generate questions for a specific topic using AI."""
         pattern = exam.pattern
         prompt = self.prompt_templates.MCQ_GENERATION.format(
             exam_name=exam.name,
             country_name=exam.country.name,
-            total_questions=pattern.get('total_questions', 100),
-            total_marks=pattern.get('total_marks', 400),
-            duration_minutes=pattern.get('duration_minutes', 180),
-            marks_per_correct=pattern.get('marks_per_correct', 4),
-            negative_marks=pattern.get('negative_marks_per_wrong', 0),
+            total_questions=pattern.get("total_questions", 100),
+            total_marks=pattern.get("total_marks", 400),
+            duration_minutes=pattern.get("duration_minutes", 180),
+            marks_per_correct=pattern.get("marks_per_correct", 4),
+            negative_marks=pattern.get("negative_marks_per_wrong", 0),
             difficulty_distribution=json.dumps(exam.difficulty_distribution),
             count=count,
             subject_name=topic.subject.name,
@@ -270,59 +278,83 @@ class AITestGenerationService:
 
         # Attach topic reference so _save_questions can use it
         for q in questions:
-            q['_topic'] = topic
+            q["_topic"] = topic
 
         return questions[:count]
 
     def _generate_fallback_questions_for_topic(
-        self, exam, topic, count, difficulty='mixed', bloom_level='apply'
+        self, exam, topic, count, difficulty="mixed", bloom_level="apply"
     ) -> List[Dict[str, Any]]:
         """Generate high-quality deterministic questions when LLM is offline or unconfigured."""
         questions = []
         diff_val = self._difficulty_to_numeric(difficulty)
         for i in range(count):
             q_num = i + 1
-            questions.append({
-                'text': f"Regarding {topic.name} in {topic.subject.name}, which of the following statements is conceptually correct? (Question #{q_num})",
-                'options': [
-                    {'text': f"Valid standard formulation for {topic.name} adhering to core theorems.", 'is_correct': True, 'explanation': f"Correct: accurately defines {topic.name}."},
-                    {'text': f"Violates standard boundary conditions of {topic.name}.", 'is_correct': False, 'explanation': "Incorrect."},
-                    {'text': f"Assumes unconstrained linear behavior inapplicable to {topic.name}.", 'is_correct': False, 'explanation': "Incorrect."},
-                    {'text': f"Inverts the inverse relationship governing {topic.name}.", 'is_correct': False, 'explanation': "Incorrect."},
-                ],
-                'explanation': f"The correct option provides the valid theoretical formulation for {topic.name} under {exam.name} examination standards.",
-                'solution_steps': [
-                    f"1. Identify the core principles of {topic.name}.",
-                    f"2. Evaluate constraints and boundary conditions in {topic.subject.name}.",
-                    f"3. Select the valid solution matching standard theorems.",
-                ],
-                'difficulty': diff_val,
-                'bloom_level': bloom_level,
-                'tags': [topic.name.lower(), topic.subject.name.lower(), exam.code.lower()],
-            })
+            questions.append(
+                {
+                    "text": f"Regarding {topic.name} in {topic.subject.name}, which of the following statements is conceptually correct? (Question #{q_num})",
+                    "options": [
+                        {
+                            "text": f"Valid standard formulation for {topic.name} adhering to core theorems.",
+                            "is_correct": True,
+                            "explanation": f"Correct: accurately defines {topic.name}.",
+                        },
+                        {
+                            "text": f"Violates standard boundary conditions of {topic.name}.",
+                            "is_correct": False,
+                            "explanation": "Incorrect.",
+                        },
+                        {
+                            "text": f"Assumes unconstrained linear behavior inapplicable to {topic.name}.",
+                            "is_correct": False,
+                            "explanation": "Incorrect.",
+                        },
+                        {
+                            "text": f"Inverts the inverse relationship governing {topic.name}.",
+                            "is_correct": False,
+                            "explanation": "Incorrect.",
+                        },
+                    ],
+                    "explanation": f"The correct option provides the valid theoretical formulation for {topic.name} under {exam.name} examination standards.",
+                    "solution_steps": [
+                        f"1. Identify the core principles of {topic.name}.",
+                        f"2. Evaluate constraints and boundary conditions in {topic.subject.name}.",
+                        f"3. Select the valid solution matching standard theorems.",
+                    ],
+                    "difficulty": diff_val,
+                    "bloom_level": bloom_level,
+                    "tags": [
+                        topic.name.lower(),
+                        topic.subject.name.lower(),
+                        exam.code.lower(),
+                    ],
+                }
+            )
         return questions
 
     def _call_llm_with_retry(self, prompt: str, max_retries: int = 2) -> Optional[Dict]:
         """Call LLM with exponential backoff retry."""
         import os
-        if os.getenv('PYTEST_CURRENT_TEST'):
+
+        if os.getenv("PYTEST_CURRENT_TEST"):
             # In unit tests, avoid unmocked external live network calls
             return None
 
         for attempt in range(max_retries):
             try:
                 from apps.ai_engine.ai_client import AIClient
+
                 client = AIClient.get_client()
                 if not client:
                     logger.error("AI client not available")
                     return None
 
                 response = client.models.generate_content(
-                    model='gemini-2.0-flash',
+                    model="gemini-2.0-flash",
                     contents=prompt,
                     config={
-                        'response_mime_type': 'application/json',
-                        'temperature': 0.7,
+                        "response_mime_type": "application/json",
+                        "temperature": 0.7,
                     },
                 )
 
@@ -337,7 +369,7 @@ class AITestGenerationService:
             except Exception as e:
                 logger.warning(f"LLM call attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(2 ** attempt)
+                    time.sleep(2**attempt)
                 else:
                     # Try fallback model
                     return self._call_fallback_llm(prompt)
@@ -358,7 +390,8 @@ class AITestGenerationService:
 
         # 2. Markdown codeblock extraction
         import re
-        codeblock = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text, re.IGNORECASE)
+
+        codeblock = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
         if codeblock:
             try:
                 return json.loads(codeblock.group(1).strip())
@@ -366,7 +399,7 @@ class AITestGenerationService:
                 pass
 
         # 3. Outermost balanced JSON object extraction
-        brace_match = re.search(r'(\{[\s\S]*\})', text)
+        brace_match = re.search(r"(\{[\s\S]*\})", text)
         if brace_match:
             try:
                 return json.loads(brace_match.group(1).strip())
@@ -379,14 +412,15 @@ class AITestGenerationService:
         """Fallback to a simpler model if primary fails."""
         try:
             from apps.ai_engine.ai_client import AIClient
+
             client = AIClient.get_client()
             if not client:
                 return None
 
             response = client.models.generate_content(
-                model='gemini-2.0-flash-lite',
+                model="gemini-2.0-flash-lite",
                 contents=prompt,
-                config={'response_mime_type': 'application/json'},
+                config={"response_mime_type": "application/json"},
             )
 
             if response.text:
@@ -399,32 +433,32 @@ class AITestGenerationService:
     def _validate_questions(self, data: Dict, exam) -> List[Dict]:
         """Validate AI-generated questions against quality rules."""
         validated = []
-        questions = data.get('questions', [])
+        questions = data.get("questions", [])
 
         for q in questions:
             # Required fields
-            if not all(k in q for k in ['text', 'options', 'explanation']):
+            if not all(k in q for k in ["text", "options", "explanation"]):
                 continue
 
             # Exactly 4 options
-            if len(q.get('options', [])) != 4:
+            if len(q.get("options", [])) != 4:
                 continue
 
             # Exactly one correct answer
-            correct_count = sum(1 for o in q['options'] if o.get('is_correct'))
+            correct_count = sum(1 for o in q["options"] if o.get("is_correct"))
             if correct_count != 1:
                 continue
 
             # Question text minimum length
-            if len(q['text']) < 10:
+            if len(q["text"]) < 10:
                 continue
 
             # Option text minimum length
-            if any(len(o['text']) < 2 for o in q['options']):
+            if any(len(o["text"]) < 2 for o in q["options"]):
                 continue
 
             # Content moderation (basic)
-            if self._contains_inappropriate_content(q['text']):
+            if self._contains_inappropriate_content(q["text"]):
                 continue
 
             validated.append(q)
@@ -434,7 +468,10 @@ class AITestGenerationService:
     def _contains_inappropriate_content(self, text: str) -> bool:
         """Basic content moderation check."""
         inappropriate_words = [
-            'offensive', 'inappropriate', 'hate', 'discriminate',
+            "offensive",
+            "inappropriate",
+            "hate",
+            "discriminate",
         ]
         text_lower = text.lower()
         return any(word in text_lower for word in inappropriate_words)
@@ -442,17 +479,19 @@ class AITestGenerationService:
     def _deduplicate_questions(self, questions: List[Dict], topic) -> List[Dict]:
         """Remove questions that are too similar to existing ones."""
         existing_texts = set(
-            Question.objects.filter(topic=topic, is_deleted=False).values_list('text', flat=True)[:500]
+            Question.objects.filter(topic=topic, is_deleted=False).values_list(
+                "text", flat=True
+            )[:500]
         )
 
         unique_questions = []
         for q in questions:
             # Check exact match
-            if q['text'] in existing_texts:
+            if q["text"] in existing_texts:
                 continue
 
             # Check similarity (simple: first 50 chars)
-            prefix = q['text'][:50]
+            prefix = q["text"][:50]
             is_similar = any(prefix in existing for existing in existing_texts)
             if is_similar:
                 continue
@@ -463,13 +502,19 @@ class AITestGenerationService:
 
     def _difficulty_to_numeric(self, difficulty: str) -> float:
         """Convert difficulty string to numeric value."""
-        mapping = {'easy': 1.5, 'medium': 2.5, 'hard': 3.5, 'mixed': 2.5, 'adaptive': 2.5}
+        mapping = {
+            "easy": 1.5,
+            "medium": 2.5,
+            "hard": 3.5,
+            "mixed": 2.5,
+            "adaptive": 2.5,
+        }
         return mapping.get(difficulty, 2.5)
 
     @transaction.atomic
     def _create_test(self, exam, user, config, cache_key, question_count) -> Test:
         """Create a Test record."""
-        time_limit = config.get('time_limit_minutes')
+        time_limit = config.get("time_limit_minutes")
         if not time_limit:
             # Estimate based on question count (2 min per question)
             time_limit = max(15, question_count * 2)
@@ -478,13 +523,13 @@ class AITestGenerationService:
             exam=exam,
             title=f"{exam.name} Practice Test — {timezone.now().strftime('%b %d, %Y')}",
             description=f"AI-generated practice test for {exam.name} ({question_count} questions)",
-            mode=config.get('mode', 'mock'),
-            difficulty=config.get('difficulty', 'mixed'),
+            mode=config.get("mode", "mock"),
+            difficulty=config.get("difficulty", "mixed"),
             time_limit_minutes=time_limit,
-            passing_score=exam.pattern.get('passing_score', 50),
-            total_marks=question_count * exam.pattern.get('marks_per_correct', 1),
-            negative_marks_per_question=exam.pattern.get('negative_marks_per_wrong', 0),
-            marks_per_correct=exam.pattern.get('marks_per_correct', 1),
+            passing_score=exam.pattern.get("passing_score", 50),
+            total_marks=question_count * exam.pattern.get("marks_per_correct", 1),
+            negative_marks_per_question=exam.pattern.get("negative_marks_per_wrong", 0),
+            marks_per_correct=exam.pattern.get("marks_per_correct", 1),
             is_ai_generated=True,
             generation_config=config,
             ai_generation_id=cache_key,
@@ -499,38 +544,44 @@ class AITestGenerationService:
         """Save generated questions to the question bank and link to test."""
         for idx, q_data in enumerate(questions):
             # Use the topic attached during generation — never fall back to a hardcoded first topic
-            topic = q_data.get('_topic')
+            topic = q_data.get("_topic")
             if topic is None:
                 first_subject = test.exam.subjects.filter(is_active=True).first()
-                topic = first_subject.topics.filter(is_active=True).first() if first_subject else None
+                topic = (
+                    first_subject.topics.filter(is_active=True).first()
+                    if first_subject
+                    else None
+                )
 
             if topic is None:
-                logger.warning(f"No topic found for question {idx} in test {test.id}, skipping")
+                logger.warning(
+                    f"No topic found for question {idx} in test {test.id}, skipping"
+                )
                 continue
 
             # Create question
             question = Question.objects.create(
                 topic=topic,
-                text=q_data['text'],
-                question_type='mcq',
-                difficulty=q_data.get('difficulty', 2.5),
-                bloom_level=q_data.get('bloom_level', 'apply'),
-                explanation=q_data['explanation'],
-                solution_steps=q_data.get('solution_steps', []),
-                tags=q_data.get('tags', []),
+                text=q_data["text"],
+                question_type="mcq",
+                difficulty=q_data.get("difficulty", 2.5),
+                bloom_level=q_data.get("bloom_level", "apply"),
+                explanation=q_data["explanation"],
+                solution_steps=q_data.get("solution_steps", []),
+                tags=q_data.get("tags", []),
                 is_ai_generated=True,
-                ai_model='gemini-2.0-flash',
+                ai_model="gemini-2.0-flash",
                 ai_generation_id=test.ai_generation_id,
                 created_by=test.created_by,
             )
 
             # Create options
-            for opt_idx, opt_data in enumerate(q_data['options']):
+            for opt_idx, opt_data in enumerate(q_data["options"]):
                 Option.objects.create(
                     question=question,
-                    text=opt_data['text'],
-                    is_correct=opt_data['is_correct'],
-                    explanation=opt_data.get('explanation', ''),
+                    text=opt_data["text"],
+                    is_correct=opt_data["is_correct"],
+                    explanation=opt_data.get("explanation", ""),
                     order=opt_idx,
                 )
 

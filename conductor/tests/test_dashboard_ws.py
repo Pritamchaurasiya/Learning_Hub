@@ -1,4 +1,3 @@
-
 import pytest
 from channels.testing import WebsocketCommunicator
 from channels.layers import get_channel_layer
@@ -10,11 +9,7 @@ User = get_user_model()
 
 
 # Use in-memory channel layer for testing
-TEST_CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+TEST_CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
 @pytest.mark.asyncio
@@ -26,20 +21,20 @@ async def test_instructor_dashboard_connection():
     user = await User.objects.acreate(
         email="instructor_ws@example.com",
         password="TestPassword123!",
-        role="instructor"
+        role="instructor",
     )
 
     # Test authenticated connection
     communicator = WebsocketCommunicator(application, "ws/dashboard/instructor/")
     communicator.scope["user"] = user
-    
+
     connected, subprotocol = await communicator.connect()
     assert connected
-    
+
     # Receive initial message
     response = await communicator.receive_json_from()
     assert response["type"] == "connection_established"
-    
+
     await communicator.disconnect()
 
 
@@ -51,13 +46,13 @@ async def test_instructor_dashboard_demo_mode():
     # Consumer allows anonymous connections for demo visualization
     communicator = WebsocketCommunicator(application, "ws/dashboard/instructor/")
     # AnonymousUser is default
-    
+
     connected, subprotocol = await communicator.connect()
     # Consumer allows demo connections for visualization purposes
     assert connected
-    
+
     # Should still receive initial message
     response = await communicator.receive_json_from()
     assert response["type"] == "connection_established"
-    
+
     await communicator.disconnect()

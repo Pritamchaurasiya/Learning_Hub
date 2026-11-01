@@ -1,9 +1,9 @@
-
 import logging
 from typing import Dict, Any
 from .ai_client import AIClient
 
 logger = logging.getLogger(__name__)
+
 
 class ModerationService:
     @staticmethod
@@ -17,10 +17,12 @@ class ModerationService:
 
         try:
             result = AIClient.moderate_content(text)
-            
+
             if not result.get("is_safe"):
-                logger.warning(f"Unsafe content detected: {result.get('flags')} - Reason: {result.get('reason')}")
-            
+                logger.warning(
+                    f"Unsafe content detected: {result.get('flags')} - Reason: {result.get('reason')}"
+                )
+
             return result
         except Exception as e:
             logger.error(f"Moderation failed: {e}")

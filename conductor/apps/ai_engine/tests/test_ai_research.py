@@ -1,7 +1,7 @@
-
 import pytest
 from apps.ai_engine.information_bottleneck import InformationBottleneckEngine, IBConfig
 from apps.ai_engine.neuro_symbolic import NeuroSymbolicEngine
+
 
 class TestAIResearch:
     """Test suite for Deep AI Research components."""
@@ -10,13 +10,13 @@ class TestAIResearch:
         """Test Variational Information Bottleneck training (Simulated/Torch)."""
         config = IBConfig(epochs=1, latent_dim=10)
         engine = InformationBottleneckEngine(config)
-        
+
         # Mock Data
         X = [[0.1] * 784 for _ in range(5)]
         Y = [0, 1, 2, 3, 4]
-        
+
         metrics = engine.train_vib(X, Y)
-        
+
         assert "loss" in metrics
         assert "rate_I_XZ" in metrics
         assert "distortion_ce" in metrics
@@ -28,13 +28,13 @@ class TestAIResearch:
         # Valid step: 2x + 4 = 10 -> 2x = 6
         step1 = "2*x + 4 = 10"
         step2 = "2*x = 6"
-        
+
         try:
             result = NeuroSymbolicEngine.verify_math_step(step2, step1)
             # If SymPy is installed, it should be valid. If not, fallback or skip.
             if result.get("reason") != "SymPy not installed":
-                 assert result["valid"] is True
-                 assert result["confidence"] > 0.9
+                assert result["valid"] is True
+                assert result["confidence"] > 0.9
         except Exception:
             pytest.skip("SymPy error or not installed")
 
@@ -43,7 +43,7 @@ class TestAIResearch:
         # A or B, not A -> B must be True
         vars = ["A", "B"]
         constraints = ["A | B", "~A"]
-        
+
         try:
             solution = NeuroSymbolicEngine.solve_satisfiability(vars, constraints)
             if solution:

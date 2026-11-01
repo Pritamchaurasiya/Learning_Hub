@@ -3,6 +3,7 @@ Course views for Learning Hub API.
 """
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from django_filters import rest_framework as filters
@@ -11,7 +12,12 @@ from rest_framework.decorators import action
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.conf import settings
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiResponse,
+)
 from drf_spectacular.types import OpenApiTypes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -35,6 +41,7 @@ from .serializers import (
 
 from .services import CourseService, LessonService, NoteService, ResourceService
 from .certificate_service import CertificateService, CertificateType
+
 
 class CourseFilter(filters.FilterSet):
     """Filter for courses."""
@@ -68,7 +75,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
                 queryset=Category.objects.filter(is_active=True).order_by("name"),
                 to_attr="active_subcategories",
             ),
-            "courses"
+            "courses",
         )
         .annotate(
             published_course_count=Count(
@@ -101,86 +108,106 @@ class CourseViewSet(viewsets.ModelViewSet):
     POST /api/v1/courses/{slug}/enroll/ - Enroll in course
     GET /api/v1/courses/{slug}/reviews/ - Get reviews
     POST /api/v1/courses/{slug}/review/ - Submit review
-    
+
     Query Optimization:
     - list: Minimal fields with select_related for instructor/category
     - retrieve: Full course with prefetched modules, lessons, reviews
     """
-    
+
     def get_queryset(self):
         """
         Optimize queryset based on action to prevent N+1 queries.
         """
         queryset = Course.objects.filter(is_published=True)
-        
-        if self.action == 'list':
+
+        if self.action == "list":
             # List view: Optimize with minimal fields and annotations
-            queryset = queryset.select_related(
-                'instructor',
-                'category'
-            ).annotate(
-                review_count=Count('reviews'),
-                avg_rating=Avg('reviews__rating'),
-                enrollment_count_cached=Count('enrollments')
-            ).only(
-                'id', 'title', 'slug', 'short_description', 'price', 
-                'is_free', 'discount_price', 'thumbnail', 'difficulty',
-                'duration_hours', 'created_at', 'updated_at',
-                'instructor__id', 'instructor__username', 'instructor__display_name',
-                'category__id', 'category__name', 'category__slug'
-            )
-        
-        elif self.action == 'retrieve':
-            # Detail view: Fetch full course with related data
-            queryset = queryset.select_related(
-                'instructor',
-                'category'
-            ).prefetch_related(
-                Prefetch(
-                    'modules',
-                    queryset=Module.objects.select_related('course').prefetch_related(
-                        Prefetch(
-                            'lessons',
-                            queryset=Lesson.objects.order_by('order')
-                        )
-                    ).order_by('order')
-                ),
-                Prefetch(
-                    'reviews',
-                    queryset=Review.objects.select_related('user').order_by('-created_at')
+            queryset = (
+                queryset.select_related("instructor", "category")
+                .annotate(
+                    review_count=Count("reviews"),
+                    avg_rating=Avg("reviews__rating"),
+                    enrollment_count_cached=Count("enrollments"),
                 )
-            ).annotate(
-                review_count=Count('reviews'),
-                avg_rating=Avg('reviews__rating'),
-                enrollment_count_cached=Count('enrollments')
+                .only(
+                    "id",
+                    "title",
+                    "slug",
+                    "short_description",
+                    "price",
+                    "is_free",
+                    "discount_price",
+                    "thumbnail",
+                    "difficulty",
+                    "duration_hours",
+                    "created_at",
+                    "updated_at",
+                    "instructor__id",
+                    "instructor__username",
+                    "instructor__display_name",
+                    "category__id",
+                    "category__name",
+                    "category__slug",
+                )
             )
-            
+
+        elif self.action == "retrieve":
+            # Detail view: Fetch full course with related data
+            queryset = (
+                queryset.select_related("instructor", "category")
+                .prefetch_related(
+                    Prefetch(
+                        "modules",
+                        queryset=Module.objects.select_related("course")
+                        .prefetch_related(
+                            Prefetch(
+                                "lessons", queryset=Lesson.objects.order_by("order")
+                            )
+                        )
+                        .order_by("order"),
+                    ),
+                    Prefetch(
+                        "reviews",
+                        queryset=Review.objects.select_related("user").order_by(
+                            "-created_at"
+                        ),
+                    ),
+                )
+                .annotate(
+                    review_count=Count("reviews"),
+                    avg_rating=Avg("reviews__rating"),
+                    enrollment_count_cached=Count("enrollments"),
+                )
+            )
+
             # Add user-specific enrollment if authenticated
-            user = self.request.user if hasattr(self.request, 'user') else None
+            user = self.request.user if hasattr(self.request, "user") else None
             if user and user.is_authenticated:
                 queryset = queryset.prefetch_related(
                     Prefetch(
-                        'enrollments',
+                        "enrollments",
                         queryset=Enrollment.objects.filter(user=user),
-                        to_attr='user_enrollment'
+                        to_attr="user_enrollment",
                     )
                 )
-        
-        elif self.action in ['enroll', 'my_courses']:
+
+        elif self.action in ["enroll", "my_courses"]:
             # Enrollment-related actions
-            queryset = queryset.select_related('instructor', 'category')
-        
-        elif self.action in ['reviews', 'review']:
+            queryset = queryset.select_related("instructor", "category")
+
+        elif self.action in ["reviews", "review"]:
             # Review-related actions
             queryset = queryset.prefetch_related(
                 Prefetch(
-                    'reviews',
-                    queryset=Review.objects.select_related('user').order_by('-created_at')
+                    "reviews",
+                    queryset=Review.objects.select_related("user").order_by(
+                        "-created_at"
+                    ),
                 )
             )
-        
+
         return queryset
-    
+
     """
     Course endpoints.
 
@@ -193,7 +220,9 @@ class CourseViewSet(viewsets.ModelViewSet):
     GET /api/v1/courses/featured/ - Featured courses
     """
 
-    queryset = Course.objects.filter(is_published=True).select_related('instructor', 'category')
+    queryset = Course.objects.filter(is_published=True).select_related(
+        "instructor", "category"
+    )
     lookup_field = "slug"
     filterset_class = CourseFilter
     search_fields = ["title", "description", "instructor__display_name"]
@@ -212,43 +241,48 @@ class CourseViewSet(viewsets.ModelViewSet):
         - Write operations (create/update/delete): Must be authenticated instructor
         - Custom actions have their own permission_classes decorator
         """
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAuthenticated(), IsInstructor()]
-        elif self.action in ['list', 'retrieve', 'reviews', 'featured', 'trending']:
+        elif self.action in ["list", "retrieve", "reviews", "featured", "trending"]:
             return [AllowAny()]
         return super().get_permissions()
 
     def get_queryset(self):
-        query = self.request.query_params.get('search', None)
-        semantic = self.request.query_params.get('semantic', 'false') == 'true'
+        query = self.request.query_params.get("search", None)
+        semantic = self.request.query_params.get("semantic", "false") == "true"
 
         if query:
             if semantic:
-                 from apps.core.vector_service import VectorService
-                 # Threshold-based filtering could be added here
-                 return VectorService.semantic_search(Course, query, limit=10)\
-                     .select_related("instructor", "category")
-            
-            return CourseService.search_courses(query)\
-                .select_related("instructor", "category")
-        
-        queryset = super().get_queryset().select_related('instructor', 'category')
-        
+                from apps.core.vector_service import VectorService
+
+                # Threshold-based filtering could be added here
+                return VectorService.semantic_search(
+                    Course, query, limit=10
+                ).select_related("instructor", "category")
+
+            return CourseService.search_courses(query).select_related(
+                "instructor", "category"
+            )
+
+        queryset = super().get_queryset().select_related("instructor", "category")
+
         # Filter unpublished courses
         if not self.request.user.is_staff:
-            if self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'instructor':
+            if (
+                self.request.user.is_authenticated
+                and getattr(self.request.user, "role", "") == "instructor"
+            ):
                 from django.db import models
-                queryset = queryset.filter(models.Q(is_published=True) | models.Q(instructor=self.request.user))
+
+                queryset = queryset.filter(
+                    models.Q(is_published=True) | models.Q(instructor=self.request.user)
+                )
             else:
                 queryset = queryset.filter(is_published=True)
-                
+
         # Only prefetch modules/lessons for detail view; skip reviews on list
-        if self.action == 'retrieve':
-            return queryset.prefetch_related(
-                "modules",
-                "modules__lessons",
-                "reviews"
-            )
+        if self.action == "retrieve":
+            return queryset.prefetch_related("modules", "modules__lessons", "reviews")
         return queryset
 
     def perform_create(self, serializer):
@@ -268,6 +302,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             return super().get_object()
 
         import uuid
+
         obj = None
         is_uuid = False
         try:
@@ -281,6 +316,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
         if obj is None:
             from django.shortcuts import get_object_or_404
+
             obj = get_object_or_404(queryset, slug=lookup_value)
 
         self.check_object_permissions(self.request, obj)
@@ -306,6 +342,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             from apps.core.exceptions import PaymentRequiredException
         except ImportError:
             from rest_framework.exceptions import APIException
+
             class PaymentRequiredException(APIException):
                 status_code = 402
                 default_detail = "Payment required."
@@ -331,19 +368,29 @@ class CourseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="enroll")
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[IsAuthenticated],
+        url_path="enroll",
+    )
     def enroll_by_body(self, request):
         """
         Enroll via POST /api/v1/courses/enroll/ with {"course_id": "<slug_or_id>"}.
         Provides 100% parity with frontend clients that post to the collection endpoint.
         """
-        course_id = request.data.get("course_id") or request.data.get("id") or request.data.get("course")
+        course_id = (
+            request.data.get("course_id")
+            or request.data.get("id")
+            or request.data.get("course")
+        )
         if not course_id:
             return Response(
                 {"status": "error", "message": "Field 'course_id' is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         import uuid
+
         is_uuid = False
         try:
             uuid.UUID(str(course_id))
@@ -366,6 +413,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             from apps.core.exceptions import PaymentRequiredException
         except ImportError:
             from rest_framework.exceptions import APIException
+
             class PaymentRequiredException(APIException):
                 status_code = 402
                 default_detail = "Payment required."
@@ -426,7 +474,9 @@ class CourseViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def rate(self, request, slug=None):
         """Submit a rating/review (alias for /review/ with frontend parameter normalization)."""
-        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        data = (
+            request.data.copy() if hasattr(request.data, "copy") else dict(request.data)
+        )
         if "comment" in data and "content" not in data:
             data["content"] = data["comment"]
         if "title" not in data or not data["title"]:
@@ -504,7 +554,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         query = request.query_params.get("q", "").strip()
         if not query:
-             return Response(
+            return Response(
                 {"status": "error", "message": "Search query 'q' is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -513,21 +563,27 @@ class CourseViewSet(viewsets.ModelViewSet):
             limit = min(int(request.query_params.get("limit", 20)), 100)
         except (ValueError, TypeError):
             limit = 20
-        
+
         # Check if we are running on Postgres
-        is_postgres = 'postgresql' in settings.DATABASES['default']['ENGINE']
+        is_postgres = "postgresql" in settings.DATABASES["default"]["ENGINE"]
 
         if is_postgres:
-            from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-            
+            from django.contrib.postgres.search import (
+                SearchVector,
+                SearchQuery,
+                SearchRank,
+            )
+
             # Postgres Full-Text Search
-            vector = SearchVector("title", weight="A") + \
-                     SearchVector("short_description", weight="B") + \
-                     SearchVector("description", weight="C") + \
-                     SearchVector("instructor__username", weight="A")
-            
+            vector = (
+                SearchVector("title", weight="A")
+                + SearchVector("short_description", weight="B")
+                + SearchVector("description", weight="C")
+                + SearchVector("instructor__username", weight="A")
+            )
+
             search_query = SearchQuery(query)
-            
+
             courses = (
                 self.get_queryset()
                 .annotate(rank=SearchRank(vector, search_query))
@@ -535,7 +591,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .order_by("-rank")[:limit]
             )
         else:
-             # SQLite / Fallback Search
+            # SQLite / Fallback Search
             courses = (
                 self.get_queryset()
                 .filter(
@@ -553,7 +609,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 "status": "success",
                 "results": len(serializer.data),
                 "data": serializer.data,
-                "strategy": "postgres_fts" if is_postgres else "simple_match"
+                "strategy": "postgres_fts" if is_postgres else "simple_match",
             }
         )
 
@@ -565,46 +621,51 @@ class CourseViewSet(viewsets.ModelViewSet):
             # manually serialize since we have a wrapper dict
             data = []
             for item in recs:
-                course_data = CourseListSerializer(item['course']).data
-                course_data['ai_reason'] = item['ai_reason']
-                course_data['ai_score'] = item['score']
+                course_data = CourseListSerializer(item["course"]).data
+                course_data["ai_reason"] = item["ai_reason"]
+                course_data["ai_score"] = item["score"]
                 data.append(course_data)
-            
+
             return Response({"status": "success", "data": data})
         except Exception:
             # Fallback
-            courses = Course.objects.filter(is_published=True).order_by('-enrollment_count')[:5]
+            courses = Course.objects.filter(is_published=True).order_by(
+                "-enrollment_count"
+            )[:5]
             serializer = CourseListSerializer(courses, many=True)
-            return Response({"status": "success", "data": serializer.data, "note": "fallback"})
+            return Response(
+                {"status": "success", "data": serializer.data, "note": "fallback"}
+            )
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def certificate(self, request, slug=None):
         """Generate/Get certificate for course."""
         course = self.get_object()
         from apps.courses.models import Enrollment
-        
+
         # Verify enrollment
         try:
             enrollment = Enrollment.objects.get(user=request.user, course=course)
         except Enrollment.DoesNotExist:
-             return Response(
-                 {"error": "You are not enrolled in this course."},
-                 status=status.HTTP_403_FORBIDDEN
-             )
-             
+            return Response(
+                {"error": "You are not enrolled in this course."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Verify completion
         if enrollment.progress_percentage < 100:
-             return Response(
-                 {
-                     "status": "error", 
-                     "message": f"Course not completed yet ({enrollment.progress_percentage}%). Complete all lessons to get certified."
-                 },
-                 status=status.HTTP_400_BAD_REQUEST
-             )
-        
+            return Response(
+                {
+                    "status": "error",
+                    "message": f"Course not completed yet ({enrollment.progress_percentage}%). Complete all lessons to get certified.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             # Check for existing certificate first (idempotency guard)
             from .models import Certificate as CertModel
+
             existing_cert = CertModel.objects.filter(
                 user=request.user, course=course
             ).first()
@@ -613,7 +674,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                     {
                         "status": "success",
                         "data": CertificateSerializer(existing_cert).data,
-                        "message": "Certificate already generated."
+                        "message": "Certificate already generated.",
                     }
                 )
 
@@ -622,37 +683,49 @@ class CourseViewSet(viewsets.ModelViewSet):
                 certificate_type=CertificateType.COURSE_COMPLETION,
                 achievement_name=f"Completed {course.title}",
                 achievement_details={
-                    'completion_date': str(timezone.now().date()),
-                    'course_id': str(course.id),
+                    "completion_date": str(timezone.now().date()),
+                    "course_id": str(course.id),
                 },
-                course_id=str(course.id)
+                course_id=str(course.id),
             )
             # Create Certificate model record for backward compatibility
             cert_record, created = CertModel.objects.get_or_create(
                 user=request.user,
                 course=course,
                 defaults={
-                    'enrollment': enrollment,
-                    'certificate_code': cert.get('verification_code', ''),
-                    'signature': cert.get('signature', '')
-                }
+                    "enrollment": enrollment,
+                    "certificate_code": cert.get("verification_code", ""),
+                    "signature": cert.get("signature", ""),
+                },
             )
             return Response(
                 {
                     "status": "success",
                     "data": CertificateSerializer(cert_record).data,
-                    "download_url": cert.get('pdf_url')
+                    "download_url": cert.get("pdf_url"),
                 }
             )
         except Exception as e:
-            logger.error("Certificate generation failed for user %s, course %s: %s",
-                        request.user.id, course.id, str(e))
+            logger.error(
+                "Certificate generation failed for user %s, course %s: %s",
+                request.user.id,
+                course.id,
+                str(e),
+            )
             return Response(
-                {"status": "error", "message": "Certificate generation failed. Please try again."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {
+                    "status": "error",
+                    "message": "Certificate generation failed. Please try again.",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=['get'], url_path='key-concepts', permission_classes=[AllowAny])
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="key-concepts",
+        permission_classes=[AllowAny],
+    )
     def key_concepts(self, request, slug=None):
         """
         Get key concepts extracted from course content using Information Bottleneck.
@@ -660,157 +733,217 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         from .content_analyzer import LessonAnalysisService
         from .models import Lesson
-        
+
         course = self.get_object()
-        
+
         # Aggregate content from all lessons
-        lessons = Lesson.objects.filter(module__course=course).values('id', 'title', 'text_content')
-        
+        lessons = Lesson.objects.filter(module__course=course).values(
+            "id", "title", "text_content"
+        )
+
         all_content = "\n\n".join(
             f"## {lesson['title']}\n{lesson['text_content'] or ''}"
             for lesson in lessons
         )
-        
-        if not all_content.strip():
-            return Response({
-                "status": "success",
-                "data": {
-                    "key_concepts": [],
-                    "summary": "No content available for analysis.",
-                    "metrics": {}
-                }
-            })
-        
-        analysis = LessonAnalysisService.analyze_lesson(
-            lesson_id=course.id,
-            content=all_content,
-            title=course.title
-        )
-        
-        return Response({
-            "status": "success",
-            "data": analysis
-        })
 
-    @action(detail=True, methods=['post'], url_path='complete-lesson', permission_classes=[IsAuthenticated])
+        if not all_content.strip():
+            return Response(
+                {
+                    "status": "success",
+                    "data": {
+                        "key_concepts": [],
+                        "summary": "No content available for analysis.",
+                        "metrics": {},
+                    },
+                }
+            )
+
+        analysis = LessonAnalysisService.analyze_lesson(
+            lesson_id=course.id, content=all_content, title=course.title
+        )
+
+        return Response({"status": "success", "data": analysis})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="complete-lesson",
+        permission_classes=[IsAuthenticated],
+    )
     def complete_lesson(self, request, slug=None):
         """
         Mark a lesson as complete, update progress, and award XP.
         Body: { "lesson_id": <uuid/id> }
         """
         course = self.get_object()
-        lesson_id = request.data.get('lesson_id')
-        
+        lesson_id = request.data.get("lesson_id")
+
         if not lesson_id:
-            return Response({"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST)
-            
+            return Response(
+                {"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         from .models import Lesson
 
         try:
             lesson = Lesson.objects.get(id=lesson_id, module__course=course)
         except Lesson.DoesNotExist:
-            return Response({"error": "Lesson not found in this course"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Lesson not found in this course"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         try:
             result = LessonService.complete_lesson(request.user, lesson, course)
             return Response(result, status=status.HTTP_200_OK)
         except Exception:
             import logging
-            logger = logging.getLogger(__name__)
-            logger.exception("Error completing lesson %s for user %s", lesson_id, request.user.id)
-            return Response({"error": "Failed to complete lesson"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=True, methods=['post'], url_path='update-progress', permission_classes=[IsAuthenticated])
+            logger = logging.getLogger(__name__)
+            logger.exception(
+                "Error completing lesson %s for user %s", lesson_id, request.user.id
+            )
+            return Response(
+                {"error": "Failed to complete lesson"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="update-progress",
+        permission_classes=[IsAuthenticated],
+    )
     def update_progress(self, request, slug=None):
         """
         Update playback progress (timestamp).
         Body: { "lesson_id": <id>, "seconds": <float> }
         """
-        lesson_id = request.data.get('lesson_id')
-        seconds = request.data.get('seconds', 0.0)
-        
-        if not lesson_id:
-            return Response({"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST)
-             
-        try:
-            progress = LessonService.update_lesson_progress(request.user, lesson_id, float(seconds))
-            return Response({"status": "success", "saved_at": progress.progress_seconds})
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        lesson_id = request.data.get("lesson_id")
+        seconds = request.data.get("seconds", 0.0)
 
-    @action(detail=True, methods=['post'], url_path='bookmark', permission_classes=[IsAuthenticated])
+        if not lesson_id:
+            return Response(
+                {"error": "lesson_id required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            progress = LessonService.update_lesson_progress(
+                request.user, lesson_id, float(seconds)
+            )
+            return Response(
+                {"status": "success", "saved_at": progress.progress_seconds}
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="bookmark",
+        permission_classes=[IsAuthenticated],
+    )
     def bookmark(self, request, slug=None):
         """Bookmark a course for later."""
         course = self.get_object()
         from apps.ai_engine.models import UserBehavior
+
         behavior, created = UserBehavior.objects.get_or_create(
             user=request.user,
             behavior_type=UserBehavior.BehaviorType.WISHLIST,
             course=course,
-            defaults={'source_page': 'course_detail'}
+            defaults={"source_page": "course_detail"},
         )
         if not created:
             behavior.delete()
             return Response({"status": "success", "bookmarked": False})
-        return Response({"status": "success", "bookmarked": True}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"status": "success", "bookmarked": True}, status=status.HTTP_201_CREATED
+        )
 
-    @action(detail=False, methods=['get'], url_path='bookmarks', permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="bookmarks",
+        permission_classes=[IsAuthenticated],
+    )
     def bookmarks(self, request):
         """Get user's bookmarked courses."""
         from apps.ai_engine.models import UserBehavior
+
         course_ids = UserBehavior.objects.filter(
-            user=request.user,
-            behavior_type=UserBehavior.BehaviorType.WISHLIST
-        ).values_list('course_id', flat=True)
+            user=request.user, behavior_type=UserBehavior.BehaviorType.WISHLIST
+        ).values_list("course_id", flat=True)
         courses = Course.objects.filter(id__in=course_ids, is_published=True)
         serializer = CourseListSerializer(courses, many=True)
         return Response({"status": "success", "data": serializer.data})
 
     @method_decorator(cache_page(60 * 10))
-    @action(detail=True, methods=['get'], url_path='similar', permission_classes=[AllowAny])
+    @action(
+        detail=True, methods=["get"], url_path="similar", permission_classes=[AllowAny]
+    )
     def similar(self, request, slug=None):
         """Get courses similar to this one."""
         course = self.get_object()
-        similar = Course.objects.filter(
-            category=course.category,
-            is_published=True
-        ).exclude(id=course.id).order_by('-enrollment_count')[:10]
+        similar = (
+            Course.objects.filter(category=course.category, is_published=True)
+            .exclude(id=course.id)
+            .order_by("-enrollment_count")[:10]
+        )
         serializer = CourseListSerializer(similar, many=True)
         return Response({"status": "success", "data": serializer.data})
 
-    @action(detail=True, methods=['post'], url_path='share', permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="share",
+        permission_classes=[IsAuthenticated],
+    )
     def share(self, request, slug=None):
         """Share a course (track share + return share link)."""
         course = self.get_object()
         from apps.ai_engine.models import UserBehavior
+
         UserBehavior.objects.create(
             user=request.user,
             behavior_type=UserBehavior.BehaviorType.COURSE_CLICK,
             course=course,
-            source_page='share',
-            metadata={'action': 'share'}
+            source_page="share",
+            metadata={"action": "share"},
         )
         share_url = f"{request.build_absolute_uri('/courses/')}{course.slug}"
-        return Response({
-            "status": "success",
-            "share_url": share_url,
-            "title": course.title,
-            "description": course.short_description or course.description[:200]
-        })
+        return Response(
+            {
+                "status": "success",
+                "share_url": share_url,
+                "title": course.title,
+                "description": course.short_description or course.description[:200],
+            }
+        )
 
     # =========================================================================
     # COURSE NOTES & TIMESTAMPED BOOKMARKS
     # =========================================================================
 
-    @extend_schema(description="Get or create timestamped notes for this course", responses={200: dict})
-    @action(detail=True, methods=['get', 'post'], url_path='notes', permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Get or create timestamped notes for this course",
+        responses={200: dict},
+    )
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="notes",
+        permission_classes=[IsAuthenticated],
+    )
     def notes(self, request, slug=None):
         """List course notes on GET, create new lesson note on POST."""
         course = self.get_object()
         from .models import CourseNote, Lesson
 
-        if request.method == 'GET':
-            lesson_id = request.query_params.get('lesson_id')
+        if request.method == "GET":
+            lesson_id = request.query_params.get("lesson_id")
             qs = CourseNote.objects.filter(user=request.user, course=course)
             if lesson_id:
                 qs = qs.filter(lesson_id=lesson_id)
@@ -823,20 +956,28 @@ class CourseViewSet(viewsets.ModelViewSet):
                     "content": n.content,
                     "created_at": n.created_at.isoformat(),
                 }
-                for n in qs.select_related('lesson')
+                for n in qs.select_related("lesson")
             ]
-            return Response({"status": "success", "count": len(notes_data), "data": notes_data})
+            return Response(
+                {"status": "success", "count": len(notes_data), "data": notes_data}
+            )
 
-        lesson_id = request.data.get('lesson_id')
-        content = request.data.get('content', '').strip()
-        timestamp = request.data.get('timestamp_seconds', 0)
+        lesson_id = request.data.get("lesson_id")
+        content = request.data.get("content", "").strip()
+        timestamp = request.data.get("timestamp_seconds", 0)
 
         if not lesson_id or not content:
-            return Response({"status": "error", "message": "lesson_id and content are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "message": "lesson_id and content are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         lesson = Lesson.objects.filter(id=lesson_id, module__course=course).first()
         if not lesson:
-            return Response({"status": "error", "message": "Lesson not found in this course."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"status": "error", "message": "Lesson not found in this course."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         note = NoteService.create_note(
             user=request.user,
@@ -845,40 +986,58 @@ class CourseViewSet(viewsets.ModelViewSet):
             content=content,
             timestamp_seconds=int(timestamp),
         )
-        return Response({
-            "status": "success",
-            "message": "Note saved.",
-            "data": {
-                "id": str(note.id),
-                "lesson_id": str(note.lesson_id),
-                "timestamp_seconds": note.timestamp_seconds,
-                "content": note.content,
-            }
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "status": "success",
+                "message": "Note saved.",
+                "data": {
+                    "id": str(note.id),
+                    "lesson_id": str(note.lesson_id),
+                    "timestamp_seconds": note.timestamp_seconds,
+                    "content": note.content,
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     @extend_schema(description="Delete a student note", responses={200: dict})
-    @action(detail=True, methods=['delete'], url_path='notes/(?P<note_id>[^/.]+)', permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="notes/(?P<note_id>[^/.]+)",
+        permission_classes=[IsAuthenticated],
+    )
     def delete_note(self, request, slug=None, note_id=None):
         """Delete student note."""
         course = self.get_object()
-        deleted = NoteService.delete_note(user=request.user, course=course, note_id=note_id)
+        deleted = NoteService.delete_note(
+            user=request.user, course=course, note_id=note_id
+        )
         if deleted:
             return Response({"status": "success", "message": "Note deleted."})
-        return Response({"status": "error", "message": "Note not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"status": "error", "message": "Note not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # =========================================================================
     # COURSE RESOURCES & DOWNLOADS
     # =========================================================================
 
-    @extend_schema(description="List downloadable resources and cheat sheets for course", responses={200: dict})
-    @action(detail=True, methods=['get', 'post'], url_path='resources')
+    @extend_schema(
+        description="List downloadable resources and cheat sheets for course",
+        responses={200: dict},
+    )
+    @action(detail=True, methods=["get", "post"], url_path="resources")
     def resources(self, request, slug=None):
         """List or add course resources."""
         course = self.get_object()
         from .models import CourseResource
 
-        if request.method == 'GET':
-            res_list = CourseResource.objects.filter(course=course).select_related('lesson')
+        if request.method == "GET":
+            res_list = CourseResource.objects.filter(course=course).select_related(
+                "lesson"
+            )
             data = [
                 {
                     "id": str(r.id),
@@ -895,32 +1054,58 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response({"status": "success", "count": len(data), "data": data})
 
         # POST: Must be instructor / admin
-        if not request.user.is_authenticated or (request.user != course.instructor and not request.user.is_staff):
-            return Response({"status": "error", "message": "Only course instructors can add resources."}, status=status.HTTP_403_FORBIDDEN)
+        if not request.user.is_authenticated or (
+            request.user != course.instructor and not request.user.is_staff
+        ):
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Only course instructors can add resources.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        title = request.data.get('title')
-        res_type = request.data.get('resource_type', 'pdf')
-        ext_url = request.data.get('external_url', '')
-        desc = request.data.get('description', '')
+        title = request.data.get("title")
+        res_type = request.data.get("resource_type", "pdf")
+        ext_url = request.data.get("external_url", "")
+        desc = request.data.get("description", "")
 
         if not title:
-            return Response({"status": "error", "message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "message": "Title is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         resource = ResourceService.create_resource(
             course=course,
             title=title,
             description=desc,
             resource_type=res_type,
-            external_url=ext_url
+            external_url=ext_url,
         )
-        return Response({"status": "success", "message": "Resource added.", "data": {"id": str(resource.id), "title": resource.title}}, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "status": "success",
+                "message": "Resource added.",
+                "data": {"id": str(resource.id), "title": resource.title},
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     # =========================================================================
     # DETAILED PROGRESS SUMMARY
     # =========================================================================
 
-    @extend_schema(description="Get full progress breakdown across all modules and lessons", responses={200: dict})
-    @action(detail=True, methods=['get'], url_path='progress-summary', permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Get full progress breakdown across all modules and lessons",
+        responses={200: dict},
+    )
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="progress-summary",
+        permission_classes=[IsAuthenticated],
+    )
     def progress_summary(self, request, slug=None):
         """Get comprehensive progress summary for student."""
         course = self.get_object()
@@ -928,23 +1113,28 @@ class CourseViewSet(viewsets.ModelViewSet):
 
         enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
         if not enrollment:
-            return Response({"status": "error", "message": "You are not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"status": "error", "message": "You are not enrolled in this course."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         completed_lesson_ids = set(
             LessonCompletion.objects.filter(
                 user=request.user, lesson__module__course=course
-            ).values_list('lesson_id', flat=True)
+            ).values_list("lesson_id", flat=True)
         )
 
         all_lessons = list(
             Lesson.objects.filter(module__course=course)
-            .select_related('module')
-            .order_by('module__order', 'order')
+            .select_related("module")
+            .order_by("module__order", "order")
         )
 
         total_count = len(all_lessons)
         completed_count = len(completed_lesson_ids)
-        percentage = int((completed_count / total_count) * 100) if total_count > 0 else 0
+        percentage = (
+            int((completed_count / total_count) * 100) if total_count > 0 else 0
+        )
 
         # Find next uncompleted lesson
         next_lesson = None
@@ -954,79 +1144,91 @@ class CourseViewSet(viewsets.ModelViewSet):
                     "id": str(les.id),
                     "title": les.title,
                     "module_title": les.module.title,
-                    "duration_seconds": les.duration_seconds if hasattr(les, 'duration_seconds') else 0
+                    "duration_seconds": (
+                        les.duration_seconds if hasattr(les, "duration_seconds") else 0
+                    ),
                 }
                 break
 
-        return Response({
-            "status": "success",
-            "data": {
-                "course_title": course.title,
-                "course_slug": course.slug,
-                "progress_percentage": percentage,
-                "total_lessons": total_count,
-                "completed_lessons_count": completed_count,
-                "is_completed": percentage >= 100,
-                "completed_at": enrollment.completed_at.isoformat() if enrollment.completed_at else None,
-                "completed_lesson_ids": [str(lid) for lid in completed_lesson_ids],
-                "next_lesson": next_lesson,
+        return Response(
+            {
+                "status": "success",
+                "data": {
+                    "course_title": course.title,
+                    "course_slug": course.slug,
+                    "progress_percentage": percentage,
+                    "total_lessons": total_count,
+                    "completed_lessons_count": completed_count,
+                    "is_completed": percentage >= 100,
+                    "completed_at": (
+                        enrollment.completed_at.isoformat()
+                        if enrollment.completed_at
+                        else None
+                    ),
+                    "completed_lesson_ids": [str(lid) for lid in completed_lesson_ids],
+                    "next_lesson": next_lesson,
+                },
             }
-        })
+        )
 
 
 @extend_schema(tags=["Certificates"])
 class CertificateViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Certificate endpoints.
-    
+
     GET /api/v1/courses/certificates/ - List my certificates
     GET /api/v1/courses/certificates/{code}/ - Get certificate detail
     """
-    
+
     permission_classes = [IsAuthenticated]
-    lookup_field = 'certificate_code'
-    
+    lookup_field = "certificate_code"
+
     def get_queryset(self):
-        return self.request.user.certificates.select_related('course', 'user')
-    
+        return self.request.user.certificates.select_related("course", "user")
+
     def get_serializer_class(self):
         return CertificateSerializer
-    
-    @action(detail=True, methods=['get'])
+
+    @action(detail=True, methods=["get"])
     def download(self, request, certificate_code=None):
         """Download certificate file."""
         import os
         from django.http import FileResponse
         from django.conf import settings
-        
+
         certificate = self.get_object()
-        
+
         # In this system, certificates are stored in MEDIA_ROOT/certificates/
-        file_path = os.path.join(settings.MEDIA_ROOT, 'certificates', f"{certificate.id}.pdf")
-        
+        file_path = os.path.join(
+            settings.MEDIA_ROOT, "certificates", f"{certificate.id}.pdf"
+        )
+
         if not os.path.exists(file_path):
             return Response(
                 {"error": "Certificate file not found. It may still be generating."},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
-            
+
         response = FileResponse(
-            open(file_path, 'rb'),
-            content_type='application/pdf',
+            open(file_path, "rb"),
+            content_type="application/pdf",
             as_attachment=True,
             filename=f"certificate_{certificate.certificate_code}.pdf",
         )
         return response
 
+
 class PublicCertificateViewSet(viewsets.GenericViewSet):
     """
     Public endpoints for certificate verification.
     """
-    permission_classes = [AllowAny]
-    queryset = Certificate.objects.all().select_related('course', 'user')
-    lookup_field = 'certificate_code'
 
-    @action(detail=True, methods=['get'])
+    permission_classes = [AllowAny]
+    queryset = Certificate.objects.all().select_related("course", "user")
+    lookup_field = "certificate_code"
+
+    @action(detail=True, methods=["get"])
     def verify(self, request, certificate_code=None):
         """
         Public endpoint to verify a certificate signature.
@@ -1034,29 +1236,33 @@ class PublicCertificateViewSet(viewsets.GenericViewSet):
         """
         try:
             cert = self.get_object()
-            
+
             # Retrieve signature (it was generated on save)
-            return Response({
-                "valid": True,
-                "certificate_code": cert.certificate_code,
-                "student_name": cert.user.get_full_name() or cert.user.username,
-                "course_title": cert.course.title,
-                "issued_at": cert.issued_at,
-                "signature": cert.signature,
-                "verified_by": "Conductor Certification Authority"
-            })
+            return Response(
+                {
+                    "valid": True,
+                    "certificate_code": cert.certificate_code,
+                    "student_name": cert.user.get_full_name() or cert.user.username,
+                    "course_title": cert.course.title,
+                    "issued_at": cert.issued_at,
+                    "signature": cert.signature,
+                    "verified_by": "Conductor Certification Authority",
+                }
+            )
         except Exception:
             return Response(
                 {"valid": False, "error": "Invalid Certificate Code"},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
+
 
 from .models import CareerTrack
 from .serializers import CareerTrackSerializer
 
+
 @extend_schema_view(
     list=extend_schema(responses={200: CareerTrackSerializer(many=True)}),
-    retrieve=extend_schema(responses={200: CareerTrackSerializer})
+    retrieve=extend_schema(responses={200: CareerTrackSerializer}),
 )
 class CareerTrackViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -1064,38 +1270,51 @@ class CareerTrackViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/v1/courses/tracks/
     GET /api/v1/courses/tracks/{slug}/
     """
-    queryset = CareerTrack.objects.filter(is_active=True).prefetch_related('courses', 'trackcourse_set__course')
+
+    queryset = CareerTrack.objects.filter(is_active=True).prefetch_related(
+        "courses", "trackcourse_set__course"
+    )
     serializer_class = CareerTrackSerializer
     permission_classes = [AllowAny]
-    lookup_field = 'slug'
+    lookup_field = "slug"
 
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny], url_path='verify')
+    @action(
+        detail=False, methods=["get"], permission_classes=[AllowAny], url_path="verify"
+    )
     def verify(self, request):
         """
         Public endpoint to verify a certificate signature.
         GET /api/v1/courses/tracks/verify/?code=XXXX
         """
-        code = request.query_params.get('code')
+        code = request.query_params.get("code")
         if not code:
             return Response(
-                {"valid": False, "error": "Certificate code is required. Use ?code=XXXX"},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "valid": False,
+                    "error": "Certificate code is required. Use ?code=XXXX",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
         from apps.courses.models import Certificate
+
         try:
-            cert = Certificate.objects.select_related('user', 'course').get(certificate_code=code)
-            
+            cert = Certificate.objects.select_related("user", "course").get(
+                certificate_code=code
+            )
+
             # Retrieve signature (it was generated on save)
-            return Response({
-                "valid": True,
-                "certificate_code": cert.certificate_code,
-                "student_name": cert.user.get_full_name() or cert.user.username,
-                "course_title": cert.course.title,
-                "issued_at": cert.issued_at,
-                "signature": cert.signature
-            })
+            return Response(
+                {
+                    "valid": True,
+                    "certificate_code": cert.certificate_code,
+                    "student_name": cert.user.get_full_name() or cert.user.username,
+                    "course_title": cert.course.title,
+                    "issued_at": cert.issued_at,
+                    "signature": cert.signature,
+                }
+            )
         except Certificate.DoesNotExist:
             return Response(
                 {"valid": False, "error": "Invalid Certificate Code"},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )

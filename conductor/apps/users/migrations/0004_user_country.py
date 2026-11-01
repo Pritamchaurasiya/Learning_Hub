@@ -7,14 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('exams', '0002_formula_pyq_revisionnote'),
-        ('users', '0003_remove_bookmark_user_bookma_user_id_2928de_idx_and_more'),
+        ("exams", "0002_formula_pyq_revisionnote"),
+        ("users", "0003_remove_bookmark_user_bookma_user_id_2928de_idx_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='users', to='exams.country'),
+            model_name="user",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="users",
+                to="exams.country",
+            ),
         ),
     ]

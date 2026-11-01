@@ -22,7 +22,7 @@ class TwoFactorService:
     def _generate_secret() -> str:
         """Generate base32-compatible secret string."""
         random_bytes = os.urandom(20)
-        return base64.b32encode(random_bytes).decode('utf-8').rstrip('=')
+        return base64.b32encode(random_bytes).decode("utf-8").rstrip("=")
 
     @staticmethod
     def _get_totp_code(secret: str, time_step: int = 30, t: int = None) -> str:
@@ -30,23 +30,28 @@ class TwoFactorService:
         if t is None:
             t = int(time.time())
         counter = t // time_step
-        
+
         # Pad secret if needed
         padding = (8 - len(secret) % 8) % 8
-        padded_secret = secret + '=' * padding
+        padded_secret = secret + "=" * padding
         key = base64.b32decode(padded_secret, casefold=True)
-        
+
         msg = struct.pack(">Q", counter)
         h = hmac.new(key, msg, hashlib.sha1).digest()
         offset = h[19] & 0x0F
-        code_int = struct.unpack(">I", h[offset:offset + 4])[0] & 0x7FFFFFFF
+        code_int = struct.unpack(">I", h[offset : offset + 4])[0] & 0x7FFFFFFF
         code = str(code_int % 1000000).zfill(6)
         return code
 
     @classmethod
     def verify_totp(cls, secret: str, code: str, window: int = 1) -> bool:
         """Verify TOTP code with time drift window tolerance."""
-        if not secret or not code or len(str(code).strip()) != 6 or not str(code).strip().isdigit():
+        if (
+            not secret
+            or not code
+            or len(str(code).strip()) != 6
+            or not str(code).strip().isdigit()
+        ):
             return False
 
         current_time = int(time.time())
@@ -63,13 +68,13 @@ class TwoFactorService:
         two_factor, _ = TwoFactorAuth.objects.get_or_create(user=user)
         if not two_factor.secret or not two_factor.is_enabled:
             two_factor.secret = cls._generate_secret()
-            two_factor.save(update_fields=['secret'])
+            two_factor.save(update_fields=["secret"])
 
         issuer = "LearningHub"
         account_name = user.email
         encoded_issuer = urllib.parse.quote(issuer)
         encoded_account = urllib.parse.quote(account_name)
-        
+
         otpauth_url = f"otpauth://totp/{encoded_issuer}:{encoded_account}?secret={two_factor.secret}&issuer={encoded_issuer}&algorithm=SHA1&digits=6&period=30"
 
         return {
@@ -88,14 +93,18 @@ class TwoFactorService:
             raise ValueError("2FA has not been initialized. Please run setup first.")
 
         if not cls.verify_totp(two_factor.secret, code):
-            raise ValueError("Invalid verification code. Please check your authenticator app.")
+            raise ValueError(
+                "Invalid verification code. Please check your authenticator app."
+            )
 
         # Generate 8 backup recovery codes
         recovery_codes = [secrets.token_hex(4).upper() for _ in range(8)]
         two_factor.recovery_codes = recovery_codes
         two_factor.is_enabled = True
         two_factor.last_verified_at = timezone.now()
-        two_factor.save(update_fields=['is_enabled', 'recovery_codes', 'last_verified_at'])
+        two_factor.save(
+            update_fields=["is_enabled", "recovery_codes", "last_verified_at"]
+        )
 
         return {
             "is_enabled": True,
@@ -129,7 +138,7 @@ class TwoFactorService:
         if len(code) == 6 and code.isdigit():
             if cls.verify_totp(two_factor.secret, code):
                 two_factor.last_verified_at = timezone.now()
-                two_factor.save(update_fields=['last_verified_at'])
+                two_factor.save(update_fields=["last_verified_at"])
                 return True
 
         # Check recovery codes
@@ -137,7 +146,7 @@ class TwoFactorService:
         if code_upper in two_factor.recovery_codes:
             two_factor.recovery_codes.remove(code_upper)
             two_factor.last_verified_at = timezone.now()
-            two_factor.save(update_fields=['recovery_codes', 'last_verified_at'])
+            two_factor.save(update_fields=["recovery_codes", "last_verified_at"])
             return True
 
         return False

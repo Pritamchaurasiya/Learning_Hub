@@ -13,10 +13,15 @@ def trigger_welcome_email(sender, instance, created, **kwargs):
     When a user joins a group, fires an async welcome email.
     Fully guarded — task scheduling failure never prevents membership save.
     """
-    if created and instance.role == 'member':
+    if created and instance.role == "member":
         try:
             from .tasks import send_group_welcome_email
+
             send_group_welcome_email.delay(instance.user.email, instance.group.name)
         except Exception as e:
-            logger.error("Welcome email signal failed for user %s group %s: %s",
-                         instance.user_id, instance.group_id, e)
+            logger.error(
+                "Welcome email signal failed for user %s group %s: %s",
+                instance.user_id,
+                instance.group_id,
+                e,
+            )

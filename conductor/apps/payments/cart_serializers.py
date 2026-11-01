@@ -28,7 +28,8 @@ class CartCourseSerializer(serializers.ModelSerializer):
         if obj.instructor:
             return {
                 "id": str(obj.instructor.id),
-                "display_name": getattr(obj.instructor, "display_name", None) or getattr(obj.instructor, "username", "Instructor"),
+                "display_name": getattr(obj.instructor, "display_name", None)
+                or getattr(obj.instructor, "username", "Instructor"),
             }
         return {"display_name": "LearningHub"}
 

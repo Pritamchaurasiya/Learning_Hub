@@ -23,7 +23,7 @@ from rest_framework.pagination import PageNumberPagination
 
 class SessionPagination(PageNumberPagination):
     page_size = 20
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 50
 
 
@@ -53,9 +53,7 @@ class LiveSessionViewSet(viewsets.ReadOnlyModelViewSet):
         return (
             LiveSession.objects.select_related("host", "course")
             .prefetch_related("attendees")
-            .filter(
-                scheduled_time__gte=timezone.now() - timedelta(hours=2)
-            )
+            .filter(scheduled_time__gte=timezone.now() - timedelta(hours=2))
             .exclude(status="cancelled")
         )
 
@@ -80,11 +78,13 @@ class LiveSessionViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         msg = "Joined successfully" if created else "Already joined"
-        return Response({
-            "status": "success",
-            "message": msg,
-            "data": {"meeting_url": session.meeting_url},
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": msg,
+                "data": {"meeting_url": session.meeting_url},
+            }
+        )
 
     @extend_schema(description="Leave a session you joined.")
     @action(detail=True, methods=["post"])
@@ -170,14 +170,19 @@ class LiveSessionViewSet(viewsets.ReadOnlyModelViewSet):
 
         if session.status in ("ended", "cancelled"):
             return Response(
-                {"status": "error", "message": f"Cannot cancel a {session.status} session"},
+                {
+                    "status": "error",
+                    "message": f"Cannot cancel a {session.status} session",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         session.status = "cancelled"
         session.save(update_fields=["status", "updated_at"])
-        return Response({
-            "status": "success",
-            "message": "Session cancelled",
-            "data": LiveSessionSerializer(session).data,
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": "Session cancelled",
+                "data": LiveSessionSerializer(session).data,
+            }
+        )

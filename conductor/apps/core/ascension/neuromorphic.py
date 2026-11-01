@@ -4,15 +4,16 @@ import random
 
 logger = structlog.get_logger(__name__)
 
+
 class SpikingNeuralNetwork:
     """
     Simulates a Neuromorphic Spiking Neural Network (SNN).
-    Instead of continuous weights, neurons communicate via discrete spikes 
+    Instead of continuous weights, neurons communicate via discrete spikes
     (Action Potentials), mimicking the human brain's energy efficiency.
     """
 
     def __init__(self, num_neurons=1000):
-        self.neurons = [0.0] * num_neurons # Membrane potential
+        self.neurons = [0.0] * num_neurons  # Membrane potential
         self.threshold = 1.0
         self.decay = 0.9
 
@@ -31,8 +32,8 @@ class SpikingNeuralNetwork:
             # Fire?
             if self.neurons[i] >= self.threshold:
                 spikes += 1
-                self.neurons[i] = 0.0 # Reset
-        
+                self.neurons[i] = 0.0  # Reset
+
         logger.info(f"⚡ Network Activity: {spikes} spikes generated.")
         return spikes
 

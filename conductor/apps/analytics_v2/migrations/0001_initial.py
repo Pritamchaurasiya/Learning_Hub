@@ -10,99 +10,236 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('exams', '0001_initial'),
+        ("exams", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ExamPerformance',
+            name="ExamPerformance",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('total_tests_taken', models.IntegerField(default=0)),
-                ('total_questions_answered', models.IntegerField(default=0)),
-                ('total_correct', models.IntegerField(default=0)),
-                ('avg_percentage', models.FloatField(default=0)),
-                ('best_percentage', models.FloatField(default=0)),
-                ('worst_percentage', models.FloatField(default=100)),
-                ('latest_percentage', models.FloatField(default=0)),
-                ('percentile_rank', models.FloatField(blank=True, help_text='Percentile vs other users (0-100)', null=True)),
-                ('weak_topics', models.JSONField(default=list, help_text='Topic IDs with accuracy < 40%')),
-                ('strong_topics', models.JSONField(default=list, help_text='Topic IDs with accuracy > 80%')),
-                ('avg_time_per_question', models.FloatField(default=0)),
-                ('first_test_date', models.DateTimeField(blank=True, null=True)),
-                ('last_test_date', models.DateTimeField(blank=True, null=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("total_tests_taken", models.IntegerField(default=0)),
+                ("total_questions_answered", models.IntegerField(default=0)),
+                ("total_correct", models.IntegerField(default=0)),
+                ("avg_percentage", models.FloatField(default=0)),
+                ("best_percentage", models.FloatField(default=0)),
+                ("worst_percentage", models.FloatField(default=100)),
+                ("latest_percentage", models.FloatField(default=0)),
+                (
+                    "percentile_rank",
+                    models.FloatField(
+                        blank=True,
+                        help_text="Percentile vs other users (0-100)",
+                        null=True,
+                    ),
+                ),
+                (
+                    "weak_topics",
+                    models.JSONField(
+                        default=list, help_text="Topic IDs with accuracy < 40%"
+                    ),
+                ),
+                (
+                    "strong_topics",
+                    models.JSONField(
+                        default=list, help_text="Topic IDs with accuracy > 80%"
+                    ),
+                ),
+                ("avg_time_per_question", models.FloatField(default=0)),
+                ("first_test_date", models.DateTimeField(blank=True, null=True)),
+                ("last_test_date", models.DateTimeField(blank=True, null=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'exam_performance',
+                "db_table": "exam_performance",
             },
         ),
         migrations.CreateModel(
-            name='PerformanceTrend',
+            name="PerformanceTrend",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('date', models.DateField(db_index=True)),
-                ('period', models.CharField(choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], default='daily', max_length=10)),
-                ('tests_taken', models.IntegerField(default=0)),
-                ('avg_percentage', models.FloatField(default=0)),
-                ('total_questions', models.IntegerField(default=0)),
-                ('total_correct', models.IntegerField(default=0)),
-                ('total_time_minutes', models.IntegerField(default=0)),
-                ('streak_days', models.IntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("date", models.DateField(db_index=True)),
+                (
+                    "period",
+                    models.CharField(
+                        choices=[
+                            ("daily", "Daily"),
+                            ("weekly", "Weekly"),
+                            ("monthly", "Monthly"),
+                        ],
+                        default="daily",
+                        max_length=10,
+                    ),
+                ),
+                ("tests_taken", models.IntegerField(default=0)),
+                ("avg_percentage", models.FloatField(default=0)),
+                ("total_questions", models.IntegerField(default=0)),
+                ("total_correct", models.IntegerField(default=0)),
+                ("total_time_minutes", models.IntegerField(default=0)),
+                ("streak_days", models.IntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'performance_trends',
-                'ordering': ['-date'],
+                "db_table": "performance_trends",
+                "ordering": ["-date"],
             },
         ),
         migrations.CreateModel(
-            name='TopicPerformance',
+            name="TopicPerformance",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('total_attempts', models.IntegerField(default=0)),
-                ('correct_attempts', models.IntegerField(default=0)),
-                ('incorrect_attempts', models.IntegerField(default=0)),
-                ('unanswered_attempts', models.IntegerField(default=0)),
-                ('accuracy', models.FloatField(default=0, help_text='Correct / Total (0-100)')),
-                ('total_time_seconds', models.IntegerField(default=0)),
-                ('avg_time_seconds', models.FloatField(default=0)),
-                ('fastest_time_seconds', models.IntegerField(default=0)),
-                ('slowest_time_seconds', models.IntegerField(default=0)),
-                ('last_5_accuracy', models.FloatField(default=0, help_text='Accuracy of last 5 attempts')),
-                ('trend', models.CharField(choices=[('improving', 'Improving'), ('stable', 'Stable'), ('declining', 'Declining'), ('new', 'No data yet')], default='stable', max_length=15)),
-                ('mastery_level', models.FloatField(default=0, help_text='Mastery score (0-100)')),
-                ('last_attempted', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("total_attempts", models.IntegerField(default=0)),
+                ("correct_attempts", models.IntegerField(default=0)),
+                ("incorrect_attempts", models.IntegerField(default=0)),
+                ("unanswered_attempts", models.IntegerField(default=0)),
+                (
+                    "accuracy",
+                    models.FloatField(default=0, help_text="Correct / Total (0-100)"),
+                ),
+                ("total_time_seconds", models.IntegerField(default=0)),
+                ("avg_time_seconds", models.FloatField(default=0)),
+                ("fastest_time_seconds", models.IntegerField(default=0)),
+                ("slowest_time_seconds", models.IntegerField(default=0)),
+                (
+                    "last_5_accuracy",
+                    models.FloatField(
+                        default=0, help_text="Accuracy of last 5 attempts"
+                    ),
+                ),
+                (
+                    "trend",
+                    models.CharField(
+                        choices=[
+                            ("improving", "Improving"),
+                            ("stable", "Stable"),
+                            ("declining", "Declining"),
+                            ("new", "No data yet"),
+                        ],
+                        default="stable",
+                        max_length=15,
+                    ),
+                ),
+                (
+                    "mastery_level",
+                    models.FloatField(default=0, help_text="Mastery score (0-100)"),
+                ),
+                ("last_attempted", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'topic_performance',
+                "db_table": "topic_performance",
             },
         ),
         migrations.CreateModel(
-            name='AIRecommendation',
+            name="AIRecommendation",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('recommendation_type', models.CharField(choices=[('practice_topic', 'Practice specific topic'), ('retake_test', 'Retake a test'), ('study_resource', 'Study resource suggestion'), ('difficulty_adjust', 'Adjust difficulty level'), ('focus_area', 'Focus on weak area'), ('milestone', 'Milestone achievement'), ('motivation', 'Motivational message')], max_length=30)),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('target_topic_id', models.CharField(blank=True, max_length=36, null=True)),
-                ('target_test_id', models.CharField(blank=True, max_length=36, null=True)),
-                ('target_exam_id', models.CharField(blank=True, max_length=36, null=True)),
-                ('priority', models.CharField(choices=[('high', 'High'), ('medium', 'Medium'), ('low', 'Low')], default='medium', max_length=10)),
-                ('is_actioned', models.BooleanField(default=False)),
-                ('actioned_at', models.DateTimeField(blank=True, null=True)),
-                ('is_dismissed', models.BooleanField(default=False)),
-                ('reasoning', models.TextField(blank=True, help_text='AI reasoning for this recommendation')),
-                ('confidence', models.FloatField(default=0.5, help_text='AI confidence (0-1)')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('exam', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='exams.exam')),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "recommendation_type",
+                    models.CharField(
+                        choices=[
+                            ("practice_topic", "Practice specific topic"),
+                            ("retake_test", "Retake a test"),
+                            ("study_resource", "Study resource suggestion"),
+                            ("difficulty_adjust", "Adjust difficulty level"),
+                            ("focus_area", "Focus on weak area"),
+                            ("milestone", "Milestone achievement"),
+                            ("motivation", "Motivational message"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                (
+                    "target_topic_id",
+                    models.CharField(blank=True, max_length=36, null=True),
+                ),
+                (
+                    "target_test_id",
+                    models.CharField(blank=True, max_length=36, null=True),
+                ),
+                (
+                    "target_exam_id",
+                    models.CharField(blank=True, max_length=36, null=True),
+                ),
+                (
+                    "priority",
+                    models.CharField(
+                        choices=[
+                            ("high", "High"),
+                            ("medium", "Medium"),
+                            ("low", "Low"),
+                        ],
+                        default="medium",
+                        max_length=10,
+                    ),
+                ),
+                ("is_actioned", models.BooleanField(default=False)),
+                ("actioned_at", models.DateTimeField(blank=True, null=True)),
+                ("is_dismissed", models.BooleanField(default=False)),
+                (
+                    "reasoning",
+                    models.TextField(
+                        blank=True, help_text="AI reasoning for this recommendation"
+                    ),
+                ),
+                (
+                    "confidence",
+                    models.FloatField(default=0.5, help_text="AI confidence (0-1)"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("expires_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "exam",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="exams.exam",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'ai_recommendations',
-                'ordering': ['-priority', '-created_at'],
+                "db_table": "ai_recommendations",
+                "ordering": ["-priority", "-created_at"],
             },
         ),
     ]

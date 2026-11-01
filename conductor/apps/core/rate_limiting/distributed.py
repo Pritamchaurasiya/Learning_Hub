@@ -67,6 +67,7 @@ return { allowed, math.floor(remaining), retry_after, capacity }
 
 class RateLimitTier(Enum):
     """User account tiers with escalating capacity budgets."""
+
     ANONYMOUS = "ANONYMOUS"
     FREE = "FREE"
     PRO = "PRO"
@@ -77,13 +78,15 @@ class RateLimitTier(Enum):
 @dataclass
 class RateLimitConfig:
     """Token Bucket parameters."""
-    capacity: int       # Maximum burst token capacity
+
+    capacity: int  # Maximum burst token capacity
     refill_rate: float  # Replenishment rate in tokens per second
 
 
 @dataclass
 class RateLimitResult:
     """Outcome of a rate limit evaluation."""
+
     allowed: bool
     remaining: int
     retry_after: int
@@ -104,18 +107,37 @@ class DistributedTokenBucketRateLimiter:
     # Default rate configurations: (capacity, refill_tokens_per_second)
     # 60 tokens / 1.0 per sec = steady state 60 req/min with burst up to 60
     TIER_CONFIGS: Dict[RateLimitTier, RateLimitConfig] = {
-        RateLimitTier.ANONYMOUS: RateLimitConfig(capacity=20, refill_rate=0.5),     # 30 req/min, burst 20
-        RateLimitTier.FREE: RateLimitConfig(capacity=60, refill_rate=1.0),          # 60 req/min, burst 60
-        RateLimitTier.PRO: RateLimitConfig(capacity=300, refill_rate=5.0),         # 300 req/min, burst 300
-        RateLimitTier.INSTRUCTOR: RateLimitConfig(capacity=600, refill_rate=10.0),  # 600 req/min, burst 600
-        RateLimitTier.ADMIN: RateLimitConfig(capacity=2000, refill_rate=50.0),      # 3000 req/min, burst 2000
+        RateLimitTier.ANONYMOUS: RateLimitConfig(
+            capacity=20, refill_rate=0.5
+        ),  # 30 req/min, burst 20
+        RateLimitTier.FREE: RateLimitConfig(
+            capacity=60, refill_rate=1.0
+        ),  # 60 req/min, burst 60
+        RateLimitTier.PRO: RateLimitConfig(
+            capacity=300, refill_rate=5.0
+        ),  # 300 req/min, burst 300
+        RateLimitTier.INSTRUCTOR: RateLimitConfig(
+            capacity=600, refill_rate=10.0
+        ),  # 600 req/min, burst 600
+        RateLimitTier.ADMIN: RateLimitConfig(
+            capacity=2000, refill_rate=50.0
+        ),  # 3000 req/min, burst 2000
     }
 
     # Endpoint multipliers to restrict expensive routes (auth, AI, heavy search)
     ENDPOINT_PROFILES: Dict[str, Dict[str, float]] = {
-        "auth": {"capacity_factor": 0.25, "rate_factor": 0.2},     # e.g., login/registration brute-force defense
-        "ai": {"capacity_factor": 0.33, "rate_factor": 0.33},      # Expensive LLM token streams
-        "search": {"capacity_factor": 0.5, "rate_factor": 0.5},    # Full-text / Vector search queries
+        "auth": {
+            "capacity_factor": 0.25,
+            "rate_factor": 0.2,
+        },  # e.g., login/registration brute-force defense
+        "ai": {
+            "capacity_factor": 0.33,
+            "rate_factor": 0.33,
+        },  # Expensive LLM token streams
+        "search": {
+            "capacity_factor": 0.5,
+            "rate_factor": 0.5,
+        },  # Full-text / Vector search queries
         "default": {"capacity_factor": 1.0, "rate_factor": 1.0},
     }
 
@@ -139,13 +161,18 @@ class DistributedTokenBucketRateLimiter:
     def _init_redis(self):
         try:
             import redis
+
             redis_url = getattr(settings, "REDIS_URL", "redis://localhost:6379/0")
-            client = redis.from_url(redis_url, decode_responses=True, socket_connect_timeout=1.5)
+            client = redis.from_url(
+                redis_url, decode_responses=True, socket_connect_timeout=1.5
+            )
             # Ping connection
             client.ping()
             self._redis_client = client
             self._lua_script = client.register_script(LUA_TOKEN_BUCKET)
-            logger.info("DistributedTokenBucketRateLimiter: Connected to Redis (%s)", redis_url)
+            logger.info(
+                "DistributedTokenBucketRateLimiter: Connected to Redis (%s)", redis_url
+            )
         except Exception as exc:
             logger.warning(
                 "DistributedTokenBucketRateLimiter: Redis unavailable (%s). Using thread-safe in-memory fallback.",
@@ -192,7 +219,9 @@ class DistributedTokenBucketRateLimiter:
                     reset_time=int(now + retry_after) if retry_after > 0 else int(now),
                 )
             except Exception as e:
-                logger.error("Redis Lua rate limiter failed, falling back to memory: %s", e)
+                logger.error(
+                    "Redis Lua rate limiter failed, falling back to memory: %s", e
+                )
 
         # 2. Resilient In-Memory Fallback
         return self._check_in_memory(key, capacity, refill_rate, now, cost, ttl)
@@ -213,7 +242,9 @@ class DistributedTokenBucketRateLimiter:
                 last_updated = now
             else:
                 elapsed = max(0.0, now - bucket["last_updated"])
-                tokens = min(float(capacity), bucket["tokens"] + (elapsed * refill_rate))
+                tokens = min(
+                    float(capacity), bucket["tokens"] + (elapsed * refill_rate)
+                )
                 last_updated = now
 
             if tokens >= cost:
@@ -225,7 +256,9 @@ class DistributedTokenBucketRateLimiter:
                 allowed = False
                 remaining = int(tokens)
                 missing = cost - tokens
-                retry_after = math.ceil(missing / refill_rate) if refill_rate > 0 else 60
+                retry_after = (
+                    math.ceil(missing / refill_rate) if refill_rate > 0 else 60
+                )
 
             self._in_memory_buckets[key] = {
                 "tokens": tokens,
@@ -236,7 +269,8 @@ class DistributedTokenBucketRateLimiter:
             # Periodic prune for in-memory leaks if dictionary grows large
             if len(self._in_memory_buckets) > 5000:
                 self._in_memory_buckets = {
-                    k: v for k, v in self._in_memory_buckets.items()
+                    k: v
+                    for k, v in self._in_memory_buckets.items()
                     if v["expires_at"] > now
                 }
 
@@ -255,21 +289,22 @@ class DistributedTokenBucketRateLimiter:
             return RateLimitTier.ANONYMOUS
         if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
             return RateLimitTier.ADMIN
-        
+
         # Check role field or pro attributes
         role = getattr(user, "role", "").upper()
         if role in ("INSTRUCTOR", "TEACHER"):
             return RateLimitTier.INSTRUCTOR
-        
+
         if getattr(user, "is_pro", False) or role in ("PRO", "PREMIUM"):
             return RateLimitTier.PRO
-            
+
         return RateLimitTier.FREE
 
 
 # ==============================================================================
 # DECORATOR & DRF THROTTLE
 # ==============================================================================
+
 
 def rate_limit_token_bucket(
     endpoint_category: str = "default",
@@ -279,6 +314,7 @@ def rate_limit_token_bucket(
     """
     View decorator enforcing Redis Lua distributed token bucket rate limiting.
     """
+
     def decorator(view_func):
         @functools.wraps(view_func)
         def wrapped_view(request, *args, **kwargs):
@@ -328,6 +364,7 @@ def rate_limit_token_bucket(
             return response
 
         return wrapped_view
+
     return decorator
 
 
@@ -338,6 +375,7 @@ try:
         """
         DRF-compatible throttle backed by DistributedTokenBucketRateLimiter.
         """
+
         endpoint_category = "default"
         cost = 1
 
@@ -367,8 +405,13 @@ try:
             return self.result.allowed
 
         def wait(self):
-            return getattr(self, "result", None).retry_after if getattr(self, "result", None) else None
+            return (
+                getattr(self, "result", None).retry_after
+                if getattr(self, "result", None)
+                else None
+            )
 
 except ImportError:
+
     class DistributedTokenBucketRateThrottle:
         pass

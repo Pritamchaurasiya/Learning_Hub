@@ -16,7 +16,7 @@ def health_check(request):
     """Health check endpoint for monitoring."""
     from django.db import connection
     from django.core.cache import cache
-    
+
     status = {"service": "Learning Hub API", "components": {}}
     http_status = 200
 
@@ -62,12 +62,12 @@ urlpatterns = [
     path("signup/", TemplateView.as_view(template_name="signup.html")),
     # Health check
     path("health/", health_check, name="health"),
-
     # Prometheus Metrics (optional)
 ]
 
 try:
     import django_prometheus  # noqa: F401
+
     urlpatterns += [path("", include("django_prometheus.urls"))]
 except ImportError:
     pass
@@ -76,7 +76,7 @@ from apps.exams.views import GeoDetectView, PreferenceView
 
 urlpatterns += [
     # Admin
-    path("god-admin/", god_admin.urls), # God Mode Portal
+    path("god-admin/", god_admin.urls),  # God Mode Portal
     path("admin/", admin.site.urls),
     # Top-level preference routes (as per API contract table)
     path("api/preference", PreferenceView.as_view(), name="top_preference_bare"),
@@ -91,16 +91,32 @@ urlpatterns += [
                 path("geo/detect", GeoDetectView.as_view()),
                 path("preference/", PreferenceView.as_view(), name="v1_preference"),
                 path("preference", PreferenceView.as_view()),
-                path("csrf-token", lambda request: JsonResponse({
-                    "status": "success",
-                    "csrfToken": __import__("django.middleware.csrf", fromlist=["get_token"]).get_token(request),
-                    "sessionId": request.session.session_key or ""
-                }), name="csrf_token_bare"),
-                path("csrf-token/", lambda request: JsonResponse({
-                    "status": "success",
-                    "csrfToken": __import__("django.middleware.csrf", fromlist=["get_token"]).get_token(request),
-                    "sessionId": request.session.session_key or ""
-                }), name="csrf_token"),
+                path(
+                    "csrf-token",
+                    lambda request: JsonResponse(
+                        {
+                            "status": "success",
+                            "csrfToken": __import__(
+                                "django.middleware.csrf", fromlist=["get_token"]
+                            ).get_token(request),
+                            "sessionId": request.session.session_key or "",
+                        }
+                    ),
+                    name="csrf_token_bare",
+                ),
+                path(
+                    "csrf-token/",
+                    lambda request: JsonResponse(
+                        {
+                            "status": "success",
+                            "csrfToken": __import__(
+                                "django.middleware.csrf", fromlist=["get_token"]
+                            ).get_token(request),
+                            "sessionId": request.session.session_key or "",
+                        }
+                    ),
+                    name="csrf_token",
+                ),
                 path("users/", include("apps.users.urls.users")),
                 path("organizations/", include("apps.users.urls.orgs")),
                 path("core/", include("apps.core.urls")),
@@ -110,9 +126,14 @@ urlpatterns += [
                 path("payments/", include("apps.payments.urls")),
                 path("commerce/cart/", include("apps.payments.cart_urls")),
                 path("cart/", include("apps.payments.cart_urls")),
-                path("checkout/", include([
-                    path("", include("apps.payments.cart_urls")),
-                ])),
+                path(
+                    "checkout/",
+                    include(
+                        [
+                            path("", include("apps.payments.cart_urls")),
+                        ]
+                    ),
+                ),
                 path("notifications/", include("apps.notifications.urls")),
                 path("ai/", include("apps.ai_engine.urls")),
                 path("dsa/", include("apps.dsa.urls")),
@@ -156,6 +177,7 @@ import os
 from apps.core.health import DeepHealthCheckView
 from apps.core.health_check import liveness_view, readiness_view, metrics_view
 
+
 # Serve SPA with fallback
 def serve_spa(request, path):
     """
@@ -165,12 +187,12 @@ def serve_spa(request, path):
     from pathlib import Path
     from django.http import Http404
     from django.conf import settings
-    
-    path = posixpath.normpath(path).lstrip('/')
-    
+
+    path = posixpath.normpath(path).lstrip("/")
+
     # Unified React Web build root
-    build_root = settings.BASE_DIR.parent / 'learninghub' / 'dist'
-    
+    build_root = settings.BASE_DIR.parent / "learninghub" / "dist"
+
     # Try to serve the actual file (e.g. assets/*.js, assets/*.css)
     try:
         file_path = build_root / path
@@ -178,9 +200,10 @@ def serve_spa(request, path):
             return serve(request, path, document_root=build_root)
     except Exception:
         pass
-        
+
     # Fallback to index.html for client-side routing
     return TemplateView.as_view(template_name="index.html")(request)
+
 
 urlpatterns += [
     path("health/deep/", DeepHealthCheckView.as_view(), name="deep_health_check"),
@@ -188,7 +211,10 @@ urlpatterns += [
     path("health/ready/", readiness_view, name="readiness_probe"),
     path("health/metrics/", metrics_view, name="app_metrics"),
     path("monitoring/", include("apps.monitoring.urls")),
-    re_path(r'^(?!api/|admin/|god-admin/|health/|metrics/|monitoring/|static/)(?P<path>.*)$', serve_spa),
+    re_path(
+        r"^(?!api/|admin/|god-admin/|health/|metrics/|monitoring/|static/)(?P<path>.*)$",
+        serve_spa,
+    ),
 ]
 
 # Serve media files in development

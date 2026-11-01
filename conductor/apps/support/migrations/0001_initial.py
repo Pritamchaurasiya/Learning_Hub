@@ -8,29 +8,75 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Feedback',
+            name="Feedback",
             fields=[
-                ('id', models.CharField(default=uuid.uuid4, editable=False, max_length=36, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('category', models.CharField(choices=[('general', 'General Inquiry'), ('bug', 'Bug Report'), ('content', 'Course Content'), ('billing', 'Billing & Payment'), ('feature', 'Feature Request'), ('other', 'Other')], default='general', max_length=20)),
-                ('subject', models.CharField(max_length=255)),
-                ('message', models.TextField()),
-                ('status', models.CharField(choices=[('open', 'Open'), ('in_progress', 'In Progress'), ('escalated', 'Escalated'), ('resolved', 'Resolved'), ('closed', 'Closed')], default='open', max_length=20)),
-                ('urgency_score', models.IntegerField(default=1, help_text='1 (Low) to 10 (Critical) calculated by AI.')),
-                ('ai_suggested_response', models.TextField(blank=True, help_text='Auto-generated triage answer.')),
-                ('admin_response', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=36,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("general", "General Inquiry"),
+                            ("bug", "Bug Report"),
+                            ("content", "Course Content"),
+                            ("billing", "Billing & Payment"),
+                            ("feature", "Feature Request"),
+                            ("other", "Other"),
+                        ],
+                        default="general",
+                        max_length=20,
+                    ),
+                ),
+                ("subject", models.CharField(max_length=255)),
+                ("message", models.TextField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("open", "Open"),
+                            ("in_progress", "In Progress"),
+                            ("escalated", "Escalated"),
+                            ("resolved", "Resolved"),
+                            ("closed", "Closed"),
+                        ],
+                        default="open",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "urgency_score",
+                    models.IntegerField(
+                        default=1,
+                        help_text="1 (Low) to 10 (Critical) calculated by AI.",
+                    ),
+                ),
+                (
+                    "ai_suggested_response",
+                    models.TextField(
+                        blank=True, help_text="Auto-generated triage answer."
+                    ),
+                ),
+                ("admin_response", models.TextField(blank=True)),
             ],
             options={
-                'verbose_name_plural': 'Feedback',
-                'db_table': 'feedback',
-                'ordering': ['-created_at'],
+                "verbose_name_plural": "Feedback",
+                "db_table": "feedback",
+                "ordering": ["-created_at"],
             },
         ),
     ]

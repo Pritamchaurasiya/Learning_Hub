@@ -17,18 +17,19 @@ class ConversationViewSet(viewsets.ModelViewSet):
     create: POST /api/v1/chat/conversations/     — create new conversation
     start:  POST /api/v1/chat/conversations/start/ — start 1-on-1 conversation
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ConversationSerializer
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Conversation.objects.none()
-            
+
         return Conversation.objects.filter(
             participants=self.request.user
         ).prefetch_related(
-            'participants',
-            Prefetch('messages', queryset=Message.objects.order_by('created_at'))
+            "participants",
+            Prefetch("messages", queryset=Message.objects.order_by("created_at")),
         )
 
     def perform_create(self, serializer):
@@ -37,18 +38,18 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.participants.add(self.request.user)
 
         # Add other participants from request data
-        participant_ids = self.request.data.get('participant_ids', [])
+        participant_ids = self.request.data.get("participant_ids", [])
         if participant_ids:
             participants = User.objects.filter(id__in=participant_ids)
             conversation.participants.add(*participants)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def start(self, request):
         """Start or get existing conversation with a user."""
-        target_user_id = request.data.get('user_id')
+        target_user_id = request.data.get("user_id")
         if not target_user_id:
             return Response(
-                {'status': 'error', 'message': 'user_id required'},
+                {"status": "error", "message": "user_id required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -56,7 +57,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             target_user = User.objects.get(id=target_user_id)
         except User.DoesNotExist:
             return Response(
-                {'status': 'error', 'message': 'User not found'},
+                {"status": "error", "message": "User not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -69,13 +70,13 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         if existing:
             serializer = self.get_serializer(existing)
-            return Response({'status': 'success', 'data': serializer.data})
+            return Response({"status": "success", "data": serializer.data})
 
         conversation = Conversation.objects.create()
         conversation.participants.add(request.user, target_user)
         serializer = self.get_serializer(conversation)
         return Response(
-            {'status': 'success', 'data': serializer.data},
+            {"status": "success", "data": serializer.data},
             status=status.HTTP_201_CREATED,
         )
 
@@ -88,23 +89,25 @@ class MessageViewSet(viewsets.ModelViewSet):
     list:   GET  /api/v1/chat/messages/     — user's messages
     create: POST /api/v1/chat/messages/     — send message
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = MessageSerializer
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Message.objects.none()
-            
+
         return Message.objects.filter(
             conversation__participants=self.request.user
-        ).select_related('sender', 'conversation')
+        ).select_related("sender", "conversation")
 
     def perform_create(self, serializer):
-        conversation_id = self.request.data.get('conversation')
+        conversation_id = self.request.data.get("conversation")
         try:
             conversation = Conversation.objects.get(id=conversation_id)
         except Conversation.DoesNotExist:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Conversation not found")
 
         if not conversation.participants.filter(id=self.request.user.id).exists():
@@ -112,4 +115,4 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         serializer.save(sender=self.request.user)
         conversation.last_message_at = serializer.instance.created_at
-        conversation.save(update_fields=['last_message_at'])
+        conversation.save(update_fields=["last_message_at"])

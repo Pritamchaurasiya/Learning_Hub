@@ -6,23 +6,55 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('test_engine', '0003_add_performance_indexes'),
+        ("test_engine", "0003_add_performance_indexes"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='status',
-            field=models.CharField(choices=[('draft', 'Draft'), ('review', 'Under Review'), ('approved', 'Approved'), ('published', 'Published'), ('archived', 'Archived')], db_index=True, default='published', max_length=20),
+            model_name="question",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("draft", "Draft"),
+                    ("review", "Under Review"),
+                    ("approved", "Approved"),
+                    ("published", "Published"),
+                    ("archived", "Archived"),
+                ],
+                db_index=True,
+                default="published",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='test',
-            name='ai_mode',
-            field=models.CharField(choices=[('no_ai', 'No AI (Deterministic Question Bank)'), ('ai_optional', 'AI Optional (Enhanced when available)'), ('ai_required', 'AI Required (Strict AI session)'), ('hybrid', 'Hybrid (Bank first + AI fill)')], db_index=True, default='no_ai', max_length=20),
+            model_name="test",
+            name="ai_mode",
+            field=models.CharField(
+                choices=[
+                    ("no_ai", "No AI (Deterministic Question Bank)"),
+                    ("ai_optional", "AI Optional (Enhanced when available)"),
+                    ("ai_required", "AI Required (Strict AI session)"),
+                    ("hybrid", "Hybrid (Bank first + AI fill)"),
+                ],
+                db_index=True,
+                default="no_ai",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='test',
-            name='question_source',
-            field=models.CharField(choices=[('manual', 'Manual'), ('database', 'Database Question Bank'), ('import', 'Imported'), ('ai_generated', 'AI Generated'), ('hybrid', 'Hybrid Sources')], db_index=True, default='database', max_length=20),
+            model_name="test",
+            name="question_source",
+            field=models.CharField(
+                choices=[
+                    ("manual", "Manual"),
+                    ("database", "Database Question Bank"),
+                    ("import", "Imported"),
+                    ("ai_generated", "AI Generated"),
+                    ("hybrid", "Hybrid Sources"),
+                ],
+                db_index=True,
+                default="database",
+                max_length=20,
+            ),
         ),
     ]

@@ -37,6 +37,7 @@ class Triple:
 
 class EntityLinker:
     """Link text mentions to entities."""
+
     def __init__(self):
         self.entities: Dict[str, Entity] = {}
         self.alias_map: Dict[str, str] = {}
@@ -54,25 +55,28 @@ class EntityLinker:
         for alias, entity_id in self.alias_map.items():
             idx = text_lower.find(alias)
             if idx >= 0:
-                mentions.append((alias, self.entities[entity_id], idx, idx + len(alias)))
+                mentions.append(
+                    (alias, self.entities[entity_id], idx, idx + len(alias))
+                )
         return mentions
 
 
 class RelationExtractor:
     """Extract relations from text."""
+
     def __init__(self):
         self.patterns = {
-            'is_a': ['is a', 'is an', 'are'],
-            'part_of': ['part of', 'belongs to', 'member of'],
-            'located_in': ['in', 'at', 'located in'],
-            'created_by': ['by', 'created by', 'made by']
+            "is_a": ["is a", "is an", "are"],
+            "part_of": ["part of", "belongs to", "member of"],
+            "located_in": ["in", "at", "located in"],
+            "created_by": ["by", "created by", "made by"],
         }
 
     def extract(self, text: str, entities: List[Entity]) -> List[Relation]:
         relations = []
         text_lower = text.lower()
         for i, e1 in enumerate(entities):
-            for e2 in entities[i+1:]:
+            for e2 in entities[i + 1 :]:
                 for rel_type, keywords in self.patterns.items():
                     for kw in keywords:
                         if kw in text_lower:
@@ -83,6 +87,7 @@ class RelationExtractor:
 
 class KnowledgeGraphV2:
     """Knowledge graph with querying."""
+
     def __init__(self):
         self.entities: Dict[str, Entity] = {}
         self.relations: List[Relation] = []
@@ -102,7 +107,9 @@ class KnowledgeGraphV2:
             self.adjacency[relation.source] = []
         self.adjacency[relation.source].append((relation.target, relation.type))
 
-    def query_neighbors(self, entity_id: str, rel_type: Optional[str] = None) -> List[Entity]:
+    def query_neighbors(
+        self, entity_id: str, rel_type: Optional[str] = None
+    ) -> List[Entity]:
         neighbors = []
         for target_id, rtype in self.adjacency.get(entity_id, []):
             if rel_type is None or rtype == rel_type:
@@ -128,4 +135,4 @@ class KnowledgeGraphV2:
         mentions = self.linker.link(text)
         entities = [m[1] for m in mentions]
         relations = self.extractor.extract(text, entities)
-        return {'entities': entities, 'relations': relations, 'mentions': len(mentions)}
+        return {"entities": entities, "relations": relations, "mentions": len(mentions)}

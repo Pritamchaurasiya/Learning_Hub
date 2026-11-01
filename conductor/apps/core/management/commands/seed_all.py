@@ -19,23 +19,55 @@ class Command(BaseCommand):
 
     def _seed_users(self):
         data = [
-            {"email": "admin@learninghub.dev", "username": "admin", "password": "Admin@123", "role": "admin", "display_name": "Admin User", "is_staff": True, "is_superuser": True},
-            {"email": "instructor@learninghub.dev", "username": "instructor", "password": "Instructor@123", "role": "instructor", "display_name": "Dr. Sarah Chen"},
-            {"email": "student@learninghub.dev", "username": "student", "password": "Student@123", "role": "student", "display_name": "Alex Johnson"},
-            {"email": "demo@learninghub.dev", "username": "demo", "password": "Demo@123", "role": "student", "display_name": "Demo User"},
+            {
+                "email": "admin@learninghub.dev",
+                "username": "admin",
+                "password": "Admin@123",
+                "role": "admin",
+                "display_name": "Admin User",
+                "is_staff": True,
+                "is_superuser": True,
+            },
+            {
+                "email": "instructor@learninghub.dev",
+                "username": "instructor",
+                "password": "Instructor@123",
+                "role": "instructor",
+                "display_name": "Dr. Sarah Chen",
+            },
+            {
+                "email": "student@learninghub.dev",
+                "username": "student",
+                "password": "Student@123",
+                "role": "student",
+                "display_name": "Alex Johnson",
+            },
+            {
+                "email": "demo@learninghub.dev",
+                "username": "demo",
+                "password": "Demo@123",
+                "role": "student",
+                "display_name": "Demo User",
+            },
         ]
         created_users = {}
         for u in data:
-            user, _ = User.objects.get_or_create(email=u["email"], defaults={k: v for k, v in u.items() if k != "password"})
+            user, _ = User.objects.get_or_create(
+                email=u["email"],
+                defaults={k: v for k, v in u.items() if k != "password"},
+            )
             if _:
                 user.set_password(u["password"])
                 user.save()
             created_users[u["username"]] = user
-            self.stdout.write(f"  {'Created' if _ else 'Found'} user: {u['email']} ({u['role']})")
+            self.stdout.write(
+                f"  {'Created' if _ else 'Found'} user: {u['email']} ({u['role']})"
+            )
         return created_users
 
     def _seed_categories(self):
         from apps.courses.models import Category
+
         data = [
             ("Programming", "code", 1),
             ("Web Development", "web", 2),
@@ -46,7 +78,15 @@ class Command(BaseCommand):
         ]
         cats = {}
         for name, icon, order in data:
-            cat, _ = Category.objects.get_or_create(name=name, defaults={"slug": slugify(name), "icon": icon, "order": order, "is_active": True})
+            cat, _ = Category.objects.get_or_create(
+                name=name,
+                defaults={
+                    "slug": slugify(name),
+                    "icon": icon,
+                    "order": order,
+                    "is_active": True,
+                },
+            )
             cats[name] = cat
         return cats
 
@@ -75,7 +115,7 @@ class Command(BaseCommand):
                             ("Variables & Data Types", "text", 20, 2),
                             ("Control Flow", "video", 25, 3),
                             ("Functions & Modules", "video", 30, 4),
-                        ]
+                        ],
                     },
                     {
                         "title": "Object-Oriented Programming",
@@ -84,9 +124,9 @@ class Command(BaseCommand):
                             ("Classes & Objects", "video", 25, 1),
                             ("Inheritance & Polymorphism", "video", 30, 2),
                             ("Magic Methods", "text", 20, 3),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
             {
                 "title": "Full Stack Web Development",
@@ -109,7 +149,7 @@ class Command(BaseCommand):
                             ("State & Props", "video", 25, 2),
                             ("React Hooks Deep Dive", "video", 35, 3),
                             ("Routing with React Router", "text", 20, 4),
-                        ]
+                        ],
                     },
                     {
                         "title": "Backend with Node.js",
@@ -118,9 +158,9 @@ class Command(BaseCommand):
                             ("Express.js Basics", "video", 25, 1),
                             ("RESTful APIs", "video", 30, 2),
                             ("Database with MongoDB", "video", 25, 3),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
             {
                 "title": "Machine Learning A-Z",
@@ -142,7 +182,7 @@ class Command(BaseCommand):
                             ("Linear & Logistic Regression", "video", 30, 1),
                             ("Decision Trees & Random Forests", "video", 35, 2),
                             ("Support Vector Machines", "video", 25, 3),
-                        ]
+                        ],
                     },
                     {
                         "title": "Deep Learning",
@@ -151,9 +191,9 @@ class Command(BaseCommand):
                             ("Neural Networks Fundamentals", "video", 40, 1),
                             ("CNNs for Computer Vision", "video", 35, 2),
                             ("RNNs & Transformers", "video", 45, 3),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
             {
                 "title": "Data Science Bootcamp",
@@ -176,7 +216,7 @@ class Command(BaseCommand):
                             ("Data Cleaning & Preparation", "video", 30, 2),
                             ("Grouping & Aggregation", "text", 20, 3),
                             ("Merging & Joining Datasets", "video", 25, 4),
-                        ]
+                        ],
                     },
                     {
                         "title": "Data Visualization",
@@ -184,9 +224,9 @@ class Command(BaseCommand):
                         "lessons": [
                             ("Matplotlib & Seaborn", "video", 30, 1),
                             ("Interactive Charts with Plotly", "text", 20, 2),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
             {
                 "title": "Flutter & Dart - Build Native Apps",
@@ -208,7 +248,7 @@ class Command(BaseCommand):
                             ("Dart Syntax & Types", "video", 15, 1),
                             ("Object-Oriented Dart", "video", 25, 2),
                             ("Async Programming", "video", 20, 3),
-                        ]
+                        ],
                     },
                     {
                         "title": "Flutter Widgets",
@@ -217,9 +257,9 @@ class Command(BaseCommand):
                             ("Stateless & Stateful Widgets", "video", 25, 1),
                             ("Layouts & Styling", "video", 30, 2),
                             ("State Management with Riverpod", "video", 40, 3),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
             {
                 "title": "Docker & Kubernetes Mastery",
@@ -241,7 +281,7 @@ class Command(BaseCommand):
                             ("Containers & Images", "video", 20, 1),
                             ("Docker Compose", "video", 25, 2),
                             ("Dockerfile Best Practices", "text", 15, 3),
-                        ]
+                        ],
                     },
                     {
                         "title": "Kubernetes",
@@ -250,9 +290,9 @@ class Command(BaseCommand):
                             ("Pods, Services & Deployments", "video", 35, 1),
                             ("ConfigMaps & Secrets", "video", 20, 2),
                             ("Helm Charts", "text", 20, 3),
-                        ]
+                        ],
                     },
-                ]
+                ],
             },
         ]
 
@@ -274,20 +314,41 @@ class Command(BaseCommand):
                     "is_featured": cd["is_featured"],
                     "is_free": cd["price"] == 0,
                     "requirements": [],
-                    "learning_objectives": [f"Master {cd['title']}", "Build real-world projects"],
+                    "learning_objectives": [
+                        f"Master {cd['title']}",
+                        "Build real-world projects",
+                    ],
                 },
             )
             if created:
                 lessons_count = 0
                 for mod_data in cd["modules"]:
-                    module, _ = Module.objects.get_or_create(course=course, title=mod_data["title"], defaults={"order": mod_data["order"]})
+                    module, _ = Module.objects.get_or_create(
+                        course=course,
+                        title=mod_data["title"],
+                        defaults={"order": mod_data["order"]},
+                    )
                     for title, content_type, duration, order in mod_data["lessons"]:
-                        Lesson.objects.get_or_create(module=module, slug=slugify(title), defaults={
-                            "title": title, "content_type": content_type, "duration_minutes": duration, "order": order,
-                        })
+                        Lesson.objects.get_or_create(
+                            module=module,
+                            slug=slugify(title),
+                            defaults={
+                                "title": title,
+                                "content_type": content_type,
+                                "duration_minutes": duration,
+                                "order": order,
+                            },
+                        )
                         lessons_count += 1
                 Course.objects.filter(id=course.id).update(lessons_count=lessons_count)
-            self.stdout.write(f"  {'Created' if created else 'Found'} course: {cd['title']}")
+            self.stdout.write(
+                f"  {'Created' if created else 'Found'} course: {cd['title']}"
+            )
 
-        Enrollment.objects.get_or_create(user=users["student"], course=Course.objects.get(slug="python-masterclass"))
-        Enrollment.objects.get_or_create(user=users["student"], course=Course.objects.get(slug="data-science-bootcamp"))
+        Enrollment.objects.get_or_create(
+            user=users["student"], course=Course.objects.get(slug="python-masterclass")
+        )
+        Enrollment.objects.get_or_create(
+            user=users["student"],
+            course=Course.objects.get(slug="data-science-bootcamp"),
+        )

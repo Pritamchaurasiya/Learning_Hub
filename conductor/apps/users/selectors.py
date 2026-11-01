@@ -26,7 +26,9 @@ def get_user_by_username(username: str) -> Optional[User]:
     return User.objects.filter(username=username.strip()).first()
 
 
-def list_users(role: Optional[str] = None, is_active: Optional[bool] = None) -> QuerySet[User]:
+def list_users(
+    role: Optional[str] = None, is_active: Optional[bool] = None
+) -> QuerySet[User]:
     """List users with optional role and status filters."""
     qs = User.objects.all()
     if role:
@@ -38,7 +40,9 @@ def list_users(role: Optional[str] = None, is_active: Optional[bool] = None) -> 
 
 def list_active_sessions(user) -> QuerySet[UserSession]:
     """List all active login sessions for a user."""
-    return UserSession.objects.filter(user=user, is_active=True).order_by("-last_active")
+    return UserSession.objects.filter(user=user, is_active=True).order_by(
+        "-last_active"
+    )
 
 
 def get_user_bookmarks(user) -> QuerySet[Bookmark]:

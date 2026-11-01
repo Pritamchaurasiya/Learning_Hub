@@ -34,11 +34,11 @@ class TestGamificationEdgeCases:
         # Test page 0
         response = api_client.get("/api/v1/gamification/leaderboard/?page=0")
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST]
-        
+
         # Test very large page
         response = api_client.get("/api/v1/gamification/leaderboard/?page=99999")
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND]
-        
+
         # Test negative limit
         response = api_client.get("/api/v1/gamification/leaderboard/?limit=-1")
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST]
@@ -46,7 +46,7 @@ class TestGamificationEdgeCases:
     def test_streak_calculation_timezone_edge_cases(self, user):
         """Test streak calculations across timezone boundaries."""
         from apps.gamification.models import Streak
-        
+
         # Test streak at day boundary
         try:
             streak = Streak.objects.get_or_create(user=user)[0]
@@ -58,13 +58,13 @@ class TestGamificationEdgeCases:
     def test_badge_awarding_duplicate(self, user, badge):
         """Test awarding same badge twice."""
         from apps.gamification.services import GamificationService
-        
+
         # Award badge first time (uses badge name string)
         result1 = GamificationService.award_badge(user, badge.name)
-        
+
         # Try to award again - should return None (already awarded)
         result2 = GamificationService.award_badge(user, badge.name)
-        
+
         # First should succeed, second should be None
         assert result1 is not None
         assert result2 is None
@@ -83,14 +83,14 @@ class TestGamificationPerformanceEdgeCases:
     def test_concurrent_xp_updates(self, user):
         """Test concurrent/rapid XP updates don't crash and are handled by anti-cheat."""
         from apps.gamification.services import GamificationService
-        
+
         results = []
         for i in range(5):
             # Same reason to trigger anti-cheat rate limit
             res = GamificationService.award_xp(user, 10, "rapid_click_test")
             results.append(res)
-            
+
         # First should succeed, others should be blocked by anti-cheat
         assert results[0] is not None
-        assert results[0].get('blocked') is False
-        assert any(r.get('blocked') is True for r in results[1:])
+        assert results[0].get("blocked") is False
+        assert any(r.get("blocked") is True for r in results[1:])

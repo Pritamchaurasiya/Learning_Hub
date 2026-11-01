@@ -109,8 +109,9 @@ class TestUserBadgeModel:
     def test_unique_badge_per_user(self, user, badge):
         """Test user cannot earn same badge twice."""
         UserBadge.objects.create(user=user, badge=badge)
-        
+
         from django.db import IntegrityError
+
         with pytest.raises(IntegrityError):
             UserBadge.objects.create(user=user, badge=badge)
 
@@ -137,7 +138,7 @@ class TestStreakModel:
         streak.last_activity_date = yesterday
         streak.current_streak = 5
         streak.save()
-        
+
         streak.update_streak()
         assert streak.current_streak == 6
 
@@ -147,7 +148,7 @@ class TestStreakModel:
         streak.last_activity_date = two_days_ago
         streak.current_streak = 10
         streak.save()
-        
+
         streak.update_streak()
         assert streak.current_streak == 1
 
@@ -157,7 +158,7 @@ class TestStreakModel:
         streak.longest_streak = 5
         streak.last_activity_date = timezone.now().date() - timedelta(days=1)
         streak.save()
-        
+
         streak.update_streak()
         assert streak.longest_streak == 11
 
@@ -174,7 +175,7 @@ class TestGamificationService:
     def test_get_user_stats(self, user):
         """Test getting user stats creates records if needed."""
         stats = GamificationService.get_user_stats(user)
-        
+
         assert "xp" in stats
         assert "streak" in stats
         assert "badges" in stats
@@ -185,7 +186,7 @@ class TestGamificationService:
         xp = UserXP.objects.get(user=user)
         initial_xp = xp.total_xp
         GamificationService.award_xp(user, 100)
-        
+
         xp.refresh_from_db()
         assert xp.total_xp == initial_xp + 100
 

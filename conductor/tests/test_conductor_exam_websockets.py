@@ -10,7 +10,14 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.exams.models import Country, Exam, Subject, Topic
-from apps.test_engine.models import Test, Question, Option, TestQuestion, TestAttempt, AttemptAnswer
+from apps.test_engine.models import (
+    Test,
+    Question,
+    Option,
+    TestQuestion,
+    TestAttempt,
+    AttemptAnswer,
+)
 from apps.test_engine.consumers import ExamStationConsumer, ExamProctorConsumer
 
 User = get_user_model()
@@ -26,7 +33,9 @@ def exam_battery(db):
         pattern={"total_questions": 2, "duration_minutes": 25},
         is_active=True,
     )
-    subject = Subject.objects.create(exam=exam, name="Mathematics", code="MATH_RT", is_active=True)
+    subject = Subject.objects.create(
+        exam=exam, name="Mathematics", code="MATH_RT", is_active=True
+    )
     topic = Topic.objects.create(subject=subject, name="Algebra", is_active=True)
 
     test = Test.objects.create(
@@ -90,10 +99,9 @@ async def test_exam_station_unauthenticated_rejection(exam_battery):
     attempt = exam_battery["attempt"]
     # Scope without user
     communicator = WebsocketCommunicator(
-        ExamStationConsumer.as_asgi(),
-        f"/ws/test/attempts/{attempt.id}/"
+        ExamStationConsumer.as_asgi(), f"/ws/test/attempts/{attempt.id}/"
     )
-    communicator.scope['url_route'] = {'kwargs': {'attempt_id': str(attempt.id)}}
+    communicator.scope["url_route"] = {"kwargs": {"attempt_id": str(attempt.id)}}
 
     connected, close_code = await communicator.connect()
     assert not connected or close_code == 4401
@@ -107,11 +115,10 @@ async def test_exam_station_connect_and_heartbeat(exam_battery):
     attempt = exam_battery["attempt"]
 
     communicator = WebsocketCommunicator(
-        ExamStationConsumer.as_asgi(),
-        f"/ws/test/attempts/{attempt.id}/"
+        ExamStationConsumer.as_asgi(), f"/ws/test/attempts/{attempt.id}/"
     )
-    communicator.scope['user'] = student
-    communicator.scope['url_route'] = {'kwargs': {'attempt_id': str(attempt.id)}}
+    communicator.scope["user"] = student
+    communicator.scope["url_route"] = {"kwargs": {"attempt_id": str(attempt.id)}}
 
     connected, subprotocol = await communicator.connect()
     assert connected
@@ -140,36 +147,39 @@ async def test_exam_station_autosave_and_telemetry(exam_battery):
     opt_c = exam_battery["opt_correct"]
 
     communicator = WebsocketCommunicator(
-        ExamStationConsumer.as_asgi(),
-        f"/ws/test/attempts/{attempt.id}/"
+        ExamStationConsumer.as_asgi(), f"/ws/test/attempts/{attempt.id}/"
     )
-    communicator.scope['user'] = student
-    communicator.scope['url_route'] = {'kwargs': {'attempt_id': str(attempt.id)}}
+    communicator.scope["user"] = student
+    communicator.scope["url_route"] = {"kwargs": {"attempt_id": str(attempt.id)}}
 
     connected, _ = await communicator.connect()
     assert connected
     await communicator.receive_json_from()  # Handshake
 
     # 1. Autosave over WebSocket
-    await communicator.send_json_to({
-        "type": "autosave",
-        "question_id": str(question.id),
-        "answer_data": {
-            "selected_options": [str(opt_c.id)],
-            "time_spent": 18,
+    await communicator.send_json_to(
+        {
+            "type": "autosave",
+            "question_id": str(question.id),
+            "answer_data": {
+                "selected_options": [str(opt_c.id)],
+                "time_spent": 18,
+            },
         }
-    })
+    )
     save_ack = await communicator.receive_json_from()
     assert save_ack["type"] == "autosave_ack"
     assert save_ack["status"] == "saved"
 
     # 2. Telemetry incident over WebSocket
-    await communicator.send_json_to({
-        "type": "telemetry_event",
-        "event_name": "tab_switch",
-        "severity": "medium",
-        "details": {"switch_count": 1, "duration_ms": 1200},
-    })
+    await communicator.send_json_to(
+        {
+            "type": "telemetry_event",
+            "event_name": "tab_switch",
+            "severity": "medium",
+            "details": {"switch_count": 1, "duration_ms": 1200},
+        }
+    )
     telem_ack = await communicator.receive_json_from()
     assert telem_ack["type"] == "telemetry_ack"
     assert telem_ack["event_name"] == "tab_switch"
@@ -187,33 +197,33 @@ async def test_proctor_consumer_and_interventions(exam_battery):
 
     # 1. Connect student communicator
     student_comm = WebsocketCommunicator(
-        ExamStationConsumer.as_asgi(),
-        f"/ws/test/attempts/{attempt.id}/"
+        ExamStationConsumer.as_asgi(), f"/ws/test/attempts/{attempt.id}/"
     )
-    student_comm.scope['user'] = student
-    student_comm.scope['url_route'] = {'kwargs': {'attempt_id': str(attempt.id)}}
+    student_comm.scope["user"] = student
+    student_comm.scope["url_route"] = {"kwargs": {"attempt_id": str(attempt.id)}}
     connected_student, _ = await student_comm.connect()
     assert connected_student
     await student_comm.receive_json_from()  # Handshake
 
     # 2. Connect proctor communicator
     proctor_comm = WebsocketCommunicator(
-        ExamProctorConsumer.as_asgi(),
-        f"/ws/test/proctor/{test.id}/"
+        ExamProctorConsumer.as_asgi(), f"/ws/test/proctor/{test.id}/"
     )
-    proctor_comm.scope['user'] = instructor
-    proctor_comm.scope['url_route'] = {'kwargs': {'test_id': str(test.id)}}
+    proctor_comm.scope["user"] = instructor
+    proctor_comm.scope["url_route"] = {"kwargs": {"test_id": str(test.id)}}
     connected_proctor, _ = await proctor_comm.connect()
     assert connected_proctor
     proctor_welcome = await proctor_comm.receive_json_from()
     assert proctor_welcome["type"] == "proctor_connected"
 
     # 3. Proctor issues warning to student
-    await proctor_comm.send_json_to({
-        "action": "issue_warning",
-        "attempt_id": str(attempt.id),
-        "message": "Warning: Please return to full screen immediately.",
-    })
+    await proctor_comm.send_json_to(
+        {
+            "action": "issue_warning",
+            "attempt_id": str(attempt.id),
+            "message": "Warning: Please return to full screen immediately.",
+        }
+    )
     action_ack = await proctor_comm.receive_json_from()
     assert action_ack["status"] == "delivered"
 
@@ -223,11 +233,13 @@ async def test_proctor_consumer_and_interventions(exam_battery):
     assert "full screen" in warning_msg["message"]
 
     # 5. Proctor grants extra time
-    await proctor_comm.send_json_to({
-        "action": "add_time",
-        "attempt_id": str(attempt.id),
-        "seconds": 180,
-    })
+    await proctor_comm.send_json_to(
+        {
+            "action": "add_time",
+            "attempt_id": str(attempt.id),
+            "seconds": 180,
+        }
+    )
     time_ack = await proctor_comm.receive_json_from()
     assert time_ack["status"] == "extended"
 

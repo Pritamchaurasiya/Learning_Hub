@@ -23,7 +23,7 @@ class ComplianceService:
     """
     Manages data privacy and compliance requests.
     """
-    
+
     @classmethod
     def export_user_data(cls, user) -> Dict[str, Any]:
         """
@@ -31,7 +31,7 @@ class ComplianceService:
         Returns dictionary of data categories.
         """
         logger.info(f"Generating data export for user {user.id}")
-        
+
         # 1. Profile Data
         profile_data = {
             "username": user.username,
@@ -39,27 +39,25 @@ class ComplianceService:
             "date_joined": user.date_joined.isoformat(),
             # ... other fields
         }
-        
+
         # 2. Activity Logs (Mocked fetch)
         activity_logs = [
             {"date": "2025-01-01", "action": "login"},
-            {"date": "2025-01-02", "action": "course_view"}
+            {"date": "2025-01-02", "action": "course_view"},
         ]
-        
+
         # 3. Learning Progress (Mocked)
-        progress = [
-            {"course": "Python 101", "completed": 80}
-        ]
-        
+        progress = [{"course": "Python 101", "completed": 80}]
+
         return {
             "metadata": {
                 "export_date": timezone.now().isoformat(),
-                "request_id": "req_12345"
+                "request_id": "req_12345",
             },
             "profile": profile_data,
             "activity": activity_logs,
             "learning_progress": progress,
-            "payments": [] # ...
+            "payments": [],  # ...
         }
 
     @classmethod
@@ -76,12 +74,12 @@ class ComplianceService:
             user.is_active = False
             user.set_unusable_password()
             user.save()
-            
+
             # 2. Clear profile details
             # e.g., UserProfile.objects.filter(user=user).update(bio="", avatar=None)
-            
+
             # 3. Keep logs but unlink PII if strict
-            
+
             logger.info(f"User {user.id} anonymized successfully")
             return True
         except Exception as e:
@@ -97,7 +95,7 @@ class ComplianceService:
         log_entry = {
             "user_id": user.id,
             "consents": consents,
-            "timestamp": timezone.now().isoformat()
+            "timestamp": timezone.now().isoformat(),
         }
         logger.info(f"Consent updated: {log_entry}")
         return True

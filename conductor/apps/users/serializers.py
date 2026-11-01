@@ -85,17 +85,24 @@ class UserLoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for user profile.
-    
+
     Performance Optimization:
     - Uses select_related('xp_profile', 'streak_profile') from queryset
     - Direct field access instead of SerializerMethodField to prevent N+1
     - Expects UserViewSet to prefetch related data
     """
+
     # Access related fields directly (requires select_related in queryset)
-    xp = serializers.IntegerField(source='xp_profile.total_xp', read_only=True, default=0)
-    level = serializers.IntegerField(source='xp_profile.level', read_only=True, default=1)
-    streak = serializers.IntegerField(source='streak_profile.current_streak', read_only=True, default=0)
-    
+    xp = serializers.IntegerField(
+        source="xp_profile.total_xp", read_only=True, default=0
+    )
+    level = serializers.IntegerField(
+        source="xp_profile.level", read_only=True, default=1
+    )
+    streak = serializers.IntegerField(
+        source="streak_profile.current_streak", read_only=True, default=0
+    )
+
     # Optional: If you need the old SerializerMethodField behavior for compatibility
     # Keep these commented out unless needed
     # def get_xp(self, obj):
@@ -110,9 +117,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
     #     except Exception:
     #         return 1
 
-    country_id = serializers.CharField(source='country.id', read_only=True, allow_null=True)
-    country_code = serializers.CharField(source='country.code', read_only=True, allow_null=True)
-    country_name = serializers.CharField(source='country.name', read_only=True, allow_null=True)
+    country_id = serializers.CharField(
+        source="country.id", read_only=True, allow_null=True
+    )
+    country_code = serializers.CharField(
+        source="country.code", read_only=True, allow_null=True
+    )
+    country_name = serializers.CharField(
+        source="country.name", read_only=True, allow_null=True
+    )
 
     def get_streak(self, obj):
         try:
@@ -169,15 +182,16 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
 class UserPreferenceSerializer(serializers.Serializer):
     """Serializer for exam and country study preferences."""
+
     countryId = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     examId = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     subjectIds = serializers.ListField(
         child=serializers.CharField(), required=False, default=list
     )
     difficulty = serializers.ChoiceField(
-        choices=['EASY', 'MEDIUM', 'HARD', 'MIXED', 'ADAPTIVE'],
+        choices=["EASY", "MEDIUM", "HARD", "MIXED", "ADAPTIVE"],
         required=False,
-        default='MEDIUM'
+        default="MEDIUM",
     )
     dailyGoal = serializers.IntegerField(required=False, default=15)
 
@@ -275,34 +289,37 @@ class TokenRefreshResponseSerializer(serializers.Serializer):
 
 class BookmarkSerializer(serializers.ModelSerializer):
     """Serializer for user bookmarks."""
+
     from apps.users.models import Bookmark
-    
-    course_title = serializers.CharField(source='course.title', read_only=True)
-    course_slug = serializers.CharField(source='course.slug', read_only=True)
+
+    course_title = serializers.CharField(source="course.title", read_only=True)
+    course_slug = serializers.CharField(source="course.slug", read_only=True)
     course_id = serializers.UUIDField(write_only=True)
-    
+
     class Meta:
         from apps.users.models import Bookmark
+
         model = Bookmark
-        fields = ['course_id', 'course_title', 'course_slug', 'notes', 'created_at']
-        read_only_fields = ['created_at']
-        
+        fields = ["course_id", "course_title", "course_slug", "notes", "created_at"]
+        read_only_fields = ["created_at"]
+
     def validate_course_id(self, value):
         from apps.courses.models import Course
+
         if not Course.objects.filter(id=value).exists():
-            raise serializers.ValidationError('Course does not exist.')
+            raise serializers.ValidationError("Course does not exist.")
         return value
-        
+
     def create(self, validated_data):
         from apps.courses.models import Course
         from apps.users.models import Bookmark
-        
-        user = self.context['request'].user
-        course_id = validated_data.pop('course_id')
+
+        user = self.context["request"].user
+        course_id = validated_data.pop("course_id")
         course = Course.objects.get(id=course_id)
-        
+
         if Bookmark.objects.filter(user=user, course=course).exists():
-            raise serializers.ValidationError('Bookmark already exists.')
-            
+            raise serializers.ValidationError("Bookmark already exists.")
+
         bookmark = Bookmark.objects.create(user=user, course=course, **validated_data)
         return bookmark

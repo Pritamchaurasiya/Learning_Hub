@@ -22,5 +22,9 @@ urlpatterns = [
     path("refund/", RefundView.as_view(), name="refund"),
     path("stats/", PaymentStatsView.as_view(), name="stats"),
     path("invoices/", InvoiceListView.as_view(), name="invoices_list"),
-    path("invoices/<str:invoice_number>/", InvoiceDetailView.as_view(), name="invoice_detail"),
+    path(
+        "invoices/<str:invoice_number>/",
+        InvoiceDetailView.as_view(),
+        name="invoice_detail",
+    ),
 ]

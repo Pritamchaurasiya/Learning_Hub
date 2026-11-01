@@ -15,6 +15,7 @@ import pytest
 def tag(db):
     """Create a DSA tag."""
     from apps.dsa.models import Tag
+
     return Tag.objects.create(name="Arrays", slug="arrays")
 
 
@@ -22,6 +23,7 @@ def tag(db):
 def tag_dp(db):
     """Create a DP tag."""
     from apps.dsa.models import Tag
+
     return Tag.objects.create(name="Dynamic Programming", slug="dynamic-programming")
 
 
@@ -29,6 +31,7 @@ def tag_dp(db):
 def problem(db, tag):
     """Create a DSA problem."""
     from apps.dsa.models import Problem
+
     p = Problem.objects.create(
         title="Two Sum",
         slug="two-sum",
@@ -48,6 +51,7 @@ def problem(db, tag):
 def problem_medium(db, tag_dp):
     """Create a medium difficulty problem."""
     from apps.dsa.models import Problem
+
     p = Problem.objects.create(
         title="Longest Palindrome",
         slug="longest-palindrome",
@@ -67,6 +71,7 @@ def problem_medium(db, tag_dp):
 def test_case(db, problem):
     """Create a visible test case."""
     from apps.dsa.models import TestCase
+
     return TestCase.objects.create(
         problem=problem,
         input_data="[2,7,11,15], target=9",
@@ -80,6 +85,7 @@ def test_case(db, problem):
 def hidden_test_case(db, problem):
     """Create a hidden test case."""
     from apps.dsa.models import TestCase
+
     return TestCase.objects.create(
         problem=problem,
         input_data="[3,2,4], target=6",
@@ -92,6 +98,7 @@ def hidden_test_case(db, problem):
 def submission(db, user, problem):
     """Create a submission."""
     from apps.dsa.models import Submission
+
     return Submission.objects.create(
         user=user,
         problem=problem,

@@ -27,7 +27,6 @@ def generate_progress_id():
     return f"prog-{uuid.uuid4().hex[:12]}"
 
 
-
 class Ebook(models.Model):
     DIFFICULTY_CHOICES = [
         ("Beginner", "Beginner"),
@@ -41,8 +40,12 @@ class Ebook(models.Model):
     author = models.CharField(max_length=255)
     cover_url = models.URLField(max_length=1024, blank=True, null=True)
     description = models.TextField()
-    category = models.CharField(max_length=100, db_index=True, default="Computer Science")
-    difficulty = models.CharField(max_length=32, choices=DIFFICULTY_CHOICES, default="Intermediate")
+    category = models.CharField(
+        max_length=100, db_index=True, default="Computer Science"
+    )
+    difficulty = models.CharField(
+        max_length=32, choices=DIFFICULTY_CHOICES, default="Intermediate"
+    )
     total_chapters = models.PositiveIntegerField(default=1)
     estimated_reading_time_mins = models.PositiveIntegerField(default=60)
     rating = models.FloatField(default=5.0)
@@ -89,10 +92,20 @@ class EbookChapter(models.Model):
 
 
 class EbookHighlight(models.Model):
-    id = models.CharField(max_length=64, primary_key=True, default=generate_highlight_id)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ebook_highlights")
-    ebook = models.ForeignKey(Ebook, on_delete=models.CASCADE, related_name="highlights")
-    chapter = models.ForeignKey(EbookChapter, on_delete=models.CASCADE, related_name="highlights")
+    id = models.CharField(
+        max_length=64, primary_key=True, default=generate_highlight_id
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ebook_highlights",
+    )
+    ebook = models.ForeignKey(
+        Ebook, on_delete=models.CASCADE, related_name="highlights"
+    )
+    chapter = models.ForeignKey(
+        EbookChapter, on_delete=models.CASCADE, related_name="highlights"
+    )
     text = models.TextField()
     color = models.CharField(max_length=32, default="#ffeb3b")
     note = models.TextField(blank=True, default="")
@@ -110,9 +123,15 @@ class EbookHighlight(models.Model):
 
 class EbookBookmark(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=generate_bookmark_id)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ebook_bookmarks")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ebook_bookmarks",
+    )
     ebook = models.ForeignKey(Ebook, on_delete=models.CASCADE, related_name="bookmarks")
-    chapter = models.ForeignKey(EbookChapter, on_delete=models.CASCADE, related_name="bookmarks")
+    chapter = models.ForeignKey(
+        EbookChapter, on_delete=models.CASCADE, related_name="bookmarks"
+    )
     position = models.PositiveIntegerField(default=0)
     title = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -130,9 +149,17 @@ class EbookBookmark(models.Model):
 
 class EbookReadingProgress(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=generate_progress_id)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ebook_progress")
-    ebook = models.ForeignKey(Ebook, on_delete=models.CASCADE, related_name="user_progress")
-    current_chapter = models.ForeignKey(EbookChapter, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ebook_progress",
+    )
+    ebook = models.ForeignKey(
+        Ebook, on_delete=models.CASCADE, related_name="user_progress"
+    )
+    current_chapter = models.ForeignKey(
+        EbookChapter, on_delete=models.SET_NULL, null=True, blank=True
+    )
     progress_percentage = models.FloatField(default=0.0)
     time_spent_seconds = models.PositiveIntegerField(default=0)
     is_completed = models.BooleanField(default=False)
@@ -149,9 +176,15 @@ class EbookReadingProgress(models.Model):
 
 
 class EbookFlashcard(models.Model):
-    id = models.CharField(max_length=64, primary_key=True, default=generate_flashcard_id)
-    ebook = models.ForeignKey(Ebook, on_delete=models.CASCADE, related_name="flashcards")
-    chapter = models.ForeignKey(EbookChapter, on_delete=models.CASCADE, related_name="flashcards")
+    id = models.CharField(
+        max_length=64, primary_key=True, default=generate_flashcard_id
+    )
+    ebook = models.ForeignKey(
+        Ebook, on_delete=models.CASCADE, related_name="flashcards"
+    )
+    chapter = models.ForeignKey(
+        EbookChapter, on_delete=models.CASCADE, related_name="flashcards"
+    )
     front = models.TextField()
     back = models.TextField()
     explanation = models.TextField(blank=True, default="")

@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 class Difficulty(Enum):
     """Problem difficulty levels."""
+
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
@@ -34,6 +35,7 @@ class Difficulty(Enum):
 
 class ProblemCategory(Enum):
     """DSA problem categories."""
+
     ARRAYS = "arrays"
     STRINGS = "strings"
     LINKED_LISTS = "linked_lists"
@@ -55,6 +57,7 @@ class ProblemCategory(Enum):
 @dataclass
 class TestResult:
     """Result of a single test case."""
+
     test_id: int
     passed: bool
     expected: str
@@ -66,6 +69,7 @@ class TestResult:
 @dataclass
 class SubmissionResult:
     """Complete submission result."""
+
     submission_id: str
     status: str  # accepted, wrong_answer, time_limit, runtime_error, etc.
     passed_tests: int
@@ -80,23 +84,20 @@ class DSAPracticeEngine:
     """
     AI-powered DSA practice engine.
     """
-    
+
     CACHE_TIMEOUT = 1800  # 30 minutes
-    
+
     # ==========================================================================
     # PROBLEM RECOMMENDATION
     # ==========================================================================
-    
+
     @classmethod
     def get_recommended_problems(
-        cls,
-        user,
-        limit: int = 5,
-        category: Optional[ProblemCategory] = None
+        cls, user, limit: int = 5, category: Optional[ProblemCategory] = None
     ) -> List[Dict[str, Any]]:
         """
         Get personalized problem recommendations.
-        
+
         Algorithm:
         1. Analyze user's solved problems and success rate
         2. Identify weak areas from failed attempts
@@ -104,135 +105,143 @@ class DSAPracticeEngine:
         4. Mix in some challenging problems for growth
         """
         from apps.dsa.models import Problem, Submission
-        
+
         cache_key = f"dsa_recommendations:{user.id}:{category}"
         cached = cache.get(cache_key)
         if cached:
             return cached
-        
+
         # Get user's submission history
         submissions = Submission.objects.filter(user=user)
-        solved_ids = set(submissions.filter(status__in=['AC', 'accepted']).values_list('problem_id', flat=True))
-        
+        solved_ids = set(
+            submissions.filter(status__in=["AC", "accepted"]).values_list(
+                "problem_id", flat=True
+            )
+        )
+
         # Analyze by category
         category_stats = cls._analyze_category_performance(user)
-        
+
         # Identify weak categories
         weak_categories = [
-            cat for cat, stats in category_stats.items()
-            if stats['success_rate'] < 0.5
+            cat for cat, stats in category_stats.items() if stats["success_rate"] < 0.5
         ]
-        
+
         # Determine appropriate difficulty
-        avg_success_rate = sum(
-            s['success_rate'] for s in category_stats.values()
-        ) / len(category_stats) if category_stats else 0.5
-        
+        avg_success_rate = (
+            sum(s["success_rate"] for s in category_stats.values())
+            / len(category_stats)
+            if category_stats
+            else 0.5
+        )
+
         if avg_success_rate >= 0.7:
-            target_difficulty = ['MEDIUM', 'HARD']
+            target_difficulty = ["MEDIUM", "HARD"]
         elif avg_success_rate >= 0.4:
-            target_difficulty = ['EASY', 'MEDIUM']
+            target_difficulty = ["EASY", "MEDIUM"]
         else:
-            target_difficulty = ['EASY']
-        
+            target_difficulty = ["EASY"]
+
         # Build query
         query = Problem.objects.filter(is_active=True).exclude(id__in=solved_ids)
-        
+
         if category:
-            cat_name = category.value.replace('_', ' ')
-            query = query.filter(Q(tags__slug=category.value) | Q(tags__name__iexact=cat_name))
+            cat_name = category.value.replace("_", " ")
+            query = query.filter(
+                Q(tags__slug=category.value) | Q(tags__name__iexact=cat_name)
+            )
         elif weak_categories:
             # Prioritize weak categories
-            weak_names = [c.replace('_', ' ') for c in weak_categories[:3]]
-            query = query.filter(Q(tags__slug__in=weak_categories[:3]) | Q(tags__name__in=weak_names))
-        
+            weak_names = [c.replace("_", " ") for c in weak_categories[:3]]
+            query = query.filter(
+                Q(tags__slug__in=weak_categories[:3]) | Q(tags__name__in=weak_names)
+            )
+
         query = query.filter(difficulty__in=target_difficulty)
-        
+
         # Get problems with some randomization
-        problems = list(query.prefetch_related('tags').order_by('?')[:limit])
-        
+        problems = list(query.prefetch_related("tags").order_by("?")[:limit])
+
         result = [
             {
-                'problem_id': str(p.id),
-                'title': p.title,
-                'difficulty': p.difficulty,
-                'category': p.tags.first().name if p.tags.exists() else 'General',
-                'acceptance_rate': cls._get_acceptance_rate(p),
-                'reason': cls._get_recommendation_reason(p, weak_categories)
+                "problem_id": str(p.id),
+                "title": p.title,
+                "difficulty": p.difficulty,
+                "category": p.tags.first().name if p.tags.exists() else "General",
+                "acceptance_rate": cls._get_acceptance_rate(p),
+                "reason": cls._get_recommendation_reason(p, weak_categories),
             }
             for p in problems
         ]
-        
+
         cache.set(cache_key, result, timeout=cls.CACHE_TIMEOUT)
         return result
-    
+
     @classmethod
     def _analyze_category_performance(cls, user) -> Dict[str, Dict]:
         """Analyze user performance by category (problem tags)."""
         from apps.dsa.models import Submission
-        
+
         stats = {}
-        
+
         for category in ProblemCategory:
-            cat_name = category.value.replace('_', ' ')
+            cat_name = category.value.replace("_", " ")
             submissions = Submission.objects.filter(
-                Q(problem__tags__slug=category.value) | Q(problem__tags__name__iexact=cat_name),
-                user=user
+                Q(problem__tags__slug=category.value)
+                | Q(problem__tags__name__iexact=cat_name),
+                user=user,
             )
-            
+
             total = submissions.count()
             if total > 0:
-                accepted = submissions.filter(status__in=['AC', 'accepted']).count()
+                accepted = submissions.filter(status__in=["AC", "accepted"]).count()
                 stats[category.value] = {
-                    'total_attempts': total,
-                    'accepted': accepted,
-                    'success_rate': accepted / total
+                    "total_attempts": total,
+                    "accepted": accepted,
+                    "success_rate": accepted / total,
                 }
-        
+
         return stats
-    
+
     @classmethod
     def _get_acceptance_rate(cls, problem) -> float:
         """Get acceptance rate for a problem."""
         from apps.dsa.models import Submission
-        
+
         total = Submission.objects.filter(problem=problem).count()
         if total == 0:
             return 0.5  # Default
-        
-        accepted = Submission.objects.filter(problem=problem, status__in=['AC', 'accepted']).count()
+
+        accepted = Submission.objects.filter(
+            problem=problem, status__in=["AC", "accepted"]
+        ).count()
         return round(accepted / total, 2)
-    
+
     @classmethod
     def _get_recommendation_reason(cls, problem, weak_categories: List[str]) -> str:
         """Generate recommendation reason."""
         prob_tags = [t.slug for t in problem.tags.all()]
         if any(w in prob_tags for w in weak_categories):
-            primary_tag = problem.tags.first().name if problem.tags.exists() else 'DSA'
+            primary_tag = problem.tags.first().name if problem.tags.exists() else "DSA"
             return f"Practice your weak area: {primary_tag}"
-        elif problem.difficulty.lower() == 'easy':
+        elif problem.difficulty.lower() == "easy":
             return "Build confidence with this warmup problem"
-        elif problem.difficulty.lower() == 'hard':
+        elif problem.difficulty.lower() == "hard":
             return "Challenge yourself with this advanced problem"
         else:
             return "Good practice for skill building"
 
-    
     # ==========================================================================
     # CODE VALIDATION
     # ==========================================================================
-    
+
     @classmethod
     def validate_solution(
-        cls,
-        user,
-        problem_id: str,
-        code: str,
-        language: str
+        cls, user, problem_id: str, code: str, language: str
     ) -> SubmissionResult:
         """
         Validate a user's solution.
-        
+
         This is a simplified implementation. In production:
         - Use isolated code execution (Docker/sandbox)
         - Implement proper timeout handling
@@ -240,38 +249,50 @@ class DSAPracticeEngine:
         """
         from apps.dsa.models import Problem, Submission, TestCase
         import uuid
-        
+
         problem = Problem.objects.get(id=problem_id)
         test_cases = TestCase.objects.filter(problem=problem)
-        
+
         submission_id = str(uuid.uuid4())
         test_results = []
         passed = 0
         total_time = 0.0
         total_memory = 0
-        
+
         for idx, tc in enumerate(test_cases):
             # In production, this would actually execute the code
-            result = cls._run_test_case(code, language, tc.input_data, tc.expected_output)
-            
-            test_results.append(TestResult(
-                test_id=idx + 1,
-                passed=result['passed'],
-                expected=tc.expected_output[:100],  # Truncate for safety
-                actual=result.get('output', '')[:100],
-                execution_time_ms=result.get('time_ms', 0),
-                memory_kb=result.get('memory_kb', 0)
-            ))
-            
-            if result['passed']:
+            result = cls._run_test_case(
+                code, language, tc.input_data, tc.expected_output
+            )
+
+            test_results.append(
+                TestResult(
+                    test_id=idx + 1,
+                    passed=result["passed"],
+                    expected=tc.expected_output[:100],  # Truncate for safety
+                    actual=result.get("output", "")[:100],
+                    execution_time_ms=result.get("time_ms", 0),
+                    memory_kb=result.get("memory_kb", 0),
+                )
+            )
+
+            if result["passed"]:
                 passed += 1
-            total_time += result.get('time_ms', 0)
-            total_memory = max(total_memory, result.get('memory_kb', 0))
-        
+            total_time += result.get("time_ms", 0)
+            total_memory = max(total_memory, result.get("memory_kb", 0))
+
         # Determine status
-        db_status = 'AC' if (test_cases and passed == len(test_cases)) else ('WA' if passed == 0 else 'WA')
-        display_status = 'accepted' if (test_cases and passed == len(test_cases)) else ('wrong_answer' if passed == 0 else 'partial')
-        
+        db_status = (
+            "AC"
+            if (test_cases and passed == len(test_cases))
+            else ("WA" if passed == 0 else "WA")
+        )
+        display_status = (
+            "accepted"
+            if (test_cases and passed == len(test_cases))
+            else ("wrong_answer" if passed == 0 else "partial")
+        )
+
         # Save submission cleanly
         sub = Submission.objects.create(
             user=user,
@@ -281,13 +302,15 @@ class DSAPracticeEngine:
             status=db_status,
             runtime_ms=int(total_time),
             memory_kb=total_memory,
-            error_log=f"Passed {passed}/{len(test_cases)} tests."
+            error_log=f"Passed {passed}/{len(test_cases)} tests.",
         )
         submission_id = str(sub.id)
-        
+
         # Generate AI feedback
-        feedback = cls._generate_feedback(code, language, display_status, passed, len(test_cases))
-        
+        feedback = cls._generate_feedback(
+            code, language, display_status, passed, len(test_cases)
+        )
+
         return SubmissionResult(
             submission_id=submission_id,
             status=display_status,
@@ -296,32 +319,32 @@ class DSAPracticeEngine:
             execution_time_ms=total_time,
             memory_kb=total_memory,
             test_results=test_results,
-            feedback=feedback
+            feedback=feedback,
         )
 
-    
     @classmethod
     def _run_test_case(
-        cls,
-        code: str,
-        language: str,
-        input_data: str,
-        expected_output: str
+        cls, code: str, language: str, input_data: str, expected_output: str
     ) -> Dict[str, Any]:
         """
         Run a single test case using secure execution.
         Supports Python.
         """
-        if language.lower() not in ['python', 'python3', 'py']:
-            return {'passed': False, 'output': 'Language not supported backend', 'time_ms': 0, 'error': 'Unsupported Language'}
+        if language.lower() not in ["python", "python3", "py"]:
+            return {
+                "passed": False,
+                "output": "Language not supported backend",
+                "time_ms": 0,
+                "error": "Unsupported Language",
+            }
 
         import subprocess
         import time
-        
+
         start_time = time.perf_counter()
         error = None
         output = ""
-        
+
         # Security wrapper to prevent basic OS interaction
         # While not a full sandbox, it severely limits the attack surface
         # by removing common dangerous modules and running in a separate process.
@@ -351,57 +374,53 @@ del sys
             # For massive scale production with hostile user code, use Docker/NSJail/Firecracker.
             process = subprocess.run(
                 ["python", "-I", "-c", secure_code],
-                input=input_data.encode('utf-8'),
+                input=input_data.encode("utf-8"),
                 capture_output=True,
                 timeout=2.0,  # Strict 2 second timeout per test case
             )
-            
-            output = process.stdout.decode('utf-8').strip()
-            
+
+            output = process.stdout.decode("utf-8").strip()
+
             if process.returncode != 0:
-                error = process.stderr.decode('utf-8').strip()
+                error = process.stderr.decode("utf-8").strip()
                 if not error:
                     error = f"Process exited with non-zero code: {process.returncode}"
-                    
+
         except subprocess.TimeoutExpired:
             error = "Time Limit Exceeded (2.0s)"
         except Exception as e:
             error = f"Execution Error: {str(e)}"
-            
+
         execution_time = (time.perf_counter() - start_time) * 1000
-        
+
         # Normalize output (trim whitespace)
         passed = (output == expected_output.strip()) and (error is None)
-        
+
         return {
-            'passed': passed,
-            'output': output,
-            'time_ms': round(execution_time, 2),
-            'memory_kb': 0, # Placeholder
-            'error': error
+            "passed": passed,
+            "output": output,
+            "time_ms": round(execution_time, 2),
+            "memory_kb": 0,  # Placeholder
+            "error": error,
         }
-    
+
     @classmethod
     def _generate_feedback(
-        cls,
-        code: str,
-        language: str,
-        status: str,
-        passed: int,
-        total: int
+        cls, code: str, language: str, status: str, passed: int, total: int
     ) -> str:
         """Generate AI feedback using Concept Bottleneck Model + LLM."""
         from apps.ai_engine.ai_client import AIClient
         from apps.ai_engine.integrated_services import IntegratedAIService
-        
+
         # 1. Get Concept Analysis
         try:
             ai_service = IntegratedAIService()
             concept_analysis = ai_service.analyze_dsa_submission(
-                code, 
-                {'passed_tests': passed, 'total_tests': total, 'memory_kb': 0}
+                code, {"passed_tests": passed, "total_tests": total, "memory_kb": 0}
             )
-            concept_str = ", ".join([f"{k}: {v:.2f}" for k, v in concept_analysis['concept_scores'].items()])
+            concept_str = ", ".join(
+                [f"{k}: {v:.2f}" for k, v in concept_analysis["concept_scores"].items()]
+            )
         except Exception as e:
             logger.error(f"Concept analysis failed: {e}")
             concept_str = "Concept analysis unavailable"
@@ -420,16 +439,18 @@ del sys
         
         Provide brief, constructive feedback based on the concept scores.
         """
-        
+
         try:
             feedback_json = AIClient.generate_code_review(
-                problem_title="DSA Submission",
-                problem_description=prompt,
-                code=code
+                problem_title="DSA Submission", problem_description=prompt, code=code
             )
-            return feedback_json.get('feedback', "Good effort.") + "\n" + feedback_json.get('suggestions', "")
+            return (
+                feedback_json.get("feedback", "Good effort.")
+                + "\n"
+                + feedback_json.get("suggestions", "")
+            )
         except Exception:
-            if status == 'accepted':
+            if status == "accepted":
                 return "🎉 Great job! Solution passed."
             else:
                 return f"Solution failed ({passed}/{total}). Check edge cases."
@@ -439,23 +460,25 @@ del sys
         """Generate a hint for the current problem state."""
         from apps.dsa.models import Problem
         from apps.ai_engine.ai_client import AIClient
-        
+
         try:
             problem = Problem.objects.get(id=problem_id)
             prompt = f"Problem: {problem.title}\nDescription: {problem.description}\nUser Code:\n{code}\n\nGive a helpful small hint without revealing the full answer."
-            
+
             # Simple text generation via AI Client (assuming we have a method or mock it)
             # Since generate_code_review returns structured JSON...
             review = AIClient.generate_code_review("Hint Request", prompt, code)
-            return review.get('feedback', "Try breaking the problem into smaller parts.")
-            
+            return review.get(
+                "feedback", "Try breaking the problem into smaller parts."
+            )
+
         except Exception:
             return "Focus on the base case and constraints."
-    
+
     # ==========================================================================
     # PERFORMANCE ANALYSIS
     # ==========================================================================
-    
+
     @classmethod
     def analyze_solution_complexity(cls, code: str, language: str) -> Dict[str, Any]:
         """
@@ -463,219 +486,231 @@ del sys
         Uses pattern matching for common constructs.
         """
         analysis = {
-            'time_complexity': 'Unknown',
-            'space_complexity': 'Unknown',
-            'patterns_detected': [],
-            'suggestions': []
+            "time_complexity": "Unknown",
+            "space_complexity": "Unknown",
+            "patterns_detected": [],
+            "suggestions": [],
         }
-        
+
         # Detect common patterns
         patterns = {
-            'nested_loops': (r'for\s+.*:\s*\n\s*for|while\s+.*:\s*\n\s*while', 'O(n²)'),
-            'single_loop': (r'for\s+.*:|while\s+.*:', 'O(n)'),
-            'recursion': (r'def\s+(\w+)\([^)]*\)[^:]*:\s*.*\1\(', 'O(2^n) or O(n)'),
-            'sorting': (r'\.sort\(\)|sorted\(', 'O(n log n)'),
-            'binary_search': (r'while\s+\w+\s*[<>]=?\s*\w+.*mid', 'O(log n)'),
-            'hash_lookup': (r'\w+\s*=\s*\{|\w+\[.+\]\s*=', 'O(1) lookup'),
+            "nested_loops": (r"for\s+.*:\s*\n\s*for|while\s+.*:\s*\n\s*while", "O(n²)"),
+            "single_loop": (r"for\s+.*:|while\s+.*:", "O(n)"),
+            "recursion": (r"def\s+(\w+)\([^)]*\)[^:]*:\s*.*\1\(", "O(2^n) or O(n)"),
+            "sorting": (r"\.sort\(\)|sorted\(", "O(n log n)"),
+            "binary_search": (r"while\s+\w+\s*[<>]=?\s*\w+.*mid", "O(log n)"),
+            "hash_lookup": (r"\w+\s*=\s*\{|\w+\[.+\]\s*=", "O(1) lookup"),
         }
-        
+
         for pattern_name, (regex, complexity) in patterns.items():
             if re.search(regex, code, re.MULTILINE):
-                analysis['patterns_detected'].append(pattern_name)
-                if analysis['time_complexity'] == 'Unknown':
-                    analysis['time_complexity'] = complexity
-        
+                analysis["patterns_detected"].append(pattern_name)
+                if analysis["time_complexity"] == "Unknown":
+                    analysis["time_complexity"] = complexity
+
         # Suggestions based on patterns
-        if 'nested_loops' in analysis['patterns_detected']:
-            analysis['suggestions'].append(
+        if "nested_loops" in analysis["patterns_detected"]:
+            analysis["suggestions"].append(
                 "Consider using a hash table to reduce nested loop to O(n)"
             )
-        
-        if 'recursion' in analysis['patterns_detected']:
-            analysis['suggestions'].append(
+
+        if "recursion" in analysis["patterns_detected"]:
+            analysis["suggestions"].append(
                 "Consider memoization to optimize recursive calls"
             )
-        
+
         return analysis
-    
+
     # ==========================================================================
     # CONTEST/COMPETITION
     # ==========================================================================
-    
+
     @classmethod
     def get_active_contests(cls) -> List[Dict[str, Any]]:
         """Get currently active or upcoming contests."""
         from apps.dsa.models import Contest
-        
+
         now = timezone.now()
-        
+
         contests = Contest.objects.filter(
-            Q(start_time__lte=now, end_time__gte=now) |  # Active
-            Q(start_time__gt=now)  # Upcoming
-        ).order_by('start_time')[:10]
-        
+            Q(start_time__lte=now, end_time__gte=now)
+            | Q(start_time__gt=now)  # Active  # Upcoming
+        ).order_by("start_time")[:10]
+
         return [
             {
-                'contest_id': str(c.id),
-                'title': c.title,
-                'start_time': c.start_time.isoformat(),
-                'end_time': c.end_time.isoformat(),
-                'status': 'active' if c.start_time <= now <= c.end_time else 'upcoming',
-                'problem_count': c.problems.count(),
-                'participants': c.participants.count()
+                "contest_id": str(c.id),
+                "title": c.title,
+                "start_time": c.start_time.isoformat(),
+                "end_time": c.end_time.isoformat(),
+                "status": "active" if c.start_time <= now <= c.end_time else "upcoming",
+                "problem_count": c.problems.count(),
+                "participants": c.participants.count(),
             }
             for c in contests
         ]
-    
+
     @classmethod
     def get_contest_leaderboard(cls, contest_id: str) -> List[Dict[str, Any]]:
         """Get leaderboard for a contest."""
         from apps.dsa.models import ContestParticipant
-        
-        participants = ContestParticipant.objects.filter(
-            contest_id=contest_id
-        ).select_related('user').order_by('-score', 'finish_time')[:100]
-        
+
+        participants = (
+            ContestParticipant.objects.filter(contest_id=contest_id)
+            .select_related("user")
+            .order_by("-score", "finish_time")[:100]
+        )
+
         return [
             {
-                'rank': idx + 1,
-                'user': p.user.username,
-                'score': p.score,
-                'problems_solved': p.problems_solved,
-                'finish_time': p.finish_time.isoformat() if p.finish_time else None
+                "rank": idx + 1,
+                "user": p.user.username,
+                "score": p.score,
+                "problems_solved": p.problems_solved,
+                "finish_time": p.finish_time.isoformat() if p.finish_time else None,
             }
             for idx, p in enumerate(participants)
         ]
-    
+
     # ==========================================================================
     # USER PROGRESS
     # ==========================================================================
-    
+
     @classmethod
     def get_user_dsa_stats(cls, user) -> Dict[str, Any]:
         """Get comprehensive DSA practice stats for a user matching frontend DSAStats."""
         from apps.dsa.models import Submission, Problem
-        
+
         submissions = Submission.objects.filter(user=user)
-        
+
         # Overall stats
         total_problems = Problem.objects.filter(is_active=True).count()
-        solved = submissions.filter(status__in=['AC', 'accepted']).values('problem_id').distinct().count()
-        attempted = submissions.values('problem_id').distinct().count()
+        solved = (
+            submissions.filter(status__in=["AC", "accepted"])
+            .values("problem_id")
+            .distinct()
+            .count()
+        )
+        attempted = submissions.values("problem_id").distinct().count()
         total_submissions = submissions.count()
-        
+
         # By difficulty (DB has 'EASY', 'MEDIUM', 'HARD')
-        diff_map = {'easy': 'EASY', 'medium': 'MEDIUM', 'hard': 'HARD'}
+        diff_map = {"easy": "EASY", "medium": "MEDIUM", "hard": "HARD"}
         diff_total_counts = {}
         diff_solved_counts = {}
         for k, v in diff_map.items():
-            diff_total_counts[k] = Problem.objects.filter(difficulty=v, is_active=True).count()
-            diff_solved_counts[k] = submissions.filter(
-                status__in=['AC', 'accepted'],
-                problem__difficulty=v
-            ).values('problem_id').distinct().count()
+            diff_total_counts[k] = Problem.objects.filter(
+                difficulty=v, is_active=True
+            ).count()
+            diff_solved_counts[k] = (
+                submissions.filter(status__in=["AC", "accepted"], problem__difficulty=v)
+                .values("problem_id")
+                .distinct()
+                .count()
+            )
 
         difficulty_stats = {
-            k: {'total': diff_total_counts[k], 'solved': diff_solved_counts[k]}
+            k: {"total": diff_total_counts[k], "solved": diff_solved_counts[k]}
             for k in diff_map
         }
-        
+
         # By category
         category_stats = cls._analyze_category_performance(user)
-        
+
         # Recent activity
-        recent = submissions.order_by('-submitted_at')[:10]
+        recent = submissions.order_by("-submitted_at")[:10]
         recent_activity = [
             {
-                'problem_title': s.problem.title,
-                'status': s.status,
-                'language': s.language,
-                'submitted_at': s.submitted_at.isoformat() if s.submitted_at else ''
+                "problem_title": s.problem.title,
+                "status": s.status,
+                "language": s.language,
+                "submitted_at": s.submitted_at.isoformat() if s.submitted_at else "",
             }
             for s in recent
         ]
-        
+
         # Streak
         streak = cls._calculate_dsa_streak(user)
         ranking = cls._get_user_ranking(user)
-        acceptance_rate = round((solved / total_submissions * 100) if total_submissions > 0 else 0, 1)
+        acceptance_rate = round(
+            (solved / total_submissions * 100) if total_submissions > 0 else 0, 1
+        )
 
         return {
-            'total_problems': total_problems,
-            'solved_problems': solved,
-            'attempted_problems': attempted,
-            'submissions_count': total_submissions,
-            'acceptance_rate': acceptance_rate,
-            'current_streak': streak,
-            'longest_streak': streak,
-            'rank': ranking.get('rank', 1),
-            'easy_solved': diff_solved_counts['easy'],
-            'medium_solved': diff_solved_counts['medium'],
-            'hard_solved': diff_solved_counts['hard'],
-            'total_easy': diff_total_counts['easy'],
-            'total_medium': diff_total_counts['medium'],
-            'total_hard': diff_total_counts['hard'],
-            'solve_rate': round((solved / total_problems * 100) if total_problems > 0 else 0, 1),
-            'by_difficulty': difficulty_stats,
-            'by_category': category_stats,
-            'recent_activity': recent_activity,
-            'streak_days': streak,
-            'ranking': ranking
+            "total_problems": total_problems,
+            "solved_problems": solved,
+            "attempted_problems": attempted,
+            "submissions_count": total_submissions,
+            "acceptance_rate": acceptance_rate,
+            "current_streak": streak,
+            "longest_streak": streak,
+            "rank": ranking.get("rank", 1),
+            "easy_solved": diff_solved_counts["easy"],
+            "medium_solved": diff_solved_counts["medium"],
+            "hard_solved": diff_solved_counts["hard"],
+            "total_easy": diff_total_counts["easy"],
+            "total_medium": diff_total_counts["medium"],
+            "total_hard": diff_total_counts["hard"],
+            "solve_rate": round(
+                (solved / total_problems * 100) if total_problems > 0 else 0, 1
+            ),
+            "by_difficulty": difficulty_stats,
+            "by_category": category_stats,
+            "recent_activity": recent_activity,
+            "streak_days": streak,
+            "ranking": ranking,
         }
-    
+
     @classmethod
     def _calculate_dsa_streak(cls, user) -> int:
         """Calculate consecutive days of DSA practice."""
         from apps.dsa.models import Submission
-        
+
         today = timezone.now().date()
         streak = 0
-        
+
         for i in range(365):  # Max 1 year
             date = today - timedelta(days=i)
             has_submission = Submission.objects.filter(
-                user=user,
-                submitted_at__date=date
+                user=user, submitted_at__date=date
             ).exists()
-            
+
             if has_submission:
                 streak += 1
             else:
                 break
-        
+
         return streak
-    
+
     @classmethod
     def _get_user_ranking(cls, user) -> Dict[str, Any]:
         """Get user's global ranking."""
         from apps.dsa.models import Submission
         from django.db.models import Count
-        
+
         # Get all users sorted by solved problems
         user_scores = list(
-            Submission.objects.filter(
-                status__in=['AC', 'accepted']
-            ).values('user_id').annotate(
-                solved=Count('problem_id', distinct=True)
-            ).order_by('-solved')
+            Submission.objects.filter(status__in=["AC", "accepted"])
+            .values("user_id")
+            .annotate(solved=Count("problem_id", distinct=True))
+            .order_by("-solved")
         )
-        
+
         user_id = user.id
         rank = 1
         user_solved = 0
-        
+
         for score in user_scores:
-            if score['user_id'] == user_id:
-                user_solved = score['solved']
+            if score["user_id"] == user_id:
+                user_solved = score["solved"]
                 break
             rank += 1
-        
+
         total_users = len(user_scores)
-        percentile = round((1 - rank / max(total_users, 1)) * 100, 1) if total_users > 0 else 100.0
+        percentile = (
+            round((1 - rank / max(total_users, 1)) * 100, 1)
+            if total_users > 0
+            else 100.0
+        )
 
-        return {
-            'rank': rank,
-            'solved': user_solved,
-            'percentile': percentile
-        }
-
+        return {"rank": rank, "solved": user_solved, "percentile": percentile}

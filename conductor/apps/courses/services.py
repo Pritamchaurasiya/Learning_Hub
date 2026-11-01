@@ -63,67 +63,84 @@ class CourseService:
         query = query[:200].strip()
 
         # Generate safe cache key — hash query and strip whitespace to prevent memcached CacheKeyWarning
-        query_hash = hashlib.sha256(query.encode('utf-8')).hexdigest()[:16]
-        safe_query = re.sub(r'[^a-zA-Z0-9_-]', '_', query[:30]).strip('_')
-        cache_key = f"course_search:{safe_query}_{query_hash}" if safe_query else f"course_search:{query_hash}"
+        query_hash = hashlib.sha256(query.encode("utf-8")).hexdigest()[:16]
+        safe_query = re.sub(r"[^a-zA-Z0-9_-]", "_", query[:30]).strip("_")
+        cache_key = (
+            f"course_search:{safe_query}_{query_hash}"
+            if safe_query
+            else f"course_search:{query_hash}"
+        )
         cached = cache.get(cache_key)
         if cached is not None:
             # Cached value is a list of sorted course IDs
             if isinstance(cached, list) and cached:
                 from django.db.models import Case, When, Value, IntegerField
+
                 preserved_order = Case(
                     *[When(pk=pk, then=Value(pos)) for pos, pk in enumerate(cached)],
-                    output_field=IntegerField()
+                    output_field=IntegerField(),
                 )
-                return Course.objects.filter(
-                    id__in=cached
-                ).select_related("instructor", "category").order_by(preserved_order)
+                return (
+                    Course.objects.filter(id__in=cached)
+                    .select_related("instructor", "category")
+                    .order_by(preserved_order)
+                )
             return Course.objects.none()
 
-        is_postgres = 'postgresql' in connection.settings_dict['ENGINE']
+        is_postgres = "postgresql" in connection.settings_dict["ENGINE"]
 
         # 1. Keyword Search (Postgres Full Text)
         keyword_results = Course.objects.none()
         if is_postgres:
-            from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-            vector_config = SearchVector('title', weight='A') + \
-                     SearchVector('short_description', weight='B') + \
-                     SearchVector('description', weight='C')
+            from django.contrib.postgres.search import (
+                SearchVector,
+                SearchQuery,
+                SearchRank,
+            )
+
+            vector_config = (
+                SearchVector("title", weight="A")
+                + SearchVector("short_description", weight="B")
+                + SearchVector("description", weight="C")
+            )
             search_query = SearchQuery(query)
-            keyword_results = Course.objects.annotate(
-                rank=SearchRank(vector_config, search_query)
-            ).filter(
-                is_published=True,
-                rank__gte=0.1
-            ).select_related("instructor", "category")
+            keyword_results = (
+                Course.objects.annotate(rank=SearchRank(vector_config, search_query))
+                .filter(is_published=True, rank__gte=0.1)
+                .select_related("instructor", "category")
+            )
         else:
             keyword_results = Course.objects.filter(
-                Q(title__icontains=query) | 
-                Q(description__icontains=query) |
-                Q(short_description__icontains=query),
-                is_published=True
+                Q(title__icontains=query)
+                | Q(description__icontains=query)
+                | Q(short_description__icontains=query),
+                is_published=True,
             ).select_related("instructor", "category")
 
         # 2. Semantic/Vector Search
         try:
             from apps.ai_engine.vector_service import VectorService
+
             # Get semantic matches (CourseEmbedding -> ContentObject -> Course)
             # Note: This assumes CourseEmbedding links to Course or Module/Lesson
             # For simplicity, let's assume we search CourseEmbeddings and get related courses
             vector_matches = VectorService.search_similar_content(query, top_k=5)
             # vector_matches is a QuerySet of CourseEmbedding
-            
+
             # Extract Course IDs directly from embeddings without N+1 GenericForeignKey queries
             from django.contrib.contenttypes.models import ContentType
+
             course_ct = ContentType.objects.get_for_model(Course)
             semantic_course_ids = [
-                em.object_id for em in vector_matches if em.content_type_id == course_ct.id
+                em.object_id
+                for em in vector_matches
+                if em.content_type_id == course_ct.id
             ]
             # Select relations eagerly to prevent N+1 queries during serialization/iteration
             semantic_results = Course.objects.filter(
                 id__in=semantic_course_ids, is_published=True
             ).select_related("instructor", "category")
-            
+
         except Exception as e:
             # Fallback if AI/Vector fails
             logger.warning("Vector search failed: %s", e)
@@ -133,32 +150,44 @@ class CourseService:
         # Score = 1 / (k + rank) where k is a constant (e.g., 60)
         rrf_k = 60
         scores = {}
-        
+
         # Process Semantic Results (evaluate once)
         for rank, course in enumerate(semantic_results[:20]):
             scores[course.id] = scores.get(course.id, 0) + (1.0 / (rrf_k + rank + 1))
-            
+
         # Process Keyword Results (evaluate once)
         for rank, course in enumerate(keyword_results[:20]):
             scores[course.id] = scores.get(course.id, 0) + (1.0 / (rrf_k + rank + 1))
-            
+
         # Sort by RRF score and return as a proper QuerySet with preserved ordering
-        sorted_course_ids = sorted(scores.keys(), key=lambda cid: scores[cid], reverse=True)
+        sorted_course_ids = sorted(
+            scores.keys(), key=lambda cid: scores[cid], reverse=True
+        )
         if sorted_course_ids:
             from django.db.models import Case, When, Value, IntegerField
+
             preserved_order = Case(
-                *[When(pk=pk, then=Value(pos)) for pos, pk in enumerate(sorted_course_ids)],
-                output_field=IntegerField()
+                *[
+                    When(pk=pk, then=Value(pos))
+                    for pos, pk in enumerate(sorted_course_ids)
+                ],
+                output_field=IntegerField(),
             )
-            final_qs = Course.objects.filter(
-                id__in=sorted_course_ids
-            ).select_related("instructor", "category").order_by(preserved_order)
+            final_qs = (
+                Course.objects.filter(id__in=sorted_course_ids)
+                .select_related("instructor", "category")
+                .order_by(preserved_order)
+            )
         else:
-            final_qs = keyword_results[:20] if keyword_results.exists() else Course.objects.none()
-        
+            final_qs = (
+                keyword_results[:20]
+                if keyword_results.exists()
+                else Course.objects.none()
+            )
+
         # Cache sorted IDs for 10 minutes (caching QuerySets directly is unreliable)
         cache.set(cache_key, list(sorted_course_ids), timeout=600)
-        
+
         return final_qs
 
 
@@ -166,7 +195,7 @@ class EnrollmentService:
     """
     Service layer for Enrollment operations.
     """
-    
+
     @staticmethod
     def enroll(user, course) -> "Enrollment":
         """
@@ -198,18 +227,22 @@ class EnrollmentService:
         # Publish to EventBus (outside transaction — fire-and-forget)
         try:
             from apps.core.event_bus import EventBus
-            EventBus.publish("course.enrolled", {
-                "user_id": user.id,
-                "username": user.username,
-                "course_id": course.id,
-                "course_title": course.title,
-                "enrollment_id": enrollment.id,
-            })
+
+            EventBus.publish(
+                "course.enrolled",
+                {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "course_id": course.id,
+                    "course_title": course.title,
+                    "enrollment_id": enrollment.id,
+                },
+            )
         except Exception:
             pass  # EventBus is non-critical
 
         return enrollment
-        
+
     @staticmethod
     def _trigger_dashboard_update(course, enrollment):
         """
@@ -218,11 +251,11 @@ class EnrollmentService:
         try:
             from channels.layers import get_channel_layer
             from asgiref.sync import async_to_sync
-            
+
             channel_layer = get_channel_layer()
             instructor_id = course.instructor.id
             group_name = f"instructor_dashboard_{instructor_id}"
-            
+
             # Message payload
             message = {
                 "type": "dashboard_update",
@@ -231,12 +264,12 @@ class EnrollmentService:
                     "revenue_bump": float(course.price) if not course.is_free else 0,
                     "student_name": enrollment.user.username,
                     "course_title": course.title,
-                    "message": f"New Student: {enrollment.user.username} enrolled in {course.title}!"
-                }
+                    "message": f"New Student: {enrollment.user.username} enrolled in {course.title}!",
+                },
             }
-            
+
             async_to_sync(channel_layer.group_send)(group_name, message)
-            
+
         except Exception as e:
             # Don't fail the transaction just because WS failed
             logger.warning("Error sending dashboard update: %s", e)
@@ -272,19 +305,19 @@ class EnrollmentService:
     @staticmethod
     def get_course_reviews(course) -> QuerySet:
         """Get approved reviews for a course."""
-        return Review.objects.filter(course=course, is_approved=True).select_related("user")
+        return Review.objects.filter(course=course, is_approved=True).select_related(
+            "user"
+        )
 
     @staticmethod
     def get_user_enrollments(user) -> QuerySet:
         """Get enrollments for a user with optimized queries."""
-        return Enrollment.objects.filter(user=user).select_related(
-            "course",
-            "course__instructor",
-            "course__category"
-        ).prefetch_related(
-            "course__modules"
-        ).order_by('-created_at')
-
+        return (
+            Enrollment.objects.filter(user=user)
+            .select_related("course", "course__instructor", "course__category")
+            .prefetch_related("course__modules")
+            .order_by("-created_at")
+        )
 
     @staticmethod
     def get_personalized_recommendations(user) -> List[Dict[str, Any]]:
@@ -296,46 +329,52 @@ class EnrollmentService:
         from django.db.models import F
         from django.db import connection, reset_queries
         from django.conf import settings
-        
+
         # Enable query logging for debugging (only in DEBUG mode)
         if settings.DEBUG:
             reset_queries()
-        
+
         # 1. Get Candidate Courses (Active, Not Enrolled)
         # FIX: Use select_related to avoid N+1 queries on category/instructor
-        enrolled_ids = list(Enrollment.objects.filter(user=user).values_list('course_id', flat=True))
-        candidates = list(Course.objects.filter(
-            is_published=True
-        ).exclude(
-            id__in=enrolled_ids
-        ).select_related(
-            'category', 'instructor'
-        )[:20])
-        
-        logger.debug("Recommendations query: %d candidates fetched with %d enrolled courses", len(candidates), len(enrolled_ids))
-        
+        enrolled_ids = list(
+            Enrollment.objects.filter(user=user).values_list("course_id", flat=True)
+        )
+        candidates = list(
+            Course.objects.filter(is_published=True)
+            .exclude(id__in=enrolled_ids)
+            .select_related("category", "instructor")[:20]
+        )
+
+        logger.debug(
+            "Recommendations query: %d candidates fetched with %d enrolled courses",
+            len(candidates),
+            len(enrolled_ids),
+        )
+
         # 2. Extract User Profile (Mock for now, would come from LearningProfile)
         user_profile = {
-            'weaknesses': ['optimization', 'algorithms'], 
-            'interests': ['ai', 'python']
+            "weaknesses": ["optimization", "algorithms"],
+            "interests": ["ai", "python"],
         }
-        
+
         ai_service = IntegratedAIService()
         scored_courses = []
-        
+
         # Batch extract course features safely handling nullable category
         course_features_list = [
             {
-                'topics': ([course.category.slug] if course.category else ['general'])
+                "topics": ([course.category.slug] if course.category else ["general"])
                 + course.title.lower().split()
             }
             for course in candidates
         ]
-        
+
         # 3. Batch Neuro-Symbolic Scoring (eliminates N sequential AI embedding computations)
         try:
-            if hasattr(ai_service, 'batch_semantic_recommendation_boost'):
-                sym_scores = ai_service.batch_semantic_recommendation_boost(user_profile, course_features_list)
+            if hasattr(ai_service, "batch_semantic_recommendation_boost"):
+                sym_scores = ai_service.batch_semantic_recommendation_boost(
+                    user_profile, course_features_list
+                )
             else:
                 sym_scores = [
                     ai_service.get_semantic_recommendation_boost(user_profile, feat)
@@ -344,24 +383,36 @@ class EnrollmentService:
         except Exception as e:
             logger.warning("AI recommendation scoring error: %s", e)
             sym_scores = [0.0] * len(candidates)
-            
+
         for course, sym_score in zip(candidates, sym_scores):
             # Base Score (Popularity)
-            base_score = (course.avg_rating * 0.5) + (min(course.enrollment_count, 100) / 100.0 * 0.5)
+            base_score = (course.avg_rating * 0.5) + (
+                min(course.enrollment_count, 100) / 100.0 * 0.5
+            )
             final_score = (base_score * 0.7) + (sym_score * 0.3)
-            
-            scored_courses.append({
-                'course': course,
-                'score': final_score,
-                'ai_reason': "Matches your learning goals" if sym_score > 0.5 else "Popular course"
-            })
-            
+
+            scored_courses.append(
+                {
+                    "course": course,
+                    "score": final_score,
+                    "ai_reason": (
+                        "Matches your learning goals"
+                        if sym_score > 0.5
+                        else "Popular course"
+                    ),
+                }
+            )
+
         # Sort by Score
-        scored_courses.sort(key=lambda x: x['score'], reverse=True)
-        
+        scored_courses.sort(key=lambda x: x["score"], reverse=True)
+
         if settings.DEBUG:
-            logger.debug("Recommendations: %d queries executed for %d results", len(connection.queries), len(scored_courses))
-        
+            logger.debug(
+                "Recommendations: %d queries executed for %d results",
+                len(connection.queries),
+                len(scored_courses),
+            )
+
         # Return top 5
         return scored_courses[:5]
 
@@ -371,23 +422,34 @@ class EnrollmentService:
         Get aggregated analytics for a specific course including engagement metrics.
         """
         from django.db.models import Avg, Count
-        
+
         enrollments = Enrollment.objects.filter(course=course)
         total_enrollments = enrollments.count()
-        
+
         # Calculate completion rate (percentage of students who finished)
         completed_enrollments = enrollments.filter(progress_percentage=100).count()
-        completion_rate = (completed_enrollments / total_enrollments * 100) if total_enrollments > 0 else 0
-        
+        completion_rate = (
+            (completed_enrollments / total_enrollments * 100)
+            if total_enrollments > 0
+            else 0
+        )
+
         # Average progress
-        avg_progress = enrollments.aggregate(Avg("progress_percentage"))["progress_percentage__avg"] or 0
-        
+        avg_progress = (
+            enrollments.aggregate(Avg("progress_percentage"))[
+                "progress_percentage__avg"
+            ]
+            or 0
+        )
+
         return {
             "total_enrollments": total_enrollments,
             "completion_rate": round(completion_rate, 2),
             "average_progress": round(avg_progress, 2),
             "avg_rating": course.avg_rating,
-            "total_revenue": total_enrollments * float(course.price) if not course.is_free else 0
+            "total_revenue": (
+                total_enrollments * float(course.price) if not course.is_free else 0
+            ),
         }
 
 
@@ -417,10 +479,13 @@ class LessonService:
             user=user, lesson__module__course=course
         ).count()
 
-        progress = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
+        progress = (
+            int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
+        )
 
         with transaction.atomic():
             from django.db import connection
+
             if "postgresql" in connection.settings_dict.get("ENGINE", ""):
                 enrollment, _ = Enrollment.objects.select_for_update().get_or_create(
                     user=user, course=course
@@ -435,25 +500,34 @@ class LessonService:
                 enrollment.progress_percentage = min(progress, 100)
                 if progress >= 100 and not enrollment.completed_at:
                     enrollment.completed_at = timezone.now()
-                    GamificationService.award_xp(user, 500, f"Certified: {course.title}")
+                    GamificationService.award_xp(
+                        user, 500, f"Certified: {course.title}"
+                    )
 
                     # Async Certificate Generation
                     from apps.courses.tasks import generate_certificate_task
+
                     generate_certificate_task.delay(user.id, course.id)
 
-                enrollment.save(update_fields=["progress_percentage", "completed_at", "updated_at"])
+                enrollment.save(
+                    update_fields=["progress_percentage", "completed_at", "updated_at"]
+                )
 
         # Publish lesson.completed event for notifications
         try:
             from apps.core.event_bus import EventBus
-            EventBus.publish("lesson.completed", {
-                "user_id": user.id,
-                "username": user.username,
-                "lesson_id": str(lesson.id),
-                "lesson_title": lesson.title,
-                "course_title": course.title,
-                "progress": progress,
-            })
+
+            EventBus.publish(
+                "lesson.completed",
+                {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "lesson_id": str(lesson.id),
+                    "lesson_title": lesson.title,
+                    "course_title": course.title,
+                    "progress": progress,
+                },
+            )
         except Exception:
             pass
 
@@ -487,7 +561,9 @@ class NoteService:
     """Service layer for Student notes."""
 
     @staticmethod
-    def create_note(user, course, lesson, content: str, timestamp_seconds: int = 0) -> Any:
+    def create_note(
+        user, course, lesson, content: str, timestamp_seconds: int = 0
+    ) -> Any:
         """Create a student note."""
         from apps.courses.models import CourseNote
         from apps.courses.validators import validate_note_content
@@ -505,6 +581,7 @@ class NoteService:
     def delete_note(user, course, note_id: str) -> bool:
         """Delete a student note."""
         from apps.courses.models import CourseNote
+
         note = CourseNote.objects.filter(user=user, course=course, id=note_id).first()
         if note:
             note.delete()
@@ -516,7 +593,15 @@ class ResourceService:
     """Service layer for Course downloadable resources."""
 
     @staticmethod
-    def create_resource(course, title: str, resource_type: str = "pdf", file=None, external_url: str = "", description: str = "", lesson=None) -> Any:
+    def create_resource(
+        course,
+        title: str,
+        resource_type: str = "pdf",
+        file=None,
+        external_url: str = "",
+        description: str = "",
+        lesson=None,
+    ) -> Any:
         """Create a course downloadable resource."""
         from apps.courses.models import CourseResource
 
@@ -532,5 +617,3 @@ class ResourceService:
             description=description,
             lesson=lesson,
         )
-
-

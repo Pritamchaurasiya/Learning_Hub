@@ -1,4 +1,5 @@
 """Subscription Celery tasks."""
+
 import logging
 from celery import shared_task
 from django.utils import timezone
@@ -32,17 +33,17 @@ def send_expiry_reminders():
     seven_days = now + timezone.timedelta(days=7)
 
     expiring = UserSubscription.objects.filter(
-        status='active',
+        status="active",
         current_period_end__lte=seven_days,
         current_period_end__gt=now,
         auto_renew=False,
-    ).select_related('user', 'plan')
+    ).select_related("user", "plan")
 
     sent = 0
     for sub in expiring:
         try:
             send_mail(
-                subject=f'Your {sub.plan.name} subscription expires in {sub.days_remaining} days',
+                subject=f"Your {sub.plan.name} subscription expires in {sub.days_remaining} days",
                 message=f'Your {sub.plan.name} subscription will expire on {sub.current_period_end.strftime("%B %d, %Y")}. Renew now to continue enjoying premium features.',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[sub.user.email],
@@ -53,7 +54,7 @@ def send_expiry_reminders():
             logger.error(f"Failed to send expiry reminder to {sub.user.email}: {e}")
 
     logger.info(f"Sent {sent} subscription expiry reminders")
-    return {'sent': sent}
+    return {"sent": sent}
 
 
 @shared_task
@@ -64,34 +65,36 @@ def convert_expired_trials():
     """
     now = timezone.now()
     expired_trials = UserSubscription.objects.filter(
-        status='trial',
+        status="trial",
         trial_ends_at__lt=now,
     )
 
     converted = 0
     for sub in expired_trials:
-        sub.status = 'expired'
-        sub.save(update_fields=['status'])
+        sub.status = "expired"
+        sub.save(update_fields=["status"])
         converted += 1
-        
+
         # 1. Downgrade user's feature access by assigning the Free plan
-        free_plan = SubscriptionPlan.objects.filter(code='free').first()
+        free_plan = SubscriptionPlan.objects.filter(code="free").first()
         if free_plan:
             UserSubscription.objects.create(
                 user=sub.user,
                 plan=free_plan,
-                status='active',
+                status="active",
                 current_period_start=now,
-                current_period_end=now + timezone.timedelta(days=3650) # Active for 10 years
+                current_period_end=now
+                + timezone.timedelta(days=3650),  # Active for 10 years
             )
-            
+
         # 2. Send email prompting user to subscribe
         try:
             from django.conf import settings
             from django.core.mail import send_mail
+
             send_mail(
-                subject='Your trial has expired',
-                message='Your free trial has ended. You have been placed on the Free plan. To regain access to premium features, please subscribe to a premium plan.',
+                subject="Your trial has expired",
+                message="Your free trial has ended. You have been placed on the Free plan. To regain access to premium features, please subscribe to a premium plan.",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[sub.user.email],
                 fail_silently=True,
@@ -100,4 +103,4 @@ def convert_expired_trials():
             logger.error(f"Failed to send trial expiry email to {sub.user.email}: {e}")
 
     logger.info(f"Converted {converted} expired trials")
-    return {'converted': converted}
+    return {"converted": converted}

@@ -6,17 +6,21 @@ logger = logging.getLogger(__name__)
 
 @shared_task(
     bind=True,
-    queue='default',
+    queue="default",
     autoretry_for=(Exception,),
     retry_backoff=True,
-    retry_kwargs={'max_retries': 3},
+    retry_kwargs={"max_retries": 3},
 )
 def send_group_welcome_email(self, user_email, group_name):
     """
     Sends a welcome email asynchronously when a user joins a study group.
     Uses retry with exponential backoff for SMTP transient failures.
     """
-    logger.info("CELERY TASK START: Sending Welcome Email to %s for group %s", user_email, group_name)
+    logger.info(
+        "CELERY TASK START: Sending Welcome Email to %s for group %s",
+        user_email,
+        group_name,
+    )
 
     try:
         from django.core.mail import send_mail

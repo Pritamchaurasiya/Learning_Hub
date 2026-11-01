@@ -5,6 +5,7 @@ from apps.ai_engine.ai_client import AIClient
 
 logger = structlog.get_logger(__name__)
 
+
 class DreamingService:
     """
     Subconscious process that runs when the system is idle.
@@ -20,12 +21,12 @@ class DreamingService:
         """
         logger.info("🌙 System entering REM Sleep (Dreaming Mode)...")
         self.is_dreaming = True
-        
+
         try:
             while self.is_dreaming:
                 self.dream_scenario()
-                time.sleep(2) # Dream speed
-                
+                time.sleep(2)  # Dream speed
+
                 # Wake up probability
                 if random.random() < 0.1:
                     self.wake_up()
@@ -38,12 +39,12 @@ class DreamingService:
         """
         topic = random.choice(["Recursion", "Dynamic Programming", "Graph Theory"])
         difficulty = random.choice(["Hard", "Impossible"])
-        
+
         logger.info(f"💭 Dreaming of a {difficulty} {topic} problem...")
-        
+
         # In a real system, we'd use the LLM to generate this.
         # AIClient.generate_problem(topic, difficulty)
-        
+
         # Mock consolidation
         logger.info("🧠 Synaptic Consolidation: New solution pathway reinforced.")
 

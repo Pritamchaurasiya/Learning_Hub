@@ -4,6 +4,7 @@ import random
 
 logger = structlog.get_logger(__name__)
 
+
 class EdgeComputeRouter:
     """
     Simulates a smart router that dispatches requests to the nearest edge node.
@@ -22,24 +23,24 @@ class EdgeComputeRouter:
         Determines the optimal edge node for a user based on simulated IP geolocation.
         """
         logger.info(f"🌐 Routing request from {user_ip} for {request_type}...")
-        
+
         # Simulating Geo-IP lookup
         # In production, use MaxMind or Cloudflare headers
         if user_ip.startswith("10."):
-            nearest = EdgeComputeRouter.NODES[0] # Local/VPN -> NYC
+            nearest = EdgeComputeRouter.NODES[0]  # Local/VPN -> NYC
         elif user_ip.startswith("192."):
-            nearest = EdgeComputeRouter.NODES[1] # LAN -> London (Simulated)
+            nearest = EdgeComputeRouter.NODES[1]  # LAN -> London (Simulated)
         else:
             nearest = random.choice(EdgeComputeRouter.NODES)
 
         logger.info(f"⚡ Nearest Edge Node: {nearest['id']} ({nearest['latency']}ms)")
-        
+
         if request_type == "ai_inference":
-             logger.info("🤖 Offloading AI inference to Edge GPU Cluster...")
-             time.sleep(0.01) # Ultra-low latency simulation
-        
+            logger.info("🤖 Offloading AI inference to Edge GPU Cluster...")
+            time.sleep(0.01)  # Ultra-low latency simulation
+
         return {
             "node_id": nearest["id"],
             "region": nearest["region"],
-            "status": "routed"
+            "status": "routed",
         }

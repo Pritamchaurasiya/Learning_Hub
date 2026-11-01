@@ -13,12 +13,14 @@ print("=" * 80)
 print("LEARNING HUB PYTHON SDK DEVELOPMENT")
 print("=" * 80)
 
-BASE_DIR = Path('c:\\Users\\shiva\\Desktop\\windows_app\\conductor')
+BASE_DIR = Path("c:\\Users\\shiva\\Desktop\\windows_app\\conductor")
 os.chdir(BASE_DIR)
+
 
 def log(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
+
 
 # ============================================================================
 # Create SDK Package Structure
@@ -27,11 +29,11 @@ log("Creating Python SDK package structure...")
 
 # Create SDK directory structure
 sdk_dirs = [
-    'learning_hub_sdk',
-    'learning_hub_sdk/learning_hub_sdk',
-    'learning_hub_sdk/tests',
-    'learning_hub_sdk/docs',
-    'learning_hub_sdk/examples'
+    "learning_hub_sdk",
+    "learning_hub_sdk/learning_hub_sdk",
+    "learning_hub_sdk/tests",
+    "learning_hub_sdk/docs",
+    "learning_hub_sdk/examples",
 ]
 
 for dir_path in sdk_dirs:
@@ -44,7 +46,7 @@ for dir_path in sdk_dirs:
 log("Creating package configuration files...")
 
 # setup.py
-setup_py = '''from setuptools import setup, find_packages
+setup_py = """from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -92,28 +94,28 @@ setup(
         ],
     },
 )
-'''
+"""
 
-with open('learning_hub_sdk/setup.py', 'w') as f:
+with open("learning_hub_sdk/setup.py", "w") as f:
     f.write(setup_py)
 
 log("  [OK] Created setup.py")
 
 # requirements.txt
-requirements_txt = '''requests>=2.28.0
+requirements_txt = """requests>=2.28.0
 urllib3>=1.26.0
 python-dateutil>=2.8.0
 pydantic>=1.10.0
 typing-extensions>=4.0.0
-'''
+"""
 
-with open('learning_hub_sdk/requirements.txt', 'w') as f:
+with open("learning_hub_sdk/requirements.txt", "w") as f:
     f.write(requirements_txt)
 
 log("  [OK] Created requirements.txt")
 
 # pyproject.toml
-pyproject_toml = '''[build-system]
+pyproject_toml = """[build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
@@ -132,9 +134,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-'''
+"""
 
-with open('learning_hub_sdk/pyproject.toml', 'w') as f:
+with open("learning_hub_sdk/pyproject.toml", "w") as f:
     f.write(pyproject_toml)
 
 log("  [OK] Created pyproject.toml")
@@ -191,7 +193,7 @@ __all__ = [
 ]
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/__init__.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/__init__.py", "w") as f:
     f.write(init_py)
 
 log("  [OK] Created __init__.py")
@@ -233,7 +235,7 @@ class ServerError(APIError):
     pass
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/exceptions.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/exceptions.py", "w") as f:
     f.write(exceptions_py)
 
 log("  [OK] Created exceptions.py")
@@ -354,7 +356,7 @@ class Auth:
         return self._access_token
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/auth.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/auth.py", "w") as f:
     f.write(auth_py)
 
 log("  [OK] Created auth.py")
@@ -470,7 +472,7 @@ class APIResponse(BaseModel):
     results: List[Dict[str, Any]] = []
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/models.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/models.py", "w") as f:
     f.write(models_py)
 
 log("  [OK] Created models.py")
@@ -743,7 +745,7 @@ class LearningHubClient:
         return self._handle_response(response)
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/client.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/client.py", "w") as f:
     f.write(client_py)
 
 log("  [OK] Created client.py")
@@ -847,7 +849,7 @@ if __name__ == '__main__':
     main()
 '''
 
-with open('learning_hub_sdk/learning_hub_sdk/cli.py', 'w') as f:
+with open("learning_hub_sdk/learning_hub_sdk/cli.py", "w") as f:
     f.write(cli_py)
 
 log("  [OK] Created cli.py")
@@ -858,7 +860,7 @@ log("  [OK] Created cli.py")
 log("Creating documentation...")
 
 # README.md
-readme_md = '''# Learning Hub Python SDK
+readme_md = """# Learning Hub Python SDK
 
 A comprehensive Python SDK for the Learning Hub API, providing easy integration with authentication, course management, user management, and more.
 
@@ -1031,9 +1033,9 @@ This SDK is licensed under the MIT License. See the LICENSE file for details.
 ## Support
 
 For support, please contact support@learninghub.com or create an issue on GitHub.
-'''
+"""
 
-with open('learning_hub_sdk/README.md', 'w') as f:
+with open("learning_hub_sdk/README.md", "w") as f:
     f.write(readme_md)
 
 log("  [OK] Created README.md")
@@ -1112,7 +1114,7 @@ class TestLearningHubClient:
             client.health_check()
 '''
 
-with open('learning_hub_sdk/tests/test_client.py', 'w') as f:
+with open("learning_hub_sdk/tests/test_client.py", "w") as f:
     f.write(test_client_py)
 
 log("  [OK] Created test_client.py")
@@ -1182,7 +1184,7 @@ if __name__ == "__main__":
     main()
 '''
 
-with open('learning_hub_sdk/examples/quick_start.py', 'w') as f:
+with open("learning_hub_sdk/examples/quick_start.py", "w") as f:
     f.write(quick_start_py)
 
 log("  [OK] Created quick_start.py")

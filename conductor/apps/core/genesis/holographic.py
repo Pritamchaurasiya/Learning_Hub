@@ -3,6 +3,7 @@ import hashlib
 
 logger = structlog.get_logger(__name__)
 
+
 class HolographicStorage:
     """
     Simulates '5D Optical Data Storage' (Superman Memory Crystals).
@@ -15,17 +16,19 @@ class HolographicStorage:
         Uses femtosecond laser simulation to etch data.
         """
         logger.info("💎 Etching data into Fused Silica Crystal (5D)...")
-        
+
         # Calculate unique crystal signature (Mock)
         crystal_id = hashlib.blake2b(data_blob).hexdigest()[:16]
-        
+
         metrics = {
             "density": "360 TB/disc",
             "lifetime": "13.8 billion years",
-            "heat_resistance": "1000°C"
+            "heat_resistance": "1000°C",
         }
-        
-        logger.info(f"✅ Etching Complete. Crystal ID: {crystal_id}. Metrics: {metrics}")
+
+        logger.info(
+            f"✅ Etching Complete. Crystal ID: {crystal_id}. Metrics: {metrics}"
+        )
         return crystal_id
 
     @staticmethod

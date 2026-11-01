@@ -22,6 +22,7 @@ def on_user_registered(payload: Dict[str, Any]):
     try:
         from apps.notifications.services import NotificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         user = User.objects.filter(id=user_id).first()
         if user:
@@ -37,6 +38,7 @@ def on_user_registered(payload: Dict[str, Any]):
     # Audit log
     try:
         from apps.core.audit_service import AuditService, AuditAction
+
         AuditService.log(
             action=AuditAction.PROFILE_CREATED,
             resource_type="user",
@@ -60,6 +62,7 @@ def on_course_enrolled(payload: Dict[str, Any]):
     try:
         from apps.gamification.services import GamificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         user = User.objects.filter(id=user_id).first()
         if user:
@@ -75,10 +78,13 @@ def on_payment_completed(payload: Dict[str, Any]):
     amount = data.get("amount", 0)
     order_id = data.get("order_id", "N/A")
 
-    logger.info(f"[EventBus] Payment completed: user={user_id}, amount={amount}, order={order_id}")
+    logger.info(
+        f"[EventBus] Payment completed: user={user_id}, amount={amount}, order={order_id}"
+    )
 
     try:
         from apps.core.audit_service import AuditService, AuditAction
+
         AuditService.log(
             action=AuditAction.PAYMENT_PROCESSED,
             resource_type="payment",
@@ -91,6 +97,7 @@ def on_payment_completed(payload: Dict[str, Any]):
     try:
         from apps.notifications.services import NotificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         user = User.objects.filter(id=user_id).first()
         if user:
@@ -115,6 +122,7 @@ def on_lesson_completed(payload: Dict[str, Any]):
     try:
         from apps.gamification.services import GamificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         user = User.objects.filter(id=user_id).first()
         if user:
@@ -137,6 +145,7 @@ def on_threat_detected(payload: Dict[str, Any]):
 
     try:
         from apps.core.audit_service import AuditService, AuditAction, AuditSeverity
+
         AuditService.log(
             action=AuditAction.SUSPICIOUS_ACTIVITY,
             resource_type="security",
@@ -151,6 +160,7 @@ def on_threat_detected(payload: Dict[str, Any]):
     try:
         from apps.notifications.services import NotificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         for admin in User.objects.filter(is_staff=True):
             NotificationService.send_notification(
@@ -174,6 +184,7 @@ def on_system_alert(payload: Dict[str, Any]):
     try:
         from apps.notifications.services import NotificationService
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         for admin in User.objects.filter(is_staff=True)[:5]:  # Top 5 admins
             NotificationService.send_notification(

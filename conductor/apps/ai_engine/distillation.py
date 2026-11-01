@@ -38,14 +38,15 @@ class TeacherModel:
     """
     Large, accurate teacher model (mock).
     """
+
     def __init__(self, hidden_size: int = 512):
         self.hidden_size = hidden_size
-        
+
     def forward(self, x: List[float]) -> Tuple[List[float], List[float]]:
         """Returns (logits, hidden_features)."""
         # Mock teacher output
         logits = [sum(x) * 0.1, sum(x) * 0.2, sum(x) * 0.3]
-        features = [xi * 0.5 for xi in x[:self.hidden_size]]
+        features = [xi * 0.5 for xi in x[: self.hidden_size]]
         return logits, features
 
 
@@ -53,14 +54,18 @@ class StudentModel:
     """
     Smaller, faster student model.
     """
+
     def __init__(self, hidden_size: int = 64):
         self.hidden_size = hidden_size
         self.weights = [[0.01] * hidden_size for _ in range(3)]
-        
+
     def forward(self, x: List[float]) -> Tuple[List[float], List[float]]:
         """Returns (logits, hidden_features)."""
-        features = [xi * 0.3 for xi in x[:self.hidden_size]]
-        logits = [sum(w[i] * features[i] for i in range(min(len(w), len(features)))) for w in self.weights]
+        features = [xi * 0.3 for xi in x[: self.hidden_size]]
+        logits = [
+            sum(w[i] * features[i] for i in range(min(len(w), len(features))))
+            for w in self.weights
+        ]
         return logits, features
 
 
@@ -68,7 +73,14 @@ class DistillationTrainer:
     """
     Trains student to mimic teacher.
     """
-    def __init__(self, teacher: TeacherModel, student: StudentModel, temperature: float = 4.0, alpha: float = 0.7):
+
+    def __init__(
+        self,
+        teacher: TeacherModel,
+        student: StudentModel,
+        temperature: float = 4.0,
+        alpha: float = 0.7,
+    ):
         self.teacher = teacher
         self.student = student
         self.temperature = temperature
@@ -82,22 +94,31 @@ class DistillationTrainer:
         # Teacher forward (no gradients)
         teacher_logits, teacher_features = self.teacher.forward(x)
         teacher_soft = softmax(teacher_logits, self.temperature)
-        
+
         # Student forward
         student_logits, student_features = self.student.forward(x)
         student_soft = softmax(student_logits, self.temperature)
-        
+
         # Soft target loss (KL divergence)
-        soft_loss = kl_divergence(teacher_soft, student_soft) * (self.temperature ** 2)
-        
+        soft_loss = kl_divergence(teacher_soft, student_soft) * (self.temperature**2)
+
         # Hard target loss (cross-entropy)
-        hard_target = [1.0 if i == hard_label else 0.0 for i in range(len(student_logits))]
+        hard_target = [
+            1.0 if i == hard_label else 0.0 for i in range(len(student_logits))
+        ]
         hard_loss = cross_entropy(softmax(student_logits, 1.0), hard_target)
-        
+
         # Feature matching loss
-        feature_loss = sum((tf - sf) ** 2 for tf, sf in zip(teacher_features[:len(student_features)], student_features)) / len(student_features)
-        
-        total_loss = self.alpha * soft_loss + (1 - self.alpha) * hard_loss + 0.1 * feature_loss
+        feature_loss = sum(
+            (tf - sf) ** 2
+            for tf, sf in zip(
+                teacher_features[: len(student_features)], student_features
+            )
+        ) / len(student_features)
+
+        total_loss = (
+            self.alpha * soft_loss + (1 - self.alpha) * hard_loss + 0.1 * feature_loss
+        )
         return total_loss
 
     def train_step(self, x: List[float], label: int):

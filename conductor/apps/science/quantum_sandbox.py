@@ -27,14 +27,14 @@ class Qubit:
         """Collapse wave function."""
         prob_0 = abs(self.alpha) ** 2
         collapsed = 0 if random.random() < prob_0 else 1
-        
+
         if collapsed == 0:
-            self.alpha = 1+0j
-            self.beta = 0+0j
+            self.alpha = 1 + 0j
+            self.beta = 0 + 0j
         else:
-            self.alpha = 0+0j
-            self.beta = 1+0j
-            
+            self.alpha = 0 + 0j
+            self.beta = 1 + 0j
+
         return collapsed
 
 
@@ -42,11 +42,11 @@ class QuantumSandbox:
     """
     Simulates single-qubit and simple multi-qubit operations.
     """
-    
+
     @classmethod
     def create_qubit(cls) -> Qubit:
         """Initialize to |0>."""
-        return Qubit(1+0j, 0+0j)
+        return Qubit(1 + 0j, 0 + 0j)
 
     @classmethod
     def apply_hadamard(cls, qubit: Qubit):
@@ -57,7 +57,7 @@ class QuantumSandbox:
         inv_sqrt2 = 1 / math.sqrt(2)
         new_alpha = inv_sqrt2 * (qubit.alpha + qubit.beta)
         new_beta = inv_sqrt2 * (qubit.alpha - qubit.beta)
-        
+
         qubit.alpha = new_alpha
         qubit.beta = new_beta
 
@@ -75,22 +75,22 @@ class QuantumSandbox:
         This function simulates the statistical OUTCOME of a Bell pair measure loop.
         """
         # Simplified simulation of |Phi+> = (|00> + |11>) / sqrt(2)
-        
+
         results = {"00": 0, "01": 0, "10": 0, "11": 0}
         shots = 1000
-        
+
         for _ in range(shots):
             # In Bell state |Phi+>, measurements are correlated
             outcome = 0 if random.random() < 0.5 else 1
             measure_1 = outcome
-            measure_2 = outcome # Perfect correlation
-            
+            measure_2 = outcome  # Perfect correlation
+
             key = f"{measure_1}{measure_2}"
             results[key] += 1
-            
+
         return {
             "circuit": "H(q0) -> CNOT(q0, q1)",
             "shots": shots,
             "counts": results,
-            "success": results["01"] == 0 and results["10"] == 0 # Ideal
+            "success": results["01"] == 0 and results["10"] == 0,  # Ideal
         }

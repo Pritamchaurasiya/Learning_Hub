@@ -21,7 +21,7 @@ class TestFeedbackModel:
             category=Feedback.Category.GENERAL,
             status=Feedback.Status.OPEN,
         )
-        
+
         assert feedback.user == user
         assert feedback.subject == "Test Subject"
         assert feedback.status == Feedback.Status.OPEN
@@ -34,10 +34,10 @@ class TestFeedbackModel:
             message="Test",
             status=Feedback.Status.OPEN,
         )
-        
+
         feedback.status = Feedback.Status.RESOLVED
         feedback.save()
-        
+
         feedback.refresh_from_db()
         assert feedback.status == Feedback.Status.RESOLVED
 
@@ -51,7 +51,7 @@ class TestFeedbackModel:
             Feedback.Category.FEATURE,
             Feedback.Category.OTHER,
         ]
-        
+
         for i, category in enumerate(categories):
             feedback = Feedback.objects.create(
                 user=user,
@@ -70,7 +70,7 @@ class TestFeedbackModel:
             Feedback.Status.RESOLVED,
             Feedback.Status.CLOSED,
         ]
-        
+
         for i, fb_status in enumerate(statuses):
             feedback = Feedback.objects.create(
                 user=user,
@@ -88,7 +88,7 @@ class TestFeedbackModel:
             message="Test Message",
             category=Feedback.Category.BUG,
         )
-        
+
         result = str(feedback)
         assert "Test Subject" in result
         assert user.email in result
@@ -105,7 +105,7 @@ class TestFeedbackModel:
             subject="Second",
             message="Second feedback",
         )
-        
+
         feedbacks = list(Feedback.objects.filter(user=user))
         # Most recent should be first
         assert str(feedbacks[0].id) == str(f2.id)
@@ -117,11 +117,11 @@ class TestFeedbackModel:
             subject="Urgent",
             message="Critical issue",
         )
-        
+
         assert feedback.urgency_score == 1  # Default
-        
+
         feedback.urgency_score = 10
         feedback.save()
-        
+
         feedback.refresh_from_db()
         assert feedback.urgency_score == 10

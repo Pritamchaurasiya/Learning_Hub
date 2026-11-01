@@ -33,6 +33,7 @@ class CreateOrderSerializer(serializers.Serializer):
 
     def validate_course_id(self, value):
         from apps.courses.models import Course
+
         if not Course.objects.filter(id=value, is_published=True).exists():
             raise serializers.ValidationError("Course not found or not available.")
         return value
@@ -52,12 +53,16 @@ class VerifySubscriptionSerializer(serializers.Serializer):
     """
     Verify a subscription payment logic.
     """
+
     razorpay_payment_id = serializers.CharField(required=True)
     razorpay_order_id = serializers.CharField(required=True)
     razorpay_signature = serializers.CharField(required=True)
-    plan_type = serializers.CharField(required=False, default='pro')
+    plan_type = serializers.CharField(required=False, default="pro")
 
 
 class RefundSerializer(serializers.Serializer):
     """Serializer for refund requests."""
-    payment_id = serializers.UUIDField(required=True, help_text="ID of the completed payment to refund")
+
+    payment_id = serializers.UUIDField(
+        required=True, help_text="ID of the completed payment to refund"
+    )

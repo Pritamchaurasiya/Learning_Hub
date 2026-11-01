@@ -7,209 +7,284 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0005_remove_course_courses_slug_360be0_idx_and_more'),
-        ('payments', '0004_cart_cartitem'),
+        ("courses", "0005_remove_course_courses_slug_360be0_idx_and_more"),
+        ("payments", "0004_cart_cartitem"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='coupon',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Coupon', 'verbose_name_plural': 'Coupons'},
+            name="coupon",
+            options={
+                "ordering": ["-created_at"],
+                "verbose_name": "Coupon",
+                "verbose_name_plural": "Coupons",
+            },
         ),
         migrations.AlterModelOptions(
-            name='payment',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Payment', 'verbose_name_plural': 'Payments'},
+            name="payment",
+            options={
+                "ordering": ["-created_at"],
+                "verbose_name": "Payment",
+                "verbose_name_plural": "Payments",
+            },
         ),
         migrations.RemoveIndex(
-            model_name='payment',
-            name='payments_pa_status_343680_idx',
+            model_name="payment",
+            name="payments_pa_status_343680_idx",
         ),
         migrations.RenameIndex(
-            model_name='payment',
-            new_name='idx_payment_gateway_id',
-            old_name='payments_pa_gateway_9ebf66_idx',
+            model_name="payment",
+            new_name="idx_payment_gateway_id",
+            old_name="payments_pa_gateway_9ebf66_idx",
         ),
         migrations.AddField(
-            model_name='coupon',
-            name='discount_amount',
-            field=models.DecimalField(blank=True, decimal_places=2, help_text='Fixed amount discount (alternative to percentage)', max_digits=10, null=True),
+            model_name="coupon",
+            name="discount_amount",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                help_text="Fixed amount discount (alternative to percentage)",
+                max_digits=10,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='coupon',
-            name='minimum_order_value',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
+            model_name="coupon",
+            name="minimum_order_value",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=10, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='failed_at',
+            model_name="payment",
+            name="failed_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='gateway_signature',
+            model_name="payment",
+            name="gateway_signature",
             field=models.CharField(blank=True, max_length=256),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='ip_address',
+            model_name="payment",
+            name="ip_address",
             field=models.GenericIPAddressField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='metadata',
+            model_name="payment",
+            name="metadata",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='original_amount',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
+            model_name="payment",
+            name="original_amount",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=10, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='refunded_at',
+            model_name="payment",
+            name="refunded_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='user_agent',
+            model_name="payment",
+            name="user_agent",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='code',
+            model_name="coupon",
+            name="code",
             field=models.CharField(db_index=True, max_length=50, unique=True),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='discount_percent',
+            model_name="coupon",
+            name="discount_percent",
             field=models.DecimalField(db_index=True, decimal_places=2, max_digits=5),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='is_active',
+            model_name="coupon",
+            name="is_active",
             field=models.BooleanField(db_index=True, default=True),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='used_count',
+            model_name="coupon",
+            name="used_count",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='valid_from',
+            model_name="coupon",
+            name="valid_from",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='coupon',
-            name='valid_until',
+            model_name="coupon",
+            name="valid_until",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='amount',
+            model_name="payment",
+            name="amount",
             field=models.DecimalField(db_index=True, decimal_places=2, max_digits=10),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='completed_at',
+            model_name="payment",
+            name="completed_at",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='currency',
-            field=models.CharField(db_index=True, default='INR', max_length=10),
+            model_name="payment",
+            name="currency",
+            field=models.CharField(db_index=True, default="INR", max_length=10),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='gateway',
+            model_name="payment",
+            name="gateway",
             field=models.CharField(db_index=True, max_length=50),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='gateway_order_id',
+            model_name="payment",
+            name="gateway_order_id",
             field=models.CharField(blank=True, db_index=True, max_length=100),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='gateway_payment_id',
+            model_name="payment",
+            name="gateway_payment_id",
             field=models.CharField(blank=True, db_index=True, max_length=100),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed'), ('refunded', 'Refunded'), ('cancelled', 'Cancelled')], db_index=True, default='pending', max_length=20),
+            model_name="payment",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Pending"),
+                    ("completed", "Completed"),
+                    ("failed", "Failed"),
+                    ("refunded", "Refunded"),
+                    ("cancelled", "Cancelled"),
+                ],
+                db_index=True,
+                default="pending",
+                max_length=20,
+            ),
         ),
         migrations.AddIndex(
-            model_name='coupon',
-            index=models.Index(fields=['code', 'is_active'], name='idx_coupon_code_active'),
+            model_name="coupon",
+            index=models.Index(
+                fields=["code", "is_active"], name="idx_coupon_code_active"
+            ),
         ),
         migrations.AddIndex(
-            model_name='coupon',
-            index=models.Index(fields=['is_active', 'valid_until'], name='idx_coupon_active_valid'),
+            model_name="coupon",
+            index=models.Index(
+                fields=["is_active", "valid_until"], name="idx_coupon_active_valid"
+            ),
         ),
         migrations.AddIndex(
-            model_name='coupon',
-            index=models.Index(fields=['-used_count'], name='idx_coupon_popular'),
+            model_name="coupon",
+            index=models.Index(fields=["-used_count"], name="idx_coupon_popular"),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['status', '-created_at'], name='idx_payment_status_created'),
+            model_name="payment",
+            index=models.Index(
+                fields=["status", "-created_at"], name="idx_payment_status_created"
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['user', '-created_at'], name='idx_payment_user_created'),
+            model_name="payment",
+            index=models.Index(
+                fields=["user", "-created_at"], name="idx_payment_user_created"
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['course', 'status'], name='idx_payment_course_status'),
+            model_name="payment",
+            index=models.Index(
+                fields=["course", "status"], name="idx_payment_course_status"
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['user', 'status'], name='idx_payment_user_status'),
+            model_name="payment",
+            index=models.Index(
+                fields=["user", "status"], name="idx_payment_user_status"
+            ),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['-completed_at'], name='idx_payment_completed'),
+            model_name="payment",
+            index=models.Index(fields=["-completed_at"], name="idx_payment_completed"),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['gateway', 'status'], name='idx_payment_gateway_status'),
+            model_name="payment",
+            index=models.Index(
+                fields=["gateway", "status"], name="idx_payment_gateway_status"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='coupon',
-            constraint=models.CheckConstraint(check=models.Q(('discount_percent__gte', 0), ('discount_percent__lte', 100)), name='coupon_discount_percent_range'),
+            model_name="coupon",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("discount_percent__gte", 0), ("discount_percent__lte", 100)
+                ),
+                name="coupon_discount_percent_range",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='coupon',
-            constraint=models.CheckConstraint(check=models.Q(('discount_amount__isnull', True), ('discount_amount__gte', 0), _connector='OR'), name='coupon_discount_amount_non_negative'),
+            model_name="coupon",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("discount_amount__isnull", True),
+                    ("discount_amount__gte", 0),
+                    _connector="OR",
+                ),
+                name="coupon_discount_amount_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='coupon',
-            constraint=models.CheckConstraint(check=models.Q(('used_count__gte', 0)), name='coupon_used_count_non_negative'),
+            model_name="coupon",
+            constraint=models.CheckConstraint(
+                check=models.Q(("used_count__gte", 0)),
+                name="coupon_used_count_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='coupon',
-            constraint=models.CheckConstraint(check=models.Q(('max_uses__isnull', True), ('max_uses__gte', 0), _connector='OR'), name='coupon_max_uses_non_negative'),
+            model_name="coupon",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("max_uses__isnull", True), ("max_uses__gte", 0), _connector="OR"
+                ),
+                name="coupon_max_uses_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='payment',
-            constraint=models.CheckConstraint(check=models.Q(('amount__gte', 0)), name='payment_amount_non_negative'),
+            model_name="payment",
+            constraint=models.CheckConstraint(
+                check=models.Q(("amount__gte", 0)), name="payment_amount_non_negative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='payment',
-            constraint=models.CheckConstraint(check=models.Q(('discount_amount__gte', 0)), name='payment_discount_non_negative'),
+            model_name="payment",
+            constraint=models.CheckConstraint(
+                check=models.Q(("discount_amount__gte", 0)),
+                name="payment_discount_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='payment',
-            constraint=models.CheckConstraint(check=models.Q(('original_amount__isnull', True), ('original_amount__gte', 0), _connector='OR'), name='payment_original_amount_non_negative'),
+            model_name="payment",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("original_amount__isnull", True),
+                    ("original_amount__gte", 0),
+                    _connector="OR",
+                ),
+                name="payment_original_amount_non_negative",
+            ),
         ),
         migrations.AlterModelTable(
-            name='coupon',
-            table='payment_coupons',
+            name="coupon",
+            table="payment_coupons",
         ),
         migrations.AlterModelTable(
-            name='payment',
-            table='payments',
+            name="payment",
+            table="payments",
         ),
     ]

@@ -16,6 +16,7 @@ if "django.utils.itercompat" not in sys.modules:
         sys.modules["django.utils.itercompat"] = itercompat
         try:
             import django.utils
+
             django.utils.itercompat = itercompat
         except Exception:
             pass
@@ -41,8 +42,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     if os.getenv("DEBUG", "False").lower() != "true":
         raise ValueError(
-            "SECRET_KEY environment variable must be set in production for security. " +
-            "Please set SECRET_KEY in your environment."
+            "SECRET_KEY environment variable must be set in production for security. "
+            + "Please set SECRET_KEY in your environment."
         )
     # Dev/test only - generate a unique insecure key so multiple dev instances don't conflict
     SECRET_KEY = "django-insecure-dev-" + str(uuid.uuid4())
@@ -55,8 +56,8 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").spl
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
 if not ALLOWED_HOSTS and not DEBUG:
     raise ValueError(
-        "ALLOWED_HOSTS must be configured in production. " +
-        "Please set ALLOWED_HOSTS in your environment (comma-separated)."
+        "ALLOWED_HOSTS must be configured in production. "
+        + "Please set ALLOWED_HOSTS in your environment (comma-separated)."
     )
 
 # SECURITY: Enforce HTTPS in production via SECURE_SSL_REDIRECT
@@ -68,7 +69,7 @@ if not ALLOWED_HOSTS and not DEBUG:
 
 # SECURITY: Proxy header for SSL offloading (if behind load balancer/proxy)
 if os.getenv("USE_X_FORWARDED_PROTO", "False").lower() == "true":
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 DJANGO_APPS = [
@@ -94,15 +95,15 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "csp",
     "pgvector",  # Vector Search
-    "axes",      # Brute Force Protection
+    "axes",  # Brute Force Protection
 ]
 
 LOCAL_APPS = [
     # Core production apps
     "apps.users",
     "apps.courses",
-    "apps.exams",           # NEW: Exam taxonomy (Country → Exam → Subject → Topic)
-    "apps.test_engine",     # NEW: Robust test engine with AI generation
+    "apps.exams",  # NEW: Exam taxonomy (Country → Exam → Subject → Topic)
+    "apps.test_engine",  # NEW: Robust test engine with AI generation
     "apps.notifications",
     "apps.gamification",
     "apps.payments",
@@ -117,11 +118,11 @@ LOCAL_APPS = [
     "apps.live_sessions",
     "apps.search",
     "apps.analytics",
-    "apps.analytics_v2",     # NEW: Advanced analytics & performance tracking
-    "apps.subscriptions",    # NEW: Monetization, subscriptions, usage limits
+    "apps.analytics_v2",  # NEW: Advanced analytics & performance tracking
+    "apps.subscriptions",  # NEW: Monetization, subscriptions, usage limits
     "apps.quiz",
-    "apps.monitoring",       # System health & telemetry monitoring
-    "apps.ebooks",           # Digital library & interactive ebooks
+    "apps.monitoring",  # System health & telemetry monitoring
+    "apps.ebooks",  # Digital library & interactive ebooks
     # Archived apps (disabled to reduce startup time & attack surface):
     # "apps.web3",
     # "apps.metaverse",
@@ -169,6 +170,7 @@ MIDDLEWARE = [
 if DEBUG:
     try:
         import silk  # noqa: F401
+
         INSTALLED_APPS += ["silk"]
         MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
         SILKY_PYTHON_PROFILER = True
@@ -369,7 +371,7 @@ SPECTACULAR_SETTINGS = {
             "scheme": "bearer",
             "bearerFormat": "JWT",
         }
-    }
+    },
 }
 
 # Email
@@ -454,7 +456,9 @@ CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit (raises exception
 CELERY_TASK_ACKS_LATE = True  # Ensure tasks aren't lost if worker crashes
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # One task at a time for long-running tasks
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 100  # Restart worker after 100 tasks (prevent memory leaks)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    100  # Restart worker after 100 tasks (prevent memory leaks)
+)
 
 # Result Backend Settings
 CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
@@ -471,21 +475,21 @@ CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
 CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 1 minute delay between retries
 CELERY_TASK_MAX_RETRIES = 3
 CELERY_TASK_ANNOTATIONS = {
-    '*': {
-        'rate_limit': '100/m',  # Max 100 tasks per minute per task type
-        'time_limit': 1800,  # 30 minutes
-        'soft_time_limit': 1500,  # 25 minutes
+    "*": {
+        "rate_limit": "100/m",  # Max 100 tasks per minute per task type
+        "time_limit": 1800,  # 30 minutes
+        "soft_time_limit": 1500,  # 25 minutes
     },
-    'apps.ai_engine.tasks.*': {
-        'rate_limit': '20/m',  # AI tasks are more resource-intensive
-        'time_limit': 600,  # 10 minutes
-        'soft_time_limit': 540,  # 9 minutes
+    "apps.ai_engine.tasks.*": {
+        "rate_limit": "20/m",  # AI tasks are more resource-intensive
+        "time_limit": 600,  # 10 minutes
+        "soft_time_limit": 540,  # 9 minutes
     },
-    'apps.payments.tasks.*': {
-        'rate_limit': '50/m',  # Payment tasks need higher availability
-        'time_limit': 300,  # 5 minutes
-        'acks_late': True,  # Critical - don't lose payment tasks
-        'reject_on_worker_lost': True,
+    "apps.payments.tasks.*": {
+        "rate_limit": "50/m",  # Payment tasks need higher availability
+        "time_limit": 300,  # 5 minutes
+        "acks_late": True,  # Critical - don't lose payment tasks
+        "reject_on_worker_lost": True,
     },
 }
 
@@ -495,13 +499,18 @@ CELERY_TASK_QUEUES = {
     "ai_queue": {"exchange": "ai_queue", "routing_key": "ai_queue"},
     "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
     "payment_queue": {"exchange": "payment_queue", "routing_key": "payment_queue"},
-    "notifications_queue": {"exchange": "notifications_queue", "routing_key": "notifications_queue"},
+    "notifications_queue": {
+        "exchange": "notifications_queue",
+        "routing_key": "notifications_queue",
+    },
 }
 
 CELERY_TASK_ROUTES = {
     "apps.ai_engine.tasks.*": {"queue": "ai_queue"},
     "apps.ai_engine.*": {"queue": "ai_queue"},
-    "apps.payments.tasks.*": {"queue": "payment_queue"},  # Separate queue for critical payments
+    "apps.payments.tasks.*": {
+        "queue": "payment_queue"
+    },  # Separate queue for critical payments
     "apps.core.background_tasks.*": {"queue": "default"},
     "apps.notifications.tasks.*": {"queue": "notifications_queue"},
     "*": {"queue": "default"},
@@ -509,10 +518,10 @@ CELERY_TASK_ROUTES = {
 
 # Logging Configuration for Celery
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Don't override Django logging
-CELERY_WORKER_LOG_FORMAT = '[%(asctime)s: %(levelname)s/%(processName)s] %(message)s'
+CELERY_WORKER_LOG_FORMAT = "[%(asctime)s: %(levelname)s/%(processName)s] %(message)s"
 CELERY_WORKER_TASK_LOG_FORMAT = (
-    '[%(asctime)s: %(levelname)s/%(processName)s] '
-    '[%(task_name)s(%(task_id)s)] %(message)s'
+    "[%(asctime)s: %(levelname)s/%(processName)s] "
+    "[%(task_name)s(%(task_id)s)] %(message)s"
 )
 
 # Monitoring & Events
@@ -535,7 +544,7 @@ CACHES = {
             "CONNECTION_POOL_KWARGS": {
                 "max_connections": 100,
                 "retry_on_timeout": True,
-            }
+            },
         },
         "KEY_PREFIX": "learning_hub",
     }
@@ -600,8 +609,12 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 # Firebase Cloud Messaging (FCM) Configuration
 # Set FCM_CREDENTIALS as a dict in settings, or set FCM_CREDENTIALS_PATH to a JSON file path
-FCM_CREDENTIALS = os.getenv('FCM_CREDENTIALS', None)  # Can be set as JSON string or dict
-FCM_CREDENTIALS_PATH = os.getenv('FCM_CREDENTIALS_PATH', None)  # Path to firebase-admin-sdk json file
+FCM_CREDENTIALS = os.getenv(
+    "FCM_CREDENTIALS", None
+)  # Can be set as JSON string or dict
+FCM_CREDENTIALS_PATH = os.getenv(
+    "FCM_CREDENTIALS_PATH", None
+)  # Path to firebase-admin-sdk json file
 
 # ==============================================================================
 # SECURITY HARDENING 🛡️
@@ -614,11 +627,29 @@ CONTENT_SECURITY_POLICY = {
         "default-src": ("'self'",),
         "base-uri": ("'self'",),
         "object-src": ("'none'",),
-        "font-src": ("'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"),
+        "font-src": (
+            "'self'",
+            "https://fonts.gstatic.com",
+            "https://cdnjs.cloudflare.com",
+        ),
         "frame-ancestors": ("'none'",),
-        "img-src": ("'self'", "data:", "https://images.unsplash.com", "https://*.unsplash.com"),
-        "style-src": ("'self'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"),
-        "script-src": ("'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdnjs.cloudflare.com"),
+        "img-src": (
+            "'self'",
+            "data:",
+            "https://images.unsplash.com",
+            "https://*.unsplash.com",
+        ),
+        "style-src": (
+            "'self'",
+            "https://fonts.googleapis.com",
+            "https://cdnjs.cloudflare.com",
+        ),
+        "script-src": (
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://unpkg.com",
+            "https://cdnjs.cloudflare.com",
+        ),
         "connect-src": ("'self'",),
         "manifest-src": ("'self'",),
     }
@@ -631,19 +662,19 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # SECURITY: Referrer policy
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 # SECURITY: Cross-Origin Opener Policy
-SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
 
 # Browser Protections
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # Request size limits
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB max upload
@@ -662,24 +693,44 @@ OTEL_JAEGER_HOST = os.getenv("OTEL_JAEGER_HOST", "localhost")
 OTEL_JAEGER_PORT = int(os.getenv("OTEL_JAEGER_PORT", "6831"))
 OTEL_OTLP_ENDPOINT = os.getenv("OTEL_OTLP_ENDPOINT", None)
 OTEL_SAMPLE_RATE = float(os.getenv("OTEL_SAMPLE_RATE", "0.1"))
-OTEL_EXPORTER_JAEGER = os.getenv("OTEL_EXPORTER_JAEGER", "true").lower() in ("true", "1", "yes")
-OTEL_EXPORTER_OTLP = os.getenv("OTEL_EXPORTER_OTLP", "false").lower() in ("true", "1", "yes")
-OTEL_EXPORTER_CONSOLE = os.getenv("OTEL_EXPORTER_CONSOLE", "false").lower() in ("true", "1", "yes")
+OTEL_EXPORTER_JAEGER = os.getenv("OTEL_EXPORTER_JAEGER", "true").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+OTEL_EXPORTER_OTLP = os.getenv("OTEL_EXPORTER_OTLP", "false").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+OTEL_EXPORTER_CONSOLE = os.getenv("OTEL_EXPORTER_CONSOLE", "false").lower() in (
+    "true",
+    "1",
+    "yes",
+)
 
 # Sentry Configuration
 SENTRY_ENABLED = os.getenv("SENTRY_ENABLED", "true").lower() in ("true", "1", "yes")
 SENTRY_DSN = os.getenv("SENTRY_DSN", None)
-SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", os.getenv("ENVIRONMENT", "development"))
+SENTRY_ENVIRONMENT = os.getenv(
+    "SENTRY_ENVIRONMENT", os.getenv("ENVIRONMENT", "development")
+)
 SENTRY_RELEASE = os.getenv("SENTRY_RELEASE", os.getenv("VERSION", "1.0.0"))
 SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
 SENTRY_PROFILES_SAMPLE_RATE = float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1"))
 SENTRY_SEND_PII = os.getenv("SENTRY_SEND_PII", "false").lower() in ("true", "1", "yes")
 SENTRY_DEBUG = os.getenv("SENTRY_DEBUG", "false").lower() in ("true", "1", "yes")
-SENTRY_ENABLE_TRACING = os.getenv("SENTRY_ENABLE_TRACING", "true").lower() in ("true", "1", "yes")
+SENTRY_ENABLE_TRACING = os.getenv("SENTRY_ENABLE_TRACING", "true").lower() in (
+    "true",
+    "1",
+    "yes",
+)
 
 # ==============================================================================
 # FEATURE FLAGS 🚀
 # ==============================================================================
-FEATURE_COUNTRY_FILTER = os.getenv("FEATURE_COUNTRY_FILTER", "true").lower() in ("true", "1", "yes")
-
-
+FEATURE_COUNTRY_FILTER = os.getenv("FEATURE_COUNTRY_FILTER", "true").lower() in (
+    "true",
+    "1",
+    "yes",
+)

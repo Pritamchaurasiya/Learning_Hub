@@ -164,12 +164,12 @@ def generate_certificate(self, enrollment_id):
 
         # Create basic certificate
         width, height = 1200, 800
-        image = Image.new('RGB', (width, height), 'white')
+        image = Image.new("RGB", (width, height), "white")
         draw = ImageDraw.Draw(image)
-        
+
         # Simple styling
-        draw.rectangle([20, 20, width-20, height-20], outline="#7C3AED", width=10)
-        
+        draw.rectangle([20, 20, width - 20, height - 20], outline="#7C3AED", width=10)
+
         # Add Text (Fallbacks for fonts)
         try:
             title_font = ImageFont.truetype("arial.ttf", 60)
@@ -178,15 +178,39 @@ def generate_certificate(self, enrollment_id):
             title_font = ImageFont.load_default()
             text_font = ImageFont.load_default()
 
-        draw.text((width/2, 200), "Certificate of Completion", font=title_font, fill="black", anchor="mm")
-        draw.text((width/2, 350), f"Proudly presented to", font=text_font, fill="gray", anchor="mm")
-        draw.text((width/2, 450), enrollment.user.display_name, font=title_font, fill="#7C3AED", anchor="mm")
-        draw.text((width/2, 600), f"For completing: {enrollment.course.title}", font=text_font, fill="black", anchor="mm")
-        
+        draw.text(
+            (width / 2, 200),
+            "Certificate of Completion",
+            font=title_font,
+            fill="black",
+            anchor="mm",
+        )
+        draw.text(
+            (width / 2, 350),
+            f"Proudly presented to",
+            font=text_font,
+            fill="gray",
+            anchor="mm",
+        )
+        draw.text(
+            (width / 2, 450),
+            enrollment.user.display_name,
+            font=title_font,
+            fill="#7C3AED",
+            anchor="mm",
+        )
+        draw.text(
+            (width / 2, 600),
+            f"For completing: {enrollment.course.title}",
+            font=text_font,
+            fill="black",
+            anchor="mm",
+        )
+
         # Save to buffer
         buffer = io.BytesIO()
-        image.save(buffer, format='PNG')
-        
+        image.save(buffer, format="PNG")
+
         # Attach to email
         email = EmailMessage(
             subject=f"Congratulations! You completed {enrollment.course.title}",
@@ -203,7 +227,7 @@ The Learning Hub Team
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[enrollment.user.email],
         )
-        email.attach(f'certificate_{enrollment.id}.png', buffer.getvalue(), 'image/png')
+        email.attach(f"certificate_{enrollment.id}.png", buffer.getvalue(), "image/png")
         email.send()
 
         return f"Certificate generated and sent to {enrollment.user.email}"

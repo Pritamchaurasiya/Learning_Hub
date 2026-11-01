@@ -36,7 +36,11 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = FeedbackSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
     filterset_fields = ["category", "status"]
     search_fields = ["subject", "message"]
     ordering_fields = ["created_at", "category"]
@@ -51,11 +55,12 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Save ticket immediately so the user doesn't wait
         ticket = serializer.save(user=self.request.user)
-        
+
         # Fire off an asynchronous Celery task to perform AI Triage on the exact text.
         # This will calculate urgency, assign a status, and draft an AI response,
         # moving the ticket through its State Machine automatically.
         from apps.support.tasks import auto_triage_support_ticket
+
         auto_triage_support_ticket.delay(ticket.id)
 
     @extend_schema(description="Mark a ticket as resolved with an admin response.")
@@ -64,7 +69,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         """Admin resolves a ticket with optional response text."""
         ticket = self.get_object()
 
-        if ticket.status in ['resolved', 'closed']:
+        if ticket.status in ["resolved", "closed"]:
             return Response(
                 {"status": "error", "message": f"Already {ticket.status}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -75,11 +80,13 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         ticket.admin_response = admin_response
         ticket.save(update_fields=["status", "admin_response", "updated_at"])
 
-        return Response({
-            "status": "success",
-            "message": "Ticket resolved",
-            "data": FeedbackSerializer(ticket).data,
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": "Ticket resolved",
+                "data": FeedbackSerializer(ticket).data,
+            }
+        )
 
     @extend_schema(description="Get support ticket statistics (staff only).")
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAdminUser])
@@ -92,45 +99,51 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         # Single aggregate query instead of 5 separate counts
         agg = qs.aggregate(
             total=Count("id"),
-            open_count=Count("id", filter=Q(status='open')),
-            in_progress_count=Count("id", filter=Q(status='in_progress')),
-            resolved_count=Count("id", filter=Q(status__in=['resolved', 'closed'])),
-            critical_count=Count("id", filter=Q(urgency_score__gte=8, status__in=['open', 'in_progress'])),
+            open_count=Count("id", filter=Q(status="open")),
+            in_progress_count=Count("id", filter=Q(status="in_progress")),
+            resolved_count=Count("id", filter=Q(status__in=["resolved", "closed"])),
+            critical_count=Count(
+                "id", filter=Q(urgency_score__gte=8, status__in=["open", "in_progress"])
+            ),
         )
 
         by_category = list(
-            qs.values("category")
-            .annotate(count=Count("id"))
-            .order_by("-count")
+            qs.values("category").annotate(count=Count("id")).order_by("-count")
         )
 
-        return Response({
-            "status": "success",
-            "data": {
-                "total": agg["total"],
-                "open": agg["open_count"],
-                "in_progress": agg["in_progress_count"],
-                "resolved": agg["resolved_count"],
-                "critical_backlog": agg["critical_count"],
-                "by_category": by_category,
-            },
-        })
+        return Response(
+            {
+                "status": "success",
+                "data": {
+                    "total": agg["total"],
+                    "open": agg["open_count"],
+                    "in_progress": agg["in_progress_count"],
+                    "resolved": agg["resolved_count"],
+                    "critical_backlog": agg["critical_count"],
+                    "by_category": by_category,
+                },
+            }
+        )
 
     def list(self, request, *args, **kwargs):
         """Override list to wrap in standard response format."""
         response = super().list(request, *args, **kwargs)
-        return Response({
-            "status": "success",
-            "data": response.data,
-        })
+        return Response(
+            {
+                "status": "success",
+                "data": response.data,
+            }
+        )
 
     def retrieve(self, request, *args, **kwargs):
         """Override retrieve to wrap in standard response format."""
         response = super().retrieve(request, *args, **kwargs)
-        return Response({
-            "status": "success",
-            "data": response.data,
-        })
+        return Response(
+            {
+                "status": "success",
+                "data": response.data,
+            }
+        )
 
     def create(self, request, *args, **kwargs):
         """Override create for consistent response format."""

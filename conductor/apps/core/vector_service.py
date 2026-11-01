@@ -1,4 +1,3 @@
-
 import os
 import logging
 from typing import List
@@ -8,11 +7,13 @@ from google.genai import types
 
 logger = logging.getLogger(__name__)
 
+
 class VectorService:
     """
     Service for Vector Embeddings and Semantic Search.
     Uses Google Gemini 'text-embedding-004' model.
     """
+
     _client = None
 
     @classmethod
@@ -22,7 +23,9 @@ class VectorService:
             if api_key:
                 cls._client = genai.Client(api_key=api_key)
             else:
-                logger.warning("GEMINI_API_KEY is missing from environment; vector generation unavailable.")
+                logger.warning(
+                    "GEMINI_API_KEY is missing from environment; vector generation unavailable."
+                )
         return cls._client
 
     @classmethod
@@ -32,7 +35,7 @@ class VectorService:
         """
         if not text:
             return []
-            
+
         try:
             client = cls._get_client()
             response = client.models.embed_content(
@@ -57,17 +60,21 @@ class VectorService:
         # 1. Attempt database-level pgvector indexing if available
         try:
             from pgvector.django import L2Distance
-            return list(model_class.objects.order_by(
-                L2Distance('embedding', embedding)
-            )[:limit])
+
+            return list(
+                model_class.objects.order_by(L2Distance("embedding", embedding))[:limit]
+            )
         except Exception as db_err:
-            logger.debug(f"pgvector query skipped/failed ({db_err}), falling back to in-memory cosine distance.")
+            logger.debug(
+                f"pgvector query skipped/failed ({db_err}), falling back to in-memory cosine distance."
+            )
 
         # 2. In-memory cosine similarity fallback
         try:
             import math
+
             records = list(model_class.objects.exclude(embedding__isnull=True)[:100])
-            
+
             def cosine_similarity(v1: List[float], v2: List[float]) -> float:
                 if not v1 or not v2 or len(v1) != len(v2):
                     return 0.0
@@ -90,4 +97,3 @@ class VectorService:
         except Exception as fallback_err:
             logger.error(f"In-memory vector fallback error: {fallback_err}")
             return list(model_class.objects.all()[:limit])
-

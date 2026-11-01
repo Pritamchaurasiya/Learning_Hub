@@ -1,4 +1,3 @@
-
 import logging
 import json
 import datetime
@@ -9,6 +8,7 @@ from .models import LearningSchedule
 from apps.courses.models import Enrollment
 
 logger = logging.getLogger(__name__)
+
 
 class StudyPlanAgent:
     """
@@ -22,9 +22,9 @@ class StudyPlanAgent:
         Generates a 7-day study plan based on enrolled courses and user goals.
         """
         # 1. Gather Context
-        enrollments = Enrollment.objects.filter(user=user).select_related('course')
+        enrollments = Enrollment.objects.filter(user=user).select_related("course")
         active_courses = [e.course.title for e in enrollments]
-        
+
         if not active_courses:
             return {"error": "No active courses found. Enroll in a course first."}
 
@@ -48,34 +48,34 @@ class StudyPlanAgent:
             }}
         }}
         """
-        
+
         # 3. Invoke LLM
         try:
             response_text = AIClient.generate_content(prompt)
             # Simple cleanup if the model adds markdown code blocks
-            clean_json = response_text.replace('```json', '').replace('```', '').strip()
+            clean_json = response_text.replace("```json", "").replace("```", "").strip()
             plan_data = json.loads(clean_json)
-            
+
             # 4. Persistence
             today = timezone.localdate()
             start_of_week = today - datetime.timedelta(days=today.weekday())
-            
+
             schedule, created = LearningSchedule.objects.update_or_create(
                 user=user,
                 week_start_date=start_of_week,
                 defaults={
-                    'days_json': plan_data.get('schedule', {}),
-                    'goal': plan_data.get('goal_summary', 'Stay Consistent'),
-                    'is_active': True
-                }
+                    "days_json": plan_data.get("schedule", {}),
+                    "goal": plan_data.get("goal_summary", "Stay Consistent"),
+                    "is_active": True,
+                },
             )
-            
+
             return {
                 "schedule_id": schedule.id,
                 "week_start": start_of_week,
-                "plan": plan_data
+                "plan": plan_data,
             }
-            
+
         except Exception as e:
             logger.error(f"StudyPlanAgent failed: {e}")
             return {"error": "Failed to generate plan. AI unavailable."}

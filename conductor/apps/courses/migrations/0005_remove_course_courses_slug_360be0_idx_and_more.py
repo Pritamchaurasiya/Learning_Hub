@@ -8,142 +8,195 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0004_coursenote_courseresource_certificate_idx_cert_user_and_more'),
+        (
+            "courses",
+            "0004_coursenote_courseresource_certificate_idx_cert_user_and_more",
+        ),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='course',
-            name='courses_slug_360be0_idx',
+            model_name="course",
+            name="courses_slug_360be0_idx",
         ),
         migrations.RemoveIndex(
-            model_name='course',
-            name='courses_is_publ_de2716_idx',
+            model_name="course",
+            name="courses_is_publ_de2716_idx",
         ),
         migrations.RemoveIndex(
-            model_name='course',
-            name='courses_is_publ_0892ff_idx',
+            model_name="course",
+            name="courses_is_publ_0892ff_idx",
         ),
         migrations.RenameIndex(
-            model_name='course',
-            new_name='idx_course_cat_pub',
-            old_name='courses_categor_9b36bb_idx',
+            model_name="course",
+            new_name="idx_course_cat_pub",
+            old_name="courses_categor_9b36bb_idx",
         ),
         migrations.RenameIndex(
-            model_name='course',
-            new_name='idx_course_popular',
-            old_name='courses_enrollm_45ab31_idx',
+            model_name="course",
+            new_name="idx_course_popular",
+            old_name="courses_enrollm_45ab31_idx",
         ),
         migrations.RenameIndex(
-            model_name='course',
-            new_name='idx_course_instructor',
-            old_name='courses_instruc_77fba4_idx',
+            model_name="course",
+            new_name="idx_course_instructor",
+            old_name="courses_instruc_77fba4_idx",
         ),
         migrations.RenameIndex(
-            model_name='enrollment',
-            new_name='idx_enroll_completed',
-            old_name='enrollments_complet_ddc915_idx',
+            model_name="enrollment",
+            new_name="idx_enroll_completed",
+            old_name="enrollments_complet_ddc915_idx",
         ),
         migrations.RenameIndex(
-            model_name='enrollment',
-            new_name='idx_enroll_created',
-            old_name='enrollments_created_52c4b2_idx',
+            model_name="enrollment",
+            new_name="idx_enroll_created",
+            old_name="enrollments_created_52c4b2_idx",
         ),
         migrations.AddField(
-            model_name='course',
-            name='discount_price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
+            model_name="course",
+            name="discount_price",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=10, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='enrollment',
-            name='completed_lessons_count',
+            model_name="enrollment",
+            name="completed_lessons_count",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='enrollment',
-            name='first_accessed_at',
-            field=models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True),
+            model_name="enrollment",
+            name="first_accessed_at",
+            field=models.DateTimeField(
+                blank=True, default=django.utils.timezone.now, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='is_free',
+            model_name="course",
+            name="is_free",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='price',
-            field=models.DecimalField(db_index=True, decimal_places=2, default=0, max_digits=10),
+            model_name="course",
+            name="price",
+            field=models.DecimalField(
+                db_index=True, decimal_places=2, default=0, max_digits=10
+            ),
         ),
         migrations.AlterField(
-            model_name='enrollment',
-            name='completed_at',
+            model_name="enrollment",
+            name="completed_at",
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='enrollment',
-            name='last_accessed_at',
+            model_name="enrollment",
+            name="last_accessed_at",
             field=models.DateTimeField(auto_now=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='enrollment',
-            name='progress_percentage',
+            model_name="enrollment",
+            name="progress_percentage",
             field=models.PositiveIntegerField(db_index=True, default=0),
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['is_published', '-avg_rating'], name='idx_course_pub_rating'),
+            model_name="course",
+            index=models.Index(
+                fields=["is_published", "-avg_rating"], name="idx_course_pub_rating"
+            ),
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['is_published', '-created_at'], name='idx_course_pub_recent'),
+            model_name="course",
+            index=models.Index(
+                fields=["is_published", "-created_at"], name="idx_course_pub_recent"
+            ),
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['is_free', 'is_published'], name='idx_course_free_pub'),
+            model_name="course",
+            index=models.Index(
+                fields=["is_free", "is_published"], name="idx_course_free_pub"
+            ),
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['price', 'is_published'], name='idx_course_price_pub'),
+            model_name="course",
+            index=models.Index(
+                fields=["price", "is_published"], name="idx_course_price_pub"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enrollment',
-            index=models.Index(fields=['user', '-last_accessed_at'], name='idx_enroll_user_recent'),
+            model_name="enrollment",
+            index=models.Index(
+                fields=["user", "-last_accessed_at"], name="idx_enroll_user_recent"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enrollment',
-            index=models.Index(fields=['course', '-created_at'], name='idx_enroll_course_recent'),
+            model_name="enrollment",
+            index=models.Index(
+                fields=["course", "-created_at"], name="idx_enroll_course_recent"
+            ),
         ),
         migrations.AddIndex(
-            model_name='enrollment',
-            index=models.Index(fields=['user', 'progress_percentage'], name='idx_enroll_user_progress'),
+            model_name="enrollment",
+            index=models.Index(
+                fields=["user", "progress_percentage"], name="idx_enroll_user_progress"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('price__gte', 0)), name='course_price_non_negative'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(("price__gte", 0)), name="course_price_non_negative"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('discount_price__isnull', True), ('discount_price__gte', 0), _connector='OR'), name='course_discount_non_negative'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("discount_price__isnull", True),
+                    ("discount_price__gte", 0),
+                    _connector="OR",
+                ),
+                name="course_discount_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('discount_price__isnull', True), ('discount_price__lt', models.F('price')), _connector='OR'), name='course_discount_less_than_price'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("discount_price__isnull", True),
+                    ("discount_price__lt", models.F("price")),
+                    _connector="OR",
+                ),
+                name="course_discount_less_than_price",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('avg_rating__gte', 0), ('avg_rating__lte', 5)), name='course_rating_range_0_to_5'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(("avg_rating__gte", 0), ("avg_rating__lte", 5)),
+                name="course_rating_range_0_to_5",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('enrollment_count__gte', 0)), name='course_enrollment_non_negative'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(("enrollment_count__gte", 0)),
+                name="course_enrollment_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='course',
-            constraint=models.CheckConstraint(check=models.Q(('duration_hours__gte', 0)), name='course_duration_non_negative'),
+            model_name="course",
+            constraint=models.CheckConstraint(
+                check=models.Q(("duration_hours__gte", 0)),
+                name="course_duration_non_negative",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='enrollment',
-            constraint=models.CheckConstraint(check=models.Q(('progress_percentage__gte', 0), ('progress_percentage__lte', 100)), name='enrollment_progress_range_0_to_100'),
+            model_name="enrollment",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("progress_percentage__gte", 0), ("progress_percentage__lte", 100)
+                ),
+                name="enrollment_progress_range_0_to_100",
+            ),
         ),
     ]
