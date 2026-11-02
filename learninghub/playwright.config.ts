@@ -30,6 +30,24 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')` */
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
 
+    /*
+     * Shared E2E state models a returning visitor who already answered the
+     * location-consent prompt. First-visit consent behavior is covered by
+     * country-consent.spec.ts with an isolated empty storage state.
+     */
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+          localStorage: [
+            { name: 'lh_location_permission_requested', value: 'true' },
+            { name: 'cookieConsent', value: 'accepted' },
+          ],
+        },
+      ],
+    },
+
     /* Navigation timeout — Vite cold-starts can take 30s+ on first load */
     navigationTimeout: 45000,
 
