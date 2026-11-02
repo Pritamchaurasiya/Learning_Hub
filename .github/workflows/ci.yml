@@ -259,6 +259,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      shadow-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: shadow_db
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -275,6 +287,25 @@ jobs:
       - name: Generate Prisma client
         working-directory: learninghub/backend
         run: npx prisma generate
+      - name: Export Prisma schema drift (temporary diagnostic)
+        working-directory: learninghub/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          DIRECT_URL: postgresql://test:test@localhost:5432/test_db
+          SHADOW_DATABASE_URL: postgresql://test:test@localhost:5433/shadow_db
+        run: |
+          set -euo pipefail
+          npx prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "$SHADOW_DATABASE_URL" \
+            --script > /tmp/prisma-schema-drift.sql
+          echo "DRIFT_SQL_LINES=$(wc -l < /tmp/prisma-schema-drift.sql)"
+          echo "DRIFT_SQL_BYTES=$(wc -c < /tmp/prisma-schema-drift.sql)"
+          echo "DRIFT_SQL_SHA256=$(sha256sum /tmp/prisma-schema-drift.sql | cut -d' ' -f1)"
+          echo "PRISMA_DRIFT_SQL_BEGIN"
+          cat /tmp/prisma-schema-drift.sql
+          echo "PRISMA_DRIFT_SQL_END"
       - name: Apply database migrations
         working-directory: learninghub/backend
         env:
