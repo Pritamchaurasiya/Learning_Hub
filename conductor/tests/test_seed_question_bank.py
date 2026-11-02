@@ -42,8 +42,16 @@ class TestSeedExamQuestionBankCommand:
         for q in questions:
             assert q.difficulty > 0
             assert q.discrimination > 0
-            assert q.options.count() >= 4
-            # At least one correct option
+            # MCQs require four distractor/answer choices. Coding questions
+            # intentionally use a canonical reference answer plus executable
+            # test cases, so they must not be treated as four-option MCQs.
+            if q.question_type == "mcq":
+                assert q.options.count() >= 4
+            elif q.question_type == "coding":
+                assert q.code_template.strip()
+                assert len(q.test_cases) >= 1
+
+            # Every seeded question keeps a canonical correct/reference answer.
             assert q.options.filter(is_correct=True).exists()
 
         # Verify Test Blueprints
