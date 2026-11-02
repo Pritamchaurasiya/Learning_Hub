@@ -1,0 +1,63 @@
+name: Temporary Prisma Schema Drift Export
+
+on:
+  push:
+    branches:
+      - fix/ci-cd-stabilization
+    paths:
+      - .github/workflows/generate-prisma-drift.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export-drift:
+    name: Generate Prisma migration diff (diagnostic)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: learninghub/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: learninghub/backend/package-lock.json
+      - name: Install backend dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Export schema drift SQL
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          DIRECT_URL: postgresql://test:test@localhost:5432/test_db
+          SHADOW_DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+        run: |
+          set -euo pipefail
+          npx prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "$SHADOW_DATABASE_URL" \
+            --script > /tmp/prisma-schema-drift.sql
+          echo "DRIFT_SQL_LINES=$(wc -l < /tmp/prisma-schema-drift.sql)"
+          echo "DRIFT_SQL_BYTES=$(wc -c < /tmp/prisma-schema-drift.sql)"
+          echo "DRIFT_SQL_SHA256=$(sha256sum /tmp/prisma-schema-drift.sql | cut -d' ' -f1)"
+          echo "PRISMA_DRIFT_SQL_BASE64_BEGIN"
+          base64 -w0 /tmp/prisma-schema-drift.sql
+          echo
+          echo "PRISMA_DRIFT_SQL_BASE64_END"
