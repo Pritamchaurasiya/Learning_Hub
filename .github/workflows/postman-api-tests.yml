@@ -113,6 +113,28 @@ jobs:
               );
             }
 
+            if (suite.label === 'Django DRF') {
+              for (const requestName of [
+                'Login — obtain JWT pair',
+                'Refresh — rotate JWT pair'
+              ]) {
+                const request = allRequests.find(item => item.name === requestName);
+                assert.ok(request, `Django DRF: missing token-flow request: ${requestName}`);
+                const testScript = (request.event || [])
+                  .filter(event => event.listen === 'test')
+                  .flatMap(event => event.script?.exec || [])
+                  .join('\\n');
+                assert.ok(
+                  testScript.includes('data?.accessToken'),
+                  `Django DRF: ${requestName} must parse data.accessToken`
+                );
+                assert.ok(
+                  testScript.includes('data?.refreshToken'),
+                  `Django DRF: ${requestName} must parse data.refreshToken`
+                );
+              }
+            }
+
             let smokeCount = 0;
             for (const folderName of suite.smokeFolders) {
               const folder = folders.get(folderName);
