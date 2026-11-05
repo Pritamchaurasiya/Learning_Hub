@@ -36,8 +36,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Health endpoint returns a healthy status', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });",
-                  "pm.test('Health check completes within 2 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+                  "pm.test('Django health endpoint returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Django health check completes within 2 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Django health reports healthy service', function () { pm.expect(body.status).to.equal('healthy'); });"
                 ]
               }
             }
@@ -93,6 +95,7 @@
           },
           "event": [
             {
+              "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
@@ -105,8 +108,7 @@
                   "if (access) pm.environment.set('accessToken', access);",
                   "if (refresh) pm.environment.set('refreshToken', refresh);"
                 ]
-              },
-              "listen": "test"
+              }
             }
           ],
           "response": []
@@ -150,7 +152,9 @@
           },
           "event": [
             {
+              "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "pm.test('Refresh returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
@@ -159,10 +163,8 @@
                   "pm.test('Refresh response contains a new access token', function () { pm.expect(access, 'access token').to.be.a('string').and.not.empty; });",
                   "if (access) pm.environment.set('accessToken', access);",
                   "if (refresh) pm.environment.set('refreshToken', refresh);"
-                ],
-                "type": "text/javascript"
-              },
-              "listen": "test"
+                ]
+              }
             }
           ],
           "response": []
@@ -179,14 +181,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/users/me/",
+              "raw": "{{baseUrl}}/api/v1/auth/me/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "users",
+                "auth",
                 "me",
                 ""
               ]
@@ -194,14 +196,14 @@
           },
           "event": [
             {
+              "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Current-user endpoint requires a valid token', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Current-user endpoint returns HTTP 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('Current-user response is a JSON object', function () { pm.expect(pm.response.json()).to.be.an('object'); });"
-                ],
-                "type": "text/javascript"
-              },
-              "listen": "test"
+                ]
+              }
             }
           ],
           "response": []
@@ -241,16 +243,16 @@
           },
           "event": [
             {
+              "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "pm.test('Course catalog is available', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
                   "pm.test('Course catalog returns a JSON object', function () { pm.expect(body).to.be.an('object'); });",
                   "pm.test('Course catalog follows the documented response envelope', function () { pm.expect(body).to.have.property('status'); pm.expect(body).to.have.property('data'); });"
-                ],
-                "type": "text/javascript"
-              },
-              "listen": "test"
+                ]
+              }
             }
           ],
           "response": []
@@ -324,34 +326,34 @@
             "method": "GET",
             "header": [
               {
-                "value": "application/json",
-                "key": "Accept"
+                "key": "Accept",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/users/me/",
+              "raw": "{{baseUrl}}/api/v1/auth/me/",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "users",
+                "auth",
                 "me",
                 ""
               ]
             },
-            "description": "Negative security check: the profile endpoint must reject requests without a JWT. Expected status is 401 or 403 according to the deployed DRF authentication/permission configuration."
+            "description": "Negative security check: Django auth/me is protected by the me_view in conductor/apps/users/urls/auth.py. Expected 401 or 403."
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "pm.test('Anonymous profile request is rejected', function () { pm.expect(pm.response.code).to.be.oneOf([401, 403]); });",
                   "pm.test('Anonymous request does not expose a profile', function () { pm.expect(pm.response.code).not.to.equal(200); });"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
