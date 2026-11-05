@@ -1,21 +1,44 @@
 {
-  "id": "learninghub-local-django",
+  "id": "0edf7f2c-da2d-4b2d-ab12-d99d6ad03a4d",
   "name": "LearningHub — Local Development (Django DRF)",
   "values": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8000",
       "type": "default",
-      "enabled": true
+      "enabled": true,
+      "description": "Backend origin only"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Dedicated non-production test account"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Dedicated non-production test password"
     },
     {
       "key": "accessToken",
       "value": "",
       "type": "secret",
-      "enabled": true
+      "enabled": true,
+      "description": "JWT access token; do not commit"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "JWT refresh token; do not commit"
     }
   ],
   "_postman_variable_scope": "environment",
-  "_postman_exported_at": "2026-11-05T00:00:00.000Z",
-  "_postman_exported_using": "ChatGPT"
+  "_postman_exported_at": "2026-11-05T03:35:00.000Z",
+  "_postman_exported_using": "Postman"
 }
