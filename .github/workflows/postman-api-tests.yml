@@ -1,0 +1,58 @@
+name: Postman API Smoke Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "postman/collections/**"
+      - ".github/workflows/postman-api-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "postman/collections/**"
+      - ".github/workflows/postman-api-tests.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: postman-api-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  newman-smoke:
+    name: Newman — safe API smoke tests
+    if: ${{ vars.LEARNINGHUB_API_BASE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Run safe GET-only Postman folders
+        run: |
+          npx --yes newman@latest run postman/collections/learninghub-django-api.collection.json \
+            --env-var "baseUrl=${{ vars.LEARNINGHUB_API_BASE_URL }}" \
+            --folder "00 — Health" \
+            --folder "02 — Learning & Assessment" \
+            --timeout-request 10000 \
+            --reporters cli,junit \
+            --reporter-junit-export newman-results.xml
+
+      - name: Upload Newman test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-api-smoke-report
+          path: newman-results.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+    # Configure the repository variable LEARNINGHUB_API_BASE_URL with a reachable
+    # HTTPS staging URL to enable this job. It is intentionally skipped otherwise.
