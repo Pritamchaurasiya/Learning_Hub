@@ -1,7 +1,8 @@
 {
   "info": {
+    "_postman_id": "5069fbb3-02c1-4c81-bd0e-c83f3f3e1d07",
     "name": "LearningHub — API Quality & Regression Suite (Django DRF)",
-    "description": "Canonical Django REST Framework API smoke suite. Based on README.md, API_CONTRACT.md and BACKEND_TRUTH.md. Configure baseUrl for the target environment. This suite intentionally avoids destructive operations and uses GET-only smoke requests.",
+    "description": "Canonical Django REST Framework API regression collection. Source references: README.md, API_CONTRACT.md and BACKEND_TRUTH.md. Configure baseUrl for the target environment. Smoke folders are GET-only; authentication flow requests are manual/local and require a dedicated non-production account.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -17,11 +18,28 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8000"
+      "value": "http://localhost:8000",
+      "description": "Backend origin only"
     },
     {
       "key": "accessToken",
-      "value": ""
+      "value": "",
+      "description": "Runtime JWT access token; use a local secret environment value"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "description": "Runtime JWT refresh token; use a local secret environment value"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "description": "Dedicated non-production test account email"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "description": "Dedicated non-production test account password; never commit a real value"
     }
   ],
   "event": [
@@ -30,17 +48,18 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "pm.test('Response time below smoke threshold (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
-          "pm.test('Response body is valid JSON when present', function () { if (pm.response.text().length > 0) pm.response.to.be.json; });"
+          "pm.test('Response time below collection ceiling (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });"
         ]
       }
     }
   ],
   "item": [
     {
+      "id": "19a41c84-96fb-4f54-a2e2-c7077a25b20c",
       "name": "00 — Health",
       "item": [
         {
+          "id": "7b2017f1-0af7-4edf-b391-4efd4ed95445",
           "name": "Health Check",
           "request": {
             "method": "GET",
@@ -54,14 +73,119 @@
                 "value": "application/json"
               }
             ]
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Health endpoint returns a healthy status', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });",
+                  "pm.test('Health check completes within 2 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(2000); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
+      "id": "926d90f7-872e-4076-b1db-3f3d6446e770",
       "name": "01 — Authentication",
       "item": [
         {
+          "id": "d4395076-213b-47c8-b69b-a77ae3be14b0",
+          "name": "Login — obtain JWT pair",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login/",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login returns 200 or 201', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "const body = pm.response.json();",
+                  "const access = body?.data?.tokens?.access || body?.tokens?.access || body?.data?.access || body?.access;",
+                  "const refresh = body?.data?.tokens?.refresh || body?.tokens?.refresh || body?.data?.refresh || body?.refresh;",
+                  "pm.test('Login response contains an access token', function () { pm.expect(access, 'access token').to.be.a('string').and.not.empty; });",
+                  "pm.test('Login response contains a refresh token', function () { pm.expect(refresh, 'refresh token').to.be.a('string').and.not.empty; });",
+                  "if (access) pm.environment.set('accessToken', access);",
+                  "if (refresh) pm.environment.set('refreshToken', refresh);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "cca6aa29-5d2e-4ba0-bc44-048d926bc1fc",
+          "name": "Refresh — rotate JWT pair",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/refresh/",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Refresh returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "const access = body?.data?.tokens?.access || body?.tokens?.access || body?.data?.access || body?.access;",
+                  "const refresh = body?.data?.tokens?.refresh || body?.tokens?.refresh || body?.data?.refresh || body?.refresh;",
+                  "pm.test('Refresh response contains a new access token', function () { pm.expect(access, 'access token').to.be.a('string').and.not.empty; });",
+                  "if (access) pm.environment.set('accessToken', access);",
+                  "if (refresh) pm.environment.set('refreshToken', refresh);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "bf42f272-7ef4-4230-bfdb-494b6846e0c1",
           "name": "Current User — authenticated profile",
           "request": {
             "method": "GET",
@@ -72,14 +196,28 @@
                 "value": "application/json"
               }
             ]
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Current-user endpoint requires a valid token', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Current-user response is a JSON object', function () { pm.expect(pm.response.json()).to.be.an('object'); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
+      "id": "e73edd8d-0752-4500-8d84-5911642be76f",
       "name": "02 — Learning & Assessment",
       "item": [
         {
+          "id": "47634470-b0a0-4f92-8da4-21a3eaeb13ea",
           "name": "List Published Courses",
           "request": {
             "method": "GET",
@@ -93,9 +231,24 @@
                 "value": "application/json"
               }
             ]
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Course catalog is available', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Course catalog returns a JSON object', function () { pm.expect(body).to.be.an('object'); });",
+                  "pm.test('Course catalog follows the documented response envelope', function () { pm.expect(body).to.have.property('status'); pm.expect(body).to.have.property('data'); });"
+                ]
+              }
+            }
+          ]
         },
         {
+          "id": "743ab344-8edc-46f8-b5c1-24a47d00f78d",
           "name": "List Tests",
           "request": {
             "method": "GET",
@@ -109,7 +262,57 @@
                 "value": "application/json"
               }
             ]
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Test catalog is publicly accessible', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Test catalog returns a JSON object', function () { pm.expect(body).to.be.an('object'); });",
+                  "pm.test('Test catalog follows the documented response envelope', function () { pm.expect(body).to.have.property('status'); pm.expect(body).to.have.property('data'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d153a4cf-9c93-447c-c053-485ff6525aad",
+      "name": "03 — Security & Access Control",
+      "item": [
+        {
+          "id": "2470ae56-c272-e6c7-6320-6b00fe23d78a",
+          "name": "Current User — reject anonymous access",
+          "description": "Negative security check: the profile endpoint must reject requests without a JWT. Expected 401 or 403 per DRF authentication/permission behavior.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users/me/",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Anonymous profile request is rejected', function () { pm.expect(pm.response.code).to.be.oneOf([401, 403]); });",
+                  "pm.test('Anonymous request does not expose a profile', function () { pm.expect(pm.response.code).not.to.equal(200); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
