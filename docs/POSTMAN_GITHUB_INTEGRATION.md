@@ -36,7 +36,7 @@ Do not point one collection at the other backend just because both use a similar
 
 1. Import the correct collection and its matching environment.
 2. Set `baseUrl` to the corresponding backend origin; do not append `/api/v1`.
-3. For the Django collection, use a dedicated local/staging test account to populate `testEmail` and `testPassword` as local/secret values. Run Authentication manually; Login stores returned JWT values in secret environment variables and Refresh updates the rotated pair.
+3. For the Django collection, use a dedicated local/staging test account to populate `testEmail` and `testPassword` as local/secret values. Run Authentication manually; Login stores returned JWT values in secret environment variables and Refresh updates the rotated pair. Both requests parse the canonical `data.accessToken` and `data.refreshToken` fields returned by the Django auth views; CI validates this token-response contract statically.
 4. For the Express collection, use its own environment and its own JWT values. Do not reuse a Django token.
 5. Run the full collection locally or against staging before production.
 
