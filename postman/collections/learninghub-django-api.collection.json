@@ -1,0 +1,118 @@
+{
+  "info": {
+    "_postman_id": "learninghub-api-quality-suite",
+    "name": "LearningHub — API Quality & Regression Suite (Django DRF)",
+    "description": "Canonical Django REST Framework API smoke suite. Based on README.md, API_CONTRACT.md and BACKEND_TRUTH.md. Configure baseUrl for the target environment. This suite intentionally avoids destructive operations and uses GET-only smoke requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response time below smoke threshold (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+          "pm.test('Response body is valid JSON when present', function () { if (pm.response.text().length > 0) pm.response.to.be.json; });"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 — Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health/",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 — Authentication",
+      "item": [
+        {
+          "name": "Current User — authenticated profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users/me/",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 — Learning & Assessment",
+      "item": [
+        {
+          "name": "List Published Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/courses/",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "List Tests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/tests/?page=1&page_size=10",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
