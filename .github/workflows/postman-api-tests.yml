@@ -1,4 +1,4 @@
-name: Postman API Smoke Tests
+name: Postman API Quality Gates
 
 on:
   workflow_dispatch:
@@ -20,15 +20,105 @@ permissions:
   contents: read
 
 concurrency:
-  group: postman-api-smoke-${{ github.ref }}
+  group: postman-api-quality-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  collection-validation:
+    name: Validate Postman collection and environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate collection structure and smoke-safety policy
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+
+          const collection = JSON.parse(fs.readFileSync(
+            'postman/collections/learninghub-django-api.collection.json', 'utf8'
+          ));
+          const environment = JSON.parse(fs.readFileSync(
+            'postman/environments/learninghub-local.environment.json', 'utf8'
+          ));
+
+          assert.equal(
+            collection.info.schema,
+            'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+            'Collection must use Postman Collection v2.1.0'
+          );
+          assert.ok(Array.isArray(collection.item) && collection.item.length > 0,
+            'Collection must contain folders');
+
+          const folderByName = new Map(collection.item.map(folder => [folder.name, folder]));
+          const requiredFolders = [
+            '00 — Health',
+            '01 — Authentication',
+            '02 — Learning & Assessment',
+            '03 — Security & Access Control'
+          ];
+          for (const name of requiredFolders) {
+            assert.ok(folderByName.has(name), `Missing required folder: ${name}`);
+          }
+
+          function requests(items, output = []) {
+            for (const item of items || []) {
+              if (item.request) output.push(item);
+              if (item.item) requests(item.item, output);
+            }
+            return output;
+          }
+
+          const allRequests = requests(collection.item);
+          assert.ok(allRequests.length >= 7, 'Expected the complete Postman request suite');
+          for (const item of allRequests) {
+            assert.ok(item.name, 'Every request needs a descriptive name');
+            assert.ok(item.request.url, `Missing URL in ${item.name}`);
+            assert.ok(item.request.method, `Missing HTTP method in ${item.name}`);
+            assert.ok((item.event || []).some(event => event.listen === 'test'),
+              `Missing request assertions in ${item.name}`);
+          }
+
+          const smokeFolders = [
+            '00 — Health',
+            '02 — Learning & Assessment',
+            '03 — Security & Access Control'
+          ];
+          let smokeCount = 0;
+          for (const name of smokeFolders) {
+            const selected = requests(folderByName.get(name).item);
+            assert.ok(selected.length > 0, `Smoke folder is empty: ${name}`);
+            for (const item of selected) {
+              assert.equal(item.request.method, 'GET',
+                `Non-GET request is not allowed in CI smoke folder: ${item.name}`);
+              assert.ok(item.request.url.includes('{{baseUrl}}'),
+                `Smoke request must use baseUrl: ${item.name}`);
+              smokeCount += 1;
+            }
+          }
+
+          const sensitiveKeys = new Set(['testPassword', 'accessToken', 'refreshToken']);
+          for (const value of environment.values || []) {
+            if (sensitiveKeys.has(value.key)) {
+              assert.equal(value.value, '',
+                `Environment export must not contain a credential/token: ${value.key}`);
+            }
+          }
+
+          console.log(`Validated ${allRequests.length} requests; ${smokeCount} GET-only smoke requests; environment contains no credentials.`);
+          NODE
+
   newman-smoke:
-    name: Newman — safe API smoke tests
-    if: ${{ vars.LEARNINGHUB_API_BASE_URL != '' }}
+    name: Newman — live API smoke tests
+    needs: collection-validation
+    if: ${{ needs.collection-validation.result == 'success' && vars.LEARNINGHUB_API_BASE_URL != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      LEARNINGHUB_API_BASE_URL: ${{ vars.LEARNINGHUB_API_BASE_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,12 +128,20 @@ jobs:
         with:
           node-version: 22
 
-      - name: Run safe GET-only Postman folders
+      - name: Require HTTPS staging target
         run: |
-          npx --yes newman@latest run postman/collections/learninghub-django-api.collection.json \
-            --env-var "baseUrl=${{ vars.LEARNINGHUB_API_BASE_URL }}" \
+          case "$LEARNINGHUB_API_BASE_URL" in
+            https://*) echo "HTTPS staging API target configured." ;;
+            *) echo "LEARNINGHUB_API_BASE_URL must be an HTTPS staging URL." >&2; exit 1 ;;
+          esac
+
+      - name: Run safe GET-only Postman smoke folders
+        run: |
+          npx --yes newman@6 run postman/collections/learninghub-django-api.collection.json \
+            --env-var "baseUrl=$LEARNINGHUB_API_BASE_URL" \
             --folder "00 — Health" \
             --folder "02 — Learning & Assessment" \
+            --folder "03 — Security & Access Control" \
             --timeout-request 10000 \
             --reporters cli,junit \
             --reporter-junit-export newman-results.xml
@@ -56,3 +154,4 @@ jobs:
           path: newman-results.xml
           if-no-files-found: ignore
           retention-days: 14
+
