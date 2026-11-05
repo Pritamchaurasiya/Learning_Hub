@@ -3,7 +3,11 @@
     "_postman_id": "5069fbb3-02c1-4c81-bd0e-c83f3f3e1d07",
     "name": "LearningHub — API Quality & Regression Suite (Django DRF)",
     "description": "Canonical Django REST Framework API regression collection. Source references: README.md, API_CONTRACT.md and BACKEND_TRUTH.md. Configure baseUrl for the target environment. Smoke folders are GET-only; authentication flow requests are manual/local and require a dedicated non-production account.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-11-05T03:26:05.000Z",
+    "updatedAt": "2026-11-05T03:34:05.000Z",
+    "lastUpdatedBy": "54268792",
+    "uid": "54268792-5069fbb3-02c1-4c81-bd0e-c83f3f3e1d07"
   },
   "auth": {
     "type": "bearer",
@@ -24,22 +28,22 @@
     {
       "key": "accessToken",
       "value": "",
-      "description": "Runtime JWT access token; use a local secret environment value"
+      "description": "Runtime JWT access token"
     },
     {
       "key": "refreshToken",
       "value": "",
-      "description": "Runtime JWT refresh token; use a local secret environment value"
+      "description": "Runtime JWT refresh token"
     },
     {
       "key": "testEmail",
       "value": "",
-      "description": "Dedicated non-production test account email"
+      "description": "Dedicated test account email"
     },
     {
       "key": "testPassword",
       "value": "",
-      "description": "Dedicated non-production test account password; never commit a real value"
+      "description": "Dedicated non-production test account password"
     }
   ],
   "event": [
@@ -48,7 +52,8 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "pm.test('Response time below collection ceiling (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });"
+          "pm.test('Response time below smoke threshold (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+          "pm.test('Response body is valid JSON when present', function () { if (pm.response.text().length > 0) pm.response.to.be.json; });"
         ]
       }
     }
