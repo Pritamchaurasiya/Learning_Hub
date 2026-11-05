@@ -101,8 +101,8 @@
                 "exec": [
                   "pm.test('Login returns 200 or 201', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
                   "const body = pm.response.json();",
-                  "const access = body?.data?.tokens?.access || body?.tokens?.access || body?.data?.access || body?.access;",
-                  "const refresh = body?.data?.tokens?.refresh || body?.tokens?.refresh || body?.data?.refresh || body?.refresh;",
+                  "const access = body?.data?.accessToken || body?.data?.tokens?.access || body?.tokens?.access || body?.data?.access || body?.access;",
+                  "const refresh = body?.data?.refreshToken || body?.data?.tokens?.refresh || body?.tokens?.refresh || body?.data?.refresh || body?.refresh;",
                   "pm.test('Login response contains an access token', function () { pm.expect(access, 'access token').to.be.a('string').and.not.empty; });",
                   "pm.test('Login response contains a refresh token', function () { pm.expect(refresh, 'refresh token').to.be.a('string').and.not.empty; });",
                   "if (access) pm.environment.set('accessToken', access);",
