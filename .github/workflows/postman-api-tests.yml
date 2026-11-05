@@ -5,11 +5,15 @@ on:
   pull_request:
     paths:
       - "postman/collections/**"
+      - "postman/environments/**"
+      - "docs/POSTMAN_GITHUB_INTEGRATION.md"
       - ".github/workflows/postman-api-tests.yml"
   push:
     branches: [main]
     paths:
       - "postman/collections/**"
+      - "postman/environments/**"
+      - "docs/POSTMAN_GITHUB_INTEGRATION.md"
       - ".github/workflows/postman-api-tests.yml"
 
 permissions:
@@ -33,7 +37,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Run safe GET-only Postman folders
         run: |
@@ -53,6 +56,3 @@ jobs:
           path: newman-results.xml
           if-no-files-found: ignore
           retention-days: 14
-
-    # Configure the repository variable LEARNINGHUB_API_BASE_URL with a reachable
-    # HTTPS staging URL to enable this job. It is intentionally skipped otherwise.
