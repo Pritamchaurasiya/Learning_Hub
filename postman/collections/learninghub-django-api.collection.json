@@ -1,6 +1,5 @@
 {
   "info": {
-    "_postman_id": "learninghub-api-quality-suite",
     "name": "LearningHub — API Quality & Regression Suite (Django DRF)",
     "description": "Canonical Django REST Framework API smoke suite. Based on README.md, API_CONTRACT.md and BACKEND_TRUTH.md. Configure baseUrl for the target environment. This suite intentionally avoids destructive operations and uses GET-only smoke requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
