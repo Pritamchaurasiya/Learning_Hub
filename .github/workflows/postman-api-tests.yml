@@ -124,8 +124,11 @@ jobs:
                   'GET',
                   `${suite.label}: CI smoke folders may only contain GET requests: ${item.name}`
                 );
+                const requestUrl = typeof item.request.url === 'string'
+                  ? item.request.url
+                  : item.request.url?.raw;
                 assert.ok(
-                  item.request.url.includes('{{baseUrl}}'),
+                  typeof requestUrl === 'string' && requestUrl.includes('{{baseUrl}}'),
                   `${suite.label}: smoke request must use baseUrl: ${item.name}`
                 );
                 smokeCount += 1;
