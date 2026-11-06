@@ -216,7 +216,14 @@ export const demoLogin = asyncHandler(async (req: Request, res: Response): Promi
 
   const role = req.body?.role === 'ADMIN' ? 'ADMIN' : 'STUDENT'
   const targetEmail = role === 'ADMIN' ? 'admin@learninghub.com' : 'student@learninghub.com'
-  const targetPassword = role === 'ADMIN' ? 'Admin@123!' : 'Student@123!'
+  const targetPassword = role === 'ADMIN'
+    ? process.env.DEMO_ADMIN_PASSWORD
+    : process.env.DEMO_STUDENT_PASSWORD
+
+  if (!targetPassword || targetPassword.length < 12 || /^CHANGE_ME|^YOUR_/i.test(targetPassword)) {
+    sendError(res, 'Local demo login is not configured', 503, 'DEMO_LOGIN_NOT_CONFIGURED')
+    return
+  }
 
   // Ensure demo account exists with valid state
   let user = await prisma.user.findUnique({ where: { email: targetEmail } })
