@@ -1,0 +1,44 @@
+{
+  "id": "a844b9e2-32c1-4d75-946c-d2e31742c9c0",
+  "name": "LearningHub — Local Development (Express/Node)",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "default",
+      "enabled": true,
+      "description": "Express backend origin only"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Express JWT access token; do not commit"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Dedicated non-production Express test account email"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Dedicated non-production Express test password; do not commit a value"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Runtime rotated Express JWT refresh token; do not commit a value"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-11-05T03:38:18.000Z",
+  "_postman_exported_using": "Postman"
+}

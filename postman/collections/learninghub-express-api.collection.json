@@ -1,0 +1,444 @@
+{
+  "info": {
+    "_postman_id": "db0d4e85-a6e6-4276-a3cb-2072206ece42",
+    "name": "LearningHub — API Quality & Regression Suite (Express/Node)",
+    "description": "Separate smoke and regression suite for the Node.js Express backend under learninghub/backend. Routes are derived from server.ts and actual route modules. Configure baseUrl as the Express origin only. CI scope is GET-only and avoids state-changing operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-11-05T03:38:17.000Z",
+    "updatedAt": "2026-11-05T03:38:18.000Z",
+    "lastUpdatedBy": "54268792",
+    "uid": "54268792-db0d4e85-a6e6-4276-a3cb-2072206ece42"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "description": "Express backend origin only"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "description": "Runtime JWT access token"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "description": "Dedicated non-production Express test account email"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "description": "Dedicated non-production test account password; keep local/secret"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "description": "Runtime rotated refresh JWT; keep local/secret"
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Express API response time below smoke threshold (5s)', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+          "pm.test('Express API response body is valid JSON when present', function () { if (pm.response.text().length > 0) pm.response.to.be.json; });"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "id": "66189d89-8393-48dd-8478-bbe1d062eb1b",
+      "name": "00 — Process Health",
+      "item": [
+        {
+          "id": "78e006c7-ba3b-414a-a042-453f33d69346",
+          "name": "Process Health",
+          "description": "GET /health is defined directly in learninghub/backend/src/server.ts and returns { status: 'ok' } without a database query.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Express process health responds HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Express process health status is ok', function () { pm.expect(body.status).to.equal('ok'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "af3ca910-ddd1-402f-b5b5-0a6e01edc9a6",
+          "name": "Liveness Probe",
+          "description": "GET /api/v1/health/live is mounted by the Express v1 router and returns an alive status without checking dependencies.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/health/live",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Liveness probe responds HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Liveness probe reports alive', function () { pm.expect(body.status).to.equal('alive'); });",
+                  "pm.test('Liveness probe provides a timestamp', function () { pm.expect(body.timestamp).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "72368118-75f2-402d-b018-69ab16aef53c",
+      "name": "01 — Public Catalog",
+      "item": [
+        {
+          "id": "a4dfea0f-aac9-45fd-ab70-f0b7bec9be73",
+          "name": "Course Categories",
+          "description": "Static category list returned through sendSuccess.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/courses/categories",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Course categories respond HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Course categories use the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "6056f6b7-95f5-4fdb-b284-6cfc63af0f89",
+          "name": "AI Models Catalog",
+          "description": "GET /api/v1/ai/models is public in Express routes and returns provider/model metadata using sendSuccess.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ai/models",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('AI model catalog responds HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('AI model catalog uses the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('AI model catalog includes provider metadata', function () { pm.expect(body.data).to.have.property('providers').that.is.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "1286b26e-0fe5-44ca-a87a-ca87c199a9c5",
+          "name": "Curriculum Templates",
+          "description": "GET /api/v1/curriculum/templates is public through optionalAuth and returns { templates } in sendSuccess data.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/curriculum/templates",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Curriculum templates respond HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Curriculum templates use the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Curriculum templates payload includes templates', function () { pm.expect(body.data).to.have.property('templates'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6378f054-637c-4cc7-8dcb-a5e7088c46bd",
+      "name": "02 — Authentication & Security",
+      "item": [
+        {
+          "id": "d11ddc60-2417-4351-b953-ff7ca472efc2",
+          "name": "Current User — Reject Anonymous Access",
+          "description": "GET /api/v1/auth/me is protected by authenticate; no Bearer token must return 401.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/auth/me",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Anonymous Express profile request is rejected', function () { pm.response.to.have.status(401); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Anonymous profile response uses the error envelope', function () { pm.expect(body.status).to.equal('error'); pm.expect(body).to.have.property('code'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Authentication (Manual)",
+      "description": "Run only against local or isolated staging with a dedicated non-production test account. These stateful auth requests are intentionally excluded from GitHub's unauthenticated GET-only Newman smoke jobs.",
+      "item": [
+        {
+          "name": "Login — store Express JWT pair",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Express login succeeds', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Login returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Login returns access and refresh tokens', function () { pm.expect(body.data.accessToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty; });",
+                  "pm.environment.set('accessToken', body.data.accessToken);",
+                  "pm.environment.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": [],
+          "id": "a66c953c-581e-4b50-851f-8b6a580c6097"
+        },
+        {
+          "name": "Refresh — rotate Express JWT pair",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const previousRefreshToken = pm.environment.get('refreshToken');",
+                  "pm.test('Express refresh succeeds', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Refresh returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Refresh returns a new access and refresh token', function () { pm.expect(body.data.accessToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.not.equal(previousRefreshToken); });",
+                  "pm.environment.set('accessToken', body.data.accessToken);",
+                  "pm.environment.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": [],
+          "id": "85c4c07f-3ed2-4d64-bd87-53ef2037d891"
+        },
+        {
+          "name": "Current User — authenticated profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated Express profile returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Authenticated profile returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Authenticated profile contains a user identity', function () { pm.expect(body.data.user).to.be.an('object'); pm.expect(body.data.user.id).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": [],
+          "id": "a2d5556e-df08-4a28-917f-f7ff367d6dcb"
+        }
+      ],
+      "id": "a5768dd6-c385-448a-83cd-453c99113006"
+    }
+  ]
+}
