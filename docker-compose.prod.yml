@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-learninghub_prod}
       POSTGRES_USER: ${POSTGRES_USER:-learninghub_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-learninghub_secure_pass_2026}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}
     expose:
       - "5432"
     healthcheck:
@@ -23,13 +23,13 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD:-learninghub_redis_pass_2026}
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}
     volumes:
       - redis_data:/data
     expose:
       - "6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-learninghub_redis_pass_2026}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -52,12 +52,15 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:-learninghub_secure_pass_2026}@db:5432/${POSTGRES_DB:-learninghub_prod}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-learninghub_redis_pass_2026}@redis:6379/0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub_prod}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
       REDIS_ENABLED: "true"
-      JWT_SECRET: ${JWT_SECRET:-lh-jwt-prod-signing-key-super-secure-32charslong!}
-      CSRF_SECRET: ${CSRF_SECRET:-lh-csrf-prod-signing-key-super-secure-64charslong-production-token!}
-      ADMIN_SECRET: ${ADMIN_SECRET:-lh-admin-prod-secret-32charslong!}
+      JWT_SECRET: ${JWT_SECRET:?Set_JWT_SECRET_in_.env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set_JWT_REFRESH_SECRET_in_.env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@learninghub.prod}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:?Set_ADMIN_DEFAULT_PASSWORD_in_.env}
+      CSRF_SECRET: ${CSRF_SECRET:?Set_CSRF_SECRET_in_.env}
+      ADMIN_SECRET: ${ADMIN_SECRET:?Set_ADMIN_SECRET_in_.env}
     depends_on:
       db:
         condition: service_healthy
@@ -87,10 +90,10 @@ services:
       - "8000"
     environment:
       DEBUG: "False"
-      SECRET_KEY: ${SECRET_KEY:-lh-prod-secret-key-super-secure-32charslong!}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-lh-jwt-prod-signing-key-super-secure-32charslong!}
-      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:-learninghub_secure_pass_2026}@db:5432/${POSTGRES_DB:-learninghub_prod}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-learninghub_redis_pass_2026}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
+      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub_prod}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
       ALLOWED_HOSTS: "backend,frontend,localhost,127.0.0.1"
       CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:80,http://frontend"
     depends_on:
@@ -112,10 +115,10 @@ services:
     command: celery -A config worker -l INFO -Q default,ai_computation
     environment:
       DEBUG: "False"
-      SECRET_KEY: ${SECRET_KEY:-lh-prod-secret-key-super-secure-32charslong!}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-lh-jwt-prod-signing-key-super-secure-32charslong!}
-      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:-learninghub_secure_pass_2026}@db:5432/${POSTGRES_DB:-learninghub_prod}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-learninghub_redis_pass_2026}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
+      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub_prod}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
     depends_on:
       db:
         condition: service_healthy
@@ -138,10 +141,10 @@ services:
     command: celery -A config beat -l INFO
     environment:
       DEBUG: "False"
-      SECRET_KEY: ${SECRET_KEY:-lh-prod-secret-key-super-secure-32charslong!}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-lh-jwt-prod-signing-key-super-secure-32charslong!}
-      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:-learninghub_secure_pass_2026}@db:5432/${POSTGRES_DB:-learninghub_prod}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-learninghub_redis_pass_2026}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
+      DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_admin}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub_prod}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
     depends_on:
       db:
         condition: service_healthy
