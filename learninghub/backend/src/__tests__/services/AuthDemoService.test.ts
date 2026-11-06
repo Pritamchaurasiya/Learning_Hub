@@ -29,14 +29,31 @@ describe('Authentication security regression suite', () => {
     })
 
     it.each(['/api/v1/auth/demo-login', '/auth/demo-login'])(
-      'does not exempt the retired demo-login path from CSRF checks: %s',
+      'allows the local-only demo-login pre-auth flow in test/development: %s',
       async path => {
         mockReq = { method: 'POST', originalUrl: path, headers: {} }
         await csrfProtection(mockReq as Request, mockRes as Response, nextFunction)
-        expect(nextFunction).not.toHaveBeenCalled()
-        expect(mockRes.status).toHaveBeenCalledWith(403)
+        expect(nextFunction).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
       }
     )
+
+    it('does not exempt demo-login from CSRF checks in production', async () => {
+      const previousNodeEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+      try {
+        mockReq = {
+          method: 'POST',
+          originalUrl: '/api/v1/auth/demo-login',
+          headers: {},
+        }
+        await csrfProtection(mockReq as Request, mockRes as Response, nextFunction)
+        expect(nextFunction).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(403)
+      } finally {
+        process.env.NODE_ENV = previousNodeEnv
+      }
+    })
 
     it('keeps the MFA pre-authentication endpoint exemption', async () => {
       mockReq = {
