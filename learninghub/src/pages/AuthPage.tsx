@@ -655,7 +655,7 @@ const AuthPage = memo(function AuthPage() {
                 </Button>
               </form>
 
-              {isLogin && (
+              {import.meta.env.DEV && isLogin && (
                 <motion.div
                   className="mt-6 relative z-10"
                   initial={{ opacity: 0 }}
