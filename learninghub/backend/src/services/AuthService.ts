@@ -170,20 +170,10 @@ export class AuthService {
       throw new Error('Invalid credentials')
     }
 
-    // Check if account is locked
+    // Enforce account lockouts consistently for every identity, including demo identities.
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      if (isDemo && demoPasswords[normalizedEmail]?.includes(input.password)) {
-        // Auto-unlock demo account when valid demo credentials are supplied
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { failedLogins: 0, lockedUntil: null },
-        })
-        user.lockedUntil = null
-        user.failedLogins = 0
-      } else {
-        const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
-        throw new Error(`Account locked. Try again in ${remainingMinutes} minutes`)
-      }
+      const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
+      throw new Error(`Account locked. Try again in ${remainingMinutes} minutes`)
     }
 
     // Verify only against the password hash stored for this user. No demo-password bypasses.
