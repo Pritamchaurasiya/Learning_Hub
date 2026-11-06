@@ -182,15 +182,15 @@ jobs:
             const isPlaceholder = value => {
               if (typeof value !== 'string' || value.trim() === '') return true;
               const v = value.trim();
-              return /^(?:\\{\\{[^}]+\\}\\}|(?:bearer\\s+)?\\{\\{[^}]+\\}\\}|<[^>]+>|your[_ -].*|replace[_ -].*|change[_ -]?me|example(?:[_ -].*)?|not[_ -]?a[_ -]?real[_ -].*)$/i.test(v);
+              return /^(?:\{\{[^}]+\}\}|(?:bearer\s+)?\{\{[^}]+\}\}|<[^>]+>|your[_ -].*|replace[_ -].*|change[_ -]?me|example(?:[_ -].*)?|not[_ -]?a[_ -]?real[_ -].*)$/i.test(v);
             };
             const suspiciousLiteralPatterns = [
               /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/,
-              /\\bgh[pousr]_[A-Za-z0-9]{20,}\\b/,
-              /\\bgithub_pat_[A-Za-z0-9_]{20,}\\b/,
-              /\\bAKIA[0-9A-Z]{16}\\b/,
-              /\\bBearer\\s+(?!\\{\\{)[A-Za-z0-9._~+\\/-]{20,}/i,
-              /\\beyJ[A-Za-z0-9_-]{8,}\\.eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b/
+              /\bgh[pousr]_[A-Za-z0-9]{20,}\b/,
+              /\bgithub_pat_[A-Za-z0-9_]{20,}\b/,
+              /\bAKIA[0-9A-Z]{16}\b/,
+              /\bBearer\s+(?!\{\{)[A-Za-z0-9._~+\/-]{20,}/i,
+              /\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/
             ];
             function inspectExport(node, location) {
               if (Array.isArray(node)) {
@@ -205,7 +205,7 @@ jobs:
                 }
                 if (typeof node.key === 'string' && /^authorization$/i.test(node.key) &&
                     typeof node.value === 'string' &&
-                    !/^(?:Bearer\\s+)?\\{\\{[^}]+\\}\\}$/i.test(node.value.trim()) &&
+                    !/^(?:Bearer\s+)?\{\{[^}]+\}\}$/i.test(node.value.trim()) &&
                     node.value.trim() !== '') {
                   assert.fail(`${suite.label}: literal Authorization header value at ${location}`);
                 }
@@ -218,8 +218,8 @@ jobs:
                 return;
               }
               if (typeof node !== 'string') return;
-              if (/^[a-z][a-z0-9+.-]*:\\/\\//i.test(node) &&
-                  /^[a-z][a-z0-9+.-]*:\\/\\/[^/\\s:@]+:[^/\\s@]+@/i.test(node)) {
+              if (/^[a-z][a-z0-9+.-]*:\/\//i.test(node) &&
+                  /^[a-z][a-z0-9+.-]*:\/\/[^/\s:@]+:[^/\s@]+@/i.test(node)) {
                 assert.fail(`${suite.label}: credential-bearing URL at ${location}`);
               }
               for (const pattern of suspiciousLiteralPatterns) {
@@ -227,8 +227,8 @@ jobs:
                   assert.fail(`${suite.label}: credential-like literal detected at ${location}`);
                 }
               }
-              if (/(?:password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key)\\s*[=:]\\s*["']?[^\\s"'&}]{8,}/i.test(node) &&
-                  !/\\{\\{[^}]+\\}\\}/.test(node)) {
+              if (/(?:password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key)\s*[=:]\s*["']?[^\s"'&}]{8,}/i.test(node) &&
+                  !/\{\{[^}]+\}\}/.test(node)) {
                 assert.fail(`${suite.label}: credential assignment detected at ${location}`);
               }
             }
