@@ -63,14 +63,15 @@ jobs:
               requiredFolders: [
                 '00 — Process Health',
                 '01 — Public Catalog',
-                '02 — Authentication & Security'
+                '02 — Authentication & Security',
+                '03 — Authentication (Manual)'
               ],
               smokeFolders: [
                 '00 — Process Health',
                 '01 — Public Catalog',
                 '02 — Authentication & Security'
               ],
-              minimumRequests: 6
+              minimumRequests: 9
             }
           ];
 
