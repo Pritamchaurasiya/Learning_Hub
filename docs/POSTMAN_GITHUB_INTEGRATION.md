@@ -24,6 +24,8 @@ Collection: `postman/collections/learninghub-express-api.collection.json`
 
 Environment export: `postman/environments/learninghub-express-local.environment.json`.
 
+**Workspace synchronization:** the GitHub exports and Postman workspace were read back and compared. All 16 requests (7 Django + 9 Express) match by folder, name, method, URL and test scripts. The Express local environment also matches its GitHub export, with credential/token fields blank.
+
 The Express route paths were checked against `learninghub/backend/src/server.ts`, `learninghub/backend/src/routes/index.ts`, and the corresponding `src/routes/v1/*.routes.ts` modules. The Express default local port is `5000`; configure the Express environment `baseUrl` as the origin only (for example `http://localhost:5000`).
 
 ## Backend source of truth
