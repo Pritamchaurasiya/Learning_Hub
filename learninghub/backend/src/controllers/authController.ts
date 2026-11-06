@@ -208,6 +208,12 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
 })
 
 export const demoLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  // Demo access is a local-only convenience. Fail closed when NODE_ENV is absent or production.
+  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+    sendNotFound(res, 'Not found')
+    return
+  }
+
   const role = req.body?.role === 'ADMIN' ? 'ADMIN' : 'STUDENT'
   const targetEmail = role === 'ADMIN' ? 'admin@learninghub.com' : 'student@learninghub.com'
   const targetPassword = role === 'ADMIN' ? 'Admin@123!' : 'Student@123!'
