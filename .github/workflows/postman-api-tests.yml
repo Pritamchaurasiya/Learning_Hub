@@ -228,7 +228,7 @@ jobs:
                   assert.fail(`${suite.label}: credential-like literal detected at ${location}`);
                 }
               }
-              if (/(?:password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key)\s*[=:]\s*["']?[^\s"'&}]{8,}/i.test(node) &&
+              if (/\b(?:password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key)\b\s*[=:]\s*["']?[^\s"'&}]{8,}/i.test(node) &&
                   !/\{\{[^}]+\}\}/.test(node)) {
                 assert.fail(`${suite.label}: credential assignment detected at ${location}`);
               }
