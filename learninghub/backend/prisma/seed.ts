@@ -14,14 +14,14 @@ async function main() {
   if (
     !adminPasswordInput ||
     adminPasswordInput.length < 12 ||
-    /^(CHANGE_ME|YOUR_)/i.test(adminPasswordInput)
+    /^(CHANGE_ME|YOUR_|REPLACE[-_]WITH|EXAMPLE|TEST_ONLY)/i.test(adminPasswordInput)
   ) {
     throw new Error('ADMIN_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
   }
   if (
     !studentPasswordInput ||
     studentPasswordInput.length < 12 ||
-    /^(CHANGE_ME|YOUR_)/i.test(studentPasswordInput)
+    /^(CHANGE_ME|YOUR_|REPLACE[-_]WITH|EXAMPLE|TEST_ONLY)/i.test(studentPasswordInput)
   ) {
     throw new Error('STUDENT_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
   }
