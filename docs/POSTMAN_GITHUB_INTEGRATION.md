@@ -20,6 +20,7 @@ Collection: `postman/collections/learninghub-express-api.collection.json`
 - **00 — Process Health:** `GET /health` and `GET /api/v1/health/live`.
 - **01 — Public Catalog:** course categories, public AI model catalog, and curriculum templates.
 - **02 — Authentication & Security:** verifies `GET /api/v1/auth/me` rejects an unauthenticated request.
+- **03 — Authentication (Manual):** dedicated test-account login, refresh-token rotation, and authenticated current-user profile checks. Run locally or on isolated staging; excluded from unauthenticated CI smoke.
 
 Environment export: `postman/environments/learninghub-express-local.environment.json`.
 
