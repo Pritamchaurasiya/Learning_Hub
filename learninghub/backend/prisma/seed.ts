@@ -10,11 +10,19 @@ async function main() {
 
   const adminPasswordInput = process.env.ADMIN_DEFAULT_PASSWORD
   const studentPasswordInput = process.env.STUDENT_DEFAULT_PASSWORD
-  if (!adminPasswordInput || adminPasswordInput.length < 12) {
-    throw new Error('ADMIN_DEFAULT_PASSWORD must be set to at least 12 characters before seeding.')
+  if (
+    !adminPasswordInput ||
+    adminPasswordInput.length < 12 ||
+    /^(CHANGE_ME|YOUR_)/i.test(adminPasswordInput)
+  ) {
+    throw new Error('ADMIN_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
   }
-  if (!studentPasswordInput || studentPasswordInput.length < 12) {
-    throw new Error('STUDENT_DEFAULT_PASSWORD must be set to at least 12 characters before seeding.')
+  if (
+    !studentPasswordInput ||
+    studentPasswordInput.length < 12 ||
+    /^(CHANGE_ME|YOUR_)/i.test(studentPasswordInput)
+  ) {
+    throw new Error('STUDENT_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
   }
 
   console.log('🌱 Seeding database...\n')
