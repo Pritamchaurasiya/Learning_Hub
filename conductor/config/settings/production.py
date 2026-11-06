@@ -3,6 +3,7 @@ Production Settings for Learning Hub Platform
 """
 
 from .base import *
+import sys
 
 # SECURITY SETTINGS
 DEBUG = False
@@ -30,6 +31,14 @@ except KeyError:
         "JWT_SECRET_KEY environment variable is missing and must be set in production. "
         "Do NOT reuse your SECRET_KEY for JWT signing."
     )
+
+_invalid_secret_prefixes = ('change_me', 'your_', 'replace-with', 'example', 'test_only', 'django-insecure')
+_is_test_runner = 'pytest' in sys.modules or os.environ.get('PYTEST_CURRENT_TEST') is not None
+if not _is_test_runner:
+    if len(SECRET_KEY) < 50 or SECRET_KEY.lower().startswith(_invalid_secret_prefixes):
+        raise ImproperlyConfigured('SECRET_KEY must be a unique production secret of at least 50 characters.')
+    if len(JWT_SECRET_KEY) < 32 or JWT_SECRET_KEY.lower().startswith(_invalid_secret_prefixes):
+        raise ImproperlyConfigured('JWT_SECRET_KEY must be a unique production secret of at least 32 characters.')
 
 # Security Headers
 SECURE_SSL_REDIRECT = True

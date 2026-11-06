@@ -1,9 +1,31 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('Database seeding is disabled unless NODE_ENV is explicitly development.')
+  }
+
+  const adminPasswordInput = process.env.ADMIN_DEFAULT_PASSWORD
+  const studentPasswordInput = process.env.STUDENT_DEFAULT_PASSWORD
+  if (
+    !adminPasswordInput ||
+    adminPasswordInput.length < 12 ||
+    /^(CHANGE_ME|YOUR_|REPLACE[-_]WITH|EXAMPLE|TEST_ONLY)/i.test(adminPasswordInput)
+  ) {
+    throw new Error('ADMIN_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
+  }
+  if (
+    !studentPasswordInput ||
+    studentPasswordInput.length < 12 ||
+    /^(CHANGE_ME|YOUR_|REPLACE[-_]WITH|EXAMPLE|TEST_ONLY)/i.test(studentPasswordInput)
+  ) {
+    throw new Error('STUDENT_DEFAULT_PASSWORD must be set to a non-placeholder value of at least 12 characters before seeding.')
+  }
+
   console.log('🌱 Seeding database...\n')
 
   // Clean old data in dependency order
@@ -28,8 +50,8 @@ async function main() {
   await prisma.topic.deleteMany()
   await prisma.country.deleteMany()
 
-  const adminPassword = await bcrypt.hash('Admin@123!', 12)
-  const studentPassword = await bcrypt.hash('Student@123!', 12)
+  const adminPassword = await bcrypt.hash(adminPasswordInput, 12)
+  const studentPassword = await bcrypt.hash(studentPasswordInput, 12)
 
   const [admin, student] = await Promise.all([
     prisma.user.create({
@@ -538,8 +560,7 @@ async function main() {
   }
 
   console.log(`✅ Seed complete: ${dsaProblems.length} DSA problems seeded.`)
-  console.log(`Admin: admin@learninghub.com / Admin@123!`)
-  console.log(`Student: student@learninghub.com / Student@123!`)
+  console.log('Seeded local admin and student accounts using environment-provided credentials.')
 }
 
 main()

@@ -15,7 +15,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  KeyRound,
 } from 'lucide-react'
 import AnimatedPage from '../components/AnimatedPage'
 import { SEO } from '../components/SEO'
@@ -280,25 +279,6 @@ const AuthPage = memo(function AuthPage() {
     }
   }
 
-  const handleFillDemoCredentials = (role: 'STUDENT' | 'ADMIN') => {
-    if (role === 'STUDENT') {
-      setEmail('student@learninghub.com')
-      setPassword('Student@123!')
-      setFieldErrors({})
-      addToast({
-        message: 'Filled Demo Student credentials into form.',
-        type: 'info',
-      })
-    } else {
-      setEmail('admin@learninghub.com')
-      setPassword('Admin@123!')
-      setFieldErrors({})
-      addToast({
-        message: 'Filled Demo Admin credentials into form.',
-        type: 'info',
-      })
-    }
-  }
 
   const fieldClass = (field: keyof FieldErrors) => {
     // eslint-disable-next-line security/detect-object-injection
@@ -655,7 +635,7 @@ const AuthPage = memo(function AuthPage() {
                 </Button>
               </form>
 
-              {isLogin && (
+              {import.meta.env.DEV && isLogin && (
                 <motion.div
                   className="mt-6 relative z-10"
                   initial={{ opacity: 0 }}
@@ -707,52 +687,7 @@ const AuthPage = memo(function AuthPage() {
                     </motion.button>
                   </div>
 
-                  {/* Demo Credentials Auto-Fill Card */}
-                  <div className="mt-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 text-xs space-y-2">
-                    <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 font-medium">
-                      <span className="flex items-center gap-1.5">
-                        <KeyRound className="h-3.5 w-3.5" />
-                        Demo Credentials:
-                      </span>
-                      <span className="text-[10px] text-gray-400">Click to fill form</span>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemoCredentials('STUDENT')}
-                        className="text-left p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-400 transition-colors group"
-                      >
-                        <div className="font-semibold text-primary-600 dark:text-primary-400 flex items-center justify-between">
-                          <span>🎓 Student Account</span>
-                          <span className="text-[10px] opacity-0 group-hover:opacity-100 text-primary-500 transition-opacity">
-                            Fill ↵
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
-                          student@learninghub.com
-                        </div>
-                        <div className="text-[10px] text-gray-400 font-mono">Student@123!</div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleFillDemoCredentials('ADMIN')}
-                        className="text-left p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-amber-400 transition-colors group"
-                      >
-                        <div className="font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-between">
-                          <span>🛡️ Admin Account</span>
-                          <span className="text-[10px] opacity-0 group-hover:opacity-100 text-amber-500 transition-opacity">
-                            Fill ↵
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-gray-600 dark:text-gray-300 truncate">
-                          admin@learninghub.com
-                        </div>
-                        <div className="text-[10px] text-gray-400 font-mono">Admin@123!</div>
-                      </button>
-                    </div>
-                  </div>
                 </motion.div>
               )}
 

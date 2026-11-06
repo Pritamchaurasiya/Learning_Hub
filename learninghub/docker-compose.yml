@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-learninghub}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-learninghub_secret}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set_DB_PASSWORD_in_root_.env}
       POSTGRES_DB: ${DB_NAME:-learninghub}
     ports:
       - '5432:5432'
@@ -21,12 +21,13 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_root_.env}
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ['CMD-SHELL', 'redis-cli -a "${REDIS_PASSWORD}" ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,17 +40,17 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5000
-      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
-      - DIRECT_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:?Set_DB_PASSWORD_in_root_.env}@db:5432/${DB_NAME:-learninghub}
+      - DIRECT_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:?Set_DB_PASSWORD_in_root_.env}@db:5432/${DB_NAME:-learninghub}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_root_.env}@redis:6379/0
       - REDIS_ENABLED=true
       - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
-      - JWT_SECRET=${JWT_SECRET:-learninghub_super_secret_jwt_key_2026_prod_minimum_32_chars!}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-learninghub_super_secret_refresh_jwt_key_2026_prod!}
-      - CSRF_SECRET=${CSRF_SECRET:-lh-csrf-prod-signing-key-super-secure-64charslong-production-token!}
-      - ADMIN_SECRET=${ADMIN_SECRET:-lh-admin-prod-secret-32charslong!}
+      - JWT_SECRET=${JWT_SECRET:?Set_JWT_SECRET_in_root_.env}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?Set_JWT_REFRESH_SECRET_in_root_.env}
+      - CSRF_SECRET=${CSRF_SECRET:?Set_CSRF_SECRET_in_root_.env}
+      - ADMIN_SECRET=${ADMIN_SECRET:?Set_ADMIN_SECRET_in_root_.env}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@learninghub.prod}
-      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-SuperAdminSecure2026Prod!}
+      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:?Set_ADMIN_DEFAULT_PASSWORD_in_root_.env}
     ports:
       - '5000:5000'
     volumes:
@@ -73,12 +74,12 @@ services:
     restart: unless-stopped
     environment:
       - DJANGO_SETTINGS_MODULE=learninghub_server.settings
-      - SECRET_KEY=${SECRET_KEY:-django-insecure-production-super-secret-key-learninghub-2026!}
+      - SECRET_KEY=${SECRET_KEY:?Set_DJANGO_SECRET_KEY_in_root_.env}
       - DEBUG=${DEBUG:-False}
-      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:-learninghub_secret}@db:5432/${DB_NAME:-learninghub}
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://${DB_USER:-learninghub}:${DB_PASSWORD:?Set_DB_PASSWORD_in_root_.env}@db:5432/${DB_NAME:-learninghub}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_root_.env}@redis:6379/0
       - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
-      - ADMIN_SECRET=${ADMIN_SECRET:-test-admin-secret-key-32charslong!!}
+      - ADMIN_SECRET=${ADMIN_SECRET:?Set_ADMIN_SECRET_in_root_.env}
     ports:
       - '8000:8000'
     depends_on:

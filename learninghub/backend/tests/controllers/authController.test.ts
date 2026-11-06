@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import {
   register,
   login,
+  demoLogin,
   refresh,
   me,
   setupMfa,
@@ -110,6 +111,29 @@ describe('AuthController', () => {
     mockRes.status = statusMock as any
     mockRes.json = jsonMock as any
     jest.clearAllMocks()
+  })
+
+  describe('demoLogin', () => {
+    it.each(['production', 'test', undefined])(
+      'fails closed when NODE_ENV is %s without touching demo users',
+      async nodeEnv => {
+        const previousNodeEnv = process.env.NODE_ENV
+        if (nodeEnv === undefined) delete process.env.NODE_ENV
+        else process.env.NODE_ENV = nodeEnv
+        try {
+          mockReq.body = { role: 'ADMIN' }
+          await demoLogin(mockReq as any, mockRes as any, jest.fn())
+          expect(statusMock).toHaveBeenCalledWith(404)
+          expect(prisma.user.findUnique).not.toHaveBeenCalled()
+          expect(prisma.user.create).not.toHaveBeenCalled()
+          expect(prisma.user.update).not.toHaveBeenCalled()
+          expect(_svc.login).not.toHaveBeenCalled()
+          expect(mockRes.cookie).not.toHaveBeenCalled()
+        } finally {
+          process.env.NODE_ENV = previousNodeEnv
+        }
+      }
+    )
   })
 
   describe('register', () => {
