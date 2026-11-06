@@ -5,8 +5,8 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
-    throw new Error('Database seeding is disabled unless NODE_ENV is explicitly development or test.')
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('Database seeding is disabled unless NODE_ENV is explicitly development.')
   }
 
   const adminPasswordInput = process.env.ADMIN_DEFAULT_PASSWORD
