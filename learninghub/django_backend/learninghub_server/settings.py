@@ -14,12 +14,19 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 # In production (DEBUG=False) without env, use a random per-boot key (fail-closed:
 # tokens invalidate on restart rather than using a guessable default).
 from django.core.management.utils import get_random_secret_key as _get_random_secret_key
+from django.core.exceptions import ImproperlyConfigured
 _SECRET_FROM_ENV = os.environ.get('DJANGO_SECRET_KEY') or os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 # Test runner must use a stable key (random per-boot would still work within a run,
 # but dev default keeps legacy tests deterministic).
 _IS_TEST_RUNNER = 'pytest' in sys.modules or os.environ.get('PYTEST_CURRENT_TEST') is not None
 if _SECRET_FROM_ENV:
+    if not DEBUG and not _IS_TEST_RUNNER:
+        invalid_prefixes = ('change_me', 'your_', 'replace-with', 'example', 'test_only', 'django-insecure')
+        if len(_SECRET_FROM_ENV) < 50 or _SECRET_FROM_ENV.lower().startswith(invalid_prefixes):
+            raise ImproperlyConfigured(
+                'A unique SECRET_KEY of at least 50 characters is required in production; example placeholders are not allowed.'
+            )
     SECRET_KEY = _SECRET_FROM_ENV
 elif DEBUG or _IS_TEST_RUNNER:
     SECRET_KEY = 'dev-only-do-not-use-in-production-generate-a-proper-secret'
