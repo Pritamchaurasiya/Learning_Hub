@@ -21,6 +21,7 @@ describe('Authentication security regression suite', () => {
     let nextFunction: jest.Mock
 
     beforeEach(() => {
+      process.env.NODE_ENV = 'development'
       mockRes = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn().mockReturnThis(),
@@ -29,7 +30,7 @@ describe('Authentication security regression suite', () => {
     })
 
     it.each(['/api/v1/auth/demo-login', '/auth/demo-login'])(
-      'allows the local-only demo-login pre-auth flow in test/development: %s',
+      'allows the local-only demo-login pre-auth flow in development: %s',
       async path => {
         mockReq = { method: 'POST', originalUrl: path, headers: {} }
         await csrfProtection(mockReq as Request, mockRes as Response, nextFunction)
@@ -83,6 +84,7 @@ describe('Authentication security regression suite', () => {
     let authService: AuthService
 
     beforeEach(() => {
+      process.env.NODE_ENV = 'development'
       prismaMock = {
         user: {
           findFirst: jest.fn(),
@@ -163,7 +165,7 @@ describe('Authentication security regression suite', () => {
       expect(prismaMock.user.update).not.toHaveBeenCalled()
     })
 
-    it('rejects reserved demo identities when runtime is not explicitly development/test', async () => {
+    it('rejects reserved demo identities outside the explicit development runtime', async () => {
       const previousNodeEnv = process.env.NODE_ENV
       process.env.NODE_ENV = 'production'
       try {
