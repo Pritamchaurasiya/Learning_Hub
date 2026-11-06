@@ -15,13 +15,22 @@ jest.mock('../../services/CacheService', () => ({
 }))
 
 describe('Authentication security regression suite', () => {
+  let originalNodeEnv: string | undefined
+
+  beforeEach(() => {
+    originalNodeEnv = process.env.NODE_ENV
+    process.env.NODE_ENV = 'development'
+  })
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
+  })
   describe('csrfProtection middleware', () => {
     let mockReq: Partial<Request>
     let mockRes: Partial<Response>
     let nextFunction: jest.Mock
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
       mockRes = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn().mockReturnThis(),
