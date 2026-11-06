@@ -87,6 +87,27 @@ const envSchema = z.object({
   AUDIT_LOG_TO_CONSOLE: z.string().default('true'),
   AUDIT_LOG_TO_DATABASE: z.string().default('false'),
   AUDIT_LOG_RETENTION_DAYS: z.string().default('90'),
+}).superRefine((values, ctx) => {
+  if (values.NODE_ENV !== 'production') return
+
+  const productionSecrets: Array<[string, string]> = [
+    ['JWT_SECRET', values.JWT_SECRET],
+    ['JWT_REFRESH_SECRET', values.JWT_REFRESH_SECRET],
+    ['CSRF_SECRET', values.CSRF_SECRET],
+    ['ADMIN_SECRET', values.ADMIN_SECRET],
+    ['ADMIN_DEFAULT_PASSWORD', values.ADMIN_DEFAULT_PASSWORD],
+  ]
+  const placeholderPattern = /^(CHANGE_ME|YOUR_|REPLACE[-_]WITH|EXAMPLE|TEST_ONLY)/i
+
+  for (const [key, value] of productionSecrets) {
+    if (placeholderPattern.test(value.trim())) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [key],
+        message: 'must be replaced with a unique production value',
+      })
+    }
+  }
 })
 
 // Type for validated environment variables
