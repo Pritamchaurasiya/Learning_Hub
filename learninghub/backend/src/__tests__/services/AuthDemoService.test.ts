@@ -174,17 +174,21 @@ describe('Authentication security regression suite', () => {
       expect(prismaMock.user.update).not.toHaveBeenCalled()
     })
 
-    it('rejects reserved demo identities outside the explicit development runtime', async () => {
-      const previousNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
-      try {
-        await expect(
-          authService.login({ email: 'student@learninghub.com', password: 'Student@123!' })
-        ).rejects.toThrow('Invalid credentials')
-        expect(prismaMock.user.findFirst).not.toHaveBeenCalled()
-      } finally {
-        process.env.NODE_ENV = previousNodeEnv
+    it.each(['production', 'test', undefined])(
+      'rejects reserved demo identities when NODE_ENV is %s',
+      async nodeEnv => {
+        const previousNodeEnv = process.env.NODE_ENV
+        if (nodeEnv === undefined) delete process.env.NODE_ENV
+        else process.env.NODE_ENV = nodeEnv
+        try {
+          await expect(
+            authService.login({ email: 'student@learninghub.com', password: 'Student@123!' })
+          ).rejects.toThrow('Invalid credentials')
+          expect(prismaMock.user.findFirst).not.toHaveBeenCalled()
+        } finally {
+          process.env.NODE_ENV = previousNodeEnv
+        }
       }
-    })
+    )
   })
 })
