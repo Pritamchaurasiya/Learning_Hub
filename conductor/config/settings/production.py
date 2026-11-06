@@ -3,7 +3,6 @@ Production Settings for Learning Hub Platform
 """
 
 from .base import *
-import re
 
 # SECURITY SETTINGS
 DEBUG = False
