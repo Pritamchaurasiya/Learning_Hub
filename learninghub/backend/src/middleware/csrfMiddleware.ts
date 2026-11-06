@@ -82,6 +82,14 @@ export async function csrfProtection(
   }
 
   const normalizedPath = req.originalUrl.split('?')[0].replace(/\/+$/, '')
+  const isLocalDemoLogin =
+    (normalizedPath === '/api/v1/auth/demo-login' || normalizedPath === '/auth/demo-login') &&
+    (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
+  if (isLocalDemoLogin) {
+    next()
+    return
+  }
+
   if (
     normalizedPath.match(
       /^\/api\/v1\/(auth\/(login|register|forgot-password|reset-password|verify-email|mfa\/(login|verify-login))|admin\/auth\/(login|verify-mfa|register\/initial)|credentials\/verify|resume\/(verify|import\/linkedin|anchor-ipfs)|debugger\/(trace|diagnose))$/
