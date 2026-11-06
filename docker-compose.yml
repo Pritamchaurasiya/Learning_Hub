@@ -56,6 +56,7 @@ services:
     environment:
       DEBUG: "False"
       SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
       DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_user}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub}
       REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
       ALLOWED_HOSTS: "backend,frontend,localhost,127.0.0.1"
@@ -80,6 +81,7 @@ services:
     environment:
       DEBUG: "False"
       SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
       DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_user}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub}
       REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
     depends_on:
@@ -99,6 +101,7 @@ services:
     environment:
       DEBUG: "False"
       SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set_JWT_SECRET_KEY_in_.env}
       DATABASE_URL: postgres://${POSTGRES_USER:-learninghub_user}:${POSTGRES_PASSWORD:?Set_POSTGRES_PASSWORD_in_.env}@db:5432/${POSTGRES_DB:-learninghub}
       REDIS_URL: redis://:${REDIS_PASSWORD:?Set_REDIS_PASSWORD_in_.env}@redis:6379/0
     depends_on:
