@@ -158,8 +158,7 @@ export class AuthService {
       normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
     if (
       isReservedDemoIdentity &&
-      process.env.NODE_ENV !== 'development' &&
-      process.env.NODE_ENV !== 'test'
+      process.env.NODE_ENV !== 'development'
     ) {
       throw new Error('Invalid credentials')
     }
