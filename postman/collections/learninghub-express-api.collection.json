@@ -325,7 +325,8 @@
               }
             }
           ],
-          "response": []
+          "response": [],
+          "id": "a66c953c-581e-4b50-851f-8b6a580c6097"
         },
         {
           "name": "Refresh — rotate Express JWT pair",
@@ -383,7 +384,8 @@
               }
             }
           ],
-          "response": []
+          "response": [],
+          "id": "85c4c07f-3ed2-4d64-bd87-53ef2037d891"
         },
         {
           "name": "Current User — authenticated profile",
@@ -432,9 +434,11 @@
               }
             }
           ],
-          "response": []
+          "response": [],
+          "id": "a2d5556e-df08-4a28-917f-f7ff367d6dcb"
         }
-      ]
+      ],
+      "id": "a5768dd6-c385-448a-83cd-453c99113006"
     }
   ]
 }
