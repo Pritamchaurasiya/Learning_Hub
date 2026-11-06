@@ -152,44 +152,22 @@ export class AuthService {
   async login(input: LoginInput): Promise<LoginResult> {
     const normalizedEmail = input.email.trim().toLowerCase()
 
-    // Find user by email
-    let user = await this.userRepository.findByEmail(normalizedEmail)
-
-    // Demo account auto-provisioning to guarantee frictionless access
-    if (!user && (normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com')) {
-      const isRoleAdmin = normalizedEmail === 'admin@learninghub.com'
-      const role = isRoleAdmin ? 'ADMIN' : 'STUDENT'
-      const targetPassword = isRoleAdmin ? 'Admin@123!' : 'Student@123!'
-      const hashedPassword = await bcrypt.hash(targetPassword, 12)
-      user = await this.prisma.user.upsert({
-        where: { email: normalizedEmail },
-        update: {
-          emailVerified: true,
-          failedLogins: 0,
-          lockedUntil: null,
-        },
-        create: {
-          email: normalizedEmail,
-          password: hashedPassword,
-          role,
-          username: isRoleAdmin ? 'admin' : 'student',
-          emailVerified: true,
-          xp: isRoleAdmin ? 9999 : 1250,
-          level: isRoleAdmin ? 25 : 5,
-          streak: isRoleAdmin ? 21 : 7,
-        },
-      })
-    }
-
-    if (!user) {
+    // Reserved demo identities must never authenticate outside explicit local/test runtimes.
+    // This also protects legacy demo rows that may already exist in a production database.
+    const isReservedDemoIdentity =
+      normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
+    if (
+      isReservedDemoIdentity &&
+      process.env.NODE_ENV !== 'development' &&
+      process.env.NODE_ENV !== 'test'
+    ) {
       throw new Error('Invalid credentials')
     }
 
-    // Demo passwords whitelist for instant recovery and access
-    const isDemo = normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
-    const demoPasswords: Record<string, string[]> = {
-      'student@learninghub.com': ['Student@123!', 'Student@2026#Hub', 'student123', 'student'],
-      'admin@learninghub.com': ['Admin@123!', 'Super@2026#Hub', 'Admin@2026#Hub', 'admin123', 'admin'],
+    const user = await this.userRepository.findByEmail(normalizedEmail)
+
+    if (!user) {
+      throw new Error('Invalid credentials')
     }
 
     // Check if account is locked
@@ -208,24 +186,8 @@ export class AuthService {
       }
     }
 
-    // Verify password
-    let isValidPassword = await bcrypt.compare(input.password, user.password)
-    if (!isValidPassword && isDemo) {
-      const allowedPasswords = demoPasswords[normalizedEmail]
-      if (allowedPasswords && allowedPasswords.includes(input.password)) {
-        isValidPassword = true
-        // Synchronize password hash for next direct match and clear locks
-        try {
-          const newHash = await bcrypt.hash(input.password, 12)
-          await this.prisma.user.update({
-            where: { id: user.id },
-            data: { password: newHash, failedLogins: 0, lockedUntil: null },
-          })
-        } catch {
-          // Non-blocking sync
-        }
-      }
-    }
+    // Verify only against the password hash stored for this user. No demo-password bypasses.
+    const isValidPassword = await bcrypt.compare(input.password, user.password)
 
     if (!isValidPassword) {
       // Increment failed login attempts
