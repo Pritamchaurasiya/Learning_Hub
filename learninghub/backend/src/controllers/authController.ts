@@ -209,7 +209,7 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
 
 export const demoLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // Demo access is a local-only convenience. Fail closed when NODE_ENV is absent or production.
-  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'development') {
     sendNotFound(res, 'Not found')
     return
   }
