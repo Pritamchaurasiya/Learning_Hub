@@ -15,6 +15,27 @@
       "type": "secret",
       "enabled": true,
       "description": "Express JWT access token; do not commit"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Dedicated non-production Express test account email"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Dedicated non-production Express test password; do not commit a value"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Runtime rotated Express JWT refresh token; do not commit a value"
     }
   ],
   "_postman_variable_scope": "environment",
