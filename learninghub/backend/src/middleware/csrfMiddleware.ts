@@ -84,7 +84,7 @@ export async function csrfProtection(
   const normalizedPath = req.originalUrl.split('?')[0].replace(/\/+$/, '')
   const isLocalDemoLogin =
     (normalizedPath === '/api/v1/auth/demo-login' || normalizedPath === '/auth/demo-login') &&
-    (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
+    process.env.NODE_ENV === 'development'
   if (isLocalDemoLogin) {
     next()
     return
