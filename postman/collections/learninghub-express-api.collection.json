@@ -29,6 +29,21 @@
       "key": "accessToken",
       "value": "",
       "description": "Runtime JWT access token"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "description": "Dedicated non-production Express test account email"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "description": "Dedicated non-production test account password; keep local/secret"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "description": "Runtime rotated refresh JWT; keep local/secret"
     }
   ],
   "event": [
@@ -248,6 +263,176 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Authentication (Manual)",
+      "description": "Run only against local or isolated staging with a dedicated non-production test account. These stateful auth requests are intentionally excluded from GitHub's unauthenticated GET-only Newman smoke jobs.",
+      "item": [
+        {
+          "name": "Login — store Express JWT pair",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Express login succeeds', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Login returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Login returns access and refresh tokens', function () { pm.expect(body.data.accessToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty; });",
+                  "pm.environment.set('accessToken', body.data.accessToken);",
+                  "pm.environment.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Refresh — rotate Express JWT pair",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const previousRefreshToken = pm.environment.get('refreshToken');",
+                  "pm.test('Express refresh succeeds', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Refresh returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Refresh returns a new access and refresh token', function () { pm.expect(body.data.accessToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty; pm.expect(body.data.refreshToken).to.not.equal(previousRefreshToken); });",
+                  "pm.environment.set('accessToken', body.data.accessToken);",
+                  "pm.environment.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Current User — authenticated profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated Express profile returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Authenticated profile returns the success envelope', function () { pm.expect(body.status).to.equal('success'); pm.expect(body.data).to.be.an('object'); });",
+                  "pm.test('Authenticated profile contains a user identity', function () { pm.expect(body.data.user).to.be.an('object'); pm.expect(body.data.user.id).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "response": []
         }
       ]
     }
