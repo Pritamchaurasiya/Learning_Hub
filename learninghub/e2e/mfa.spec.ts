@@ -30,6 +30,14 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
         body: JSON.stringify({ status: 'success', data: [] }),
       })
     })
+
+    await page.route('**/auth/sessions*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
+    })
   })
 
   test('should complete 2FA enrollment flow in Settings', async ({ page }) => {
