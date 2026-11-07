@@ -38,6 +38,7 @@ jobs:
           cd conductor
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
+          pip install pytest pytest-django factory-boy
 
       - name: Run Backend Tests
         env:
