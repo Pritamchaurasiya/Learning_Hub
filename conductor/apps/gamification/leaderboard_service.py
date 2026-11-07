@@ -58,7 +58,7 @@ class LeaderboardService:
         try:
             from apps.gamification.models import UserXP
             order_field = '-weekly_xp' if period == "weekly" else '-total_xp'
-            top_records = UserXP.objects.order_by(order_field)[:limit]
+            top_records = UserXP.objects.select_related('user').order_by(order_field)[:limit]
             results = []
             for rank, uxp in enumerate(top_records, start=1):
                 score = uxp.weekly_xp if period == "weekly" else uxp.total_xp

@@ -401,22 +401,32 @@ class GamificationService:
         
         leaderboard = []
         for entry in top_data:
-            uid_raw = entry['user_id']
-            user = users.get(UUID(uid_raw)) if len(uid_raw) == 36 and '-' in uid_raw else users.get(uid_raw)
+            uid_raw = str(entry['user_id'])
+            user = None
+            try:
+                user = users.get(UUID(uid_raw))
+            except (ValueError, TypeError):
+                pass
+            if not user:
+                user = users.get(uid_raw)
+
             if user:
-                # Get Level approximation or fetch? 
-                # For speed, approx level from score or fetch UserXP if crucial
-                # Let's keep it simple: Level = TotalXP // 100 + 1
                 level = (entry['score'] // 100) + 1
+                avatar_url = None
+                if hasattr(user, 'avatar') and user.avatar:
+                    try:
+                        avatar_url = user.avatar.url
+                    except Exception:
+                        avatar_url = None
                 
                 leaderboard.append({
                     "rank": entry['rank'],
                     "user_id": str(uid_raw),
                     "username": user.username,
                     "display_name": getattr(user, 'display_name', user.username),
-                    "total_xp": entry['score'], # or weekly_xp if period='weekly', Redis stores correct score
+                    "total_xp": entry['score'],
                     "level": level,
-                    "avatar": user.avatar.url if hasattr(user, 'avatar') and user.avatar else None,
+                    "avatar": avatar_url,
                 })
         
         return leaderboard
